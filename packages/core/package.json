@@ -1,0 +1,23 @@
+{
+	"name": "@clc/core",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./*": "./src/*"
+	},
+	"scripts": {
+		"test": "vitest run"
+	},
+	"peerDependencies": {
+		"react": ">=19.0.0"
+	},
+	"dependencies": {
+		"@tanstack/react-form": "^1.32.0",
+		"@tanstack/react-query": "^5.100.11",
+		"zod": "^4.4.3",
+		"zustand": "^5.0.13"
+	},
+	"devDependencies": {
+		"vitest": "^4.1.5"
+	}
+}

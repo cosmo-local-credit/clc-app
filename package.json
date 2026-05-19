@@ -1,0 +1,26 @@
+{
+	"name": "clc",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "pnpm --filter @clc/web dev",
+		"build": "pnpm --filter @clc/web build",
+		"preview": "pnpm --filter @clc/web preview",
+		"test": "pnpm -r test",
+		"format": "biome format .",
+		"lint": "biome lint .",
+		"check": "biome check ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.5",
+		"@ticktockbent/charlotte": "^0.6.3",
+		"typescript": "^6.0.2"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild",
+			"lightningcss",
+			"puppeteer"
+		]
+	}
+}
