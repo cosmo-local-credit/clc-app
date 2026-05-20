@@ -4,11 +4,13 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
+import { Web3Provider } from "#/providers/web3";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
@@ -28,8 +30,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 			],
 		}),
 		shellComponent: RootDocument,
+		component: AppContent,
 	},
 );
+
+function AppContent() {
+	const { queryClient } = Route.useRouteContext();
+	return (
+		<Web3Provider queryClient={queryClient}>
+			<Outlet />
+		</Web3Provider>
+	);
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
