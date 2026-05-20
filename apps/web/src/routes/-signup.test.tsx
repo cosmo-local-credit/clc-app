@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
@@ -49,6 +49,20 @@ vi.mock("#/connectors/privateKey", () => ({
 	privateKeyConnector: () => ({ id: "private-key", name: "Private Key" }),
 }));
 
+const mockOnKeyDecoded = vi.fn();
+
+vi.mock("#/components/paper-wallet-scanner", () => ({
+	PaperWalletScanner: ({
+		onKeyDecoded,
+	}: {
+		onKeyDecoded: (key: string) => void;
+		onCancel: () => void;
+	}) => {
+		mockOnKeyDecoded.mockImplementation(onKeyDecoded);
+		return <div data-testid="paper-wallet-scanner" />;
+	},
+}));
+
 vi.mock("#/providers/web3", () => ({
 	wagmiConfig: { state: {} },
 }));
@@ -62,6 +76,7 @@ beforeEach(() => {
 	mockConnect.mockReset();
 	mockStorePrivateKey.mockReset();
 	mockClearPrivateKey.mockReset();
+	mockOnKeyDecoded.mockReset();
 });
 
 describe("Signup page", () => {
@@ -143,5 +158,73 @@ describe("Signup page", () => {
 		});
 		render(<SignupPage />);
 		expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+	});
+
+	it("renders the Paper Wallet button as the primary option", () => {
+		render(<SignupPage />);
+		expect(screen.getByRole("button", { name: /paper wallet/i })).toBeTruthy();
+	});
+
+	it("expands the paper wallet scanner when Paper Wallet is clicked", () => {
+		render(<SignupPage />);
+		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
+		expect(screen.getByTestId("paper-wallet-scanner")).toBeTruthy();
+	});
+
+	it("hides other options when Paper Wallet is expanded", () => {
+		render(<SignupPage />);
+		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
+		expect(
+			screen.queryByRole("button", { name: /connect wallet/i }),
+		).toBeNull();
+		expect(screen.queryByRole("button", { name: /^private key$/i })).toBeNull();
+	});
+
+	it("connects with a valid key decoded from a QR scan", () => {
+		mockConnect.mockResolvedValue(undefined);
+		render(<SignupPage />);
+		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
+
+		const validKey =
+			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+		act(() => {
+			mockOnKeyDecoded(validKey);
+		});
+
+		expect(mockStorePrivateKey).toHaveBeenCalledWith(validKey);
+		expect(mockConnect).toHaveBeenCalledWith(
+			{ state: {} },
+			{ connector: { id: "private-key", name: "Private Key" } },
+		);
+	});
+
+	it("shows an error when QR scan decodes an invalid key", () => {
+		render(<SignupPage />);
+		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
+
+		act(() => {
+			mockOnKeyDecoded("not-a-private-key");
+		});
+
+		expect(
+			screen.getByText(/this qr code does not contain a valid private key/i),
+		).toBeTruthy();
+		expect(mockStorePrivateKey).not.toHaveBeenCalled();
+	});
+
+	it("connects with a bare hex key decoded from a QR scan", () => {
+		mockConnect.mockResolvedValue(undefined);
+		render(<SignupPage />);
+		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
+
+		const bareKey =
+			"ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+		act(() => {
+			mockOnKeyDecoded(bareKey);
+		});
+
+		expect(mockStorePrivateKey).toHaveBeenCalledWith(
+			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		);
 	});
 });
