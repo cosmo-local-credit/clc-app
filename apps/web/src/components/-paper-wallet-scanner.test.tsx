@@ -151,4 +151,39 @@ describe("PaperWalletScanner", () => {
 
 		expect(onKeyDecoded).toHaveBeenCalledWith("0xretrykey");
 	});
+
+	it("ignores a late scan result after Back is clicked", async () => {
+		let resolveScan: (value: string) => void;
+		mockScanFile.mockReturnValue(
+			new Promise<string>((resolve) => {
+				resolveScan = resolve;
+			}),
+		);
+
+		render(
+			<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />,
+		);
+
+		await act(() => {
+			fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+		});
+
+		const file = new File(["data"], "qr.png", { type: "image/png" });
+		const fileInput = screen.getByLabelText(/upload qr code image/i);
+		await act(() => {
+			fireEvent.change(fileInput, { target: { files: [file] } });
+		});
+
+		// Cancel while scan is still in flight
+		await act(() => {
+			fireEvent.click(screen.getByRole("button", { name: /back/i }));
+		});
+
+		// Now resolve the stale scan — should be ignored
+		await act(() => {
+			resolveScan?.("0xlatekey");
+		});
+
+		expect(onKeyDecoded).not.toHaveBeenCalled();
+	});
 });

@@ -1,8 +1,8 @@
-import { Html5Qrcode } from "html5-qrcode";
 import { Camera, LoaderCircle, Upload, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "#/components/ui";
 
+type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
 type ScanMode = "choose" | "camera" | "upload";
 
 interface PaperWalletScannerProps {
@@ -19,26 +19,19 @@ export function PaperWalletScanner({
 	const [mode, setMode] = useState<ScanMode>("choose");
 	const [error, setError] = useState<string | null>(null);
 	const [cameraStarting, setCameraStarting] = useState(false);
-	const scannerRef = useRef<Html5Qrcode | null>(null);
+	const scannerRef = useRef<Html5QrcodeType | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	// Cleanup scanner on unmount
+	// Incremented on cancel/unmount. In-flight async work captures the
+	// current epoch and bails out if it no longer matches.
+	const epochRef = useRef(0);
+
+	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
-			const scanner = scannerRef.current;
-			if (scanner) {
-				scannerRef.current = null;
-				if (scanner.isScanning) {
-					scanner
-						.stop()
-						.then(() => scanner.clear())
-						.catch(() => {});
-				} else {
-					try {
-						scanner.clear();
-					} catch {}
-				}
-			}
+			epochRef.current += 1;
+			teardownScanner(scannerRef.current);
+			scannerRef.current = null;
 		};
 	}, []);
 
@@ -46,19 +39,24 @@ export function PaperWalletScanner({
 		setError(null);
 		setCameraStarting(true);
 		setMode("camera");
+		const epoch = ++epochRef.current;
+
+		const { Html5Qrcode } = await import("html5-qrcode");
+		if (epochRef.current !== epoch) return;
 
 		const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
 		scannerRef.current = scanner;
 
 		try {
 			const devices = await Html5Qrcode.getCameras();
+			if (epochRef.current !== epoch) return;
+
 			if (!devices.length) {
 				setError("No camera found on this device.");
 				setCameraStarting(false);
 				return;
 			}
 
-			// Prefer back camera
 			const backCamera =
 				devices.find(
 					(d) =>
@@ -71,6 +69,7 @@ export function PaperWalletScanner({
 				backCamera.id,
 				{ fps: 10, qrbox: { width: 250, height: 250 } },
 				(decodedText) => {
+					if (epochRef.current !== epoch) return;
 					onKeyDecoded(decodedText);
 					scanner.stop().then(() => scanner.clear());
 					scannerRef.current = null;
@@ -80,6 +79,7 @@ export function PaperWalletScanner({
 				},
 			);
 		} catch (err) {
+			if (epochRef.current !== epoch) return;
 			scannerRef.current = null;
 			const msg =
 				err instanceof DOMException && err.name === "NotAllowedError"
@@ -89,44 +89,47 @@ export function PaperWalletScanner({
 						: "Failed to start camera.";
 			setError(msg);
 		} finally {
-			setCameraStarting(false);
+			if (epochRef.current === epoch) {
+				setCameraStarting(false);
+			}
 		}
 	}, [onKeyDecoded]);
 
 	const handleFileUpload = useCallback(
 		async (event: React.ChangeEvent<HTMLInputElement>) => {
-			setError(null);
 			const file = event.target.files?.[0];
 			if (!file) return;
+
+			setError(null);
+			const epoch = ++epochRef.current;
+
+			const { Html5Qrcode } = await import("html5-qrcode");
+			if (epochRef.current !== epoch) return;
 
 			const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
 			scannerRef.current = scanner;
 
 			try {
 				const decoded = await scanner.scanFile(file, false);
+				if (epochRef.current !== epoch) return;
 				onKeyDecoded(decoded);
 			} catch {
+				if (epochRef.current !== epoch) return;
 				setError("No QR code found. Try again with a clearer image.");
 			} finally {
-				scannerRef.current = null;
-				// Reset file input so the same file can be re-selected
-				if (fileInputRef.current) fileInputRef.current.value = "";
+				if (epochRef.current === epoch) {
+					scannerRef.current = null;
+					if (fileInputRef.current) fileInputRef.current.value = "";
+				}
 			}
 		},
 		[onKeyDecoded],
 	);
 
 	const handleCancel = useCallback(() => {
-		const scanner = scannerRef.current;
-		if (scanner) {
-			scanner
-				.stop()
-				.then(() => scanner.clear())
-				.catch(() => {})
-				.finally(() => {
-					scannerRef.current = null;
-				});
-		}
+		epochRef.current += 1;
+		teardownScanner(scannerRef.current);
+		scannerRef.current = null;
 		setError(null);
 		setMode("choose");
 	}, []);
@@ -185,7 +188,7 @@ export function PaperWalletScanner({
 							<LoaderCircle className="size-6 animate-spin text-muted-foreground" />
 						</div>
 					) : null}
-					{error && cameraStarting === false ? (
+					{error && !cameraStarting ? (
 						<div className="space-y-2">
 							<p className="text-xs text-destructive">{error}</p>
 							{error === "Camera access denied." ? (
@@ -233,4 +236,18 @@ export function PaperWalletScanner({
 			) : null}
 		</div>
 	);
+}
+
+function teardownScanner(scanner: Html5QrcodeType | null) {
+	if (!scanner) return;
+	if (scanner.isScanning) {
+		scanner
+			.stop()
+			.then(() => scanner.clear())
+			.catch(() => {});
+	} else {
+		try {
+			scanner.clear();
+		} catch {}
+	}
 }
