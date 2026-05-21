@@ -5,10 +5,12 @@ import { type ReactNode, useEffect } from "react";
 import { createConfig, createStorage, http, WagmiProvider } from "wagmi";
 import { connect, getAccount } from "wagmi/actions";
 import { celo } from "wagmi/chains";
+import { caliburWebAuthnConnector } from "#/connectors/calibur-webauthn";
 import {
 	hasStoredPrivateKey,
 	privateKeyConnector,
 } from "#/connectors/privateKey";
+import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
 
 const DEFAULT_WALLETCONNECT_PROJECT_ID = "4bc44b6179c99f9c147da08495a643d2";
 
@@ -60,6 +62,29 @@ function PrivateKeyReconnect() {
 	return null;
 }
 
+function CaliburWebAuthnReconnect() {
+	useEffect(() => {
+		if (typeof window === "undefined") {
+			return;
+		}
+
+		if (!hasWebAuthnCredential()) {
+			return;
+		}
+
+		if (getAccount(wagmiConfig).isConnected) {
+			return;
+		}
+
+		void connect(wagmiConfig, {
+			connector: caliburWebAuthnConnector(),
+			isReconnecting: true,
+		}).catch(() => {});
+	}, []);
+
+	return null;
+}
+
 export function Web3Provider({
 	children,
 	queryClient,
@@ -72,6 +97,7 @@ export function Web3Provider({
 			<QueryClientProvider client={queryClient}>
 				<ConnectKitProvider>{children}</ConnectKitProvider>
 				<PrivateKeyReconnect />
+				<CaliburWebAuthnReconnect />
 			</QueryClientProvider>
 		</WagmiProvider>
 	);

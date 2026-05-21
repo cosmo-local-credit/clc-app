@@ -63,6 +63,10 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
 	},
 }));
 
+vi.mock("#/features/webauthn/ui/signup-with-passkey", () => ({
+	SignupWithPasskey: () => <div data-testid="signup-with-passkey" />,
+}));
+
 vi.mock("#/providers/web3", () => ({
 	wagmiConfig: { state: {} },
 }));

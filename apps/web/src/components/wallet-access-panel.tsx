@@ -10,7 +10,13 @@ import {
 	privateKeyConnector,
 	storePrivateKey,
 } from "#/connectors/privateKey";
+import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { SignupWithPasskey } from "#/features/webauthn/ui/signup-with-passkey";
 import { wagmiConfig } from "#/providers/web3";
+
+const RELAYER_URL =
+	import.meta.env.VITE_RELAYER_URL ?? "http://localhost:3001/api/v2/relayer";
+const relayerClient = createRelayerClient(RELAYER_URL);
 
 export function WalletAccessPanel() {
 	const [pkInput, setPkInput] = useState("");
@@ -129,6 +135,18 @@ export function WalletAccessPanel() {
 
 						{pkError ? (
 							<p className="text-xs text-destructive">{pkError}</p>
+						) : null}
+
+						{!showPaperWallet && !showPkInput ? (
+							<SignupWithPasskey client={relayerClient} onSuccess={() => {}} />
+						) : null}
+
+						{!showPaperWallet && !showPkInput ? (
+							<div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+								<div className="h-px flex-1 bg-border" />
+								<span>or</span>
+								<div className="h-px flex-1 bg-border" />
+							</div>
 						) : null}
 
 						{!showPaperWallet && !showPkInput ? (
