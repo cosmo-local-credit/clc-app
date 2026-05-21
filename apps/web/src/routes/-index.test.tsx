@@ -38,6 +38,10 @@ vi.mock("#/providers/web3", () => ({
 	wagmiConfig: { state: {} },
 }));
 
+vi.mock("#/features/webauthn/ui/signup-with-passkey", () => ({
+	SignupWithPasskey: () => <div data-testid="signup-with-passkey" />,
+}));
+
 import { HomePage } from "#/components/home-page";
 
 beforeEach(() => {
