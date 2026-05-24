@@ -1,4 +1,4 @@
-export { Button, type ButtonProps, buttonVariants } from "./button";
+export { Button, type ButtonProps } from "./button";
 export {
 	Card,
 	CardAction,
@@ -8,13 +8,13 @@ export {
 	CardHeader,
 	CardTitle,
 } from "./card";
+export { CLCLogo } from "./clc-logo";
 export { CountrySelect } from "./country-select";
-export { CountrySheet, getFlagEmoji } from "./country-sheet";
+export { CountrySheet } from "./country-sheet";
+export { getFlagEmoji } from "./country-utils";
 export {
 	DialogBackdrop,
-	DialogClose,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogPortal,
@@ -27,7 +27,6 @@ export {
 	SheetBackdrop,
 	SheetClose,
 	SheetContent,
-	SheetDescription,
 	SheetFooter,
 	SheetHeader,
 	SheetPortal,

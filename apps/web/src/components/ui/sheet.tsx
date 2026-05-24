@@ -8,7 +8,6 @@ export const SheetRoot = Dialog.Root;
 export const SheetPortal = Dialog.Portal;
 export const SheetClose = Dialog.Close;
 export const SheetTitle = Dialog.Title;
-export const SheetDescription = Dialog.Description;
 
 // ── Backdrop ───────────────────────────────────────────────────────────────────
 
@@ -33,7 +32,7 @@ function SheetContent({
 	className,
 	children,
 	...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<typeof Dialog.Popup>) {
 	return (
 		<Dialog.Popup
 			className={cn(

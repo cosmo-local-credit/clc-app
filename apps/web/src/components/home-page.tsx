@@ -1,36 +1,18 @@
-import { useNavigate } from "@tanstack/react-router";
-import { BadgeCheck, LogOut, Wallet } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BadgeCheck, LogOut } from "lucide-react";
+import { useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { CLCLogo } from "#/components/ui/clc-logo";
 import { clearAuthToken } from "#/features/auth/state/token";
-import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
+
+// Routing when disconnected is handled by IndexPage in routes/index.tsx.
+// HomePage is only ever rendered when isConnected === true.
 
 export function HomePage() {
-	const { address, isConnected, status } = useAccount();
+	const { address } = useAccount();
 	const { disconnectAsync } = useDisconnect();
-	const navigate = useNavigate();
-	const [hasMounted, setHasMounted] = useState(false);
 	const [isSigningOut, setIsSigningOut] = useState(false);
-
-	useEffect(() => {
-		setHasMounted(true);
-	}, []);
-
-	// Only redirect when wagmi has finished its reconnection attempt and the
-	// account is genuinely disconnected — not while it is still reconnecting
-	// (which would cause a spurious redirect on every SPA navigation).
-	useEffect(() => {
-		if (!hasMounted || status !== "disconnected") {
-			return;
-		}
-
-		void navigate({
-			to: hasWebAuthnCredential() ? "/signin" : "/signup",
-			replace: true,
-		});
-	}, [hasMounted, status, navigate]);
 
 	async function handleSignOut() {
 		setIsSigningOut(true);
@@ -42,19 +24,11 @@ export function HomePage() {
 		}
 	}
 
-	if (!hasMounted || status === "connecting" || status === "reconnecting") {
-		return null;
-	}
-
-	if (!isConnected) {
-		return null;
-	}
-
 	return (
 		<div className="flex min-h-screen flex-col bg-background px-6 pb-12 pt-20">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-foreground text-background">
-					<Wallet className="size-7" />
+				<div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-foreground p-2">
+					<CLCLogo className="size-10" />
 				</div>
 				<div className="space-y-1">
 					<h1 className="font-heading text-2xl font-semibold">

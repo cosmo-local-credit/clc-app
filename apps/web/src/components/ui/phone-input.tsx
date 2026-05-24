@@ -1,9 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import type { CountryCode } from "react-phone-number-input";
+import type { Country } from "react-phone-number-input";
 import { getCountryCallingCode } from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
-import { CountrySheet, getFlagEmoji } from "#/components/ui/country-sheet";
+import { CountrySheet } from "#/components/ui/country-sheet";
+import { getFlagEmoji } from "#/components/ui/country-utils";
 import { cn } from "#/lib/utils.ts";
 
 // ── Phone input ────────────────────────────────────────────────────────────────
@@ -17,9 +18,9 @@ type PhoneInputFieldProps = {
 	"aria-label"?: string;
 };
 
-const DEFAULT_COUNTRY: CountryCode = ((import.meta.env.VITE_DEFAULT_COUNTRY as
+const DEFAULT_COUNTRY: Country = ((import.meta.env.VITE_DEFAULT_COUNTRY as
 	| string
-	| undefined) ?? "KE") as CountryCode;
+	| undefined) ?? "KE") as Country;
 
 export function PhoneInputField({
 	id,
@@ -29,7 +30,7 @@ export function PhoneInputField({
 	"aria-invalid": ariaInvalid,
 	"aria-label": ariaLabel,
 }: PhoneInputFieldProps) {
-	const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+	const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
 	const [sheetOpen, setSheetOpen] = useState(false);
 
 	const callingCode = getCountryCallingCode(country);
@@ -86,7 +87,7 @@ export function PhoneInputField({
 				mode="phone-country"
 				value={country}
 				onChange={(code) => {
-					setCountry(code as CountryCode);
+					setCountry(code as Country);
 					setSheetOpen(false);
 				}}
 			/>

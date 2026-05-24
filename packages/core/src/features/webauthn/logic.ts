@@ -130,7 +130,13 @@ export function computeEIP712Digest(
 		salt: pad(caliburAddress, { size: 32 }),
 	};
 	const message = {
-		batchedCall: signedBatch.batchedCall,
+		batchedCall: {
+			calls: signedBatch.batchedCall.calls.map((call) => ({
+				...call,
+				value: BigInt(call.value),
+			})),
+			revertOnFailure: signedBatch.batchedCall.revertOnFailure,
+		},
 		nonce: BigInt(signedBatch.nonce),
 		keyHash: signedBatch.keyHash,
 		executor: signedBatch.executor,

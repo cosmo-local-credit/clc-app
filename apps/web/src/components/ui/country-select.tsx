@@ -1,7 +1,8 @@
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import labels from "react-phone-number-input/locale/en.json";
-import { CountrySheet, getFlagEmoji } from "#/components/ui/country-sheet";
+import { CountrySheet } from "#/components/ui/country-sheet";
+import { getFlagEmoji } from "#/components/ui/country-utils";
 import { cn } from "#/lib/utils.ts";
 
 const countryLabels = labels as Record<string, string>;
@@ -35,7 +36,7 @@ export function CountrySelect({
 				aria-haspopup="listbox"
 				aria-expanded={open}
 				aria-label={ariaLabel ?? "Country"}
-				aria-invalid={ariaInvalid}
+				data-invalid={ariaInvalid ? "" : undefined}
 				onClick={() => setOpen(true)}
 				className={cn(
 					"flex h-9 w-full items-center gap-2 rounded-none border border-input bg-card",

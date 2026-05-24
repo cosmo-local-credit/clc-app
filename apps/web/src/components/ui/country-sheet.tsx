@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getCountries, getCountryCallingCode } from "react-phone-number-input";
 import labels from "react-phone-number-input/locale/en.json";
+import { getFlagEmoji } from "#/components/ui/country-utils";
 import { Input } from "#/components/ui/input";
 import {
 	SheetBackdrop,
@@ -14,16 +15,6 @@ import {
 import { cn } from "#/lib/utils.ts";
 
 const countryLabels = labels as Record<string, string>;
-
-// ── Flag emoji from ISO-3166-1 alpha-2 ────────────────────────────────────────
-
-export function getFlagEmoji(code: string): string {
-	return code
-		.toUpperCase()
-		.split("")
-		.map((c) => String.fromCodePoint(0x1f1e6 - 65 + c.charCodeAt(0)))
-		.join("");
-}
 
 // ── Country sheet ──────────────────────────────────────────────────────────────
 
@@ -71,7 +62,7 @@ export function CountrySheet({
 		>
 			<SheetPortal>
 				<SheetBackdrop />
-				<SheetContent className="h-[50dvh] max-h-[50dvh]">
+				<SheetContent className="h-[50dvh] max-h-[50dvh]" initialFocus={false}>
 					<SheetHeader>
 						<SheetTitle className="text-base font-semibold">
 							{mode === "phone-country"
@@ -82,7 +73,6 @@ export function CountrySheet({
 
 					<div className="px-4 pb-3">
 						<Input
-							autoFocus
 							placeholder="Search…"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
@@ -106,6 +96,7 @@ export function CountrySheet({
 												render={
 													<button
 														type="button"
+														aria-label={`Select ${name}`}
 														className={cn(
 															"flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors",
 															"hover:bg-muted active:bg-muted",

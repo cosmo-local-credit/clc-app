@@ -8,7 +8,7 @@ import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recove
 import { useCaliburSignup } from "#/features/webauthn/hooks/use-calibur-signup";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
-import { caliburConnector } from "#/providers/web3";
+import { caliburConnector } from "#/providers/web3-config";
 
 export function SignupWithPasskey({
 	client,
