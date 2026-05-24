@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { useConnect } from "wagmi";
 import { Button } from "#/components/ui";
-import { caliburWebAuthnConnector } from "#/connectors/calibur-webauthn";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recovery";
 import { useCaliburSignup } from "#/features/webauthn/hooks/use-calibur-signup";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
+import { caliburConnector } from "#/providers/web3";
 
 export function SignupWithPasskey({
 	client,
@@ -45,7 +45,7 @@ export function SignupWithPasskey({
 
 	useEffect(() => {
 		if (recoveryStep === "done" || signupStep === "done") {
-			connect({ connector: caliburWebAuthnConnector() }, { onSuccess });
+			connect({ connector: caliburConnector }, { onSuccess });
 		}
 	}, [recoveryStep, signupStep, connect, onSuccess]);
 

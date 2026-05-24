@@ -18,8 +18,8 @@ const CHAIN_ID = 42220n;
 // First Anvil/Hardhat account
 const ANVIL0 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as const;
 // Known P-256 coordinates (0xabab... / 0xcdcd...)
-const X = BigInt("0x" + "ab".repeat(32));
-const Y = BigInt("0x" + "cd".repeat(32));
+const X = BigInt(`0x${"ab".repeat(32)}`);
+const Y = BigInt(`0x${"cd".repeat(32)}`);
 
 // ── Fixtures derived from viem (match the demo implementation exactly) ──────
 // Computed offline with the same viem primitives; values locked so regressions
@@ -97,18 +97,18 @@ describe("secp256k1KeyHash", () => {
 describe("buildCaliburNonce", () => {
 	it("packs keyHash low-192-bits into upper bits and seq into lower 64 bits", () => {
 		// 0xdeadbeef fits in 32 bits — low 192 bits is the same
-		const result = buildCaliburNonce("0x" + "00".repeat(28) + "deadbeef", 7n);
+		const result = buildCaliburNonce(`0x${"00".repeat(28)}deadbeef`, 7n);
 		expect(result).toBe(BigInt("0xdeadbeef0000000000000007"));
 	});
 
 	it("seq=0 produces a nonce with only the key portion set", () => {
-		const result = buildCaliburNonce("0x" + "00".repeat(28) + "deadbeef", 0n);
+		const result = buildCaliburNonce(`0x${"00".repeat(28)}deadbeef`, 0n);
 		expect(result & 0xffffffffffffffffn).toBe(0n);
 	});
 
 	it("wraps keyHash to low 192 bits", () => {
 		// A keyHash with bits above 192 set — those should be discarded
-		const fullHash = "0x" + "ff".repeat(32);
+		const fullHash = `0x${"ff".repeat(32)}`;
 		const truncated = buildCaliburNonce(fullHash, 0n);
 		// Upper 64 bits of the nonce (bits 255:192) should be 0xff bytes from keyHash bits 191:128
 		// Lower 64 bits (seq) should be 0
@@ -279,7 +279,7 @@ describe("computeEIP712Digest", () => {
 				revertOnFailure: true,
 			},
 			nonce: "0",
-			keyHash: ("0x" + "00".repeat(32)) as `0x${string}`,
+			keyHash: `0x${"00".repeat(32)}` as `0x${string}`,
 			executor: ANVIL0,
 			deadline: "0",
 		};
@@ -299,7 +299,7 @@ describe("computeEIP712Digest", () => {
 				calls: [{ to: ANVIL0, value: "0", data: "0x" as `0x${string}` }],
 				revertOnFailure: true,
 			},
-			keyHash: ("0x" + "00".repeat(32)) as `0x${string}`,
+			keyHash: `0x${"00".repeat(32)}` as `0x${string}`,
 			executor: ANVIL0,
 			deadline: "0",
 		};

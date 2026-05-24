@@ -6,6 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RelayerError } from "#/features/webauthn/api/relayer-client";
+import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
 export type RecoveryStep =
@@ -17,10 +18,9 @@ export type RecoveryStep =
 	| "error";
 export type RecoveryOutcome = "recovered" | "not_found" | "failed";
 
-const RELYING_PARTY_ID =
-	import.meta.env.VITE_RELYING_PARTY_ID ??
-	window?.location?.hostname ??
-	"localhost";
+const RELYING_PARTY_ID = resolveRelyingPartyId(
+	import.meta.env.VITE_RELYING_PARTY_ID,
+);
 
 export function useCaliburRecovery(client: RelayerClient) {
 	const [step, setStep] = useState<RecoveryStep>("idle");

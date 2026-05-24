@@ -1,16 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
-import { type ReactNode, useEffect } from "react";
+import type { ReactNode } from "react";
 import { createConfig, createStorage, http, WagmiProvider } from "wagmi";
-import { connect, getAccount } from "wagmi/actions";
 import { celo } from "wagmi/chains";
 import { caliburWebAuthnConnector } from "#/connectors/calibur-webauthn";
-import {
-	hasStoredPrivateKey,
-	privateKeyConnector,
-} from "#/connectors/privateKey";
-import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
+import { privateKeyConnector } from "#/connectors/privateKey";
 
 const DEFAULT_WALLETCONNECT_PROJECT_ID = "4bc44b6179c99f9c147da08495a643d2";
 
@@ -34,56 +29,23 @@ const storage =
 		? createStorage({ storage: window.localStorage })
 		: undefined;
 
+// Singleton connector instances. A single uid is required for wagmi to
+// serialise/deserialise these connections in its localStorage store. Creating a
+// new instance on every call produces a different uid, which causes wagmi to
+// drop the connection entry during its next serialisation pass.
+export const pkConnector = privateKeyConnector();
+export const caliburConnector = caliburWebAuthnConnector();
+
 export const wagmiConfig = createConfig({
 	...connectkitConfig,
 	storage,
-	connectors: connectkitConfig.connectors ?? [],
+	// Include custom connectors so wagmi can serialise their connections.
+	connectors: [
+		...(connectkitConfig.connectors ?? []),
+		pkConnector,
+		caliburConnector,
+	],
 });
-
-function PrivateKeyReconnect() {
-	useEffect(() => {
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		if (!hasStoredPrivateKey()) {
-			return;
-		}
-
-		if (getAccount(wagmiConfig).isConnected) {
-			return;
-		}
-
-		void connect(wagmiConfig, {
-			connector: privateKeyConnector(),
-		}).catch(() => {});
-	}, []);
-
-	return null;
-}
-
-function CaliburWebAuthnReconnect() {
-	useEffect(() => {
-		if (typeof window === "undefined") {
-			return;
-		}
-
-		if (!hasWebAuthnCredential()) {
-			return;
-		}
-
-		if (getAccount(wagmiConfig).isConnected) {
-			return;
-		}
-
-		void connect(wagmiConfig, {
-			connector: caliburWebAuthnConnector(),
-			isReconnecting: true,
-		}).catch(() => {});
-	}, []);
-
-	return null;
-}
 
 export function Web3Provider({
 	children,
@@ -93,11 +55,9 @@ export function Web3Provider({
 	queryClient: QueryClient;
 }) {
 	return (
-		<WagmiProvider config={wagmiConfig}>
+		<WagmiProvider config={wagmiConfig} reconnectOnMount>
 			<QueryClientProvider client={queryClient}>
 				<ConnectKitProvider>{children}</ConnectKitProvider>
-				<PrivateKeyReconnect />
-				<CaliburWebAuthnReconnect />
 			</QueryClientProvider>
 		</WagmiProvider>
 	);

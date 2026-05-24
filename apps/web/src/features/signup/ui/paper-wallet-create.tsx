@@ -1,0 +1,144 @@
+import { toPng } from "html-to-image";
+import { ArrowLeft, Download, LoaderCircle } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { connect } from "wagmi/actions";
+
+import { Button } from "#/components/ui/button";
+import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
+import { buildPaperWalletUrl } from "#/lib/paper-wallet";
+import { pkConnector, wagmiConfig } from "#/providers/web3";
+import { PaperWalletCard } from "./paper-wallet-card";
+
+// ── Component ──────────────────────────────────────────────────────────────────
+
+type Props = {
+	onBack: () => void;
+};
+
+export function PaperWalletCreate({ onBack }: Props) {
+	// Generate key exactly once for this component lifetime
+	const keyRef = useRef<`0x${string}` | null>(null);
+	if (!keyRef.current) keyRef.current = generatePrivateKey();
+	const key = keyRef.current;
+
+	const account = useMemo(() => privateKeyToAccount(key), [key]);
+	const address = account.address;
+	const qrUrl = buildPaperWalletUrl(key);
+
+	const cardRef = useRef<HTMLDivElement>(null);
+	const [downloading, setDownloading] = useState(false);
+	const [downloadError, setDownloadError] = useState<string | null>(null);
+	const [acked, setAcked] = useState(false);
+	const [connecting, setConnecting] = useState(false);
+	const [connectError, setConnectError] = useState<string | null>(null);
+
+	async function handleDownload() {
+		if (!cardRef.current) return;
+		setDownloading(true);
+		setDownloadError(null);
+		try {
+			const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+			const a = document.createElement("a");
+			a.href = dataUrl;
+			a.download = `clc-wallet-${address.slice(2, 10)}.png`;
+			a.click();
+		} catch {
+			setDownloadError("Download failed. Try a screenshot instead.");
+		} finally {
+			setDownloading(false);
+		}
+	}
+
+	async function handleContinue() {
+		setConnecting(true);
+		setConnectError(null);
+		try {
+			storePrivateKey(key);
+			await connect(wagmiConfig, { connector: pkConnector });
+		} catch (err) {
+			clearPrivateKey();
+			setConnectError(
+				err instanceof Error ? err.message : "Connection failed.",
+			);
+			setConnecting(false);
+		}
+		// On success wagmi state updates and SignupFlow re-renders; no need to
+		// manually setConnecting(false)
+	}
+
+	return (
+		<div className="flex min-h-screen flex-col bg-background">
+			<div className="flex flex-col px-6 pb-12 pt-12">
+				{/* Back navigation */}
+				<button
+					type="button"
+					onClick={onBack}
+					className="mb-8 flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground"
+					aria-label="Go back"
+				>
+					<ArrowLeft className="size-4" />
+					Back
+				</button>
+
+				<div className="mb-6 space-y-1">
+					<h1 className="font-heading text-2xl font-semibold">
+						Your paper wallet
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						Download or photograph this card. Anyone who scans the QR code will
+						have full access to this wallet.
+					</p>
+				</div>
+
+				{/* Card preview */}
+				<PaperWalletCard ref={cardRef} address={address} qrUrl={qrUrl} />
+
+				{/* Download */}
+				<Button
+					className="mt-4 h-11 w-full"
+					onClick={handleDownload}
+					disabled={downloading}
+				>
+					{downloading ? (
+						<LoaderCircle className="mr-2 size-4 animate-spin" />
+					) : (
+						<Download className="mr-2 size-4" />
+					)}
+					{downloading ? "Preparing…" : "Download card"}
+				</Button>
+				{downloadError ? (
+					<p className="mt-2 text-xs text-destructive">{downloadError}</p>
+				) : null}
+
+				{/* Acknowledgement */}
+				<label className="mt-6 flex cursor-pointer items-start gap-3">
+					<input
+						type="checkbox"
+						checked={acked}
+						onChange={(e) => setAcked(e.target.checked)}
+						className="mt-0.5 size-4 cursor-pointer accent-primary"
+					/>
+					<span className="text-sm text-muted-foreground">
+						I have saved this key. If lost, my wallet cannot be recovered.
+					</span>
+				</label>
+
+				{/* Continue */}
+				<Button
+					className="mt-4 h-11 w-full"
+					disabled={!acked || connecting}
+					onClick={handleContinue}
+				>
+					{connecting ? (
+						<LoaderCircle className="mr-2 size-4 animate-spin" />
+					) : null}
+					{connecting ? "Connecting…" : "Continue"}
+				</Button>
+				{connectError ? (
+					<p className="mt-2 text-xs text-destructive">{connectError}</p>
+				) : null}
+			</div>
+		</div>
+	);
+}

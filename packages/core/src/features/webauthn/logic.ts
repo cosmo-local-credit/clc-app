@@ -262,7 +262,7 @@ export function encodeWebAuthnAuth(auth: WebAuthnAuth): `0x${string}` {
 
 function bytesToBigInt(bytes: Uint8Array): bigint {
 	return BigInt(
-		"0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(""),
+		`0x${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`,
 	);
 }
 

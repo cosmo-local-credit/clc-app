@@ -12,9 +12,12 @@ import {
 } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { encodeAbiParameters, parseSignature } from "viem";
+import { createPublicClient, encodeAbiParameters, http, parseSignature } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { celo } from "wagmi/chains";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
+import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
 export type SignupStep =
@@ -28,11 +31,18 @@ export type SignupStep =
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
 	"0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
-const RELYING_PARTY_ID =
-	import.meta.env.VITE_RELYING_PARTY_ID ??
-	window?.location?.hostname ??
-	"localhost";
+const PUBLIC_RPC_URL =
+	(import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined) ??
+	"https://forno.celo.org";
+const RELYING_PARTY_ID = resolveRelyingPartyId(
+	import.meta.env.VITE_RELYING_PARTY_ID,
+);
 const RELYING_PARTY_NAME = import.meta.env.VITE_RELYING_PARTY_NAME ?? "CLC";
+
+const publicClient = createPublicClient({
+	chain: celo,
+	transport: http(PUBLIC_RPC_URL),
+});
 
 export function useCaliburSignup(client: RelayerClient) {
 	const [step, setStep] = useState<SignupStep>("idle");
@@ -42,6 +52,7 @@ export function useCaliburSignup(client: RelayerClient) {
 	const signup = useMutation({
 		mutationFn: async () => {
 			setError(null);
+			assertWebAuthnSupported("create");
 
 			// Phase 1 — ephemeral key
 			setStep("generating-key");
@@ -107,7 +118,7 @@ export function useCaliburSignup(client: RelayerClient) {
 					revertOnFailure: true,
 				},
 				nonce: String(caliburNonceStr),
-				keyHash: ("0x" + "00".repeat(32)) as `0x${string}`,
+				keyHash: `0x${"00".repeat(32)}` as `0x${string}`,
 				executor,
 				deadline: "0",
 			};
@@ -126,7 +137,9 @@ export function useCaliburSignup(client: RelayerClient) {
 				[rawSig, "0x"],
 			);
 
-			await client.relay({
+			const {
+				result: { txHash },
+			} = await client.relay({
 				userAddress: account.address,
 				signedBatch,
 				signature: wrappedSig,
@@ -143,6 +156,14 @@ export function useCaliburSignup(client: RelayerClient) {
 				publicKeyX: x.toString(),
 				publicKeyY: y.toString(),
 			});
+
+			const receipt = await publicClient.waitForTransactionReceipt({
+				hash: txHash as `0x${string}`,
+				timeout: 120_000,
+			});
+			if (receipt.status !== "success") {
+				throw new Error("Passkey registration transaction failed on-chain");
+			}
 
 			// Store locally, zero ephemeral key
 			storeWebAuthnCredential({
@@ -218,10 +239,10 @@ function extractFromAuthData(attestation: Uint8Array): {
 	if (!x || !y) throw new Error("Cannot extract P-256 key from COSE");
 	return {
 		x: BigInt(
-			"0x" + Array.from(x, (b) => b.toString(16).padStart(2, "0")).join(""),
+			`0x${Array.from(x, (b) => b.toString(16).padStart(2, "0")).join("")}`,
 		),
 		y: BigInt(
-			"0x" + Array.from(y, (b) => b.toString(16).padStart(2, "0")).join(""),
+			`0x${Array.from(y, (b) => b.toString(16).padStart(2, "0")).join("")}`,
 		),
 	};
 }
