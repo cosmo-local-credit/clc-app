@@ -6,9 +6,7 @@ import { cn } from "#/lib/utils.ts";
 // ── Convenience re-exports ─────────────────────────────────────────────────────
 export const DialogRoot = Dialog.Root;
 export const DialogPortal = Dialog.Portal;
-export const DialogClose = Dialog.Close;
 export const DialogTitle = Dialog.Title;
-export const DialogDescription = Dialog.Description;
 
 // ── Backdrop ───────────────────────────────────────────────────────────────────
 

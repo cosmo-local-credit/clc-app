@@ -1,8 +1,7 @@
-import { Wallet } from "lucide-react";
 import QRCode from "qrcode";
 import { forwardRef, type ReactNode, useEffect, useState } from "react";
 
-import { PAPER_WALLET_ORIGIN } from "#/lib/paper-wallet";
+import { CLCLogo } from "#/components/ui/clc-logo";
 
 // ── QR code generator ──────────────────────────────────────────────────────────
 
@@ -34,59 +33,52 @@ export type PaperWalletCardProps = {
 	address: `0x${string}`;
 	/** Full URL encoded in the QR code */
 	qrUrl: string;
-	/** Optional logo override; defaults to a simple Wallet icon */
+	/** Human-readable label printed on the card */
+	label: string;
+	/** Optional logo override; defaults to CLC logo */
 	logo?: ReactNode;
 };
 
 /**
  * Renders a business-card-sized wallet card suitable for html-to-image capture.
  *
- * Layout (left-to-right, top-to-bottom):
- *   [Logo / CLC App / URL] | [QR code]
- *   [full address]
+ * Layout:
+ *   [logo + label] | [QR code]
+ *   [address]
  *
  * Forward ref so the parent can pass it to toPng().
  */
 export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
-	function PaperWalletCard({ address, qrUrl, logo }, ref) {
+	function PaperWalletCard({ address, qrUrl, label, logo }, ref) {
 		const qrDataUrl = useQrDataUrl(qrUrl);
 
 		return (
 			<div
 				ref={ref}
 				// aspect-[7/4] = standard business card ratio (3.5 × 2 in)
-				className="flex aspect-[7/4] w-full flex-col overflow-hidden rounded-xl border border-border bg-white"
+				className="grid aspect-[7/4] w-full grid-rows-[1fr_auto] overflow-hidden rounded-lg border border-dotted border-gray-300 bg-white px-5 py-4"
 				// Explicit white background for image capture
 				style={{ backgroundColor: "#ffffff" }}
 			>
-				{/* Top row: branding + QR */}
-				<div className="flex flex-1 min-h-0">
-					{/* Left: logo + name + URL */}
-					<div className="flex w-[38%] flex-col items-start justify-center gap-1.5 border-r border-gray-200 px-4 py-3">
-						<div className="flex size-8 items-center justify-center rounded-lg bg-gray-900 text-white">
-							{logo ?? <Wallet className="size-4" />}
+				<div className="grid min-h-0 grid-cols-[40%_60%] gap-4">
+					<div className="flex min-w-0 flex-col justify-between pr-2">
+						<div className="flex size-16 shrink-0 items-center justify-center">
+							{logo ?? <CLCLogo className="size-16" />}
 						</div>
 						<p
-							className="font-heading text-sm font-semibold leading-tight text-gray-900"
+							className="break-words font-heading text-[1.05rem] font-semibold leading-tight text-gray-800"
 							style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}
 						>
-							CLC App
-						</p>
-						<p
-							className="font-mono text-[9px] leading-tight text-gray-500 break-all"
-							style={{ fontFamily: "JetBrains Mono, monospace" }}
-						>
-							{PAPER_WALLET_ORIGIN.replace(/^https?:\/\//, "")}
+							{label}
 						</p>
 					</div>
 
-					{/* Right: QR code */}
-					<div className="flex flex-1 items-center justify-center p-3">
+					<div className="flex min-h-0 items-center justify-end">
 						{qrDataUrl ? (
 							<img
 								src={qrDataUrl}
 								alt="Wallet QR code"
-								className="h-full w-auto max-h-full object-contain"
+								className="aspect-square h-auto w-full max-w-[178px] object-contain"
 								// Prevent cross-origin tainting html-to-image
 								crossOrigin="anonymous"
 							/>
@@ -96,15 +88,12 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
 					</div>
 				</div>
 
-				{/* Bottom: address */}
-				<div className="border-t border-gray-200 px-4 py-2">
-					<p
-						className="truncate font-mono text-[9px] text-gray-600"
-						style={{ fontFamily: "JetBrains Mono, monospace" }}
-					>
-						{address}
-					</p>
-				</div>
+				<p
+					className="mt-3 break-all font-mono text-[0.78rem] leading-tight text-gray-600"
+					style={{ fontFamily: "JetBrains Mono, monospace" }}
+				>
+					{address}
+				</p>
 			</div>
 		);
 	},

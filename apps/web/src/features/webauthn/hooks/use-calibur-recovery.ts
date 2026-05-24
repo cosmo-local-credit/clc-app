@@ -22,6 +22,13 @@ const RELYING_PARTY_ID = resolveRelyingPartyId(
 	import.meta.env.VITE_RELYING_PARTY_ID,
 );
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+	return bytes.buffer.slice(
+		bytes.byteOffset,
+		bytes.byteOffset + bytes.byteLength,
+	) as ArrayBuffer;
+}
+
 export function useCaliburRecovery(client: RelayerClient) {
 	const [step, setStep] = useState<RecoveryStep>("idle");
 	const [outcome, setOutcome] = useState<RecoveryOutcome | null>(null);
@@ -43,7 +50,7 @@ export function useCaliburRecovery(client: RelayerClient) {
 			setStep("asserting");
 			const assertion = (await navigator.credentials.get({
 				publicKey: {
-					challenge: challengeBytes,
+					challenge: toArrayBuffer(challengeBytes),
 					rpId: RELYING_PARTY_ID,
 					userVerification: "required",
 				},

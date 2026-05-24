@@ -22,7 +22,7 @@ vi.mock("#/connectors/privateKey", () => ({
 	privateKeyConnector: () => ({ id: "private-key" }),
 }));
 
-vi.mock("#/providers/web3", () => ({
+vi.mock("#/providers/web3-config", () => ({
 	wagmiConfig: {},
 	pkConnector: { id: "private-key" },
 }));

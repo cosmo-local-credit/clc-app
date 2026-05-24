@@ -25,13 +25,14 @@ import {
 	getStoredKey,
 	storePrivateKey,
 } from "#/connectors/privateKey";
-import { useScanUrlImport } from "#/features/signup/state/scan-url-import";
+import { useScanUrlImport } from "#/lib/scan-url-import";
 import {
 	clearWebAuthnCredential,
 	getWebAuthnCredential,
 	storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
-import { pkConnector, Web3Provider, wagmiConfig } from "#/providers/web3";
+import { Web3Provider } from "#/providers/web3";
+import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
@@ -46,6 +47,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 			links: [
 				{ rel: "stylesheet", href: appCss },
 				{ rel: "manifest", href: "/manifest.json" },
+				{ rel: "icon", type: "image/svg+xml", href: "/logo.svg" },
 				{ rel: "icon", href: "/favicon.ico" },
 				{ rel: "apple-touch-icon", href: "/logo192.png" },
 			],

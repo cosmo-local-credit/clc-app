@@ -26,9 +26,18 @@ const mockConfig = {
 	emitter: { emit: vi.fn() },
 };
 
+type MockProvider = {
+	request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+};
+
 function buildImpl() {
 	const factory = caliburWebAuthnConnector();
-	return factory(mockConfig as Parameters<typeof factory>[0]);
+	return factory(mockConfig as unknown as Parameters<typeof factory>[0]);
+}
+
+async function getMockProvider() {
+	const impl = buildImpl();
+	return (await impl.getProvider()) as MockProvider;
 }
 
 beforeEach(() => {
@@ -104,15 +113,13 @@ describe("disconnect()", () => {
 describe("getProvider() — eth_accounts", () => {
 	it("returns address when credential is stored", async () => {
 		storeWebAuthnCredential(TEST_CRED);
-		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = await getMockProvider();
 		const result = await provider.request({ method: "eth_accounts" });
 		expect(result).toEqual([TEST_CRED.address]);
 	});
 
 	it("returns empty array when no credential", async () => {
-		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = await getMockProvider();
 		const result = await provider.request({ method: "eth_accounts" });
 		expect(result).toEqual([]);
 	});
@@ -120,8 +127,7 @@ describe("getProvider() — eth_accounts", () => {
 
 describe("getProvider() — eth_chainId", () => {
 	it("returns hex chain id", async () => {
-		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = await getMockProvider();
 		const result = await provider.request({ method: "eth_chainId" });
 		expect(result).toBe("0xa4ec"); // 42220 in hex
 	});
@@ -130,8 +136,7 @@ describe("getProvider() — eth_chainId", () => {
 describe("getProvider() — eth_sendTransaction", () => {
 	it("calls sendCaliburTransaction and returns txHash", async () => {
 		storeWebAuthnCredential(TEST_CRED);
-		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = await getMockProvider();
 		const result = await provider.request({
 			method: "eth_sendTransaction",
 			params: [{ to: "0x1234", value: "0x0", data: "0x" }],
@@ -149,7 +154,7 @@ describe("getProvider() — eth_sendTransaction", () => {
 
 		storeWebAuthnCredential(TEST_CRED);
 		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = (await impl.getProvider()) as MockProvider;
 
 		await expect(
 			provider.request({
@@ -168,8 +173,7 @@ describe("getProvider() — unsupported methods", () => {
 		"eth_sign",
 		"eth_signTypedData_v4",
 	])("%s throws Method not supported", async (method) => {
-		const impl = buildImpl();
-		const provider = await impl.getProvider();
+		const provider = await getMockProvider();
 		await expect(provider.request({ method })).rejects.toThrow(
 			"Method not supported",
 		);

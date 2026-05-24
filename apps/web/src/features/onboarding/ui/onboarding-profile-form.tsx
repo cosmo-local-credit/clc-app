@@ -1,21 +1,17 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
-import { useState } from "react";
-
 import { Button } from "#/components/ui/button";
 import { CountrySelect } from "#/components/ui/country-select";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
-import { submitSignupProfile } from "#/features/signup/api/auth-client";
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
 type Props = {
-	address: `0x${string}`;
-	onBack: () => void;
-	onDone: () => void;
+	onNext: (data: ProfileInput) => void;
 };
 
 const DEFAULT_VALUES: ProfileInput = {
@@ -25,49 +21,46 @@ const DEFAULT_VALUES: ProfileInput = {
 	country: "",
 };
 
-export function ProfileForm({ address, onBack, onDone }: Props) {
-	const [submitError, setSubmitError] = useState<string | null>(null);
+export function OnboardingProfileForm({ onNext }: Props) {
+	const navigate = useNavigate();
 
 	const form = useForm({
 		defaultValues: DEFAULT_VALUES,
 		validators: { onChange: profileSchema },
 		onSubmit: async ({ value }) => {
-			setSubmitError(null);
-			try {
-				await submitSignupProfile({ ...value, address });
-				onDone();
-			} catch (err) {
-				setSubmitError(
-					err instanceof Error ? err.message : "Submission failed.",
-				);
-			}
+			console.log("[onboarding] profile:", value);
+			onNext(value);
 		},
 	});
 
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<div className="flex flex-col px-6 pb-12 pt-20">
+				{/* Header */}
 				<div className="mb-10 space-y-4">
-					<Button
-						variant="ghost"
-						className="h-11 w-fit px-0"
-						onClick={onBack}
+					<button
+						type="button"
+						onClick={() => void navigate({ to: "/" })}
+						className="mb-8 flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground"
+						aria-label="Back"
 					>
-						<ArrowLeft className="mr-2 size-4" />
+						<ArrowLeft className="size-4" />
 						Back
-					</Button>
+					</button>
 
 					<div className="space-y-1">
-					<h1 className="font-heading text-2xl font-semibold">
-						Tell us about yourself
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						Optional — you can fill these in later.
-					</p>
+						<h1 className="font-heading text-[1.75rem] font-semibold leading-tight">
+							Create your account
+						</h1>
+						<p className="text-sm text-muted-foreground">
+							Name and country are required. Provide an email or phone number.
+						</p>
 					</div>
 				</div>
 
+				{/* Form */}
 				<form
+					aria-label="Create account"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
@@ -81,11 +74,11 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label htmlFor="profile-name" className="text-sm font-medium">
+									<label htmlFor="onb-name" className="text-sm font-medium">
 										Name
 									</label>
 									<Input
-										id="profile-name"
+										id="onb-name"
 										type="text"
 										autoComplete="name"
 										placeholder="Your name"
@@ -109,14 +102,11 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label
-										htmlFor="profile-email"
-										className="text-sm font-medium"
-									>
+									<label htmlFor="onb-email" className="text-sm font-medium">
 										Email
 									</label>
 									<Input
-										id="profile-email"
+										id="onb-email"
 										type="email"
 										autoComplete="email"
 										placeholder="you@example.com"
@@ -140,14 +130,11 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label
-										htmlFor="profile-phone"
-										className="text-sm font-medium"
-									>
+									<label htmlFor="onb-phone" className="text-sm font-medium">
 										Phone
 									</label>
 									<PhoneInputField
-										id="profile-phone"
+										id="onb-phone"
 										value={field.state.value}
 										onChange={(val) => field.handleChange(val)}
 										aria-invalid={!!err}
@@ -166,33 +153,24 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
 							return (
-								<CountryPhoneSync countryValue={field.state.value} form={form}>
-									<div className="flex flex-col gap-1.5">
-										<label
-											htmlFor="profile-country"
-											className="text-sm font-medium"
-										>
-											Country
-										</label>
-										<CountrySelect
-											id="profile-country"
-											value={field.state.value}
-											onChange={(v) => field.handleChange(v)}
-											aria-invalid={!!err}
-											aria-label="Country"
-										/>
-										{err ? (
-											<p className="text-xs text-destructive">{err}</p>
-										) : null}
-									</div>
-								</CountryPhoneSync>
+								<div className="flex flex-col gap-1.5">
+									<label htmlFor="onb-country" className="text-sm font-medium">
+										Country
+									</label>
+									<CountrySelect
+										id="onb-country"
+										value={field.state.value}
+										onChange={(v) => field.handleChange(v)}
+										aria-invalid={!!err}
+										aria-label="Country"
+									/>
+									{err ? (
+										<p className="text-xs text-destructive">{err}</p>
+									) : null}
+								</div>
 							);
 						}}
 					</form.Field>
-
-					{submitError ? (
-						<p className="text-xs text-destructive">{submitError}</p>
-					) : null}
 
 					<form.Subscribe selector={(s) => s.isSubmitting}>
 						{(isSubmitting) => (
@@ -209,24 +187,18 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						)}
 					</form.Subscribe>
 				</form>
+
+				{/* Footer */}
+				<p className="mt-8 text-center text-sm text-muted-foreground">
+					Already have an account?{" "}
+					<Link
+						to="/"
+						className="font-medium text-foreground underline-offset-4 hover:underline"
+					>
+						Go back to sign in
+					</Link>
+				</p>
 			</div>
 		</div>
 	);
-}
-
-// ── Initial country ↔ phone sync helper ───────────────────────────────────────
-// Q16=B: sync country → phone-country on first render only; then independent.
-// This is handled inside PhoneInputField (it reads DEFAULT_COUNTRY from env).
-// The CountryPhoneSync wrapper does nothing at runtime — it's a placeholder
-// in case bi-directional sync is added later.
-
-function CountryPhoneSync({
-	children,
-}: {
-	countryValue: string;
-	// biome-ignore lint/suspicious/noExplicitAny: TanStack Form generic type
-	form: any;
-	children: React.ReactNode;
-}) {
-	return <>{children}</>;
 }

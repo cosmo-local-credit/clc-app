@@ -5,9 +5,10 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
 import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
-import { pkConnector, wagmiConfig } from "#/providers/web3";
+import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { PaperWalletCard } from "./paper-wallet-card";
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -32,6 +33,8 @@ export function PaperWalletCreate({ onBack }: Props) {
 	const [acked, setAcked] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectError, setConnectError] = useState<string | null>(null);
+	const [walletLabel, setWalletLabel] = useState("");
+	const cardLabel = walletLabel.trim() || "Paper wallet";
 
 	async function handleDownload() {
 		if (!cardRef.current) return;
@@ -91,8 +94,28 @@ export function PaperWalletCreate({ onBack }: Props) {
 					</p>
 				</div>
 
+				<div className="mb-4 space-y-2">
+					<label
+						htmlFor="paper-wallet-label"
+						className="text-sm font-medium text-foreground"
+					>
+						Name on wallet
+					</label>
+					<Input
+						id="paper-wallet-label"
+						value={walletLabel}
+						onChange={(event) => setWalletLabel(event.target.value)}
+						placeholder="Paper wallet"
+					/>
+				</div>
+
 				{/* Card preview */}
-				<PaperWalletCard ref={cardRef} address={address} qrUrl={qrUrl} />
+				<PaperWalletCard
+					ref={cardRef}
+					address={address}
+					qrUrl={qrUrl}
+					label={cardLabel}
+				/>
 
 				{/* Download */}
 				<Button

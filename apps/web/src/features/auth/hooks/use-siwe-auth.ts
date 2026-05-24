@@ -3,7 +3,7 @@ import { SiweMessage } from "siwe";
 import { useAccount } from "wagmi";
 import { signMessage } from "wagmi/actions";
 
-import { wagmiConfig } from "#/providers/web3";
+import { wagmiConfig } from "#/providers/web3-config";
 import { getSiweNonce, verifySiweSignature } from "../api/client";
 import { getAuthToken, setAuthToken } from "../state/token";
 

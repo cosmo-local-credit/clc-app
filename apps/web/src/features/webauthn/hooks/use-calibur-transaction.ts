@@ -21,6 +21,13 @@ export type CaliburCall = {
 	data: `0x${string}`;
 };
 
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+	return bytes.buffer.slice(
+		bytes.byteOffset,
+		bytes.byteOffset + bytes.byteLength,
+	) as ArrayBuffer;
+}
+
 export async function sendCaliburTransaction(
 	calls: CaliburCall[],
 	client: RelayerClient,
@@ -56,20 +63,18 @@ export async function sendCaliburTransaction(
 		CHAIN_ID,
 	);
 
-	let assertion: PublicKeyCredential;
-	try {
-		assertion = (await navigator.credentials.get({
-			publicKey: {
-				challenge: digestBytes,
-				allowCredentials: [
-					{ id: base64UrlToBytes(cred.credentialId), type: "public-key" },
-				],
-				userVerification: "required",
-			},
-		})) as PublicKeyCredential;
-	} catch (err) {
-		throw err;
-	}
+	const assertion = (await navigator.credentials.get({
+		publicKey: {
+			challenge: toArrayBuffer(digestBytes),
+			allowCredentials: [
+				{
+					id: toArrayBuffer(base64UrlToBytes(cred.credentialId)),
+					type: "public-key",
+				},
+			],
+			userVerification: "required",
+		},
+	})) as PublicKeyCredential;
 
 	if (!assertion) {
 		throw new Error("WebAuthn assertion cancelled");

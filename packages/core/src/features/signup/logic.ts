@@ -12,13 +12,31 @@ const phoneValidator = (val: string) =>
 // ISO 3166-1 alpha-2
 const countryValidator = (val: string) => val === "" || /^[A-Z]{2}$/.test(val);
 
-export const profileSchema = z.object({
-	name: z.string().max(80, { message: "Name must be 80 characters or fewer" }),
-	email: z
-		.string()
-		.refine(emailValidator, { message: "Invalid email address" }),
-	phone: z.string().refine(phoneValidator, { message: "Invalid phone number" }),
-	country: z.string().refine(countryValidator, { message: "Invalid country" }),
-});
+export const profileSchema = z
+	.object({
+		name: z
+			.string()
+			.min(1, { message: "Name is required" })
+			.max(80, { message: "Name must be 80 characters or fewer" }),
+		email: z
+			.string()
+			.refine(emailValidator, { message: "Invalid email address" }),
+		phone: z
+			.string()
+			.refine(phoneValidator, { message: "Invalid phone number" }),
+		country: z
+			.string()
+			.min(1, { message: "Country is required" })
+			.refine(countryValidator, { message: "Invalid country" }),
+	})
+	.superRefine((data, ctx) => {
+		if (!data.email && !data.phone) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "Provide an email or phone number",
+				path: ["email"],
+			});
+		}
+	});
 
 export type ProfileInput = z.infer<typeof profileSchema>;

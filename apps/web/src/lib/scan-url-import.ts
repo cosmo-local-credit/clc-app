@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { connect, getAccount } from "wagmi/actions";
 import { normalizePrivateKey } from "#/connectors/normalize-private-key";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
-import { pkConnector, wagmiConfig } from "#/providers/web3";
+import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 
 // ── Hook ───────────────────────────────────────────────────────────────────────
 

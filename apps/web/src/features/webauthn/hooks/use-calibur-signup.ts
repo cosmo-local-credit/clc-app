@@ -12,7 +12,12 @@ import {
 } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { createPublicClient, encodeAbiParameters, http, parseSignature } from "viem";
+import {
+	createPublicClient,
+	encodeAbiParameters,
+	http,
+	parseSignature,
+} from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { celo } from "wagmi/chains";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
@@ -103,13 +108,12 @@ export function useCaliburSignup(client: RelayerClient) {
 			// Phase 4 — register WebAuthn key in Calibur via relay
 			setStep("registering");
 			const registerCalldata = encodeRegisterCalldata(x, y);
-			const {
-				result: { nonce: caliburNonceStr },
-			} = await client.getCaliburNonce(account.address);
-
-			const {
-				result: { relayerAddress },
-			} = await client.getHealth();
+			const [caliburNonceResponse, healthResponse] = await Promise.all([
+				client.getCaliburNonce(account.address),
+				client.getHealth(),
+			]);
+			const caliburNonceStr = caliburNonceResponse.result.nonce;
+			const relayerAddress = healthResponse.result.relayerAddress;
 			const executor = relayerAddress as `0x${string}`;
 
 			const signedBatch = {
@@ -202,16 +206,17 @@ async function extractP256Coords(
 				["verify"],
 			);
 			const jwk = await crypto.subtle.exportKey("jwk", cryptoKey);
+			if (!jwk.x || !jwk.y) throw new Error("JWK missing x/y coordinates");
 			const x = BigInt(
 				"0x" +
-					base64UrlToBytes(jwk.x!).reduce(
+					base64UrlToBytes(jwk.x).reduce(
 						(h, b) => h + b.toString(16).padStart(2, "0"),
 						"",
 					),
 			);
 			const y = BigInt(
 				"0x" +
-					base64UrlToBytes(jwk.y!).reduce(
+					base64UrlToBytes(jwk.y).reduce(
 						(h, b) => h + b.toString(16).padStart(2, "0"),
 						"",
 					),
