@@ -3,7 +3,13 @@ import type { WebAuthnCredential } from "@clc/core/features/webauthn/index";
 const STORAGE_KEY = "clc_webauthn";
 
 function store(): Storage | null {
-	return typeof localStorage !== "undefined" ? localStorage : null;
+	if (typeof window === "undefined") return null;
+
+	try {
+		return window.localStorage;
+	} catch {
+		return null;
+	}
 }
 
 export function storeWebAuthnCredential(

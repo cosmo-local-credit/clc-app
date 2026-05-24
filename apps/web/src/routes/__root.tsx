@@ -8,9 +8,30 @@ import {
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
-import { Web3Provider } from "#/providers/web3";
+import { privateKeyToAccount } from "viem/accounts";
+import { connect } from "wagmi/actions";
+import { Button } from "#/components/ui/button";
+import {
+	DialogBackdrop,
+	DialogContent,
+	DialogPortal,
+	DialogRoot,
+	DialogTitle,
+} from "#/components/ui/dialog";
+import {
+	clearPrivateKey,
+	getStoredKey,
+	storePrivateKey,
+} from "#/connectors/privateKey";
+import { useScanUrlImport } from "#/features/signup/state/scan-url-import";
+import {
+	clearWebAuthnCredential,
+	getWebAuthnCredential,
+	storeWebAuthnCredential,
+} from "#/lib/webauthn-storage";
+import { pkConnector, Web3Provider, wagmiConfig } from "#/providers/web3";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
@@ -38,8 +59,98 @@ function AppContent() {
 	const { queryClient } = Route.useRouteContext();
 	return (
 		<Web3Provider queryClient={queryClient}>
-			<Outlet />
+			<AppInner />
 		</Web3Provider>
+	);
+}
+
+function AppInner() {
+	const { pendingKey, clearPendingKey } = useScanUrlImport();
+	const [switching, setSwitching] = useState(false);
+
+	// Derive incoming address for display (memoised so it stays stable)
+	const pendingAddress = useMemo(
+		() => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
+		[pendingKey],
+	);
+
+	async function handleConfirmSwitch() {
+		if (!pendingKey) return;
+		setSwitching(true);
+		const previousPrivateKey = getStoredKey();
+		const previousWebAuthnCredential = getWebAuthnCredential();
+		try {
+			storePrivateKey(pendingKey);
+			await connect(wagmiConfig, { connector: pkConnector });
+			clearWebAuthnCredential();
+			clearPendingKey();
+		} catch {
+			if (previousPrivateKey) {
+				storePrivateKey(previousPrivateKey);
+			} else {
+				clearPrivateKey();
+			}
+
+			if (previousWebAuthnCredential) {
+				storeWebAuthnCredential({
+					credentialId: previousWebAuthnCredential.credentialId,
+					keyHash: previousWebAuthnCredential.keyHash,
+					publicKeyX: previousWebAuthnCredential.publicKeyX,
+					publicKeyY: previousWebAuthnCredential.publicKeyY,
+					address: previousWebAuthnCredential.address,
+				});
+			} else {
+				clearWebAuthnCredential();
+			}
+		} finally {
+			setSwitching(false);
+		}
+	}
+
+	return (
+		<>
+			<Outlet />
+			{pendingKey && pendingAddress ? (
+				<DialogRoot
+					open={true}
+					onOpenChange={(isOpen) => {
+						if (!isOpen) clearPendingKey();
+					}}
+				>
+					<DialogPortal>
+						<DialogBackdrop />
+						<DialogContent>
+							<DialogTitle className="text-base font-semibold">
+								Switch wallet?
+							</DialogTitle>
+							<p className="mt-1 text-sm text-muted-foreground">
+								A paper wallet QR was scanned. Import this address?
+							</p>
+							<p className="mt-2 truncate font-mono text-xs text-foreground">
+								{pendingAddress}
+							</p>
+							<div className="mt-5 flex flex-col gap-2">
+								<Button
+									className="h-11 w-full"
+									disabled={switching}
+									onClick={handleConfirmSwitch}
+								>
+									{switching ? "Switching…" : "Switch wallet"}
+								</Button>
+								<Button
+									variant="ghost"
+									className="h-11 w-full"
+									onClick={clearPendingKey}
+									disabled={switching}
+								>
+									Cancel
+								</Button>
+							</div>
+						</DialogContent>
+					</DialogPortal>
+				</DialogRoot>
+			) : null}
+		</>
 	);
 }
 

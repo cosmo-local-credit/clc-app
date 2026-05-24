@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	clearWebAuthnCredential,
 	markWebAuthnStale,
 	storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
@@ -15,7 +14,7 @@ vi.mock("#/features/webauthn/hooks/use-calibur-transaction", () => ({
 
 const TEST_CRED = {
 	credentialId: "cred-abc",
-	keyHash: ("0x" + "aa".repeat(32)) as `0x${string}`,
+	keyHash: `0x${"aa".repeat(32)}` as `0x${string}`,
 	publicKeyX: "111",
 	publicKeyY: "222",
 	address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
@@ -140,7 +139,7 @@ describe("getProvider() — eth_sendTransaction", () => {
 		expect(result).toBe("0xdeadbeef");
 	});
 
-	it("marks credential stale and rethrows on failure", async () => {
+	it("preserves the credential and rethrows on failure", async () => {
 		const { sendCaliburTransaction } = await import(
 			"#/features/webauthn/hooks/use-calibur-transaction"
 		);
@@ -159,7 +158,7 @@ describe("getProvider() — eth_sendTransaction", () => {
 			}),
 		).rejects.toThrow("WebAuthn cancelled");
 
-		expect(await impl.isAuthorized()).toBe(false);
+		expect(await impl.isAuthorized()).toBe(true);
 	});
 });
 

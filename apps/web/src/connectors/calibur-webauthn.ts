@@ -5,11 +5,10 @@ import { sendCaliburTransaction } from "#/features/webauthn/hooks/use-calibur-tr
 import {
 	clearWebAuthnCredential,
 	getWebAuthnCredential,
-	markWebAuthnStale,
 } from "#/lib/webauthn-storage";
 
 const RELAYER_URL =
-	import.meta.env.VITE_RELAYER_URL ?? "http://localhost:3001/api/v2/relayer";
+	import.meta.env.VITE_RELAYER_URL ?? "http://192.168.1.20:5003/api/v2/relayer";
 
 export function caliburWebAuthnConnector() {
 	return createConnector(((config) => {
@@ -72,22 +71,17 @@ export function caliburWebAuthnConnector() {
 
 							case "eth_sendTransaction": {
 								const [tx] = params as [Record<string, string>];
-								try {
-									const { txHash } = await sendCaliburTransaction(
-										[
-											{
-												to: (tx.to ?? "0x") as `0x${string}`,
-												value: tx.value ?? "0",
-												data: (tx.data ?? "0x") as `0x${string}`,
-											},
-										],
-										client,
-									);
-									return txHash;
-								} catch (err) {
-									markWebAuthnStale();
-									throw err;
-								}
+								const { txHash } = await sendCaliburTransaction(
+									[
+										{
+											to: (tx.to ?? "0x") as `0x${string}`,
+											value: tx.value ?? "0",
+											data: (tx.data ?? "0x") as `0x${string}`,
+										},
+									],
+									client,
+								);
+								return txHash;
 							}
 
 							case "personal_sign":

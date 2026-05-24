@@ -45,7 +45,6 @@ export function createRelayerClient(baseUrl: string) {
 	const get = async <T>(path: string): Promise<OKResponse<T>> => {
 		const res = await fetch(`${baseUrl}${path}`, {
 			method: "GET",
-			headers: { "Content-Type": "application/json" },
 		});
 		return handleResponse<T>(res);
 	};

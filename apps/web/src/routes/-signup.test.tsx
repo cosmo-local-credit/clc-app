@@ -1,23 +1,22 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-	mockConnect,
-	mockClearPrivateKey,
-	mockNavigate,
-	mockShowConnectModal,
-	mockStorePrivateKey,
-} = vi.hoisted(() => ({
-	mockConnect: vi.fn(),
-	mockClearPrivateKey: vi.fn(),
-	mockNavigate: vi.fn(),
-	mockShowConnectModal: vi.fn(),
-	mockStorePrivateKey: vi.fn(),
-}));
+// ── Hoisted mocks ──────────────────────────────────────────────────────────────
+
+const { mockNavigate, mockConnect, mockSignup, mockGetProfileCompleted } =
+	vi.hoisted(() => ({
+		mockNavigate: vi.fn(),
+		mockConnect: vi.fn(),
+		mockSignup: vi.fn(),
+		mockGetProfileCompleted: vi.fn(() => false),
+	}));
 
 vi.mock("@tanstack/react-router", () => ({
 	createFileRoute: () => (options: Record<string, unknown>) => options,
 	useNavigate: () => mockNavigate,
+	Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+		<a href={to}>{children}</a>
+	),
 }));
 
 const mockUseAccount = vi.fn(() => ({
@@ -27,208 +26,234 @@ const mockUseAccount = vi.fn(() => ({
 
 vi.mock("wagmi", () => ({
 	useAccount: () => mockUseAccount(),
+	useConnect: () => ({ connect: mockConnect }),
 }));
 
 vi.mock("wagmi/actions", () => ({
 	connect: mockConnect,
-}));
-
-vi.mock("connectkit", () => ({
-	ConnectKitButton: {
-		Custom: ({
-			children,
-		}: {
-			children: (props: { show: () => void }) => React.ReactNode;
-		}) => children({ show: mockShowConnectModal }),
-	},
+	getAccount: () => ({ isConnected: false }),
 }));
 
 vi.mock("#/connectors/privateKey", () => ({
-	storePrivateKey: mockStorePrivateKey,
-	clearPrivateKey: mockClearPrivateKey,
-	privateKeyConnector: () => ({ id: "private-key", name: "Private Key" }),
+	storePrivateKey: vi.fn(),
+	clearPrivateKey: vi.fn(),
+	privateKeyConnector: () => ({ id: "private-key" }),
+	hasStoredPrivateKey: () => false,
 }));
 
-const mockOnKeyDecoded = vi.fn();
-
-vi.mock("#/components/paper-wallet-scanner", () => ({
-	PaperWalletScanner: ({
-		onKeyDecoded,
-	}: {
-		onKeyDecoded: (key: string) => void;
-		onCancel: () => void;
-	}) => {
-		mockOnKeyDecoded.mockImplementation(onKeyDecoded);
-		return <div data-testid="paper-wallet-scanner" />;
-	},
+vi.mock("#/connectors/calibur-webauthn", () => ({
+	caliburWebAuthnConnector: () => ({ id: "calibur-webauthn" }),
 }));
 
-vi.mock("#/features/webauthn/ui/signup-with-passkey", () => ({
-	SignupWithPasskey: () => <div data-testid="signup-with-passkey" />,
+vi.mock("#/features/webauthn/hooks/use-calibur-signup", () => ({
+	useCaliburSignup: () => ({
+		step: "idle",
+		error: null,
+		signup: { mutate: mockSignup },
+	}),
+}));
+
+vi.mock("#/features/auth/hooks/use-siwe-auth", () => ({
+	useSiweAuth: () => ({
+		state: { status: "idle" },
+		authenticate: vi.fn().mockResolvedValue("mock-token"),
+	}),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-recovery", () => ({
+	useCaliburRecovery: () => ({
+		step: "idle",
+		outcome: null,
+		error: null,
+		recover: { mutate: vi.fn() },
+	}),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
+	usePlatformPasskeyLabel: () => ({
+		provider: "google",
+		label: "Sign up with Google",
+	}),
+}));
+
+vi.mock("#/features/webauthn/api/relayer-client", () => ({
+	createRelayerClient: () => ({}),
+}));
+
+vi.mock("#/features/signup/state/profile-completed", () => ({
+	getProfileCompleted: () => mockGetProfileCompleted(),
+	markProfileCompleted: vi.fn(),
+	clearProfileCompleted: vi.fn(),
+}));
+
+vi.mock("#/lib/webauthn-storage", () => ({
+	hasWebAuthnCredential: () => false,
+	storeWebAuthnCredential: vi.fn(),
+	clearWebAuthnCredential: vi.fn(),
 }));
 
 vi.mock("#/providers/web3", () => ({
 	wagmiConfig: { state: {} },
 }));
 
-import { SignupPage } from "#/components/signup-page";
+// ProfileForm renders Base UI Dialog (CountrySheet) which crashes in jsdom
+vi.mock("#/features/signup/ui/profile-form", () => ({
+	ProfileForm: ({
+		address,
+		onBack,
+		onDone,
+	}: {
+		address: string;
+		onBack: () => void;
+		onDone: () => void;
+	}) => (
+		<div data-testid="profile-form">
+			<span>Tell us about yourself ({address})</span>
+			<button type="button" onClick={onBack}>
+				Back
+			</button>
+			<button type="button" onClick={onDone}>
+				Submit profile
+			</button>
+		</div>
+	),
+}));
+
+// PaperWalletCreate uses html-to-image + qrcode which don't work in jsdom
+vi.mock("#/features/signup/ui/paper-wallet-create", () => ({
+	PaperWalletCreate: ({ onBack }: { onBack: () => void }) => (
+		<div data-testid="paper-wallet-create">
+			<button type="button" onClick={onBack}>
+				Back
+			</button>
+		</div>
+	),
+}));
+
+// ── Import under test ──────────────────────────────────────────────────────────
+
+import { SignupFlow } from "#/features/signup/ui/signup-flow";
+
+// ── Tests ──────────────────────────────────────────────────────────────────────
 
 beforeEach(() => {
 	mockUseAccount.mockReturnValue({ isConnected: false, address: undefined });
 	mockNavigate.mockClear();
-	mockShowConnectModal.mockClear();
-	mockConnect.mockReset();
-	mockStorePrivateKey.mockReset();
-	mockClearPrivateKey.mockReset();
-	mockOnKeyDecoded.mockReset();
+	mockConnect.mockClear();
+	mockSignup.mockClear();
+	mockGetProfileCompleted.mockReturnValue(false);
 });
 
-describe("Signup page", () => {
-	it("renders the Connect Wallet button", () => {
-		render(<SignupPage />);
-		expect(
-			screen.getByRole("button", { name: /connect wallet/i }),
-		).toBeTruthy();
-	});
-
-	it("opens the ConnectKit modal when Connect Wallet is clicked", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
-		expect(mockShowConnectModal).toHaveBeenCalledTimes(1);
-	});
-
-	it("does not show the private key input initially", () => {
-		render(<SignupPage />);
-		expect(screen.queryByPlaceholderText("0x...")).toBeNull();
-	});
-
-	it("reveals the private key input when Private Key button is clicked", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
-		expect(screen.getByPlaceholderText("0x...")).toBeTruthy();
-	});
-
-	it("validates the private key before connecting", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
-		fireEvent.change(screen.getByLabelText(/^private key$/i), {
-			target: { value: "0x123" },
-		});
-		fireEvent.click(
-			screen.getByRole("button", { name: /sign in with private key/i }),
-		);
-
-		expect(
-			screen.getByText(
-				/invalid private key\. must be 0x-prefixed 64-char hex\./i,
-			),
-		).toBeTruthy();
-		expect(mockStorePrivateKey).not.toHaveBeenCalled();
-		expect(mockConnect).not.toHaveBeenCalled();
-	});
-
-	it("stores the private key and connects with the private-key connector", async () => {
-		mockConnect.mockResolvedValue(undefined);
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
-
-		const validKey =
-			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-		fireEvent.change(screen.getByLabelText(/^private key$/i), {
-			target: { value: validKey },
+describe("SignupFlow", () => {
+	describe("method picker (default phase)", () => {
+		it("renders the passkey signup button", () => {
+			render(<SignupFlow />);
+			expect(
+				screen.getByRole("button", { name: /continue with google/i }),
+			).toBeTruthy();
 		});
 
-		const form = screen.getByLabelText(/^private key$/i).closest("form");
-		expect(form).not.toBeNull();
-		if (!form) {
-			throw new Error("Private key form not found");
-		}
-
-		fireEvent.submit(form);
-
-		expect(mockStorePrivateKey).toHaveBeenCalledWith(validKey);
-		expect(mockConnect).toHaveBeenCalledWith(
-			{ state: {} },
-			{
-				connector: { id: "private-key", name: "Private Key" },
-			},
-		);
-	});
-
-	it("redirects to / when already connected", () => {
-		mockUseAccount.mockReturnValue({
-			isConnected: true,
-			address: "0x1234",
-		});
-		render(<SignupPage />);
-		expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
-	});
-
-	it("renders the Paper Wallet button as the primary option", () => {
-		render(<SignupPage />);
-		expect(screen.getByRole("button", { name: /paper wallet/i })).toBeTruthy();
-	});
-
-	it("expands the paper wallet scanner when Paper Wallet is clicked", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
-		expect(screen.getByTestId("paper-wallet-scanner")).toBeTruthy();
-	});
-
-	it("hides other options when Paper Wallet is expanded", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
-		expect(
-			screen.queryByRole("button", { name: /connect wallet/i }),
-		).toBeNull();
-		expect(screen.queryByRole("button", { name: /^private key$/i })).toBeNull();
-	});
-
-	it("connects with a valid key decoded from a QR scan", () => {
-		mockConnect.mockResolvedValue(undefined);
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
-
-		const validKey =
-			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-		act(() => {
-			mockOnKeyDecoded(validKey);
+		it("renders the paper wallet button", () => {
+			render(<SignupFlow />);
+			expect(
+				screen.getByRole("button", { name: /create paper wallet/i }),
+			).toBeTruthy();
 		});
 
-		expect(mockStorePrivateKey).toHaveBeenCalledWith(validKey);
-		expect(mockConnect).toHaveBeenCalledWith(
-			{ state: {} },
-			{ connector: { id: "private-key", name: "Private Key" } },
-		);
-	});
-
-	it("shows an error when QR scan decodes an invalid key", () => {
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
-
-		act(() => {
-			mockOnKeyDecoded("not-a-private-key");
+		it("renders a sign-in link", () => {
+			render(<SignupFlow />);
+			expect(screen.getByRole("link", { name: /sign in/i })).toBeTruthy();
 		});
 
-		expect(
-			screen.getByText(/this qr code does not contain a valid private key/i),
-		).toBeTruthy();
-		expect(mockStorePrivateKey).not.toHaveBeenCalled();
+		it("calls signup.mutate when the passkey button is clicked", () => {
+			render(<SignupFlow />);
+			fireEvent.click(
+				screen.getByRole("button", { name: /continue with google/i }),
+			);
+			expect(mockSignup).toHaveBeenCalledTimes(1);
+		});
 	});
 
-	it("connects with a bare hex key decoded from a QR scan", () => {
-		mockConnect.mockResolvedValue(undefined);
-		render(<SignupPage />);
-		fireEvent.click(screen.getByRole("button", { name: /paper wallet/i }));
-
-		const bareKey =
-			"ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-		act(() => {
-			mockOnKeyDecoded(bareKey);
+	describe("paper wallet phase", () => {
+		it("switches to the paper wallet create screen when the button is clicked", () => {
+			render(<SignupFlow />);
+			fireEvent.click(
+				screen.getByRole("button", { name: /create paper wallet/i }),
+			);
+			expect(screen.getByTestId("paper-wallet-create")).toBeTruthy();
 		});
 
-		expect(mockStorePrivateKey).toHaveBeenCalledWith(
-			"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-		);
+		it("hides the method picker while in paper wallet phase", () => {
+			render(<SignupFlow />);
+			fireEvent.click(
+				screen.getByRole("button", { name: /create paper wallet/i }),
+			);
+			expect(
+				screen.queryByRole("button", { name: /continue with google/i }),
+			).toBeNull();
+		});
+
+		it("returns to the method picker when Back is clicked", () => {
+			render(<SignupFlow />);
+			fireEvent.click(
+				screen.getByRole("button", { name: /create paper wallet/i }),
+			);
+			fireEvent.click(screen.getByRole("button", { name: /back/i }));
+			expect(
+				screen.getByRole("button", { name: /continue with google/i }),
+			).toBeTruthy();
+		});
+	});
+
+	describe("profile form phase (post-connection)", () => {
+		it("shows the profile form when connected and profile not yet completed", () => {
+			mockUseAccount.mockReturnValue({
+				isConnected: true,
+				address: "0xdeadbeef",
+			});
+			render(<SignupFlow />);
+			expect(screen.getByText(/tell us about yourself/i)).toBeTruthy();
+		});
+
+		it("includes the wallet address in the profile form", () => {
+			mockUseAccount.mockReturnValue({
+				isConnected: true,
+				address: "0xdeadbeef",
+			});
+			render(<SignupFlow />);
+			expect(screen.getByText(/0xdeadbeef/i)).toBeTruthy();
+		});
+
+		it("navigates to / when profile is submitted", () => {
+			mockUseAccount.mockReturnValue({
+				isConnected: true,
+				address: "0xdeadbeef",
+			});
+			render(<SignupFlow />);
+			fireEvent.click(screen.getByRole("button", { name: /submit profile/i }));
+			expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+		});
+
+		it("navigates to / when back is clicked from the profile form", () => {
+			mockUseAccount.mockReturnValue({
+				isConnected: true,
+				address: "0xdeadbeef",
+			});
+			render(<SignupFlow />);
+			fireEvent.click(screen.getByRole("button", { name: /back/i }));
+			expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+		});
+	});
+
+	describe("redirect when already done", () => {
+		it("navigates to / when already connected and profile completed", () => {
+			mockGetProfileCompleted.mockReturnValue(true);
+			mockUseAccount.mockReturnValue({
+				isConnected: true,
+				address: "0xdeadbeef",
+			});
+			render(<SignupFlow />);
+			expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+		});
 	});
 });

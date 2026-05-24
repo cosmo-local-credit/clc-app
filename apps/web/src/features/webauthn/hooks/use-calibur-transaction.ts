@@ -9,10 +9,7 @@ import {
 } from "@clc/core/features/webauthn/index";
 import { encodeAbiParameters } from "viem";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
-import {
-	getWebAuthnCredential,
-	markWebAuthnStale,
-} from "#/lib/webauthn-storage";
+import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
 	"0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
@@ -71,12 +68,10 @@ export async function sendCaliburTransaction(
 			},
 		})) as PublicKeyCredential;
 	} catch (err) {
-		markWebAuthnStale();
 		throw err;
 	}
 
 	if (!assertion) {
-		markWebAuthnStale();
 		throw new Error("WebAuthn assertion cancelled");
 	}
 
@@ -97,7 +92,7 @@ export async function sendCaliburTransaction(
 		challengeIndex: BigInt(challengeIndex),
 		typeIndex: BigInt(typeIndex),
 		r: BigInt(
-			"0x" + Array.from(r, (b) => b.toString(16).padStart(2, "0")).join(""),
+			`0x${Array.from(r, (b) => b.toString(16).padStart(2, "0")).join("")}`,
 		),
 		s: BigInt(
 			"0x" +

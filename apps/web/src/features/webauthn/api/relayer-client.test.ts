@@ -29,7 +29,18 @@ describe("getHealth", () => {
 			result: { relayerAddress: "0xabc", chainId: 42220 },
 		});
 		const res = await client.getHealth();
-		expect(spy).toHaveBeenCalledWith(`${BASE}/health`, expect.any(Object));
+		expect(spy).toHaveBeenCalledWith(
+			`${BASE}/health`,
+			expect.objectContaining({ method: "GET" }),
+		);
+		expect(spy).toHaveBeenCalledWith(
+			`${BASE}/health`,
+			expect.not.objectContaining({
+				headers: expect.objectContaining({
+					"Content-Type": "application/json",
+				}),
+			}),
+		);
 		expect(res.result.relayerAddress).toBe("0xabc");
 	});
 });
@@ -43,7 +54,7 @@ describe("getEOANonce", () => {
 		);
 		expect(spy).toHaveBeenCalledWith(
 			`${BASE}/nonce/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`,
-			expect.any(Object),
+			expect.objectContaining({ method: "GET" }),
 		);
 		expect(res.result.nonce).toBe("7");
 	});
@@ -62,7 +73,7 @@ describe("getCaliburNonce", () => {
 
 	it("GETs /calibur-nonce/:address/:keyHash for a keyed nonce", async () => {
 		const spy = mockFetch({ ok: true, result: { nonce: "1" } });
-		const keyHash = "0x" + "aa".repeat(32);
+		const keyHash = `0x${"aa".repeat(32)}`;
 		await client.getCaliburNonce(
 			"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 			keyHash,
@@ -94,7 +105,7 @@ describe("recoverWebAuthn", () => {
 			ok: true,
 			result: {
 				address: "0xabc",
-				keyHash: "0x" + "aa".repeat(32),
+				keyHash: `0x${"aa".repeat(32)}`,
 				publicKeyX: "123",
 				publicKeyY: "456",
 			},
@@ -160,7 +171,7 @@ describe("relay", () => {
 			signedBatch: {
 				batchedCall: { calls: [], revertOnFailure: true },
 				nonce: "0",
-				keyHash: ("0x" + "00".repeat(32)) as `0x${string}`,
+				keyHash: `0x${"00".repeat(32)}` as `0x${string}`,
 				executor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
 				deadline: "0",
 			},

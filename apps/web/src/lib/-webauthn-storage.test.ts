@@ -9,7 +9,7 @@ import {
 
 const SAMPLE = {
 	credentialId: "abc123",
-	keyHash: ("0x" + "aa".repeat(32)) as `0x${string}`,
+	keyHash: `0x${"aa".repeat(32)}` as `0x${string}`,
 	publicKeyX: "12345678901234567890",
 	publicKeyY: "98765432109876543210",
 	address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
