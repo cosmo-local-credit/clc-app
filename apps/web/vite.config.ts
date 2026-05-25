@@ -48,18 +48,15 @@ loadWranglerViteVars();
 
 const fullReactErrors = process.env.VITE_FULL_REACT_ERRORS === "true";
 
-if (fullReactErrors) {
-	process.env.NODE_ENV = "development";
-}
-
 const config = defineConfig({
-	build: {
-		minify: fullReactErrors ? false : "esbuild",
-		sourcemap: fullReactErrors,
-	},
-	define: fullReactErrors
-		? { "process.env.NODE_ENV": JSON.stringify("development") }
-		: undefined,
+	environments: fullReactErrors
+		? {
+				client: {
+					build: { minify: false, sourcemap: true },
+					define: { "process.env.NODE_ENV": JSON.stringify("development") },
+				},
+			}
+		: {},
 	resolve: { tsconfigPaths: true },
 	plugins: [
 		devtools(),
