@@ -14,10 +14,7 @@ import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { useSiweAuth } from "#/features/auth/hooks/use-siwe-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recovery";
-import {
-	isPasskeyPlatformAvailable,
-	pickPasskeyProvider,
-} from "#/features/webauthn/hooks/use-platform-passkey-label";
+import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import {
 	caliburConnector,
 	pkConnector,
@@ -43,10 +40,12 @@ export function LandingPage() {
 	const [pkError, setPkError] = useState<string | null>(null);
 	const [pkConnecting, setPkConnecting] = useState(false);
 
-	const available = isPasskeyPlatformAvailable();
-	const provider = pickPasskeyProvider();
+	const {
+		available,
+		provider,
+		label: providerLabel,
+	} = usePlatformPasskeyLabel();
 	const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
-	const providerLabel = provider === "apple" ? "Apple ID" : "Google";
 
 	const {
 		step: recoveryStep,

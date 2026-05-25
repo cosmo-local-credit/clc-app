@@ -25,11 +25,21 @@ export function tanstackSerwistPlugin(): Plugin {
 	};
 }
 
+function getPublicOutputDir(rootDir: string, production: boolean): string {
+	if (!production) return path.resolve(rootDir, "public");
+	// cloudflare-pages preset (set by build:cf or Cloudflare CI) outputs static
+	// assets to dist/ rather than .output/public/ used by the node preset.
+	const isCfPages =
+		process.env.NITRO_PRESET === "cloudflare-pages" ||
+		Boolean(process.env.CF_PAGES);
+	return isCfPages
+		? path.resolve(rootDir, "dist")
+		: path.resolve(rootDir, ".output", "public");
+}
+
 async function buildServiceWorker(rootDir: string, production: boolean) {
 	const outName = "sw.js";
-	const outDir = production
-		? path.resolve(rootDir, ".output", "public")
-		: path.resolve(rootDir, "public");
+	const outDir = getPublicOutputDir(rootDir, production);
 	const swSrc = path.resolve(rootDir, "src", "sw.ts");
 	const swDest = path.resolve(outDir, outName);
 	const env = production ? "production" : "dev";
