@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 export type PasskeyProvider = "apple" | "google";
 
 /**
@@ -30,8 +32,14 @@ export function usePlatformPasskeyLabel(): {
 	provider: PasskeyProvider;
 	label: string;
 } {
-	const available = isPasskeyPlatformAvailable();
-	const provider = pickPasskeyProvider();
+	const [available, setAvailable] = useState(false);
+	const [provider, setProvider] = useState<PasskeyProvider>("google");
+
+	useEffect(() => {
+		setAvailable(isPasskeyPlatformAvailable());
+		setProvider(pickPasskeyProvider());
+	}, []);
+
 	return {
 		available,
 		provider,
