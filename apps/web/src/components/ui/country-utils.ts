@@ -1,4 +1,3 @@
-// Flag emoji from ISO-3166-1 alpha-2.
 export function getFlagEmoji(code: string): string {
 	return code
 		.toUpperCase()

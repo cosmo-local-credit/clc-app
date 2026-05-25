@@ -26,7 +26,6 @@ export function PaperWalletScanner({
 	// current epoch and bails out if it no longer matches.
 	const epochRef = useRef(0);
 
-	// Cleanup on unmount
 	useEffect(() => {
 		return () => {
 			epochRef.current += 1;
@@ -74,9 +73,7 @@ export function PaperWalletScanner({
 					scanner.stop().then(() => scanner.clear());
 					scannerRef.current = null;
 				},
-				() => {
-					// Scanning... ignore continuous failures
-				},
+				() => {},
 			);
 		} catch (err) {
 			if (epochRef.current !== epoch) return;

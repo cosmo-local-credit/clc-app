@@ -36,7 +36,6 @@ export const caliburConnector = caliburWebAuthnConnector();
 export const wagmiConfig = createConfig({
 	...connectkitConfig,
 	storage,
-	// Include custom connectors so wagmi can serialise their connections.
 	connectors: [
 		...(connectkitConfig.connectors ?? []),
 		pkConnector,

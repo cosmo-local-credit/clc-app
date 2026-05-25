@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { profileSchema } from "./logic";
 
-// Minimal valid base — used as a template in tests that focus on one field.
 const VALID_BASE = {
 	name: "Alice",
 	email: "alice@example.com",
@@ -10,8 +9,6 @@ const VALID_BASE = {
 };
 
 describe("profileSchema", () => {
-	// ── Required fields ───────────────────────────────────────────────────────────
-
 	it("accepts a fully populated object", () => {
 		expect(
 			profileSchema.safeParse({
@@ -40,8 +37,6 @@ describe("profileSchema", () => {
 		).toBe(true);
 	});
 
-	// ── name ─────────────────────────────────────────────────────────────────────
-
 	it("rejects an empty name", () => {
 		const result = profileSchema.safeParse({ ...VALID_BASE, name: "" });
 		expect(result.success).toBe(false);
@@ -66,8 +61,6 @@ describe("profileSchema", () => {
 			profileSchema.safeParse({ ...VALID_BASE, name: "a".repeat(80) }).success,
 		).toBe(true);
 	});
-
-	// ── country ───────────────────────────────────────────────────────────────────
 
 	it("rejects an empty country", () => {
 		const result = profileSchema.safeParse({ ...VALID_BASE, country: "" });
@@ -94,8 +87,6 @@ describe("profileSchema", () => {
 			profileSchema.safeParse({ ...VALID_BASE, country: "KE" }).success,
 		).toBe(true);
 	});
-
-	// ── email OR phone required ────────────────────────────────────────────────────
 
 	it("rejects when both email and phone are empty", () => {
 		const result = profileSchema.safeParse({
@@ -144,8 +135,6 @@ describe("profileSchema", () => {
 		).toBe(true);
 	});
 
-	// ── email format ─────────────────────────────────────────────────────────────
-
 	it("rejects a malformed email", () => {
 		expect(
 			profileSchema.safeParse({ ...VALID_BASE, email: "not-an-email" }).success,
@@ -157,8 +146,6 @@ describe("profileSchema", () => {
 			profileSchema.safeParse({ ...VALID_BASE, email: "alice@" }).success,
 		).toBe(false);
 	});
-
-	// ── phone format ─────────────────────────────────────────────────────────────
 
 	it("accepts a valid E.164 phone number", () => {
 		expect(

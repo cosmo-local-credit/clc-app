@@ -3,13 +3,10 @@ import type * as React from "react";
 
 import { cn } from "#/lib/utils.ts";
 
-// ── Convenience re-exports ─────────────────────────────────────────────────────
 export const SheetRoot = Dialog.Root;
 export const SheetPortal = Dialog.Portal;
 export const SheetClose = Dialog.Close;
 export const SheetTitle = Dialog.Title;
-
-// ── Backdrop ───────────────────────────────────────────────────────────────────
 
 function SheetBackdrop({ className, ...props }: React.ComponentProps<"div">) {
 	return (
@@ -17,7 +14,6 @@ function SheetBackdrop({ className, ...props }: React.ComponentProps<"div">) {
 			className={cn(
 				"fixed inset-0 min-h-dvh bg-black/50 transition-opacity duration-200",
 				"data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-				// iOS scroll bounce
 				"supports-[-webkit-touch-callout:none]:absolute",
 				className,
 			)}
@@ -25,8 +21,6 @@ function SheetBackdrop({ className, ...props }: React.ComponentProps<"div">) {
 		/>
 	);
 }
-
-// ── Popup (slides up from bottom) ─────────────────────────────────────────────
 
 function SheetContent({
 	className,
@@ -36,27 +30,20 @@ function SheetContent({
 	return (
 		<Dialog.Popup
 			className={cn(
-				// Position
 				"fixed inset-x-0 bottom-0 z-50",
-				// Shape
 				"flex max-h-[85dvh] flex-col rounded-t-2xl bg-background",
-				// Shadow
 				"shadow-xl",
-				// Animation
 				"transition-transform duration-200 ease-out",
 				"data-[starting-style]:translate-y-full data-[ending-style]:translate-y-full",
 				className,
 			)}
 			{...props}
 		>
-			{/* Drag indicator */}
 			<div className="mx-auto mt-3 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30" />
 			{children}
 		</Dialog.Popup>
 	);
 }
-
-// ── Header / footer helpers ───────────────────────────────────────────────────
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
 	return (

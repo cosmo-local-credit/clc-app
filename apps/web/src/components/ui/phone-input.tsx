@@ -7,8 +7,6 @@ import { CountrySheet } from "#/components/ui/country-sheet";
 import { getFlagEmoji } from "#/components/ui/country-utils";
 import { cn } from "#/lib/utils.ts";
 
-// ── Phone input ────────────────────────────────────────────────────────────────
-
 type PhoneInputFieldProps = {
 	id?: string;
 	value: string;
@@ -45,7 +43,6 @@ export function PhoneInputField({
 					className,
 				)}
 			>
-				{/* Country flag + dial code trigger */}
 				<button
 					type="button"
 					aria-label={`Country: ${country}`}
@@ -64,7 +61,6 @@ export function PhoneInputField({
 					<ChevronDown className="size-3 text-muted-foreground" />
 				</button>
 
-				{/* Phone number input */}
 				<PhoneInput
 					id={id}
 					country={country}

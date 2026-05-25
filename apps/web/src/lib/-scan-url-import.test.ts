@@ -1,8 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// ── Hoisted mocks ──────────────────────────────────────────────────────────────
-
 const { mockConnect, mockStorePrivateKey, mockClearPrivateKey } = vi.hoisted(
 	() => ({
 		mockConnect: vi.fn().mockResolvedValue(undefined),
@@ -27,12 +25,8 @@ vi.mock("#/providers/web3-config", () => ({
 	pkConnector: { id: "private-key" },
 }));
 
-// ── Import under test ──────────────────────────────────────────────────────────
-
 import { getAccount } from "wagmi/actions";
 import { useScanUrlImport } from "./scan-url-import";
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
 
 const VALID_KEY =
 	"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
@@ -144,7 +138,6 @@ describe("useScanUrlImport", () => {
 
 		renderHook(() => useScanUrlImport());
 
-		// normalizePrivateKey prepends 0x
 		expect(mockStorePrivateKey).toHaveBeenCalledWith(`0x${bareKey}`);
 	});
 });

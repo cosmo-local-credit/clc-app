@@ -4,8 +4,6 @@ import { normalizePrivateKey } from "#/connectors/normalize-private-key";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 
-// ── Hook ───────────────────────────────────────────────────────────────────────
-
 /**
  * Detects a `?w=<key>` param on the current URL and handles it:
  * - If no wallet is currently connected: auto-imports and connects silently.
@@ -27,7 +25,6 @@ export function useScanUrlImport(): {
 		const raw = search.get("w");
 		if (!raw) return;
 
-		// Strip from URL bar immediately regardless of outcome
 		history.replaceState(null, "", window.location.pathname);
 
 		const result = normalizePrivateKey(raw);
@@ -36,10 +33,8 @@ export function useScanUrlImport(): {
 		const { isConnected } = getAccount(wagmiConfig);
 
 		if (isConnected) {
-			// Defer to a confirmation dialog
 			setPendingKey(result.key);
 		} else {
-			// Silent auto-import
 			storePrivateKey(result.key);
 			void connect(wagmiConfig, { connector: pkConnector }).catch(() => {
 				clearPrivateKey();

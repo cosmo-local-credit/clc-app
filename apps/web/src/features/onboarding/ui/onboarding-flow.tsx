@@ -5,11 +5,7 @@ import { useState } from "react";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 import { OnboardingWalletStep } from "./onboarding-wallet-step";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
 type Step = "profile" | "wallet";
-
-// ── Component ──────────────────────────────────────────────────────────────────
 
 /**
  * Two-step onboarding flow:

@@ -7,8 +7,6 @@ import { cn } from "#/lib/utils.ts";
 
 const countryLabels = labels as Record<string, string>;
 
-// ── Country select ─────────────────────────────────────────────────────────────
-
 type CountrySelectProps = {
 	id?: string;
 	value: string;

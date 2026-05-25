@@ -29,7 +29,6 @@ export function useSiweAuth() {
 	const [state, setState] = useState<SiweAuthState>({ status: "idle" });
 
 	const authenticate = useCallback(async (): Promise<string> => {
-		// Return cached token if available.
 		const cached = getAuthToken();
 		if (cached) {
 			setState({ status: "done", token: cached });

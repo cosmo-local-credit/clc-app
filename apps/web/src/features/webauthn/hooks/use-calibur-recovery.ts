@@ -39,14 +39,12 @@ export function useCaliburRecovery(client: RelayerClient) {
 			setError(null);
 			setOutcome(null);
 
-			// Step 1 — fetch server challenge
 			setStep("challenging");
 			const {
 				result: { challenge: challengeB64 },
 			} = await client.getWebAuthnChallenge();
 			const challengeBytes = base64UrlToBytes(challengeB64);
 
-			// Step 2 — discoverable credential assertion (no allowCredentials)
 			setStep("asserting");
 			const assertion = (await navigator.credentials.get({
 				publicKey: {
@@ -60,7 +58,6 @@ export function useCaliburRecovery(client: RelayerClient) {
 
 			const response = assertion.response as AuthenticatorAssertionResponse;
 
-			// Step 3 — send assertion to backend for proof-of-possession verification
 			setStep("verifying");
 			const { result } = await client.recoverWebAuthn({
 				credentialId: assertion.id,

@@ -9,7 +9,6 @@ export const Route = createFileRoute("/")({ component: IndexPage });
 function IndexPage() {
 	const { isConnected, status } = useAccount();
 
-	// Wait out reconnection — avoids spurious landing page flash on refresh.
 	if (status === "connecting" || status === "reconnecting") return null;
 
 	if (isConnected) return <HomePage />;

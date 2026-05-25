@@ -6,9 +6,6 @@ import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { clearAuthToken } from "#/features/auth/state/token";
 
-// Routing when disconnected is handled by IndexPage in routes/index.tsx.
-// HomePage is only ever rendered when isConnected === true.
-
 export function HomePage() {
 	const { address } = useAccount();
 	const { disconnectAsync } = useDisconnect();

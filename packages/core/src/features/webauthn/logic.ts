@@ -9,8 +9,6 @@ import {
 	toRlp,
 } from "viem";
 
-// ── EIP-7702 ────────────────────────────────────────────────────────────────
-
 export function eip7702AuthMessage(args: {
 	chainId: bigint;
 	contractAddress: `0x${string}`;
@@ -23,8 +21,6 @@ export function eip7702AuthMessage(args: {
 	]);
 	return keccak256(concat(["0x05", rlp]));
 }
-
-// ── Calibur key hashes ──────────────────────────────────────────────────────
 
 export function webAuthnKeyHash(x: bigint, y: bigint): `0x${string}` {
 	const publicKey = encodeAbiParameters(
@@ -43,14 +39,10 @@ export function secp256k1KeyHash(address: `0x${string}`): `0x${string}` {
 	return keccak256(concat([keyTypePadded, publicKeyHash]));
 }
 
-// ── Calibur nonce ───────────────────────────────────────────────────────────
-
 export function buildCaliburNonce(keyHash: `0x${string}`, seq: bigint): bigint {
 	const keyBig = BigInt(keyHash) & ((1n << 192n) - 1n);
 	return (keyBig << 64n) | seq;
 }
-
-// ── Calibur calldata ────────────────────────────────────────────────────────
 
 const REGISTER_ABI = [
 	{
@@ -80,8 +72,6 @@ export function encodeRegisterCalldata(x: bigint, y: bigint): `0x${string}` {
 		args: [{ keyType: 1, publicKey }],
 	});
 }
-
-// ── EIP-712 digest ──────────────────────────────────────────────────────────
 
 export type CaliburCall = {
 	to: `0x${string}`;
@@ -151,8 +141,6 @@ export function computeEIP712Digest(
 	return hexToBytes(digest);
 }
 
-// ── DER signature parsing ───────────────────────────────────────────────────
-
 export function parseDERSignature(derSig: Uint8Array): {
 	r: Uint8Array;
 	s: Uint8Array;
@@ -193,8 +181,6 @@ function padTo32(bytes: Uint8Array): Uint8Array {
 	return padded;
 }
 
-// ── S normalization ─────────────────────────────────────────────────────────
-
 const P256_ORDER = BigInt(
 	"0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551",
 );
@@ -207,8 +193,6 @@ export function normalizeS(sBytes: Uint8Array): Uint8Array {
 	}
 	return sBytes;
 }
-
-// ── base64url ───────────────────────────────────────────────────────────────
 
 export function base64UrlToBytes(base64url: string): Uint8Array {
 	const b64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
@@ -223,8 +207,6 @@ export function bytesToBase64Url(bytes: ArrayBuffer): string {
 	const b64 = btoa(String.fromCharCode(...new Uint8Array(bytes)));
 	return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
-
-// ── WebAuthnAuth ABI encoding ────────────────────────────────────────────────
 
 export type WebAuthnAuth = {
 	authenticatorData: Uint8Array;
@@ -263,8 +245,6 @@ export function encodeWebAuthnAuth(auth: WebAuthnAuth): `0x${string}` {
 		],
 	);
 }
-
-// ── Internal helpers ────────────────────────────────────────────────────────
 
 function bytesToBigInt(bytes: Uint8Array): bigint {
 	return BigInt(

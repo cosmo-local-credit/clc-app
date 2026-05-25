@@ -32,15 +32,11 @@ import {
 	wagmiConfig,
 } from "#/providers/web3-config";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
-
 const RELAYER_URL: string =
 	(import.meta.env.VITE_RELAYER_URL as string | undefined) ??
 	"http://192.168.1.20:5003/api/v2/relayer";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
-
-// ── Component ──────────────────────────────────────────────────────────────────
 
 export function LandingPage() {
 	const navigate = useNavigate();
@@ -72,14 +68,12 @@ export function LandingPage() {
 	);
 	const connecting = isRecovering || pkConnecting;
 
-	// After recovery, connect caliburConnector → SIWE → IndexPage takes over
 	useEffect(() => {
 		if (recoveryStep === "done") {
 			wagmiConnect({ connector: caliburConnector });
 		}
 	}, [recoveryStep, wagmiConnect]);
 
-	// Run SIWE once after wallet connects
 	useEffect(() => {
 		if (isConnected && !siweAttempted.current) {
 			siweAttempted.current = true;
@@ -129,7 +123,6 @@ export function LandingPage() {
 
 	return (
 		<div className="flex min-h-[100svh] flex-col bg-background px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-12 sm:min-h-screen sm:pb-12 sm:pt-20">
-			{/* Hero */}
 			<div className="flex flex-col items-center gap-5 text-center">
 				<CLCLogo className="size-20" />
 				<div className="space-y-1">
@@ -143,7 +136,6 @@ export function LandingPage() {
 				</div>
 			</div>
 
-			{/* Actions */}
 			<div className="mt-auto space-y-3 pb-2 pt-8 sm:pt-16">
 				{connecting ? (
 					<div className="flex flex-col items-center gap-2 py-3">
@@ -162,7 +154,6 @@ export function LandingPage() {
 					/>
 				) : null}
 
-				{/* Create account — always first */}
 				{!showScanner && !showPkInput && !connecting ? (
 					<Button
 						className="h-11 w-full bg-foreground text-background hover:bg-foreground/90"
@@ -173,7 +164,6 @@ export function LandingPage() {
 					</Button>
 				) : null}
 
-				{/* not_found or recovery error feedback */}
 				{outcome === "not_found" ? (
 					<div className="rounded-xl border border-border bg-card p-4 space-y-1">
 						<p className="text-sm font-medium">No passkey found</p>
@@ -201,14 +191,12 @@ export function LandingPage() {
 
 				{!showScanner && !showPkInput && !connecting ? (
 					<>
-						{/* Divider */}
 						<div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
 							<div className="h-px flex-1 bg-border" />
 							<span>or</span>
 							<div className="h-px flex-1 bg-border" />
 						</div>
 
-						{/* Passkey — only on Chrome Android / Safari Mobile */}
 						{available ? (
 							<Button
 								className="h-11 w-full"
@@ -222,7 +210,6 @@ export function LandingPage() {
 							</Button>
 						) : null}
 
-						{/* Paper wallet — always present */}
 						<Button
 							className="h-11 w-full"
 							onClick={() => {

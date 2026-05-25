@@ -3,8 +3,6 @@ import { forwardRef, type ReactNode, useEffect, useState } from "react";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 
-// ── QR code generator ──────────────────────────────────────────────────────────
-
 function useQrDataUrl(url: string): string | null {
 	const [dataUrl, setDataUrl] = useState<string | null>(null);
 
@@ -25,8 +23,6 @@ function useQrDataUrl(url: string): string | null {
 
 	return dataUrl;
 }
-
-// ── Business-card component ────────────────────────────────────────────────────
 
 export type PaperWalletCardProps = {
 	/** The wallet address to display and encode in the QR code */
@@ -55,9 +51,7 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
 		return (
 			<div
 				ref={ref}
-				// aspect-[7/4] = standard business card ratio (3.5 × 2 in)
 				className="grid aspect-[7/4] w-full grid-rows-[1fr_auto] overflow-hidden rounded-lg border border-dotted border-gray-300 bg-white px-5 py-4"
-				// Explicit white background for image capture
 				style={{ backgroundColor: "#ffffff" }}
 			>
 				<div className="grid min-h-0 grid-cols-[40%_60%] gap-4">
@@ -79,7 +73,6 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
 								src={qrDataUrl}
 								alt="Wallet QR code"
 								className="aspect-square h-auto w-full max-w-[178px] object-contain"
-								// Prevent cross-origin tainting html-to-image
 								crossOrigin="anonymous"
 							/>
 						) : (

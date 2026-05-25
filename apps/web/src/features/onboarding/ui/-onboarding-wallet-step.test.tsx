@@ -2,8 +2,6 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
-// ── Hoisted mocks ──────────────────────────────────────────────────────────────
-
 const {
 	mockUpgradeAndLinkMutate,
 	mockUpgradeStep,
@@ -24,7 +22,6 @@ const {
 	mockOnBack: vi.fn(),
 }));
 
-// Deterministic key for tests
 const FAKE_PK =
 	"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
 const FAKE_ADDRESS =
@@ -103,8 +100,6 @@ beforeEach(() => {
 	mockIsPasskeyPlatformAvailable.mockReturnValue(false);
 	mockPickPasskeyProvider.mockReturnValue("google");
 });
-
-// ── Rendering ──────────────────────────────────────────────────────────────────
 
 describe("OnboardingWalletStep rendering", () => {
 	it("shows the paper wallet card with the generated address", () => {
@@ -207,8 +202,6 @@ describe("OnboardingWalletStep rendering", () => {
 	});
 });
 
-// ── Continue flow (pk wallet) ──────────────────────────────────────────────────
-
 describe("OnboardingWalletStep continue flow", () => {
 	it("Continue button is disabled before acknowledging", () => {
 		render(
@@ -262,8 +255,6 @@ describe("OnboardingWalletStep continue flow", () => {
 	});
 });
 
-// ── Link flow (Calibur + WebAuthn) ─────────────────────────────────────────────
-
 describe("OnboardingWalletStep link flow", () => {
 	beforeEach(() => {
 		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
@@ -284,8 +275,6 @@ describe("OnboardingWalletStep link flow", () => {
 		expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
 	});
 });
-
-// ── Back navigation ────────────────────────────────────────────────────────────
 
 describe("OnboardingWalletStep back navigation", () => {
 	it("clicking back calls onBack", () => {

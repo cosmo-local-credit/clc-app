@@ -8,8 +8,6 @@ import { CountrySelect } from "#/components/ui/country-select";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
 type Props = {
 	onNext: (data: ProfileInput) => void;
 };
@@ -36,7 +34,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<div className="flex flex-col px-6 pb-12 pt-20">
-				{/* Header */}
 				<div className="mb-10 space-y-4">
 					<button
 						type="button"
@@ -58,7 +55,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 					</div>
 				</div>
 
-				{/* Form */}
 				<form
 					aria-label="Create account"
 					onSubmit={(e) => {
@@ -68,7 +64,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 					}}
 					className="space-y-4"
 				>
-					{/* Name */}
 					<form.Field name="name">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -96,7 +91,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 						}}
 					</form.Field>
 
-					{/* Email */}
 					<form.Field name="email">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -124,7 +118,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 						}}
 					</form.Field>
 
-					{/* Phone */}
 					<form.Field name="phone">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -148,7 +141,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 						}}
 					</form.Field>
 
-					{/* Country */}
 					<form.Field name="country">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -188,7 +180,6 @@ export function OnboardingProfileForm({ onNext }: Props) {
 					</form.Subscribe>
 				</form>
 
-				{/* Footer */}
 				<p className="mt-8 text-center text-sm text-muted-foreground">
 					Already have an account?{" "}
 					<Link

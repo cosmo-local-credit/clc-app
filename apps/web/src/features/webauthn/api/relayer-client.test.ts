@@ -21,7 +21,6 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-// ── getHealth ────────────────────────────────────────────────────────────────
 describe("getHealth", () => {
 	it("GETs /health and returns the relayer address", async () => {
 		const spy = mockFetch({
@@ -45,7 +44,6 @@ describe("getHealth", () => {
 	});
 });
 
-// ── getEOANonce ──────────────────────────────────────────────────────────────
 describe("getEOANonce", () => {
 	it("GETs /nonce/:address and returns the nonce", async () => {
 		const spy = mockFetch({ ok: true, result: { nonce: "7" } });
@@ -60,7 +58,6 @@ describe("getEOANonce", () => {
 	});
 });
 
-// ── getCaliburNonce ──────────────────────────────────────────────────────────
 describe("getCaliburNonce", () => {
 	it("GETs /calibur-nonce/:address for root key", async () => {
 		const spy = mockFetch({ ok: true, result: { nonce: "3" } });
@@ -85,7 +82,6 @@ describe("getCaliburNonce", () => {
 	});
 });
 
-// ── getWebAuthnChallenge ─────────────────────────────────────────────────────
 describe("getWebAuthnChallenge", () => {
 	it("GETs /webauthn/challenge and returns the challenge string", async () => {
 		const spy = mockFetch({ ok: true, result: { challenge: "abc123" } });
@@ -98,7 +94,6 @@ describe("getWebAuthnChallenge", () => {
 	});
 });
 
-// ── recoverWebAuthn ──────────────────────────────────────────────────────────
 describe("recoverWebAuthn", () => {
 	it("POSTs the full assertion payload to /webauthn/recover", async () => {
 		const spy = mockFetch({
@@ -158,7 +153,6 @@ describe("recoverWebAuthn", () => {
 	});
 });
 
-// ── relay ────────────────────────────────────────────────────────────────────
 describe("relay", () => {
 	it("POSTs a secp256k1 registration payload to /relay", async () => {
 		const spy = mockFetch({
