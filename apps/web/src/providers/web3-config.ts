@@ -1,25 +1,7 @@
-import { getDefaultConfig } from "connectkit";
 import { createConfig, createStorage, http } from "wagmi";
 import { celo } from "wagmi/chains";
 import { caliburWebAuthnConnector } from "#/connectors/calibur-webauthn";
 import { privateKeyConnector } from "#/connectors/privateKey";
-
-const DEFAULT_WALLETCONNECT_PROJECT_ID = "4bc44b6179c99f9c147da08495a643d2";
-
-const connectkitConfig = getDefaultConfig({
-	chains: [celo],
-	transports: {
-		[celo.id]: http("https://forno.celo.org"),
-	},
-	enableAaveAccount: false,
-	walletConnectProjectId:
-		import.meta.env.VITE_WALLETCONNECT_PROJECT_ID ??
-		DEFAULT_WALLETCONNECT_PROJECT_ID,
-	appName: "CLC App",
-	appDescription: "Community exchange via vouchers and commitment pools",
-	appUrl: "https://sarafu.network",
-	appIcon: "/favicon.ico",
-});
 
 const storage =
 	typeof window !== "undefined"
@@ -34,11 +16,10 @@ export const pkConnector = privateKeyConnector();
 export const caliburConnector = caliburWebAuthnConnector();
 
 export const wagmiConfig = createConfig({
-	...connectkitConfig,
+	chains: [celo],
+	transports: {
+		[celo.id]: http("https://forno.celo.org"),
+	},
 	storage,
-	connectors: [
-		...(connectkitConfig.connectors ?? []),
-		pkConnector,
-		caliburConnector,
-	],
+	connectors: [pkConnector, caliburConnector],
 });
