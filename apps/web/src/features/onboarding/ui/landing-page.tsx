@@ -1,13 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ConnectKitButton } from "connectkit";
-import {
-	KeyRound,
-	LoaderCircle,
-	ScanLine,
-	UserPlus,
-	Wallet,
-	X,
-} from "lucide-react";
+import { KeyRound, LoaderCircle, ScanLine, UserPlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { useAccount, useConnect } from "wagmi";
@@ -234,32 +226,17 @@ export function LandingPage() {
 						</button>
 
 						{showAdvanced ? (
-							<div className="space-y-3">
-								<ConnectKitButton.Custom>
-									{({ show }) => (
-										<Button
-											variant="outline"
-											className="h-11 w-full"
-											onClick={show}
-										>
-											<Wallet className="mr-2 size-4" />
-											Connect wallet
-										</Button>
-									)}
-								</ConnectKitButton.Custom>
-
-								<Button
-									variant="outline"
-									className="h-11 w-full"
-									onClick={() => {
-										setShowPkInput(true);
-										setPkError(null);
-									}}
-								>
-									<KeyRound className="mr-2 size-4" />
-									Private key
-								</Button>
-							</div>
+							<Button
+								variant="outline"
+								className="h-11 w-full"
+								onClick={() => {
+									setShowPkInput(true);
+									setPkError(null);
+								}}
+							>
+								<KeyRound className="mr-2 size-4" />
+								Private key
+							</Button>
 						) : null}
 					</>
 				) : null}

@@ -36,16 +36,6 @@ vi.mock("wagmi/actions", () => ({
 	connect: (...args: unknown[]) => mockConnectAction(...args),
 }));
 
-vi.mock("connectkit", () => ({
-	ConnectKitButton: {
-		Custom: ({
-			children,
-		}: {
-			children: (props: { show: () => void }) => React.ReactNode;
-		}) => children({ show: vi.fn() }),
-	},
-}));
-
 vi.mock("#/components/paper-wallet-scanner", () => ({
 	PaperWalletScanner: ({
 		onKeyDecoded,
@@ -223,18 +213,12 @@ describe("LandingPage navigation", () => {
 
 	it("hides advanced options by default", () => {
 		render(<LandingPage />);
-		expect(
-			screen.queryByRole("button", { name: /connect wallet/i }),
-		).toBeNull();
 		expect(screen.queryByRole("button", { name: /private key/i })).toBeNull();
 	});
 
-	it("shows Connect wallet and Private key under advanced options", () => {
+	it("shows Private key under advanced options", () => {
 		render(<LandingPage />);
 		fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
-		expect(
-			screen.getByRole("button", { name: /connect wallet/i }),
-		).toBeTruthy();
 		expect(screen.getByRole("button", { name: /private key/i })).toBeTruthy();
 	});
 });
