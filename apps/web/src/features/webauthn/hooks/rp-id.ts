@@ -3,7 +3,13 @@ export function resolveRelyingPartyId(
 	hostname?: string,
 ): string {
 	const trimmedEnvValue = envValue?.trim();
-	if (trimmedEnvValue) return trimmedEnvValue;
+	if (trimmedEnvValue) {
+		try {
+			return new URL(trimmedEnvValue).hostname;
+		} catch {
+			return trimmedEnvValue;
+		}
+	}
 
 	const resolvedHostname =
 		hostname ??

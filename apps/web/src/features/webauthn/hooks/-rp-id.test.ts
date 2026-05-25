@@ -13,6 +13,12 @@ describe("resolveRelyingPartyId", () => {
 		);
 	});
 
+	it("normalizes URL env values to hostnames", () => {
+		expect(
+			resolveRelyingPartyId("https://app.cosmolocal.credit", "example.com"),
+		).toBe("app.cosmolocal.credit");
+	});
+
 	it("falls back to localhost when neither env nor hostname is available", () => {
 		expect(resolveRelyingPartyId(undefined, undefined)).toBe("localhost");
 	});
