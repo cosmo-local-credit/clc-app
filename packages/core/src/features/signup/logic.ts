@@ -1,15 +1,11 @@
 import { z } from "zod";
 
-// ── Schema ─────────────────────────────────────────────────────────────────────
-
 const emailValidator = (val: string) =>
 	val === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
-// E.164: + followed by 1–15 digits
 const phoneValidator = (val: string) =>
 	val === "" || /^\+[1-9]\d{1,14}$/.test(val);
 
-// ISO 3166-1 alpha-2
 const countryValidator = (val: string) => val === "" || /^[A-Z]{2}$/.test(val);
 
 export const profileSchema = z

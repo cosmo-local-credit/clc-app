@@ -59,13 +59,11 @@ export function useCaliburSignup(client: RelayerClient) {
 			setError(null);
 			assertWebAuthnSupported("create");
 
-			// Phase 1 — ephemeral key
 			setStep("generating-key");
 			const pk = generatePrivateKey();
 			ephemeralKeyRef.current = pk;
 			const account = privateKeyToAccount(pk);
 
-			// Phase 2 — EIP-7702 auth message (signed, not yet relayed)
 			const {
 				result: { nonce: nonceStr },
 			} = await client.getEOANonce(account.address);
@@ -76,7 +74,6 @@ export function useCaliburSignup(client: RelayerClient) {
 			});
 			const authSig = parseSignature(await account.sign({ hash: authMsg }));
 
-			// Phase 3 — create WebAuthn passkey
 			setStep("creating-passkey");
 			const challenge = crypto.getRandomValues(new Uint8Array(32));
 			const credential = (await navigator.credentials.create({
@@ -105,7 +102,6 @@ export function useCaliburSignup(client: RelayerClient) {
 			);
 			const keyHash = webAuthnKeyHash(x, y);
 
-			// Phase 4 — register WebAuthn key in Calibur via relay
 			setStep("registering");
 			const registerCalldata = encodeRegisterCalldata(x, y);
 			const [caliburNonceResponse, healthResponse] = await Promise.all([
@@ -169,7 +165,6 @@ export function useCaliburSignup(client: RelayerClient) {
 				throw new Error("Passkey registration transaction failed on-chain");
 			}
 
-			// Store locally, zero ephemeral key
 			storeWebAuthnCredential({
 				credentialId: credential.id,
 				keyHash,
@@ -189,8 +184,6 @@ export function useCaliburSignup(client: RelayerClient) {
 
 	return { step, error, signup };
 }
-
-// ── P-256 public key extraction ────────────────────────────────────────────────
 
 async function extractP256Coords(
 	response: AuthenticatorAttestationResponse,
@@ -224,7 +217,6 @@ async function extractP256Coords(
 			return { x, y };
 		}
 	}
-	// Fallback: parse COSE key from authData
 	return extractFromAuthData(
 		new Uint8Array(response.attestationObject ?? new ArrayBuffer(0)),
 	);
@@ -234,7 +226,6 @@ function extractFromAuthData(attestation: Uint8Array): {
 	x: bigint;
 	y: bigint;
 } {
-	// Parse CBOR attestationObject to find authData
 	const authData = parseAuthData(attestation);
 	if (!authData || authData.length < 55)
 		throw new Error("Cannot parse authData");

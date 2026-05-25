@@ -11,14 +11,11 @@ import { buildPaperWalletUrl } from "#/lib/paper-wallet";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { PaperWalletCard } from "./paper-wallet-card";
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
 type Props = {
 	onBack: () => void;
 };
 
 export function PaperWalletCreate({ onBack }: Props) {
-	// Generate key exactly once for this component lifetime
 	const keyRef = useRef<`0x${string}` | null>(null);
 	if (!keyRef.current) keyRef.current = generatePrivateKey();
 	const key = keyRef.current;
@@ -66,14 +63,11 @@ export function PaperWalletCreate({ onBack }: Props) {
 			);
 			setConnecting(false);
 		}
-		// On success wagmi state updates and SignupFlow re-renders; no need to
-		// manually setConnecting(false)
 	}
 
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<div className="flex flex-col px-6 pb-12 pt-12">
-				{/* Back navigation */}
 				<button
 					type="button"
 					onClick={onBack}
@@ -109,7 +103,6 @@ export function PaperWalletCreate({ onBack }: Props) {
 					/>
 				</div>
 
-				{/* Card preview */}
 				<PaperWalletCard
 					ref={cardRef}
 					address={address}
@@ -117,7 +110,6 @@ export function PaperWalletCreate({ onBack }: Props) {
 					label={cardLabel}
 				/>
 
-				{/* Download */}
 				<Button
 					className="mt-4 h-11 w-full"
 					onClick={handleDownload}
@@ -134,7 +126,6 @@ export function PaperWalletCreate({ onBack }: Props) {
 					<p className="mt-2 text-xs text-destructive">{downloadError}</p>
 				) : null}
 
-				{/* Acknowledgement */}
 				<label className="mt-6 flex cursor-pointer items-start gap-3">
 					<input
 						type="checkbox"
@@ -147,7 +138,6 @@ export function PaperWalletCreate({ onBack }: Props) {
 					</span>
 				</label>
 
-				{/* Continue */}
 				<Button
 					className="mt-4 h-11 w-full"
 					disabled={!acked || connecting}

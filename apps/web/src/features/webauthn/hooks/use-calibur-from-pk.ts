@@ -26,8 +26,6 @@ import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-suppo
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
-
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
 	"0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
@@ -44,8 +42,6 @@ const publicClient = createPublicClient({
 	transport: http(PUBLIC_RPC_URL),
 });
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
 export type UpgradeStep =
 	| "idle"
 	| "authorizing"
@@ -53,8 +49,6 @@ export type UpgradeStep =
 	| "registering"
 	| "done"
 	| "error";
-
-// ── Hook ───────────────────────────────────────────────────────────────────────
 
 /**
  * Upgrades an existing secp256k1 paper-wallet key to a Calibur smart account.
@@ -74,7 +68,6 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
 
 			const account = privateKeyToAccount(pk);
 
-			// Phase 1 — EIP-7702 auth message
 			setStep("authorizing");
 			const {
 				result: { nonce: nonceStr },
@@ -86,7 +79,6 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
 			});
 			const authSig = parseSignature(await account.sign({ hash: authMsg }));
 
-			// Phase 2 — create WebAuthn passkey
 			setStep("creating-passkey");
 			const challenge = crypto.getRandomValues(new Uint8Array(32));
 			const credential = (await navigator.credentials.create({
@@ -115,7 +107,6 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
 			);
 			const keyHash = webAuthnKeyHash(x, y);
 
-			// Phase 3 — relay EIP-7702 + register WebAuthn
 			setStep("registering");
 			const registerCalldata = encodeRegisterCalldata(x, y);
 			const [caliburNonceResponse, healthResponse] = await Promise.all([
@@ -198,8 +189,6 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
 	return { step, error, upgradeAndLink };
 }
 
-// ── P-256 public key extraction (shared with use-calibur-signup) ───────────────
-
 async function extractP256Coords(
 	response: AuthenticatorAttestationResponse,
 ): Promise<{ x: bigint; y: bigint }> {
@@ -232,7 +221,6 @@ async function extractP256Coords(
 			return { x, y };
 		}
 	}
-	// Fallback: inline authData parsing (same logic as useCaliburSignup)
 	throw new Error("Cannot extract P-256 key: getPublicKey() not available");
 }
 

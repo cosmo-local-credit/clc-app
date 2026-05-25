@@ -3,11 +3,7 @@ import type {
 	SignedBatch,
 } from "@clc/core/features/webauthn/index";
 
-// ── Response envelopes ────────────────────────────────────────────────────────
-
 type OKResponse<T> = { ok: true; description?: string; result: T };
-
-// ── Error types ───────────────────────────────────────────────────────────────
 
 export class RelayerError extends Error {
 	constructor(
@@ -18,8 +14,6 @@ export class RelayerError extends Error {
 		super(code);
 	}
 }
-
-// ── Payload types (match backend contract in WEBAUTHN_PLAN.md §5) ─────────────
 
 export type RelayPayload = {
 	userAddress: `0x${string}`;
@@ -38,8 +32,6 @@ export type RecoverPayload = {
 	clientDataJSON: string;
 	signature: string;
 };
-
-// ── Client factory ─────────────────────────────────────────────────────────────
 
 export function createRelayerClient(baseUrl: string) {
 	const get = async <T>(path: string): Promise<OKResponse<T>> => {
@@ -92,8 +84,6 @@ export function createRelayerClient(baseUrl: string) {
 }
 
 export type RelayerClient = ReturnType<typeof createRelayerClient>;
-
-// ── Internal ──────────────────────────────────────────────────────────────────
 
 async function handleResponse<T>(res: Response): Promise<OKResponse<T>> {
 	const json = await res.json();

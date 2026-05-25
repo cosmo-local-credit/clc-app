@@ -2,8 +2,6 @@ const API_URL: string =
 	(import.meta.env.VITE_API_URL as string | undefined) ??
 	"http://192.168.1.20:5003";
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
-
 async function apiFetch<T>(
 	path: string,
 	init?: RequestInit,
@@ -25,8 +23,6 @@ async function apiFetch<T>(
 	}
 	return body as T;
 }
-
-// ── SIWE ───────────────────────────────────────────────────────────────────────
 
 export async function getSiweNonce(): Promise<string> {
 	const data = await apiFetch<{ ok: true; result: { nonce: string } }>(
@@ -55,8 +51,6 @@ export async function verifySiweSignature(
 	);
 	return data.result;
 }
-
-// ── Profile ────────────────────────────────────────────────────────────────────
 
 export type ProfilePayload = {
 	name: string;

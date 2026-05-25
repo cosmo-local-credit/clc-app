@@ -1,8 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// ── Hoisted mocks ──────────────────────────────────────────────────────────────
-
 const {
 	mockOnboardingProfileFormOnNext,
 	mockOnboardingWalletStepOnBack,
@@ -92,8 +90,6 @@ beforeEach(() => {
 	mockOnboardingWalletStepOnDone.mockClear();
 	mockNavigate.mockClear();
 });
-
-// ── Step transitions ───────────────────────────────────────────────────────────
 
 describe("OnboardingFlow step transitions", () => {
 	it("starts on the profile step", () => {

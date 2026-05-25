@@ -23,15 +23,11 @@ import {
 } from "#/providers/web3-config";
 import { PaperWalletCard } from "./paper-wallet-card";
 
-// ── Constants ──────────────────────────────────────────────────────────────────
-
 const RELAYER_URL: string =
 	(import.meta.env.VITE_RELAYER_URL as string | undefined) ??
 	"http://192.168.1.20:5003/api/v2/relayer";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
-
-// ── Component ──────────────────────────────────────────────────────────────────
 
 type Props = {
 	profileData: ProfileInput;
@@ -40,7 +36,6 @@ type Props = {
 };
 
 export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
-	// Generate private key exactly once for this component lifetime
 	const keyRef = useRef<`0x${string}` | null>(null);
 	if (!keyRef.current) keyRef.current = generatePrivateKey();
 	const pk = keyRef.current;
@@ -77,7 +72,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 	].includes(upgradeStep);
 	const isLinked = upgradeStep === "done";
 
-	// After upgradeAndLink succeeds, connect with caliburConnector
 	useEffect(() => {
 		if (upgradeStep === "done") {
 			setLinkConnectError(null);
@@ -132,7 +126,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 	return (
 		<div className="flex min-h-screen flex-col bg-background">
 			<div className="flex flex-col px-6 pb-12 pt-12">
-				{/* Back */}
 				<button
 					type="button"
 					onClick={onBack}
@@ -168,7 +161,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					/>
 				</div>
 
-				{/* Card preview */}
 				<PaperWalletCard
 					ref={cardRef}
 					address={address}
@@ -176,7 +168,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					label={cardLabel}
 				/>
 
-				{/* Download */}
 				<Button
 					className="mt-4 h-11 w-full"
 					onClick={handleDownload}
@@ -194,7 +185,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					<p className="mt-2 text-xs text-destructive">{downloadError}</p>
 				) : null}
 
-				{/* Acknowledgement */}
 				<label className="mt-6 flex cursor-pointer items-start gap-3">
 					<input
 						type="checkbox"
@@ -208,9 +198,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					</span>
 				</label>
 
-				{/* Actions */}
 				<div className="mt-4 space-y-3">
-					{/* Passkey link — platform-conditional */}
 					{available ? (
 						<Button
 							className="h-11 w-full"
@@ -237,7 +225,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 						<p className="text-xs text-destructive">{linkConnectError}</p>
 					) : null}
 
-					{/* Continue without linking */}
 					<button
 						type="button"
 						className="w-full py-2 text-center text-sm font-medium text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"

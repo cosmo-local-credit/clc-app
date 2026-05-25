@@ -33,7 +33,6 @@ export function normalizePrivateKey(raw: string): NormalizeResult {
 		}
 	}
 
-	// Already 0x-prefixed
 	if (candidate.startsWith("0x") || candidate.startsWith("0X")) {
 		const body = candidate.slice(2);
 		if (HEX_64.test(body)) {
@@ -45,7 +44,6 @@ export function normalizePrivateKey(raw: string): NormalizeResult {
 		};
 	}
 
-	// Bare hex — prepend 0x
 	if (HEX_64.test(candidate)) {
 		return { ok: true, key: `0x${candidate.toLowerCase()}` };
 	}

@@ -1,8 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────────
-
 const mockNavigate = vi.fn();
 const mockDisconnectAsync = vi.fn(() => Promise.resolve());
 const mockClearAuthToken = vi.fn();
@@ -44,8 +42,6 @@ vi.mock("#/components/ui/clc-logo", () => ({
 import { HomePage } from "#/components/home-page";
 import { LandingPage } from "#/features/onboarding/ui/landing-page";
 
-// ── IndexPage — thin routing shell (mirrors routes/index.tsx) ──────────────────
-
 function IndexPage() {
 	const { isConnected, status } = mockUseAccount() as {
 		isConnected: boolean;
@@ -67,8 +63,6 @@ beforeEach(() => {
 	mockDisconnectAsync.mockClear();
 	mockClearAuthToken.mockClear();
 });
-
-// ── IndexPage routing ──────────────────────────────────────────────────────────
 
 describe("IndexPage routing", () => {
 	it("renders LandingPage when disconnected", () => {
@@ -107,8 +101,6 @@ describe("IndexPage routing", () => {
 		expect(container.firstChild).toBeNull();
 	});
 });
-
-// ── HomePage (connected state) ─────────────────────────────────────────────────
 
 describe("HomePage", () => {
 	beforeEach(() => {

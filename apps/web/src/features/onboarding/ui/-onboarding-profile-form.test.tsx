@@ -1,8 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// ── Hoisted mocks ──────────────────────────────────────────────────────────────
-
 const { mockNavigate } = vi.hoisted(() => ({
 	mockNavigate: vi.fn(),
 }));
@@ -14,7 +12,6 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-// Simplify CountrySelect to a plain input for test interaction
 vi.mock("#/components/ui/country-select", () => ({
 	CountrySelect: ({
 		value,
@@ -34,7 +31,6 @@ vi.mock("#/components/ui/country-select", () => ({
 	),
 }));
 
-// Simplify PhoneInputField to a plain input for test interaction
 vi.mock("#/components/ui/phone-input", () => ({
 	PhoneInputField: ({
 		value,
@@ -61,8 +57,6 @@ import { OnboardingProfileForm } from "./onboarding-profile-form";
 beforeEach(() => {
 	mockNavigate.mockClear();
 });
-
-// ── Rendering ──────────────────────────────────────────────────────────────────
 
 describe("OnboardingProfileForm rendering", () => {
 	it("renders name, email, phone, and country fields", () => {
@@ -92,8 +86,6 @@ describe("OnboardingProfileForm rendering", () => {
 	});
 });
 
-// ── Navigation ─────────────────────────────────────────────────────────────────
-
 describe("OnboardingProfileForm navigation", () => {
 	it("navigates to / when back button is clicked", () => {
 		render(<OnboardingProfileForm onNext={vi.fn()} />);
@@ -101,8 +93,6 @@ describe("OnboardingProfileForm navigation", () => {
 		expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
 	});
 });
-
-// ── Submission ─────────────────────────────────────────────────────────────────
 
 describe("OnboardingProfileForm submission", () => {
 	it("calls onNext with validated data on valid submission", async () => {

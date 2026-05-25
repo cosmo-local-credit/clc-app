@@ -70,7 +70,6 @@ function AppInner() {
 	const { pendingKey, clearPendingKey } = useScanUrlImport();
 	const [switching, setSwitching] = useState(false);
 
-	// Derive incoming address for display (memoised so it stays stable)
 	const pendingAddress = useMemo(
 		() => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
 		[pendingKey],

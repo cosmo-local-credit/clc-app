@@ -12,8 +12,6 @@ export async function submitSignupProfile(
 ): Promise<{ ok: true }> {
 	const token = getAuthToken();
 	if (!token) {
-		// No JWT yet — SIWE was not completed. Fall through gracefully so the
-		// profile is still marked locally even if backend persistence fails.
 		console.warn("[signup] no auth token; profile not persisted to backend");
 		return { ok: true } as const;
 	}

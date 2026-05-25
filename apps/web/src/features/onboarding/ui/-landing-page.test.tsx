@@ -2,8 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
-// ── Hoisted mocks ──────────────────────────────────────────────────────────────
-
 const {
 	mockNavigate,
 	mockRecoverMutate,
@@ -104,8 +102,6 @@ vi.mock("#/providers/web3-config", () => ({
 	wagmiConfig: {},
 }));
 
-// ── Platform detection — controlled per test ───────────────────────────────────
-
 const mockIsPasskeyPlatformAvailable = vi.fn(() => false);
 const mockPickPasskeyProvider = vi.fn<() => PasskeyProvider>(() => "google");
 
@@ -133,8 +129,6 @@ beforeEach(() => {
 	mockIsPasskeyPlatformAvailable.mockReturnValue(false);
 	mockPickPasskeyProvider.mockReturnValue("google");
 });
-
-// ── Button visibility ──────────────────────────────────────────────────────────
 
 describe("LandingPage button visibility", () => {
 	it("always shows Create an account button", () => {
@@ -196,8 +190,6 @@ describe("LandingPage button visibility", () => {
 	});
 });
 
-// ── Navigation ────────────────────────────────────────────────────────────────
-
 describe("LandingPage navigation", () => {
 	it("navigates to /onboarding when Create an account is clicked", () => {
 		render(<LandingPage />);
@@ -247,8 +239,6 @@ describe("LandingPage navigation", () => {
 	});
 });
 
-// ── Passkey recovery ──────────────────────────────────────────────────────────
-
 describe("LandingPage passkey recovery", () => {
 	beforeEach(() => {
 		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
@@ -272,7 +262,6 @@ describe("LandingPage passkey recovery", () => {
 	it("shows Create an account CTA inside not_found error", () => {
 		mockRecoveryState.outcome = "not_found";
 		render(<LandingPage />);
-		// Should have a link or button pointing to /onboarding
 		const createLink = screen
 			.getAllByRole("link")
 			.find((el) => el.getAttribute("href") === "/onboarding");

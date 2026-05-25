@@ -58,7 +58,6 @@ describe("PaperWalletScanner", () => {
 	it("decodes a QR code from an uploaded image and calls onKeyDecoded", async () => {
 		const decodedAddress = "0xaCB673ea3B8B868cAb37c1bEb59E66Af31dE2e87";
 
-		// Resolve scanFile with the test data
 		let resolveScan: (value: string) => void;
 		mockScanFile.mockReturnValue(
 			new Promise<string>((resolve) => {
@@ -70,12 +69,10 @@ describe("PaperWalletScanner", () => {
 			<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />,
 		);
 
-		// Navigate to upload mode
 		await act(() => {
 			fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
 		});
 
-		// Trigger file upload
 		const pngBuffer = readFileSync(TEST_IMAGE);
 		const file = new File([pngBuffer], "test-qr.png", { type: "image/png" });
 		const fileInput = screen.getByLabelText(/upload qr code image/i);
@@ -84,7 +81,6 @@ describe("PaperWalletScanner", () => {
 			fireEvent.change(fileInput, { target: { files: [file] } });
 		});
 
-		// Resolve the scan
 		await act(() => {
 			resolveScan?.(decodedAddress);
 		});
@@ -135,7 +131,6 @@ describe("PaperWalletScanner", () => {
 
 		fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
 
-		// First attempt — fails
 		const file1 = new File(["bad"], "bad.png", { type: "image/png" });
 		const fileInput = screen.getByLabelText(/upload qr code image/i);
 
@@ -143,7 +138,6 @@ describe("PaperWalletScanner", () => {
 			fireEvent.change(fileInput, { target: { files: [file1] } });
 		});
 
-		// Second attempt — succeeds
 		const file2 = new File(["good"], "good.png", { type: "image/png" });
 		await act(() => {
 			fireEvent.change(fileInput, { target: { files: [file2] } });
@@ -174,12 +168,10 @@ describe("PaperWalletScanner", () => {
 			fireEvent.change(fileInput, { target: { files: [file] } });
 		});
 
-		// Cancel while scan is still in flight
 		await act(() => {
 			fireEvent.click(screen.getByRole("button", { name: /back/i }));
 		});
 
-		// Now resolve the stale scan — should be ignored
 		await act(() => {
 			resolveScan?.("0xlatekey");
 		});

@@ -10,8 +10,6 @@ import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { submitSignupProfile } from "#/features/onboarding/api/auth-client";
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
 type Props = {
 	address: `0x${string}`;
 	onBack: () => void;
@@ -71,7 +69,6 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 					}}
 					className="space-y-4"
 				>
-					{/* Name */}
 					<form.Field name="name">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -99,7 +96,6 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						}}
 					</form.Field>
 
-					{/* Email */}
 					<form.Field name="email">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -130,7 +126,6 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						}}
 					</form.Field>
 
-					{/* Phone */}
 					<form.Field name="phone">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -157,7 +152,6 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						}}
 					</form.Field>
 
-					{/* Country */}
 					<form.Field name="country">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
@@ -209,12 +203,6 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 		</div>
 	);
 }
-
-// ── Initial country ↔ phone sync helper ───────────────────────────────────────
-// Q16=B: sync country → phone-country on first render only; then independent.
-// This is handled inside PhoneInputField (it reads DEFAULT_COUNTRY from env).
-// The CountryPhoneSync wrapper does nothing at runtime — it's a placeholder
-// in case bi-directional sync is added later.
 
 function CountryPhoneSync({
 	children,
