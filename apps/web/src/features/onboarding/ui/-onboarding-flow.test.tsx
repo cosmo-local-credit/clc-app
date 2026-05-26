@@ -35,7 +35,12 @@ vi.mock("./onboarding-profile-form", () => ({
 							name: "Alice",
 							email: "alice@example.com",
 							phone: "",
-							country: "KE",
+							location: {
+								lat: -1.2921,
+								lng: 36.8219,
+								locationName: "Nairobi, Kenya",
+								country: "KE",
+							},
 						});
 					}}
 				>

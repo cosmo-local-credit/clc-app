@@ -1,12 +1,11 @@
 import { z } from "zod";
+import { locationSchema } from "../location/logic";
 
 const emailValidator = (val: string) =>
 	val === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
 const phoneValidator = (val: string) =>
 	val === "" || /^\+[1-9]\d{1,14}$/.test(val);
-
-const countryValidator = (val: string) => val === "" || /^[A-Z]{2}$/.test(val);
 
 export const profileSchema = z
 	.object({
@@ -20,10 +19,7 @@ export const profileSchema = z
 		phone: z
 			.string()
 			.refine(phoneValidator, { message: "Invalid phone number" }),
-		country: z
-			.string()
-			.min(1, { message: "Country is required" })
-			.refine(countryValidator, { message: "Invalid country" }),
+		location: locationSchema,
 	})
 	.superRefine((data, ctx) => {
 		if (!data.email && !data.phone) {

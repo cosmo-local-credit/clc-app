@@ -12,25 +12,6 @@ vi.mock("@tanstack/react-router", () => ({
 	),
 }));
 
-vi.mock("#/components/ui/country-select", () => ({
-	CountrySelect: ({
-		value,
-		onChange,
-		id,
-	}: {
-		value: string;
-		onChange: (v: string) => void;
-		id?: string;
-	}) => (
-		<input
-			data-testid="country-select"
-			id={id}
-			value={value}
-			onChange={(e) => onChange(e.target.value)}
-		/>
-	),
-}));
-
 vi.mock("#/components/ui/phone-input", () => ({
 	PhoneInputField: ({
 		value,
@@ -51,6 +32,49 @@ vi.mock("#/components/ui/phone-input", () => ({
 	),
 }));
 
+vi.mock("./location-picker", () => ({
+	LocationPicker: ({
+		value,
+		onChange,
+	}: {
+		value:
+			| {
+					lat: number;
+					lng: number;
+					locationName: string;
+					country: string;
+			  }
+			| undefined;
+		onChange: (
+			value:
+				| {
+						lat: number;
+						lng: number;
+						locationName: string;
+						country: string;
+				  }
+				| undefined,
+		) => void;
+	}) => (
+		<div data-testid="location-picker">
+			<span>{value?.locationName ?? "No location"}</span>
+			<button
+				type="button"
+				onClick={() =>
+					onChange({
+						lat: -1.2921,
+						lng: 36.8219,
+						locationName: "Nairobi, Kenya",
+						country: "KE",
+					})
+				}
+			>
+				choose location
+			</button>
+		</div>
+	),
+}));
+
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
@@ -59,12 +83,13 @@ beforeEach(() => {
 });
 
 describe("OnboardingProfileForm rendering", () => {
-	it("renders name, email, phone, and country fields", () => {
+	it("renders name, email, phone, and location fields", () => {
 		render(<OnboardingProfileForm onNext={vi.fn()} />);
 		expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
 		expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
 		expect(screen.getByTestId("phone-input")).toBeTruthy();
-		expect(screen.getByTestId("country-select")).toBeTruthy();
+		expect(screen.getByTestId("location-picker")).toBeTruthy();
+		expect(screen.queryByTestId("country-select")).toBeNull();
 	});
 
 	it("renders the Continue submit button", () => {
@@ -105,9 +130,7 @@ describe("OnboardingProfileForm submission", () => {
 		fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
 			target: { value: "alice@example.com" },
 		});
-		fireEvent.change(screen.getByTestId("country-select"), {
-			target: { value: "KE" },
-		});
+		fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
 		await act(async () => {
 			fireEvent.submit(screen.getByRole("form"));
@@ -117,7 +140,12 @@ describe("OnboardingProfileForm submission", () => {
 			expect.objectContaining<Partial<ProfileInput>>({
 				name: "Alice",
 				email: "alice@example.com",
-				country: "KE",
+				location: {
+					lat: -1.2921,
+					lng: 36.8219,
+					locationName: "Nairobi, Kenya",
+					country: "KE",
+				},
 			}),
 		);
 	});
@@ -129,9 +157,7 @@ describe("OnboardingProfileForm submission", () => {
 		fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
 			target: { value: "alice@example.com" },
 		});
-		fireEvent.change(screen.getByTestId("country-select"), {
-			target: { value: "KE" },
-		});
+		fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
 		await act(async () => {
 			fireEvent.submit(screen.getByRole("form"));
@@ -147,8 +173,24 @@ describe("OnboardingProfileForm submission", () => {
 		fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
 			target: { value: "Alice" },
 		});
-		fireEvent.change(screen.getByTestId("country-select"), {
-			target: { value: "KE" },
+		fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+		await act(async () => {
+			fireEvent.submit(screen.getByRole("form"));
+		});
+
+		expect(mockOnNext).not.toHaveBeenCalled();
+	});
+
+	it("does not call onNext until a valid location is set", async () => {
+		const mockOnNext = vi.fn();
+		render(<OnboardingProfileForm onNext={mockOnNext} />);
+
+		fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+			target: { value: "Alice" },
+		});
+		fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+			target: { value: "alice@example.com" },
 		});
 
 		await act(async () => {
