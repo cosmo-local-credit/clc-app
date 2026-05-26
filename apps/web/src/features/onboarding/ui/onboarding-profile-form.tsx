@@ -1,22 +1,30 @@
+import type { LocationInput } from "@clc/core/features/location/logic";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { Button } from "#/components/ui/button";
-import { CountrySelect } from "#/components/ui/country-select";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { LocationPicker } from "./location-picker";
 
 type Props = {
 	onNext: (data: ProfileInput) => void;
 };
 
-const DEFAULT_VALUES: ProfileInput = {
+type ProfileFormValues = {
+	name: string;
+	email: string;
+	phone: string;
+	location: LocationInput | undefined;
+};
+
+const DEFAULT_VALUES: ProfileFormValues = {
 	name: "",
 	email: "",
 	phone: "",
-	country: "",
+	location: undefined,
 };
 
 export function OnboardingProfileForm({ onNext }: Props) {
@@ -26,8 +34,9 @@ export function OnboardingProfileForm({ onNext }: Props) {
 		defaultValues: DEFAULT_VALUES,
 		validators: { onChange: profileSchema },
 		onSubmit: async ({ value }) => {
-			console.log("[onboarding] profile:", value);
-			onNext(value);
+			const parsed = profileSchema.parse(value);
+			console.log("[onboarding] profile:", parsed);
+			onNext(parsed);
 		},
 	});
 
@@ -50,7 +59,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							Create your account
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							Name and country are required. Provide an email or phone number.
+							Name and location are required. Provide an email or phone number.
 						</p>
 					</div>
 				</div>
@@ -141,25 +150,15 @@ export function OnboardingProfileForm({ onNext }: Props) {
 						}}
 					</form.Field>
 
-					<form.Field name="country">
+					<form.Field name="location">
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
 							return (
-								<div className="flex flex-col gap-1.5">
-									<label htmlFor="onb-country" className="text-sm font-medium">
-										Country
-									</label>
-									<CountrySelect
-										id="onb-country"
-										value={field.state.value}
-										onChange={(v) => field.handleChange(v)}
-										aria-invalid={!!err}
-										aria-label="Country"
-									/>
-									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
-									) : null}
-								</div>
+								<LocationPicker
+									value={field.state.value}
+									onChange={(next) => field.handleChange(next)}
+									error={err ?? undefined}
+								/>
 							);
 						}}
 					</form.Field>

@@ -21,7 +21,7 @@ export async function submitSignupProfile(
 			name: input.name,
 			email: input.email,
 			phone: input.phone,
-			country: input.country,
+			location: input.location,
 		},
 		token,
 	);

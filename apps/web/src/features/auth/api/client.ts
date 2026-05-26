@@ -1,3 +1,5 @@
+import type { LocationInput } from "@clc/core/features/location/logic";
+
 const API_URL: string =
 	(import.meta.env.VITE_API_URL as string | undefined) ??
 	"http://192.168.1.20:5003";
@@ -56,7 +58,7 @@ export type ProfilePayload = {
 	name: string;
 	email: string;
 	phone: string;
-	country: string;
+	location: LocationInput;
 };
 
 export async function submitProfile(
@@ -79,7 +81,7 @@ export type ProfileResult = {
 	name: string;
 	email: string;
 	phone: string;
-	country: string;
+	location: LocationInput;
 	createdAt: string;
 };
 

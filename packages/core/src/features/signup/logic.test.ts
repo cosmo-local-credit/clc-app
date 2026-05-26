@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { profileSchema } from "./logic";
 
+const VALID_LOCATION = {
+	lat: -1.2921,
+	lng: 36.8219,
+	locationName: "Nairobi, Kenya",
+	country: "KE",
+};
+
 const VALID_BASE = {
 	name: "Alice",
 	email: "alice@example.com",
 	phone: "",
-	country: "KE",
+	location: VALID_LOCATION,
 };
 
 describe("profileSchema", () => {
@@ -15,24 +22,24 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "alice@example.com",
 				phone: "+254712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
 
-	it("accepts name + email + country (no phone)", () => {
+	it("accepts name + email + location (no phone)", () => {
 		expect(profileSchema.safeParse({ ...VALID_BASE, phone: "" }).success).toBe(
 			true,
 		);
 	});
 
-	it("accepts name + phone + country (no email)", () => {
+	it("accepts name + phone + location (no email)", () => {
 		expect(
 			profileSchema.safeParse({
 				name: "Alice",
 				email: "",
 				phone: "+254712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
@@ -62,30 +69,22 @@ describe("profileSchema", () => {
 		).toBe(true);
 	});
 
-	it("rejects an empty country", () => {
-		const result = profileSchema.safeParse({ ...VALID_BASE, country: "" });
+	it("rejects a missing location", () => {
+		const result = profileSchema.safeParse({
+			name: "Alice",
+			email: "alice@example.com",
+			phone: "",
+		});
 		expect(result.success).toBe(false);
-		if (!result.success) {
-			expect(result.error.issues[0]?.message).toMatch(/required/i);
-		}
 	});
 
-	it("rejects a lowercase country code", () => {
+	it("rejects an invalid location country code", () => {
 		expect(
-			profileSchema.safeParse({ ...VALID_BASE, country: "ke" }).success,
+			profileSchema.safeParse({
+				...VALID_BASE,
+				location: { ...VALID_LOCATION, country: "KEN" },
+			}).success,
 		).toBe(false);
-	});
-
-	it("rejects a three-letter country code", () => {
-		expect(
-			profileSchema.safeParse({ ...VALID_BASE, country: "KEN" }).success,
-		).toBe(false);
-	});
-
-	it("accepts a valid ISO 3166-1 alpha-2 country code", () => {
-		expect(
-			profileSchema.safeParse({ ...VALID_BASE, country: "KE" }).success,
-		).toBe(true);
 	});
 
 	it("rejects when both email and phone are empty", () => {
@@ -93,7 +92,7 @@ describe("profileSchema", () => {
 			name: "Alice",
 			email: "",
 			phone: "",
-			country: "KE",
+			location: VALID_LOCATION,
 		});
 		expect(result.success).toBe(false);
 		if (!result.success) {
@@ -108,7 +107,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "alice@example.com",
 				phone: "",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
@@ -119,7 +118,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "",
 				phone: "+254712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
@@ -130,7 +129,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "alice@example.com",
 				phone: "+254712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
@@ -153,7 +152,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "",
 				phone: "+254712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(true);
 	});
@@ -164,7 +163,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "",
 				phone: "0712345678",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(false);
 	});
@@ -175,7 +174,7 @@ describe("profileSchema", () => {
 				name: "Alice",
 				email: "",
 				phone: "+abc12345",
-				country: "KE",
+				location: VALID_LOCATION,
 			}).success,
 		).toBe(false);
 	});

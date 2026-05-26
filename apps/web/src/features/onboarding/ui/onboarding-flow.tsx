@@ -9,7 +9,7 @@ type Step = "profile" | "wallet";
 
 /**
  * Two-step onboarding flow:
- *   1. Profile form  — collects name, country, email/phone
+ *   1. Profile form  — collects name, location, email/phone
  *   2. Wallet step   — generates paper wallet, optional Calibur+WebAuthn link
  *
  * The flow is disconnected-only; IndexPage handles already-connected users.
