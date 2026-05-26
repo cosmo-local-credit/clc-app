@@ -1,7 +1,12 @@
 import QRCode from "qrcode";
-import { forwardRef, type ReactNode, useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
+import {
+	PAPER_WALLET_HEIGHT,
+	PAPER_WALLET_WIDTH,
+} from "./paper-wallet-constants";
+import type { PaperWalletCustomization } from "./paper-wallet-types";
 
 function useQrDataUrl(url: string): string | null {
 	const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -10,8 +15,8 @@ function useQrDataUrl(url: string): string | null {
 		let cancelled = false;
 		void QRCode.toDataURL(url, {
 			type: "image/png",
-			margin: 1,
-			width: 256,
+			margin: 0,
+			width: 512,
 			color: { dark: "#000000", light: "#ffffff" },
 		}).then((result) => {
 			if (!cancelled) setDataUrl(result);
@@ -25,68 +30,221 @@ function useQrDataUrl(url: string): string | null {
 }
 
 export type PaperWalletCardProps = {
-	/** The wallet address to display and encode in the QR code */
 	address: `0x${string}`;
-	/** Full URL encoded in the QR code */
 	qrUrl: string;
-	/** Human-readable label printed on the card */
-	label: string;
-	/** Optional logo override; defaults to CLC logo */
-	logo?: ReactNode;
+	customization: PaperWalletCustomization;
 };
 
 /**
- * Renders a business-card-sized wallet card suitable for html-to-image capture.
+ * Renders a fixed-geometry paper wallet card at 600 x 378 px.
  *
- * Layout:
- *   [logo + label] | [QR code]
- *   [address]
- *
- * Forward ref so the parent can pass it to toPng().
+ * All dimensions and font stacks are inline-styled so html-to-image
+ * captures an accurate export regardless of stylesheet resolution.
  */
 export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
-	function PaperWalletCard({ address, qrUrl, label, logo }, ref) {
+	function PaperWalletCard({ address, qrUrl, customization }, ref) {
 		const qrDataUrl = useQrDataUrl(qrUrl);
+		const { name, website, description, logoDataUrl } = customization;
+		const showDescription = description.trim().length > 0;
 
 		return (
 			<div
 				ref={ref}
-				className="grid aspect-[7/4] w-full grid-rows-[1fr_auto] overflow-hidden rounded-lg border border-dotted border-gray-300 bg-white px-5 py-4"
-				style={{ backgroundColor: "#ffffff" }}
+				data-slot="paper-wallet-root"
+				style={{
+					width: PAPER_WALLET_WIDTH,
+					height: PAPER_WALLET_HEIGHT,
+					backgroundColor: "#ffffff",
+					boxSizing: "border-box",
+					overflow: "hidden",
+					padding: "20px 20px 10px",
+					border: "1px dashed rgba(0,0,0,0.16)",
+					borderRadius: 8,
+					display: "flex",
+					flexDirection: "column",
+				}}
 			>
-				<div className="grid min-h-0 grid-cols-[40%_60%] gap-4">
-					<div className="flex min-w-0 flex-col justify-between pr-2">
-						<div className="flex size-16 shrink-0 items-center justify-center">
-							{logo ?? <CLCLogo className="size-16" />}
-						</div>
-						<p
-							className="break-words font-heading text-[1.05rem] font-semibold leading-tight text-gray-800"
-							style={{ fontFamily: "Plus Jakarta Sans, sans-serif" }}
+				{/* Upper section: logo + text | QR */}
+				<div
+					style={{
+						display: "flex",
+						alignItems: "flex-start",
+						flexGrow: 1,
+						minHeight: 0,
+					}}
+				>
+					{/* Left identity column */}
+					<div
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							width: 300,
+							height: 250,
+							paddingRight: 16,
+						}}
+					>
+						{/* Logo */}
+						<div
+							style={{
+								width: 124,
+								height: 124,
+								flexShrink: 0,
+							}}
 						>
-							{label}
-						</p>
+							{logoDataUrl ? (
+								<img
+									data-slot="logo"
+									src={logoDataUrl}
+									alt=""
+									style={{
+										width: "100%",
+										height: "100%",
+										objectFit: "contain",
+									}}
+								/>
+							) : (
+								<CLCLogo className="size-full" />
+							)}
+						</div>
+
+						<div style={{ marginTop: "auto" }}>
+							{/* Name */}
+							<span
+								data-slot="name"
+								className="line-clamp-2"
+								style={{
+									display: "-webkit-box",
+									WebkitBoxOrient: "vertical",
+									WebkitLineClamp: 2,
+									overflow: "hidden",
+									maxHeight: 57.6,
+									fontFamily: "Plus Jakarta Sans, sans-serif",
+									fontSize: 24,
+									fontWeight: 700,
+									letterSpacing: "-0.015em",
+									lineHeight: 1.2,
+									color: "#111827",
+								}}
+							>
+								{name}
+							</span>
+
+							{/* Website */}
+							<span
+								data-slot="website"
+								className="truncate"
+								style={{
+									display: "block",
+									width: "100%",
+									overflow: "hidden",
+									textOverflow: "ellipsis",
+									whiteSpace: "nowrap",
+									fontFamily: "Inter, sans-serif",
+									fontSize: 17,
+									lineHeight: 1.25,
+									color: "#6b7280",
+									marginTop: 4,
+								}}
+							>
+								{website}
+							</span>
+
+							{/* Description — rendered only when non-empty */}
+							{showDescription ? (
+								<span
+									data-slot="description"
+									className="line-clamp-2"
+									style={{
+										display: "-webkit-box",
+										WebkitBoxOrient: "vertical",
+										WebkitLineClamp: 2,
+										overflow: "hidden",
+										maxHeight: 43.2,
+										fontFamily: "Inter, sans-serif",
+										fontSize: 16,
+										lineHeight: 1.35,
+										color: "#6b7280",
+										marginTop: 6,
+									}}
+								>
+									{description}
+								</span>
+							) : null}
+						</div>
 					</div>
 
-					<div className="flex min-h-0 items-center justify-end">
-						{qrDataUrl ? (
-							<img
-								src={qrDataUrl}
-								alt="Wallet QR code"
-								className="aspect-square h-auto w-full max-w-[178px] object-contain"
-								crossOrigin="anonymous"
-							/>
-						) : (
-							<div className="size-16 animate-pulse rounded bg-gray-100" />
-						)}
+					{/* QR code */}
+					<div
+						style={{
+							flexShrink: 0,
+							marginLeft: "auto",
+						}}
+					>
+						<div
+							style={{
+								width: 250,
+								height: 250,
+								boxSizing: "border-box",
+								padding: 10,
+								backgroundColor: "#ffffff",
+								borderRadius: 6,
+								border: "1px solid rgba(0,0,0,0.1)",
+							}}
+						>
+							{qrDataUrl ? (
+								<img
+									data-slot="qr"
+									src={qrDataUrl}
+									alt="Wallet QR code"
+									style={{
+										width: "100%",
+										height: "100%",
+									}}
+								/>
+							) : (
+								<div
+									style={{
+										width: "100%",
+										height: "100%",
+										backgroundColor: "#f3f4f6",
+										borderRadius: 2,
+									}}
+								/>
+							)}
+						</div>
 					</div>
 				</div>
 
-				<p
-					className="mt-3 break-all font-mono text-[0.78rem] leading-tight text-gray-600"
-					style={{ fontFamily: "JetBrains Mono, monospace" }}
+				{/* Footer: address */}
+				<div
+					style={{
+						height: 56,
+						flexShrink: 0,
+						borderTop: "1px solid rgba(0,0,0,0.1)",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+					}}
 				>
-					{address}
-				</p>
+					<span
+						data-slot="address"
+						style={{
+							fontFamily: "JetBrains Mono, monospace",
+							fontSize: 16,
+							fontWeight: 500,
+							letterSpacing: "-0.035em",
+							lineHeight: 1.1,
+							color: "#111827",
+							wordBreak: "normal",
+							whiteSpace: "nowrap",
+							textAlign: "center",
+							paddingLeft: 8,
+							paddingRight: 8,
+						}}
+					>
+						{address}
+					</span>
+				</div>
 			</div>
 		);
 	},

@@ -1,15 +1,13 @@
-import { toPng } from "html-to-image";
-import { ArrowLeft, Download, LoaderCircle } from "lucide-react";
+import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
-import { PaperWalletCard } from "./paper-wallet-card";
+import { usePaperWalletSetup } from "./paper-wallet-setup";
 
 type Props = {
 	onBack: () => void;
@@ -24,31 +22,15 @@ export function PaperWalletCreate({ onBack }: Props) {
 	const address = account.address;
 	const qrUrl = buildPaperWalletUrl(key);
 
-	const cardRef = useRef<HTMLDivElement>(null);
-	const [downloading, setDownloading] = useState(false);
-	const [downloadError, setDownloadError] = useState<string | null>(null);
+	const { card, controls, downloadButton } = usePaperWalletSetup({
+		address,
+		qrUrl,
+		defaultName: "Paper wallet",
+	});
+
 	const [acked, setAcked] = useState(false);
 	const [connecting, setConnecting] = useState(false);
 	const [connectError, setConnectError] = useState<string | null>(null);
-	const [walletLabel, setWalletLabel] = useState("");
-	const cardLabel = walletLabel.trim() || "Paper wallet";
-
-	async function handleDownload() {
-		if (!cardRef.current) return;
-		setDownloading(true);
-		setDownloadError(null);
-		try {
-			const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
-			const a = document.createElement("a");
-			a.href = dataUrl;
-			a.download = `clc-wallet-${address.slice(2, 10)}.png`;
-			a.click();
-		} catch {
-			setDownloadError("Download failed. Try a screenshot instead.");
-		} finally {
-			setDownloading(false);
-		}
-	}
 
 	async function handleContinue() {
 		setConnecting(true);
@@ -88,43 +70,11 @@ export function PaperWalletCreate({ onBack }: Props) {
 					</p>
 				</div>
 
-				<div className="mb-4 space-y-2">
-					<label
-						htmlFor="paper-wallet-label"
-						className="text-sm font-medium text-foreground"
-					>
-						Name on wallet
-					</label>
-					<Input
-						id="paper-wallet-label"
-						value={walletLabel}
-						onChange={(event) => setWalletLabel(event.target.value)}
-						placeholder="Paper wallet"
-					/>
-				</div>
+				{card}
 
-				<PaperWalletCard
-					ref={cardRef}
-					address={address}
-					qrUrl={qrUrl}
-					label={cardLabel}
-				/>
+				{downloadButton}
 
-				<Button
-					className="mt-4 h-11 w-full"
-					onClick={handleDownload}
-					disabled={downloading}
-				>
-					{downloading ? (
-						<LoaderCircle className="mr-2 size-4 animate-spin" />
-					) : (
-						<Download className="mr-2 size-4" />
-					)}
-					{downloading ? "Preparing…" : "Download card"}
-				</Button>
-				{downloadError ? (
-					<p className="mt-2 text-xs text-destructive">{downloadError}</p>
-				) : null}
+				{controls}
 
 				<label className="mt-6 flex cursor-pointer items-start gap-3">
 					<input
@@ -146,7 +96,7 @@ export function PaperWalletCreate({ onBack }: Props) {
 					{connecting ? (
 						<LoaderCircle className="mr-2 size-4 animate-spin" />
 					) : null}
-					{connecting ? "Connecting…" : "Continue"}
+					{connecting ? "Connecting..." : "Continue"}
 				</Button>
 				{connectError ? (
 					<p className="mt-2 text-xs text-destructive">{connectError}</p>
