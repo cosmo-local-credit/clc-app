@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type MockGeoState =
@@ -70,6 +71,15 @@ beforeEach(() => {
 });
 
 describe("LocationPicker", () => {
+	it("does not render the browser-only map during server rendering", () => {
+		const html = renderToString(
+			<LocationPicker onChange={vi.fn()} value={undefined} />,
+		);
+
+		expect(html).toContain("Loading location map");
+		expect(html).not.toContain("pick map location");
+	});
+
 	it("shows the top four search suggestions without selecting for the user", async () => {
 		vi.useFakeTimers();
 		mockSearchLocations.mockResolvedValue([
