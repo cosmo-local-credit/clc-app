@@ -41,6 +41,7 @@ export function LocationPicker({
 	);
 	const [reversePending, setReversePending] = useState(false);
 	const [reverseError, setReverseError] = useState<string | null>(null);
+	const [canRenderMap, setCanRenderMap] = useState(false);
 	const searchAbortRef = useRef<AbortController | null>(null);
 	const reverseAbortRef = useRef<AbortController | null>(null);
 	const reverseRequestRef = useRef(0);
@@ -54,6 +55,10 @@ export function LocationPicker({
 	useEffect(() => {
 		onChangeRef.current = onChange;
 	}, [onChange]);
+
+	useEffect(() => {
+		setCanRenderMap(true);
+	}, []);
 
 	useEffect(() => {
 		setPin((current) => {
@@ -241,20 +246,26 @@ export function LocationPicker({
 				<p className="text-muted-foreground text-xs">Searching places…</p>
 			) : null}
 
-			<Suspense
-				fallback={
-					<output className="block h-52 w-full rounded-xl border border-border bg-card">
-						<span className="sr-only">Loading location map</span>
-					</output>
-				}
-			>
-				<LocationMap
-					lat={pin?.lat ?? null}
-					lng={pin?.lng ?? null}
-					interactive
-					onLocationChange={placePin}
-				/>
-			</Suspense>
+			{canRenderMap ? (
+				<Suspense
+					fallback={
+						<output className="block h-52 w-full rounded-xl border border-border bg-card">
+							<span className="sr-only">Loading location map</span>
+						</output>
+					}
+				>
+					<LocationMap
+						lat={pin?.lat ?? null}
+						lng={pin?.lng ?? null}
+						interactive
+						onLocationChange={placePin}
+					/>
+				</Suspense>
+			) : (
+				<output className="block h-52 w-full rounded-xl border border-border bg-card">
+					<span className="sr-only">Loading location map</span>
+				</output>
+			)}
 
 			{reversePending ? (
 				<output className="text-muted-foreground text-sm">
