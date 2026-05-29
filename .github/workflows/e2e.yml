@@ -1,9 +1,11 @@
 name: E2E (BrowserStack)
 
-# Real-device e2e is heavier than unit tests, so it runs on demand and on PRs
-# labelled "e2e" rather than on every push. Tests target a deployed build via
-# BASE_URL (the live app by default, or a Cloudflare PR preview URL you pass in).
+# Runs on every push to master (against the live deployment) and on demand.
+# Also runs on PRs labelled "e2e" so you can validate changes before they ship.
+# Tests target a deployed build — see playwright.config.ts for why.
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
     inputs:
       base_url:
@@ -17,6 +19,7 @@ jobs:
   browserstack:
     name: Playwright on BrowserStack
     if: >
+      github.event_name == 'push' ||
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'e2e')
     runs-on: ubuntu-latest
