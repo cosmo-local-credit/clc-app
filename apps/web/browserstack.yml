@@ -1,0 +1,43 @@
+# BrowserStack Automate config for the browserstack-node-sdk.
+# Run with: pnpm --filter @clc/web test:e2e:bs
+#
+# Credentials are read from the environment — NEVER hardcode them here.
+# Export locally or set them as GitHub Actions secrets:
+#   BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+# Real mobile devices — the only viewports this app targets (360–430px).
+platforms:
+  - deviceName: Xiaomi Redmi Note 11
+    osVersion: 11.0
+    browserName: chrome
+    deviceOrientation: portrait
+  - deviceName: iPhone 14
+    osVersion: 26
+    browserName: safari
+    deviceOrientation: portrait
+  - deviceName: Samsung Galaxy S22
+    osVersion: 12.0
+    browserName: chrome
+    deviceOrientation: portrait
+
+parallelsPerPlatform: 1
+
+# Tests run against a public deployment (BASE_URL — defaults to the live app or
+# a Cloudflare PR preview), so no Local tunnel is needed. Set this to true and
+# point BASE_URL at http://localhost:<port> only if you serve a build locally.
+browserstackLocal: false
+
+buildName: clc-app e2e
+buildIdentifier: ${BUILD_NUMBER}
+projectName: clc-app
+
+# Debugging artifacts surfaced on the BrowserStack dashboard.
+testObservability: true
+networkLogs: true
+consoleLogs: info
+video: true
+debug: true
+
+selfHeal: true
