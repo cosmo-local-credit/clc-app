@@ -12,7 +12,7 @@ function DialogBackdrop({ className, ...props }: React.ComponentProps<"div">) {
 		<Dialog.Backdrop
 			className={cn(
 				"fixed inset-0 min-h-dvh bg-black/50 transition-opacity duration-150",
-				"data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+				"data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
 				"supports-[-webkit-touch-callout:none]:absolute",
 				className,
 			)}
@@ -29,7 +29,7 @@ function DialogContent({
 	return (
 		<Dialog.Popup
 			className={cn(
-				"fixed left-1/2 top-1/2 z-50 w-[calc(100vw-3rem)] max-w-sm",
+				"fixed top-1/2 left-1/2 z-50 w-[calc(100vw-3rem)] max-w-sm",
 				"-translate-x-1/2 -translate-y-1/2",
 				"rounded-xl bg-background p-6",
 				"border border-border shadow-xl",

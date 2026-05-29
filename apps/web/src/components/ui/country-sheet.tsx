@@ -62,7 +62,7 @@ export function CountrySheet({
 				<SheetBackdrop />
 				<SheetContent className="h-[50dvh] max-h-[50dvh]" initialFocus={false}>
 					<SheetHeader>
-						<SheetTitle className="text-base font-semibold">
+						<SheetTitle className="font-semibold text-base">
 							{mode === "phone-country"
 								? "Select country code"
 								: "Select country"}
@@ -80,7 +80,7 @@ export function CountrySheet({
 
 					<div className="min-h-0 flex-1 overflow-y-auto pb-safe">
 						{filtered.length === 0 ? (
-							<p className="px-4 py-6 text-center text-sm text-muted-foreground">
+							<p className="px-4 py-6 text-center text-muted-foreground text-sm">
 								No countries found
 							</p>
 						) : (
@@ -113,7 +113,7 @@ export function CountrySheet({
 												</span>
 												{mode === "phone-country" ? (
 													<>
-														<span className="w-12 shrink-0 font-mono text-xs text-muted-foreground">
+														<span className="w-12 shrink-0 font-mono text-muted-foreground text-xs">
 															+{getCountryCallingCode(code)}
 														</span>
 														<span className="truncate">{name}</span>

@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
 	"vcs": {
 		"enabled": false,
 		"clientKind": "git",
@@ -11,6 +11,9 @@
 			"**/src/**/*",
 			"**/plugins/**/*",
 			"**/.vscode/**/*",
+			"biome.json",
+			"!.claude",
+			"!.pi",
 			"**/index.html",
 			"**/vite.config.ts",
 			"!**/src/routeTree.gen.ts",
@@ -25,7 +28,10 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"nursery": {
+				"useSortedClasses": "error"
+			}
 		}
 	},
 	"javascript": {

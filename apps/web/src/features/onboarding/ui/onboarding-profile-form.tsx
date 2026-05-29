@@ -42,12 +42,12 @@ export function OnboardingProfileForm({ onNext }: Props) {
 
 	return (
 		<div className="flex min-h-[100svh] flex-col bg-background">
-			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<div className="mb-6 space-y-3">
 					<button
 						type="button"
 						onClick={() => void navigate({ to: "/" })}
-						className="-ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-sm text-muted-foreground hover:text-foreground"
+						className="-ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
 						aria-label="Back"
 					>
 						<ArrowLeft className="size-4" />
@@ -55,10 +55,10 @@ export function OnboardingProfileForm({ onNext }: Props) {
 					</button>
 
 					<div className="space-y-1">
-						<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+						<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
 							Create your account
 						</h1>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Name and location are required. Provide an email or phone number.
 						</p>
 					</div>
@@ -78,7 +78,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label htmlFor="onb-name" className="text-sm font-medium">
+									<label htmlFor="onb-name" className="font-medium text-sm">
 										Name
 									</label>
 									<Input
@@ -93,7 +93,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 										aria-label="Name"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -105,7 +105,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label htmlFor="onb-email" className="text-sm font-medium">
+									<label htmlFor="onb-email" className="font-medium text-sm">
 										Email
 									</label>
 									<Input
@@ -120,7 +120,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 										aria-label="Email"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -132,7 +132,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label htmlFor="onb-phone" className="text-sm font-medium">
+									<label htmlFor="onb-phone" className="font-medium text-sm">
 										Phone
 									</label>
 									<PhoneInputField
@@ -143,7 +143,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 										aria-label="Phone number"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -187,7 +187,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 					</form.Subscribe>
 				</form>
 
-				<p className="mt-8 text-center text-sm text-muted-foreground">
+				<p className="mt-8 text-center text-muted-foreground text-sm">
 					Already have an account?{" "}
 					<Link
 						to="/"

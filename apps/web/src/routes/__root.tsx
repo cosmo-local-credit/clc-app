@@ -121,13 +121,13 @@ function AppInner() {
 					<DialogPortal>
 						<DialogBackdrop />
 						<DialogContent>
-							<DialogTitle className="text-base font-semibold">
+							<DialogTitle className="font-semibold text-base">
 								Switch wallet?
 							</DialogTitle>
-							<p className="mt-1 text-sm text-muted-foreground">
+							<p className="mt-1 text-muted-foreground text-sm">
 								A paper wallet QR was scanned. Import this address?
 							</p>
-							<p className="mt-2 truncate font-mono text-xs text-foreground">
+							<p className="mt-2 truncate font-mono text-foreground text-xs">
 								{pendingAddress}
 							</p>
 							<div className="mt-5 flex flex-col gap-2">

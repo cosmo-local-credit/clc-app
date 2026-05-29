@@ -107,11 +107,11 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
 	return (
 		<div className="flex min-h-[100svh] flex-col bg-background">
-			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<button
 					type="button"
 					onClick={onBack}
-					className="-ml-2 mb-3 flex h-11 items-center gap-1.5 self-start px-2 text-sm text-muted-foreground hover:text-foreground"
+					className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
 					aria-label="Back"
 				>
 					<ArrowLeft className="size-4" />
@@ -119,10 +119,10 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 				</button>
 
 				<div className="mb-5 space-y-1">
-					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
 						Your paper wallet
 					</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Download or photograph this card. Anyone who scans the QR code will
 						have full access to this wallet.
 					</p>
@@ -142,7 +142,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 						onChange={(e) => setAcked(e.target.checked)}
 						className="mt-0.5 size-4 cursor-pointer accent-primary"
 					/>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						I have saved this key. If lost, my wallet cannot be recovered.
 					</span>
 				</label>
@@ -168,15 +168,15 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					) : null}
 
 					{upgradeError ? (
-						<p className="text-xs text-destructive">{upgradeError}</p>
+						<p className="text-destructive text-xs">{upgradeError}</p>
 					) : null}
 					{linkConnectError ? (
-						<p className="text-xs text-destructive">{linkConnectError}</p>
+						<p className="text-destructive text-xs">{linkConnectError}</p>
 					) : null}
 
 					<button
 						type="button"
-						className="w-full py-2 text-center text-sm font-medium text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
+						className="w-full py-2 text-center font-medium text-foreground text-sm underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
 						disabled={!acked || connecting || isUpgrading || isLinked}
 						onClick={handleContinue}
 					>
@@ -190,7 +190,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 								: "Continue to wallet"}
 					</button>
 					{connectError ? (
-						<p className="text-xs text-destructive">{connectError}</p>
+						<p className="text-destructive text-xs">{connectError}</p>
 					) : null}
 				</div>
 			</div>

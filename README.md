@@ -1,16 +1,22 @@
 # CLC App
 
-## Repository layout
+> Route redeemable claims across curated markets with shared standards.
 
-```text
-apps/
-  web/      Web app
-  mobile/   Placeholder for future Expo app
-packages/
-  core/     Shared logic intended to work in web (PWA) and mobile
+[![codecov](https://codecov.io/gh/cosmo-local-credit/clc-app/branch/master/graph/badge.svg?token=WNZV9550PY)](https://codecov.io/gh/cosmo-local-credit/clc-app)
+
+## Prerequisites
+
+Before running the project locally, install:
+
+- [NVM](https://github.com/nvm-sh/nvm)
+- [pnpm](https://pnpm.io/installation) 10.33.1 or later
+
+Then install the pinned Node.js version from `.nvmrc`:
+
+```bash
+nvm install
+nvm use
 ```
-
-`packages/core` holds shared schemas, stores, query helpers, and other portable logic. Biome prevents web only imports from being used there.
 
 ## Getting started
 
@@ -24,3 +30,7 @@ pnpm test
 The web app runs on `http://localhost:3000` during development.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guidelines, and feature structure.
+
+## License
+
+[AGPL-3.0](LICENSE)

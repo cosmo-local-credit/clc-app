@@ -134,7 +134,7 @@ export function PaperWalletScanner({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<p className="text-sm font-medium">Paper Wallet</p>
+				<p className="font-medium text-sm">Paper Wallet</p>
 				<Button
 					variant="ghost"
 					size="icon-sm"
@@ -187,7 +187,7 @@ export function PaperWalletScanner({
 					) : null}
 					{error && !cameraStarting ? (
 						<div className="space-y-2">
-							<p className="text-xs text-destructive">{error}</p>
+							<p className="text-destructive text-xs">{error}</p>
 							{error === "Camera access denied." ? (
 								<Button
 									variant="outline"
@@ -225,7 +225,7 @@ export function PaperWalletScanner({
 						<Upload className="mr-2 size-4" />
 						Choose Image
 					</Button>
-					{error ? <p className="text-xs text-destructive">{error}</p> : null}
+					{error ? <p className="text-destructive text-xs">{error}</p> : null}
 					<Button variant="ghost" className="w-full" onClick={handleCancel}>
 						Back
 					</Button>

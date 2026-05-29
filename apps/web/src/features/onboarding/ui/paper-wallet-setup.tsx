@@ -163,7 +163,7 @@ export function usePaperWalletSetup({
 				{downloading ? "Preparing..." : "Download card"}
 			</Button>
 			{downloadError ? (
-				<p className="mt-2 text-xs text-destructive">{downloadError}</p>
+				<p className="mt-2 text-destructive text-xs">{downloadError}</p>
 			) : null}
 		</div>
 	);

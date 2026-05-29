@@ -73,7 +73,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 
 	return (
 		<details className="mt-6">
-			<summary className="cursor-pointer text-sm font-medium text-foreground">
+			<summary className="cursor-pointer font-medium text-foreground text-sm">
 				Customize
 			</summary>
 
@@ -82,7 +82,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 				<div className="space-y-2">
 					<label
 						htmlFor="pw-name"
-						className="text-sm font-medium text-foreground"
+						className="font-medium text-foreground text-sm"
 					>
 						Name on wallet
 					</label>
@@ -98,7 +98,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 				<div className="space-y-2">
 					<label
 						htmlFor="pw-website"
-						className="text-sm font-medium text-foreground"
+						className="font-medium text-foreground text-sm"
 					>
 						Website
 					</label>
@@ -116,7 +116,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 				<div className="space-y-2">
 					<label
 						htmlFor="pw-description"
-						className="text-sm font-medium text-foreground"
+						className="font-medium text-foreground text-sm"
 					>
 						Description
 					</label>
@@ -128,7 +128,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						onChange={(event) =>
 							handleFieldUpdate("description", event.target.value)
 						}
-						className="w-full rounded-none border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+						className="w-full rounded-none border border-border bg-card px-3 py-2 text-foreground text-sm placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
 					/>
 				</div>
 
@@ -136,7 +136,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 				<div className="space-y-2">
 					<label
 						htmlFor="pw-logo-input"
-						className="text-sm font-medium text-foreground"
+						className="font-medium text-foreground text-sm"
 					>
 						Logo
 					</label>
@@ -162,7 +162,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						/>
 
 						{value.logoDataUrl && logoFileName ? (
-							<span className="max-w-full truncate text-xs text-muted-foreground">
+							<span className="max-w-full truncate text-muted-foreground text-xs">
 								{logoFileName}
 							</span>
 						) : null}
@@ -170,7 +170,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						{value.logoDataUrl ? (
 							<button
 								type="button"
-								className="text-sm text-destructive underline-offset-2 hover:underline"
+								className="text-destructive text-sm underline-offset-2 hover:underline"
 								onClick={handleResetLogo}
 							>
 								Reset logo
@@ -179,7 +179,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 					</div>
 
 					{logoError ? (
-						<p className="text-xs text-destructive">{logoError}</p>
+						<p className="text-destructive text-xs">{logoError}</p>
 					) : null}
 				</div>
 			</div>

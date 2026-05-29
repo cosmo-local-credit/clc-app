@@ -52,7 +52,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 
 	return (
 		<div className="flex min-h-[100svh] flex-col bg-background">
-			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<div className="mb-6 space-y-3">
 					<Button
 						variant="ghost"
@@ -64,10 +64,10 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 					</Button>
 
 					<div className="space-y-1">
-						<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+						<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
 							Tell us about yourself
 						</h1>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-muted-foreground text-sm">
 							Name and location are required. Provide an email or phone number.
 						</p>
 					</div>
@@ -86,7 +86,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 							const err = getFieldError(field.state.meta.errors);
 							return (
 								<div className="flex flex-col gap-1.5">
-									<label htmlFor="profile-name" className="text-sm font-medium">
+									<label htmlFor="profile-name" className="font-medium text-sm">
 										Name
 									</label>
 									<Input
@@ -101,7 +101,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 										aria-label="Name"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -115,7 +115,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 								<div className="flex flex-col gap-1.5">
 									<label
 										htmlFor="profile-email"
-										className="text-sm font-medium"
+										className="font-medium text-sm"
 									>
 										Email
 									</label>
@@ -131,7 +131,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 										aria-label="Email"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -145,7 +145,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 								<div className="flex flex-col gap-1.5">
 									<label
 										htmlFor="profile-phone"
-										className="text-sm font-medium"
+										className="font-medium text-sm"
 									>
 										Phone
 									</label>
@@ -157,7 +157,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 										aria-label="Phone number"
 									/>
 									{err ? (
-										<p className="text-xs text-destructive">{err}</p>
+										<p className="text-destructive text-xs">{err}</p>
 									) : null}
 								</div>
 							);
@@ -186,7 +186,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 					</form.Field>
 
 					{submitError ? (
-						<p className="text-xs text-destructive">{submitError}</p>
+						<p className="text-destructive text-xs">{submitError}</p>
 					) : null}
 
 					<form.Subscribe selector={(s) => s.isSubmitting}>

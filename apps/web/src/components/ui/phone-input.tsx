@@ -48,14 +48,14 @@ export function PhoneInputField({
 					aria-label={`Country: ${country}`}
 					onClick={() => setSheetOpen(true)}
 					className={cn(
-						"flex shrink-0 items-center gap-1 border-r border-input px-3",
-						"text-sm text-foreground transition-colors hover:bg-muted",
+						"flex shrink-0 items-center gap-1 border-input border-r px-3",
+						"text-foreground text-sm transition-colors hover:bg-muted",
 					)}
 				>
 					<span className="text-base leading-none">
 						{getFlagEmoji(country)}
 					</span>
-					<span className="font-mono text-xs text-muted-foreground">
+					<span className="font-mono text-muted-foreground text-xs">
 						+{callingCode}
 					</span>
 					<ChevronDown className="size-3 text-muted-foreground" />

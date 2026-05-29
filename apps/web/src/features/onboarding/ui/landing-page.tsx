@@ -113,25 +113,25 @@ export function LandingPage() {
 	}
 
 	return (
-		<div className="flex min-h-[100svh] flex-col bg-background px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-12 sm:min-h-screen sm:pb-12 sm:pt-20">
+		<div className="flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:min-h-screen sm:pt-20 sm:pb-12">
 			<div className="flex flex-col items-center gap-5 text-center">
 				<CLCLogo className="size-20" />
 				<div className="space-y-1">
-					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
 						CLC
 					</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Route redeemable claims across curated markets with shared
 						standards.
 					</p>
 				</div>
 			</div>
 
-			<div className="mt-auto space-y-3 pb-2 pt-8 sm:pt-16">
+			<div className="mt-auto space-y-3 pt-8 pb-2 sm:pt-16">
 				{connecting ? (
 					<div className="flex flex-col items-center gap-2 py-3">
 						<LoaderCircle className="size-6 animate-spin text-primary" />
-						<p className="text-sm text-muted-foreground">Connecting...</p>
+						<p className="text-muted-foreground text-sm">Connecting...</p>
 					</div>
 				) : null}
 
@@ -156,9 +156,9 @@ export function LandingPage() {
 				) : null}
 
 				{outcome === "not_found" ? (
-					<div className="rounded-xl border border-border bg-card p-4 space-y-1">
-						<p className="text-sm font-medium">No passkey found</p>
-						<p className="text-xs text-muted-foreground">
+					<div className="space-y-1 rounded-xl border border-border bg-card p-4">
+						<p className="font-medium text-sm">No passkey found</p>
+						<p className="text-muted-foreground text-xs">
 							No passkey is registered on this device.{" "}
 							<Link
 								to="/onboarding"
@@ -177,12 +177,12 @@ export function LandingPage() {
 						</p>
 					</div>
 				) : recoveryError ? (
-					<p className="text-xs text-destructive">{recoveryError}</p>
+					<p className="text-destructive text-xs">{recoveryError}</p>
 				) : null}
 
 				{!showScanner && !showPkInput && !connecting ? (
 					<>
-						<div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+						<div className="flex items-center gap-3 text-[11px] text-muted-foreground uppercase tracking-[0.24em]">
 							<div className="h-px flex-1 bg-border" />
 							<span>or</span>
 							<div className="h-px flex-1 bg-border" />
@@ -214,7 +214,7 @@ export function LandingPage() {
 
 						<button
 							type="button"
-							className="w-full pt-1 text-center text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+							className="w-full pt-1 text-center text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
 							onClick={() => {
 								setShowAdvanced((current) => !current);
 								setShowPkInput(false);
@@ -243,7 +243,7 @@ export function LandingPage() {
 				{showPkInput && !connecting ? (
 					<form onSubmit={handlePkSubmit} className="space-y-3">
 						<div className="flex items-center justify-between">
-							<p className="text-sm font-medium">Private key</p>
+							<p className="font-medium text-sm">Private key</p>
 							<Button
 								variant="ghost"
 								size="icon-sm"
@@ -277,7 +277,7 @@ export function LandingPage() {
 					</form>
 				) : null}
 
-				{pkError ? <p className="text-xs text-destructive">{pkError}</p> : null}
+				{pkError ? <p className="text-destructive text-xs">{pkError}</p> : null}
 			</div>
 		</div>
 	);
