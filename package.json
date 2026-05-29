@@ -2,6 +2,9 @@
 	"name": "clc",
 	"private": true,
 	"packageManager": "pnpm@10.33.1",
+	"engines": {
+		"node": "24.16.0"
+	},
 	"type": "module",
 	"scripts": {
 		"dev": "pnpm --filter @clc/web dev --host",
@@ -10,12 +13,12 @@
 		"preview": "pnpm --filter @clc/web preview",
 		"preview:cf": "wrangler pages dev apps/web/dist",
 		"test": "pnpm -r test",
-		"format": "biome format .",
+		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"check": "biome check ."
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.5",
+		"@biomejs/biome": "2.4.16",
 		"@tanstack/cli": "^0.68.0",
 		"@ticktockbent/charlotte": "^0.6.3",
 		"typescript": "^6.0.2",

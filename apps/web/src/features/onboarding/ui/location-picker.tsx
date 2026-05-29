@@ -176,7 +176,7 @@ export function LocationPicker({
 	return (
 		<div className="space-y-3">
 			<div className="relative">
-				<label htmlFor="location-search" className="text-sm font-medium">
+				<label htmlFor="location-search" className="font-medium text-sm">
 					Location
 				</label>
 				<div className="relative mt-1.5">
@@ -196,7 +196,7 @@ export function LocationPicker({
 					/>
 					<button
 						type="button"
-						className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
+						className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
 						onClick={geolocation.request}
 						disabled={geoUnavailable || geoRequesting}
 						aria-label={
@@ -238,7 +238,7 @@ export function LocationPicker({
 			</div>
 
 			{searching ? (
-				<p className="text-xs text-muted-foreground">Searching places…</p>
+				<p className="text-muted-foreground text-xs">Searching places…</p>
 			) : null}
 
 			<Suspense
@@ -257,17 +257,17 @@ export function LocationPicker({
 			</Suspense>
 
 			{reversePending ? (
-				<output className="text-sm text-muted-foreground">
+				<output className="text-muted-foreground text-sm">
 					Identifying location…
 				</output>
 			) : null}
 
 			{shownError ? (
-				<p className="text-xs text-destructive">{shownError}</p>
+				<p className="text-destructive text-xs">{shownError}</p>
 			) : null}
 
 			{geolocation.state.status === "error" ? (
-				<p className="text-xs text-destructive">{geolocation.state.message}</p>
+				<p className="text-destructive text-xs">{geolocation.state.message}</p>
 			) : null}
 		</div>
 	);

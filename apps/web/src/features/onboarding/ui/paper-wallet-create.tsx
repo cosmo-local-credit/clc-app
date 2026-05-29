@@ -49,11 +49,11 @@ export function PaperWalletCreate({ onBack }: Props) {
 
 	return (
 		<div className="flex min-h-[100svh] flex-col bg-background">
-			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<button
 					type="button"
 					onClick={onBack}
-					className="-ml-2 mb-3 flex h-11 items-center gap-1.5 self-start px-2 text-sm text-muted-foreground hover:text-foreground"
+					className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
 					aria-label="Go back"
 				>
 					<ArrowLeft className="size-4" />
@@ -61,10 +61,10 @@ export function PaperWalletCreate({ onBack }: Props) {
 				</button>
 
 				<div className="mb-5 space-y-1">
-					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
 						Your paper wallet
 					</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-muted-foreground text-sm">
 						Download or photograph this card. Anyone who scans the QR code will
 						have full access to this wallet.
 					</p>
@@ -83,7 +83,7 @@ export function PaperWalletCreate({ onBack }: Props) {
 						onChange={(e) => setAcked(e.target.checked)}
 						className="mt-0.5 size-4 cursor-pointer accent-primary"
 					/>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-muted-foreground text-sm">
 						I have saved this key. If lost, my wallet cannot be recovered.
 					</span>
 				</label>
@@ -99,7 +99,7 @@ export function PaperWalletCreate({ onBack }: Props) {
 					{connecting ? "Connecting..." : "Continue"}
 				</Button>
 				{connectError ? (
-					<p className="mt-2 text-xs text-destructive">{connectError}</p>
+					<p className="mt-2 text-destructive text-xs">{connectError}</p>
 				) : null}
 			</div>
 		</div>

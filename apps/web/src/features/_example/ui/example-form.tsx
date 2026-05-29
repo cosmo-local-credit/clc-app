@@ -33,7 +33,7 @@ export function ExampleForm() {
 				e.stopPropagation();
 				void form.handleSubmit();
 			}}
-			className="flex flex-col gap-3 max-w-sm"
+			className="flex max-w-sm flex-col gap-3"
 		>
 			<form.Field name="name">
 				{(field) => {
@@ -56,7 +56,7 @@ export function ExampleForm() {
 			</form.Field>
 
 			{greeting.data && (
-				<p className="text-sm text-muted-foreground">{greeting.data.message}</p>
+				<p className="text-muted-foreground text-sm">{greeting.data.message}</p>
 			)}
 
 			<Button type="submit">Save</Button>

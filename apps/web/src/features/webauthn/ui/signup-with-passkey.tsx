@@ -63,7 +63,7 @@ export function SignupWithPasskey({
 	if (mode === "signup") {
 		return (
 			<div className="space-y-2">
-				<p className="text-center text-sm text-muted-foreground">
+				<p className="text-center text-muted-foreground text-sm">
 					No existing wallet found.
 				</p>
 				<Button
@@ -89,7 +89,7 @@ export function SignupWithPasskey({
 						Cancel
 					</Button>
 				) : null}
-				{error ? <p className="text-xs text-destructive">{error}</p> : null}
+				{error ? <p className="text-destructive text-xs">{error}</p> : null}
 			</div>
 		);
 	}
@@ -108,7 +108,7 @@ export function SignupWithPasskey({
 				)}
 				{loading ? "Connecting…" : hasLocal ? continueLabel : label}
 			</Button>
-			{error ? <p className="text-xs text-destructive">{error}</p> : null}
+			{error ? <p className="text-destructive text-xs">{error}</p> : null}
 		</div>
 	);
 }
