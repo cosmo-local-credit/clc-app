@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { codecovVitePlugin } from "@codecov/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -50,16 +51,17 @@ const config = defineConfig(({ mode }) => {
 	const fullReactErrors =
 		(process.env.VITE_FULL_REACT_ERRORS ?? localEnv.VITE_FULL_REACT_ERRORS) ===
 		"true";
+	const environments = fullReactErrors
+		? {
+				client: {
+					build: { minify: false, sourcemap: true },
+					define: { "process.env.NODE_ENV": JSON.stringify("development") },
+				},
+			}
+		: undefined;
 
 	return {
-		environments: fullReactErrors
-			? {
-					client: {
-						build: { minify: false, sourcemap: true },
-						define: { "process.env.NODE_ENV": JSON.stringify("development") },
-					},
-				}
-			: {},
+		environments,
 		resolve: { tsconfigPaths: true },
 		plugins: [
 			devtools(),
@@ -68,6 +70,12 @@ const config = defineConfig(({ mode }) => {
 			tanstackStart(),
 			viteReact(),
 			tanstackSerwistPlugin(),
+			codecovVitePlugin({
+				enableBundleAnalysis: process.env.CI === "true",
+				bundleName: "clc-web",
+				uploadToken: process.env.CODECOV_TOKEN,
+				gitService: "github",
+			}),
 		],
 	};
 });
