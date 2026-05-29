@@ -45,10 +45,23 @@ export function LocationPicker({
 	const reverseAbortRef = useRef<AbortController | null>(null);
 	const reverseRequestRef = useRef(0);
 	const skipNextSearchRef = useRef(false);
+	const onChangeRef = useRef(onChange);
 	const geolocation = useBrowserGeolocation();
+	const geoStatus = geolocation.state.status;
+	const geoLat = geoStatus === "granted" ? geolocation.state.lat : null;
+	const geoLng = geoStatus === "granted" ? geolocation.state.lng : null;
 
 	useEffect(() => {
-		setPin(value ? { lat: value.lat, lng: value.lng } : null);
+		onChangeRef.current = onChange;
+	}, [onChange]);
+
+	useEffect(() => {
+		setPin((current) => {
+			if (!value) return current ? null : current;
+			if (current?.lat === value.lat && current.lng === value.lng)
+				return current;
+			return { lat: value.lat, lng: value.lng };
+		});
 	}, [value]);
 
 	const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
@@ -64,7 +77,7 @@ export function LocationPicker({
 			}
 			setReverseError(null);
 			setReversePending(true);
-			onChange(undefined);
+			onChangeRef.current(undefined);
 
 			reverseAbortRef.current?.abort();
 			const controller = new AbortController();
@@ -82,7 +95,7 @@ export function LocationPicker({
 				setReversePending(false);
 				if (!result) {
 					setReverseError(REVERSE_ERROR);
-					onChange(undefined);
+					onChangeRef.current(undefined);
 					return;
 				}
 
@@ -94,7 +107,7 @@ export function LocationPicker({
 				});
 				if (!parsed.success) {
 					setReverseError(REVERSE_ERROR);
-					onChange(undefined);
+					onChangeRef.current(undefined);
 					return;
 				}
 
@@ -102,10 +115,10 @@ export function LocationPicker({
 				if (options.updateSearchInput !== false) {
 					setSearchQueryFromLocation(parsed.data.locationName);
 				}
-				onChange(parsed.data);
+				onChangeRef.current(parsed.data);
 			});
 		},
-		[onChange, setSearchQueryFromLocation],
+		[setSearchQueryFromLocation],
 	);
 
 	useEffect(() => {
@@ -149,10 +162,10 @@ export function LocationPicker({
 	}, []);
 
 	useEffect(() => {
-		if (geolocation.state.status === "granted") {
-			placePin(geolocation.state.lat, geolocation.state.lng);
+		if (geoStatus === "granted" && geoLat !== null && geoLng !== null) {
+			placePin(geoLat, geoLng);
 		}
-	}, [geolocation.state, placePin]);
+	}, [geoStatus, geoLat, geoLng, placePin]);
 
 	const geoUnavailable =
 		geolocation.state.status === "denied" ||

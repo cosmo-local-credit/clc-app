@@ -374,6 +374,35 @@ describe("LocationPicker", () => {
 		});
 	});
 
+	it("does not re-run granted geolocation when the parent rerenders", async () => {
+		mockGeoState.current = {
+			status: "granted",
+			lat: -1.2921,
+			lng: 36.8219,
+			accuracy: 10,
+		};
+		mockReverseLocation.mockResolvedValue({
+			locationName: "Nairobi, Kenya",
+			country: "KE",
+		});
+		const firstOnChange = vi.fn();
+		const { rerender } = render(
+			<LocationPicker onChange={firstOnChange} value={undefined} />,
+		);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+		expect(mockReverseLocation).toHaveBeenCalledTimes(1);
+
+		rerender(<LocationPicker onChange={vi.fn()} value={undefined} />);
+
+		await act(async () => {
+			await Promise.resolve();
+		});
+		expect(mockReverseLocation).toHaveBeenCalledTimes(1);
+	});
+
 	it("shows the reverse error and calls onChange(undefined) when locationSchema parse fails", async () => {
 		mockReverseLocation.mockResolvedValue({
 			locationName: "x".repeat(201),

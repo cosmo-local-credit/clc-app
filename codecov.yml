@@ -16,6 +16,10 @@ coverage:
         target: auto
         threshold: 1%
 
+bundle_analysis:
+  warning_threshold: "5%"
+  status: informational
+
 flags:
   web:
     paths:
@@ -30,3 +34,4 @@ comment:
   layout: "reach,diff,flags,files"
   behavior: default
   require_changes: true
+  require_bundle_changes: true

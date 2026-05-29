@@ -92,7 +92,7 @@ export async function searchLocations(
 
 		const body = (await response.json()) as ArcgisSearchResponse;
 		return (body.candidates ?? [])
-			.map((candidate) => {
+			.map((candidate): GeocodeSuggestion | null => {
 				const lat = candidate.location?.y;
 				const lng = candidate.location?.x;
 				if (typeof lat !== "number" || typeof lng !== "number") return null;
@@ -107,12 +107,13 @@ export async function searchLocations(
 					) ?? candidate.address;
 				if (!address) return null;
 
+				const country = normalizeCountryCode(candidate.attributes?.Country);
 				return {
 					address,
 					lat,
 					lng,
 					score: candidate.score ?? 0,
-					country: normalizeCountryCode(candidate.attributes?.Country),
+					...(country ? { country } : {}),
 				};
 			})
 			.filter(

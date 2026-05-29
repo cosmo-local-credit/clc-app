@@ -34,6 +34,11 @@ jobs:
       - name: Test — web (with coverage)
         run: pnpm --filter @clc/web exec vitest run --coverage --passWithNoTests
 
+      - name: Build web bundle analysis
+        run: pnpm --filter @clc/web build
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Upload coverage — core
         uses: codecov/codecov-action@v5
         with:
