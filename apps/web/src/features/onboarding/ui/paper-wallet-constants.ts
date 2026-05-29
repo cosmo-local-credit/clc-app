@@ -16,5 +16,9 @@ export const PAPER_WALLET_EXPORT_PIXEL_RATIO = 2;
  */
 export const PAPER_WALLET_PREVIEW_SCALE = 0.52;
 
-/** Caps the preview at the usable width of a 430 px phone viewport. */
-export const PAPER_WALLET_PREVIEW_MAX_SCALE = 0.64;
+/**
+ * The preview always fills the available width up to the card's native size.
+ * Capping below 1 made the card narrower than the w-full controls beside it
+ * on viewports wider than ~430 px, causing edge misalignment.
+ */
+export const PAPER_WALLET_PREVIEW_MAX_SCALE = 1;
