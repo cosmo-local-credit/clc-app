@@ -106,20 +106,20 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 	}
 
 	return (
-		<div className="flex min-h-screen flex-col bg-background">
-			<div className="flex flex-col px-6 pb-12 pt-12">
+		<div className="flex min-h-[100svh] flex-col bg-background">
+			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
 				<button
 					type="button"
 					onClick={onBack}
-					className="mb-8 flex items-center gap-1.5 self-start text-sm text-muted-foreground hover:text-foreground"
+					className="-ml-2 mb-3 flex h-11 items-center gap-1.5 self-start px-2 text-sm text-muted-foreground hover:text-foreground"
 					aria-label="Back"
 				>
 					<ArrowLeft className="size-4" />
 					Back
 				</button>
 
-				<div className="mb-6 space-y-1">
-					<h1 className="font-heading text-2xl font-semibold">
+				<div className="mb-5 space-y-1">
+					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
 						Your paper wallet
 					</h1>
 					<p className="text-sm text-muted-foreground">
@@ -152,7 +152,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 						<Button
 							className="h-11 w-full"
 							onClick={() => upgradeAndLink.mutate()}
-							disabled={isUpgrading || isLinked}
+							disabled={!acked || isUpgrading || isLinked}
 						>
 							{isUpgrading ? (
 								<LoaderCircle className="mr-2 size-4 animate-spin" />

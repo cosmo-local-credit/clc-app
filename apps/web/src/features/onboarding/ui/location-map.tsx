@@ -1,11 +1,12 @@
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "#/lib/utils";
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
+const MARKER_COLOR = "#166534";
 
 type LocationMapProps = {
 	lat?: number | null;
@@ -50,6 +51,28 @@ export function LocationMap({
 		interactiveRef.current = interactive;
 	}, [interactive]);
 
+	const setMarker = useCallback(
+		(map: MapLibreGL.Map, nextLat: number, nextLng: number) => {
+			if (markerRef.current) {
+				markerRef.current.setLngLat([nextLng, nextLat]);
+				return;
+			}
+
+			markerRef.current = new MapLibreGL.Marker({
+				color: MARKER_COLOR,
+				draggable: interactiveRef.current,
+			})
+				.setLngLat([nextLng, nextLat])
+				.addTo(map);
+			markerRef.current.on("dragend", () => {
+				const markerLngLat = markerRef.current?.getLngLat();
+				if (!markerLngLat) return;
+				onLocationChangeRef.current?.(markerLngLat.lat, markerLngLat.lng);
+			});
+		},
+		[],
+	);
+
 	useEffect(() => {
 		if (!maptilerStyle || failed || !containerRef.current || mapRef.current) {
 			return;
@@ -67,14 +90,20 @@ export function LocationMap({
 		const center: [number, number] = hasLocation
 			? [initialLocation.lng as number, initialLocation.lat as number]
 			: [NAIROBI.lng, NAIROBI.lat];
-		const map = new MapLibreGL.Map({
-			container: containerRef.current,
-			style: maptilerStyle,
-			center,
-			zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
-			interactive: true,
-			attributionControl: false,
-		});
+		let map: MapLibreGL.Map;
+		try {
+			map = new MapLibreGL.Map({
+				container: containerRef.current,
+				style: maptilerStyle,
+				center,
+				zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
+				interactive: isInteractive,
+				attributionControl: false,
+			});
+		} catch {
+			setFailed(true);
+			return;
+		}
 
 		mapRef.current = map;
 		map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
@@ -92,28 +121,10 @@ export function LocationMap({
 			}
 		}
 
-		function setMarker(nextLat: number, nextLng: number) {
-			if (markerRef.current) {
-				markerRef.current.setLngLat([nextLng, nextLat]);
-				return;
-			}
-			markerRef.current = new MapLibreGL.Marker({
-				color: "#166534",
-				draggable: isInteractive,
-			})
-				.setLngLat([nextLng, nextLat])
-				.addTo(map);
-			markerRef.current.on("dragend", () => {
-				const markerLngLat = markerRef.current?.getLngLat();
-				if (!markerLngLat) return;
-				onLocationChangeRef.current?.(markerLngLat.lat, markerLngLat.lng);
-			});
-		}
-
 		function handleMapClick(event: MapMouseEvent) {
 			if (!isInteractive) return;
 			const { lat: clickLat, lng: clickLng } = event.lngLat;
-			setMarker(clickLat, clickLng);
+			setMarker(map, clickLat, clickLng);
 			onLocationChangeRef.current?.(clickLat, clickLng);
 		}
 
@@ -124,20 +135,19 @@ export function LocationMap({
 		function handleLoad() {
 			const pending = pendingRef.current;
 			if (pending) {
-				setMarker(pending.lat, pending.lng);
+				setMarker(map, pending.lat, pending.lng);
 				flyToPin(pending.lat, pending.lng);
 				pendingRef.current = null;
 				return;
 			}
 			if (hasLocation) {
-				setMarker(initialLocation.lat as number, initialLocation.lng as number);
+				setMarker(
+					map,
+					initialLocation.lat as number,
+					initialLocation.lng as number,
+				);
 				flyToPin(initialLocation.lat as number, initialLocation.lng as number);
 			}
-		}
-
-		function handleError() {
-			removeMap();
-			setFailed(true);
 		}
 
 		if (isInteractive) {
@@ -145,15 +155,13 @@ export function LocationMap({
 			map.on("click", handleMapClick);
 		}
 		map.on("load", handleLoad);
-		map.on("error", handleError);
 
 		return () => {
 			if (isInteractive) map.off("click", handleMapClick);
 			map.off("load", handleLoad);
-			map.off("error", handleError);
 			removeMap();
 		};
-	}, [failed, maptilerStyle]);
+	}, [failed, maptilerStyle, setMarker]);
 
 	useEffect(() => {
 		const map = mapRef.current;
@@ -164,21 +172,7 @@ export function LocationMap({
 				pendingRef.current = { lat, lng };
 				return;
 			}
-			if (markerRef.current) {
-				markerRef.current.setLngLat([lng, lat]);
-			} else {
-				markerRef.current = new MapLibreGL.Marker({
-					color: "#166534",
-					draggable: interactive,
-				})
-					.setLngLat([lng, lat])
-					.addTo(map);
-				markerRef.current.on("dragend", () => {
-					const markerLngLat = markerRef.current?.getLngLat();
-					if (!markerLngLat) return;
-					onLocationChangeRef.current?.(markerLngLat.lat, markerLngLat.lng);
-				});
-			}
+			setMarker(map, lat, lng);
 			map.flyTo({ center: [lng, lat], zoom: PIN_ZOOM });
 			pendingRef.current = null;
 			return;
@@ -187,7 +181,7 @@ export function LocationMap({
 		pendingRef.current = null;
 		markerRef.current?.remove();
 		markerRef.current = null;
-	}, [interactive, lat, lng]);
+	}, [lat, lng, setMarker]);
 
 	if (!maptilerStyle || failed) return null;
 

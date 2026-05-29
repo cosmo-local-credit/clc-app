@@ -117,7 +117,7 @@ export function LandingPage() {
 			<div className="flex flex-col items-center gap-5 text-center">
 				<CLCLogo className="size-20" />
 				<div className="space-y-1">
-					<h1 className="font-heading text-[1.75rem] font-semibold leading-tight">
+					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
 						CLC
 					</h1>
 					<p className="text-sm text-muted-foreground">

@@ -6,14 +6,13 @@ import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { tanstackSerwistPlugin } from "./plugins/serwist";
 
-function loadWranglerViteVars() {
-	const configPath = resolve(
-		dirname(fileURLToPath(import.meta.url)),
-		"../../wrangler.toml",
-	);
+const webRoot = dirname(fileURLToPath(import.meta.url));
+
+function loadWranglerViteVars(localEnv: Record<string, string>) {
+	const configPath = resolve(webRoot, "../../wrangler.toml");
 	let activeSection = "";
 	let config = "";
 	try {
@@ -38,34 +37,39 @@ function loadWranglerViteVars() {
 		if (!match) continue;
 
 		const [, key, value] = match;
-		if (key && value !== undefined && !process.env[key]) {
+		if (key && value !== undefined && !process.env[key] && !localEnv[key]) {
 			process.env[key] = value;
 		}
 	}
 }
 
-loadWranglerViteVars();
+const config = defineConfig(({ mode }) => {
+	const localEnv = loadEnv(mode, webRoot, "VITE_");
+	loadWranglerViteVars(localEnv);
 
-const fullReactErrors = process.env.VITE_FULL_REACT_ERRORS === "true";
+	const fullReactErrors =
+		(process.env.VITE_FULL_REACT_ERRORS ?? localEnv.VITE_FULL_REACT_ERRORS) ===
+		"true";
 
-const config = defineConfig({
-	environments: fullReactErrors
-		? {
-				client: {
-					build: { minify: false, sourcemap: true },
-					define: { "process.env.NODE_ENV": JSON.stringify("development") },
-				},
-			}
-		: {},
-	resolve: { tsconfigPaths: true },
-	plugins: [
-		devtools(),
-		nitro(),
-		tailwindcss(),
-		tanstackStart(),
-		viteReact(),
-		tanstackSerwistPlugin(),
-	],
+	return {
+		environments: fullReactErrors
+			? {
+					client: {
+						build: { minify: false, sourcemap: true },
+						define: { "process.env.NODE_ENV": JSON.stringify("development") },
+					},
+				}
+			: {},
+		resolve: { tsconfigPaths: true },
+		plugins: [
+			devtools(),
+			nitro(),
+			tailwindcss(),
+			tanstackStart(),
+			viteReact(),
+			tanstackSerwistPlugin(),
+		],
+	};
 });
 
 export default config;

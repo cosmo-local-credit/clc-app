@@ -69,13 +69,16 @@ describe("profileSchema", () => {
 		).toBe(true);
 	});
 
-	it("rejects a missing location", () => {
+	it("rejects a missing location with a user-facing message", () => {
 		const result = profileSchema.safeParse({
 			name: "Alice",
 			email: "alice@example.com",
 			phone: "",
 		});
 		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe("Choose a location");
+		}
 	});
 
 	it("rejects an invalid location country code", () => {

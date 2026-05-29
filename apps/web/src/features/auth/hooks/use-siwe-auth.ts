@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { SiweMessage } from "siwe";
+import { createSiweMessage } from "viem/siwe";
 import { useAccount } from "wagmi";
 import { signMessage } from "wagmi/actions";
 
@@ -41,7 +41,7 @@ export function useSiweAuth() {
 		try {
 			const nonce = await getSiweNonce();
 
-			const siweMsg = new SiweMessage({
+			const message = createSiweMessage({
 				domain: window.location.host,
 				address,
 				statement: "Sign in to CLC App",
@@ -50,7 +50,6 @@ export function useSiweAuth() {
 				chainId: chainId ?? 42220,
 				nonce,
 			});
-			const message = siweMsg.prepareMessage();
 			// Use wagmi/actions signMessage to access the config store directly.
 			// This avoids ConnectorNotConnectedError when called immediately after
 			// connect() resolves — the React hook state lags one render behind.

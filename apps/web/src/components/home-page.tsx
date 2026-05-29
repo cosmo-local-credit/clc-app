@@ -22,13 +22,13 @@ export function HomePage() {
 	}
 
 	return (
-		<div className="flex min-h-screen flex-col bg-background px-6 pb-12 pt-20">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
+		<div className="flex min-h-[100svh] flex-col bg-background px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+			<div className="mb-6 flex flex-col items-center gap-4 text-center">
 				<div className="flex size-14 items-center justify-center rounded-2xl border border-border bg-foreground p-2">
 					<CLCLogo className="size-10" />
 				</div>
 				<div className="space-y-1">
-					<h1 className="font-heading text-2xl font-semibold">
+					<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
 						Wallet connected
 					</h1>
 					<p className="text-sm text-muted-foreground">

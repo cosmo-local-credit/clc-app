@@ -36,6 +36,7 @@ vi.mock("./location-picker", () => ({
 	LocationPicker: ({
 		value,
 		onChange,
+		error,
 	}: {
 		value:
 			| {
@@ -55,6 +56,7 @@ vi.mock("./location-picker", () => ({
 				  }
 				| undefined,
 		) => void;
+		error?: string;
 	}) => (
 		<div data-testid="location-picker">
 			<span>{value?.locationName ?? "No location"}</span>
@@ -71,6 +73,7 @@ vi.mock("./location-picker", () => ({
 			>
 				choose location
 			</button>
+			{error ? <p>{error}</p> : null}
 		</div>
 	),
 }));
@@ -182,6 +185,18 @@ describe("OnboardingProfileForm submission", () => {
 		expect(mockOnNext).not.toHaveBeenCalled();
 	});
 
+	it("does not show the location error when unrelated fields change", async () => {
+		render(<OnboardingProfileForm onNext={vi.fn()} />);
+
+		await act(async () => {
+			fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+				target: { value: "Alice" },
+			});
+		});
+
+		expect(screen.queryByText(/choose a location/i)).toBeNull();
+	});
+
 	it("does not call onNext until a valid location is set", async () => {
 		const mockOnNext = vi.fn();
 		render(<OnboardingProfileForm onNext={mockOnNext} />);
@@ -198,5 +213,6 @@ describe("OnboardingProfileForm submission", () => {
 		});
 
 		expect(mockOnNext).not.toHaveBeenCalled();
+		expect(screen.getByText(/choose a location/i)).toBeTruthy();
 	});
 });

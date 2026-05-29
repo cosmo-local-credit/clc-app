@@ -266,7 +266,7 @@ describe("OnboardingWalletStep link flow", () => {
 		mockPickPasskeyProvider.mockReturnValue("google");
 	});
 
-	it("clicking Link wallet to Google passkey calls upgradeAndLink.mutate", () => {
+	it("disables passkey linking before acknowledging the saved key", () => {
 		render(
 			<OnboardingWalletStep
 				profileData={PROFILE}
@@ -274,6 +274,21 @@ describe("OnboardingWalletStep link flow", () => {
 				onDone={mockOnDone}
 			/>,
 		);
+
+		expect(
+			screen.getByRole("button", { name: /link wallet to google passkey/i }),
+		).toHaveProperty("disabled", true);
+	});
+
+	it("clicking Link wallet to Google passkey after acknowledging calls upgradeAndLink.mutate", () => {
+		render(
+			<OnboardingWalletStep
+				profileData={PROFILE}
+				onBack={mockOnBack}
+				onDone={mockOnDone}
+			/>,
+		);
+		fireEvent.click(screen.getByRole("checkbox"));
 		fireEvent.click(
 			screen.getByRole("button", { name: /link wallet to google passkey/i }),
 		);
