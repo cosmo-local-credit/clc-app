@@ -24,6 +24,9 @@ export const wagmiConfig = createConfig({
 	transports: {
 		[celo.id]: http(PUBLIC_RPC_URL),
 	},
+	// Defer wagmi's onMount() to useEffect so it never fires during SSR render,
+	// preventing the synchronous store mutation that causes React 19 to throw.
+	ssr: true,
 	storage,
 	connectors: [pkConnector, caliburConnector],
 });
