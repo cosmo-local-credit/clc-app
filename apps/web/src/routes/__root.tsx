@@ -160,12 +160,26 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		if (typeof window === "undefined") return;
 		if (!("serviceWorker" in navigator)) return;
 
+		if (import.meta.env.DEV) {
+			void navigator.serviceWorker
+				.getRegistrations()
+				.then((registrations) =>
+					Promise.all(
+						registrations.map((registration) => registration.unregister()),
+					),
+				)
+				.catch((err) => {
+					console.error("[sw] unregister failed", err);
+				});
+			return;
+		}
+
 		let cancelled = false;
 		void (async () => {
-			const { Serwist } = await import("@serwist/window");
-			if (cancelled) return;
-			const serwist = new Serwist("/sw.js", { scope: "/", type: "module" });
 			try {
+				const { Serwist } = await import("@serwist/window");
+				if (cancelled) return;
+				const serwist = new Serwist("/sw.js", { scope: "/", type: "module" });
 				await serwist.register();
 			} catch (err) {
 				console.error("[sw] registration failed", err);

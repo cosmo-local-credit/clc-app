@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    name: Test & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm check
+
+      - name: Test — core (with coverage)
+        run: pnpm --filter @clc/core exec vitest run --coverage
+
+      - name: Test — web (with coverage)
+        run: pnpm --filter @clc/web exec vitest run --coverage --passWithNoTests
+
+      - name: Upload coverage — core
+        uses: codecov/codecov-action@v5
+        with:
+          files: packages/core/coverage/lcov.info
+          flags: core
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage — web
+        uses: codecov/codecov-action@v5
+        with:
+          files: apps/web/coverage/lcov.info
+          flags: web
+          token: ${{ secrets.CODECOV_TOKEN }}

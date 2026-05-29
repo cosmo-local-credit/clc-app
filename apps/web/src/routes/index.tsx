@@ -7,9 +7,7 @@ import { LandingPage } from "#/features/onboarding/ui/landing-page";
 export const Route = createFileRoute("/")({ component: IndexPage });
 
 function IndexPage() {
-	const { isConnected, status } = useAccount();
-
-	if (status === "connecting" || status === "reconnecting") return null;
+	const { isConnected } = useAccount();
 
 	if (isConnected) return <HomePage />;
 	return <LandingPage />;

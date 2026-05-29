@@ -14,5 +14,16 @@ export default defineConfig({
 				ssr: { enabled: true },
 			},
 		},
+		coverage: {
+			provider: "v8",
+			reporter: ["lcov", "text", "json-summary"],
+			reportsDirectory: "./coverage",
+			include: ["src/**/*.{ts,tsx}"],
+			exclude: [
+				"src/**/*.test.{ts,tsx}",
+				"src/**/*.d.ts",
+				"src/routeTree.gen.ts",
+			],
+		},
 	},
 });

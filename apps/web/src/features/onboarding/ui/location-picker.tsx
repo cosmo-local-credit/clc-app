@@ -1,6 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { TbCurrentLocation } from "react-icons/tb";
 
@@ -11,13 +11,19 @@ import {
 	searchLocations,
 } from "#/features/onboarding/api/geo-client";
 
-import { LocationMap } from "./location-map";
+import { LocationMap } from "./location-map.lazy";
 import { useBrowserGeolocation } from "./use-browser-geolocation";
 
 type LocationPickerProps = {
 	value: LocationInput | undefined;
 	onChange: (value: LocationInput | undefined) => void;
 	error?: string;
+};
+
+type PlacePinOptions = {
+	locationNameHint?: string;
+	clearSuggestions?: boolean;
+	updateSearchInput?: boolean;
 };
 
 const REVERSE_ERROR = "Couldn't identify a country here. Try a nearby spot.";
@@ -38,50 +44,24 @@ export function LocationPicker({
 	const searchAbortRef = useRef<AbortController | null>(null);
 	const reverseAbortRef = useRef<AbortController | null>(null);
 	const reverseRequestRef = useRef(0);
+	const skipNextSearchRef = useRef(false);
 	const geolocation = useBrowserGeolocation();
 
 	useEffect(() => {
-		if (value) {
-			setPin({ lat: value.lat, lng: value.lng });
-		}
+		setPin(value ? { lat: value.lat, lng: value.lng } : null);
 	}, [value]);
 
-	useEffect(() => {
-		if (query.trim().length < 3) {
-			searchAbortRef.current?.abort();
-			setSuggestions([]);
-			setSearching(false);
-			return;
-		}
-
-		setSearching(true);
-		const timeout = setTimeout(() => {
-			searchAbortRef.current?.abort();
-			const controller = new AbortController();
-			searchAbortRef.current = controller;
-			void searchLocations(query.trim(), controller.signal).then((results) => {
-				if (controller.signal.aborted) return;
-				setSuggestions(results.slice(0, 5));
-				setSearching(false);
-			});
-		}, 400);
-
-		return () => {
-			clearTimeout(timeout);
-		};
-	}, [query]);
-
-	useEffect(() => {
-		return () => {
-			searchAbortRef.current?.abort();
-			reverseAbortRef.current?.abort();
-		};
+	const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
+		skipNextSearchRef.current = true;
+		setQuery(nextQuery);
 	}, []);
 
 	const placePin = useCallback(
-		(lat: number, lng: number) => {
+		(lat: number, lng: number, options: PlacePinOptions = {}) => {
 			setPin({ lat, lng });
-			setSuggestions([]);
+			if (options.clearSuggestions !== false) {
+				setSuggestions([]);
+			}
 			setReverseError(null);
 			setReversePending(true);
 			onChange(undefined);
@@ -109,7 +89,7 @@ export function LocationPicker({
 				const parsed = locationSchema.safeParse({
 					lat,
 					lng,
-					locationName: result.locationName,
+					locationName: options.locationNameHint ?? result.locationName,
 					country: result.country,
 				});
 				if (!parsed.success) {
@@ -119,11 +99,54 @@ export function LocationPicker({
 				}
 
 				setReverseError(null);
+				if (options.updateSearchInput !== false) {
+					setSearchQueryFromLocation(parsed.data.locationName);
+				}
 				onChange(parsed.data);
 			});
 		},
-		[onChange],
+		[onChange, setSearchQueryFromLocation],
 	);
+
+	useEffect(() => {
+		searchAbortRef.current?.abort();
+		if (skipNextSearchRef.current) {
+			skipNextSearchRef.current = false;
+			setSuggestions([]);
+			setSearching(false);
+			return;
+		}
+
+		const trimmedQuery = query.trim();
+		if (trimmedQuery.length < 3) {
+			setSuggestions([]);
+			setSearching(false);
+			return;
+		}
+
+		setSearching(true);
+		const controller = new AbortController();
+		searchAbortRef.current = controller;
+		const timeout = setTimeout(() => {
+			void searchLocations(trimmedQuery, controller.signal).then((results) => {
+				if (controller.signal.aborted) return;
+				setSuggestions(results.slice(0, 4));
+				setSearching(false);
+			});
+		}, 400);
+
+		return () => {
+			controller.abort();
+			clearTimeout(timeout);
+		};
+	}, [query]);
+
+	useEffect(() => {
+		return () => {
+			searchAbortRef.current?.abort();
+			reverseAbortRef.current?.abort();
+		};
+	}, []);
 
 	useEffect(() => {
 		if (geolocation.state.status === "granted") {
@@ -135,8 +158,7 @@ export function LocationPicker({
 		geolocation.state.status === "denied" ||
 		geolocation.state.status === "unavailable";
 	const geoRequesting = geolocation.state.status === "requesting";
-	const placeLabel = value?.locationName;
-	const shownError = reverseError ?? error;
+	const shownError = reverseError ?? (reversePending ? undefined : error);
 
 	return (
 		<div className="space-y-3">
@@ -147,19 +169,21 @@ export function LocationPicker({
 				<div className="relative mt-1.5">
 					<Input
 						id="location-search"
-						type="search"
+						type="text"
 						role="searchbox"
 						autoComplete="off"
 						placeholder="Search for a town or place"
 						value={query}
-						onChange={(event) => setQuery(event.target.value)}
+						onChange={(event) => {
+							skipNextSearchRef.current = false;
+							setQuery(event.target.value);
+						}}
 						className="bg-card pr-10"
 						aria-invalid={!!shownError}
-						aria-label="Place search"
 					/>
 					<button
 						type="button"
-						className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center text-muted-foreground disabled:pointer-events-none disabled:opacity-50"
+						className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
 						onClick={geolocation.request}
 						disabled={geoUnavailable || geoRequesting}
 						aria-label={
@@ -187,8 +211,10 @@ export function LocationPicker({
 								aria-selected="false"
 								className="block w-full px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
 								onClick={() => {
-									setQuery(suggestion.address);
-									placePin(suggestion.lat, suggestion.lng);
+									setSearchQueryFromLocation(suggestion.address);
+									placePin(suggestion.lat, suggestion.lng, {
+										locationNameHint: suggestion.address,
+									});
 								}}
 							>
 								{suggestion.address}
@@ -202,21 +228,25 @@ export function LocationPicker({
 				<p className="text-xs text-muted-foreground">Searching places…</p>
 			) : null}
 
-			<LocationMap
-				lat={pin?.lat ?? null}
-				lng={pin?.lng ?? null}
-				interactive
-				onLocationChange={placePin}
-			/>
+			<Suspense
+				fallback={
+					<output className="block h-52 w-full rounded-xl border border-border bg-card">
+						<span className="sr-only">Loading location map</span>
+					</output>
+				}
+			>
+				<LocationMap
+					lat={pin?.lat ?? null}
+					lng={pin?.lng ?? null}
+					interactive
+					onLocationChange={placePin}
+				/>
+			</Suspense>
 
 			{reversePending ? (
 				<output className="text-sm text-muted-foreground">
 					Identifying location…
 				</output>
-			) : placeLabel ? (
-				<p className="rounded-xl border border-border bg-card p-3 text-sm">
-					{placeLabel}
-				</p>
 			) : null}
 
 			{shownError ? (

@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
@@ -9,7 +9,10 @@ const {
 	MockNavigationControl,
 	MockAttributionControl,
 } = vi.hoisted(() => {
-	type MapHandler = (event?: { lngLat: { lat: number; lng: number } }) => void;
+	type MapHandler = (event?: {
+		lngLat?: { lat: number; lng: number };
+		error?: Error;
+	}) => void;
 	type MockMapOptions = {
 		container: HTMLElement;
 		style: string;
@@ -60,6 +63,10 @@ const {
 
 		triggerClick(lat: number, lng: number) {
 			this.handlers.get("click")?.({ lngLat: { lat, lng } });
+		}
+
+		triggerError(error = new Error("tile failed")) {
+			this.handlers.get("error")?.({ error });
 		}
 	}
 
@@ -178,6 +185,27 @@ describe("LocationMap", () => {
 		expect(onLocationChange).toHaveBeenNthCalledWith(2, -1.28, 36.83);
 	});
 
+	it("keeps the map mounted for non-fatal errors after the style has loaded", () => {
+		render(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+		mapInstances[0]?.triggerLoad();
+
+		mapInstances[0]?.triggerError();
+
+		expect(screen.getByLabelText("Location map")).toBeTruthy();
+		expect(mapInstances[0]?.remove).not.toHaveBeenCalled();
+	});
+
+	it("keeps the map mounted for recoverable errors before load", () => {
+		render(<LocationMap interactive />);
+
+		act(() => {
+			mapInstances[0]?.triggerError(new Error("tile failed"));
+		});
+
+		expect(screen.getByLabelText("Location map")).toBeTruthy();
+		expect(mapInstances[0]?.remove).not.toHaveBeenCalled();
+	});
+
 	it("removes map and marker on cleanup", () => {
 		const { unmount } = render(
 			<LocationMap interactive lat={-1.2921} lng={36.8219} />,
@@ -188,5 +216,32 @@ describe("LocationMap", () => {
 
 		expect(markerInstances[0]?.remove).toHaveBeenCalled();
 		expect(mapInstances[0]?.remove).toHaveBeenCalled();
+	});
+
+	it("renders nothing when VITE_MAPTILER_KEY is absent", () => {
+		vi.stubEnv("VITE_MAPTILER_KEY", "");
+		const { container } = render(<LocationMap />);
+		expect(container.firstChild).toBeNull();
+		expect(mapInstances).toHaveLength(0);
+	});
+
+	it("renders nothing when WebGL is not supported", () => {
+		vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+		const { container } = render(<LocationMap />);
+		expect(container.firstChild).toBeNull();
+		expect(mapInstances).toHaveLength(0);
+	});
+
+	it("updates the marker and flies to new coordinates when lat/lng props change after load", () => {
+		const { rerender } = render(<LocationMap interactive />);
+		mapInstances[0]?.triggerLoad();
+
+		rerender(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+
+		expect(markerInstances[0]?.coordinates).toEqual([36.8219, -1.2921]);
+		expect(mapInstances[0]?.flyTo).toHaveBeenCalledWith({
+			center: [36.8219, -1.2921],
+			zoom: 13,
+		});
 	});
 });

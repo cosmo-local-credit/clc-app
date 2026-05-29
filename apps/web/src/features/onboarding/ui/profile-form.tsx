@@ -51,16 +51,20 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 	});
 
 	return (
-		<div className="flex min-h-screen flex-col bg-background">
-			<div className="flex flex-col px-6 pb-12 pt-20">
-				<div className="mb-10 space-y-4">
-					<Button variant="ghost" className="h-11 w-fit px-0" onClick={onBack}>
+		<div className="flex min-h-[100svh] flex-col bg-background">
+			<div className="flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)]">
+				<div className="mb-6 space-y-3">
+					<Button
+						variant="ghost"
+						className="-ml-2 h-11 w-fit px-2"
+						onClick={onBack}
+					>
 						<ArrowLeft className="mr-2 size-4" />
 						Back
 					</Button>
 
 					<div className="space-y-1">
-						<h1 className="font-heading text-2xl font-semibold">
+						<h1 className="font-heading text-[1.75rem] font-bold leading-tight">
 							Tell us about yourself
 						</h1>
 						<p className="text-sm text-muted-foreground">
@@ -164,11 +168,19 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
 						{(field) => {
 							const err = getFieldError(field.state.meta.errors);
 							return (
-								<LocationPicker
-									value={field.state.value}
-									onChange={(next) => field.handleChange(next)}
-									error={err ?? undefined}
-								/>
+								<form.Subscribe selector={(s) => s.submissionAttempts}>
+									{(submissionAttempts) => (
+										<LocationPicker
+											value={field.state.value}
+											onChange={(next) => field.handleChange(next)}
+											error={
+												field.state.meta.isTouched || submissionAttempts > 0
+													? (err ?? undefined)
+													: undefined
+											}
+										/>
+									)}
+								</form.Subscribe>
 							);
 						}}
 					</form.Field>

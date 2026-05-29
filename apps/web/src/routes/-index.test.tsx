@@ -43,12 +43,11 @@ import { HomePage } from "#/components/home-page";
 import { LandingPage } from "#/features/onboarding/ui/landing-page";
 
 function IndexPage() {
-	const { isConnected, status } = mockUseAccount() as {
+	const { isConnected } = mockUseAccount() as {
 		isConnected: boolean;
 		status: string;
 		address?: `0x${string}`;
 	};
-	if (status === "connecting" || status === "reconnecting") return null;
 	if (isConnected) return <HomePage />;
 	return <LandingPage />;
 }
@@ -81,24 +80,24 @@ describe("IndexPage routing", () => {
 		expect(screen.getByText(/wallet connected/i)).toBeTruthy();
 	});
 
-	it("renders nothing while reconnecting", () => {
+	it("renders LandingPage while reconnecting without a connected account", () => {
 		mockUseAccount.mockReturnValue({
 			isConnected: false,
 			status: "reconnecting",
 			address: undefined,
 		});
-		const { container } = render(<IndexPage />);
-		expect(container.firstChild).toBeNull();
+		render(<IndexPage />);
+		expect(screen.getByTestId("landing-page")).toBeTruthy();
 	});
 
-	it("renders nothing while connecting", () => {
+	it("renders LandingPage while connecting without a connected account", () => {
 		mockUseAccount.mockReturnValue({
 			isConnected: false,
 			status: "connecting",
 			address: undefined,
 		});
-		const { container } = render(<IndexPage />);
-		expect(container.firstChild).toBeNull();
+		render(<IndexPage />);
+		expect(screen.getByTestId("landing-page")).toBeTruthy();
 	});
 });
 
