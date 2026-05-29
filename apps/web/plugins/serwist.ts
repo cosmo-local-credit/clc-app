@@ -79,6 +79,8 @@ async function buildServiceWorker(rootDir: string, production: boolean) {
 				swDest,
 				globDirectory: outDir,
 				globPatterns: ["**/*.{js,css,html,png,svg,ico,webmanifest,woff,woff2}"],
+				// _worker.js/ is the Cloudflare Pages server bundle — not a static asset
+				globIgnores: ["_worker.js/**"],
 				injectionPoint: "self.__SW_MANIFEST",
 			});
 
