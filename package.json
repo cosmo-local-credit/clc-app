@@ -13,6 +13,8 @@
 		"preview": "pnpm --filter @clc/web preview",
 		"preview:cf": "wrangler pages dev apps/web/dist",
 		"test": "pnpm -r test",
+		"test:e2e": "pnpm --filter @clc/web test:e2e",
+		"test:e2e:bs": "pnpm --filter @clc/web test:e2e:bs",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"check": "biome check ."
