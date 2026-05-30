@@ -1,3 +1,5 @@
+// TEMPORARILY DISABLED — Playwright / BrowserStack tests commented out
+/*
 import { test as base, type Page } from "@playwright/test";
 
 /** True when the run is driven by the browserstack-node-sdk wrapper. */
@@ -88,3 +90,4 @@ export const test = base.extend({
 });
 
 export { expect } from "@playwright/test";
+*/

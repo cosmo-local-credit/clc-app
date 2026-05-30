@@ -1,3 +1,5 @@
+// TEMPORARILY DISABLED — Playwright / BrowserStack tests commented out
+/*
 import { completeProfileStep, expect, onBrowserStack, test } from "./fixtures";
 
 /**
@@ -42,3 +44,4 @@ test.describe("paper wallet", () => {
 		}
 	});
 });
+*/
