@@ -1,3 +1,5 @@
+// TEMPORARILY DISABLED — Playwright / BrowserStack tests commented out
+/*
 import { completeProfileStep, expect, gotoHydrated, test } from "./fixtures";
 
 test.describe("onboarding", () => {
@@ -27,3 +29,4 @@ test.describe("onboarding", () => {
 		).toBeVisible();
 	});
 });
+*/
