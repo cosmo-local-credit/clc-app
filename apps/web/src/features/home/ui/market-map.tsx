@@ -3,6 +3,7 @@ import MapLibreGL, {
 	type MapLayerMouseEvent,
 } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
+import { RiCupLine, RiShoppingBagLine, RiToolsLine } from "react-icons/ri";
 
 import { cn } from "#/lib/utils";
 import type { MarketLocation, MarketLocationKind } from "./market-data";
@@ -46,6 +47,12 @@ const markerImageIds: Record<MarketLocationKind, string> = {
 	shop: "market-shop",
 	service: "market-service",
 };
+
+function MarkerGlyph({ kind }: { kind: MarketLocationKind }) {
+	if (kind === "eatery") return <RiCupLine className="size-3.5" aria-hidden="true" />;
+	if (kind === "shop") return <RiShoppingBagLine className="size-3.5" aria-hidden="true" />;
+	return <RiToolsLine className="size-3.5" aria-hidden="true" />;
+}
 
 type MarketMapProps = {
 	locations: MarketLocation[];
@@ -285,6 +292,7 @@ export function MarketMap({
 			if (typeof clusterId !== "number") return;
 			const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
 			void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
+				if (!feature) return;
 				const coordinates =
 					feature.geometry.type === "Point"
 						? feature.geometry.coordinates

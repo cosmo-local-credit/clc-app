@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
 import { HomePage } from "#/components/home-page";
@@ -16,8 +17,13 @@ function IndexPage() {
 	const { isConnected } = useAccount();
 	const { tab } = Route.useSearch();
 	const navigate = Route.useNavigate();
+	const [mounted, setMounted] = useState(false);
 
-	if (isConnected) {
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (mounted && isConnected) {
 		return (
 			<HomePage
 				activeTab={tab}

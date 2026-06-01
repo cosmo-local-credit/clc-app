@@ -43,7 +43,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
 			) : (
 				<div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
 					<main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
-						{currentTab === "wallet" ? <WalletPage address={address} /> : null}
+						{currentTab === "wallet" ? <WalletPage /> : null}
 						{currentTab === "activity" ? <UndonePage tab="activity" /> : null}
 						{currentTab === "pool" ? <UndonePage tab="pool" /> : null}
 						{currentTab === "settings" ? (
