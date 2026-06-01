@@ -77,7 +77,7 @@ describe("IndexPage routing", () => {
 		});
 		render(<IndexPage />);
 		expect(screen.queryByTestId("landing-page")).toBeNull();
-		expect(screen.getByText(/wallet connected/i)).toBeTruthy();
+		expect(screen.getByText(/KSh 12,840/i)).toBeTruthy();
 	});
 
 	it("renders LandingPage while reconnecting without a connected account", () => {
@@ -110,15 +110,17 @@ describe("HomePage", () => {
 		});
 	});
 
-	it("shows the connected address", () => {
+	it("shows the connected address in settings", () => {
 		render(<HomePage />);
+		fireEvent.click(screen.getByRole("button", { name: /settings/i }));
 		expect(
 			screen.getByText(/0x1234567890abcdef1234567890abcdef12345678/i),
 		).toBeTruthy();
 	});
 
-	it("clears auth state and disconnects when signing out", async () => {
+	it("clears auth state and disconnects from settings", async () => {
 		render(<HomePage />);
+		fireEvent.click(screen.getByRole("button", { name: /settings/i }));
 		fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
 		expect(mockClearAuthToken).toHaveBeenCalledTimes(1);
 		expect(mockDisconnectAsync).toHaveBeenCalledTimes(1);

@@ -146,7 +146,7 @@ beforeEach(() => {
 });
 
 describe("LocationMap", () => {
-	it("creates a MapLibre map with the MapTiler style and required controls", () => {
+	it("creates a MapLibre map with the MapTiler style and navigation control", () => {
 		render(<LocationMap />);
 
 		expect(mapInstances).toHaveLength(1);
@@ -157,7 +157,7 @@ describe("LocationMap", () => {
 		expect(mapInstances[0]?.options.zoom).toBe(5);
 		expect(
 			mapInstances[0]?.controls.map((control) => control.position),
-		).toEqual(["bottom-right", "bottom-left"]);
+		).toEqual(["bottom-right"]);
 	});
 
 	it("places a pending marker after style load and flies to zoom 13", () => {
