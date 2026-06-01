@@ -107,10 +107,6 @@ export function LocationMap({
 
 		mapRef.current = map;
 		map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
-		map.addControl(
-			new MapLibreGL.AttributionControl({ compact: true }),
-			"bottom-left",
-		);
 
 		function removeMap() {
 			markerRef.current?.remove();

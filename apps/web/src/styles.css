@@ -108,6 +108,19 @@ body {
 	color: var(--color-foreground);
 }
 
+.market-map-fallback {
+	background-color: var(--color-card);
+	background-image:
+		linear-gradient(90deg, color-mix(in oklch, var(--color-border) 70%, transparent) 1px, transparent 1px),
+		linear-gradient(color-mix(in oklch, var(--color-border) 70%, transparent) 1px, transparent 1px);
+	background-size: 3rem 3rem;
+}
+
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-logo {
+	display: none !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
