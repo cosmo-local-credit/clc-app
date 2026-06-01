@@ -58,10 +58,10 @@ export function MarketPage() {
 
 			{selectedLocation ? <MarketPreview location={selectedLocation} /> : null}
 
-			<div className="absolute right-4 bottom-[calc(8.5rem+env(safe-area-inset-bottom))] z-20 flex flex-col gap-3">
-				<button
-					type="button"
-					className="flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground disabled:text-muted-foreground"
+			<div className="absolute right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex">
+				<Button
+					size="icon-lg"
+					className="h-11 w-11 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
 					aria-label={locationButtonLabel}
 					disabled={
 						geolocation.state.status === "requesting" ||
@@ -71,7 +71,7 @@ export function MarketPage() {
 					onClick={geolocation.request}
 				>
 					<RiFocus3Line className="size-5" aria-hidden="true" />
-				</button>
+				</Button>
 			</div>
 
 			<div className="absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
