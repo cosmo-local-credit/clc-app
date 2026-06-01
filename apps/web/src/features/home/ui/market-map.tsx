@@ -360,13 +360,13 @@ export function MarketMap({
 
 	useEffect(() => {
 		const map = mapRef.current;
-		if (!map || !loaded || !selectedLocationId) return;
+		if (!map || !loaded || !selectedLocationId || userLocation) return;
 		const selected = locations.find(
 			(location) => location.id === selectedLocationId,
 		);
 		if (!selected) return;
 		map.flyTo({ center: [selected.lng, selected.lat], zoom: MARKET_ZOOM });
-	}, [loaded, locations, selectedLocationId]);
+	}, [loaded, locations, selectedLocationId, userLocation]);
 
 	if (!maptilerStyle || failed) {
 		return (
