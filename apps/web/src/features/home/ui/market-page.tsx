@@ -74,8 +74,8 @@ export function MarketPage() {
 				</Button>
 			</div>
 
-			<div className="absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
-				<Button className="h-11 px-5">
+			<div className="pointer-events-none absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
+				<Button className="pointer-events-auto h-11 px-5">
 					<RiListUnordered className="mr-2 size-4" aria-hidden="true" />
 					Browse all
 				</Button>
