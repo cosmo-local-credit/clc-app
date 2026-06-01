@@ -49,8 +49,10 @@ const markerImageIds: Record<MarketLocationKind, string> = {
 };
 
 function MarkerGlyph({ kind }: { kind: MarketLocationKind }) {
-	if (kind === "eatery") return <RiCupLine className="size-3.5" aria-hidden="true" />;
-	if (kind === "shop") return <RiShoppingBagLine className="size-3.5" aria-hidden="true" />;
+	if (kind === "eatery")
+		return <RiCupLine className="size-3.5" aria-hidden="true" />;
+	if (kind === "shop")
+		return <RiShoppingBagLine className="size-3.5" aria-hidden="true" />;
 	return <RiToolsLine className="size-3.5" aria-hidden="true" />;
 }
 
