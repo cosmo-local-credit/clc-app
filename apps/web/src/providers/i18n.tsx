@@ -87,10 +87,18 @@ function persistLocale(locale: SupportedLocale) {
 }
 
 export function AppI18nProvider({ children }: { children: ReactNode }) {
-	const [locale, setLocaleState] = useState<SupportedLocale>(readStoredLocale);
-	const [loading, setLoading] = useState(locale !== DEFAULT_LOCALE);
+	// Always start with DEFAULT_LOCALE so server and first client render match.
+	// The stored preference is read in an effect after hydration.
+	const [locale, setLocaleState] = useState<SupportedLocale>(DEFAULT_LOCALE);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const activeLocaleRef = useRef<SupportedLocale>(DEFAULT_LOCALE);
+
+	// Restore persisted locale after hydration to avoid server/client mismatch.
+	useEffect(() => {
+		const stored = readStoredLocale();
+		if (stored !== DEFAULT_LOCALE) setLocaleState(stored);
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
