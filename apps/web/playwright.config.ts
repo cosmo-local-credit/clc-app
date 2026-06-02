@@ -23,10 +23,14 @@ export default defineConfig({
 		screenshot: "only-on-failure",
 	},
 	projects: [
-		{ name: "pixel-7", use: { ...devices["Pixel 7"] } },
+		{ name: "pixel-7", use: { ...devices["Pixel 7"], channel: "chrome" } },
 		{
 			name: "iphone-14",
-			use: { ...devices["iPhone 14"], browserName: "chromium" },
+			use: {
+				...devices["iPhone 14"],
+				browserName: "chromium",
+				channel: "chrome",
+			},
 		},
 	],
 	webServer: undefined,
