@@ -1,18 +1,13 @@
 name: E2E + Visual (Percy)
 
-# Runs on every push to master and on PRs. Percy uploads snapshots when
-# PERCY_TOKEN is set — without it the suite still runs but skips uploads.
+# Manual-only while E2E/Percy is disabled for CI.
 on:
-  push:
-    branches: [master]
   workflow_dispatch:
     inputs:
       base_url:
         description: "URL to test (e.g. a Cloudflare preview deployment)"
         required: false
         default: "https://app.cosmolocal.credit"
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   e2e:
