@@ -1,3 +1,4 @@
+import "maplibre-gl/dist/maplibre-gl.css";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
 

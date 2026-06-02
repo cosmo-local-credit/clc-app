@@ -1,9 +1,14 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 
 import { OnboardingProfileForm } from "./onboarding-profile-form";
-import { OnboardingWalletStep } from "./onboarding-wallet-step";
+
+const OnboardingWalletStep = lazy(() =>
+	import("./onboarding-wallet-step").then((module) => ({
+		default: module.OnboardingWalletStep,
+	})),
+);
 
 type Step = "profile" | "wallet";
 
@@ -21,13 +26,15 @@ export function OnboardingFlow() {
 
 	if (step === "wallet" && profileData) {
 		return (
-			<OnboardingWalletStep
-				profileData={profileData}
-				onBack={() => setStep("profile")}
-				onDone={() => {
-					void navigate({ to: "/", replace: true });
-				}}
-			/>
+			<Suspense fallback={<OnboardingStepFallback />}>
+				<OnboardingWalletStep
+					profileData={profileData}
+					onBack={() => setStep("profile")}
+					onDone={() => {
+						void navigate({ to: "/", replace: true });
+					}}
+				/>
+			</Suspense>
 		);
 	}
 
@@ -39,4 +46,8 @@ export function OnboardingFlow() {
 			}}
 		/>
 	);
+}
+
+function OnboardingStepFallback() {
+	return <div className="min-h-[100svh] bg-background" />;
 }

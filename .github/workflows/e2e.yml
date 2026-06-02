@@ -47,6 +47,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The SDK's yauzl-based zip extraction produces a truncated binary (~91 KB
+      # short). Pre-download with curl+unzip so the binary is correct, and cache
+      # it so subsequent runs skip the 37 MB download entirely.
+      - name: Cache BrowserStack SDK CLI binary
+        id: bs-cli-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.browserstack/cli
+          key: bs-cli-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/web/package.json') }}
+
+      - name: Install BrowserStack SDK CLI binary
+        if: steps.bs-cli-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.browserstack/cli"
+          BINARY_URL=$(curl -fsS \
+            'https://api.browserstack.com/sdk/v1/update_cli?sdk_version=1.55.5&os=linux&os_arch=x64&cli_version=0&sdk_language=node' \
+            -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['url'])")
+          echo "Downloading BrowserStack CLI from: $BINARY_URL"
+          curl -fsSL -o /tmp/bs-cli.zip "$BINARY_URL"
+          unzip -qo /tmp/bs-cli.zip -d "$HOME/.browserstack/cli/"
+          chmod +x "$HOME/.browserstack/cli/binary-"*
+
       # Browsers run remotely on BrowserStack; nothing to install locally.
       # browserstackLocal is false — tests target the live deployment.
       - name: Run e2e on BrowserStack

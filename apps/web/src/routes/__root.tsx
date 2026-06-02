@@ -1,14 +1,11 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
@@ -34,6 +31,14 @@ import {
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import appCss from "../styles.css?url";
+
+const AppDevtools = import.meta.env.DEV
+	? lazy(() =>
+			import("#/components/devtools").then((module) => ({
+				default: module.AppDevtools,
+			})),
+		)
+	: null;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 	{
@@ -199,19 +204,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				{children}
 				<Toaster richColors closeButton />
-				<TanStackDevtools
-					config={{ position: "bottom-right" }}
-					plugins={[
-						{
-							name: "Tanstack Router",
-							render: <TanStackRouterDevtoolsPanel />,
-						},
-						{
-							name: "Tanstack Query",
-							render: <ReactQueryDevtoolsPanel />,
-						},
-					]}
-				/>
+				{AppDevtools ? (
+					<Suspense fallback={null}>
+						<AppDevtools />
+					</Suspense>
+				) : null}
 				<Scripts />
 			</body>
 		</html>
