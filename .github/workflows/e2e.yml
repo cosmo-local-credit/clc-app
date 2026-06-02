@@ -18,12 +18,11 @@ on:
 jobs:
   browserstack:
     name: Playwright on BrowserStack
-    # TEMPORARILY DISABLED — restore original condition to re-enable
-    if: false
-    # if: >
-    #   github.event_name == 'push' ||
-    #   github.event_name == 'workflow_dispatch' ||
-    #   contains(github.event.pull_request.labels.*.name, 'e2e')
+    # Run on push to master, manual dispatch, or PRs labelled "e2e".
+    if: >
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'e2e')
     runs-on: ubuntu-latest
 
     steps:
