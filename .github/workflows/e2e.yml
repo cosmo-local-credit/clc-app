@@ -1,8 +1,7 @@
-name: E2E (BrowserStack)
+name: E2E + Visual (Percy)
 
-# Runs on every push to master (against the live deployment) and on demand.
-# Also runs on PRs labelled "e2e" so you can validate changes before they ship.
-# Tests target a deployed build — see playwright.config.ts for why.
+# Runs on every push to master and on PRs. Percy uploads snapshots when
+# PERCY_TOKEN is set — without it the suite still runs but skips uploads.
 on:
   push:
     branches: [master]
@@ -13,26 +12,14 @@ on:
         required: false
         default: "https://app.cosmolocal.credit"
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  browserstack:
-    name: Playwright on BrowserStack
-    # Run on push to master, manual dispatch, or PRs labelled "e2e".
-    if: >
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'e2e')
+  e2e:
+    name: Playwright + Percy
     runs-on: ubuntu-latest
 
     steps:
-      - name: BrowserStack env setup
-        uses: browserstack/github-actions/setup-env@master
-        with:
-          username: ${{ secrets.BROWSERSTACK_USERNAME }}
-          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          project-name: clc-app
-
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v6
@@ -47,34 +34,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The SDK's yauzl-based zip extraction produces a truncated binary (~91 KB
-      # short). Pre-download with curl+unzip so the binary is correct, and cache
-      # it so subsequent runs skip the 37 MB download entirely.
-      - name: Cache BrowserStack SDK CLI binary
-        id: bs-cli-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.browserstack/cli
-          key: bs-cli-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('apps/web/package.json') }}
+      - name: Install Playwright browsers
+        run: pnpm --filter @clc/web exec playwright install chromium --with-deps
 
-      - name: Install BrowserStack SDK CLI binary
-        if: steps.bs-cli-cache.outputs.cache-hit != 'true'
-        run: |
-          set -euo pipefail
-          mkdir -p "$HOME/.browserstack/cli"
-          BINARY_URL=$(curl -fsS \
-            'https://api.browserstack.com/sdk/v1/update_cli?sdk_version=1.55.5&os=linux&os_arch=x64&cli_version=0&sdk_language=node' \
-            -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)['url'])")
-          echo "Downloading BrowserStack CLI from: $BINARY_URL"
-          curl -fsSL -o /tmp/bs-cli.zip "$BINARY_URL"
-          unzip -qo /tmp/bs-cli.zip -d "$HOME/.browserstack/cli/"
-          chmod +x "$HOME/.browserstack/cli/binary-"*
-
-      # Browsers run remotely on BrowserStack; nothing to install locally.
-      # browserstackLocal is false — tests target the live deployment.
-      - name: Run e2e on BrowserStack
-        run: pnpm --filter @clc/web test:e2e:bs
+      - name: Run E2E tests with Percy
+        run: pnpm --filter @clc/web test:e2e:percy
         env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
           BASE_URL: ${{ github.event.inputs.base_url || 'https://app.cosmolocal.credit' }}
-          BUILD_NUMBER: ${{ github.run_number }}

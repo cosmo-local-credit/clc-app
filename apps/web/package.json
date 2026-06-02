@@ -13,7 +13,7 @@
 		"test": "vitest run --passWithNoTests",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
-		"test:e2e:bs": "BROWSERSTACK=1 browserstack-node-sdk playwright test",
+		"test:e2e:percy": "percy exec -- playwright test",
 		"check": "tsc --noEmit"
 	},
 	"dependencies": {
@@ -70,9 +70,9 @@
 		"@types/react-dom": "^19.2.0",
 		"@vitejs/plugin-react": "^6.0.1",
 		"@vitest/coverage-v8": "^4.1.7",
-		"browserstack-node-sdk": "^1.55.5",
+		"@percy/cli": "^1.31.14",
+		"@percy/playwright": "^1.1.0",
 		"jsdom": "^28.1.0",
-		"playwright": "^1.59.1",
 		"vite": "^8.0.0",
 		"vitest": "^4.1.7"
 	}

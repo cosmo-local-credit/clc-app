@@ -9,10 +9,8 @@
  *   - WebAuthn / passkey flows (TC-12, TC-20, TC-21, TC-23, TC-30)
  *   - Real camera QR scanning (TC-13, TC-14, TC-16)
  *   - localStorage corruption edge case (TC-29)
- *
- * These tests run on both local device emulation and BrowserStack real
- * devices. The `BROWSERSTACK` env var controls which mode is active.
  */
+import percySnapshot from "@percy/playwright";
 import {
 	completeProfileStep,
 	connectViaOnboarding,
@@ -40,6 +38,8 @@ test.describe("landing page", () => {
 		await expect(
 			page.getByRole("button", { name: "Advanced options" }),
 		).toBeVisible();
+
+		await percySnapshot(page, "Landing page");
 	});
 
 	test('"Create an account" navigates to /onboarding (TC-02)', async ({
@@ -91,6 +91,8 @@ test.describe("onboarding profile form", () => {
 		await expect(
 			page.getByRole("button", { name: "Download card" }),
 		).toBeVisible();
+
+		await percySnapshot(page, "Onboarding — paper wallet step");
 	});
 });
 
@@ -173,6 +175,8 @@ test.describe("paper wallet step", () => {
 
 		// Connected address should be visible
 		await expect(page.locator('[data-slot="address"]')).toBeVisible();
+
+		await percySnapshot(page, "Home — connected wallet");
 	});
 });
 

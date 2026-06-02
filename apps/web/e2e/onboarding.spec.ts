@@ -1,6 +1,7 @@
 /**
  * Onboarding — profile form validation and navigation.
  */
+import percySnapshot from "@percy/playwright";
 import { completeProfileStep, expect, gotoHydrated, test } from "./fixtures";
 
 test.describe("onboarding profile", () => {
@@ -15,6 +16,8 @@ test.describe("onboarding profile", () => {
 		await expect(
 			page.getByRole("heading", { name: "Your paper wallet" }),
 		).toBeHidden();
+
+		await percySnapshot(page, "Onboarding — profile form validation");
 	});
 
 	test("completes the profile and reaches the paper wallet step", async ({
