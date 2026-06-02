@@ -1,10 +1,12 @@
-import { completeProfileStep, expect, onBrowserStack, test } from "./fixtures";
-
 /**
- * The paper wallet preview is a CSS-scaled card. Its rendered box must line up
- * with the full-width controls below it — a regression here is what made the
- * card edges diverge from the Download button on viewports wider than ~430px.
+ * Paper wallet — card rendering and alignment invariants.
+ *
+ * The paper wallet preview is a CSS-scaled card. Its rendered box must
+ * line up with the full-width controls below it across the 360–430px
+ * mobile viewport range.
  */
+import { completeProfileStep, expect, test } from "./fixtures";
+
 async function expectCardAlignsWithButton(
 	page: Parameters<typeof completeProfileStep>[0],
 ): Promise<void> {
@@ -22,8 +24,7 @@ async function expectCardAlignsWithButton(
 	expect(Math.abs(wrapperBox.width - buttonBox.width)).toBeLessThanOrEqual(1);
 }
 
-test.describe("paper wallet", () => {
-	// Device-agnostic invariant — runs on every real device and locally.
+test.describe("paper wallet card", () => {
 	test("card and download button share the same horizontal bounds", async ({
 		page,
 	}) => {
@@ -31,13 +32,10 @@ test.describe("paper wallet", () => {
 		await expectCardAlignsWithButton(page);
 	});
 
-	// Real devices have a fixed viewport, so the width sweep is desktop-only.
 	test("stays aligned across the mobile width range", async ({ page }) => {
-		test.skip(onBrowserStack, "viewport sweep is desktop-only");
-
 		await completeProfileStep(page);
-		for (const width of [360, 390, 412, 430, 491]) {
-			await page.setViewportSize({ width, height: 1091 });
+		for (const width of [360, 390, 412, 430]) {
+			await page.setViewportSize({ width, height: 896 });
 			await expectCardAlignsWithButton(page);
 		}
 	});

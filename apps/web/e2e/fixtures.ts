@@ -1,18 +1,20 @@
 import { test as base, type Page } from "@playwright/test";
 
-/** True when the run is driven by the browserstack-node-sdk wrapper. */
-export const onBrowserStack = process.env.BROWSERSTACK === "1";
-
 /**
  * Navigate and wait for the client to hydrate.
  *
  * TanStack Start streams the SSR response, so the document never reaches
- * `load`/`domcontentloaded` — navigate with `commit` instead. Then block until
- * hydration finishes: typing into a controlled input before React attaches its
- * listeners updates the DOM but not component state, so the search never fires.
- * TanStack flips `window.$_TSR.hydrated` (and later deletes `$_TSR`) on hydrate.
+ * `load`/`domcontentloaded` — navigate with `commit` instead. Then block
+ * until hydration finishes: TanStack flips `window.$_TSR.hydrated` (and
+ * later deletes `$_TSR`) on hydrate.
  */
 export async function gotoHydrated(page: Page, path: string): Promise<void> {
+	// TanStack Start streams the SSR response so the document may never
+	// fire `load`/`domcontentloaded`. Navigate with `commit` (document
+	// parsed), wait for TanStack Router hydration flag, then give React
+	// enough time to mount and attach event handlers to the delegation
+	// root. Buttons are visible in the DOM before React mounts; clicks
+	// before that point are silently ignored.
 	await page.goto(path, { waitUntil: "commit" });
 	await page.waitForFunction(
 		() => {
@@ -23,15 +25,16 @@ export async function gotoHydrated(page: Page, path: string): Promise<void> {
 		null,
 		{ timeout: 20_000 },
 	);
+	// Empirically, React needs ~2s after the TSR hydration flag flips.
+	await page.waitForTimeout(2500);
 }
 
 /**
  * Fills the onboarding profile form and advances to the paper wallet step.
  *
- * The location field is geocoder-backed (ArcGIS World Geocoder), so the helper
- * types a query, waits for the suggestion listbox, picks the first result, then
- * waits for the reverse-geocode to resolve before submitting — otherwise the
- * form has no valid location and Continue won't advance.
+ * The location field is geocoder-backed (ArcGIS World Geocoder), so the
+ * helper types a query, waits for the suggestion listbox, picks the first
+ * result, then waits for the reverse-geocode to resolve before submitting.
  */
 export async function completeProfileStep(page: Page): Promise<void> {
 	await gotoHydrated(page, "/onboarding");
@@ -61,30 +64,43 @@ export async function completeProfileStep(page: Page): Promise<void> {
 }
 
 /**
- * Base test extended to report pass/fail back to the BrowserStack dashboard via
- * the browserstack_executor channel. No-op on local runs.
+ * Connect with a paper wallet through the onboarding flow, returning to
+ * the home page as a connected user. Useful as a setup step for tests
+ * that need an authenticated session.
  */
-export const test = base.extend({
-	page: async ({ page }, use, testInfo) => {
-		await use(page);
+export async function connectViaOnboarding(page: Page): Promise<void> {
+	await completeProfileStep(page);
 
-		if (!onBrowserStack) return;
+	// Acknowledge key saved
+	await page.getByLabel("I have saved this key").check();
 
-		const passed = testInfo.status === testInfo.expectedStatus;
-		const payload = {
-			action: "setSessionStatus",
-			arguments: {
-				status: passed ? "passed" : "failed",
-				reason: passed ? "Test passed" : (testInfo.error?.message ?? "failed"),
-			},
-		};
-		await page
-			.evaluate(
-				() => undefined,
-				`browserstack_executor: ${JSON.stringify(payload)}`,
-			)
-			.catch(() => undefined);
-	},
-});
+	// Click the paper-wallet-only continue button
+	const continueButton = page.getByRole("button", {
+		name: /Continue with paper wallet only|Continue to wallet/,
+	});
+	await continueButton.click();
+
+	// Wait for home page to appear (connected state)
+	await page
+		.getByRole("heading", { name: "Wallet" })
+		.waitFor({ state: "visible", timeout: 20_000 });
+}
+
+/**
+ * Sign out from the home page and return to the landing page.
+ */
+export async function signOut(page: Page): Promise<void> {
+	// Navigate to settings tab
+	await page.getByRole("button", { name: "Settings" }).click();
+
+	// Click sign out
+	await page.getByRole("button", { name: "Sign out" }).click();
+
+	// Wait for landing page
+	await page
+		.getByRole("heading", { name: "CLC" })
+		.waitFor({ state: "visible", timeout: 10_000 });
+}
 
 export { expect } from "@playwright/test";
+export const test = base;

@@ -1,8 +1,9 @@
-// TEMPORARILY DISABLED — Playwright / BrowserStack tests commented out
-/*
+/**
+ * Onboarding — profile form validation and navigation.
+ */
 import { completeProfileStep, expect, gotoHydrated, test } from "./fixtures";
 
-test.describe("onboarding", () => {
+test.describe("onboarding profile", () => {
 	test("does not advance when the form is empty", async ({ page }) => {
 		await gotoHydrated(page, "/onboarding");
 		await page.getByRole("button", { name: "Continue" }).click();
@@ -28,5 +29,17 @@ test.describe("onboarding", () => {
 			page.getByRole("button", { name: "Download card" }),
 		).toBeVisible();
 	});
+
+	test("shows phone input field with country selector", async ({ page }) => {
+		await gotoHydrated(page, "/onboarding");
+
+		// The phone input should be present
+		const phoneInput = page.getByLabel("Phone number");
+		await expect(phoneInput).toBeVisible();
+
+		// Should accept phone number input
+		await phoneInput.fill("+254712345678");
+		// Phone lib normalizes away the leading +; assert the numeric value
+		await expect(phoneInput).toHaveValue(/2547/);
+	});
 });
-*/
