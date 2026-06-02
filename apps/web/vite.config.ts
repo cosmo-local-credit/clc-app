@@ -44,7 +44,7 @@ function loadWranglerViteVars(localEnv: Record<string, string>) {
 	}
 }
 
-const config = defineConfig(({ mode }) => {
+const config = defineConfig(({ mode, command }) => {
 	const localEnv = loadEnv(mode, webRoot, "VITE_");
 	loadWranglerViteVars(localEnv);
 
@@ -64,7 +64,7 @@ const config = defineConfig(({ mode }) => {
 		environments,
 		resolve: { tsconfigPaths: true },
 		plugins: [
-			devtools(),
+			...(command === "serve" ? [devtools()] : []),
 			nitro(),
 			tailwindcss(),
 			tanstackStart(),

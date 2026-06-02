@@ -78,9 +78,12 @@ async function buildServiceWorker(rootDir: string, production: boolean) {
 				swSrc: swDest,
 				swDest,
 				globDirectory: outDir,
-				globPatterns: ["**/*.{js,css,html,png,svg,ico,webmanifest,woff,woff2}"],
-				// _worker.js/ is the Cloudflare Pages server bundle — not a static asset
+				globPatterns: ["**/*.{js,css,html,png,svg,ico,webmanifest}"],
+				// _worker.js/ is the Cloudflare Pages server bundle — not a static asset.
+				// Large route/vendor chunks and fonts are better fetched on demand on slow
+				// connections; the browser cache will keep what the user actually visits.
 				globIgnores: ["_worker.js/**"],
+				maximumFileSizeToCacheInBytes: 300 * 1024,
 				injectionPoint: "self.__SW_MANIFEST",
 			});
 

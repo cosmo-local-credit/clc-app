@@ -1,3 +1,4 @@
+import "maplibre-gl/dist/maplibre-gl.css";
 import MapLibreGL, {
 	type GeoJSONSource,
 	type MapLayerMouseEvent,
