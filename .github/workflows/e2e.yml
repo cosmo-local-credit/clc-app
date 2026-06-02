@@ -26,6 +26,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: BrowserStack env setup
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          project-name: clc-app
+
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v6
@@ -41,10 +48,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Browsers run remotely on BrowserStack; nothing to install locally.
+      # browserstackLocal is false — tests target the live deployment.
       - name: Run e2e on BrowserStack
         run: pnpm --filter @clc/web test:e2e:bs
         env:
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           BASE_URL: ${{ github.event.inputs.base_url || 'https://app.cosmolocal.credit' }}
           BUILD_NUMBER: ${{ github.run_number }}
