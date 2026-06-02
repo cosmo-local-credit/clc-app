@@ -1,8 +1,10 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
+import { OnboardingLanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
@@ -14,6 +16,7 @@ type Props = {
 };
 
 export function PaperWalletCreate({ onBack }: Props) {
+	const { t } = useLingui();
 	const keyRef = useRef<`0x${string}` | null>(null);
 	if (!keyRef.current) keyRef.current = generatePrivateKey();
 	const key = keyRef.current;
@@ -25,7 +28,7 @@ export function PaperWalletCreate({ onBack }: Props) {
 	const { card, controls, downloadButton } = usePaperWalletSetup({
 		address,
 		qrUrl,
-		defaultName: "Paper wallet",
+		defaultName: t`Paper wallet`,
 	});
 
 	const [acked, setAcked] = useState(false);
@@ -41,32 +44,35 @@ export function PaperWalletCreate({ onBack }: Props) {
 		} catch (err) {
 			clearPrivateKey();
 			setConnectError(
-				err instanceof Error ? err.message : "Connection failed.",
+				err instanceof Error ? err.message : t`Connection failed.`,
 			);
 			setConnecting(false);
 		}
 	}
 
 	return (
-		<div className="flex min-h-[100svh] flex-col bg-background">
+		<div className="relative flex min-h-[100svh] flex-col bg-background">
+			<OnboardingLanguageSelector />
 			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<button
 					type="button"
 					onClick={onBack}
 					className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
-					aria-label="Go back"
+					aria-label={t`Go back`}
 				>
 					<ArrowLeft className="size-4" />
-					Back
+					<Trans>Back</Trans>
 				</button>
 
 				<div className="mb-5 space-y-1">
 					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-						Your paper wallet
+						<Trans>Your paper wallet</Trans>
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						Download or photograph this card. Anyone who scans the QR code will
-						have full access to this wallet.
+						<Trans>
+							Download or photograph this card. Anyone who scans the QR code
+							will have full access to this wallet.
+						</Trans>
 					</p>
 				</div>
 
@@ -84,7 +90,9 @@ export function PaperWalletCreate({ onBack }: Props) {
 						className="mt-0.5 size-4 cursor-pointer accent-primary"
 					/>
 					<span className="text-muted-foreground text-sm">
-						I have saved this key. If lost, my wallet cannot be recovered.
+						<Trans>
+							I have saved this key. If lost, my wallet cannot be recovered.
+						</Trans>
 					</span>
 				</label>
 
@@ -96,7 +104,7 @@ export function PaperWalletCreate({ onBack }: Props) {
 					{connecting ? (
 						<LoaderCircle className="mr-2 size-4 animate-spin" />
 					) : null}
-					{connecting ? "Connecting..." : "Continue"}
+					{connecting ? t`Connecting...` : t`Continue`}
 				</Button>
 				{connectError ? (
 					<p className="mt-2 text-destructive text-xs">{connectError}</p>

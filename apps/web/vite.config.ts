@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codecovVitePlugin } from "@codecov/vite-plugin";
+import { lingui } from "@lingui/vite-plugin";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -69,6 +71,8 @@ const config = defineConfig(({ mode, command }) => {
 			tailwindcss(),
 			tanstackStart(),
 			viteReact(),
+			babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
+			lingui(),
 			tanstackSerwistPlugin(),
 			codecovVitePlugin({
 				enableBundleAnalysis: process.env.CI === "true",

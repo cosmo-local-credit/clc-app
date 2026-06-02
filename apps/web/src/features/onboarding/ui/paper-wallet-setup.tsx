@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import { toPng } from "html-to-image";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +41,7 @@ export function usePaperWalletSetup({
 	qrUrl,
 	defaultName,
 }: UsePaperWalletSetupProps): PaperWalletSetupSlots {
+	const { t } = useLingui();
 	const cardRef = useRef<HTMLDivElement>(null);
 	const previewHostRef = useRef<HTMLDivElement>(null);
 	const [customization, setCustomization] = useState<PaperWalletCustomization>(
@@ -53,7 +55,7 @@ export function usePaperWalletSetup({
 	const [previewScale, setPreviewScale] = useState(PAPER_WALLET_PREVIEW_SCALE);
 	const [downloading, setDownloading] = useState(false);
 	const [downloadError, setDownloadError] = useState<string | null>(null);
-	const fallbackName = defaultName.trim() || "Paper wallet";
+	const fallbackName = defaultName.trim() || t`Paper wallet`;
 	const normalizedCustomization = useMemo<PaperWalletCustomization>(
 		() => ({
 			name: customization.name.trim() || fallbackName,
@@ -104,7 +106,7 @@ export function usePaperWalletSetup({
 			a.download = `clc-wallet-${address.slice(2, 10)}.png`;
 			a.click();
 		} catch {
-			setDownloadError("Download failed. Try a screenshot instead.");
+			setDownloadError(t`Download failed. Try a screenshot instead.`);
 		} finally {
 			setDownloading(false);
 		}
@@ -153,14 +155,14 @@ export function usePaperWalletSetup({
 				className="mt-4 h-11 w-full"
 				onClick={handleDownload}
 				disabled={downloading}
-				aria-label="Download card"
+				aria-label={t`Download card`}
 			>
 				{downloading ? (
 					<FiLoader className="mr-2 size-4 animate-spin" />
 				) : (
 					<FiDownload className="mr-2 size-4" />
 				)}
-				{downloading ? "Preparing..." : "Download card"}
+				{downloading ? t`Preparing...` : t`Download card`}
 			</Button>
 			{downloadError ? (
 				<p className="mt-2 text-destructive text-xs">{downloadError}</p>
