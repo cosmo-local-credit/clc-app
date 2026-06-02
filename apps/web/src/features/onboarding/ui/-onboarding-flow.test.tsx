@@ -103,11 +103,11 @@ describe("OnboardingFlow step transitions", () => {
 		expect(screen.queryByTestId("wallet-step")).toBeNull();
 	});
 
-	it("moves to the wallet step after profile form submits", () => {
+	it("moves to the wallet step after profile form submits", async () => {
 		render(<OnboardingFlow />);
 		fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
 		expect(screen.queryByTestId("profile-form")).toBeNull();
-		expect(screen.getByTestId("wallet-step")).toBeTruthy();
+		expect(await screen.findByTestId("wallet-step")).toBeTruthy();
 	});
 
 	it("passes profile data to the wallet step", () => {
