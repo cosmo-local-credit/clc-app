@@ -1,10 +1,12 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
+import { OnboardingLanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
@@ -34,6 +36,7 @@ type Props = {
 };
 
 export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
+	const { t } = useLingui();
 	const keyRef = useRef<`0x${string}` | null>(null);
 	if (!keyRef.current) keyRef.current = generatePrivateKey();
 	const pk = keyRef.current;
@@ -82,11 +85,11 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 					setLinkConnectError(
 						err instanceof Error
 							? err.message
-							: "Passkey linked, but wallet connection failed.",
+							: t`Passkey linked, but wallet connection failed.`,
 					);
 				});
 		}
-	}, [upgradeStep, onDone]);
+	}, [upgradeStep, onDone, t]);
 
 	async function handleContinue() {
 		setConnecting(true);
@@ -99,32 +102,35 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 		} catch (err) {
 			clearPrivateKey();
 			setConnectError(
-				err instanceof Error ? err.message : "Connection failed.",
+				err instanceof Error ? err.message : t`Connection failed.`,
 			);
 			setConnecting(false);
 		}
 	}
 
 	return (
-		<div className="flex min-h-[100svh] flex-col bg-background">
+		<div className="relative flex min-h-[100svh] flex-col bg-background">
+			<OnboardingLanguageSelector />
 			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<button
 					type="button"
 					onClick={onBack}
 					className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
-					aria-label="Back"
+					aria-label={t`Back`}
 				>
 					<ArrowLeft className="size-4" />
-					Back
+					<Trans>Back</Trans>
 				</button>
 
 				<div className="mb-5 space-y-1">
 					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-						Your paper wallet
+						<Trans>Your paper wallet</Trans>
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						Download or photograph this card. Anyone who scans the QR code will
-						have full access to this wallet.
+						<Trans>
+							Download or photograph this card. Anyone who scans the QR code
+							will have full access to this wallet.
+						</Trans>
 					</p>
 				</div>
 
@@ -137,13 +143,15 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 				<label className="mt-6 flex cursor-pointer items-start gap-3">
 					<input
 						type="checkbox"
-						aria-label="I have saved this key"
+						aria-label={t`I have saved this key`}
 						checked={acked}
 						onChange={(e) => setAcked(e.target.checked)}
 						className="mt-0.5 size-4 cursor-pointer accent-primary"
 					/>
 					<span className="text-muted-foreground text-sm">
-						I have saved this key. If lost, my wallet cannot be recovered.
+						<Trans>
+							I have saved this key. If lost, my wallet cannot be recovered.
+						</Trans>
 					</span>
 				</label>
 
@@ -160,10 +168,10 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 								<ProviderIcon className="mr-2 size-4" />
 							)}
 							{isUpgrading
-								? "Linking passkey..."
+								? t`Linking passkey...`
 								: isLinked
-									? "Passkey linked"
-									: `Link wallet to ${providerLabel} passkey`}
+									? t`Passkey linked`
+									: t`Link wallet to ${providerLabel} passkey`}
 						</Button>
 					) : null}
 
@@ -184,10 +192,10 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 							<LoaderCircle className="mr-2 inline size-4 animate-spin" />
 						) : null}
 						{connecting
-							? "Opening paper wallet..."
+							? t`Opening paper wallet...`
 							: available
-								? "Continue with paper wallet only"
-								: "Continue to wallet"}
+								? t`Continue with paper wallet only`
+								: t`Continue to wallet`}
 					</button>
 					{connectError ? (
 						<p className="text-destructive text-xs">{connectError}</p>

@@ -4,17 +4,22 @@ import { fileURLToPath } from "node:url";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockScanFile, mockClear } = vi.hoisted(() => ({
-	mockScanFile: vi.fn(),
-	mockClear: vi.fn(),
-}));
+const { mockScanFile, mockClear, mockGetCameras, mockStart } = vi.hoisted(
+	() => ({
+		mockScanFile: vi.fn(),
+		mockClear: vi.fn(),
+		mockGetCameras: vi.fn(),
+		mockStart: vi.fn(),
+	}),
+);
 
 vi.mock("html5-qrcode", () => {
 	return {
 		Html5Qrcode: class {
+			static getCameras = mockGetCameras;
 			scanFile = mockScanFile;
 			clear = mockClear;
-			start = vi.fn().mockResolvedValue(undefined);
+			start = mockStart;
 			stop = vi.fn().mockResolvedValue(undefined);
 			isScanning = false;
 			getState = vi.fn(() => 0);
@@ -39,6 +44,12 @@ describe("PaperWalletScanner", () => {
 		onCancel.mockReset();
 		mockScanFile.mockReset();
 		mockClear.mockReset();
+		mockGetCameras.mockReset();
+		mockStart.mockReset();
+		mockGetCameras.mockResolvedValue([
+			{ id: "camera-1", label: "Back Camera" },
+		]);
+		mockStart.mockResolvedValue(undefined);
 	});
 
 	it("returns to choose mode when Back is clicked", () => {
@@ -53,6 +64,24 @@ describe("PaperWalletScanner", () => {
 
 		expect(screen.getByRole("button", { name: /scan qr code/i })).toBeTruthy();
 		expect(screen.getByRole("button", { name: /upload image/i })).toBeTruthy();
+	});
+
+	it("offers image upload when camera access is denied", async () => {
+		mockStart.mockRejectedValueOnce(
+			new DOMException("Permission denied", "NotAllowedError"),
+		);
+
+		render(
+			<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />,
+		);
+
+		await act(() => {
+			fireEvent.click(screen.getByRole("button", { name: /scan qr code/i }));
+		});
+
+		expect(
+			screen.getByRole("button", { name: /upload image instead/i }),
+		).toBeTruthy();
 	});
 
 	it("decodes a QR code from an uploaded image and calls onKeyDecoded", async () => {

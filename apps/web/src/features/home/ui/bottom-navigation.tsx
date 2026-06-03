@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import {
 	RiGroupLine,
@@ -17,37 +18,42 @@ export function BottomNavigation({
 	activeTab: HomeTab;
 	onTabChange: (tab: HomeTab) => void;
 }) {
+	const { t } = useLingui();
 	return (
 		<nav
-			aria-label="Primary"
+			aria-label={t`Primary navigation`}
 			className="fixed inset-x-0 bottom-0 z-50 border-border border-t bg-card px-1 pb-[env(safe-area-inset-bottom)]"
 		>
 			<div className="grid h-16 grid-cols-5">
 				<NavButton
 					tab="wallet"
-					label="Wallet"
+					label={t`Wallet`}
 					activeTab={activeTab}
 					onTabChange={onTabChange}
 					icon={<RiWallet3Line />}
 				/>
 				<NavButton
 					tab="activity"
-					label="Activity"
+					label={t`Activity`}
 					activeTab={activeTab}
 					onTabChange={onTabChange}
 					icon={<RiNotification3Line />}
 				/>
-				<MarketNavButton activeTab={activeTab} onTabChange={onTabChange} />
+				<MarketNavButton
+					label={t`Market`}
+					activeTab={activeTab}
+					onTabChange={onTabChange}
+				/>
 				<NavButton
 					tab="pool"
-					label="Pool"
+					label={t`Pool`}
 					activeTab={activeTab}
 					onTabChange={onTabChange}
 					icon={<RiGroupLine />}
 				/>
 				<NavButton
 					tab="settings"
-					label="Settings"
+					label={t`Settings`}
 					activeTab={activeTab}
 					onTabChange={onTabChange}
 					icon={<RiSettings3Line />}
@@ -97,9 +103,11 @@ function NavButton({
 }
 
 function MarketNavButton({
+	label,
 	activeTab,
 	onTabChange,
 }: {
+	label: string;
 	activeTab: HomeTab;
 	onTabChange: (tab: HomeTab) => void;
 }) {
@@ -125,7 +133,7 @@ function MarketNavButton({
 					active && "font-semibold text-foreground",
 				)}
 			>
-				Market
+				{label}
 			</span>
 		</button>
 	);

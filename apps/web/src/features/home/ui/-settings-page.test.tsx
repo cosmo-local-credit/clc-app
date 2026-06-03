@@ -1,7 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { SettingsPage } from "./settings-page";
+vi.mock("#/components/language-selector", () => ({
+	LanguageSelector: () => <div data-testid="language-selector" />,
+}));
+
+const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {
 	it("shows the connected address", () => {

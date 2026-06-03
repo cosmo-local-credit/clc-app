@@ -1,10 +1,13 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { KeyRound, LoaderCircle, ScanLine, UserPlus, X } from "lucide-react";
+import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { useAccount, useConnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
+import { OnboardingLanguageSelector } from "#/components/language-selector";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
@@ -28,6 +31,7 @@ const RELAYER_URL: string =
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export function LandingPage() {
+	const { t } = useLingui();
 	const navigate = useNavigate();
 	const { connect: wagmiConnect } = useConnect();
 	const { isConnected } = useAccount();
@@ -85,13 +89,13 @@ export function LandingPage() {
 			setShowScanner(false);
 		} catch (err) {
 			clearPrivateKey();
-			setPkError(err instanceof Error ? err.message : "Connection failed.");
+			setPkError(err instanceof Error ? err.message : t`Connection failed.`);
 		} finally {
 			setPkConnecting(false);
 		}
 	}
 
-	function handlePkSubmit(e: React.FormEvent<HTMLFormElement>) {
+	function handlePkSubmit(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		setPkError(null);
 		const result = normalizePrivateKey(pkInput);
@@ -106,14 +110,15 @@ export function LandingPage() {
 		setPkError(null);
 		const result = normalizePrivateKey(raw);
 		if (!result.ok) {
-			setPkError("This QR code does not contain a valid private key.");
+			setPkError(t`This QR code does not contain a valid private key.`);
 			return;
 		}
 		void connectWithKey(result.key);
 	}
 
 	return (
-		<div className="flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:min-h-screen sm:pt-20 sm:pb-12">
+		<div className="relative flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+			<OnboardingLanguageSelector />
 			<div className="flex flex-col items-center gap-5 text-center">
 				<CLCLogo className="size-20" />
 				<div className="space-y-1">
@@ -121,17 +126,21 @@ export function LandingPage() {
 						CLC
 					</h1>
 					<p className="text-muted-foreground text-sm">
-						Route redeemable claims across curated markets with shared
-						standards.
+						<Trans>
+							Route redeemable claims across curated markets with shared
+							standards.
+						</Trans>
 					</p>
 				</div>
 			</div>
 
-			<div className="mt-auto space-y-3 pt-8 pb-2 sm:pt-16">
+			<div className="mt-auto space-y-3 pt-8 pb-2">
 				{connecting ? (
 					<div className="flex flex-col items-center gap-2 py-3">
 						<LoaderCircle className="size-6 animate-spin text-primary" />
-						<p className="text-muted-foreground text-sm">Connecting...</p>
+						<p className="text-muted-foreground text-sm">
+							<Trans>Connecting...</Trans>
+						</p>
 					</div>
 				) : null}
 
@@ -151,28 +160,30 @@ export function LandingPage() {
 						onClick={() => void navigate({ to: "/onboarding" })}
 					>
 						<UserPlus className="mr-2 size-4" aria-hidden="true" />
-						Create an account
+						<Trans>Create an account</Trans>
 					</Button>
 				) : null}
 
 				{outcome === "not_found" ? (
 					<div className="space-y-1 rounded-xl border border-border bg-card p-4">
-						<p className="font-medium text-sm">No passkey found</p>
+						<p className="font-medium text-sm">
+							<Trans>No passkey found</Trans>
+						</p>
 						<p className="text-muted-foreground text-xs">
-							No passkey is registered on this device.{" "}
+							<Trans>No passkey is registered on this device.</Trans>{" "}
 							<Link
 								to="/onboarding"
 								className="font-medium text-foreground underline-offset-4 hover:underline"
 							>
-								Create an account
+								<Trans>Create an account</Trans>
 							</Link>{" "}
-							or{" "}
+							<Trans>or</Trans>{" "}
 							<button
 								type="button"
 								className="font-medium text-foreground underline-offset-4 hover:underline"
 								onClick={() => recover.mutate()}
 							>
-								try again
+								<Trans>try again</Trans>
 							</button>
 						</p>
 					</div>
@@ -184,7 +195,9 @@ export function LandingPage() {
 					<>
 						<div className="flex items-center gap-3 text-[11px] text-muted-foreground uppercase tracking-[0.24em]">
 							<div className="h-px flex-1 bg-border" />
-							<span>or</span>
+							<span>
+								<Trans>or</Trans>
+							</span>
 							<div className="h-px flex-1 bg-border" />
 						</div>
 
@@ -196,8 +209,8 @@ export function LandingPage() {
 							>
 								{isRecovering ? null : <ProviderIcon className="mr-2 size-4" />}
 								{isRecovering
-									? "Connecting..."
-									: `Continue with ${providerLabel}`}
+									? t`Connecting...`
+									: t`Continue with ${providerLabel}`}
 							</Button>
 						) : null}
 
@@ -209,7 +222,7 @@ export function LandingPage() {
 							}}
 						>
 							<ScanLine className="mr-2 size-4" />
-							Continue with Paper Wallet
+							<Trans>Continue with Paper Wallet</Trans>
 						</Button>
 
 						<button
@@ -221,7 +234,7 @@ export function LandingPage() {
 								setPkError(null);
 							}}
 						>
-							Advanced options
+							<Trans>Advanced options</Trans>
 						</button>
 
 						{showAdvanced ? (
@@ -234,7 +247,7 @@ export function LandingPage() {
 								}}
 							>
 								<KeyRound className="mr-2 size-4" />
-								Private key
+								<Trans>Private key</Trans>
 							</Button>
 						) : null}
 					</>
@@ -243,11 +256,13 @@ export function LandingPage() {
 				{showPkInput && !connecting ? (
 					<form onSubmit={handlePkSubmit} className="space-y-3">
 						<div className="flex items-center justify-between">
-							<p className="font-medium text-sm">Private key</p>
+							<p className="font-medium text-sm">
+								<Trans>Private key</Trans>
+							</p>
 							<Button
 								variant="ghost"
 								size="icon-sm"
-								aria-label="Close private key form"
+								aria-label={t`Close private key form`}
 								onClick={() => {
 									setShowPkInput(false);
 									setPkInput("");
@@ -264,7 +279,7 @@ export function LandingPage() {
 							onChange={(e) => setPkInput(e.target.value)}
 							placeholder="0x..."
 							className="font-mono"
-							aria-label="Private key"
+							aria-label={t`Private key`}
 						/>
 						<Button
 							type="submit"
@@ -272,7 +287,7 @@ export function LandingPage() {
 							className="h-11 w-full"
 						>
 							<KeyRound className="mr-2 size-4" />
-							Sign in with private key
+							<Trans>Sign in with private key</Trans>
 						</Button>
 					</form>
 				) : null}

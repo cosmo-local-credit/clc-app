@@ -1,5 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { TbCurrentLocation } from "react-icons/tb";
@@ -26,13 +27,12 @@ type PlacePinOptions = {
 	updateSearchInput?: boolean;
 };
 
-const REVERSE_ERROR = "Couldn't identify a country here. Try a nearby spot.";
-
 export function LocationPicker({
 	value,
 	onChange,
 	error,
 }: LocationPickerProps) {
+	const { t } = useLingui();
 	const [query, setQuery] = useState("");
 	const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
 	const [searching, setSearching] = useState(false);
@@ -98,8 +98,9 @@ export function LocationPicker({
 					return;
 				}
 				setReversePending(false);
+				const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
 				if (!result) {
-					setReverseError(REVERSE_ERROR);
+					setReverseError(reverseErrorMsg);
 					onChangeRef.current(undefined);
 					return;
 				}
@@ -111,7 +112,7 @@ export function LocationPicker({
 					country: result.country,
 				});
 				if (!parsed.success) {
-					setReverseError(REVERSE_ERROR);
+					setReverseError(reverseErrorMsg);
 					onChangeRef.current(undefined);
 					return;
 				}
@@ -123,7 +124,7 @@ export function LocationPicker({
 				onChangeRef.current(parsed.data);
 			});
 		},
-		[setSearchQueryFromLocation],
+		[setSearchQueryFromLocation, t],
 	);
 
 	useEffect(() => {
@@ -182,7 +183,7 @@ export function LocationPicker({
 		<div className="space-y-3">
 			<div className="relative">
 				<label htmlFor="location-search" className="font-medium text-sm">
-					Location
+					<Trans>Location</Trans>
 				</label>
 				<div className="relative mt-1.5">
 					<Input
@@ -190,7 +191,7 @@ export function LocationPicker({
 						type="text"
 						role="searchbox"
 						autoComplete="off"
-						placeholder="Search for a town or place"
+						placeholder={t`Search for a town or place`}
 						value={query}
 						onChange={(event) => {
 							skipNextSearchRef.current = false;
@@ -205,7 +206,7 @@ export function LocationPicker({
 						onClick={geolocation.request}
 						disabled={geoUnavailable || geoRequesting}
 						aria-label={
-							geoUnavailable ? "Location unavailable" : "Use my location"
+							geoUnavailable ? t`Location unavailable` : t`Use my location`
 						}
 					>
 						{geoRequesting ? (
@@ -243,14 +244,18 @@ export function LocationPicker({
 			</div>
 
 			{searching ? (
-				<p className="text-muted-foreground text-xs">Searching places…</p>
+				<p className="text-muted-foreground text-xs">
+					<Trans>Searching places…</Trans>
+				</p>
 			) : null}
 
 			{canRenderMap ? (
 				<Suspense
 					fallback={
 						<output className="block h-52 w-full rounded-xl border border-border bg-card">
-							<span className="sr-only">Loading location map</span>
+							<span className="sr-only">
+								<Trans>Loading location map</Trans>
+							</span>
 						</output>
 					}
 				>
@@ -263,13 +268,15 @@ export function LocationPicker({
 				</Suspense>
 			) : (
 				<output className="block h-52 w-full rounded-xl border border-border bg-card">
-					<span className="sr-only">Loading location map</span>
+					<span className="sr-only">
+						<Trans>Loading location map</Trans>
+					</span>
 				</output>
 			)}
 
 			{reversePending ? (
 				<output className="text-muted-foreground text-sm">
-					Identifying location…
+					<Trans>Identifying location…</Trans>
 				</output>
 			) : null}
 

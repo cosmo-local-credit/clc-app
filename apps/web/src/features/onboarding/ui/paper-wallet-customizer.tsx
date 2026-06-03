@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -18,6 +19,7 @@ const ACCEPTED_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
  * and a logo upload + reset control.
  */
 export function PaperWalletCustomizer({ value, onChange }: Props) {
+	const { t } = useLingui();
 	const [logoError, setLogoError] = useState<string | null>(null);
 	const [logoFileName, setLogoFileName] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +37,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 
 		// Validate type
 		if (!ACCEPTED_LOGO_TYPES.includes(file.type)) {
-			setLogoError("SVG files are not supported. Use PNG, JPEG, or WebP.");
+			setLogoError(t`SVG files are not supported. Use PNG, JPEG, or WebP.`);
 			target.value = "";
 			return;
 		}
@@ -43,7 +45,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 		// Validate size
 		if (file.size > MAX_LOGO_BYTES) {
 			setLogoError(
-				`File too large (${(file.size / 1024).toFixed(0)} KB). Maximum is 512 KB.`,
+				t`File too large (${(file.size / 1024).toFixed(0)} KB). Maximum is 512 KB.`,
 			);
 			target.value = "";
 			return;
@@ -74,7 +76,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 	return (
 		<details className="mt-6">
 			<summary className="cursor-pointer font-medium text-foreground text-sm">
-				Customize
+				<Trans>Customize</Trans>
 			</summary>
 
 			<div className="mt-4 space-y-4">
@@ -84,7 +86,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						htmlFor="pw-name"
 						className="font-medium text-foreground text-sm"
 					>
-						Name on wallet
+						<Trans>Name on wallet</Trans>
 					</label>
 					<Input
 						id="pw-name"
@@ -100,7 +102,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						htmlFor="pw-website"
 						className="font-medium text-foreground text-sm"
 					>
-						Website
+						<Trans>Website</Trans>
 					</label>
 					<Input
 						id="pw-website"
@@ -118,7 +120,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						htmlFor="pw-description"
 						className="font-medium text-foreground text-sm"
 					>
-						Description
+						<Trans>Description</Trans>
 					</label>
 					<textarea
 						id="pw-description"
@@ -138,7 +140,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 						htmlFor="pw-logo-input"
 						className="font-medium text-foreground text-sm"
 					>
-						Logo
+						<Trans>Logo</Trans>
 					</label>
 
 					<div className="flex flex-wrap items-center gap-2">
@@ -148,7 +150,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 							size="sm"
 							onClick={() => fileInputRef.current?.click()}
 						>
-							Upload logo
+							<Trans>Upload logo</Trans>
 						</Button>
 						<input
 							id="pw-logo-input"
@@ -173,7 +175,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
 								className="text-destructive text-sm underline-offset-2 hover:underline"
 								onClick={handleResetLogo}
 							>
-								Reset logo
+								<Trans>Reset logo</Trans>
 							</button>
 						) : null}
 					</div>

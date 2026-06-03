@@ -92,6 +92,11 @@ vi.mock("#/providers/web3-config", () => ({
 	wagmiConfig: {},
 }));
 
+vi.mock("#/components/language-selector", () => ({
+	OnboardingLanguageSelector: () => null,
+	LanguageSelector: () => null,
+}));
+
 const mockIsPasskeyPlatformAvailable = vi.fn(() => false);
 const mockPickPasskeyProvider = vi.fn<() => PasskeyProvider>(() => "google");
 
