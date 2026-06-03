@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Trans } from "@lingui/react/macro";
 import {
 	RiArrowRightSLine,
 	RiBankCardLine,
@@ -49,10 +49,10 @@ export function WalletPage() {
 		<div className="space-y-6">
 			<div className="space-y-1">
 				<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-					Wallet
+					<Trans>Wallet</Trans>
 				</h1>
 				<p className="text-muted-foreground text-sm">
-					Manage vouchers, pools, and local payments.
+					<Trans>Manage vouchers, pools, and local payments.</Trans>
 				</p>
 			</div>
 
@@ -74,27 +74,22 @@ export function WalletPage() {
 				<div className="grid grid-cols-3 gap-2">
 					<Button className="h-11 px-2 text-xs">
 						<RiSendPlane2Line className="mr-1.5 size-4" aria-hidden="true" />
-						Send
+						<Trans>Send</Trans>
 					</Button>
 					<Button variant="outline" className="h-11 px-2 text-xs">
 						<RiDownloadLine className="mr-1.5 size-4" aria-hidden="true" />
-						Receive
+						<Trans>Receive</Trans>
 					</Button>
 					<Button variant="outline" className="h-11 px-2 text-xs">
 						<RiBankCardLine className="mr-1.5 size-4" aria-hidden="true" />
-						Top up
+						<Trans>Top up</Trans>
 					</Button>
 				</div>
 			</section>
 
 			<RecentActivity />
 
-			<WalletListSection
-				title="My vouchers"
-				viewAllLabel="View all"
-				items={placeholderVouchers}
-				icon={<RiCoupon3Line />}
-			/>
+			<VoucherListSection />
 
 			<PoolListSection />
 		</div>
@@ -109,13 +104,13 @@ function RecentActivity() {
 					id="recent-activity-title"
 					className="font-heading font-semibold text-base"
 				>
-					Recent activity
+					<Trans>Recent activity</Trans>
 				</h2>
 				<button
 					type="button"
 					className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
 				>
-					View all
+					<Trans>View all</Trans>
 				</button>
 			</div>
 			<div className="border border-border bg-card">
@@ -143,37 +138,25 @@ function RecentActivity() {
 	);
 }
 
-function WalletListSection({
-	title,
-	viewAllLabel,
-	items,
-	icon,
-}: {
-	title: string;
-	viewAllLabel: string;
-	items: { id: string; name: string; balance: string }[];
-	icon: ReactNode;
-}) {
+function VoucherListSection() {
 	return (
-		<section
-			aria-labelledby={`${title.toLowerCase().replaceAll(" ", "-")}-title`}
-		>
+		<section aria-labelledby="my-vouchers-title">
 			<div className="mb-2 flex items-center justify-between gap-3">
 				<h2
-					id={`${title.toLowerCase().replaceAll(" ", "-")}-title`}
+					id="my-vouchers-title"
 					className="font-heading font-semibold text-base"
 				>
-					{title}
+					<Trans>My vouchers</Trans>
 				</h2>
 				<button
 					type="button"
 					className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
 				>
-					{viewAllLabel}
+					<Trans>View all</Trans>
 				</button>
 			</div>
 			<div className="space-y-2">
-				{items.map((item) => (
+				{placeholderVouchers.map((item) => (
 					<button
 						key={item.id}
 						type="button"
@@ -181,7 +164,7 @@ function WalletListSection({
 					>
 						<span className="flex min-w-0 items-center gap-3">
 							<span className="flex size-8 shrink-0 items-center justify-center bg-muted text-foreground [&_svg]:size-4">
-								{icon}
+								<RiCoupon3Line />
 							</span>
 							<span className="block truncate font-medium text-sm">
 								{item.name}
@@ -205,13 +188,13 @@ function PoolListSection() {
 					id="my-pools-title"
 					className="font-heading font-semibold text-base"
 				>
-					My pools
+					<Trans>My pools</Trans>
 				</h2>
 				<button
 					type="button"
 					className="font-medium text-foreground text-sm underline-offset-4 hover:underline"
 				>
-					View all
+					<Trans>View all</Trans>
 				</button>
 			</div>
 			<div className="space-y-2">

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import {
 	RiArrowRightSLine,
@@ -8,10 +9,15 @@ import {
 
 import { Button } from "#/components/ui/button";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
-import { type MarketLocation, placeholderMarketLocations } from "./market-data";
+import {
+	type MarketLocation,
+	type MarketLocationKind,
+	placeholderMarketLocations,
+} from "./market-data";
 import { MarketMap } from "./market-map.lazy";
 
 export function MarketPage() {
+	const { t } = useLingui();
 	const geolocation = useBrowserGeolocation();
 	const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
 		placeholderMarketLocations[0]?.id ?? null,
@@ -29,12 +35,12 @@ export function MarketPage() {
 			: null;
 	const locationButtonLabel =
 		geolocation.state.status === "requesting"
-			? "Finding location"
+			? t`Finding location`
 			: geolocation.state.status === "denied"
-				? "Location denied"
+				? t`Location denied`
 				: geolocation.state.status === "unavailable"
-					? "Location unavailable"
-					: "Use current location";
+					? t`Location unavailable`
+					: t`Use current location`;
 
 	const handleSelectLocation = useCallback((id: string) => {
 		setSelectedLocationId(id);
@@ -77,14 +83,27 @@ export function MarketPage() {
 			<div className="pointer-events-none absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
 				<Button className="pointer-events-auto h-11 px-5">
 					<RiListUnordered className="mr-2 size-4" aria-hidden="true" />
-					Browse all
+					<Trans>Browse all</Trans>
 				</Button>
 			</div>
 		</main>
 	);
 }
 
+function useKindLabel(kind: MarketLocationKind): string {
+	const { t } = useLingui();
+	switch (kind) {
+		case "eatery":
+			return t`Eatery`;
+		case "shop":
+			return t`Shop`;
+		case "service":
+			return t`Service`;
+	}
+}
+
 function MarketPreview({ location }: { location: MarketLocation }) {
+	const categoryLabel = useKindLabel(location.kind);
 	return (
 		<button
 			type="button"
@@ -100,7 +119,7 @@ function MarketPreview({ location }: { location: MarketLocation }) {
 						{location.name} · {location.distance}
 					</span>
 					<span className="mt-1 inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
-						{location.category}
+						{categoryLabel}
 					</span>
 				</span>
 			</span>

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
@@ -28,6 +29,7 @@ import {
 	getWebAuthnCredential,
 	storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
+import { AppI18nProvider } from "#/providers/i18n";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import appCss from "../styles.css?url";
@@ -65,13 +67,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function AppContent() {
 	const { queryClient } = Route.useRouteContext();
 	return (
-		<Web3Provider queryClient={queryClient}>
-			<AppInner />
-		</Web3Provider>
+		<AppI18nProvider>
+			<Web3Provider queryClient={queryClient}>
+				<AppInner />
+			</Web3Provider>
+		</AppI18nProvider>
 	);
 }
 
 function AppInner() {
+	const { t } = useLingui();
 	const { pendingKey, clearPendingKey } = useScanUrlImport();
 	const [switching, setSwitching] = useState(false);
 
@@ -127,10 +132,12 @@ function AppInner() {
 						<DialogBackdrop />
 						<DialogContent>
 							<DialogTitle className="font-semibold text-base">
-								Switch wallet?
+								<Trans>Switch wallet?</Trans>
 							</DialogTitle>
 							<p className="mt-1 text-muted-foreground text-sm">
-								A paper wallet QR was scanned. Import this address?
+								<Trans>
+									A paper wallet QR was scanned. Import this address?
+								</Trans>
 							</p>
 							<p className="mt-2 truncate font-mono text-foreground text-xs">
 								{pendingAddress}
@@ -141,7 +148,7 @@ function AppInner() {
 									disabled={switching}
 									onClick={handleConfirmSwitch}
 								>
-									{switching ? "Switching…" : "Switch wallet"}
+									{switching ? t`Switching…` : t`Switch wallet`}
 								</Button>
 								<Button
 									variant="ghost"
@@ -149,7 +156,7 @@ function AppInner() {
 									onClick={clearPendingKey}
 									disabled={switching}
 								>
-									Cancel
+									<Trans>Cancel</Trans>
 								</Button>
 							</div>
 						</DialogContent>

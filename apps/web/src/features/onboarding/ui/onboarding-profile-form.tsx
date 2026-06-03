@@ -2,11 +2,14 @@ import type { LocationInput } from "@clc/core/features/location/logic";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
+import { OnboardingLanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { translateValidationError } from "#/lib/validation-i18n";
 import { LocationPicker } from "./location-picker";
 
 type Props = {
@@ -28,6 +31,7 @@ const DEFAULT_VALUES: ProfileFormValues = {
 };
 
 export function OnboardingProfileForm({ onNext }: Props) {
+	const { i18n, t } = useLingui();
 	const navigate = useNavigate();
 
 	const form = useForm({
@@ -41,31 +45,35 @@ export function OnboardingProfileForm({ onNext }: Props) {
 	});
 
 	return (
-		<div className="flex min-h-[100svh] flex-col bg-background">
+		<div className="relative flex min-h-[100svh] flex-col bg-background">
+			<OnboardingLanguageSelector />
 			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
 				<div className="mb-6 space-y-3">
 					<button
 						type="button"
 						onClick={() => void navigate({ to: "/" })}
 						className="-ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
-						aria-label="Back"
+						aria-label={t`Back`}
 					>
 						<ArrowLeft className="size-4" />
-						Back
+						<Trans>Back</Trans>
 					</button>
 
 					<div className="space-y-1">
 						<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-							Create your account
+							<Trans>Create your account</Trans>
 						</h1>
 						<p className="text-muted-foreground text-sm">
-							Name and location are required. Provide an email or phone number.
+							<Trans>
+								Name and location are required. Provide an email or phone
+								number.
+							</Trans>
 						</p>
 					</div>
 				</div>
 
 				<form
-					aria-label="Create account"
+					aria-label={t`Create account`}
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
@@ -79,21 +87,23 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							return (
 								<div className="flex flex-col gap-1.5">
 									<label htmlFor="onb-name" className="font-medium text-sm">
-										Name
+										<Trans>Name</Trans>
 									</label>
 									<Input
 										id="onb-name"
 										type="text"
 										autoComplete="name"
-										placeholder="Your name"
+										placeholder={t`Your name`}
 										value={field.state.value}
 										onChange={(e) => field.handleChange(e.target.value)}
 										onBlur={field.handleBlur}
 										aria-invalid={!!err}
-										aria-label="Name"
+										aria-label={t`Name`}
 									/>
 									{err ? (
-										<p className="text-destructive text-xs">{err}</p>
+										<p className="text-destructive text-xs">
+											{translateValidationError(err, i18n)}
+										</p>
 									) : null}
 								</div>
 							);
@@ -106,7 +116,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							return (
 								<div className="flex flex-col gap-1.5">
 									<label htmlFor="onb-email" className="font-medium text-sm">
-										Email
+										<Trans>Email</Trans>
 									</label>
 									<Input
 										id="onb-email"
@@ -117,10 +127,12 @@ export function OnboardingProfileForm({ onNext }: Props) {
 										onChange={(e) => field.handleChange(e.target.value)}
 										onBlur={field.handleBlur}
 										aria-invalid={!!err}
-										aria-label="Email"
+										aria-label={t`Email`}
 									/>
 									{err ? (
-										<p className="text-destructive text-xs">{err}</p>
+										<p className="text-destructive text-xs">
+											{translateValidationError(err, i18n)}
+										</p>
 									) : null}
 								</div>
 							);
@@ -133,17 +145,19 @@ export function OnboardingProfileForm({ onNext }: Props) {
 							return (
 								<div className="flex flex-col gap-1.5">
 									<label htmlFor="onb-phone" className="font-medium text-sm">
-										Phone
+										<Trans>Phone</Trans>
 									</label>
 									<PhoneInputField
 										id="onb-phone"
 										value={field.state.value}
 										onChange={(val) => field.handleChange(val)}
 										aria-invalid={!!err}
-										aria-label="Phone number"
+										aria-label={t`Phone number`}
 									/>
 									{err ? (
-										<p className="text-destructive text-xs">{err}</p>
+										<p className="text-destructive text-xs">
+											{translateValidationError(err, i18n)}
+										</p>
 									) : null}
 								</div>
 							);
@@ -161,7 +175,9 @@ export function OnboardingProfileForm({ onNext }: Props) {
 											onChange={(next) => field.handleChange(next)}
 											error={
 												field.state.meta.isTouched || submissionAttempts > 0
-													? (err ?? undefined)
+													? err
+														? translateValidationError(err, i18n)
+														: undefined
 													: undefined
 											}
 										/>
@@ -181,19 +197,19 @@ export function OnboardingProfileForm({ onNext }: Props) {
 								{isSubmitting ? (
 									<LoaderCircle className="mr-2 size-4 animate-spin" />
 								) : null}
-								{isSubmitting ? "Saving…" : "Continue"}
+								{isSubmitting ? t`Saving…` : t`Continue`}
 							</Button>
 						)}
 					</form.Subscribe>
 				</form>
 
 				<p className="mt-8 text-center text-muted-foreground text-sm">
-					Already have an account?{" "}
+					<Trans>Already have an account?</Trans>{" "}
 					<Link
 						to="/"
 						className="font-medium text-foreground underline-offset-4 hover:underline"
 					>
-						Go back to sign in
+						<Trans>Go back to sign in</Trans>
 					</Link>
 				</p>
 			</div>
