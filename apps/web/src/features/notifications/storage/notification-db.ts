@@ -123,6 +123,12 @@ export type RecordSubscriptionDiagnosticInput = Omit<
 
 let databasePromise: Promise<IDBPDatabase<NotificationDatabase>> | null = null;
 
+export async function resetNotificationDatabaseForTests(): Promise<void> {
+	const database = await databasePromise?.catch(() => null);
+	database?.close();
+	databasePromise = null;
+}
+
 export function isNotificationStorageAvailable(): boolean {
 	return typeof indexedDB !== "undefined";
 }

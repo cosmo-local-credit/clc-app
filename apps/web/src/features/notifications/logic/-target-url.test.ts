@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	isSafeNotificationTargetUrl,
-	normalizeNotificationTargetUrl,
-} from "./target-url";
+import { normalizeNotificationTargetUrl } from "./target-url";
 
 const APP_ORIGIN = "https://app.cosmolocal.credit";
 
@@ -62,13 +59,8 @@ describe("normalizeNotificationTargetUrl", () => {
 			normalizeNotificationTargetUrl("\u0000/wallet", APP_ORIGIN),
 		).toBeNull();
 	});
-});
 
-describe("isSafeNotificationTargetUrl", () => {
-	it("returns true only when the target can be normalized", () => {
-		expect(isSafeNotificationTargetUrl("/wallet", APP_ORIGIN)).toBe(true);
-		expect(
-			isSafeNotificationTargetUrl("https://evil.example", APP_ORIGIN),
-		).toBe(false);
+	it("rejects targets when no app origin is available", () => {
+		expect(normalizeNotificationTargetUrl("/wallet", null)).toBeNull();
 	});
 });

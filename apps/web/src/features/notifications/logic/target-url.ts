@@ -1,8 +1,6 @@
-const DEFAULT_APP_ORIGIN = "http://localhost";
-
 export function normalizeNotificationTargetUrl(
 	targetUrl: unknown,
-	appOrigin = readCurrentOrigin(),
+	appOrigin: string | null | undefined = readCurrentOrigin(),
 ): string | null {
 	if (typeof targetUrl !== "string") {
 		return null;
@@ -41,14 +39,11 @@ export function normalizeNotificationTargetUrl(
 	}
 }
 
-export function isSafeNotificationTargetUrl(
-	targetUrl: unknown,
-	appOrigin = readCurrentOrigin(),
-): boolean {
-	return normalizeNotificationTargetUrl(targetUrl, appOrigin) !== null;
-}
+function normalizeOrigin(appOrigin: string | null | undefined): string | null {
+	if (!appOrigin) {
+		return null;
+	}
 
-function normalizeOrigin(appOrigin: string): string | null {
 	try {
 		return new URL(appOrigin).origin;
 	} catch {
@@ -56,12 +51,12 @@ function normalizeOrigin(appOrigin: string): string | null {
 	}
 }
 
-function readCurrentOrigin(): string {
+function readCurrentOrigin(): string | null {
 	if (typeof location !== "undefined" && location.origin !== "null") {
 		return location.origin;
 	}
 
-	return DEFAULT_APP_ORIGIN;
+	return null;
 }
 
 function hasControlCharacter(value: string): boolean {

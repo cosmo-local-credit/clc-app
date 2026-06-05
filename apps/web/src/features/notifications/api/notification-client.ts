@@ -9,8 +9,6 @@ import {
 } from "../logic/payload-schema";
 import type { NotificationPermissionSnapshot } from "../platform/capability";
 
-const DEFAULT_WEBPUSH_BASE_URL = "http://localhost:8787";
-
 export type NotificationClientOptions = {
 	baseUrl?: string;
 	fetcher?: typeof fetch;
@@ -278,10 +276,16 @@ const devDebugStateResponseSchema = z.object({
 	vapidPublicKey: z.string(),
 });
 
-export function getNotificationBackendBaseUrl(): string {
-	const configured =
-		(import.meta.env.VITE_WEBPUSH_BASE_URL as string | undefined) ??
-		DEFAULT_WEBPUSH_BASE_URL;
+function getNotificationBackendBaseUrl(): string {
+	const configured = import.meta.env.VITE_WEBPUSH_BASE_URL as
+		| string
+		| undefined;
+
+	if (!configured?.trim()) {
+		throw new Error(
+			"VITE_WEBPUSH_BASE_URL must be set to the notification backend base URL.",
+		);
+	}
 
 	return trimTrailingSlashes(configured);
 }
