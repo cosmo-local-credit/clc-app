@@ -11,73 +11,73 @@
 let _baseUrl = "http://localhost:3001";
 
 export function configureApi(url: string) {
-	_baseUrl = url;
+  _baseUrl = url;
 }
 
 type RequestOptions = {
-	method?: string;
-	body?: unknown;
-	headers?: Record<string, string>;
+  method?: string;
+  body?: unknown;
+  headers?: Record<string, string>;
 };
 
 class ApiClient {
-	private authToken: string | null = null;
+  private authToken: string | null = null;
 
-	setAuthToken(token: string | null) {
-		this.authToken = token;
-	}
+  setAuthToken(token: string | null) {
+    this.authToken = token;
+  }
 
-	private getHeaders(): Record<string, string> {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-		};
-		if (this.authToken) {
-			headers.Authorization = `Bearer ${this.authToken}`;
-		}
-		return headers;
-	}
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (this.authToken) {
+      headers.Authorization = `Bearer ${this.authToken}`;
+    }
+    return headers;
+  }
 
-	async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-		const { method = "GET", body, headers: extraHeaders } = options;
+  async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    const { method = "GET", body, headers: extraHeaders } = options;
 
-		const response = await fetch(`${_baseUrl}${path}`, {
-			method,
-			headers: { ...this.getHeaders(), ...extraHeaders },
-			body: body ? JSON.stringify(body) : undefined,
-		});
+    const response = await fetch(`${_baseUrl}${path}`, {
+      method,
+      headers: { ...this.getHeaders(), ...extraHeaders },
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-		if (!response.ok) {
-			throw new ApiError(response.status, await response.text());
-		}
+    if (!response.ok) {
+      throw new ApiError(response.status, await response.text());
+    }
 
-		return response.json() as Promise<T>;
-	}
+    return response.json() as Promise<T>;
+  }
 
-	get<T>(path: string) {
-		return this.request<T>(path);
-	}
+  get<T>(path: string) {
+    return this.request<T>(path);
+  }
 
-	post<T>(path: string, body: unknown) {
-		return this.request<T>(path, { method: "POST", body });
-	}
+  post<T>(path: string, body: unknown) {
+    return this.request<T>(path, { method: "POST", body });
+  }
 
-	put<T>(path: string, body: unknown) {
-		return this.request<T>(path, { method: "PUT", body });
-	}
+  put<T>(path: string, body: unknown) {
+    return this.request<T>(path, { method: "PUT", body });
+  }
 
-	delete<T>(path: string) {
-		return this.request<T>(path, { method: "DELETE" });
-	}
+  delete<T>(path: string) {
+    return this.request<T>(path, { method: "DELETE" });
+  }
 }
 
 export class ApiError extends Error {
-	constructor(
-		public status: number,
-		public body: string,
-	) {
-		super(`API Error ${status}: ${body}`);
-		this.name = "ApiError";
-	}
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
+    super(`API Error ${status}: ${body}`);
+    this.name = "ApiError";
+  }
 }
 
 export const apiClient = new ApiClient();

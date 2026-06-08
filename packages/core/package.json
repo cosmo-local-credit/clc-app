@@ -1,25 +1,26 @@
 {
-	"name": "@clc/core",
-	"private": true,
-	"type": "module",
-	"exports": {
-		"./*": "./src/*"
-	},
-	"scripts": {
-		"test": "vitest run"
-	},
-	"peerDependencies": {
-		"react": ">=19.0.0"
-	},
-	"dependencies": {
-		"@tanstack/react-form": "^1.32.0",
-		"@tanstack/react-query": "^5.100.14",
-		"viem": "^2.51.3",
-		"zod": "^4.4.3",
-		"zustand": "^5.0.13"
-	},
-	"devDependencies": {
-		"@vitest/coverage-v8": "^4.1.7",
-		"vitest": "^4.1.7"
-	}
+  "name": "@clc/core",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@tanstack/react-form": "^1.32.0",
+    "@tanstack/react-query": "^5.100.14",
+    "viem": "^2.51.3",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.7",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  }
 }

@@ -10,55 +10,55 @@ import { UndonePage } from "./undone-page";
 import { WalletPage } from "./wallet-page";
 
 type HomePageProps = {
-	activeTab?: HomeTab;
-	onTabChange?: (tab: HomeTab) => void;
+  activeTab?: HomeTab;
+  onTabChange?: (tab: HomeTab) => void;
 };
 
 export function HomePage({ activeTab, onTabChange }: HomePageProps) {
-	const { address } = useAccount();
-	const { disconnectAsync } = useDisconnect();
-	const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
-	const [isSigningOut, setIsSigningOut] = useState(false);
-	const currentTab = activeTab ?? fallbackTab;
+  const { address } = useAccount();
+  const { disconnectAsync } = useDisconnect();
+  const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const currentTab = activeTab ?? fallbackTab;
 
-	function handleTabChange(tab: HomeTab) {
-		if (!activeTab) setFallbackTab(tab);
-		onTabChange?.(tab);
-	}
+  function handleTabChange(tab: HomeTab) {
+    if (!activeTab) setFallbackTab(tab);
+    onTabChange?.(tab);
+  }
 
-	async function handleSignOut() {
-		setIsSigningOut(true);
-		clearAuthToken();
-		try {
-			await disconnectAsync();
-		} finally {
-			setIsSigningOut(false);
-		}
-	}
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    clearAuthToken();
+    try {
+      await disconnectAsync();
+    } finally {
+      setIsSigningOut(false);
+    }
+  }
 
-	return (
-		<div className="min-h-[100svh] bg-background text-foreground">
-			{currentTab === "market" ? (
-				<MarketPage />
-			) : (
-				<div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
-					<main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
-						{currentTab === "wallet" ? <WalletPage /> : null}
-						{currentTab === "activity" ? <UndonePage tab="activity" /> : null}
-						{currentTab === "pool" ? <UndonePage tab="pool" /> : null}
-						{currentTab === "settings" ? (
-							<SettingsPage
-								address={address}
-								isSigningOut={isSigningOut}
-								onSignOut={() => {
-									void handleSignOut();
-								}}
-							/>
-						) : null}
-					</main>
-				</div>
-			)}
-			<BottomNavigation activeTab={currentTab} onTabChange={handleTabChange} />
-		</div>
-	);
+  return (
+    <div className="min-h-[100svh] bg-background text-foreground">
+      {currentTab === "market" ? (
+        <MarketPage />
+      ) : (
+        <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
+          <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
+            {currentTab === "wallet" ? <WalletPage /> : null}
+            {currentTab === "activity" ? <UndonePage tab="activity" /> : null}
+            {currentTab === "pool" ? <UndonePage tab="pool" /> : null}
+            {currentTab === "settings" ? (
+              <SettingsPage
+                address={address}
+                isSigningOut={isSigningOut}
+                onSignOut={() => {
+                  void handleSignOut();
+                }}
+              />
+            ) : null}
+          </main>
+        </div>
+      )}
+      <BottomNavigation activeTab={currentTab} onTabChange={handleTabChange} />
+    </div>
+  );
 }

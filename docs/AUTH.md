@@ -23,13 +23,13 @@ SIWE is separate from wallet connection:
 
 ## Storage
 
-| Data | Storage | Key | Written by | Cleared by |
-| --- | --- | --- | --- | --- |
-| Paper-wallet private key | `localStorage` | `clc_pk_raw` | `storePrivateKey` | `clearPrivateKey`, private-key connector disconnect |
-| Paper-wallet connected flag | `localStorage` | `clc_pk_connected` | `storePrivateKey` | `clearPrivateKey` |
-| Paper-wallet address | `localStorage` | `clc_pk_address` | `storePrivateKey` | `clearPrivateKey` |
-| WebAuthn credential | `localStorage` | `clc_webauthn` | `storeWebAuthnCredential` | `clearWebAuthnCredential`, Calibur connector disconnect |
-| SIWE JWT | `sessionStorage` | `clc_auth_token` | `setAuthToken` | `clearAuthToken`, browser session end |
+| Data                        | Storage          | Key                | Written by                | Cleared by                                              |
+| --------------------------- | ---------------- | ------------------ | ------------------------- | ------------------------------------------------------- |
+| Paper-wallet private key    | `localStorage`   | `clc_pk_raw`       | `storePrivateKey`         | `clearPrivateKey`, private-key connector disconnect     |
+| Paper-wallet connected flag | `localStorage`   | `clc_pk_connected` | `storePrivateKey`         | `clearPrivateKey`                                       |
+| Paper-wallet address        | `localStorage`   | `clc_pk_address`   | `storePrivateKey`         | `clearPrivateKey`                                       |
+| WebAuthn credential         | `localStorage`   | `clc_webauthn`     | `storeWebAuthnCredential` | `clearWebAuthnCredential`, Calibur connector disconnect |
+| SIWE JWT                    | `sessionStorage` | `clc_auth_token`   | `setAuthToken`            | `clearAuthToken`, browser session end                   |
 
 ## Overall UI Flow
 
@@ -395,63 +395,63 @@ Connect fails if no credential is stored or the stored credential is marked
 
 ### Platform And Browser Support
 
-| Scenario | Current behavior |
-| --- | --- |
-| Browser has no platform passkey support | Landing page hides the passkey sign-in button; onboarding hides the link-passkey button. |
-| Browser supports passkeys but WebAuthn create/get fails | Hook sets `step=error`; UI shows the error message. |
-| Passkey create is cancelled | Treated as an error: `Passkey creation cancelled`. |
-| Passkey assertion is cancelled | Treated as an error: `WebAuthn assertion cancelled`. |
-| `VITE_RELYING_PARTY_ID` is a URL | `resolveRelyingPartyId` normalizes it to the hostname. |
-| No relying-party env and no browser hostname | Falls back to `localhost`. |
+| Scenario                                                | Current behavior                                                                         |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Browser has no platform passkey support                 | Landing page hides the passkey sign-in button; onboarding hides the link-passkey button. |
+| Browser supports passkeys but WebAuthn create/get fails | Hook sets `step=error`; UI shows the error message.                                      |
+| Passkey create is cancelled                             | Treated as an error: `Passkey creation cancelled`.                                       |
+| Passkey assertion is cancelled                          | Treated as an error: `WebAuthn assertion cancelled`.                                     |
+| `VITE_RELYING_PARTY_ID` is a URL                        | `resolveRelyingPartyId` normalizes it to the hostname.                                   |
+| No relying-party env and no browser hostname            | Falls back to `localhost`.                                                               |
 
 ### Onboarding
 
-| Scenario | Current behavior |
-| --- | --- |
-| Profile is invalid | Field-level validation errors prevent advancing to wallet step. |
-| User goes back from wallet step | Returns to profile step; generated key is discarded when the wallet step unmounts. |
-| User does not acknowledge saving the paper wallet | Continue button remains disabled. |
-| Download card fails | Shows `Download failed. Try a screenshot instead.` |
-| Paper-wallet connection fails during onboarding | Clears private-key storage and shows the error. |
-| Passkey upgrade relayer call fails | `useCaliburFromPk` sets `step=error` and displays the error. |
-| Passkey registration transaction fails on-chain | Throws `Passkey registration transaction failed on-chain`. |
+| Scenario                                                      | Current behavior                                                                             |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Profile is invalid                                            | Field-level validation errors prevent advancing to wallet step.                              |
+| User goes back from wallet step                               | Returns to profile step; generated key is discarded when the wallet step unmounts.           |
+| User does not acknowledge saving the paper wallet             | Continue button remains disabled.                                                            |
+| Download card fails                                           | Shows `Download failed. Try a screenshot instead.`                                           |
+| Paper-wallet connection fails during onboarding               | Clears private-key storage and shows the error.                                              |
+| Passkey upgrade relayer call fails                            | `useCaliburFromPk` sets `step=error` and displays the error.                                 |
+| Passkey registration transaction fails on-chain               | Throws `Passkey registration transaction failed on-chain`.                                   |
 | Passkey registration succeeds but wagmi Calibur connect fails | WebAuthn credential remains stored; UI shows `Passkey linked, but wallet connection failed.` |
-| User links passkey successfully | Stores WebAuthn credential and navigates home after Calibur connector connects. |
+| User links passkey successfully                               | Stores WebAuthn credential and navigates home after Calibur connector connects.              |
 
 ### Sign-In
 
-| Scenario | Current behavior |
-| --- | --- |
-| Passkey recovery returns 404 from relayer | UI shows `No passkey found`, with create-account and retry actions. |
-| Passkey recovery returns verification/server error | UI shows relayer description or generic recovery error. |
-| Passkey recovery succeeds | Stores WebAuthn credential and connects Calibur connector. |
-| QR code has no valid private key | UI shows `This QR code does not contain a valid private key.` |
-| Manual private key is blank or malformed | UI shows validation error from `normalizePrivateKey`. |
-| Private-key connect fails | Clears private-key storage and shows the connection error. |
-| SIWE nonce/sign/verify fails | Error is caught in `LandingPage` and logged to console; wallet remains connected. |
-| SIWE token already exists in session storage | `authenticate()` returns cached token without signing. |
+| Scenario                                           | Current behavior                                                                  |
+| -------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Passkey recovery returns 404 from relayer          | UI shows `No passkey found`, with create-account and retry actions.               |
+| Passkey recovery returns verification/server error | UI shows relayer description or generic recovery error.                           |
+| Passkey recovery succeeds                          | Stores WebAuthn credential and connects Calibur connector.                        |
+| QR code has no valid private key                   | UI shows `This QR code does not contain a valid private key.`                     |
+| Manual private key is blank or malformed           | UI shows validation error from `normalizePrivateKey`.                             |
+| Private-key connect fails                          | Clears private-key storage and shows the connection error.                        |
+| SIWE nonce/sign/verify fails                       | Error is caught in `LandingPage` and logged to console; wallet remains connected. |
+| SIWE token already exists in session storage       | `authenticate()` returns cached token without signing.                            |
 
 ### Paper-Wallet URL Import
 
-| Scenario | Current behavior |
-| --- | --- |
-| URL has no `?w=` | No action. |
-| URL has invalid `?w=` | Query param is stripped, then ignored. |
-| URL has valid `?w=` while disconnected | Stores key and attempts `pkConnector` connect silently. |
-| Silent URL connect fails | Clears private-key storage. |
-| URL has valid `?w=` while already connected | Opens switch-wallet dialog with derived address. |
-| User cancels switch dialog | Clears pending key only. Existing wallet remains connected. |
+| Scenario                                      | Current behavior                                                                                |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| URL has no `?w=`                              | No action.                                                                                      |
+| URL has invalid `?w=`                         | Query param is stripped, then ignored.                                                          |
+| URL has valid `?w=` while disconnected        | Stores key and attempts `pkConnector` connect silently.                                         |
+| Silent URL connect fails                      | Clears private-key storage.                                                                     |
+| URL has valid `?w=` while already connected   | Opens switch-wallet dialog with derived address.                                                |
+| User cancels switch dialog                    | Clears pending key only. Existing wallet remains connected.                                     |
 | User confirms switch and new connect succeeds | Stores new private key, connects `pkConnector`, clears WebAuthn credential, clears pending key. |
-| User confirms switch and new connect fails | Restores previous private key and previous WebAuthn credential if they existed. |
+| User confirms switch and new connect fails    | Restores previous private key and previous WebAuthn credential if they existed.                 |
 
 ### Disconnect And Reconnect
 
-| Scenario | Current behavior |
-| --- | --- |
-| User signs out from `HomePage` | Clears SIWE session token and calls wagmi `disconnectAsync()`. |
-| Disconnecting private-key connector | Clears private-key localStorage keys. |
-| Disconnecting Calibur connector | Clears WebAuthn credential localStorage key. |
-| Wagmi reconnects on mount | `IndexPage` may render `HomePage` directly when connected. |
+| Scenario                                | Current behavior                                                                   |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| User signs out from `HomePage`          | Clears SIWE session token and calls wagmi `disconnectAsync()`.                     |
+| Disconnecting private-key connector     | Clears private-key localStorage keys.                                              |
+| Disconnecting Calibur connector         | Clears WebAuthn credential localStorage key.                                       |
+| Wagmi reconnects on mount               | `IndexPage` may render `HomePage` directly when connected.                         |
 | Wagmi reconnects directly to `HomePage` | `LandingPage` SIWE effect does not run, so SIWE may not be refreshed in that path. |
 
 ## Known Refinement Points
@@ -472,4 +472,3 @@ Gaps and sharp edges in the current implementation:
   success, making the paper-wallet key the active local auth method.
 - WebAuthn credentials can be marked stale, but no active flow in the current
   UI calls `markWebAuthnStale`.
-
