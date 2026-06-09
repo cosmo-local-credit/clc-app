@@ -39,7 +39,6 @@ const basePayload: NotificationPayload = {
 	body: "Voucher received",
 	createdAt: "2026-06-05T12:00:00.000Z",
 	kind: "voucher.received",
-	metadataStatus: "valid",
 	notificationId: "notification-1",
 	priority: "high",
 	targetUrl: "/wallet",
@@ -246,6 +245,20 @@ describe("notification storage availability", () => {
 			"IndexedDB is not available in this environment.",
 		);
 	});
+
+	it("retries opening the database after a cached open rejects", async () => {
+		const newerDatabase = await openRawDatabase("clc-notifications", 2);
+		newerDatabase.close();
+
+		await expect(openNotificationDatabase()).rejects.toMatchObject({
+			name: "VersionError",
+		});
+
+		await deleteRawDatabase("clc-notifications");
+
+		const database = await openNotificationDatabase();
+		expect(database.version).toBe(1);
+	});
 });
 
 function inboxMessage(
@@ -261,5 +274,21 @@ function inboxMessage(
 function waitForClockTick(): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(resolve, 1);
+	});
+}
+
+function openRawDatabase(name: string, version: number): Promise<IDBDatabase> {
+	return new Promise((resolve, reject) => {
+		const request = indexedDB.open(name, version);
+		request.onerror = () => reject(request.error);
+		request.onsuccess = () => resolve(request.result);
+	});
+}
+
+function deleteRawDatabase(name: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const request = indexedDB.deleteDatabase(name);
+		request.onerror = () => reject(request.error);
+		request.onsuccess = () => resolve();
 	});
 }

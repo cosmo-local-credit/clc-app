@@ -69,15 +69,12 @@ export const notificationActionSchema = z.object({
 
 export type NotificationAction = z.infer<typeof notificationActionSchema>;
 
-export type NotificationPayloadMetadataStatus = "dropped" | "valid";
-
 export type NotificationPayload = {
 	actions?: NotificationAction[];
 	body: string;
 	createdAt: string;
 	expiresAt?: string;
 	kind: NotificationKind;
-	metadataStatus: NotificationPayloadMetadataStatus;
 	notificationId: string;
 	offRampReference?: string;
 	priority: NotificationPriority;
@@ -121,19 +118,6 @@ const notificationOptionalMetadataSchema = z.object({
 	voucherId: optionalIdSchema,
 });
 
-export function createNotificationPayloadSchema(
-	options: ParseNotificationPayloadOptions = {},
-) {
-	return createRequiredNotificationPayloadSchema(options.appOrigin)
-		.and(notificationOptionalMetadataSchema)
-		.transform((payload) => ({
-			...payload,
-			metadataStatus: "valid" as const,
-		}));
-}
-
-export const notificationPayloadSchema = createNotificationPayloadSchema();
-
 export function parseNotificationPayload(
 	rawPayload: unknown,
 	options: ParseNotificationPayloadOptions = {},
@@ -158,7 +142,6 @@ export function parseNotificationPayload(
 		payload: {
 			...requiredResult.data,
 			...metadata,
-			metadataStatus: metadataResult.success ? "valid" : "dropped",
 		},
 		rawPayload,
 		success: true,

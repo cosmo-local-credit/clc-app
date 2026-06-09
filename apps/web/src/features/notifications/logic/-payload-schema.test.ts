@@ -80,26 +80,32 @@ describe("getNotificationKindPolicy", () => {
 
 describe("parseNotificationPayload", () => {
 	it("parses a valid voucher notification payload", () => {
-		const result = parseNotificationPayload(
-			{
-				...basePayload,
-				actions: [{ action: "view", title: "View" }],
-				expiresAt: "2026-06-05T12:00:00Z",
-				voucherId: "voucher-1",
-			},
-			{ appOrigin: APP_ORIGIN },
-		);
+		const rawPayload = {
+			...basePayload,
+			actions: [{ action: " view ", title: " View " }],
+			expiresAt: "2026-06-05T12:00:00Z",
+			offRampReference: " offramp-1 ",
+			swapId: " swap-1 ",
+			voucherId: " voucher-1 ",
+		};
+		const result = parseNotificationPayload(rawPayload, {
+			appOrigin: APP_ORIGIN,
+		});
 
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
 		expect(result.payload).toMatchObject({
 			actions: [{ action: "view", title: "View" }],
+			expiresAt: "2026-06-05T12:00:00Z",
 			kind: "voucher.received",
-			metadataStatus: "valid",
+			offRampReference: "offramp-1",
+			swapId: "swap-1",
 			targetUrl: "/wallet",
 			voucherId: "voucher-1",
 		});
+		expect(result.rawPayload).toBe(rawPayload);
+		expect(result.payload).not.toHaveProperty("metadataStatus");
 	});
 
 	it("parses an explicit very-low priority", () => {
@@ -164,12 +170,18 @@ describe("parseNotificationPayload", () => {
 	});
 
 	it("rejects unsafe target URLs", () => {
-		const result = parseNotificationPayload(
-			{ ...basePayload, targetUrl: "https://evil.example/wallet" },
-			{ appOrigin: APP_ORIGIN },
-		);
+		const rawPayload = {
+			...basePayload,
+			targetUrl: "https://evil.example/wallet",
+		};
+		const result = parseNotificationPayload(rawPayload, {
+			appOrigin: APP_ORIGIN,
+		});
 
 		expect(result.success).toBe(false);
+		if (result.success) return;
+
+		expect(result.rawPayload).toBe(rawPayload);
 	});
 
 	it("rejects invalid wallet addresses when present", () => {
@@ -190,26 +202,36 @@ describe("parseNotificationPayload", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("drops malformed optional metadata while keeping required notification fields", () => {
-		const result = parseNotificationPayload(
-			{
-				...basePayload,
-				actions: [{ action: "", title: "" }],
-				voucherId: 42,
-			},
-			{ appOrigin: APP_ORIGIN },
-		);
+	it("returns a basic notification when optional metadata is malformed", () => {
+		const rawPayload = {
+			...basePayload,
+			actions: [{ action: "", title: "" }],
+			expiresAt: "2026-06-05T12:00:00Z",
+			offRampReference: "offramp-1",
+			swapId: "swap-1",
+			voucherId: 42,
+		};
+		const result = parseNotificationPayload(rawPayload, {
+			appOrigin: APP_ORIGIN,
+		});
 
 		expect(result.success).toBe(true);
 		if (!result.success) return;
 
 		expect(result.payload).toMatchObject({
+			body: "You received a voucher.",
 			kind: "voucher.received",
-			metadataStatus: "dropped",
+			notificationId: "notification-1",
+			priority: "high",
 			targetUrl: "/wallet",
 			title: "Voucher received",
 		});
 		expect(result.payload.actions).toBeUndefined();
+		expect(result.payload.expiresAt).toBeUndefined();
+		expect(result.payload.offRampReference).toBeUndefined();
+		expect(result.payload.swapId).toBeUndefined();
 		expect(result.payload.voucherId).toBeUndefined();
+		expect(result.payload).not.toHaveProperty("metadataStatus");
+		expect(result.rawPayload).toBe(rawPayload);
 	});
 });

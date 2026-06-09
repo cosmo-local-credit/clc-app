@@ -366,6 +366,9 @@ export async function openNotificationDatabase(): Promise<
 				diagnostics.createIndex("by-status", "status");
 			}
 		},
+	}).catch((error: unknown) => {
+		databasePromise = null;
+		throw error;
 	});
 
 	return databasePromise;
