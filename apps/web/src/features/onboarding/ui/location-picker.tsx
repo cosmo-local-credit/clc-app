@@ -7,286 +7,270 @@ import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
 import type { GeocodeSuggestion } from "#/features/onboarding/api/geo-client";
-import {
-	reverseLocation,
-	searchLocations,
-} from "#/features/onboarding/api/geo-client";
+import { reverseLocation, searchLocations } from "#/features/onboarding/api/geo-client";
 
 import { LocationMap } from "./location-map.lazy";
 import { useBrowserGeolocation } from "./use-browser-geolocation";
 
 type LocationPickerProps = {
-	value: LocationInput | undefined;
-	onChange: (value: LocationInput | undefined) => void;
-	error?: string;
+  value: LocationInput | undefined;
+  onChange: (value: LocationInput | undefined) => void;
+  error?: string;
 };
 
 type PlacePinOptions = {
-	locationNameHint?: string;
-	clearSuggestions?: boolean;
-	updateSearchInput?: boolean;
+  locationNameHint?: string;
+  clearSuggestions?: boolean;
+  updateSearchInput?: boolean;
 };
 
-export function LocationPicker({
-	value,
-	onChange,
-	error,
-}: LocationPickerProps) {
-	const { t } = useLingui();
-	const [query, setQuery] = useState("");
-	const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
-	const [searching, setSearching] = useState(false);
-	const [pin, setPin] = useState<{ lat: number; lng: number } | null>(
-		value ? { lat: value.lat, lng: value.lng } : null,
-	);
-	const [reversePending, setReversePending] = useState(false);
-	const [reverseError, setReverseError] = useState<string | null>(null);
-	const [canRenderMap, setCanRenderMap] = useState(false);
-	const searchAbortRef = useRef<AbortController | null>(null);
-	const reverseAbortRef = useRef<AbortController | null>(null);
-	const reverseRequestRef = useRef(0);
-	const skipNextSearchRef = useRef(false);
-	const onChangeRef = useRef(onChange);
-	const geolocation = useBrowserGeolocation();
-	const geoStatus = geolocation.state.status;
-	const geoLat = geoStatus === "granted" ? geolocation.state.lat : null;
-	const geoLng = geoStatus === "granted" ? geolocation.state.lng : null;
+export function LocationPicker({ value, onChange, error }: LocationPickerProps) {
+  const { t } = useLingui();
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(
+    value ? { lat: value.lat, lng: value.lng } : null,
+  );
+  const [reversePending, setReversePending] = useState(false);
+  const [reverseError, setReverseError] = useState<string | null>(null);
+  const [canRenderMap, setCanRenderMap] = useState(false);
+  const searchAbortRef = useRef<AbortController | null>(null);
+  const reverseAbortRef = useRef<AbortController | null>(null);
+  const reverseRequestRef = useRef(0);
+  const skipNextSearchRef = useRef(false);
+  const onChangeRef = useRef(onChange);
+  const geolocation = useBrowserGeolocation();
+  const geoStatus = geolocation.state.status;
+  const geoLat = geoStatus === "granted" ? geolocation.state.lat : null;
+  const geoLng = geoStatus === "granted" ? geolocation.state.lng : null;
 
-	useEffect(() => {
-		onChangeRef.current = onChange;
-	}, [onChange]);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
-	useEffect(() => {
-		setCanRenderMap(true);
-	}, []);
+  useEffect(() => {
+    setCanRenderMap(true);
+  }, []);
 
-	useEffect(() => {
-		setPin((current) => {
-			if (!value) return current ? null : current;
-			if (current?.lat === value.lat && current.lng === value.lng)
-				return current;
-			return { lat: value.lat, lng: value.lng };
-		});
-	}, [value]);
+  useEffect(() => {
+    setPin((current) => {
+      if (!value) return current ? null : current;
+      if (current?.lat === value.lat && current.lng === value.lng) return current;
+      return { lat: value.lat, lng: value.lng };
+    });
+  }, [value]);
 
-	const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
-		skipNextSearchRef.current = true;
-		setQuery(nextQuery);
-	}, []);
+  const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
+    skipNextSearchRef.current = true;
+    setQuery(nextQuery);
+  }, []);
 
-	const placePin = useCallback(
-		(lat: number, lng: number, options: PlacePinOptions = {}) => {
-			setPin({ lat, lng });
-			if (options.clearSuggestions !== false) {
-				setSuggestions([]);
-			}
-			setReverseError(null);
-			setReversePending(true);
-			onChangeRef.current(undefined);
+  const placePin = useCallback(
+    (lat: number, lng: number, options: PlacePinOptions = {}) => {
+      setPin({ lat, lng });
+      if (options.clearSuggestions !== false) {
+        setSuggestions([]);
+      }
+      setReverseError(null);
+      setReversePending(true);
+      onChangeRef.current(undefined);
 
-			reverseAbortRef.current?.abort();
-			const controller = new AbortController();
-			reverseAbortRef.current = controller;
-			const requestId = reverseRequestRef.current + 1;
-			reverseRequestRef.current = requestId;
+      reverseAbortRef.current?.abort();
+      const controller = new AbortController();
+      reverseAbortRef.current = controller;
+      const requestId = reverseRequestRef.current + 1;
+      reverseRequestRef.current = requestId;
 
-			void reverseLocation(lat, lng, controller.signal).then((result) => {
-				if (
-					controller.signal.aborted ||
-					reverseRequestRef.current !== requestId
-				) {
-					return;
-				}
-				setReversePending(false);
-				const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
-				if (!result) {
-					setReverseError(reverseErrorMsg);
-					onChangeRef.current(undefined);
-					return;
-				}
+      void reverseLocation(lat, lng, controller.signal).then((result) => {
+        if (controller.signal.aborted || reverseRequestRef.current !== requestId) {
+          return;
+        }
+        setReversePending(false);
+        const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
+        if (!result) {
+          setReverseError(reverseErrorMsg);
+          onChangeRef.current(undefined);
+          return;
+        }
 
-				const parsed = locationSchema.safeParse({
-					lat,
-					lng,
-					locationName: options.locationNameHint ?? result.locationName,
-					country: result.country,
-				});
-				if (!parsed.success) {
-					setReverseError(reverseErrorMsg);
-					onChangeRef.current(undefined);
-					return;
-				}
+        const parsed = locationSchema.safeParse({
+          lat,
+          lng,
+          locationName: options.locationNameHint ?? result.locationName,
+          country: result.country,
+        });
+        if (!parsed.success) {
+          setReverseError(reverseErrorMsg);
+          onChangeRef.current(undefined);
+          return;
+        }
 
-				setReverseError(null);
-				if (options.updateSearchInput !== false) {
-					setSearchQueryFromLocation(parsed.data.locationName);
-				}
-				onChangeRef.current(parsed.data);
-			});
-		},
-		[setSearchQueryFromLocation, t],
-	);
+        setReverseError(null);
+        if (options.updateSearchInput !== false) {
+          setSearchQueryFromLocation(parsed.data.locationName);
+        }
+        onChangeRef.current(parsed.data);
+      });
+    },
+    [setSearchQueryFromLocation, t],
+  );
 
-	useEffect(() => {
-		searchAbortRef.current?.abort();
-		if (skipNextSearchRef.current) {
-			skipNextSearchRef.current = false;
-			setSuggestions([]);
-			setSearching(false);
-			return;
-		}
+  useEffect(() => {
+    searchAbortRef.current?.abort();
+    if (skipNextSearchRef.current) {
+      skipNextSearchRef.current = false;
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
 
-		const trimmedQuery = query.trim();
-		if (trimmedQuery.length < 3) {
-			setSuggestions([]);
-			setSearching(false);
-			return;
-		}
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length < 3) {
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
 
-		setSearching(true);
-		const controller = new AbortController();
-		searchAbortRef.current = controller;
-		const timeout = setTimeout(() => {
-			void searchLocations(trimmedQuery, controller.signal).then((results) => {
-				if (controller.signal.aborted) return;
-				setSuggestions(results.slice(0, 4));
-				setSearching(false);
-			});
-		}, 400);
+    setSearching(true);
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    const timeout = setTimeout(() => {
+      void searchLocations(trimmedQuery, controller.signal).then((results) => {
+        if (controller.signal.aborted) return;
+        setSuggestions(results.slice(0, 4));
+        setSearching(false);
+      });
+    }, 400);
 
-		return () => {
-			controller.abort();
-			clearTimeout(timeout);
-		};
-	}, [query]);
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [query]);
 
-	useEffect(() => {
-		return () => {
-			searchAbortRef.current?.abort();
-			reverseAbortRef.current?.abort();
-		};
-	}, []);
+  useEffect(() => {
+    return () => {
+      searchAbortRef.current?.abort();
+      reverseAbortRef.current?.abort();
+    };
+  }, []);
 
-	useEffect(() => {
-		if (geoStatus === "granted" && geoLat !== null && geoLng !== null) {
-			placePin(geoLat, geoLng);
-		}
-	}, [geoStatus, geoLat, geoLng, placePin]);
+  useEffect(() => {
+    if (geoStatus === "granted" && geoLat !== null && geoLng !== null) {
+      placePin(geoLat, geoLng);
+    }
+  }, [geoStatus, geoLat, geoLng, placePin]);
 
-	const geoUnavailable =
-		geolocation.state.status === "denied" ||
-		geolocation.state.status === "unavailable";
-	const geoRequesting = geolocation.state.status === "requesting";
-	const shownError = reverseError ?? (reversePending ? undefined : error);
+  const geoUnavailable =
+    geolocation.state.status === "denied" || geolocation.state.status === "unavailable";
+  const geoRequesting = geolocation.state.status === "requesting";
+  const shownError = reverseError ?? (reversePending ? undefined : error);
 
-	return (
-		<div className="space-y-3">
-			<div className="relative">
-				<label htmlFor="location-search" className="font-medium text-sm">
-					<Trans>Location</Trans>
-				</label>
-				<div className="relative mt-1.5">
-					<Input
-						id="location-search"
-						type="text"
-						role="searchbox"
-						autoComplete="off"
-						placeholder={t`Search for a town or place`}
-						value={query}
-						onChange={(event) => {
-							skipNextSearchRef.current = false;
-							setQuery(event.target.value);
-						}}
-						className="bg-card pr-10"
-						aria-invalid={!!shownError}
-					/>
-					<button
-						type="button"
-						className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
-						onClick={geolocation.request}
-						disabled={geoUnavailable || geoRequesting}
-						aria-label={
-							geoUnavailable ? t`Location unavailable` : t`Use my location`
-						}
-					>
-						{geoRequesting ? (
-							<ImSpinner2 className="size-4 animate-spin" />
-						) : (
-							<TbCurrentLocation className="size-4" />
-						)}
-					</button>
-				</div>
+  return (
+    <div className="space-y-3">
+      <div className="relative">
+        <label htmlFor="location-search" className="font-medium text-sm">
+          <Trans>Location</Trans>
+        </label>
+        <div className="relative mt-1.5">
+          <Input
+            id="location-search"
+            type="text"
+            role="searchbox"
+            autoComplete="off"
+            placeholder={t`Search for a town or place`}
+            value={query}
+            onChange={(event) => {
+              skipNextSearchRef.current = false;
+              setQuery(event.target.value);
+            }}
+            className="bg-card pr-10"
+            aria-invalid={!!shownError}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
+            onClick={geolocation.request}
+            disabled={geoUnavailable || geoRequesting}
+            aria-label={geoUnavailable ? t`Location unavailable` : t`Use my location`}
+          >
+            {geoRequesting ? (
+              <ImSpinner2 className="size-4 animate-spin" />
+            ) : (
+              <TbCurrentLocation className="size-4" />
+            )}
+          </button>
+        </div>
 
-				{suggestions.length > 0 ? (
-					<div
-						role="listbox"
-						className="absolute z-50 mt-1 w-full rounded-none border border-border bg-card"
-					>
-						{suggestions.map((suggestion) => (
-							<button
-								key={`${suggestion.address}-${suggestion.lat}-${suggestion.lng}`}
-								type="button"
-								role="option"
-								aria-selected="false"
-								className="block w-full px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-								onClick={() => {
-									setSearchQueryFromLocation(suggestion.address);
-									placePin(suggestion.lat, suggestion.lng, {
-										locationNameHint: suggestion.address,
-									});
-								}}
-							>
-								{suggestion.address}
-							</button>
-						))}
-					</div>
-				) : null}
-			</div>
+        {suggestions.length > 0 ? (
+          <div
+            role="listbox"
+            className="absolute z-50 mt-1 w-full rounded-none border border-border bg-card"
+          >
+            {suggestions.map((suggestion) => (
+              <button
+                key={`${suggestion.address}-${suggestion.lat}-${suggestion.lng}`}
+                type="button"
+                role="option"
+                aria-selected="false"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                onClick={() => {
+                  setSearchQueryFromLocation(suggestion.address);
+                  placePin(suggestion.lat, suggestion.lng, {
+                    locationNameHint: suggestion.address,
+                  });
+                }}
+              >
+                {suggestion.address}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
 
-			{searching ? (
-				<p className="text-muted-foreground text-xs">
-					<Trans>Searching places…</Trans>
-				</p>
-			) : null}
+      {searching ? (
+        <p className="text-muted-foreground text-xs">
+          <Trans>Searching places…</Trans>
+        </p>
+      ) : null}
 
-			{canRenderMap ? (
-				<Suspense
-					fallback={
-						<output className="block h-52 w-full rounded-xl border border-border bg-card">
-							<span className="sr-only">
-								<Trans>Loading location map</Trans>
-							</span>
-						</output>
-					}
-				>
-					<LocationMap
-						lat={pin?.lat ?? null}
-						lng={pin?.lng ?? null}
-						interactive
-						onLocationChange={placePin}
-					/>
-				</Suspense>
-			) : (
-				<output className="block h-52 w-full rounded-xl border border-border bg-card">
-					<span className="sr-only">
-						<Trans>Loading location map</Trans>
-					</span>
-				</output>
-			)}
+      {canRenderMap ? (
+        <Suspense
+          fallback={
+            <output className="block h-52 w-full rounded-xl border border-border bg-card">
+              <span className="sr-only">
+                <Trans>Loading location map</Trans>
+              </span>
+            </output>
+          }
+        >
+          <LocationMap
+            lat={pin?.lat ?? null}
+            lng={pin?.lng ?? null}
+            interactive
+            onLocationChange={placePin}
+          />
+        </Suspense>
+      ) : (
+        <output className="block h-52 w-full rounded-xl border border-border bg-card">
+          <span className="sr-only">
+            <Trans>Loading location map</Trans>
+          </span>
+        </output>
+      )}
 
-			{reversePending ? (
-				<output className="text-muted-foreground text-sm">
-					<Trans>Identifying location…</Trans>
-				</output>
-			) : null}
+      {reversePending ? (
+        <output className="text-muted-foreground text-sm">
+          <Trans>Identifying location…</Trans>
+        </output>
+      ) : null}
 
-			{shownError ? (
-				<p className="text-destructive text-xs">{shownError}</p>
-			) : null}
+      {shownError ? <p className="text-destructive text-xs">{shownError}</p> : null}
 
-			{geolocation.state.status === "error" ? (
-				<p className="text-destructive text-xs">{geolocation.state.message}</p>
-			) : null}
-		</div>
-	);
+      {geolocation.state.status === "error" ? (
+        <p className="text-destructive text-xs">{geolocation.state.message}</p>
+      ) : null}
+    </div>
+  );
 }

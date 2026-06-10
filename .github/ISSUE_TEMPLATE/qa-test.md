@@ -3,7 +3,7 @@ name: QA Test Run
 about: Step-by-step test plan for a feature — assign to a tester
 title: "QA: [Feature Name] — [Brief Scope]"
 labels: qa
-assignees: ''
+assignees: ""
 ---
 
 ## Feature
@@ -40,7 +40,7 @@ assignees: ''
 - [ ] Fail
 - [ ] Blocked
 
-*Notes:* (optional)
+_Notes:_ (optional)
 
 ---
 
@@ -55,7 +55,7 @@ assignees: ''
 - [ ] Fail
 - [ ] Blocked
 
-*Notes:* (optional)
+_Notes:_ (optional)
 
 ---
 
@@ -77,5 +77,3 @@ Check that scenarios below still work (no regressions).
 - [ ] All tests pass — ready to ship
 - [ ] Failures found (see notes below)
 - [ ] Blocked (cannot proceed — blocker found)
-
-

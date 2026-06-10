@@ -1,5 +1,5 @@
 declare module "*.po" {
-	import type { Messages } from "@lingui/core";
+  import type { Messages } from "@lingui/core";
 
-	export const messages: Messages;
+  export const messages: Messages;
 }

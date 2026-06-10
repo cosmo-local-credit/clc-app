@@ -1,52 +1,52 @@
 {
-	"name": "clc",
-	"private": true,
-	"packageManager": "pnpm@10.33.1",
-	"engines": {
-		"node": "24.16.0"
-	},
-	"type": "module",
-	"scripts": {
-		"dev": "pnpm --filter @clc/web dev --host",
-		"build": "pnpm --filter @clc/web build",
-		"build:cf": "pnpm --filter @clc/web build:cf",
-		"preview": "pnpm --filter @clc/web preview",
-		"preview:cf": "wrangler pages dev apps/web/dist",
-		"test": "pnpm -r test",
-		"i18n:extract": "lingui extract",
-		"i18n:compile": "lingui compile --typescript",
-		"test:e2e": "pnpm --filter @clc/web test:e2e",
-		"test:e2e:bs": "pnpm --filter @clc/web test:e2e:bs",
-		"format": "biome format --write .",
-		"lint": "biome lint .",
-		"lint:fix": "biome lint . --write",
-		"check": "biome check .",
-		"prepare": "husky"
-	},
-	"devDependencies": {
-		"@babel/core": "^7.29.7",
-		"@babel/plugin-syntax-jsx": "^7.29.7",
-		"@babel/plugin-syntax-typescript": "^7.29.7",
-		"@biomejs/biome": "2.4.16",
-		"@lingui/babel-plugin-lingui-macro": "5.9.5",
-		"@lingui/cli": "5.9.5",
-		"@lingui/macro": "5.9.5",
-		"@lingui/vite-plugin": "5.9.5",
-		"@rolldown/plugin-babel": "^0.2.3",
-		"@tanstack/cli": "^0.68.0",
-		"@ticktockbent/charlotte": "^0.6.3",
-		"@types/babel__core": "^7.20.5",
-		"babel-plugin-macros": "^3.1.0",
-		"husky": "^9.1.7",
-		"typescript": "^6.0.2",
-		"wrangler": "^3.99.0"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"lightningcss",
-			"puppeteer",
-			"workerd"
-		]
-	}
+  "name": "clc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @clc/web dev --host",
+    "build": "pnpm --filter @clc/web build",
+    "build:cf": "pnpm --filter @clc/web build:cf",
+    "preview": "pnpm --filter @clc/web preview",
+    "preview:cf": "wrangler pages dev apps/web/dist",
+    "test": "pnpm -r test",
+    "i18n:extract": "lingui extract",
+    "i18n:compile": "lingui compile --typescript",
+    "test:e2e": "pnpm --filter @clc/web test:e2e",
+    "test:e2e:bs": "pnpm --filter @clc/web test:e2e:bs",
+    "format": "vp fmt --fix",
+    "lint": "vp lint",
+    "lint:fix": "vp lint --fix",
+    "check": "vp check",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/plugin-syntax-jsx": "^7.29.7",
+    "@babel/plugin-syntax-typescript": "^7.29.7",
+    "@lingui/babel-plugin-lingui-macro": "5.9.5",
+    "@lingui/cli": "5.9.5",
+    "@lingui/macro": "5.9.5",
+    "@lingui/vite-plugin": "5.9.5",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tanstack/cli": "^0.68.0",
+    "@ticktockbent/charlotte": "^0.6.3",
+    "@types/babel__core": "^7.20.5",
+    "babel-plugin-macros": "^3.1.0",
+    "eslint-plugin-better-tailwindcss": "^4.5.0",
+    "typescript": "^6.0.2",
+    "vite-plus": "catalog:",
+    "wrangler": "^3.99.0"
+  },
+  "engines": {
+    "node": "24.16.0"
+  },
+  "packageManager": "pnpm@10.33.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "lightningcss",
+      "puppeteer",
+      "workerd"
+    ]
+  }
 }

@@ -12,104 +12,96 @@ import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
 
 type Props = {
-	onBack: () => void;
+  onBack: () => void;
 };
 
 export function PaperWalletCreate({ onBack }: Props) {
-	const { t } = useLingui();
-	const keyRef = useRef<`0x${string}` | null>(null);
-	if (!keyRef.current) keyRef.current = generatePrivateKey();
-	const key = keyRef.current;
+  const { t } = useLingui();
+  const keyRef = useRef<`0x${string}` | null>(null);
+  if (!keyRef.current) keyRef.current = generatePrivateKey();
+  const key = keyRef.current;
 
-	const account = useMemo(() => privateKeyToAccount(key), [key]);
-	const address = account.address;
-	const qrUrl = buildPaperWalletUrl(key);
+  const account = useMemo(() => privateKeyToAccount(key), [key]);
+  const address = account.address;
+  const qrUrl = buildPaperWalletUrl(key);
 
-	const { card, controls, downloadButton } = usePaperWalletSetup({
-		address,
-		qrUrl,
-		defaultName: t`Paper wallet`,
-	});
+  const { card, controls, downloadButton } = usePaperWalletSetup({
+    address,
+    qrUrl,
+    defaultName: t`Paper wallet`,
+  });
 
-	const [acked, setAcked] = useState(false);
-	const [connecting, setConnecting] = useState(false);
-	const [connectError, setConnectError] = useState<string | null>(null);
+  const [acked, setAcked] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
-	async function handleContinue() {
-		setConnecting(true);
-		setConnectError(null);
-		try {
-			storePrivateKey(key);
-			await connect(wagmiConfig, { connector: pkConnector });
-		} catch (err) {
-			clearPrivateKey();
-			setConnectError(
-				err instanceof Error ? err.message : t`Connection failed.`,
-			);
-			setConnecting(false);
-		}
-	}
+  async function handleContinue() {
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      storePrivateKey(key);
+      await connect(wagmiConfig, { connector: pkConnector });
+    } catch (err) {
+      clearPrivateKey();
+      setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
+      setConnecting(false);
+    }
+  }
 
-	return (
-		<div className="relative flex min-h-[100svh] flex-col bg-background">
-			<OnboardingLanguageSelector />
-			<div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-				<button
-					type="button"
-					onClick={onBack}
-					className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
-					aria-label={t`Go back`}
-				>
-					<ArrowLeft className="size-4" />
-					<Trans>Back</Trans>
-				</button>
+  return (
+    <div className="relative flex min-h-[100svh] flex-col bg-background">
+      <OnboardingLanguageSelector />
+      <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
+          aria-label={t`Go back`}
+        >
+          <ArrowLeft className="size-4" />
+          <Trans>Back</Trans>
+        </button>
 
-				<div className="mb-5 space-y-1">
-					<h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-						<Trans>Your paper wallet</Trans>
-					</h1>
-					<p className="text-muted-foreground text-sm">
-						<Trans>
-							Download or photograph this card. Anyone who scans the QR code
-							will have full access to this wallet.
-						</Trans>
-					</p>
-				</div>
+        <div className="mb-5 space-y-1">
+          <h1 className="font-bold font-heading text-[1.75rem] leading-tight">
+            <Trans>Your paper wallet</Trans>
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            <Trans>
+              Download or photograph this card. Anyone who scans the QR code will have full access
+              to this wallet.
+            </Trans>
+          </p>
+        </div>
 
-				{card}
+        {card}
 
-				{downloadButton}
+        {downloadButton}
 
-				{controls}
+        {controls}
 
-				<label className="mt-6 flex cursor-pointer items-start gap-3">
-					<input
-						type="checkbox"
-						checked={acked}
-						onChange={(e) => setAcked(e.target.checked)}
-						className="mt-0.5 size-4 cursor-pointer accent-primary"
-					/>
-					<span className="text-muted-foreground text-sm">
-						<Trans>
-							I have saved this key. If lost, my wallet cannot be recovered.
-						</Trans>
-					</span>
-				</label>
+        <label className="mt-6 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={acked}
+            onChange={(e) => setAcked(e.target.checked)}
+            className="mt-0.5 size-4 cursor-pointer accent-primary"
+          />
+          <span className="text-muted-foreground text-sm">
+            <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
+          </span>
+        </label>
 
-				<Button
-					className="mt-4 h-11 w-full"
-					disabled={!acked || connecting}
-					onClick={handleContinue}
-				>
-					{connecting ? (
-						<LoaderCircle className="mr-2 size-4 animate-spin" />
-					) : null}
-					{connecting ? t`Connecting...` : t`Continue`}
-				</Button>
-				{connectError ? (
-					<p className="mt-2 text-destructive text-xs">{connectError}</p>
-				) : null}
-			</div>
-		</div>
-	);
+        <Button
+          className="mt-4 h-11 w-full"
+          disabled={!acked || connecting}
+          onClick={handleContinue}
+        >
+          {connecting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
+          {connecting ? t`Connecting...` : t`Continue`}
+        </Button>
+        {connectError ? <p className="mt-2 text-destructive text-xs">{connectError}</p> : null}
+      </div>
+    </div>
+  );
 }

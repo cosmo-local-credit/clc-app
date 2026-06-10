@@ -5,27 +5,27 @@ import { useReconnect, WagmiProvider } from "wagmi";
 import { wagmiConfig } from "#/providers/web3-config";
 
 export function Web3Provider({
-	children,
-	queryClient,
+  children,
+  queryClient,
 }: {
-	children: ReactNode;
-	queryClient: QueryClient;
+  children: ReactNode;
+  queryClient: QueryClient;
 }) {
-	return (
-		<WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
-			<ReconnectOnMount />
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		</WagmiProvider>
-	);
+  return (
+    <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+      <ReconnectOnMount />
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  );
 }
 
 // Defers the wagmi reconnect to after mount so it does not fire synchronously
 // during the SSR hydration render pass, which would cause React 19 to throw
 // "Cannot update a component while rendering a different component".
 function ReconnectOnMount() {
-	const { mutate: reconnect } = useReconnect();
-	useEffect(() => {
-		reconnect();
-	}, [reconnect]);
-	return null;
+  const { mutate: reconnect } = useReconnect();
+  useEffect(() => {
+    reconnect();
+  }, [reconnect]);
+  return null;
 }

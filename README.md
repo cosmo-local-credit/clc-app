@@ -6,28 +6,41 @@
 
 ## Prerequisites
 
-Before running the project locally, install:
+- [Vite+](https://viteplus.dev/) CLI: `curl -fsSL https://vite.plus | bash`
 
-- [NVM](https://github.com/nvm-sh/nvm)
-- [pnpm](https://pnpm.io/installation) 10.33.1 or later
-
-Then install the pinned Node.js version from `.nvmrc`:
-
-```bash
-nvm install
-nvm use
-```
+The pinned Node.js version is in `.node-version`. `vp install` will activate it automatically if you have a compatible runtime manager (fnm, volta, or nvm).
 
 ## Getting started
 
 ```bash
-pnpm install
-pnpm dev
-pnpm build
-pnpm test
+vp install
+vp dev
+vp build
+vp test
 ```
 
 The web app runs on `http://localhost:3000` during development.
+
+## Editor setup
+
+Install the **Vite+ extension pack** for your editor:
+
+- **VS Code** — install `VoidZero.vite-plus-extension-pack` (recommended in `.vscode/extensions.json`)
+- **Zed** — Oxlint and Oxfmt LSP configs are in `.zed/settings.json`
+
+Format-on-save and organize-imports-on-save are wired for JS/TS/JSX/TSX and JSON files in both editors.
+
+## Common commands
+
+| Command          | Description                     |
+| ---------------- | ------------------------------- |
+| `vp dev`         | Start dev server                |
+| `vp build`       | Production build                |
+| `vp test`        | Run all tests                   |
+| `vp check`       | Type-check + lint + format      |
+| `vp check --fix` | Auto-fix lint and format issues |
+| `vp lint`        | Lint only                       |
+| `vp fmt --fix`   | Format only                     |
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guidelines, and feature structure.
 

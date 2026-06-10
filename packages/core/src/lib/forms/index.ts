@@ -10,10 +10,10 @@ export { useForm, useStore } from "@tanstack/react-form";
  * This handles both so callers don't need to branch.
  */
 export function getFieldError(
-	errors: Array<StandardSchemaV1Issue | string | undefined>,
+  errors: Array<StandardSchemaV1Issue | string | undefined>,
 ): string | null {
-	const first = errors.find((e) => e !== undefined);
-	if (first === undefined) return null;
-	if (typeof first === "string") return first;
-	return first.message;
+  const first = errors.find((e) => e !== undefined);
+  if (first === undefined) return null;
+  if (typeof first === "string") return first;
+  return first.message;
 }

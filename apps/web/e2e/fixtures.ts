@@ -9,24 +9,23 @@ import { test as base, type Page } from "@playwright/test";
  * later deletes `$_TSR`) on hydrate.
  */
 export async function gotoHydrated(page: Page, path: string): Promise<void> {
-	// TanStack Start streams the SSR response so the document may never
-	// fire `load`/`domcontentloaded`. Navigate with `commit` (document
-	// parsed), wait for TanStack Router hydration flag, then give React
-	// enough time to mount and attach event handlers to the delegation
-	// root. Buttons are visible in the DOM before React mounts; clicks
-	// before that point are silently ignored.
-	await page.goto(path, { waitUntil: "commit" });
-	await page.waitForFunction(
-		() => {
-			const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } })
-				.$_TSR;
-			return tsr == null || tsr.hydrated === true;
-		},
-		null,
-		{ timeout: 20_000 },
-	);
-	// Empirically, React needs ~2s after the TSR hydration flag flips.
-	await page.waitForTimeout(2500);
+  // TanStack Start streams the SSR response so the document may never
+  // fire `load`/`domcontentloaded`. Navigate with `commit` (document
+  // parsed), wait for TanStack Router hydration flag, then give React
+  // enough time to mount and attach event handlers to the delegation
+  // root. Buttons are visible in the DOM before React mounts; clicks
+  // before that point are silently ignored.
+  await page.goto(path, { waitUntil: "commit" });
+  await page.waitForFunction(
+    () => {
+      const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } }).$_TSR;
+      return tsr == null || tsr.hydrated === true;
+    },
+    null,
+    { timeout: 20_000 },
+  );
+  // Empirically, React needs ~2s after the TSR hydration flag flips.
+  await page.waitForTimeout(2500);
 }
 
 /**
@@ -37,30 +36,30 @@ export async function gotoHydrated(page: Page, path: string): Promise<void> {
  * result, then waits for the reverse-geocode to resolve before submitting.
  */
 export async function completeProfileStep(page: Page): Promise<void> {
-	await gotoHydrated(page, "/onboarding");
+  await gotoHydrated(page, "/onboarding");
 
-	await page.getByLabel("Name").fill("Test User");
-	await page.getByLabel("Email").fill("test@example.com");
+  await page.getByLabel("Name").fill("Test User");
+  await page.getByLabel("Email").fill("test@example.com");
 
-	// Real keystrokes — fill() can bypass the controlled input's onChange.
-	const search = page.getByRole("searchbox", { name: "Location" });
-	await search.click();
-	await search.pressSequentially("Nairobi", { delay: 60 });
+  // Real keystrokes — fill() can bypass the controlled input's onChange.
+  const search = page.getByRole("searchbox", { name: "Location" });
+  await search.click();
+  await search.pressSequentially("Nairobi", { delay: 60 });
 
-	const firstSuggestion = page.getByRole("option").first();
-	await firstSuggestion.waitFor({ state: "visible", timeout: 15_000 });
-	await firstSuggestion.click();
+  const firstSuggestion = page.getByRole("option").first();
+  await firstSuggestion.waitFor({ state: "visible", timeout: 15_000 });
+  await firstSuggestion.click();
 
-	// Reverse geocode runs after the pin is placed; wait for it to settle.
-	await page
-		.getByText(/Identifying location/)
-		.waitFor({ state: "hidden", timeout: 15_000 })
-		.catch(() => undefined);
+  // Reverse geocode runs after the pin is placed; wait for it to settle.
+  await page
+    .getByText(/Identifying location/)
+    .waitFor({ state: "hidden", timeout: 15_000 })
+    .catch(() => undefined);
 
-	await page.getByRole("button", { name: "Continue" }).click();
-	await page
-		.getByRole("heading", { name: "Your paper wallet" })
-		.waitFor({ state: "visible", timeout: 15_000 });
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page
+    .getByRole("heading", { name: "Your paper wallet" })
+    .waitFor({ state: "visible", timeout: 15_000 });
 }
 
 /**
@@ -69,37 +68,35 @@ export async function completeProfileStep(page: Page): Promise<void> {
  * that need an authenticated session.
  */
 export async function connectViaOnboarding(page: Page): Promise<void> {
-	await completeProfileStep(page);
+  await completeProfileStep(page);
 
-	// Acknowledge key saved
-	await page.getByLabel("I have saved this key").check();
+  // Acknowledge key saved
+  await page.getByLabel("I have saved this key").check();
 
-	// Click the paper-wallet-only continue button
-	const continueButton = page.getByRole("button", {
-		name: /Continue with paper wallet only|Continue to wallet/,
-	});
-	await continueButton.click();
+  // Click the paper-wallet-only continue button
+  const continueButton = page.getByRole("button", {
+    name: /Continue with paper wallet only|Continue to wallet/,
+  });
+  await continueButton.click();
 
-	// Wait for home page to appear (connected state)
-	await page
-		.getByRole("heading", { name: "Wallet" })
-		.waitFor({ state: "visible", timeout: 20_000 });
+  // Wait for home page to appear (connected state)
+  await page
+    .getByRole("heading", { name: "Wallet" })
+    .waitFor({ state: "visible", timeout: 20_000 });
 }
 
 /**
  * Sign out from the home page and return to the landing page.
  */
 export async function signOut(page: Page): Promise<void> {
-	// Navigate to settings tab
-	await page.getByRole("button", { name: "Settings" }).click();
+  // Navigate to settings tab
+  await page.getByRole("button", { name: "Settings" }).click();
 
-	// Click sign out
-	await page.getByRole("button", { name: "Sign out" }).click();
+  // Click sign out
+  await page.getByRole("button", { name: "Sign out" }).click();
 
-	// Wait for landing page
-	await page
-		.getByRole("heading", { name: "CLC" })
-		.waitFor({ state: "visible", timeout: 10_000 });
+  // Wait for landing page
+  await page.getByRole("heading", { name: "CLC" }).waitFor({ state: "visible", timeout: 10_000 });
 }
 
 export { expect } from "@playwright/test";

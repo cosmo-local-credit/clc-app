@@ -1,14 +1,14 @@
 {
-	"extends": "../../tsconfig.json",
-	"include": ["**/*.ts", "**/*.tsx"],
-	"exclude": ["e2e", "playwright.config.ts"],
-	"compilerOptions": {
-		"types": ["vite/client"],
-		"paths": {
-			"#/*": ["./src/*"],
-			"@/*": ["./src/*"],
-			"@clc/core/*": ["../../packages/core/src/*"],
-			"@clc/i18n/*": ["../../packages/i18n/src/*"]
-		}
-	}
+  "extends": "../../tsconfig.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["e2e", "playwright.config.ts"],
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "#/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@clc/core/*": ["../../packages/core/src/*"],
+      "@clc/i18n/*": ["../../packages/i18n/src/*"]
+    }
+  }
 }

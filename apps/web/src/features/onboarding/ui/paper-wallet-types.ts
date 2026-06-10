@@ -5,8 +5,8 @@
  * CLC logo instead of a user-uploaded raster.
  */
 export type PaperWalletCustomization = {
-	name: string;
-	website: string;
-	description: string;
-	logoDataUrl: string | null;
+  name: string;
+  website: string;
+  description: string;
+  logoDataUrl: string | null;
 };
