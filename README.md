@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-- [Vite+](https://vite.plus) CLI: `curl -fsSL https://vite.plus | bash`
+- [Vite+](https://viteplus.dev/) CLI: `curl -fsSL https://vite.plus | bash`
 
 The pinned Node.js version is in `.node-version`. `vp install` will activate it automatically if you have a compatible runtime manager (fnm, volta, or nvm).
 
