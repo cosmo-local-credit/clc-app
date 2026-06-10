@@ -62,6 +62,19 @@ var supportedKinds = map[string]struct{}{
 	"offramp.completed": {},
 }
 
+var defaultPrioritiesByKind = map[string]string{
+	"voucher.received":  "high",
+	"swap.completed":    "normal",
+	"offramp.completed": "high",
+}
+
+var supportedPriorities = map[string]struct{}{
+	"very-low": {},
+	"low":      {},
+	"normal":   {},
+	"high":     {},
+}
+
 type app struct {
 	mu              sync.Mutex
 	dataDir         string
@@ -887,7 +900,11 @@ func normalizeNotification(req debugSendRequest) (notificationPayload, error) {
 	payload.Title = firstNonEmpty(strings.TrimSpace(payload.Title), defaultTitleForKind(payload.Kind))
 	payload.Body = firstNonEmpty(strings.TrimSpace(payload.Body), defaultBodyForKind(payload.Kind))
 	payload.TargetURL = firstNonEmpty(strings.TrimSpace(payload.TargetURL), defaultTargetURL)
-	payload.Priority = firstNonEmpty(strings.TrimSpace(payload.Priority), "high")
+	priority, err := normalizePriority(payload.Kind, payload.Priority)
+	if err != nil {
+		return notificationPayload{}, err
+	}
+	payload.Priority = priority
 	payload.CreatedAt = firstNonEmpty(strings.TrimSpace(payload.CreatedAt), nowRFC3339())
 	payload.WalletAddressTarget = firstNonEmpty(strings.TrimSpace(payload.WalletAddressTarget), strings.TrimSpace(req.WalletAddress))
 
@@ -909,6 +926,24 @@ func validateSubscription(subscription pushSubscription) error {
 		return &apiError{Status: http.StatusBadRequest, Message: "pushSubscription.keys.auth and pushSubscription.keys.p256dh are required"}
 	}
 	return nil
+}
+
+func normalizePriority(kind, priority string) (string, error) {
+	normalizedPriority := strings.ToLower(strings.TrimSpace(priority))
+	if normalizedPriority == "" {
+		return defaultPriorityForKind(kind), nil
+	}
+	if _, ok := supportedPriorities[normalizedPriority]; !ok {
+		return "", &apiError{Status: http.StatusBadRequest, Message: "notification.priority must be one of very-low, low, normal, high"}
+	}
+	return normalizedPriority, nil
+}
+
+func defaultPriorityForKind(kind string) string {
+	if priority, ok := defaultPrioritiesByKind[kind]; ok {
+		return priority
+	}
+	return "high"
 }
 
 func authSchemeForEndpoint(endpoint string) webpush.AuthScheme {
