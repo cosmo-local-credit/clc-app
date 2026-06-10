@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "charlotte": {
+      "type": "stdio",
+      "command": "pnpx",
+      "args": ["@ticktockbent/charlotte"],
+      "env": {}
+    },
+    "context7": {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": ""
+      }
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "fonttrio": {
+      "type": "streamable-http",
+      "url": "https://www.fonttrio.xyz/api/mcp"
+    }
+  }
+}

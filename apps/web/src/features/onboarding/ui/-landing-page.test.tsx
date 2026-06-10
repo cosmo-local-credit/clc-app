@@ -1,265 +1,243 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
 const {
-	mockNavigate,
-	mockRecoverMutate,
-	mockRecoveryState,
-	mockConnectAction,
-	mockStorePrivateKey,
+  mockNavigate,
+  mockRecoverMutate,
+  mockRecoveryState,
+  mockConnectAction,
+  mockStorePrivateKey,
 } = vi.hoisted(() => ({
-	mockNavigate: vi.fn(),
-	mockRecoverMutate: vi.fn(),
-	mockConnectAction: vi.fn().mockResolvedValue(undefined),
-	mockStorePrivateKey: vi.fn(),
-	mockRecoveryState: {
-		step: "idle" as string,
-		outcome: null as string | null,
-		error: null as string | null,
-	},
+  mockNavigate: vi.fn(),
+  mockRecoverMutate: vi.fn(),
+  mockConnectAction: vi.fn().mockResolvedValue(undefined),
+  mockStorePrivateKey: vi.fn(),
+  mockRecoveryState: {
+    step: "idle" as string,
+    outcome: null as string | null,
+    error: null as string | null,
+  },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-	useNavigate: () => mockNavigate,
-	Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-		<a href={to}>{children}</a>
-	),
+  useNavigate: () => mockNavigate,
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 vi.mock("wagmi", () => ({
-	useAccount: () => ({ isConnected: false }),
-	useConnect: () => ({ connect: vi.fn() }),
+  useAccount: () => ({ isConnected: false }),
+  useConnect: () => ({ connect: vi.fn() }),
 }));
 
 vi.mock("wagmi/actions", () => ({
-	connect: (...args: unknown[]) => mockConnectAction(...args),
+  connect: (...args: unknown[]) => mockConnectAction(...args),
 }));
 
 vi.mock("#/components/paper-wallet-scanner", () => ({
-	PaperWalletScanner: ({
-		onKeyDecoded,
-		onCancel,
-	}: {
-		onKeyDecoded: (key: string) => void;
-		onCancel: () => void;
-	}) => (
-		<div data-testid="paper-wallet-scanner">
-			<button
-				type="button"
-				onClick={() =>
-					onKeyDecoded(
-						"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-					)
-				}
-			>
-				Simulate scan
-			</button>
-			<button type="button" onClick={onCancel}>
-				Cancel scan
-			</button>
-		</div>
-	),
+  PaperWalletScanner: ({
+    onKeyDecoded,
+    onCancel,
+  }: {
+    onKeyDecoded: (key: string) => void;
+    onCancel: () => void;
+  }) => (
+    <div data-testid="paper-wallet-scanner">
+      <button
+        type="button"
+        onClick={() =>
+          onKeyDecoded("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+        }
+      >
+        Simulate scan
+      </button>
+      <button type="button" onClick={onCancel}>
+        Cancel scan
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("#/features/webauthn/api/relayer-client", () => ({
-	createRelayerClient: () => ({}),
+  createRelayerClient: () => ({}),
 }));
 
 vi.mock("#/features/auth/hooks/use-siwe-auth", () => ({
-	useSiweAuth: () => ({ authenticate: vi.fn().mockResolvedValue("token") }),
+  useSiweAuth: () => ({ authenticate: vi.fn().mockResolvedValue("token") }),
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-recovery", () => ({
-	useCaliburRecovery: () => ({
-		...mockRecoveryState,
-		recover: { mutate: mockRecoverMutate },
-	}),
+  useCaliburRecovery: () => ({
+    ...mockRecoveryState,
+    recover: { mutate: mockRecoverMutate },
+  }),
 }));
 
 vi.mock("#/components/ui/clc-logo", () => ({
-	CLCLogo: () => <svg data-testid="clc-logo" />,
+  CLCLogo: () => <svg data-testid="clc-logo" />,
 }));
 
 vi.mock("#/connectors/privateKey", () => ({
-	storePrivateKey: (key: string) => mockStorePrivateKey(key),
-	clearPrivateKey: vi.fn(),
+  storePrivateKey: (key: string) => mockStorePrivateKey(key),
+  clearPrivateKey: vi.fn(),
 }));
 
 vi.mock("#/providers/web3-config", () => ({
-	caliburConnector: { id: "calibur" },
-	pkConnector: { id: "pk" },
-	wagmiConfig: {},
+  caliburConnector: { id: "calibur" },
+  pkConnector: { id: "pk" },
+  wagmiConfig: {},
 }));
 
 vi.mock("#/components/language-selector", () => ({
-	OnboardingLanguageSelector: () => null,
-	LanguageSelector: () => null,
+  OnboardingLanguageSelector: () => null,
+  LanguageSelector: () => null,
 }));
 
 const mockIsPasskeyPlatformAvailable = vi.fn(() => false);
 const mockPickPasskeyProvider = vi.fn<() => PasskeyProvider>(() => "google");
 
 vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
-	isPasskeyPlatformAvailable: () => mockIsPasskeyPlatformAvailable(),
-	pickPasskeyProvider: () => mockPickPasskeyProvider(),
-	usePlatformPasskeyLabel: () => ({
-		available: mockIsPasskeyPlatformAvailable(),
-		provider: mockPickPasskeyProvider(),
-		label: mockPickPasskeyProvider() === "apple" ? "Apple ID" : "Google",
-	}),
+  isPasskeyPlatformAvailable: () => mockIsPasskeyPlatformAvailable(),
+  pickPasskeyProvider: () => mockPickPasskeyProvider(),
+  usePlatformPasskeyLabel: () => ({
+    available: mockIsPasskeyPlatformAvailable(),
+    provider: mockPickPasskeyProvider(),
+    label: mockPickPasskeyProvider() === "apple" ? "Apple ID" : "Google",
+  }),
 }));
 
 import { LandingPage } from "./landing-page";
 
 beforeEach(() => {
-	mockNavigate.mockClear();
-	mockRecoverMutate.mockClear();
-	mockConnectAction.mockClear();
-	mockStorePrivateKey.mockClear();
-	mockConnectAction.mockResolvedValue(undefined);
-	mockRecoveryState.step = "idle";
-	mockRecoveryState.outcome = null;
-	mockRecoveryState.error = null;
-	mockIsPasskeyPlatformAvailable.mockReturnValue(false);
-	mockPickPasskeyProvider.mockReturnValue("google");
+  mockNavigate.mockClear();
+  mockRecoverMutate.mockClear();
+  mockConnectAction.mockClear();
+  mockStorePrivateKey.mockClear();
+  mockConnectAction.mockResolvedValue(undefined);
+  mockRecoveryState.step = "idle";
+  mockRecoveryState.outcome = null;
+  mockRecoveryState.error = null;
+  mockIsPasskeyPlatformAvailable.mockReturnValue(false);
+  mockPickPasskeyProvider.mockReturnValue("google");
 });
 
 describe("LandingPage button visibility", () => {
-	it("always shows Create an account button", () => {
-		render(<LandingPage />);
-		expect(
-			screen.getByRole("button", { name: /create an account/i }),
-		).toBeTruthy();
-	});
+  it("always shows Create an account button", () => {
+    render(<LandingPage />);
+    expect(screen.getByRole("button", { name: /create an account/i })).toBeTruthy();
+  });
 
-	it("shows an icon in the Create an account button", () => {
-		render(<LandingPage />);
-		const button = screen.getByRole("button", { name: /create an account/i });
-		expect(button.querySelector("svg")).toBeTruthy();
-	});
+  it("shows an icon in the Create an account button", () => {
+    render(<LandingPage />);
+    const button = screen.getByRole("button", { name: /create an account/i });
+    expect(button.querySelector("svg")).toBeTruthy();
+  });
 
-	it("always shows Continue with Paper Wallet button", () => {
-		render(<LandingPage />);
-		expect(
-			screen.getByRole("button", { name: /continue with paper wallet/i }),
-		).toBeTruthy();
-	});
+  it("always shows Continue with Paper Wallet button", () => {
+    render(<LandingPage />);
+    expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toBeTruthy();
+  });
 
-	it("hides passkey button on non-passkey platforms", () => {
-		mockIsPasskeyPlatformAvailable.mockReturnValue(false);
-		render(<LandingPage />);
-		expect(
-			screen.queryByRole("button", { name: /continue with google/i }),
-		).toBeNull();
-		expect(
-			screen.queryByRole("button", { name: /continue with apple/i }),
-		).toBeNull();
-	});
+  it("hides passkey button on non-passkey platforms", () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(false);
+    render(<LandingPage />);
+    expect(screen.queryByRole("button", { name: /continue with google/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /continue with apple/i })).toBeNull();
+  });
 
-	it("shows Continue with Google on Android Chrome", () => {
-		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
-		mockPickPasskeyProvider.mockReturnValue("google");
-		render(<LandingPage />);
-		expect(
-			screen.getByRole("button", { name: /continue with google/i }),
-		).toBeTruthy();
-	});
+  it("shows Continue with Google on Android Chrome", () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    mockPickPasskeyProvider.mockReturnValue("google");
+    render(<LandingPage />);
+    expect(screen.getByRole("button", { name: /continue with google/i })).toBeTruthy();
+  });
 
-	it("shows Continue with Apple ID on iOS Safari", () => {
-		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
-		mockPickPasskeyProvider.mockReturnValue("apple");
-		render(<LandingPage />);
-		expect(
-			screen.getByRole("button", { name: /continue with apple id/i }),
-		).toBeTruthy();
-	});
+  it("shows Continue with Apple ID on iOS Safari", () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    mockPickPasskeyProvider.mockReturnValue("apple");
+    render(<LandingPage />);
+    expect(screen.getByRole("button", { name: /continue with apple id/i })).toBeTruthy();
+  });
 
-	it("does not show Apple ID button when provider is google", () => {
-		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
-		mockPickPasskeyProvider.mockReturnValue("google");
-		render(<LandingPage />);
-		expect(
-			screen.queryByRole("button", { name: /continue with apple/i }),
-		).toBeNull();
-	});
+  it("does not show Apple ID button when provider is google", () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    mockPickPasskeyProvider.mockReturnValue("google");
+    render(<LandingPage />);
+    expect(screen.queryByRole("button", { name: /continue with apple/i })).toBeNull();
+  });
 });
 
 describe("LandingPage navigation", () => {
-	it("navigates to /onboarding when Create an account is clicked", () => {
-		render(<LandingPage />);
-		fireEvent.click(screen.getByRole("button", { name: /create an account/i }));
-		expect(mockNavigate).toHaveBeenCalledWith({ to: "/onboarding" });
-	});
+  it("navigates to /onboarding when Create an account is clicked", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /create an account/i }));
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/onboarding" });
+  });
 
-	it("opens the paper wallet scanner when Continue with Paper Wallet is clicked", () => {
-		render(<LandingPage />);
-		fireEvent.click(
-			screen.getByRole("button", { name: /continue with paper wallet/i }),
-		);
-		expect(screen.getByTestId("paper-wallet-scanner")).toBeTruthy();
-		expect(mockNavigate).not.toHaveBeenCalledWith({ to: "/signin" });
-	});
+  it("opens the paper wallet scanner when Continue with Paper Wallet is clicked", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+    expect(screen.getByTestId("paper-wallet-scanner")).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalledWith({ to: "/signin" });
+  });
 
-	it("stores and connects a paper wallet key after scan", async () => {
-		render(<LandingPage />);
-		fireEvent.click(
-			screen.getByRole("button", { name: /continue with paper wallet/i }),
-		);
-		fireEvent.click(screen.getByRole("button", { name: /simulate scan/i }));
-		expect(mockStorePrivateKey).toHaveBeenCalledWith(
-			"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-		);
-		expect(mockConnectAction).toHaveBeenCalledWith(
-			{},
-			expect.objectContaining({ connector: { id: "pk" } }),
-		);
-	});
+  it("stores and connects a paper wallet key after scan", async () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /simulate scan/i }));
+    expect(mockStorePrivateKey).toHaveBeenCalledWith(
+      "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    );
+    expect(mockConnectAction).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ connector: { id: "pk" } }),
+    );
+  });
 
-	it("hides advanced options by default", () => {
-		render(<LandingPage />);
-		expect(screen.queryByRole("button", { name: /private key/i })).toBeNull();
-	});
+  it("hides advanced options by default", () => {
+    render(<LandingPage />);
+    expect(screen.queryByRole("button", { name: /private key/i })).toBeNull();
+  });
 
-	it("shows Private key under advanced options", () => {
-		render(<LandingPage />);
-		fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
-		expect(screen.getByRole("button", { name: /private key/i })).toBeTruthy();
-	});
+  it("shows Private key under advanced options", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
+    expect(screen.getByRole("button", { name: /private key/i })).toBeTruthy();
+  });
 });
 
 describe("LandingPage passkey recovery", () => {
-	beforeEach(() => {
-		mockIsPasskeyPlatformAvailable.mockReturnValue(true);
-		mockPickPasskeyProvider.mockReturnValue("google");
-	});
+  beforeEach(() => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    mockPickPasskeyProvider.mockReturnValue("google");
+  });
 
-	it("calls recover.mutate when Google button is clicked", () => {
-		render(<LandingPage />);
-		fireEvent.click(
-			screen.getByRole("button", { name: /continue with google/i }),
-		);
-		expect(mockRecoverMutate).toHaveBeenCalledTimes(1);
-	});
+  it("calls recover.mutate when Google button is clicked", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
+    expect(mockRecoverMutate).toHaveBeenCalledTimes(1);
+  });
 
-	it("shows not_found error message when outcome is not_found", () => {
-		mockRecoveryState.outcome = "not_found";
-		render(<LandingPage />);
-		expect(screen.getByText(/no passkey found/i)).toBeTruthy();
-	});
+  it("shows not_found error message when outcome is not_found", () => {
+    mockRecoveryState.outcome = "not_found";
+    render(<LandingPage />);
+    expect(screen.getByText(/no passkey found/i)).toBeTruthy();
+  });
 
-	it("shows Create an account CTA inside not_found error", () => {
-		mockRecoveryState.outcome = "not_found";
-		render(<LandingPage />);
-		const createLink = screen
-			.getAllByRole("link")
-			.find((el) => el.getAttribute("href") === "/onboarding");
-		expect(createLink).toBeTruthy();
-	});
+  it("shows Create an account CTA inside not_found error", () => {
+    mockRecoveryState.outcome = "not_found";
+    render(<LandingPage />);
+    const createLink = screen
+      .getAllByRole("link")
+      .find((el) => el.getAttribute("href") === "/onboarding");
+    expect(createLink).toBeTruthy();
+  });
 
-	it("shows recovery error message when recoveryError is set", () => {
-		mockRecoveryState.error = "Verification failed";
-		render(<LandingPage />);
-		expect(screen.getByText(/verification failed/i)).toBeTruthy();
-	});
+  it("shows recovery error message when recoveryError is set", () => {
+    mockRecoveryState.error = "Verification failed";
+    render(<LandingPage />);
+    expect(screen.getByText(/verification failed/i)).toBeTruthy();
+  });
 });

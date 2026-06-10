@@ -11,104 +11,74 @@ import { hasWebAuthnCredential } from "#/lib/webauthn-storage";
 import { caliburConnector } from "#/providers/web3-config";
 
 export function SignupWithPasskey({
-	client,
-	onSuccess,
+  client,
+  onSuccess,
 }: {
-	client: RelayerClient;
-	onSuccess: () => void;
+  client: RelayerClient;
+  onSuccess: () => void;
 }) {
-	const { provider, label } = usePlatformPasskeyLabel();
-	const {
-		step: recoveryStep,
-		outcome,
-		error: recoveryError,
-		recover,
-	} = useCaliburRecovery(client);
-	const {
-		step: signupStep,
-		error: signupError,
-		signup,
-	} = useCaliburSignup(client);
-	const { connect } = useConnect();
-	const [mode, setMode] = useState<"recover" | "signup">("recover");
+  const { provider, label } = usePlatformPasskeyLabel();
+  const { step: recoveryStep, outcome, error: recoveryError, recover } = useCaliburRecovery(client);
+  const { step: signupStep, error: signupError, signup } = useCaliburSignup(client);
+  const { connect } = useConnect();
+  const [mode, setMode] = useState<"recover" | "signup">("recover");
 
-	const isRecovering = ["challenging", "asserting", "verifying"].includes(
-		recoveryStep,
-	);
-	const isCreating = [
-		"generating-key",
-		"creating-passkey",
-		"registering",
-	].includes(signupStep);
-	const loading = isRecovering || isCreating;
-	const error = recoveryError ?? signupError;
+  const isRecovering = ["challenging", "asserting", "verifying"].includes(recoveryStep);
+  const isCreating = ["generating-key", "creating-passkey", "registering"].includes(signupStep);
+  const loading = isRecovering || isCreating;
+  const error = recoveryError ?? signupError;
 
-	useEffect(() => {
-		if (recoveryStep === "done" || signupStep === "done") {
-			connect({ connector: caliburConnector }, { onSuccess });
-		}
-	}, [recoveryStep, signupStep, connect, onSuccess]);
+  useEffect(() => {
+    if (recoveryStep === "done" || signupStep === "done") {
+      connect({ connector: caliburConnector }, { onSuccess });
+    }
+  }, [recoveryStep, signupStep, connect, onSuccess]);
 
-	useEffect(() => {
-		if (outcome === "not_found") {
-			setMode("signup");
-		}
-	}, [outcome]);
+  useEffect(() => {
+    if (outcome === "not_found") {
+      setMode("signup");
+    }
+  }, [outcome]);
 
-	const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
-	const hasLocal = hasWebAuthnCredential();
-	const continueLabel =
-		provider === "apple" ? "Continue with Apple ID" : "Continue with Google";
+  const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
+  const hasLocal = hasWebAuthnCredential();
+  const continueLabel = provider === "apple" ? "Continue with Apple ID" : "Continue with Google";
 
-	if (mode === "signup") {
-		return (
-			<div className="space-y-2">
-				<p className="text-center text-muted-foreground text-sm">
-					No existing wallet found.
-				</p>
-				<Button
-					className="h-11 w-full"
-					onClick={() => signup.mutate()}
-					disabled={loading}
-				>
-					{isCreating ? (
-						<LoaderCircle className="mr-2 size-4 animate-spin" />
-					) : (
-						<ProviderIcon className="mr-2 size-4" />
-					)}
-					{isCreating
-						? "Creating wallet…"
-						: `Create with ${provider === "apple" ? "Apple ID" : "Google"}`}
-				</Button>
-				{!loading ? (
-					<Button
-						variant="ghost"
-						className="w-full text-xs"
-						onClick={() => setMode("recover")}
-					>
-						Cancel
-					</Button>
-				) : null}
-				{error ? <p className="text-destructive text-xs">{error}</p> : null}
-			</div>
-		);
-	}
+  if (mode === "signup") {
+    return (
+      <div className="space-y-2">
+        <p className="text-center text-muted-foreground text-sm">No existing wallet found.</p>
+        <Button className="h-11 w-full" onClick={() => signup.mutate()} disabled={loading}>
+          {isCreating ? (
+            <LoaderCircle className="mr-2 size-4 animate-spin" />
+          ) : (
+            <ProviderIcon className="mr-2 size-4" />
+          )}
+          {isCreating
+            ? "Creating wallet…"
+            : `Create with ${provider === "apple" ? "Apple ID" : "Google"}`}
+        </Button>
+        {!loading ? (
+          <Button variant="ghost" className="w-full text-xs" onClick={() => setMode("recover")}>
+            Cancel
+          </Button>
+        ) : null}
+        {error ? <p className="text-destructive text-xs">{error}</p> : null}
+      </div>
+    );
+  }
 
-	return (
-		<div className="space-y-2">
-			<Button
-				className="h-11 w-full"
-				onClick={() => recover.mutate()}
-				disabled={loading}
-			>
-				{loading ? (
-					<LoaderCircle className="mr-2 size-4 animate-spin" />
-				) : (
-					<ProviderIcon className="mr-2 size-4" />
-				)}
-				{loading ? "Connecting…" : hasLocal ? continueLabel : label}
-			</Button>
-			{error ? <p className="text-destructive text-xs">{error}</p> : null}
-		</div>
-	);
+  return (
+    <div className="space-y-2">
+      <Button className="h-11 w-full" onClick={() => recover.mutate()} disabled={loading}>
+        {loading ? (
+          <LoaderCircle className="mr-2 size-4 animate-spin" />
+        ) : (
+          <ProviderIcon className="mr-2 size-4" />
+        )}
+        {loading ? "Connecting…" : hasLocal ? continueLabel : label}
+      </Button>
+      {error ? <p className="text-destructive text-xs">{error}</p> : null}
+    </div>
+  );
 }

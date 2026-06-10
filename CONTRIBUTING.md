@@ -69,8 +69,8 @@ Import shared feature logic into the web app with `@clc/core/features/<name>/log
 ## Testing
 
 ```bash
-pnpm test
-pnpm --filter @clc/core test
+vp test
+vp test --filter @clc/core
 ```
 
 Use plain Vitest for logic in `packages/core`. Use `@testing-library/react` for UI tests in `apps/web`.
@@ -78,10 +78,9 @@ Use plain Vitest for logic in `packages/core`. Use `@testing-library/react` for 
 ## Common commands
 
 ```bash
-pnpm dev
-pnpm build
-pnpm check
-pnpm exec biome check --write .
+vp dev
+vp build
+vp check
 ```
 
 ## Dependency policy
