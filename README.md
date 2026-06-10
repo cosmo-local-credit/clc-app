@@ -8,7 +8,7 @@
 
 - [Vite+](https://viteplus.dev/) CLI: `curl -fsSL https://vite.plus | bash`
 
-The pinned Node.js version is in `.node-version`. `vp install` will activate it automatically if you have a compatible runtime manager (fnm, volta, or nvm).
+The pinned Node.js version is in `.node-version`. `vp install` will activate it automatically.
 
 ## Getting started
 
@@ -25,10 +25,7 @@ The web app runs on `http://localhost:3000` during development.
 
 Install the **Vite+ extension pack** for your editor:
 
-- **VS Code** — install `VoidZero.vite-plus-extension-pack` (recommended in `.vscode/extensions.json`)
-- **Zed** — Oxlint and Oxfmt LSP configs are in `.zed/settings.json`
-
-Format-on-save and organize-imports-on-save are wired for JS/TS/JSX/TSX and JSON files in both editors.
+- https://viteplus.dev/guide/ide-integration
 
 ## Common commands
 
