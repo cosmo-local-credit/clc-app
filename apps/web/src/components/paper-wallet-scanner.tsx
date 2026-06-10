@@ -74,7 +74,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
         (decodedText) => {
           if (epochRef.current !== epoch) return;
           onKeyDecoded(decodedText);
-          scanner.stop().then(() => scanner.clear());
+          void scanner.stop().then(() => scanner.clear());
           scannerRef.current = null;
         },
         () => {},
