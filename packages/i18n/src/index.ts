@@ -1,6 +1,6 @@
 import type { Messages } from "@lingui/core";
 import { i18n } from "@lingui/core";
-import { messages as enMessages } from "./catalogs/en/messages";
+import { messages as enMessages } from "./catalogs/en/messages.po";
 import {
   DEFAULT_LOCALE,
   isSupportedLocale,
@@ -19,7 +19,7 @@ export {
 
 const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages }>> = {
   en: async () => ({ messages: enMessages }),
-  sw: () => import("./catalogs/sw/messages"),
+  sw: () => import("./catalogs/sw/messages.po"),
 };
 
 const loadedLocales = new Set<SupportedLocale>();
