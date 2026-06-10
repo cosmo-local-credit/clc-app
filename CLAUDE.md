@@ -75,7 +75,7 @@ client only. **No serverless**: no TanStack Start server functions
 
 ## Commands
 
-- `vp dev` — dev server (filters to `@clc/web`)
+- `vp dev apps/web` — dev server for `@clc/web` (run from repo root)
 - `vp install` — install deps after pulling remote changes
 - `vp check` — biome (lint + format + imports). Always run after edits.
 - `vp test` — vitest across all packages

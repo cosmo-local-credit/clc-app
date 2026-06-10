@@ -14,7 +14,7 @@ The pinned Node.js version is in `.node-version`. `vp install` will activate it 
 
 ```bash
 vp install
-vp dev
+vp dev apps/web
 vp build
 vp test
 ```
@@ -32,15 +32,15 @@ Format-on-save and organize-imports-on-save are wired for JS/TS/JSX/TSX and JSON
 
 ## Common commands
 
-| Command          | Description                     |
-| ---------------- | ------------------------------- |
-| `vp dev`         | Start dev server                |
-| `vp build`       | Production build                |
-| `vp test`        | Run all tests                   |
-| `vp check`       | Type-check + lint + format      |
-| `vp check --fix` | Auto-fix lint and format issues |
-| `vp lint`        | Lint only                       |
-| `vp fmt --fix`   | Format only                     |
+| Command           | Description                     |
+| ----------------- | ------------------------------- |
+| `vp dev apps/web` | Start dev server                |
+| `vp build`        | Production build                |
+| `vp test`         | Run all tests                   |
+| `vp check`        | Type-check + lint + format      |
+| `vp check --fix`  | Auto-fix lint and format issues |
+| `vp lint`         | Lint only                       |
+| `vp fmt --fix`    | Format only                     |
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guidelines, and feature structure.
 
