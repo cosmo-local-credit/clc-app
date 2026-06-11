@@ -23,7 +23,7 @@ vi.mock("#/components/ui/select", () => ({
   ),
 }));
 
-const { ThemeSelector } = await import("./theme-selector");
+const { ThemeSelector, ThemeToggle } = await import("./theme-selector");
 const { useThemeStore, THEME_STORAGE_KEY } = await import("#/providers/theme");
 
 function mockPrefersColorScheme(dark: boolean) {
@@ -64,5 +64,35 @@ describe("ThemeSelector", () => {
     });
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  });
+});
+
+describe("ThemeToggle", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    document.documentElement.classList.remove("dark");
+    useThemeStore.setState({ theme: "light" });
+    mockPrefersColorScheme(false);
+  });
+
+  it("renders unpressed in light mode", () => {
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button", { name: /toggle theme/i });
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("switches to dark and persists when pressed", () => {
+    render(<ThemeToggle />);
+    fireEvent.click(screen.getByRole("button", { name: /toggle theme/i }));
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+  });
+
+  it("reflects a stored dark preference as pressed", () => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button", { name: /toggle theme/i });
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
   });
 });

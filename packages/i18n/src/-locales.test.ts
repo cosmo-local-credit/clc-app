@@ -21,4 +21,12 @@ describe("matchSupportedLocale", () => {
   it("is case-insensitive", () => {
     expect(matchSupportedLocale(["SW"])).toBe("sw");
   });
+
+  it("normalizes underscore-delimited tags (e.g. en_US)", () => {
+    expect(matchSupportedLocale(["sw_KE", "en_US"])).toBe("sw");
+  });
+
+  it("trims surrounding whitespace", () => {
+    expect(matchSupportedLocale(["  sw-KE  "])).toBe("sw");
+  });
 });

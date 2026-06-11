@@ -13,6 +13,21 @@ const THEME_COLOR: Record<Theme, string> = {
   dark: "#141414",
 };
 
+// Inline <head> script (as a string) injected in __root.tsx. Runs synchronously
+// before first paint so the correct scheme is applied with no flash: read the
+// stored choice, else autodetect prefers-color-scheme (seeding it for next
+// time), then set the class / color-scheme / theme-color meta. Built from the
+// same constants the store uses so the storage key and meta colours can't drift.
+export const themeBootstrapScript =
+  `(function(){try{` +
+  `var k=${JSON.stringify(THEME_STORAGE_KEY)},s=localStorage.getItem(k),` +
+  `t=s==="light"||s==="dark"?s:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";` +
+  `if(s!==t)localStorage.setItem(k,t);` +
+  `var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.style.colorScheme=t;` +
+  `var m=document.querySelector('meta[name="theme-color"]');` +
+  `if(m)m.setAttribute("content",t==="dark"?${JSON.stringify(THEME_COLOR.dark)}:${JSON.stringify(THEME_COLOR.light)})` +
+  `}catch(e){}})();`;
+
 export function readInitialTheme(): Theme {
   if (typeof window === "undefined") return "light";
   try {
@@ -64,7 +79,10 @@ export function useHydratedTheme() {
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
   useEffect(() => {
-    setTheme(readInitialTheme());
+    const initial = readInitialTheme();
+    // Skip the write when the store already matches — avoids a redundant DOM /
+    // localStorage write on every mount (the bootstrap script already applied it).
+    if (initial !== useThemeStore.getState().theme) setTheme(initial);
   }, [setTheme]);
   return { theme, setTheme };
 }
