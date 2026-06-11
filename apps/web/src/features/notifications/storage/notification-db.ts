@@ -1,9 +1,12 @@
 import { type DBSchema, type IDBPDatabase, openDB } from "idb";
 import type { NotificationPayload } from "../logic/payload-schema";
-import type { NotificationPermissionSnapshot } from "../platform/capability";
+import type {
+  NotificationCapabilityPlatform,
+  NotificationPermissionSnapshot,
+} from "../platform/capability";
 
 const DB_NAME = "clc-notifications";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const SINGLETON_KEY = "current";
 const DEFAULT_ACK_LIMIT = 100;
 const DEFAULT_DIAGNOSTIC_LIMIT = 50;
@@ -35,6 +38,13 @@ type NotificationDatabase = DBSchema & {
     key: string;
     value: NotificationInboxMessage;
   };
+  pendingClickEvents: {
+    indexes: {
+      "by-created-at": string;
+    };
+    key: string;
+    value: NotificationPendingClickEvent;
+  };
   subscriptionDiagnostics: {
     indexes: {
       "by-created-at": string;
@@ -56,11 +66,14 @@ export type NotificationConfigRecord = {
   appVersion?: string;
   key: typeof SINGLETON_KEY;
   permissionState?: NotificationPermissionSnapshot;
+  platform?: NotificationCapabilityPlatform;
   serviceWorkerVersion?: string;
   subscriptionHash?: string;
   syncCursor?: string;
   updatedAt: string;
   vapidKeyVersion?: string;
+  vapidPublicKey?: string;
+  workerProtocolVersion?: number;
 };
 
 export type NotificationConfigPatch = Omit<Partial<NotificationConfigRecord>, "key" | "updatedAt">;
@@ -70,6 +83,14 @@ export type NotificationInboxMessage = NotificationPayload & {
   readAt?: string;
   receivedAt: string;
   rawPayload?: unknown;
+};
+
+export type NotificationPendingClickEvent = {
+  actionId?: string;
+  createdAt: string;
+  eventId: string;
+  notificationId: string;
+  targetUrl: string;
 };
 
 export type NotificationAckKind = "action" | "click" | "delivery";
@@ -119,11 +140,13 @@ export type RecordSubscriptionDiagnosticInput = Omit<
   Pick<NotificationSubscriptionDiagnostic, "status">;
 
 let databasePromise: Promise<IDBPDatabase<NotificationDatabase>> | null = null;
+let lastAckQueuedAtMs = 0;
 
 export async function resetNotificationDatabaseForTests(): Promise<void> {
   const database = await databasePromise?.catch(() => null);
   database?.close();
   databasePromise = null;
+  lastAckQueuedAtMs = 0;
 }
 
 export function isNotificationStorageAvailable(): boolean {
@@ -148,6 +171,12 @@ export async function getOrCreateNotificationDeviceId(): Promise<string> {
 
   await db.put("device", record);
   return record.deviceId;
+}
+
+export async function readNotificationDeviceId(): Promise<string | null> {
+  const db = await openNotificationDatabase();
+  const record = await db.get("device", SINGLETON_KEY);
+  return record?.deviceId ?? null;
 }
 
 export async function readNotificationConfig(): Promise<NotificationConfigRecord | null> {
@@ -204,6 +233,20 @@ export async function getNotificationInboxMessage(
   return (await db.get("inbox", notificationId)) ?? null;
 }
 
+export async function deleteNotificationInboxMessages(notificationIds: string[]): Promise<void> {
+  if (notificationIds.length === 0) {
+    return;
+  }
+
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("inbox", "readwrite");
+
+  await Promise.all([
+    ...notificationIds.map((notificationId) => transaction.store.delete(notificationId)),
+    transaction.done,
+  ]);
+}
+
 export async function markNotificationInboxMessageRead(
   notificationId: string,
   readAt = nowISO(),
@@ -234,11 +277,37 @@ export async function markNotificationInboxMessageActioned(
   return next;
 }
 
+export async function savePendingNotificationClickEvent(
+  event: Omit<NotificationPendingClickEvent, "createdAt" | "eventId">,
+): Promise<NotificationPendingClickEvent> {
+  const db = await openNotificationDatabase();
+  const pendingEvent: NotificationPendingClickEvent = {
+    ...event,
+    createdAt: nowISO(),
+    eventId: createId("notification-click"),
+  };
+
+  await db.put("pendingClickEvents", pendingEvent);
+  return pendingEvent;
+}
+
+export async function consumePendingNotificationClickEvents(): Promise<
+  NotificationPendingClickEvent[]
+> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction("pendingClickEvents", "readwrite");
+  const events = await transaction.store.getAll();
+  await transaction.store.clear();
+  await transaction.done;
+
+  return events.sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+}
+
 export async function enqueueNotificationAck(
   input: EnqueueNotificationAckInput,
 ): Promise<NotificationAckQueueEntry> {
   const db = await openNotificationDatabase();
-  const now = nowISO();
+  const now = nextAckTimestamp();
   const entry: NotificationAckQueueEntry = {
     ...input,
     ackId: createId(`ack-${input.kind}`),
@@ -349,6 +418,13 @@ export async function openNotificationDatabase(): Promise<IDBPDatabase<Notificat
         ackQueue.createIndex("by-queued-at", "queuedAt");
       }
 
+      if (!db.objectStoreNames.contains("pendingClickEvents")) {
+        const pendingClickEvents = db.createObjectStore("pendingClickEvents", {
+          keyPath: "eventId",
+        });
+        pendingClickEvents.createIndex("by-created-at", "createdAt");
+      }
+
       if (!db.objectStoreNames.contains("subscriptionDiagnostics")) {
         const diagnostics = db.createObjectStore("subscriptionDiagnostics", {
           keyPath: "diagnosticId",
@@ -376,4 +452,10 @@ function createId(prefix: string): string {
 
 function nowISO(): string {
   return new Date().toISOString();
+}
+
+function nextAckTimestamp(): string {
+  const timestamp = Math.max(Date.now(), lastAckQueuedAtMs + 1);
+  lastAckQueuedAtMs = timestamp;
+  return new Date(timestamp).toISOString();
 }

@@ -1,0 +1,2 @@
+export const NOTIFICATION_WORKER_PROTOCOL_VERSION = 1;
+export const NOTIFICATION_SERVICE_WORKER_VERSION = "notifications-worker-v1";

@@ -165,12 +165,12 @@ type inboxMessage struct {
 
 type registerDeviceRequest struct {
 	DeviceID             string            `json:"deviceId"`
-	Platform             string            `json:"platform,omitempty"`
-	AppVersion           string            `json:"appVersion,omitempty"`
-	ServiceWorkerVersion string            `json:"serviceWorkerVersion,omitempty"`
-	PermissionState      string            `json:"permissionState,omitempty"`
+	Platform             *string           `json:"platform,omitempty"`
+	AppVersion           *string           `json:"appVersion,omitempty"`
+	ServiceWorkerVersion *string           `json:"serviceWorkerVersion,omitempty"`
+	PermissionState      *string           `json:"permissionState,omitempty"`
 	PushSubscription     *pushSubscription `json:"pushSubscription,omitempty"`
-	VAPIDKeyVersion      string            `json:"vapidKeyVersion,omitempty"`
+	VAPIDKeyVersion      *string           `json:"vapidKeyVersion,omitempty"`
 	CurrentWalletAddress string            `json:"currentWalletAddress,omitempty"`
 	LinkedWallets        []string          `json:"linkedWalletAddresses,omitempty"`
 }
@@ -480,11 +480,23 @@ func (a *app) handleRegisterDevice(w http.ResponseWriter, r *http.Request) error
 	defer a.mu.Unlock()
 
 	d := a.ensureDeviceLocked(req.DeviceID)
-	d.Platform = strings.TrimSpace(req.Platform)
-	d.AppVersion = strings.TrimSpace(req.AppVersion)
-	d.ServiceWorkerVersion = strings.TrimSpace(req.ServiceWorkerVersion)
-	d.PermissionState = strings.TrimSpace(req.PermissionState)
-	d.VAPIDKeyVersion = firstNonEmpty(strings.TrimSpace(req.VAPIDKeyVersion), a.vapidKeyVersion)
+	if req.Platform != nil {
+		d.Platform = strings.TrimSpace(*req.Platform)
+	}
+	if req.AppVersion != nil {
+		d.AppVersion = strings.TrimSpace(*req.AppVersion)
+	}
+	if req.ServiceWorkerVersion != nil {
+		d.ServiceWorkerVersion = strings.TrimSpace(*req.ServiceWorkerVersion)
+	}
+	if req.PermissionState != nil {
+		d.PermissionState = strings.TrimSpace(*req.PermissionState)
+	}
+	if req.VAPIDKeyVersion != nil {
+		d.VAPIDKeyVersion = firstNonEmpty(strings.TrimSpace(*req.VAPIDKeyVersion), a.vapidKeyVersion)
+	} else if d.VAPIDKeyVersion == "" {
+		d.VAPIDKeyVersion = a.vapidKeyVersion
+	}
 	d.LastSeenAt = now
 	d.LastRegisteredAt = now
 

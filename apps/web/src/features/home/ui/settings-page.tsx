@@ -3,6 +3,7 @@ import { RiLogoutBoxRLine, RiShieldCheckLine } from "react-icons/ri";
 
 import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
+import { NotificationSettingsSection } from "./notification-settings-section";
 
 export function SettingsPage({
   address,
@@ -39,6 +40,8 @@ export function SettingsPage({
           </div>
         </div>
       </section>
+
+      <NotificationSettingsSection walletAddress={address} />
 
       <section aria-labelledby="wallet-session-title" className="space-y-3">
         <h2 id="wallet-session-title">
