@@ -5,6 +5,10 @@ vi.mock("#/components/language-selector", () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,
 }));
 
+vi.mock("#/components/theme-selector", () => ({
+  ThemeSelector: () => <div data-testid="theme-selector" />,
+}));
+
 const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {
@@ -17,6 +21,12 @@ describe("SettingsPage", () => {
       />,
     );
     expect(screen.getByText(/0xabcdef1234567890abcdef1234567890abcdef12/i)).toBeTruthy();
+  });
+
+  it("renders the appearance section with the theme selector", () => {
+    render(<SettingsPage isSigningOut={false} onSignOut={vi.fn()} />);
+    expect(screen.getByRole("heading", { name: /appearance/i })).toBeTruthy();
+    expect(screen.getByTestId("theme-selector")).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {

@@ -25,6 +25,11 @@ import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import appCss from "../styles.css?url";
 
+// Runs synchronously in <head> before first paint so the correct color scheme
+// is applied with no flash: read the stored choice, else autodetect the device
+// preference (and seed it for next time). Keep in sync with #/providers/theme.
+const themeBootstrapScript = `(function(){try{var k="clc.theme",s=localStorage.getItem(k),t=s==="light"||s==="dark"?s:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(s!==t)localStorage.setItem(k,t);var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.style.colorScheme=t;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute("content",t==="dark"?"#141414":"#f2f2f2")}catch(e){}})();`;
+
 const AppDevtools = import.meta.env.DEV
   ? lazy(() =>
       import("#/components/devtools").then((module) => ({
@@ -38,7 +43,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#0a0a0a" },
+      { name: "theme-color", content: "#f2f2f2" },
       { title: "CLC App" },
     ],
     links: [
@@ -183,9 +188,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body>
         {children}
