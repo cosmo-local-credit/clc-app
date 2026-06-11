@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
@@ -66,6 +68,68 @@ func TestRegisterDevicePreservesOmittedMetadata(t *testing.T) {
 	}
 }
 
+func TestDeviceCanLinkMultipleWalletAddresses(t *testing.T) {
+	t.Parallel()
+
+	testApp := newTestApp(t)
+	linkWallet := testApp.route(http.MethodPost, testApp.handleLinkWallet)
+
+	firstResponse := postJSON[linkWalletResponse](
+		t,
+		linkWallet,
+		"/api/notifications/devices/link-wallet",
+		`{"deviceId":"device-1","walletAddress":"0xwallet-a"}`,
+	)
+	if !slices.Equal(firstResponse.LinkedWallets, []string{"0xwallet-a"}) {
+		t.Fatalf("unexpected first wallet link response: %#v", firstResponse.LinkedWallets)
+	}
+
+	secondResponse := postJSON[linkWalletResponse](
+		t,
+		linkWallet,
+		"/api/notifications/devices/link-wallet",
+		`{"deviceId":"device-1","walletAddress":"0xwallet-b"}`,
+	)
+	if !slices.Equal(secondResponse.LinkedWallets, []string{"0xwallet-a", "0xwallet-b"}) {
+		t.Fatalf("device did not retain both wallet links: %#v", secondResponse.LinkedWallets)
+	}
+
+	duplicateResponse := postJSON[linkWalletResponse](
+		t,
+		linkWallet,
+		"/api/notifications/devices/link-wallet",
+		`{"deviceId":"device-1","walletAddress":"0xwallet-a"}`,
+	)
+	if !slices.Equal(duplicateResponse.LinkedWallets, []string{"0xwallet-a", "0xwallet-b"}) {
+		t.Fatalf("duplicate wallet link changed canonical links: %#v", duplicateResponse.LinkedWallets)
+	}
+}
+
+func TestWalletAddressTargetsMultipleActiveDevices(t *testing.T) {
+	t.Parallel()
+
+	testApp := newTestApp(t)
+	register := testApp.route(http.MethodPost, testApp.handleRegisterDevice)
+
+	registerDeviceForWallet(t, register, "device-1", "0xshared", "https://push.example/device-1")
+	registerDeviceForWallet(t, register, "device-2", "0xshared", "https://push.example/device-2")
+	registerDeviceForWallet(t, register, "device-3", "0xother", "https://push.example/device-3")
+
+	testApp.mu.Lock()
+	recipients := testApp.collectRecipientsLocked("", "0xshared", "")
+	testApp.mu.Unlock()
+
+	deviceIDs := make([]string, 0, len(recipients))
+	for _, recipient := range recipients {
+		deviceIDs = append(deviceIDs, recipient.DeviceID)
+	}
+	slices.Sort(deviceIDs)
+
+	if !slices.Equal(deviceIDs, []string{"device-1", "device-2"}) {
+		t.Fatalf("wallet did not resolve to all and only linked devices: %#v", deviceIDs)
+	}
+}
+
 func newTestApp(t *testing.T) *app {
 	t.Helper()
 
@@ -80,6 +144,57 @@ func newTestApp(t *testing.T) *app {
 			ClickAcks:    []*clickAckRecord{},
 		},
 	}
+}
+
+func registerDeviceForWallet(
+	t *testing.T,
+	handler http.Handler,
+	deviceID string,
+	walletAddress string,
+	endpoint string,
+) {
+	t.Helper()
+
+	body, err := json.Marshal(registerDeviceRequest{
+		DeviceID:             deviceID,
+		CurrentWalletAddress: walletAddress,
+		PushSubscription: &pushSubscription{
+			Endpoint: endpoint,
+			Keys: pushSubscriptionKeys{
+				Auth:   "auth-" + deviceID,
+				P256dh: "p256dh-" + deviceID,
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("marshal registration request: %v", err)
+	}
+
+	requireRegisterStatus(t, handler, string(body), http.StatusOK)
+}
+
+func postJSON[T any](
+	t *testing.T,
+	handler http.Handler,
+	path string,
+	body string,
+) T {
+	t.Helper()
+
+	request := httptest.NewRequest(http.MethodPost, path, bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("unexpected status %d: %s", response.Code, response.Body.String())
+	}
+
+	var decoded T
+	if err := json.NewDecoder(response.Body).Decode(&decoded); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	return decoded
 }
 
 func requireRegisterStatus(
