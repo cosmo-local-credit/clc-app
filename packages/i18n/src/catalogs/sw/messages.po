@@ -12,7 +12,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/web/src/routes/__root.tsx:127
+#: apps/web/src/routes/__root.tsx:132
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 
@@ -28,6 +28,10 @@ msgstr "Chaguo za kina"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:198
 msgid "Already have an account?"
 msgstr "Tayari una akaunti?"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:46
+msgid "Appearance"
+msgstr "Mwonekano"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:211
 #: apps/web/src/components/paper-wallet-scanner.tsx:234
@@ -47,7 +51,7 @@ msgstr "Tazama zote"
 msgid "Camera access denied."
 msgstr "Ruhusa ya kamera imekataliwa."
 
-#: apps/web/src/routes/__root.tsx:140
+#: apps/web/src/routes/__root.tsx:145
 msgid "Cancel"
 msgstr "Ghairi"
 
@@ -56,11 +60,15 @@ msgstr "Ghairi"
 msgid "Choose a location"
 msgstr "Chagua eneo"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:51
+msgid "Choose between light and dark mode."
+msgstr "Chagua kati ya hali ya mwanga na giza."
+
 #: apps/web/src/components/paper-wallet-scanner.tsx:230
 msgid "Choose Image"
 msgstr "Chagua picha"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:36
+#: apps/web/src/features/home/ui/settings-page.tsx:37
 msgid "Choose the app display language."
 msgstr "Chagua lugha ya programu."
 
@@ -76,7 +84,7 @@ msgstr "Funga fomu ya ufunguo binafsi"
 msgid "Coming next"
 msgstr "Kinachokuja"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
 
@@ -133,6 +141,10 @@ msgstr "Fungua akaunti yako"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
 msgstr "Badilisha"
+
+#: apps/web/src/components/theme-selector.tsx:25
+msgid "Dark"
+msgstr "Giza"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 msgid "Description"
@@ -213,9 +225,13 @@ msgid "Invalid phone number"
 msgstr "Nambari ya simu si sahihi"
 
 #: apps/web/src/components/language-selector.tsx:26
-#: apps/web/src/features/home/ui/settings-page.tsx:31
+#: apps/web/src/features/home/ui/settings-page.tsx:32
 msgid "Language"
 msgstr "Lugha"
+
+#: apps/web/src/components/theme-selector.tsx:24
+msgid "Light"
+msgstr "Mwanga"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:160
 msgid "Link wallet to {providerLabel} passkey"
@@ -251,7 +267,7 @@ msgstr "Nembo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Simamia hati, vikundi, na malipo ya mitaa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:25
+#: apps/web/src/features/home/ui/settings-page.tsx:26
 msgid "Manage your wallet session and app preferences."
 msgstr "Simamia kikao cha mkoba na mapendeleo ya programu."
 
@@ -290,7 +306,7 @@ msgstr "Jina lazima liwe herufi 80 au pungufu"
 msgid "Name on wallet"
 msgstr "Jina kwenye mkoba"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "No address available"
 msgstr "Hakuna anwani inayopatikana"
 
@@ -428,7 +444,7 @@ msgid "Service"
 msgstr "Huduma"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:47
-#: apps/web/src/features/home/ui/settings-page.tsx:22
+#: apps/web/src/features/home/ui/settings-page.tsx:23
 msgid "Settings"
 msgstr "Mipangilio"
 
@@ -440,11 +456,11 @@ msgstr "Duka"
 msgid "Sign in with private key"
 msgstr "Ingia kwa ufunguo binafsi"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:84
 msgid "Sign out"
 msgstr "Ondoka"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:84
 msgid "Signing out..."
 msgstr "Inaondoka..."
 
@@ -452,17 +468,21 @@ msgstr "Inaondoka..."
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
-#: apps/web/src/routes/__root.tsx:132
+#: apps/web/src/routes/__root.tsx:137
 msgid "Switch wallet"
 msgstr "Badili mkoba"
 
-#: apps/web/src/routes/__root.tsx:124
+#: apps/web/src/routes/__root.tsx:129
 msgid "Switch wallet?"
 msgstr "Badili mkoba?"
 
-#: apps/web/src/routes/__root.tsx:132
+#: apps/web/src/routes/__root.tsx:137
 msgid "Switching…"
 msgstr "Inabadilisha…"
+
+#: apps/web/src/components/theme-selector.tsx:36
+msgid "Theme"
+msgstr "Mandhari"
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:103
 msgid "This QR code does not contain a valid private key."
@@ -515,7 +535,7 @@ msgstr "Tazama zote"
 msgid "Wallet"
 msgstr "Mkoba"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:45
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "Wallet session"
 msgstr "Kikao cha mkoba"
 
