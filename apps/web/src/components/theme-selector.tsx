@@ -1,5 +1,5 @@
 import { useLingui } from "@lingui/react/macro";
-import { useEffect } from "react";
+import { RiMoonLine, RiSunLine } from "react-icons/ri";
 import {
   SelectContent,
   SelectItem,
@@ -7,18 +7,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select";
-import { readInitialTheme, type Theme, useThemeStore } from "#/providers/theme";
+import { Toggle } from "#/components/ui/toggle";
+import { type Theme, useHydratedTheme } from "#/providers/theme";
 
 export function ThemeSelector() {
   const { t } = useLingui();
-  const theme = useThemeStore((state) => state.theme);
-  const setTheme = useThemeStore((state) => state.setTheme);
-
-  // Sync the displayed value to the theme the bootstrap script already applied.
-  // The store starts at "light" so the server and first client render match.
-  useEffect(() => {
-    setTheme(readInitialTheme());
-  }, [setTheme]);
+  const { theme, setTheme } = useHydratedTheme();
 
   const options: { value: Theme; label: string }[] = [
     { value: "light", label: t`Light` },
@@ -46,5 +40,25 @@ export function ThemeSelector() {
         ))}
       </SelectContent>
     </SelectRoot>
+  );
+}
+
+/** Compact icon toggle for menus (e.g. onboarding) — flips between light and dark. */
+export function ThemeToggle() {
+  const { t } = useLingui();
+  const { theme, setTheme } = useHydratedTheme();
+  const isDark = theme === "dark";
+
+  return (
+    <Toggle
+      variant="outline"
+      size="icon"
+      pressed={isDark}
+      onPressedChange={(pressed) => setTheme(pressed ? "dark" : "light")}
+      aria-label={t`Toggle theme`}
+      className="text-foreground"
+    >
+      {isDark ? <RiMoonLine className="size-4" /> : <RiSunLine className="size-4" />}
+    </Toggle>
   );
 }

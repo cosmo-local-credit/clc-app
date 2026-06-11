@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { create } from "zustand";
 
 export type Theme = "light" | "dark";
@@ -55,3 +56,15 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
   },
   toggleTheme: () => get().setTheme(get().theme === "dark" ? "light" : "dark"),
 }));
+
+// Reads the store theme and, after mount, syncs it to the scheme the bootstrap
+// script already applied (the store defaults to "light" so SSR and the first
+// client render match). Used by every theme control so they reflect reality.
+export function useHydratedTheme() {
+  const theme = useThemeStore((state) => state.theme);
+  const setTheme = useThemeStore((state) => state.setTheme);
+  useEffect(() => {
+    setTheme(readInitialTheme());
+  }, [setTheme]);
+  return { theme, setTheme };
+}

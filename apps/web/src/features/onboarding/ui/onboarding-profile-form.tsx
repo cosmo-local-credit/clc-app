@@ -5,7 +5,7 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
-import { OnboardingLanguageSelector } from "#/components/language-selector";
+import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -46,7 +46,7 @@ export function OnboardingProfileForm({ onNext }: Props) {
 
   return (
     <div className="relative flex min-h-[100svh] flex-col bg-background">
-      <OnboardingLanguageSelector />
+      <OnboardingMenu />
       <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="mb-6 space-y-3">
           <button
