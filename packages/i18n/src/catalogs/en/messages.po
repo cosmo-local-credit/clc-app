@@ -12,7 +12,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/web/src/routes/__root.tsx:127
+#: apps/web/src/routes/__root.tsx:143
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
@@ -20,6 +20,12 @@ msgstr "A paper wallet QR was scanned. Import this address?"
 #: apps/web/src/features/home/ui/undone-page.tsx:6
 msgid "Activity"
 msgstr "Activity"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:197
+msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
+"notifications."
+msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable "
+"notifications."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:220
 msgid "Advanced options"
@@ -47,9 +53,17 @@ msgstr "Browse all"
 msgid "Camera access denied."
 msgstr "Camera access denied."
 
-#: apps/web/src/routes/__root.tsx:140
+#: apps/web/src/routes/__root.tsx:156
 msgid "Cancel"
 msgstr "Cancel"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:122
+msgid "Checking availability..."
+msgstr "Checking availability..."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:121
+msgid "Checking notification support on this device."
+msgstr "Checking notification support on this device."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:28
@@ -60,7 +74,7 @@ msgstr "Choose a location"
 msgid "Choose Image"
 msgstr "Choose Image"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:36
+#: apps/web/src/features/home/ui/settings-page.tsx:37
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
@@ -76,7 +90,11 @@ msgstr "Close private key form"
 msgid "Coming next"
 msgstr "Coming next"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:54
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:130
+msgid "Complete the browser permission prompt to continue."
+msgstr "Complete the browser permission prompt to continue."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:57
 msgid "Connected address"
 msgstr "Connected address"
 
@@ -163,6 +181,18 @@ msgstr "Eatery"
 msgid "Email"
 msgstr "Email"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:102
+msgid "Enable notifications"
+msgstr "Enable notifications"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:131
+msgid "Enabling notifications"
+msgstr "Enabling notifications"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:100
+msgid "Enabling notifications..."
+msgstr "Enabling notifications..."
+
 #: apps/web/src/components/paper-wallet-scanner.tsx:90
 msgid "Failed to start camera."
 msgstr "Failed to start camera."
@@ -197,6 +227,10 @@ msgstr "I have saved this key. If lost, my wallet cannot be recovered."
 msgid "Identifying location…"
 msgstr "Identifying location…"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:201
+msgid "Install the app first"
+msgstr "Install the app first"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:13
 msgid "Invalid email address"
@@ -213,7 +247,7 @@ msgid "Invalid phone number"
 msgstr "Invalid phone number"
 
 #: apps/web/src/components/language-selector.tsx:26
-#: apps/web/src/features/home/ui/settings-page.tsx:31
+#: apps/web/src/features/home/ui/settings-page.tsx:32
 msgid "Language"
 msgstr "Language"
 
@@ -251,7 +285,7 @@ msgstr "Logo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Manage vouchers, pools, and local payments."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:25
+#: apps/web/src/features/home/ui/settings-page.tsx:26
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
@@ -290,7 +324,7 @@ msgstr "Name must be 80 characters or fewer"
 msgid "Name on wallet"
 msgstr "Name on wallet"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:60
 msgid "No address available"
 msgstr "No address available"
 
@@ -309,6 +343,46 @@ msgstr "No passkey is registered on this device."
 #: apps/web/src/components/paper-wallet-scanner.tsx:122
 msgid "No QR code found. Try again with a clearer image."
 msgstr "No QR code found. Try again with a clearer image."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:210
+msgid "Notification permission denied"
+msgstr "Notification permission denied"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:226
+msgid "Notification storage is unavailable"
+msgstr "Notification storage is unavailable"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:78
+msgid "Notifications"
+msgstr "Notifications"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:208
+msgid "Notifications are blocked. Allow them in your browser or device "
+"settings."
+msgstr "Notifications are blocked. Allow them in your browser or device "
+"settings."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:190
+msgid "Notifications are enabled"
+msgstr "Notifications are enabled"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:182
+msgid "Notifications are off"
+msgstr "Notifications are off"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:219
+msgid "Notifications are unavailable"
+msgstr "Notifications are unavailable"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:158
+msgid "Notifications could not be enabled"
+msgstr "Notifications could not be enabled"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:217
+msgid "Notifications currently require Chrome on Android or the installed "
+"iPhone app."
+msgstr "Notifications currently require Chrome on Android or the installed "
+"iPhone app."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:175
 msgid "Opening paper wallet..."
@@ -383,6 +457,10 @@ msgstr "Provide an email or phone number"
 msgid "Receive"
 msgstr "Receive"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:181
+msgid "Receive voucher, swap, and off-ramp updates when the app is closed."
+msgstr "Receive voucher, swap, and off-ramp updates when the app is closed."
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:104
 msgid "Recent activity"
 msgstr "Recent activity"
@@ -392,6 +470,10 @@ msgid "Recent voucher sends, redemptions, swaps, and pool events will appear "
 "here."
 msgstr "Recent voucher sends, redemptions, swaps, and pool events will appear "
 "here."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:156
+msgid "Registration failed. Check your connection and try again."
+msgstr "Registration failed. Check your connection and try again."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:160
 msgid "Reset logo"
@@ -426,7 +508,7 @@ msgid "Service"
 msgstr "Service"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:47
-#: apps/web/src/features/home/ui/settings-page.tsx:22
+#: apps/web/src/features/home/ui/settings-page.tsx:23
 msgid "Settings"
 msgstr "Settings"
 
@@ -438,11 +520,11 @@ msgstr "Shop"
 msgid "Sign in with private key"
 msgstr "Sign in with private key"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "Sign out"
 msgstr "Sign out"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "Signing out..."
 msgstr "Signing out..."
 
@@ -450,17 +532,25 @@ msgstr "Signing out..."
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
 
-#: apps/web/src/routes/__root.tsx:132
+#: apps/web/src/routes/__root.tsx:148
 msgid "Switch wallet"
 msgstr "Switch wallet"
 
-#: apps/web/src/routes/__root.tsx:124
+#: apps/web/src/routes/__root.tsx:140
 msgid "Switch wallet?"
 msgstr "Switch wallet?"
 
-#: apps/web/src/routes/__root.tsx:132
+#: apps/web/src/routes/__root.tsx:148
 msgid "Switching…"
 msgstr "Switching…"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:225
+msgid "This browser cannot store notification registration safely."
+msgstr "This browser cannot store notification registration safely."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:189
+msgid "This device is subscribed to wallet notifications."
+msgstr "This device is subscribed to wallet notifications."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:103
 msgid "This QR code does not contain a valid private key."
@@ -513,7 +603,7 @@ msgstr "View all"
 msgid "Wallet"
 msgstr "Wallet"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:45
+#: apps/web/src/features/home/ui/settings-page.tsx:48
 msgid "Wallet session"
 msgstr "Wallet session"
 

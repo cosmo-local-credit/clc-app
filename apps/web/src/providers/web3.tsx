@@ -12,10 +12,12 @@ export function Web3Provider({
   queryClient: QueryClient;
 }) {
   return (
-    <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
-      <ReconnectOnMount />
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
+        <ReconnectOnMount />
+        {children}
+      </WagmiProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import countries from "i18n-iso-countries";
+import countries from "i18n-iso-countries/index";
 
 export type GeocodeSuggestion = {
   address: string;
