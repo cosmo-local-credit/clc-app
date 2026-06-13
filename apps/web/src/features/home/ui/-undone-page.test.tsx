@@ -4,7 +4,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { UndonePage } from "./undone-page";
 
 describe("UndonePage", () => {
-  it("shows 'Activity' heading and activity description for activity tab", () => {
+  it("shows the Activity heading and activity description for activity tab", () => {
     render(<UndonePage tab="activity" />);
     expect(screen.getByText("Activity")).toBeTruthy();
     expect(screen.getByText(/voucher sends/i)).toBeTruthy();
