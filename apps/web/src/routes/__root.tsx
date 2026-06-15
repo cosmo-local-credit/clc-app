@@ -25,6 +25,7 @@ import {
   storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
 import { AppI18nProvider } from "#/providers/i18n";
+import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import appCss from "../styles.css?url";
@@ -42,7 +43,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#0a0a0a" },
+      { name: "theme-color", content: "#f2f2f2" },
       { title: "CLC App" },
     ],
     links: [
@@ -218,9 +219,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body>
         {children}

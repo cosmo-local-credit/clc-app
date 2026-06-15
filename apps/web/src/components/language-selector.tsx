@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select";
+import { ThemeToggle } from "#/components/theme-selector";
 import { useLocale } from "#/providers/i18n";
 
 export function LanguageSelector() {
@@ -45,9 +46,11 @@ export function LanguageSelector() {
   );
 }
 
-export function OnboardingLanguageSelector() {
+/** Top-right onboarding menu: change language and theme before signing in. */
+export function OnboardingMenu() {
   return (
-    <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-10">
+    <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-10 flex items-center gap-2">
+      <ThemeToggle />
       <LanguageSelector />
     </div>
   );

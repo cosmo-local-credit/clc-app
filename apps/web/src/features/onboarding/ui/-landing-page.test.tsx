@@ -91,7 +91,7 @@ vi.mock("#/providers/web3-config", () => ({
 }));
 
 vi.mock("#/components/language-selector", () => ({
-  OnboardingLanguageSelector: () => null,
+  OnboardingMenu: () => null,
   LanguageSelector: () => null,
 }));
 

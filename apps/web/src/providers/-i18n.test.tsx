@@ -1,5 +1,5 @@
 import { DEFAULT_LOCALE } from "@clc/i18n/index";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Cookies from "js-cookie";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -9,6 +9,24 @@ vi.unmock("#/providers/i18n");
 const { AppI18nProvider, useLocale } = await import("#/providers/i18n");
 
 const originalLocalStorage = window.localStorage;
+const originalLanguagesDescriptor = Object.getOwnPropertyDescriptor(window.navigator, "languages");
+
+function setNavigatorLanguages(languages: readonly string[]) {
+  Object.defineProperty(window.navigator, "languages", {
+    value: languages,
+    configurable: true,
+  });
+}
+
+function restoreNavigatorLanguages() {
+  if (originalLanguagesDescriptor) {
+    Object.defineProperty(window.navigator, "languages", originalLanguagesDescriptor);
+  } else {
+    // `languages` is a prototype getter in jsdom, so there is no own descriptor
+    // to restore — delete the stubbed own property to fall back to the default.
+    delete (window.navigator as { languages?: readonly string[] }).languages;
+  }
+}
 
 function LocaleProbe() {
   const { locale, loading, error, setLocale } = useLocale();
@@ -46,6 +64,7 @@ describe("AppI18nProvider", () => {
     });
     localStorage.clear();
     Cookies.remove("clc_locale", { path: "/" });
+    restoreNavigatorLanguages();
   });
 
   it("prefers localStorage over the locale cookie", () => {
@@ -73,6 +92,35 @@ describe("AppI18nProvider", () => {
     renderProvider();
 
     expect(screen.getByLabelText("locale").textContent).toBe(DEFAULT_LOCALE);
+  });
+
+  it("detects the device language and persists it when nothing is stored", async () => {
+    setNavigatorLanguages(["sw-KE", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("sw");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("sw");
+    });
+  });
+
+  it("falls back to the default locale when the device language is unsupported", () => {
+    setNavigatorLanguages(["fr-FR"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe(DEFAULT_LOCALE);
+  });
+
+  it("prefers a stored locale over the device language", () => {
+    localStorage.setItem("clc.locale", "en");
+    setNavigatorLanguages(["sw-KE"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("en");
   });
 
   it("persists locale changes to the document and localStorage", async () => {
