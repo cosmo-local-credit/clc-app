@@ -54,11 +54,11 @@ describe("getNotificationKindPolicy", () => {
     });
   });
 
-  it("uses normal priority without renotify for swap completed", () => {
+  it("uses normal priority with renotify for swap completed", () => {
     expect(getNotificationKindPolicy("swap.completed")).toMatchObject({
       interactionMode: "click-only",
       priority: "normal",
-      renotify: false,
+      renotify: true,
       settingsScope: "device",
       signOutPolicy: "retain-until-explicit-disable",
     });

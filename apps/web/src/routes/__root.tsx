@@ -4,6 +4,7 @@ import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanst
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
+import { useAccount } from "wagmi";
 import { connect } from "wagmi/actions";
 import { Button } from "#/components/ui/button";
 import {
@@ -14,6 +15,9 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog";
 import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/privateKey";
+import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
+import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
+import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
 import { useScanUrlImport } from "#/lib/scan-url-import";
 import {
   clearWebAuthnCredential,
@@ -67,6 +71,7 @@ function AppContent() {
 
 function AppInner() {
   const { t } = useLingui();
+  const { address } = useAccount();
   const { pendingKey, clearPendingKey } = useScanUrlImport();
   const [switching, setSwitching] = useState(false);
 
@@ -74,6 +79,17 @@ function AppInner() {
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
     [pendingKey],
   );
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      return;
+    }
+
+    void runNotificationRecovery({
+      currentWalletAddress: address,
+      linkedWalletAddresses: address ? [address] : undefined,
+    });
+  }, [address]);
 
   async function handleConfirmSwitch() {
     if (!pendingKey) return;
@@ -167,19 +183,38 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     }
 
     let cancelled = false;
+    let disposeNotificationProtocol: (() => void) | undefined;
+    let disposeServiceWorkerUpdates: (() => void) | undefined;
     void (async () => {
       try {
         const { Serwist } = await import("@serwist/window");
         if (cancelled) return;
-        const serwist = new Serwist("/sw.js", { scope: "/", type: "module" });
-        await serwist.register();
+        const updatePolicy = await initializeServiceWorkerUpdatePolicy({
+          createRegistrar: (scriptUrl, options) => new Serwist(scriptUrl, options),
+        });
+        if (cancelled) {
+          updatePolicy.dispose();
+          return;
+        }
+        disposeServiceWorkerUpdates = updatePolicy.dispose;
+        if (cancelled) return;
+        const protocol = await initializeNotificationWorkerProtocol();
+        if (protocol.status === "ready") {
+          if (cancelled) {
+            protocol.dispose();
+            return;
+          }
+          disposeNotificationProtocol = protocol.dispose;
+        }
       } catch (err) {
-        console.error("[sw] registration failed", err);
+        console.error("[sw] registration or coordination failed", err);
       }
     })();
 
     return () => {
       cancelled = true;
+      disposeNotificationProtocol?.();
+      disposeServiceWorkerUpdates?.();
     };
   }, []);
 

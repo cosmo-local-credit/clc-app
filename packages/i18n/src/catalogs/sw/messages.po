@@ -12,7 +12,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/web/src/routes/__root.tsx:132
+#: apps/web/src/routes/__root.tsx:144
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 
@@ -20,6 +20,12 @@ msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 #: apps/web/src/features/home/ui/undone-page.tsx:6
 msgid "Activity"
 msgstr "Shughuli"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:197
+msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
+"notifications."
+msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
+"iliyosakinishwa, kisha washa arifa."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:220
 msgid "Advanced options"
@@ -29,7 +35,7 @@ msgstr "Chaguo za kina"
 msgid "Already have an account?"
 msgstr "Tayari una akaunti?"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:46
+#: apps/web/src/features/home/ui/settings-page.tsx:47
 msgid "Appearance"
 msgstr "Mwonekano"
 
@@ -51,16 +57,24 @@ msgstr "Tazama zote"
 msgid "Camera access denied."
 msgstr "Ruhusa ya kamera imekataliwa."
 
-#: apps/web/src/routes/__root.tsx:145
+#: apps/web/src/routes/__root.tsx:157
 msgid "Cancel"
 msgstr "Ghairi"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:122
+msgid "Checking availability..."
+msgstr "Inakagua upatikanaji..."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:121
+msgid "Checking notification support on this device."
+msgstr "Inakagua uwezo wa arifa kwenye kifaa hiki."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:28
 msgid "Choose a location"
 msgstr "Chagua eneo"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:51
+#: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
 msgstr "Chagua kati ya hali ya mwanga na giza."
 
@@ -68,7 +82,7 @@ msgstr "Chagua kati ya hali ya mwanga na giza."
 msgid "Choose Image"
 msgstr "Chagua picha"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:37
+#: apps/web/src/features/home/ui/settings-page.tsx:38
 msgid "Choose the app display language."
 msgstr "Chagua lugha ya programu."
 
@@ -84,7 +98,11 @@ msgstr "Funga fomu ya ufunguo binafsi"
 msgid "Coming next"
 msgstr "Kinachokuja"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:69
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:130
+msgid "Complete the browser permission prompt to continue."
+msgstr "Kamilisha ombi la ruhusa la kivinjari ili kuendelea."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
 
@@ -175,6 +193,18 @@ msgstr "Baa la chakula"
 msgid "Email"
 msgstr "Barua pepe"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:102
+msgid "Enable notifications"
+msgstr "Washa arifa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:131
+msgid "Enabling notifications"
+msgstr "Inawasha arifa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:100
+msgid "Enabling notifications..."
+msgstr "Inawasha arifa..."
+
 #: apps/web/src/components/paper-wallet-scanner.tsx:90
 msgid "Failed to start camera."
 msgstr "Imeshindikana kuwasha kamera."
@@ -209,6 +239,10 @@ msgstr "Nimehifadhi ufunguo huu. Ukipotea, mkoba wangu hauwezi kurejeshwa."
 msgid "Identifying location…"
 msgstr "Inatambua eneo…"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:201
+msgid "Install the app first"
+msgstr "Sakinisha programu kwanza"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:13
 msgid "Invalid email address"
@@ -225,7 +259,7 @@ msgid "Invalid phone number"
 msgstr "Nambari ya simu si sahihi"
 
 #: apps/web/src/components/language-selector.tsx:27
-#: apps/web/src/features/home/ui/settings-page.tsx:32
+#: apps/web/src/features/home/ui/settings-page.tsx:33
 msgid "Language"
 msgstr "Lugha"
 
@@ -267,7 +301,7 @@ msgstr "Nembo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Simamia hati, vikundi, na malipo ya mitaa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:26
+#: apps/web/src/features/home/ui/settings-page.tsx:27
 msgid "Manage your wallet session and app preferences."
 msgstr "Simamia kikao cha mkoba na mapendeleo ya programu."
 
@@ -306,7 +340,7 @@ msgstr "Jina lazima liwe herufi 80 au pungufu"
 msgid "Name on wallet"
 msgstr "Jina kwenye mkoba"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:72
+#: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "No address available"
 msgstr "Hakuna anwani inayopatikana"
 
@@ -326,6 +360,46 @@ msgstr "Hakuna passkey iliyosajiliwa kwenye kifaa hiki."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "Hakuna msimbo wa QR uliopatikana. Jaribu tena kwa picha iliyo wazi "
 "zaidi."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:210
+msgid "Notification permission denied"
+msgstr "Ruhusa ya arifa imekataliwa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:226
+msgid "Notification storage is unavailable"
+msgstr "Hifadhi ya arifa haipatikani"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:78
+msgid "Notifications"
+msgstr "Arifa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:208
+msgid "Notifications are blocked. Allow them in your browser or device "
+"settings."
+msgstr "Arifa zimezuiwa. Ziruhusu katika mipangilio ya kivinjari au kifaa "
+"chako."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:190
+msgid "Notifications are enabled"
+msgstr "Arifa zimewashwa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:182
+msgid "Notifications are off"
+msgstr "Arifa zimezimwa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:219
+msgid "Notifications are unavailable"
+msgstr "Arifa hazipatikani"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:158
+msgid "Notifications could not be enabled"
+msgstr "Arifa hazikuweza kuwashwa"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:217
+msgid "Notifications currently require Chrome on Android or the installed "
+"iPhone app."
+msgstr "Kwa sasa arifa zinahitaji Chrome kwenye Android au programu ya iPhone "
+"iliyosakinishwa."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:175
 msgid "Opening paper wallet..."
@@ -400,6 +474,11 @@ msgstr "Weka barua pepe au nambari ya simu"
 msgid "Receive"
 msgstr "Pokea"
 
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:181
+msgid "Receive voucher, swap, and off-ramp updates when the app is closed."
+msgstr "Pokea taarifa za hati, ubadilishanaji, na utoaji pesa wakati programu "
+"imefungwa."
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:104
 msgid "Recent activity"
 msgstr "Shughuli za hivi karibuni"
@@ -409,6 +488,10 @@ msgid "Recent voucher sends, redemptions, swaps, and pool events will appear "
 "here."
 msgstr "Matumizi ya hati, ukomboaji, ubadilishanaji, na matukio ya vikundi "
 "yataonekana hapa."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:156
+msgid "Registration failed. Check your connection and try again."
+msgstr "Usajili umeshindikana. Angalia muunganisho wako na ujaribu tena."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:160
 msgid "Reset logo"
@@ -444,7 +527,7 @@ msgid "Service"
 msgstr "Huduma"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:47
-#: apps/web/src/features/home/ui/settings-page.tsx:23
+#: apps/web/src/features/home/ui/settings-page.tsx:24
 msgid "Settings"
 msgstr "Mipangilio"
 
@@ -456,11 +539,11 @@ msgstr "Duka"
 msgid "Sign in with private key"
 msgstr "Ingia kwa ufunguo binafsi"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:84
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Sign out"
 msgstr "Ondoka"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:84
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Signing out..."
 msgstr "Inaondoka..."
 
@@ -468,21 +551,29 @@ msgstr "Inaondoka..."
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
-#: apps/web/src/routes/__root.tsx:137
+#: apps/web/src/routes/__root.tsx:149
 msgid "Switch wallet"
 msgstr "Badili mkoba"
 
-#: apps/web/src/routes/__root.tsx:129
+#: apps/web/src/routes/__root.tsx:141
 msgid "Switch wallet?"
 msgstr "Badili mkoba?"
 
-#: apps/web/src/routes/__root.tsx:137
+#: apps/web/src/routes/__root.tsx:149
 msgid "Switching…"
 msgstr "Inabadilisha…"
 
 #: apps/web/src/components/theme-selector.tsx:30
 msgid "Theme"
 msgstr "Mandhari"
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:225
+msgid "This browser cannot store notification registration safely."
+msgstr "Kivinjari hiki hakiwezi kuhifadhi usajili wa arifa kwa usalama."
+
+#: apps/web/src/features/home/ui/notification-settings-section.tsx:189
+msgid "This device is subscribed to wallet notifications."
+msgstr "Kifaa hiki kimejiandikisha kupokea arifa za mkoba."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:103
 msgid "This QR code does not contain a valid private key."
@@ -539,7 +630,7 @@ msgstr "Tazama zote"
 msgid "Wallet"
 msgstr "Mkoba"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:63
 msgid "Wallet session"
 msgstr "Kikao cha mkoba"
 

@@ -9,6 +9,12 @@ vi.mock("#/components/theme-selector", () => ({
   ThemeSelector: () => <div data-testid="theme-selector" />,
 }));
 
+vi.mock("./notification-settings-section", () => ({
+  NotificationSettingsSection: ({ walletAddress }: { walletAddress?: string }) => (
+    <div data-testid="notification-settings">{walletAddress}</div>
+  ),
+}));
+
 const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {
@@ -20,7 +26,7 @@ describe("SettingsPage", () => {
         onSignOut={vi.fn()}
       />,
     );
-    expect(screen.getByText(/0xabcdef1234567890abcdef1234567890abcdef12/i)).toBeTruthy();
+    expect(screen.getAllByText(/0xabcdef1234567890abcdef1234567890abcdef12/i)).toHaveLength(2);
   });
 
   it("renders the appearance section with the theme selector", () => {
@@ -32,6 +38,19 @@ describe("SettingsPage", () => {
   it("shows 'No address available' when address is undefined", () => {
     render(<SettingsPage isSigningOut={false} onSignOut={vi.fn()} />);
     expect(screen.getByText(/no address available/i)).toBeTruthy();
+  });
+
+  it("passes the connected address to notification settings", () => {
+    render(
+      <SettingsPage
+        address="0xabcdef1234567890abcdef1234567890abcdef12"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId("notification-settings").textContent).toBe(
+      "0xabcdef1234567890abcdef1234567890abcdef12",
+    );
   });
 
   it("calls onSignOut when sign out button is clicked", () => {

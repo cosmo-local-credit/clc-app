@@ -276,10 +276,14 @@ const devDebugStateResponseSchema = z.object({
 });
 
 function getNotificationBackendBaseUrl(): string {
-  const configured = import.meta.env.VITE_WEBPUSH_BASE_URL as string | undefined;
+  const webPushBaseUrl = import.meta.env.VITE_WEBPUSH_BASE_URL as string | undefined;
+  const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+  const configured = webPushBaseUrl?.trim() || apiUrl?.trim();
 
-  if (!configured?.trim()) {
-    throw new Error("VITE_WEBPUSH_BASE_URL must be set to the notification backend base URL.");
+  if (!configured) {
+    throw new Error(
+      "VITE_API_URL or VITE_WEBPUSH_BASE_URL must be set to the notification backend base URL.",
+    );
   }
 
   return trimTrailingSlashes(configured);
@@ -457,7 +461,13 @@ function errorMessageFromBody(body: unknown): string | null {
 }
 
 function baseUrl(options: NotificationClientOptions): string {
-  return trimTrailingSlashes(options.baseUrl ?? getNotificationBackendBaseUrl());
+  const normalized = trimTrailingSlashes(options.baseUrl ?? getNotificationBackendBaseUrl());
+
+  if (!normalized) {
+    throw new Error("Notification backend base URL must not be empty.");
+  }
+
+  return normalized;
 }
 
 function trimTrailingSlashes(value: string): string {
