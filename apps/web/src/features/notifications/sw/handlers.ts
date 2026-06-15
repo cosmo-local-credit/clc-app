@@ -202,6 +202,7 @@ function createNotificationOptions(payload: NotificationPayload): NotificationOp
       targetUrl: payload.targetUrl,
       walletAddressTarget: payload.walletAddressTarget,
     },
+    badge: "/logo192.png",
     icon: "/logo192.png",
     renotify: policy.renotify,
     silent: false,

@@ -46,6 +46,7 @@ describe("handleNotificationPush", () => {
     expect(spies.showNotification).toHaveBeenCalledWith(
       "Voucher received",
       expect.objectContaining({
+        badge: "/logo192.png",
         body: "You received a voucher.",
         data: {
           kind: "voucher.received",
