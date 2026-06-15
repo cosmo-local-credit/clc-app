@@ -103,8 +103,7 @@ function MarketNavButton({
     >
       <span
         className={cn(
-          "absolute -top-3 flex size-12 items-center justify-center rounded-full border border-border bg-foreground p-1.5",
-          "[--clc-logo-tile:#111827] dark:bg-[#1762B8] dark:[--clc-logo-tile:#1762B8]",
+          "absolute -top-3 flex size-12 items-center justify-center rounded-full border border-border bg-primary p-1.5",
           active && "ring-2 ring-foreground/10",
         )}
       >

@@ -110,7 +110,7 @@ export function LandingPage() {
     <div className="relative flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <OnboardingMenu />
       <div className="flex flex-col items-center gap-5 text-center">
-        <CLCLogo className="size-20 dark:[--clc-logo-tile:#1762B8]" />
+        <CLCLogo className="size-20" />
         <div className="space-y-1">
           <h1 className="font-bold font-heading text-[1.75rem] leading-tight">CLC</h1>
           <p className="text-muted-foreground text-sm">
