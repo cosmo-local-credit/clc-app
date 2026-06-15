@@ -16,8 +16,9 @@ afterEach(() => {
 });
 
 describe("notification backend URL configuration", () => {
-  it("reads and trims VITE_WEBPUSH_BASE_URL", async () => {
+  it("uses and trims the Web Push-specific override", async () => {
     vi.stubEnv("VITE_WEBPUSH_BASE_URL", " https://push.example/// ");
+    vi.stubEnv("VITE_API_URL", "https://api.example");
     const { calls, fetcher } = createJsonFetcher({
       keyVersion: "dev-v1",
       publicKey: "test-key",
@@ -30,15 +31,29 @@ describe("notification backend URL configuration", () => {
     expect(calls[0]?.init).toMatchObject({ method: "GET" });
   });
 
-  it("requires VITE_WEBPUSH_BASE_URL", async () => {
+  it("falls back to VITE_API_URL", async () => {
     vi.stubEnv("VITE_WEBPUSH_BASE_URL", "");
+    vi.stubEnv("VITE_API_URL", " https://api.example/// ");
+    const { calls, fetcher } = createJsonFetcher({
+      keyVersion: "dev-v1",
+      publicKey: "test-key",
+    });
+
+    await fetchVapidPublicKey({ fetcher });
+
+    expect(calls[0]?.input).toBe("https://api.example/api/notifications/vapid-public-key");
+  });
+
+  it("requires a configured API URL", async () => {
+    vi.stubEnv("VITE_WEBPUSH_BASE_URL", "");
+    vi.stubEnv("VITE_API_URL", "");
     const { calls, fetcher } = createJsonFetcher({
       keyVersion: "dev-v1",
       publicKey: "test-key",
     });
 
     await expect(fetchVapidPublicKey({ fetcher })).rejects.toThrow(
-      "VITE_WEBPUSH_BASE_URL must be set",
+      "VITE_API_URL or VITE_WEBPUSH_BASE_URL must be set",
     );
     expect(calls).toHaveLength(0);
   });
@@ -47,6 +62,7 @@ describe("notification backend URL configuration", () => {
 describe("notification client options", () => {
   it("can override the backend base URL and fetch implementation per call", async () => {
     vi.stubEnv("VITE_WEBPUSH_BASE_URL", "");
+    vi.stubEnv("VITE_API_URL", "");
     const { calls, fetcher } = createJsonFetcher({
       keyVersion: "dev-v1",
       publicKey: "test-key",
@@ -60,6 +76,21 @@ describe("notification client options", () => {
     ).resolves.toEqual({ keyVersion: "dev-v1", publicKey: "test-key" });
     expect(calls[0]?.input).toBe("http://backend.test/api/notifications/vapid-public-key");
     expect(calls[0]?.init).toMatchObject({ method: "GET" });
+  });
+
+  it("rejects an explicitly empty base URL override", async () => {
+    const { calls, fetcher } = createJsonFetcher({
+      keyVersion: "dev-v1",
+      publicKey: "test-key",
+    });
+
+    await expect(
+      fetchVapidPublicKey({
+        baseUrl: " ",
+        fetcher,
+      }),
+    ).rejects.toThrow("Notification backend base URL must not be empty");
+    expect(calls).toHaveLength(0);
   });
 });
 

@@ -16,6 +16,12 @@ import {
   recordSubscriptionDiagnostic,
   updateNotificationConfig,
 } from "../storage/notification-db";
+import { NOTIFICATION_SERVICE_WORKER_VERSION } from "../sw/version";
+import {
+  hashPushSubscription,
+  serializePushSubscription,
+  subscribeWithVapidPublicKey,
+} from "./subscription-state";
 
 const DEFAULT_SERVICE_WORKER_READY_TIMEOUT_MS = 20_000;
 
@@ -30,6 +36,7 @@ export type NotificationSubscriptionEnableStatus =
 export type NotificationSubscriptionSnapshot = {
   capability: NotificationCapability;
   config: NotificationConfigRecord | null;
+  storageAvailable: boolean;
   subscription: NotificationPushSubscriptionJSON | null;
 };
 
@@ -65,12 +72,14 @@ export type EnableNotificationSubscriptionResult =
 
 export async function readNotificationSubscriptionSnapshot(): Promise<NotificationSubscriptionSnapshot> {
   const capability = detectNotificationCapability();
-  const config = isNotificationStorageAvailable() ? await readNotificationConfig() : null;
+  const storageAvailable = isNotificationStorageAvailable();
+  const config = storageAvailable ? await readNotificationConfig() : null;
   const subscription = await readCurrentPushSubscription();
 
   return {
     capability,
     config,
+    storageAvailable,
     subscription,
   };
 }
@@ -125,7 +134,7 @@ export async function enableNotificationSubscription(
       vapid.keyVersion,
     );
     const serviceWorkerVersion =
-      options.serviceWorkerVersion ?? readServiceWorkerVersion(registration);
+      options.serviceWorkerVersion ?? NOTIFICATION_SERVICE_WORKER_VERSION;
     const appVersion = options.appVersion ?? readAppVersion();
 
     const registerResponse = await registerNotificationDevice(
@@ -154,10 +163,12 @@ export async function enableNotificationSubscription(
     const nextConfig = await updateNotificationConfig({
       appVersion,
       permissionState: capability.permission,
+      platform: capability.platform,
       serviceWorkerVersion,
       subscriptionHash,
       syncCursor: registerResponse.inboxSyncCursor,
       vapidKeyVersion: vapid.keyVersion,
+      vapidPublicKey: vapid.publicKey,
     });
 
     await recordSubscriptionDiagnostic({
@@ -192,19 +203,6 @@ export async function enableNotificationSubscription(
       status: "failed",
     };
   }
-}
-
-export function urlBase64ToUint8Array(value: string): Uint8Array<ArrayBuffer> {
-  const padding = "=".repeat((4 - (value.length % 4)) % 4);
-  const base64 = `${value}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = atob(base64);
-  const output = new Uint8Array(new ArrayBuffer(rawData.length));
-
-  for (let index = 0; index < rawData.length; index += 1) {
-    output[index] = rawData.charCodeAt(index);
-  }
-
-  return output;
 }
 
 async function requestNotificationPermissionIfNeeded(
@@ -257,13 +255,8 @@ async function getOrCreatePushSubscription({
     await currentSubscription.unsubscribe();
   }
 
-  const subscription = await registration.pushManager.subscribe({
-    applicationServerKey: urlBase64ToUint8Array(vapid.publicKey),
-    userVisibleOnly: true,
-  });
-
   return {
-    subscription: serializePushSubscription(subscription),
+    subscription: await subscribeWithVapidPublicKey(registration, vapid.publicKey),
     subscriptionWasReused: false,
   };
 }
@@ -277,68 +270,6 @@ async function readCurrentPushSubscription(): Promise<NotificationPushSubscripti
   const subscription = await registration?.pushManager.getSubscription();
 
   return subscription ? serializePushSubscription(subscription) : null;
-}
-
-function serializePushSubscription(
-  subscription: PushSubscription,
-): NotificationPushSubscriptionJSON {
-  const json = subscription.toJSON();
-  const auth = json.keys?.auth;
-  const p256dh = json.keys?.p256dh;
-
-  if (!json.endpoint || !auth || !p256dh) {
-    throw new Error("PushSubscription is missing endpoint, auth, or p256dh.");
-  }
-
-  return {
-    endpoint: json.endpoint,
-    expirationTime: json.expirationTime ?? null,
-    keys: {
-      auth,
-      p256dh,
-    },
-  };
-}
-
-async function hashPushSubscription(
-  subscription: NotificationPushSubscriptionJSON,
-  vapidKeyVersion: string,
-): Promise<string> {
-  const input = JSON.stringify({
-    endpoint: subscription.endpoint,
-    expirationTime: subscription.expirationTime,
-    keys: subscription.keys,
-    vapidKeyVersion,
-  });
-
-  if (globalThis.crypto?.subtle) {
-    const digest = await globalThis.crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(input),
-    );
-    return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-  }
-
-  return fallbackHash(input);
-}
-
-function fallbackHash(value: string): string {
-  let hash = 2_166_136_261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16_777_619);
-  }
-
-  return hash.toString(16).padStart(8, "0");
-}
-
-function readServiceWorkerVersion(registration: ServiceWorkerRegistration): string | undefined {
-  const worker = registration.active ?? registration.waiting ?? registration.installing;
-  if (!worker?.scriptURL) {
-    return undefined;
-  }
-
-  return new URL(worker.scriptURL).pathname;
 }
 
 function readAppVersion(): string {

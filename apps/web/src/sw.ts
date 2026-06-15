@@ -1,5 +1,6 @@
 /// <reference lib="webworker" />
 import { type PrecacheEntry, Serwist, type SerwistGlobalConfig } from "serwist";
+import { registerNotificationServiceWorkerHandlers } from "./features/notifications/sw/register-handlers";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -16,4 +17,5 @@ const serwist = new Serwist({
   navigationPreload: true,
 });
 
+registerNotificationServiceWorkerHandlers(self);
 serwist.addEventListeners();
