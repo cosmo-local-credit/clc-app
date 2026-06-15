@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -817,7 +818,8 @@ func (a *app) sendPush(recipient device, payload []byte, priority string) (strin
 		return "stale-subscription", response.StatusCode, response.Status
 	}
 	if response.StatusCode >= 400 {
-		return "push-service-error", response.StatusCode, response.Status
+		body, _ := io.ReadAll(response.Body)
+		return "push-service-error", response.StatusCode, fmt.Sprintf("%s | body=%s", response.Status, strings.TrimSpace(string(body)))
 	}
 	return "sent", response.StatusCode, ""
 }
