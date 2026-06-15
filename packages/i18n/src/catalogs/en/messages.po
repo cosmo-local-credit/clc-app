@@ -12,7 +12,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/web/src/routes/__root.tsx:143
+#: apps/web/src/routes/__root.tsx:144
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
@@ -35,6 +35,10 @@ msgstr "Advanced options"
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:47
+msgid "Appearance"
+msgstr "Appearance"
+
 #: apps/web/src/components/paper-wallet-scanner.tsx:211
 #: apps/web/src/components/paper-wallet-scanner.tsx:234
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
@@ -53,7 +57,7 @@ msgstr "Browse all"
 msgid "Camera access denied."
 msgstr "Camera access denied."
 
-#: apps/web/src/routes/__root.tsx:156
+#: apps/web/src/routes/__root.tsx:157
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -70,11 +74,15 @@ msgstr "Checking notification support on this device."
 msgid "Choose a location"
 msgstr "Choose a location"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:52
+msgid "Choose between light and dark mode."
+msgstr "Choose between light and dark mode."
+
 #: apps/web/src/components/paper-wallet-scanner.tsx:230
 msgid "Choose Image"
 msgstr "Choose Image"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:37
+#: apps/web/src/features/home/ui/settings-page.tsx:38
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
@@ -94,7 +102,7 @@ msgstr "Coming next"
 msgid "Complete the browser permission prompt to continue."
 msgstr "Complete the browser permission prompt to continue."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:57
+#: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "Connected address"
 msgstr "Connected address"
 
@@ -151,6 +159,10 @@ msgstr "Create your account"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
 msgstr "Customize"
+
+#: apps/web/src/components/theme-selector.tsx:19
+msgid "Dark"
+msgstr "Dark"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 msgid "Description"
@@ -246,10 +258,14 @@ msgstr "Invalid location"
 msgid "Invalid phone number"
 msgstr "Invalid phone number"
 
-#: apps/web/src/components/language-selector.tsx:26
-#: apps/web/src/features/home/ui/settings-page.tsx:32
+#: apps/web/src/components/language-selector.tsx:27
+#: apps/web/src/features/home/ui/settings-page.tsx:33
 msgid "Language"
 msgstr "Language"
+
+#: apps/web/src/components/theme-selector.tsx:18
+msgid "Light"
+msgstr "Light"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:160
 msgid "Link wallet to {providerLabel} passkey"
@@ -285,7 +301,7 @@ msgstr "Logo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Manage vouchers, pools, and local payments."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:26
+#: apps/web/src/features/home/ui/settings-page.tsx:27
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
@@ -324,7 +340,7 @@ msgstr "Name must be 80 characters or fewer"
 msgid "Name on wallet"
 msgstr "Name on wallet"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "No address available"
 msgstr "No address available"
 
@@ -508,7 +524,7 @@ msgid "Service"
 msgstr "Service"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:47
-#: apps/web/src/features/home/ui/settings-page.tsx:23
+#: apps/web/src/features/home/ui/settings-page.tsx:24
 msgid "Settings"
 msgstr "Settings"
 
@@ -520,11 +536,11 @@ msgstr "Shop"
 msgid "Sign in with private key"
 msgstr "Sign in with private key"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:72
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Sign out"
 msgstr "Sign out"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:72
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Signing out..."
 msgstr "Signing out..."
 
@@ -532,17 +548,21 @@ msgstr "Signing out..."
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
 
-#: apps/web/src/routes/__root.tsx:148
+#: apps/web/src/routes/__root.tsx:149
 msgid "Switch wallet"
 msgstr "Switch wallet"
 
-#: apps/web/src/routes/__root.tsx:140
+#: apps/web/src/routes/__root.tsx:141
 msgid "Switch wallet?"
 msgstr "Switch wallet?"
 
-#: apps/web/src/routes/__root.tsx:148
+#: apps/web/src/routes/__root.tsx:149
 msgid "Switching…"
 msgstr "Switching…"
+
+#: apps/web/src/components/theme-selector.tsx:30
+msgid "Theme"
+msgstr "Theme"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:225
 msgid "This browser cannot store notification registration safely."
@@ -556,6 +576,10 @@ msgstr "This device is subscribed to wallet notifications."
 msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
 
+#: apps/web/src/components/theme-selector.tsx:58
+msgid "Toggle theme"
+msgstr "Toggle theme"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:85
 msgid "Top up"
 msgstr "Top up"
@@ -564,7 +588,7 @@ msgstr "Top up"
 msgid "try again"
 msgstr "try again"
 
-#: apps/web/src/components/language-selector.tsx:41
+#: apps/web/src/components/language-selector.tsx:42
 msgid "Unable to load language. Reverted to English."
 msgstr "Unable to load language. Reverted to English."
 
@@ -603,7 +627,7 @@ msgstr "View all"
 msgid "Wallet"
 msgstr "Wallet"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:48
+#: apps/web/src/features/home/ui/settings-page.tsx:63
 msgid "Wallet session"
 msgstr "Wallet session"
 

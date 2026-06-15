@@ -6,7 +6,7 @@ import { FaApple, FaGoogle } from "react-icons/fa";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
-import { OnboardingLanguageSelector } from "#/components/language-selector";
+import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
@@ -98,7 +98,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
   return (
     <div className="relative flex min-h-[100svh] flex-col bg-background">
-      <OnboardingLanguageSelector />
+      <OnboardingMenu />
       <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <button
           type="button"

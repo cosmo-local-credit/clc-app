@@ -235,6 +235,22 @@ field error display always use `getFieldError(field.state.meta.errors)` from
 `#/lib/forms`. Never `.join()` raw errors; Standard Schema returns issue
 objects, not strings.
 
+### Internationalization (lingui)
+
+User-facing copy is translated with lingui (`<Trans>` / the `t` macro from
+`@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
+`packages/i18n/src/catalogs/{en,sw}/messages.po`. They are compiled in-memory by
+`@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
+**no `lingui compile` step** and the generated `messages.ts` files are gitignored
+(do not import or commit them).
+
+**Hard rule — after adding or changing any `<Trans>` / `t` string you MUST run
+`pnpm i18n:extract`** (from the repo root) and commit the updated `.po` files.
+Skipping this leaves the new keys out of the catalogs: English silently falls
+back to the source text, but every other locale (e.g. `sw`) is left untranslated.
+Then fill in the new `msgstr ""` entries in each non-English catalog. This was
+the `7f5ba80` regression fix — keep it intact.
+
 ### Client / server / URL state
 
 Pick the right home for each kind of state. Misclassifying state — usually by

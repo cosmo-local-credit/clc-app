@@ -3,6 +3,7 @@ import {
   DEFAULT_LOCALE,
   i18n,
   isSupportedLocale,
+  matchSupportedLocale,
   type SupportedLocale,
 } from "@clc/i18n/index";
 import { I18nProvider } from "@lingui/react";
@@ -67,6 +68,17 @@ function writeCookieLocale(locale: SupportedLocale) {
   } catch {}
 }
 
+function readBrowserLocale(): SupportedLocale {
+  if (typeof navigator === "undefined") return DEFAULT_LOCALE;
+  const preferred =
+    navigator.languages && navigator.languages.length > 0
+      ? navigator.languages
+      : navigator.language
+        ? [navigator.language]
+        : [];
+  return matchSupportedLocale(preferred);
+}
+
 function readStoredLocale(): SupportedLocale {
   const localValue = readLocalStorageLocale();
   if (isSupportedLocale(localValue)) return localValue;
@@ -74,7 +86,7 @@ function readStoredLocale(): SupportedLocale {
   const cookieValue = readCookieLocale();
   if (isSupportedLocale(cookieValue)) return cookieValue;
 
-  return DEFAULT_LOCALE;
+  return readBrowserLocale();
 }
 
 function persistLocale(locale: SupportedLocale) {

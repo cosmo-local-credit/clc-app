@@ -5,6 +5,7 @@ import {
   DEFAULT_LOCALE,
   isSupportedLocale,
   LOCALE_OPTIONS,
+  matchSupportedLocale,
   SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "./locales";
@@ -13,6 +14,7 @@ export {
   DEFAULT_LOCALE,
   isSupportedLocale,
   LOCALE_OPTIONS,
+  matchSupportedLocale,
   SUPPORTED_LOCALES,
   type SupportedLocale,
 };
