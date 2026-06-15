@@ -42,7 +42,7 @@ export const notificationKindPolicies = {
   "swap.completed": {
     ...sharedV1Policy,
     priority: "normal",
-    renotify: false,
+    renotify: true,
   },
   "offramp.completed": {
     ...sharedV1Policy,

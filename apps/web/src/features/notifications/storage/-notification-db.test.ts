@@ -15,6 +15,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { NotificationPayload } from "../logic/payload-schema";
 import {
   clearQueuedNotificationAcks,
+  consumePendingNotificationClickEvents,
+  deleteNotificationInboxMessages,
   enqueueNotificationAck,
   getNotificationInboxMessage,
   getOrCreateNotificationDeviceId,
@@ -27,10 +29,12 @@ import {
   type NotificationInboxMessage,
   openNotificationDatabase,
   readNotificationConfig,
+  readNotificationDeviceId,
   recordSubscriptionDiagnostic,
   removeQueuedNotificationAck,
   resetNotificationDatabaseForTests,
   saveNotificationInboxMessage,
+  savePendingNotificationClickEvent,
   updateNotificationAckAttempt,
   updateNotificationConfig,
 } from "./notification-db";
@@ -74,6 +78,7 @@ describe("notification device storage", () => {
 
     expect(firstDeviceId).toMatch(/^device-/);
     expect(secondDeviceId).toBe(firstDeviceId);
+    expect(await readNotificationDeviceId()).toBe(firstDeviceId);
   });
 });
 
@@ -152,6 +157,10 @@ describe("notification inbox storage", () => {
 
     expect(await markNotificationInboxMessageRead("missing")).toBeNull();
     expect(await markNotificationInboxMessageActioned("missing")).toBeNull();
+
+    await deleteNotificationInboxMessages(["notification-older"]);
+    expect(await getNotificationInboxMessage("notification-older")).toBeNull();
+    expect(await getNotificationInboxMessage("notification-newer")).not.toBeNull();
   });
 });
 
@@ -199,6 +208,24 @@ describe("notification ack queue storage", () => {
   });
 });
 
+describe("pending notification click storage", () => {
+  it("stores delayed clicks and consumes them once in creation order", async () => {
+    const first = await savePendingNotificationClickEvent({
+      notificationId: "notification-1",
+      targetUrl: "/wallet",
+    });
+    await waitForClockTick();
+    const second = await savePendingNotificationClickEvent({
+      actionId: "view",
+      notificationId: "notification-2",
+      targetUrl: "/wallet/history",
+    });
+
+    expect(await consumePendingNotificationClickEvents()).toEqual([first, second]);
+    expect(await consumePendingNotificationClickEvents()).toEqual([]);
+  });
+});
+
 describe("notification subscription diagnostics storage", () => {
   it("records diagnostics newest first", async () => {
     const activeDiagnostic = await recordSubscriptionDiagnostic({
@@ -232,7 +259,7 @@ describe("notification storage availability", () => {
   });
 
   it("retries opening the database after a cached open rejects", async () => {
-    const newerDatabase = await openRawDatabase("clc-notifications", 2);
+    const newerDatabase = await openRawDatabase("clc-notifications", 3);
     newerDatabase.close();
 
     await expect(openNotificationDatabase()).rejects.toMatchObject({
@@ -242,7 +269,7 @@ describe("notification storage availability", () => {
     await deleteRawDatabase("clc-notifications");
 
     const database = await openNotificationDatabase();
-    expect(database.version).toBe(1);
+    expect(database.version).toBe(2);
   });
 });
 
