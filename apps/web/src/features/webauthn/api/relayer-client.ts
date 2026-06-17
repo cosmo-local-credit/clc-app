@@ -12,6 +12,11 @@ export class RelayerError extends Error {
   }
 }
 
+export type DelegatePayload = {
+  ephemeralAddress: `0x${string}`;
+  authorization: EIP7702Auth;
+};
+
 export type RelayPayload = {
   userAddress: `0x${string}`;
   signedBatch: SignedBatch;
@@ -48,7 +53,7 @@ export function createRelayerClient(baseUrl: string) {
   };
 
   return {
-    getHealth: () => get<{ relayerAddress: string; chainId: number }>("/health"),
+    getHealth: () => get<{ relayerAddress?: string; chainId: number }>("/health"),
 
     getEOANonce: (address: string) => get<{ nonce: string }>(`/nonce/${address}`),
 
@@ -56,6 +61,8 @@ export function createRelayerClient(baseUrl: string) {
       get<{ nonce: string }>(
         keyHash ? `/calibur-nonce/${address}/${keyHash}` : `/calibur-nonce/${address}`,
       ),
+
+    delegate: (payload: DelegatePayload) => post<{ trackingId: string }>("/delegate", payload),
 
     getWebAuthnChallenge: () => get<{ challenge: string }>("/webauthn/challenge"),
 

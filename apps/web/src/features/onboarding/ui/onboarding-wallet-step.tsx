@@ -9,19 +9,18 @@ import { connect } from "wagmi/actions";
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
+import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
 import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
 import {
   isPasskeyPlatformAvailable,
   pickPasskeyProvider,
 } from "#/features/webauthn/hooks/use-platform-passkey-label";
+import { RELAYER_URL } from "#/lib/backend-config";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
-
-const RELAYER_URL: string =
-  (import.meta.env.VITE_RELAYER_URL as string | undefined) ??
-  "http://192.168.1.20:5003/api/v2/relayer";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -51,6 +50,9 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [linkConnectError, setLinkConnectError] = useState<string | null>(null);
+  const [backendRegistered, setBackendRegistered] = useState(false);
+  const backendSignup = useBackendSignup();
+  const delegatePaperWallet = useCaliburDelegateFromPk(relayerClient);
 
   const available = isPasskeyPlatformAvailable();
   const provider = pickPasskeyProvider();
@@ -64,6 +66,8 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   } = useCaliburFromPk(pk, relayerClient);
 
   const isUpgrading = ["authorizing", "creating-passkey", "registering"].includes(upgradeStep);
+  const isRegistering = backendSignup.isPending;
+  const isDelegating = delegatePaperWallet.isPending;
   const isLinked = upgradeStep === "done";
 
   useEffect(() => {
@@ -81,12 +85,30 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     }
   }, [upgradeStep, onDone, t]);
 
+  async function ensureBackendSignup() {
+    if (backendRegistered) return;
+    await backendSignup.mutateAsync({ profile: profileData, privateKey: pk });
+    setBackendRegistered(true);
+  }
+
+  async function handleLinkPasskey() {
+    setConnectError(null);
+    setLinkConnectError(null);
+    try {
+      await ensureBackendSignup();
+      upgradeAndLink.mutate();
+    } catch {
+      // backendSignup.error is rendered below.
+    }
+  }
+
   async function handleContinue() {
     setConnecting(true);
     setConnectError(null);
     try {
+      await ensureBackendSignup();
+      await delegatePaperWallet.mutateAsync({ privateKey: pk });
       storePrivateKey(pk);
-      console.log("[onboarding] profile saved:", profileData);
       await connect(wagmiConfig, { connector: pkConnector });
       onDone();
     } catch (err) {
@@ -145,37 +167,61 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
           {available ? (
             <Button
               className="h-11 w-full"
-              onClick={() => upgradeAndLink.mutate()}
-              disabled={!acked || isUpgrading || isLinked}
+              onClick={() => void handleLinkPasskey()}
+              disabled={!acked || isRegistering || isUpgrading || isLinked}
             >
-              {isUpgrading ? (
+              {isRegistering || isUpgrading ? (
                 <LoaderCircle className="mr-2 size-4 animate-spin" />
               ) : (
                 <ProviderIcon className="mr-2 size-4" />
               )}
-              {isUpgrading
-                ? t`Linking passkey...`
-                : isLinked
-                  ? t`Passkey linked`
-                  : t`Link wallet to ${providerLabel} passkey`}
+              {isRegistering
+                ? t`Creating account...`
+                : isUpgrading
+                  ? t`Linking passkey...`
+                  : isLinked
+                    ? t`Passkey linked`
+                    : t`Link wallet to ${providerLabel} passkey`}
             </Button>
           ) : null}
 
+          {backendSignup.error ? (
+            <p className="text-destructive text-xs">
+              {backendSignup.error instanceof Error
+                ? backendSignup.error.message
+                : t`Account registration failed.`}
+            </p>
+          ) : null}
           {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}
+          {delegatePaperWallet.error ? (
+            <p className="text-destructive text-xs">
+              {delegatePaperWallet.error instanceof Error
+                ? delegatePaperWallet.error.message
+                : t`Smart wallet activation failed.`}
+            </p>
+          ) : null}
           {linkConnectError ? <p className="text-destructive text-xs">{linkConnectError}</p> : null}
 
           <button
             type="button"
             className="w-full py-2 text-center font-medium text-foreground text-sm underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
-            disabled={!acked || connecting || isUpgrading || isLinked}
+            disabled={
+              !acked || connecting || isRegistering || isDelegating || isUpgrading || isLinked
+            }
             onClick={handleContinue}
           >
-            {connecting ? <LoaderCircle className="mr-2 inline size-4 animate-spin" /> : null}
-            {connecting
-              ? t`Opening paper wallet...`
-              : available
-                ? t`Continue with paper wallet only`
-                : t`Continue to wallet`}
+            {connecting || isRegistering || isDelegating ? (
+              <LoaderCircle className="mr-2 inline size-4 animate-spin" />
+            ) : null}
+            {isRegistering
+              ? t`Creating account...`
+              : isDelegating
+                ? t`Activating smart wallet...`
+                : connecting
+                  ? t`Opening paper wallet...`
+                  : available
+                    ? t`Continue with paper wallet`
+                    : t`Continue to wallet`}
           </button>
           {connectError ? <p className="text-destructive text-xs">{connectError}</p> : null}
         </div>

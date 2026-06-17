@@ -1,6 +1,7 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 
@@ -32,6 +33,7 @@ const DEFAULT_VALUES: ProfileFormValues = {
 
 export function ProfileForm({ address, onBack, onDone }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const submitProfileMutation = useMutation({ mutationFn: submitSignupProfile });
 
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
@@ -40,7 +42,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
       setSubmitError(null);
       try {
         const parsed = profileSchema.parse(value);
-        await submitSignupProfile({ ...parsed, address });
+        await submitProfileMutation.mutateAsync({ ...parsed, address });
         onDone();
       } catch (err) {
         setSubmitError(err instanceof Error ? err.message : "Submission failed.");

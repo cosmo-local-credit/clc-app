@@ -1,70 +1,36 @@
-import { useCallback, useState } from "react";
-import { createSiweMessage } from "viem/siwe";
+import { useCallback } from "react";
 import { useAccount } from "wagmi";
-import { signMessage } from "wagmi/actions";
 
-import { wagmiConfig } from "#/providers/web3-config";
-import { getSiweNonce, verifySiweSignature } from "../api/client";
-import { getAuthToken, setAuthToken } from "../state/token";
+import { useBackendWalletSignin } from "./use-backend-auth";
 
 export type SiweAuthState =
   | { status: "idle" }
   | { status: "pending" }
-  | { status: "done"; token: string }
+  | { status: "done" }
   | { status: "error"; error: string };
 
 /**
- * Performs the SIWE challenge-response flow to obtain a short-lived JWT from
- * the Application API. The token is stored in sessionStorage and returned.
- *
- * Call `authenticate()` once the wallet is connected. Re-calling when already
- * authenticated returns the cached token immediately.
- *
- * Uses `signMessage` from wagmi/actions (not the hook) to bypass the React
- * state propagation window that causes ConnectorNotConnectedError when called
- * immediately after `connect()` resolves.
+ * Performs the backend SIWE sign-in flow for the currently connected wallet.
+ * The backend sets the HttpOnly session cookie; no client-side token is needed.
  */
 export function useSiweAuth() {
   const { address, chainId } = useAccount();
-  const [state, setState] = useState<SiweAuthState>({ status: "idle" });
+  const signin = useBackendWalletSignin(address, chainId);
 
-  const authenticate = useCallback(async (): Promise<string> => {
-    const cached = getAuthToken();
-    if (cached) {
-      setState({ status: "done", token: cached });
-      return cached;
-    }
+  const authenticate = useCallback(async () => {
+    await signin.mutateAsync();
+  }, [signin]);
 
-    if (!address) throw new Error("Wallet not connected");
-
-    setState({ status: "pending" });
-    try {
-      const nonce = await getSiweNonce();
-
-      const message = createSiweMessage({
-        domain: window.location.host,
-        address,
-        statement: "Sign in to CLC App",
-        uri: window.location.origin,
-        version: "1",
-        chainId: chainId ?? 42220,
-        nonce,
-      });
-      // Use wagmi/actions signMessage to access the config store directly.
-      // This avoids ConnectorNotConnectedError when called immediately after
-      // connect() resolves — the React hook state lags one render behind.
-      const signature = await signMessage(wagmiConfig, { message });
-
-      const { token } = await verifySiweSignature(message, signature);
-      setAuthToken(token);
-      setState({ status: "done", token });
-      return token;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Authentication failed";
-      setState({ status: "error", error: msg });
-      throw err;
-    }
-  }, [address, chainId]);
+  const state: SiweAuthState = signin.isPending
+    ? { status: "pending" }
+    : signin.isSuccess
+      ? { status: "done" }
+      : signin.isError
+        ? {
+            status: "error",
+            error: signin.error instanceof Error ? signin.error.message : "Authentication failed",
+          }
+        : { status: "idle" };
 
   return { state, authenticate };
 }

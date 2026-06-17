@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 
+import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { clearAuthToken } from "#/features/auth/state/token";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
@@ -17,6 +18,7 @@ type HomePageProps = {
 export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   const { address } = useAccount();
   const { disconnectAsync } = useDisconnect();
+  const backendLogout = useBackendLogout();
   const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentTab = activeTab ?? fallbackTab;
@@ -29,6 +31,11 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   async function handleSignOut() {
     setIsSigningOut(true);
     clearAuthToken();
+    try {
+      await backendLogout.mutateAsync();
+    } catch {
+      // Local disconnect must still happen if the session cookie is already gone.
+    }
     try {
       await disconnectAsync();
     } finally {

@@ -16,6 +16,14 @@ msgstr ""
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:192
+msgid "Account registration failed."
+msgstr "Account registration failed."
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:219
+msgid "Activating smart wallet..."
+msgstr "Activating smart wallet..."
+
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:32
 #: apps/web/src/features/home/ui/undone-page.tsx:6
 msgid "Activity"
@@ -27,7 +35,7 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:220
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:207
 msgid "Advanced options"
 msgstr "Advanced options"
 
@@ -43,8 +51,8 @@ msgstr "Appearance"
 #: apps/web/src/components/paper-wallet-scanner.tsx:234
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:59
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:107
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:110
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:132
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:62
 msgid "Back"
 msgstr "Back"
@@ -90,7 +98,7 @@ msgstr "Choose the app display language."
 msgid "Close paper wallet scanner"
 msgstr "Close paper wallet scanner"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:248
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:235
 msgid "Close private key form"
 msgstr "Close private key form"
 
@@ -106,14 +114,14 @@ msgstr "Complete the browser permission prompt to continue."
 msgid "Connected address"
 msgstr "Connected address"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:127
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:196
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:114
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:183
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:101
 msgid "Connecting..."
 msgstr "Connecting..."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:82
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:94
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:69
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:116
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:46
 msgid "Connection failed."
 msgstr "Connection failed."
@@ -123,21 +131,25 @@ msgstr "Connection failed."
 msgid "Continue"
 msgstr "Continue"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:178
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:224
 msgid "Continue to wallet"
 msgstr "Continue to wallet"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:196
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:183
 msgid "Continue with {providerLabel}"
 msgstr "Continue with {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:208
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:223
+msgid "Continue with paper wallet"
+msgstr "Continue with paper wallet"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:195
 msgid "Continue with Paper Wallet"
 msgstr "Continue with Paper Wallet"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:177
-msgid "Continue with paper wallet only"
-msgstr "Continue with paper wallet only"
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:208
+#~ msgid "Continue with paper wallet only"
+#~ msgstr "Continue with paper wallet only"
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:90
 msgid "Couldn't identify a country here. Try a nearby spot."
@@ -147,14 +159,19 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Create account"
 msgstr "Create account"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:148
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:163
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:135
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:150
 msgid "Create an account"
 msgstr "Create an account"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
 msgid "Create your account"
 msgstr "Create your account"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:179
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:217
+msgid "Creating account..."
+msgstr "Creating account..."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
@@ -177,7 +194,7 @@ msgstr "Download card"
 msgid "Download failed. Try a screenshot instead."
 msgstr "Download failed. Try a screenshot instead."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:118
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:140
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:70
 msgid "Download or photograph this card. Anyone who scans the QR code will have "
 "full access to this wallet."
@@ -226,11 +243,11 @@ msgstr "Go back"
 msgid "Go back to sign in"
 msgstr "Go back to sign in"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:134
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:156
 msgid "I have saved this key"
 msgstr "I have saved this key"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:140
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:91
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "I have saved this key. If lost, my wallet cannot be recovered."
@@ -267,11 +284,11 @@ msgstr "Language"
 msgid "Light"
 msgstr "Light"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:160
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:184
 msgid "Link wallet to {providerLabel} passkey"
 msgstr "Link wallet to {providerLabel} passkey"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:157
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:181
 msgid "Linking passkey..."
 msgstr "Linking passkey..."
 
@@ -348,11 +365,11 @@ msgstr "No address available"
 msgid "No camera found on this device."
 msgstr "No camera found on this device."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:155
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:142
 msgid "No passkey found"
 msgstr "No passkey found"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:158
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:145
 msgid "No passkey is registered on this device."
 msgstr "No passkey is registered on this device."
 
@@ -400,12 +417,12 @@ msgid "Notifications currently require Chrome on Android or the installed "
 msgstr "Notifications currently require Chrome on Android or the installed "
 "iPhone app."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:175
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:221
 msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:165
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:184
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:152
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:171
 msgid "or"
 msgstr "or"
 
@@ -418,11 +435,11 @@ msgstr "Paper wallet"
 msgid "Paper Wallet"
 msgstr "Paper Wallet"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:159
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:183
 msgid "Passkey linked"
 msgstr "Passkey linked"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:78
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:82
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Passkey linked, but wallet connection failed."
 
@@ -458,9 +475,9 @@ msgstr "Preparing..."
 msgid "Primary navigation"
 msgstr "Primary navigation"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:233
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:243
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:265
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:220
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:230
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:252
 msgid "Private key"
 msgstr "Private key"
 
@@ -495,7 +512,7 @@ msgstr "Registration failed. Check your connection and try again."
 msgid "Reset logo"
 msgstr "Reset logo"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:117
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:104
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
@@ -532,7 +549,7 @@ msgstr "Settings"
 msgid "Shop"
 msgstr "Shop"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:269
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:256
 msgid "Sign in with private key"
 msgstr "Sign in with private key"
 
@@ -543,6 +560,10 @@ msgstr "Sign out"
 #: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Signing out..."
 msgstr "Signing out..."
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:200
+msgid "Smart wallet activation failed."
+msgstr "Smart wallet activation failed."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
@@ -572,7 +593,7 @@ msgstr "This browser cannot store notification registration safely."
 msgid "This device is subscribed to wallet notifications."
 msgstr "This device is subscribed to wallet notifications."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:103
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:90
 msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
 
@@ -584,7 +605,7 @@ msgstr "Toggle theme"
 msgid "Top up"
 msgstr "Top up"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:171
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:158
 msgid "try again"
 msgstr "try again"
 
@@ -639,7 +660,7 @@ msgstr "Website"
 msgid "Your name"
 msgstr "Your name"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:115
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:67
 msgid "Your paper wallet"
 msgstr "Your paper wallet"

@@ -14,6 +14,10 @@ vi.mock("#/features/auth/state/token", () => ({
   clearAuthToken: vi.fn(),
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-session", () => ({
+  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
+}));
+
 vi.mock("./wallet-page", () => ({
   WalletPage: () => <div data-testid="wallet-page" />,
 }));

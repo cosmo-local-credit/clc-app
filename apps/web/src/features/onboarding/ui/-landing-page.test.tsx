@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
@@ -7,11 +7,13 @@ const {
   mockRecoverMutate,
   mockRecoveryState,
   mockConnectAction,
+  mockBackendSigninMutateAsync,
   mockStorePrivateKey,
 } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockRecoverMutate: vi.fn(),
   mockConnectAction: vi.fn().mockResolvedValue(undefined),
+  mockBackendSigninMutateAsync: vi.fn().mockResolvedValue({ userId: 1, role: "USER" }),
   mockStorePrivateKey: vi.fn(),
   mockRecoveryState: {
     step: "idle" as string,
@@ -64,8 +66,11 @@ vi.mock("#/features/webauthn/api/relayer-client", () => ({
   createRelayerClient: () => ({}),
 }));
 
-vi.mock("#/features/auth/hooks/use-siwe-auth", () => ({
-  useSiweAuth: () => ({ authenticate: vi.fn().mockResolvedValue("token") }),
+vi.mock("#/features/auth/hooks/use-backend-auth", () => ({
+  useBackendPrivateKeySignin: () => ({
+    mutateAsync: mockBackendSigninMutateAsync,
+    isPending: false,
+  }),
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-recovery", () => ({
@@ -114,8 +119,10 @@ beforeEach(() => {
   mockNavigate.mockClear();
   mockRecoverMutate.mockClear();
   mockConnectAction.mockClear();
+  mockBackendSigninMutateAsync.mockClear();
   mockStorePrivateKey.mockClear();
   mockConnectAction.mockResolvedValue(undefined);
+  mockBackendSigninMutateAsync.mockResolvedValue({ userId: 1, role: "USER" });
   mockRecoveryState.step = "idle";
   mockRecoveryState.outcome = null;
   mockRecoveryState.error = null;
@@ -186,7 +193,12 @@ describe("LandingPage navigation", () => {
   it("stores and connects a paper wallet key after scan", async () => {
     render(<LandingPage />);
     fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
-    fireEvent.click(screen.getByRole("button", { name: /simulate scan/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /simulate scan/i }));
+    });
+    expect(mockBackendSigninMutateAsync).toHaveBeenCalledWith({
+      privateKey: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    });
     expect(mockStorePrivateKey).toHaveBeenCalledWith(
       "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     );

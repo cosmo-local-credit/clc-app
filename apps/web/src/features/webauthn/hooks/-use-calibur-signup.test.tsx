@@ -10,6 +10,7 @@ function createClientStub(): RelayerClient {
     getHealth: vi.fn(),
     getEOANonce: vi.fn(),
     getCaliburNonce: vi.fn(),
+    delegate: vi.fn(),
     getWebAuthnChallenge: vi.fn(),
     recoverWebAuthn: vi.fn(),
     relay: vi.fn(),

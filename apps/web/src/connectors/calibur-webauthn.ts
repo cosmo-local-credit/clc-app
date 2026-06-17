@@ -2,9 +2,8 @@ import type { CreateConnectorFn } from "wagmi";
 import { createConnector } from "wagmi";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { sendCaliburTransaction } from "#/features/webauthn/hooks/use-calibur-transaction";
+import { RELAYER_URL } from "#/lib/backend-config";
 import { clearWebAuthnCredential, getWebAuthnCredential } from "#/lib/webauthn-storage";
-
-const RELAYER_URL = import.meta.env.VITE_RELAYER_URL ?? "http://192.168.1.20:5003/api/v2/relayer";
 
 export function caliburWebAuthnConnector() {
   return createConnector(((config) => {

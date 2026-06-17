@@ -102,6 +102,9 @@ export function useCaliburSignup(client: RelayerClient) {
       ]);
       const caliburNonceStr = caliburNonceResponse.result.nonce;
       const relayerAddress = healthResponse.result.relayerAddress;
+      if (!relayerAddress) {
+        throw new Error("Relayer health response is missing relayerAddress");
+      }
       const executor = relayerAddress as `0x${string}`;
 
       const signedBatch = {

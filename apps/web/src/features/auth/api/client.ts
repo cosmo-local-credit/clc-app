@@ -1,47 +1,136 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
+import { API_URL } from "#/lib/backend-config";
 
-const API_URL: string =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? "http://192.168.1.20:5003";
+type ApiOk<T> = {
+  ok: true;
+  description?: string;
+  result: T;
+};
 
-async function apiFetch<T>(path: string, init?: RequestInit, token?: string | null): Promise<T> {
+type ApiErr = {
+  ok: false;
+  description?: string;
+  code?: string;
+};
+
+export class BackendApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly description: string,
+    public readonly code?: string,
+  ) {
+    super(description);
+    this.name = "BackendApiError";
+  }
+}
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(init?.headers as Record<string, string>),
+    ...(init?.body ? { "Content-Type": "application/json" } : {}),
+    ...(init?.headers as Record<string, string> | undefined),
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}${path}`, {
+    credentials: "include",
+    ...init,
+    headers,
+  });
+
+  const text = await res.text();
+  const body = text ? (JSON.parse(text) as ApiOk<T> | ApiErr | T) : null;
+
+  if (!res.ok) {
+    const errBody = body as ApiErr | null;
+    throw new BackendApiError(
+      res.status,
+      errBody?.description ?? (res.statusText || "Request failed"),
+      errBody?.code,
+    );
   }
-  const res = await fetch(`${API_URL}${path}`, { ...init, headers });
-  const body = await res.json();
-  if (!body.ok) {
-    throw new Error((body as { description?: string }).description ?? "Request failed");
+
+  if (body && typeof body === "object" && "ok" in body) {
+    const envelope = body as ApiOk<T> | ApiErr;
+    if (!envelope.ok) {
+      throw new BackendApiError(200, envelope.description ?? "Request failed", envelope.code);
+    }
+    return envelope.result;
   }
+
   return body as T;
 }
 
 export async function getSiweNonce(): Promise<string> {
-  const data = await apiFetch<{ ok: true; result: { nonce: string } }>("/auth/siwe/nonce", {
+  const data = await apiFetch<{ nonce: string }>("/auth/nonce", {
     method: "POST",
     body: JSON.stringify({}),
   });
-  return data.result.nonce;
+  return data.nonce;
 }
 
-export type SiweVerifyResult = {
-  token: string;
-  address: string;
-  expiresAt: string;
+export type SignupSiwePayload = {
+  message: string;
+  signature: string;
+  name: string;
+  email: string;
 };
 
-export async function verifySiweSignature(
-  message: string,
-  signature: string,
-): Promise<SiweVerifyResult> {
-  const data = await apiFetch<{ ok: true; result: SiweVerifyResult }>("/auth/siwe/verify", {
+export type SignupResult = {
+  userId: number | null;
+  status: string;
+  role: string;
+  alreadyRegistered?: boolean;
+};
+
+export async function signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult> {
+  try {
+    return await apiFetch<SignupResult>("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    if (err instanceof BackendApiError && err.status === 409) {
+      return { userId: null, status: "REGISTERED", role: "USER", alreadyRegistered: true };
+    }
+    throw err;
+  }
+}
+
+export type SigninSiwePayload = {
+  message: string;
+  signature: string;
+};
+
+export type SigninResult = {
+  userId: number;
+  role: string;
+};
+
+export async function signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult> {
+  return apiFetch<SigninResult>("/auth/signin", {
     method: "POST",
-    body: JSON.stringify({ message, signature }),
+    body: JSON.stringify(payload),
   });
-  return data.result;
+}
+
+export type SessionResult = {
+  address: `0x${string}`;
+  chainId: number;
+};
+
+export async function getSession(): Promise<SessionResult | null> {
+  const res = await fetch(`${API_URL}/auth/session`, { credentials: "include" });
+  if (res.status === 204) return null;
+  if (!res.ok) {
+    throw new BackendApiError(res.status, res.statusText || "Session check failed");
+  }
+  return (await res.json()) as SessionResult;
+}
+
+export async function logout(): Promise<void> {
+  await apiFetch<Record<string, never>>("/auth/logout", {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
 }
 
 export type ProfilePayload = {
@@ -51,16 +140,16 @@ export type ProfilePayload = {
   location: LocationInput;
 };
 
-export async function submitProfile(payload: ProfilePayload, token: string): Promise<void> {
-  await apiFetch(
-    "/auth/profile",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-      credentials: "include",
-    },
-    token,
-  );
+export async function submitProfile(payload: ProfilePayload): Promise<void> {
+  await apiFetch("/auth/profile", {
+    method: "POST",
+    body: JSON.stringify({
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      country: payload.location.country,
+    }),
+  });
 }
 
 export type ProfileResult = {
@@ -68,15 +157,10 @@ export type ProfileResult = {
   name: string;
   email: string;
   phone: string;
-  location: LocationInput;
+  country: string;
   createdAt: string;
 };
 
-export async function getProfile(token: string): Promise<ProfileResult> {
-  const data = await apiFetch<{ ok: true; result: ProfileResult }>(
-    "/auth/profile",
-    { method: "GET", credentials: "include" },
-    token,
-  );
-  return data.result;
+export async function getProfile(): Promise<ProfileResult> {
+  return apiFetch<ProfileResult>("/auth/profile", { method: "GET" });
 }
