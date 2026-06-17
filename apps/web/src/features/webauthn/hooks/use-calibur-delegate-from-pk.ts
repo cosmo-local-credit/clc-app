@@ -1,32 +1,36 @@
-import { eip7702AuthMessage } from "@clc/core/features/webauthn/index";
+import { eip7702AuthMessage, isEip7702Delegated } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
 import { createPublicClient, http, parseSignature } from "viem";
+import type { PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { celo } from "wagmi/chains";
 
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { CALIBUR_ADDRESS } from "#/lib/backend-config";
 
-const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
-  "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 const PUBLIC_RPC_URL =
   (import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined) ?? "https://forno.celo.org";
-const DELEGATION_TIMEOUT_MS = 120_000;
-const DELEGATION_POLL_MS = 2_000;
+export const DELEGATION_TIMEOUT_MS = 120_000;
+export const DELEGATION_POLL_MS = 2_000;
 
-const publicClient = createPublicClient({
+const defaultPublicClient = createPublicClient({
   chain: celo,
   transport: http(PUBLIC_RPC_URL),
 });
 
-async function waitForDelegation(address: `0x${string}`): Promise<void> {
-  const expectedCode = `0xef0100${CALIBUR_ADDRESS.slice(2)}`.toLowerCase();
-  const deadline = Date.now() + DELEGATION_TIMEOUT_MS;
+export async function waitForDelegation(
+  address: `0x${string}`,
+  viemClient: Pick<PublicClient, "getCode"> = defaultPublicClient,
+  timeoutMs = DELEGATION_TIMEOUT_MS,
+  pollMs = DELEGATION_POLL_MS,
+): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const code = await publicClient.getCode({ address });
-    if (code?.toLowerCase() === expectedCode) return;
-    await new Promise((resolve) => setTimeout(resolve, DELEGATION_POLL_MS));
+    const code = await viemClient.getCode({ address });
+    if (isEip7702Delegated(code, CALIBUR_ADDRESS)) return;
+    await new Promise((resolve) => setTimeout(resolve, pollMs));
   }
 
   throw new Error("Smart wallet activation was accepted but not confirmed on-chain.");

@@ -2,12 +2,9 @@ import type { ProfileInput } from "@clc/core/features/signup/logic";
 
 import { submitProfile } from "#/features/auth/api/client";
 
-export type SignupProfilePayload = ProfileInput & {
-  address: `0x${string}`;
-};
+export type SignupProfilePayload = ProfileInput;
 
 export async function submitSignupProfile(input: SignupProfilePayload): Promise<{ ok: true }> {
-  void input.address;
   await submitProfile({
     name: input.name,
     email: input.email,

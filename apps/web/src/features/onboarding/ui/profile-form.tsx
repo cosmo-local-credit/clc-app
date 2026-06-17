@@ -31,7 +31,7 @@ const DEFAULT_VALUES: ProfileFormValues = {
   location: undefined,
 };
 
-export function ProfileForm({ address, onBack, onDone }: Props) {
+export function ProfileForm({ address: _address, onBack, onDone }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const submitProfileMutation = useMutation({ mutationFn: submitSignupProfile });
 
@@ -42,7 +42,7 @@ export function ProfileForm({ address, onBack, onDone }: Props) {
       setSubmitError(null);
       try {
         const parsed = profileSchema.parse(value);
-        await submitProfileMutation.mutateAsync({ ...parsed, address });
+        await submitProfileMutation.mutateAsync(parsed);
         onDone();
       } catch (err) {
         setSubmitError(err instanceof Error ? err.message : "Submission failed.");

@@ -37,7 +37,14 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   const text = await res.text();
-  const body = text ? (JSON.parse(text) as ApiOk<T> | ApiErr | T) : null;
+  let body: ApiOk<T> | ApiErr | T | null = null;
+  if (text) {
+    try {
+      body = JSON.parse(text) as ApiOk<T> | ApiErr | T;
+    } catch {
+      throw new BackendApiError(res.status, res.statusText || "Non-JSON response from server");
+    }
+  }
 
   if (!res.ok) {
     const errBody = body as ApiErr | null;

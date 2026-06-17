@@ -117,8 +117,10 @@ const PROFILE: ProfileInput = {
 
 beforeEach(() => {
   mockUpgradeAndLinkMutate.mockClear();
-  mockBackendSignupMutateAsync.mockClear();
-  mockDelegateMutateAsync.mockClear();
+  mockBackendSignupMutateAsync.mockReset();
+  mockBackendSignupMutateAsync.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
+  mockDelegateMutateAsync.mockReset();
+  mockDelegateMutateAsync.mockResolvedValue({ result: { trackingId: "tracking-1" } });
   mockConnect.mockClear();
   mockStorePrivateKey.mockClear();
   mockOnDone.mockClear();
@@ -222,6 +224,28 @@ describe("OnboardingWalletStep continue flow", () => {
     );
     expect(mockOnDone).toHaveBeenCalledTimes(1);
   });
+
+  it("does NOT call storePrivateKey when backendSignup throws", async () => {
+    mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+    });
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockOnDone).not.toHaveBeenCalled();
+  });
+
+  it("does NOT call storePrivateKey when delegate throws", async () => {
+    mockDelegateMutateAsync.mockRejectedValue(new Error("delegation failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+    });
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockOnDone).not.toHaveBeenCalled();
+  });
 });
 
 describe("OnboardingWalletStep link flow", () => {
@@ -250,6 +274,16 @@ describe("OnboardingWalletStep link flow", () => {
       privateKey: FAKE_PK,
     });
     expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT call upgradeAndLink when backendSignup throws", async () => {
+    mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
+    });
+    expect(mockUpgradeAndLinkMutate).not.toHaveBeenCalled();
   });
 });
 

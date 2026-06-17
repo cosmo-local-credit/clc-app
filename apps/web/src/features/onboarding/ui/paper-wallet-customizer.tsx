@@ -77,7 +77,7 @@ export function PaperWalletCustomizer({ value, onChange }: Props) {
         <Trans>Customize</Trans>
       </summary>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-4 space-y-4 border border-border bg-card p-4">
         {/* Name */}
         <div className="space-y-2">
           <label htmlFor="pw-name" className="font-medium text-foreground text-sm">

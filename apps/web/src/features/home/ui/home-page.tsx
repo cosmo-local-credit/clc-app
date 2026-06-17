@@ -3,6 +3,7 @@ import { useAccount, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { clearAuthToken } from "#/features/auth/state/token";
+import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
 import { SettingsPage } from "./settings-page";
@@ -17,6 +18,7 @@ type HomePageProps = {
 
 export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   const { address } = useAccount();
+  const delegationStatus = useCaliburDelegation(address);
   const { disconnectAsync } = useDisconnect();
   const backendLogout = useBackendLogout();
   const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
@@ -56,6 +58,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}
+                delegationStatus={delegationStatus}
                 isSigningOut={isSigningOut}
                 onSignOut={() => {
                   void handleSignOut();

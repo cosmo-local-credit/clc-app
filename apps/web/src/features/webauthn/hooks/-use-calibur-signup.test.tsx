@@ -57,4 +57,51 @@ describe("useCaliburSignup", () => {
     );
     expect(client.getEOANonce).not.toHaveBeenCalled();
   });
+
+  it("throws when relayerAddress is missing from health response", async () => {
+    const client = createClientStub();
+    // Provide enough stubs to get past credential creation to the health check
+    (client.getHealth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { chainId: 42220 }, // relayerAddress deliberately absent
+    });
+    (client.getEOANonce as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { nonce: "0" },
+    });
+    (client.getCaliburNonce as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { nonce: "0" },
+    });
+
+    // Mock crypto.subtle so extractP256Coords succeeds past the SPKI import
+    const importKeySpy = vi.spyOn(crypto.subtle, "importKey").mockResolvedValue({} as CryptoKey);
+    const exportKeySpy = vi.spyOn(crypto.subtle, "exportKey").mockResolvedValue({
+      x: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      y: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    } as JsonWebKey);
+
+    // Set up navigator.credentials so we get past the credentials guard
+    const fakeCredential = {
+      response: {
+        getPublicKey: () => new Uint8Array([0x04, ...Array.from({ length: 64 }, () => 0)]).buffer,
+        getPublicKeyAlgorithm: () => -7,
+      },
+    };
+    Object.defineProperty(navigator, "credentials", {
+      configurable: true,
+      value: { create: vi.fn().mockResolvedValue(fakeCredential) },
+    });
+
+    const { result } = renderHook(() => useCaliburSignup(client), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.signup.mutateAsync().catch(() => undefined);
+    });
+
+    importKeySpy.mockRestore();
+    exportKeySpy.mockRestore();
+
+    expect(result.current.step).toBe("error");
+    expect(result.current.error).toContain("relayerAddress");
+  });
 });

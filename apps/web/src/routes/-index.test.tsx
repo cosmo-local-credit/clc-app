@@ -35,6 +35,10 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
   useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
 }));
 
+vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
+  useCaliburDelegation: () => "checking" as const,
+}));
+
 vi.mock("#/features/onboarding/ui/landing-page", () => ({
   LandingPage: () => <div data-testid="landing-page">Landing</div>,
 }));

@@ -22,6 +22,7 @@ describe("SettingsPage", () => {
     render(
       <SettingsPage
         address="0xabcdef1234567890abcdef1234567890abcdef12"
+        delegationStatus="checking"
         isSigningOut={false}
         onSignOut={vi.fn()}
       />,
@@ -29,14 +30,14 @@ describe("SettingsPage", () => {
     expect(screen.getAllByText(/0xabcdef1234567890abcdef1234567890abcdef12/i)).toHaveLength(2);
   });
 
-  it("renders the appearance section with the theme selector", () => {
-    render(<SettingsPage isSigningOut={false} onSignOut={vi.fn()} />);
-    expect(screen.getByRole("heading", { name: /appearance/i })).toBeTruthy();
+  it("renders the preferences section with the theme selector", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    expect(screen.getByRole("heading", { name: /preferences/i })).toBeTruthy();
     expect(screen.getByTestId("theme-selector")).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {
-    render(<SettingsPage isSigningOut={false} onSignOut={vi.fn()} />);
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
     expect(screen.getByText(/no address available/i)).toBeTruthy();
   });
 
@@ -44,6 +45,7 @@ describe("SettingsPage", () => {
     render(
       <SettingsPage
         address="0xabcdef1234567890abcdef1234567890abcdef12"
+        delegationStatus="checking"
         isSigningOut={false}
         onSignOut={vi.fn()}
       />,
@@ -53,15 +55,41 @@ describe("SettingsPage", () => {
     );
   });
 
+  it("shows the Calibur delegation row with active badge when delegated", () => {
+    render(
+      <SettingsPage
+        address="0xabcdef1234567890abcdef1234567890abcdef12"
+        delegationStatus="delegated"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/delegated to calibur/i)).toBeTruthy();
+    expect(screen.getByText(/active/i)).toBeTruthy();
+  });
+
+  it("shows the Calibur delegation row with inactive badge when not-delegated", () => {
+    render(
+      <SettingsPage
+        address="0xabcdef1234567890abcdef1234567890abcdef12"
+        delegationStatus="not-delegated"
+        isSigningOut={false}
+        onSignOut={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/delegated to calibur/i)).toBeTruthy();
+    expect(screen.getByText(/inactive/i)).toBeTruthy();
+  });
+
   it("calls onSignOut when sign out button is clicked", () => {
     const onSignOut = vi.fn();
-    render(<SettingsPage isSigningOut={false} onSignOut={onSignOut} />);
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={onSignOut} />);
     fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 
   it("disables the sign out button and shows 'Signing out...' while signing out", () => {
-    render(<SettingsPage isSigningOut={true} onSignOut={vi.fn()} />);
+    render(<SettingsPage delegationStatus="checking" isSigningOut={true} onSignOut={vi.fn()} />);
     const button = screen.getByRole("button", { name: /signing out/i });
     expect(button).toBeTruthy();
     expect((button as HTMLButtonElement).disabled).toBe(true);

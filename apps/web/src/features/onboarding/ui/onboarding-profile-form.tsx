@@ -78,88 +78,90 @@ export function OnboardingProfileForm({ onNext }: Props) {
           }}
           className="space-y-4"
         >
-          <form.Field name="name">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="onb-name" className="font-medium text-sm">
-                    <Trans>Name</Trans>
-                  </label>
-                  <Input
-                    id="onb-name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder={t`Your name`}
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                    aria-label={t`Name`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
+          <div className="space-y-4 border border-border bg-card p-4">
+            <form.Field name="name">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="onb-name" className="font-medium text-sm">
+                      <Trans>Name</Trans>
+                    </label>
+                    <Input
+                      id="onb-name"
+                      type="text"
+                      autoComplete="name"
+                      placeholder={t`Your name`}
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                      aria-label={t`Name`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
 
-          <form.Field name="email">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="onb-email" className="font-medium text-sm">
-                    <Trans>Email</Trans>
-                  </label>
-                  <Input
-                    id="onb-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    aria-invalid={!!err}
-                    aria-label={t`Email`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
+            <form.Field name="email">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="onb-email" className="font-medium text-sm">
+                      <Trans>Email</Trans>
+                    </label>
+                    <Input
+                      id="onb-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      aria-invalid={!!err}
+                      aria-label={t`Email`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
 
-          <form.Field name="phone">
-            {(field) => {
-              const err = getFieldError(field.state.meta.errors);
-              return (
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="onb-phone" className="font-medium text-sm">
-                    <Trans>Phone</Trans>
-                  </label>
-                  <PhoneInputField
-                    id="onb-phone"
-                    value={field.state.value}
-                    onChange={(val) => field.handleChange(val)}
-                    aria-invalid={!!err}
-                    aria-label={t`Phone number`}
-                  />
-                  {err ? (
-                    <p className="text-destructive text-xs">
-                      {translateValidationError(err, i18n)}
-                    </p>
-                  ) : null}
-                </div>
-              );
-            }}
-          </form.Field>
+            <form.Field name="phone">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="onb-phone" className="font-medium text-sm">
+                      <Trans>Phone</Trans>
+                    </label>
+                    <PhoneInputField
+                      id="onb-phone"
+                      value={field.state.value}
+                      onChange={(val) => field.handleChange(val)}
+                      aria-invalid={!!err}
+                      aria-label={t`Phone number`}
+                    />
+                    {err ? (
+                      <p className="text-destructive text-xs">
+                        {translateValidationError(err, i18n)}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+          </div>
 
           <form.Field name="location">
             {(field) => {
