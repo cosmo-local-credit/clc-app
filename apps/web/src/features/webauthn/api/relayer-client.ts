@@ -74,8 +74,7 @@ export function createRelayerClient(baseUrl: string) {
         publicKeyY: string;
       }>("/webauthn/recover", payload),
 
-    relay: (payload: RelayPayload) =>
-      post<{ txHash: string; trackingId: string }>("/relay", payload),
+    relay: (payload: RelayPayload) => post<{ trackingId: string }>("/relay", payload),
   };
 }
 

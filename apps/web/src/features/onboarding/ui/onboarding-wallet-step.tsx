@@ -52,7 +52,12 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   const [linkConnectError, setLinkConnectError] = useState<string | null>(null);
   const [backendRegistered, setBackendRegistered] = useState(false);
   const backendSignup = useBackendSignup();
-  const delegatePaperWallet = useCaliburDelegateFromPk(relayerClient);
+  const {
+    step: delegateStep,
+    error: delegateError,
+    mutate: activatePaperWallet,
+    isPending: isDelegating,
+  } = useCaliburDelegateFromPk(relayerClient);
 
   const available = isPasskeyPlatformAvailable();
   const provider = pickPasskeyProvider();
@@ -65,9 +70,10 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     upgradeAndLink,
   } = useCaliburFromPk(pk, relayerClient);
 
-  const isUpgrading = ["authorizing", "creating-passkey", "registering"].includes(upgradeStep);
+  const isUpgrading = ["authorizing", "creating-passkey", "registering", "confirming"].includes(
+    upgradeStep,
+  );
   const isRegistering = backendSignup.isPending;
-  const isDelegating = delegatePaperWallet.isPending;
   const isLinked = upgradeStep === "done";
 
   useEffect(() => {
@@ -84,6 +90,28 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
         });
     }
   }, [upgradeStep, onDone, t]);
+
+  useEffect(() => {
+    if (delegateStep === "done" && connecting) {
+      setConnectError(null);
+      storePrivateKey(pk);
+      void connect(wagmiConfig, { connector: pkConnector })
+        .then(() => {
+          onDone();
+        })
+        .catch((err: unknown) => {
+          clearPrivateKey();
+          setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
+          setConnecting(false);
+        });
+      return;
+    }
+
+    if (delegateStep === "error" && connecting) {
+      clearPrivateKey();
+      setConnecting(false);
+    }
+  }, [connecting, delegateStep, onDone, pk, t]);
 
   async function ensureBackendSignup() {
     if (backendRegistered) return;
@@ -107,10 +135,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     setConnectError(null);
     try {
       await ensureBackendSignup();
-      await delegatePaperWallet.mutateAsync({ privateKey: pk });
-      storePrivateKey(pk);
-      await connect(wagmiConfig, { connector: pkConnector });
-      onDone();
+      activatePaperWallet({ privateKey: pk });
     } catch (err) {
       clearPrivateKey();
       setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
@@ -177,11 +202,13 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
               )}
               {isRegistering
                 ? t`Creating account...`
-                : isUpgrading
-                  ? t`Linking passkey...`
-                  : isLinked
-                    ? t`Passkey linked`
-                    : t`Link wallet to ${providerLabel} passkey`}
+                : upgradeStep === "confirming"
+                  ? t`Passkey linked — confirming on-chain...`
+                  : isUpgrading
+                    ? t`Linking passkey...`
+                    : isLinked
+                      ? t`Passkey linked`
+                      : t`Link wallet to ${providerLabel} passkey`}
             </Button>
           ) : null}
 
@@ -193,13 +220,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             </p>
           ) : null}
           {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}
-          {delegatePaperWallet.error ? (
-            <p className="text-destructive text-xs">
-              {delegatePaperWallet.error instanceof Error
-                ? delegatePaperWallet.error.message
-                : t`Smart wallet activation failed.`}
-            </p>
-          ) : null}
+          {delegateError ? <p className="text-destructive text-xs">{delegateError}</p> : null}
           {linkConnectError ? <p className="text-destructive text-xs">{linkConnectError}</p> : null}
 
           <button
@@ -215,13 +236,15 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             ) : null}
             {isRegistering
               ? t`Creating account...`
-              : isDelegating
-                ? t`Activating smart wallet...`
-                : connecting
-                  ? t`Opening paper wallet...`
-                  : available
-                    ? t`Continue with paper wallet`
-                    : t`Continue to wallet`}
+              : delegateStep === "confirming"
+                ? t`Smart wallet activated — confirming on-chain...`
+                : isDelegating
+                  ? t`Activating smart wallet...`
+                  : connecting
+                    ? t`Opening paper wallet...`
+                    : available
+                      ? t`Continue with paper wallet`
+                      : t`Continue to wallet`}
           </button>
           {connectError ? <p className="text-destructive text-xs">{connectError}</p> : null}
         </div>

@@ -1,65 +1,83 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { createElement, type ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { CALIBUR } = vi.hoisted(() => ({
-  CALIBUR: "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85" as `0x${string}`,
+import * as backendApi from "#/features/auth/api/client";
+import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { DELEGATION_POLL_MS, useCaliburDelegateFromPk } from "./use-calibur-delegate-from-pk";
+
+const FAKE_PK =
+  "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
+const FAKE_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`;
+
+vi.mock("viem/accounts", () => ({
+  privateKeyToAccount: () => ({
+    address: FAKE_ADDRESS,
+    sign: vi.fn().mockResolvedValue(`0x${"11".repeat(32)}${"22".repeat(32)}1b`),
+  }),
 }));
 
-vi.mock("#/lib/backend-config", () => ({
-  CALIBUR_ADDRESS: CALIBUR,
-}));
+function createClientStub(): RelayerClient {
+  return {
+    getHealth: vi.fn(),
+    getEOANonce: vi.fn(),
+    getCaliburNonce: vi.fn(),
+    delegate: vi.fn(),
+    getWebAuthnChallenge: vi.fn(),
+    recoverWebAuthn: vi.fn(),
+    relay: vi.fn(),
+  };
+}
 
-import { eip7702DelegationCode } from "@clc/core/features/webauthn";
-import { waitForDelegation } from "./use-calibur-delegate-from-pk";
+function createWrapper() {
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
 
-const ADDR = "0xabcdef1234567890abcdef1234567890abcdef12" as `0x${string}`;
-const DELEGATION_CODE = eip7702DelegationCode(CALIBUR);
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+}
 
-describe("waitForDelegation", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
+describe("useCaliburDelegateFromPk", () => {
+  beforeEach(() => {});
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
+  it("waits for backend tracking completion after delegation is accepted", async () => {
+    const client = createClientStub();
+    (client.getEOANonce as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { nonce: "0" },
+    });
+    (client.delegate as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { trackingId: "tracking-1" },
+    });
 
-  it("resolves immediately when bytecode already matches on first poll", async () => {
-    const getCode = vi.fn().mockResolvedValue(DELEGATION_CODE);
-    const client = { getCode };
+    const { result } = renderHook(() => useCaliburDelegateFromPk(client), {
+      wrapper: createWrapper(),
+    });
 
-    const promise = waitForDelegation(ADDR, client, 5_000, 500);
-    await vi.runAllTimersAsync();
-    await expect(promise).resolves.toBeUndefined();
-    expect(getCode).toHaveBeenCalledTimes(1);
-  });
+    vi.spyOn(backendApi, "trackOtx").mockResolvedValue({
+      otx: [
+        {
+          id: 1,
+          trackingId: "tracking-1",
+          otxType: "RELAY_DELEGATE",
+          txHash: "0xdeadbeef",
+          nonce: 0,
+          replaced: false,
+          createdAt: "2026-06-18T00:00:00Z",
+          status: "SUCCESS",
+        },
+      ],
+    });
 
-  it("resolves after code matches on a subsequent poll", async () => {
-    const getCode = vi.fn().mockResolvedValueOnce("0xdeadbeef").mockResolvedValue(DELEGATION_CODE);
-    const client = { getCode };
+    await act(async () => {
+      await result.current.mutateAsync({ privateKey: FAKE_PK });
+    });
 
-    const promise = waitForDelegation(ADDR, client, 5_000, 500);
-    await vi.runAllTimersAsync();
-    await expect(promise).resolves.toBeUndefined();
-    expect(getCode).toHaveBeenCalledTimes(2);
-  });
-
-  it("throws on timeout when code never matches", async () => {
-    const getCode = vi.fn().mockResolvedValue("0xdeadbeef");
-    const client = { getCode };
-
-    const promise = waitForDelegation(ADDR, client, 1_000, 500);
-    void promise.catch(() => {}); // prevent unhandled rejection before assertion
-    await vi.runAllTimersAsync();
-    await expect(promise).rejects.toThrow("not confirmed on-chain");
-  });
-
-  it("propagates getCode errors", async () => {
-    const getCode = vi.fn().mockRejectedValue(new Error("RPC timeout"));
-    const client = { getCode };
-
-    const promise = waitForDelegation(ADDR, client, 5_000, 500);
-    void promise.catch(() => {}); // prevent unhandled rejection before assertion
-    await vi.runAllTimersAsync();
-    await expect(promise).rejects.toThrow("RPC timeout");
+    await waitFor(() => {
+      expect(backendApi.trackOtx).toHaveBeenCalledWith("tracking-1");
+      expect(result.current.step).toBe("done");
+      expect(result.current.isPending).toBe(false);
+    });
+    expect(DELEGATION_POLL_MS).toBe(2_000);
   });
 });

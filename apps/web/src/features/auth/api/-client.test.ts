@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError, getSiweNonce, signupWithSiwe } from "./client";
+import { BackendApiError, getSiweNonce, signupWithSiwe, waitForTrackingCompletion } from "./client";
 
 function mockFetch(options: {
   status?: number;
@@ -116,6 +116,121 @@ describe("apiFetch — error handling", () => {
 
     const nonce = await getSiweNonce();
     expect(nonce).toBe("abc123");
+  });
+});
+
+describe("waitForTrackingCompletion", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("polls until the tracking chain reaches SUCCESS", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "",
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                ok: true,
+                result: {
+                  otx: [
+                    {
+                      id: 1,
+                      trackingId: "uuid-1",
+                      otxType: "RELAY_DELEGATE",
+                      txHash: "0xabc",
+                      nonce: 0,
+                      replaced: false,
+                      createdAt: "2026-06-18T00:00:00Z",
+                      status: "IN_NETWORK",
+                    },
+                  ],
+                },
+              }),
+            ),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "",
+          text: () =>
+            Promise.resolve(
+              JSON.stringify({
+                ok: true,
+                result: {
+                  otx: [
+                    {
+                      id: 1,
+                      trackingId: "uuid-1",
+                      otxType: "RELAY_DELEGATE",
+                      txHash: "0xabc",
+                      nonce: 0,
+                      replaced: false,
+                      createdAt: "2026-06-18T00:00:00Z",
+                      status: "SUCCESS",
+                    },
+                  ],
+                },
+              }),
+            ),
+        }),
+    );
+
+    const promise = waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 });
+    await vi.runAllTimersAsync();
+    await expect(promise).resolves.toMatchObject({
+      trackingId: "uuid-1",
+      txHash: "0xabc",
+      status: "SUCCESS",
+    });
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v2/otx/track/uuid-1"),
+      expect.objectContaining({ credentials: "include", method: "GET" }),
+    );
+  });
+
+  it("throws when the latest active OTX reaches a terminal failure status", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              ok: true,
+              result: {
+                otx: [
+                  {
+                    id: 1,
+                    trackingId: "uuid-1",
+                    otxType: "RELAY_DELEGATE",
+                    txHash: "0xabc",
+                    nonce: 0,
+                    replaced: false,
+                    createdAt: "2026-06-18T00:00:00Z",
+                    status: "NO_GAS",
+                  },
+                ],
+              },
+            }),
+          ),
+      }),
+    );
+
+    await expect(
+      waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 }),
+    ).rejects.toThrow("Transaction failed on-chain (NO_GAS).");
   });
 });
 

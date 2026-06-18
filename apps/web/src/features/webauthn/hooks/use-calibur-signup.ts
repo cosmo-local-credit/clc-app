@@ -11,11 +11,11 @@ import {
   webAuthnKeyHash,
 } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
-import { useRef, useState } from "react";
-import { createPublicClient, encodeAbiParameters, http, parseSignature } from "viem";
+import { useEffect, useRef, useState } from "react";
+import { encodeAbiParameters, parseSignature } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { celo } from "wagmi/chains";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
@@ -25,30 +25,61 @@ export type SignupStep =
   | "generating-key"
   | "creating-passkey"
   | "registering"
+  | "confirming"
   | "done"
   | "error";
+
+type PendingSignup = {
+  trackingId: string;
+  credentialId: string;
+  keyHash: `0x${string}`;
+  publicKeyX: string;
+  publicKeyY: string;
+  address: `0x${string}`;
+};
 
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
   "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
-const PUBLIC_RPC_URL =
-  (import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined) ?? "https://forno.celo.org";
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 const RELYING_PARTY_NAME = import.meta.env.VITE_RELYING_PARTY_NAME ?? "CLC";
-
-const publicClient = createPublicClient({
-  chain: celo,
-  transport: http(PUBLIC_RPC_URL),
-});
 
 export function useCaliburSignup(client: RelayerClient) {
   const [step, setStep] = useState<SignupStep>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
   const ephemeralKeyRef = useRef<`0x${string}` | null>(null);
+  const tracking = useOtxTracking(pendingSignup?.trackingId ?? null);
+
+  useEffect(() => {
+    if (!pendingSignup) return;
+
+    if (tracking.outcome.kind === "success") {
+      storeWebAuthnCredential({
+        credentialId: pendingSignup.credentialId,
+        keyHash: pendingSignup.keyHash,
+        publicKeyX: pendingSignup.publicKeyX,
+        publicKeyY: pendingSignup.publicKeyY,
+        address: pendingSignup.address,
+      });
+      ephemeralKeyRef.current = null;
+      setPendingSignup(null);
+      setStep("done");
+      return;
+    }
+
+    if (tracking.outcome.kind === "error") {
+      ephemeralKeyRef.current = null;
+      setPendingSignup(null);
+      setError(tracking.outcome.error);
+      setStep("error");
+    }
+  }, [pendingSignup, tracking.outcome]);
 
   const signup = useMutation({
     mutationFn: async () => {
       setError(null);
+      setPendingSignup(null);
       assertWebAuthnSupported("create");
 
       setStep("generating-key");
@@ -131,7 +162,7 @@ export function useCaliburSignup(client: RelayerClient) {
       );
 
       const {
-        result: { txHash },
+        result: { trackingId },
       } = await client.relay({
         userAddress: account.address,
         signedBatch,
@@ -150,26 +181,19 @@ export function useCaliburSignup(client: RelayerClient) {
         publicKeyY: y.toString(),
       });
 
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: txHash as `0x${string}`,
-        timeout: 120_000,
-      });
-      if (receipt.status !== "success") {
-        throw new Error("Passkey registration transaction failed on-chain");
-      }
-
-      storeWebAuthnCredential({
+      setPendingSignup({
+        trackingId,
         credentialId: credential.id,
         keyHash,
         publicKeyX: x.toString(),
         publicKeyY: y.toString(),
         address: account.address,
       });
-      ephemeralKeyRef.current = null;
-      setStep("done");
+      setStep("confirming");
     },
     onError: (err) => {
       ephemeralKeyRef.current = null;
+      setPendingSignup(null);
       setError(err instanceof Error ? err.message : "Signup failed");
       setStep("error");
     },

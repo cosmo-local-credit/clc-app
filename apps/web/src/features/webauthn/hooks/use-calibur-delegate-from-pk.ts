@@ -1,44 +1,46 @@
-import { eip7702AuthMessage, isEip7702Delegated } from "@clc/core/features/webauthn/index";
+import { eip7702AuthMessage } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
-import { createPublicClient, http, parseSignature } from "viem";
-import type { PublicClient } from "viem";
+import { useEffect, useState } from "react";
+import { parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { celo } from "wagmi/chains";
 
+import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { CALIBUR_ADDRESS } from "#/lib/backend-config";
 
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
-const PUBLIC_RPC_URL =
-  (import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined) ?? "https://forno.celo.org";
-export const DELEGATION_TIMEOUT_MS = 120_000;
 export const DELEGATION_POLL_MS = 2_000;
 
-const defaultPublicClient = createPublicClient({
-  chain: celo,
-  transport: http(PUBLIC_RPC_URL),
-});
-
-export async function waitForDelegation(
-  address: `0x${string}`,
-  viemClient: Pick<PublicClient, "getCode"> = defaultPublicClient,
-  timeoutMs = DELEGATION_TIMEOUT_MS,
-  pollMs = DELEGATION_POLL_MS,
-): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-
-  while (Date.now() < deadline) {
-    const code = await viemClient.getCode({ address });
-    if (isEip7702Delegated(code, CALIBUR_ADDRESS)) return;
-    await new Promise((resolve) => setTimeout(resolve, pollMs));
-  }
-
-  throw new Error("Smart wallet activation was accepted but not confirmed on-chain.");
-}
+export type DelegationStep = "idle" | "authorizing" | "confirming" | "done" | "error";
 
 export function useCaliburDelegateFromPk(client: RelayerClient) {
-  return useMutation({
+  const [step, setStep] = useState<DelegationStep>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [trackingId, setTrackingId] = useState<string | null>(null);
+  const tracking = useOtxTracking(trackingId, { pollMs: DELEGATION_POLL_MS });
+
+  useEffect(() => {
+    if (!trackingId) return;
+
+    if (tracking.outcome.kind === "success") {
+      setTrackingId(null);
+      setStep("done");
+      return;
+    }
+
+    if (tracking.outcome.kind === "error") {
+      setTrackingId(null);
+      setError(tracking.outcome.error);
+      setStep("error");
+    }
+  }, [trackingId, tracking.outcome]);
+
+  const mutation = useMutation({
     mutationFn: async ({ privateKey }: { privateKey: `0x${string}` }) => {
+      setError(null);
+      setTrackingId(null);
+      setStep("authorizing");
+
       const account = privateKeyToAccount(privateKey);
       const {
         result: { nonce: nonceStr },
@@ -62,8 +64,21 @@ export function useCaliburDelegateFromPk(client: RelayerClient) {
         },
       });
 
-      await waitForDelegation(account.address);
+      setTrackingId(result.result.trackingId);
+      setStep("confirming");
       return result;
     },
+    onError: (err) => {
+      setTrackingId(null);
+      setError(err instanceof Error ? err.message : "Smart wallet activation failed.");
+      setStep("error");
+    },
   });
+
+  return {
+    ...mutation,
+    step,
+    error,
+    isPending: mutation.isPending || step === "confirming",
+  };
 }

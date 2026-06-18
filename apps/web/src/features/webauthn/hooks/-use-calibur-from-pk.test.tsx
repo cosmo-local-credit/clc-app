@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import * as backendApi from "#/features/auth/api/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburFromPk } from "./use-calibur-from-pk";
 
@@ -42,6 +43,71 @@ describe("useCaliburFromPk", () => {
     Object.defineProperty(navigator, "credentials", {
       configurable: true,
       value: undefined,
+    });
+  });
+
+  it("waits for backend tracking completion after relay acceptance", async () => {
+    const client = createClientStub();
+    (client.getHealth as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { chainId: 42220, relayerAddress: "0x1234567890123456789012345678901234567890" },
+    });
+    (client.getEOANonce as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { nonce: "0" },
+    });
+    (client.getCaliburNonce as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { nonce: "0" },
+    });
+    (client.relay as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: { trackingId: "tracking-1" },
+    });
+
+    const importKeySpy = vi.spyOn(crypto.subtle, "importKey").mockResolvedValue({} as CryptoKey);
+    const exportKeySpy = vi.spyOn(crypto.subtle, "exportKey").mockResolvedValue({
+      x: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      y: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    } as JsonWebKey);
+
+    const fakeCredential = {
+      id: "cred-1",
+      response: {
+        getPublicKey: () => new Uint8Array([0x04, ...Array.from({ length: 64 }, () => 0)]).buffer,
+        getPublicKeyAlgorithm: () => -7,
+      },
+    };
+    Object.defineProperty(navigator, "credentials", {
+      configurable: true,
+      value: { create: vi.fn().mockResolvedValue(fakeCredential) },
+    });
+
+    const { result } = renderHook(() => useCaliburFromPk(FAKE_PK, client), {
+      wrapper: createWrapper(),
+    });
+
+    vi.spyOn(backendApi, "trackOtx").mockResolvedValue({
+      otx: [
+        {
+          id: 1,
+          trackingId: "tracking-1",
+          otxType: "RELAY_DELEGATE_EXEC",
+          txHash: "0xdeadbeef",
+          nonce: 0,
+          replaced: false,
+          createdAt: "2026-06-18T00:00:00Z",
+          status: "SUCCESS",
+        },
+      ],
+    });
+
+    await act(async () => {
+      await result.current.upgradeAndLink.mutateAsync();
+    });
+
+    importKeySpy.mockRestore();
+    exportKeySpy.mockRestore();
+
+    await waitFor(() => {
+      expect(backendApi.trackOtx).toHaveBeenCalledWith("tracking-1");
+      expect(result.current.step).toBe("done");
     });
   });
 

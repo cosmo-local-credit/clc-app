@@ -157,3 +157,78 @@ export type ProfileResult = {
 export async function getProfile(): Promise<ProfileResult> {
   return apiFetch<ProfileResult>("/auth/profile", { method: "GET" });
 }
+
+export type OtxRecord = {
+  id: number;
+  trackingId: string;
+  otxType: string;
+  txHash: string;
+  nonce: number;
+  replaced: boolean;
+  createdAt: string;
+  status?: string;
+};
+
+export type OtxTrackResult = {
+  otx: OtxRecord[];
+};
+
+export const TRACKING_TIMEOUT_MS = 120_000;
+export const TRACKING_POLL_MS = 2_000;
+
+const NON_TERMINAL_OTX_STATUSES = new Set(["PENDING", "IN_NETWORK", ""]);
+
+export type OtxTrackingOutcome =
+  | { kind: "pending" }
+  | { kind: "success"; otx: OtxRecord }
+  | { kind: "error"; error: string };
+
+export async function trackOtx(trackingId: string): Promise<OtxTrackResult> {
+  return apiFetch<OtxTrackResult>(`/api/v2/otx/track/${trackingId}`, { method: "GET" });
+}
+
+export function getTrackingOutcome(result: OtxTrackResult | undefined): OtxTrackingOutcome {
+  const otx = result?.otx ?? [];
+  const currentChain = otx.filter((entry) => !entry.replaced);
+  const active = (currentChain.length > 0 ? currentChain : otx).at(-1);
+
+  const success = [...otx].reverse().find((entry) => entry.status === "SUCCESS");
+  if (success) {
+    return { kind: "success", otx: success };
+  }
+
+  const status = active?.status ?? "";
+  if (active && !NON_TERMINAL_OTX_STATUSES.has(status)) {
+    return { kind: "error", error: `Transaction failed on-chain (${status}).` };
+  }
+
+  return { kind: "pending" };
+}
+
+export async function waitForTrackingCompletion(
+  trackingId: string,
+  options: {
+    timeoutMs?: number;
+    pollMs?: number;
+    sleep?: (ms: number) => Promise<void>;
+  } = {},
+): Promise<OtxRecord> {
+  const timeoutMs = options.timeoutMs ?? TRACKING_TIMEOUT_MS;
+  const pollMs = options.pollMs ?? TRACKING_POLL_MS;
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const result = await trackOtx(trackingId);
+    const outcome = getTrackingOutcome(result);
+    if (outcome.kind === "success") return outcome.otx;
+    if (outcome.kind === "error") {
+      throw new Error(outcome.error);
+    }
+
+    await sleep(pollMs);
+  }
+
+  throw new Error("Transaction was accepted but not confirmed on-chain.");
+}

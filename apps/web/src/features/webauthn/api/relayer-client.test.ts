@@ -140,7 +140,7 @@ describe("relay", () => {
   it("POSTs a secp256k1 registration payload to /relay", async () => {
     const spy = mockFetch({
       ok: true,
-      result: { txHash: "0xdeadbeef", trackingId: "uuid-1" },
+      result: { trackingId: "uuid-1" },
     });
     const payload = {
       userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
@@ -156,6 +156,6 @@ describe("relay", () => {
     };
     const res = await client.relay(payload);
     expect(spy).toHaveBeenCalledWith(`${BASE}/relay`, expect.objectContaining({ method: "POST" }));
-    expect(res.result.txHash).toBe("0xdeadbeef");
+    expect(res.result.trackingId).toBe("uuid-1");
   });
 });
