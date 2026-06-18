@@ -13,6 +13,7 @@ import { translateValidationError } from "#/lib/validation-i18n";
 import { LocationPicker } from "./location-picker";
 
 type Props = {
+  initialValues?: ProfileInput;
   onNext: (data: ProfileInput) => void;
 };
 
@@ -30,16 +31,15 @@ const DEFAULT_VALUES: ProfileFormValues = {
   location: undefined,
 };
 
-export function OnboardingProfileForm({ onNext }: Props) {
+export function OnboardingProfileForm({ initialValues, onNext }: Props) {
   const { i18n, t } = useLingui();
   const navigate = useNavigate();
 
   const form = useForm({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: initialValues ?? DEFAULT_VALUES,
     validators: { onChange: profileSchema },
     onSubmit: async ({ value }) => {
       const parsed = profileSchema.parse(value);
-      console.log("[onboarding] profile:", parsed);
       onNext(parsed);
     },
   });

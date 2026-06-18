@@ -253,3 +253,24 @@ describe("LandingPage passkey recovery", () => {
     expect(screen.getByText(/verification failed/i)).toBeTruthy();
   });
 });
+
+describe("LandingPage private key form validation", () => {
+  it("surfaces an inline error and does not connect when an invalid key is submitted", async () => {
+    render(<LandingPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
+
+    const input = screen.getByLabelText(/^private key$/i);
+    fireEvent.change(input, { target: { value: "not-a-valid-key" } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
+    });
+
+    expect(screen.getByText(/invalid private key/i)).toBeTruthy();
+    expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockConnectAction).not.toHaveBeenCalled();
+  });
+});

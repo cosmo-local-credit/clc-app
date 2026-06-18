@@ -126,6 +126,12 @@ export function LandingPage() {
           />
         ) : null}
 
+        {showScanner && pkError ? (
+          <p role="alert" className="text-destructive text-xs">
+            {pkError}
+          </p>
+        ) : null}
+
         {!showScanner && !showPkInput && !connecting ? (
           <Button
             className="h-11 w-full bg-foreground text-background hover:bg-foreground/90"
@@ -249,16 +255,20 @@ export function LandingPage() {
               onChange={(e) => setPkInput(e.target.value)}
               placeholder="0x..."
               className="font-mono"
+              aria-invalid={!!pkError}
               aria-label={t`Private key`}
             />
+            {pkError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {pkError}
+              </p>
+            ) : null}
             <Button type="submit" disabled={!pkInput.trim()} className="h-11 w-full">
               <KeyRound className="mr-2 size-4" />
               <Trans>Sign in with private key</Trans>
             </Button>
           </form>
         ) : null}
-
-        {pkError ? <p className="text-destructive text-xs">{pkError}</p> : null}
       </div>
     </div>
   );
