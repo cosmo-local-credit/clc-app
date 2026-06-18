@@ -119,20 +119,6 @@ export async function signinWithSiwe(payload: SigninSiwePayload): Promise<Signin
   });
 }
 
-export type SessionResult = {
-  address: `0x${string}`;
-  chainId: number;
-};
-
-export async function getSession(): Promise<SessionResult | null> {
-  const res = await fetch(`${API_URL}/auth/session`, { credentials: "include" });
-  if (res.status === 204) return null;
-  if (!res.ok) {
-    throw new BackendApiError(res.status, res.statusText || "Session check failed");
-  }
-  return (await res.json()) as SessionResult;
-}
-
 export async function logout(): Promise<void> {
   await apiFetch<Record<string, never>>("/auth/logout", {
     method: "POST",
