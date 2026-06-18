@@ -16,11 +16,11 @@ msgstr ""
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:192
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:219
 msgid "Account registration failed."
 msgstr "Usajili wa akaunti umeshindikana."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:219
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:242
 msgid "Activating smart wallet..."
 msgstr "Inawezesha mkoba mahiri..."
 
@@ -55,8 +55,8 @@ msgstr "Tayari una akaunti?"
 #: apps/web/src/components/paper-wallet-scanner.tsx:234
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:59
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:132
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:154
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:157
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:62
 msgid "Back"
 msgstr "Rudi"
@@ -129,7 +129,8 @@ msgid "Connecting..."
 msgstr "Inaunganisha..."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:69
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:116
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:141
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:46
 msgid "Connection failed."
 msgstr "Muunganisho umeshindikana."
@@ -139,7 +140,7 @@ msgstr "Muunganisho umeshindikana."
 msgid "Continue"
 msgstr "Endelea"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:224
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:247
 msgid "Continue to wallet"
 msgstr "Endelea kwenye mkoba"
 
@@ -147,7 +148,7 @@ msgstr "Endelea kwenye mkoba"
 msgid "Continue with {providerLabel}"
 msgstr "Endelea kwa {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:223
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:246
 msgid "Continue with paper wallet"
 msgstr "Endelea na mkoba wa karatasi"
 
@@ -176,8 +177,8 @@ msgstr "Fungua akaunti"
 msgid "Create your account"
 msgstr "Fungua akaunti yako"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:179
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:217
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:204
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:238
 msgid "Creating account..."
 msgstr "Inafungua akaunti..."
 
@@ -206,7 +207,7 @@ msgstr "Pakua kadi"
 msgid "Download failed. Try a screenshot instead."
 msgstr "Upakuaji umeshindikana. Jaribu kupiga picha ya skrini badala yake."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:140
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:165
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:70
 msgid "Download or photograph this card. Anyone who scans the QR code will have "
 "full access to this wallet."
@@ -255,11 +256,11 @@ msgstr "Rudi"
 msgid "Go back to sign in"
 msgstr "Rudi kuingia"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:156
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:181
 msgid "I have saved this key"
 msgstr "Nimehifadhi ufunguo huu"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:187
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:91
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Nimehifadhi ufunguo huu. Ukipotea, mkoba wangu hauwezi kurejeshwa."
@@ -299,11 +300,11 @@ msgstr "Lugha"
 msgid "Light"
 msgstr "Mwanga"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:184
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
 msgid "Link wallet to {providerLabel} passkey"
 msgstr "Unganisha mkoba na passkey ya {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:181
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:208
 msgid "Linking passkey..."
 msgstr "Inaunganisha passkey..."
 
@@ -433,7 +434,7 @@ msgid "Notifications currently require Chrome on Android or the installed "
 msgstr "Kwa sasa arifa zinahitaji Chrome kwenye Android au programu ya iPhone "
 "iliyosakinishwa."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:221
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:244
 msgid "Opening paper wallet..."
 msgstr "Inafungua mkoba wa karatasi..."
 
@@ -451,11 +452,15 @@ msgstr "Mkoba wa karatasi"
 msgid "Paper Wallet"
 msgstr "Mkoba wa Karatasi"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:183
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:210
 msgid "Passkey linked"
 msgstr "Passkey imeunganishwa"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:82
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:206
+msgid "Passkey linked — confirming on-chain..."
+msgstr "Passkey imeunganishwa — inathibitisha kwenye mtandao..."
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:88
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Passkey imeunganishwa, lakini muunganisho wa mkoba umeshindikana."
 
@@ -583,9 +588,13 @@ msgstr "Ondoka"
 msgid "Signing out..."
 msgstr "Inaondoka..."
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:240
+msgid "Smart wallet activated — confirming on-chain..."
+msgstr "Mkoba mahiri imewezeshwa — inathibitisha kwenye mtandao..."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:200
-msgid "Smart wallet activation failed."
-msgstr "Uwezeshaji wa mkoba mahiri umeshindikana."
+#~ msgid "Smart wallet activation failed."
+#~ msgstr "Uwezeshaji wa mkoba mahiri umeshindikana."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
@@ -682,7 +691,7 @@ msgstr "Tovuti"
 msgid "Your name"
 msgstr "Jina lako"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:137
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:162
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:67
 msgid "Your paper wallet"
 msgstr "Mkoba wako wa karatasi"
