@@ -53,6 +53,21 @@ describe("getEOANonce", () => {
   });
 });
 
+describe("trackRelay", () => {
+  it("GETs /track/:trackingId and returns the OTX chain", async () => {
+    const spy = mockFetch({
+      ok: true,
+      result: { otx: [{ trackingId: "uuid-1", status: "IN_NETWORK" }] },
+    });
+    const res = await client.trackRelay("uuid-1");
+    expect(spy).toHaveBeenCalledWith(
+      `${BASE}/track/uuid-1`,
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(res.result.otx[0]?.trackingId).toBe("uuid-1");
+  });
+});
+
 describe("getCaliburNonce", () => {
   it("GETs /calibur-nonce/:address for root key", async () => {
     const spy = mockFetch({ ok: true, result: { nonce: "3" } });

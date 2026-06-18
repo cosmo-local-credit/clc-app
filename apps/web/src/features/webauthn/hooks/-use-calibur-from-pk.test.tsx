@@ -3,7 +3,6 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import * as backendApi from "#/features/auth/api/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburFromPk } from "./use-calibur-from-pk";
 
@@ -15,6 +14,7 @@ function createClientStub(): RelayerClient {
     getHealth: vi.fn(),
     getEOANonce: vi.fn(),
     getCaliburNonce: vi.fn(),
+    trackRelay: vi.fn(),
     delegate: vi.fn(),
     getWebAuthnChallenge: vi.fn(),
     recoverWebAuthn: vi.fn(),
@@ -83,19 +83,21 @@ describe("useCaliburFromPk", () => {
       wrapper: createWrapper(),
     });
 
-    vi.spyOn(backendApi, "trackOtx").mockResolvedValue({
-      otx: [
-        {
-          id: 1,
-          trackingId: "tracking-1",
-          otxType: "RELAY_DELEGATE_EXEC",
-          txHash: "0xdeadbeef",
-          nonce: 0,
-          replaced: false,
-          createdAt: "2026-06-18T00:00:00Z",
-          status: "SUCCESS",
-        },
-      ],
+    (client.trackRelay as ReturnType<typeof vi.fn>).mockResolvedValue({
+      result: {
+        otx: [
+          {
+            id: 1,
+            trackingId: "tracking-1",
+            otxType: "RELAY_DELEGATE_EXEC",
+            txHash: "0xdeadbeef",
+            nonce: 0,
+            replaced: false,
+            createdAt: "2026-06-18T00:00:00Z",
+            status: "SUCCESS",
+          },
+        ],
+      },
     });
 
     await act(async () => {
@@ -106,7 +108,7 @@ describe("useCaliburFromPk", () => {
     exportKeySpy.mockRestore();
 
     await waitFor(() => {
-      expect(backendApi.trackOtx).toHaveBeenCalledWith("tracking-1");
+      expect(client.trackRelay).toHaveBeenCalledWith("tracking-1");
       expect(result.current.step).toBe("done");
     });
   });

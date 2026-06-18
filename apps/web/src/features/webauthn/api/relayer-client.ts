@@ -1,4 +1,5 @@
 import type { EIP7702Auth, SignedBatch } from "@clc/core/features/webauthn/index";
+import type { OtxTrackResult } from "#/features/auth/api/client";
 
 type OKResponse<T> = { ok: true; description?: string; result: T };
 
@@ -61,6 +62,8 @@ export function createRelayerClient(baseUrl: string) {
       get<{ nonce: string }>(
         keyHash ? `/calibur-nonce/${address}/${keyHash}` : `/calibur-nonce/${address}`,
       ),
+
+    trackRelay: (trackingId: string) => get<OtxTrackResult>(`/track/${trackingId}`),
 
     delegate: (payload: DelegatePayload) => post<{ trackingId: string }>("/delegate", payload),
 

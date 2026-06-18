@@ -17,7 +17,11 @@ export function useCaliburDelegateFromPk(client: RelayerClient) {
   const [step, setStep] = useState<DelegationStep>("idle");
   const [error, setError] = useState<string | null>(null);
   const [trackingId, setTrackingId] = useState<string | null>(null);
-  const tracking = useOtxTracking(trackingId, { pollMs: DELEGATION_POLL_MS });
+  const tracking = useOtxTracking(trackingId, {
+    pollMs: DELEGATION_POLL_MS,
+    queryKey: "relayer-track",
+    queryFn: async (nextTrackingId) => (await client.trackRelay(nextTrackingId)).result,
+  });
 
   useEffect(() => {
     if (!trackingId) return;

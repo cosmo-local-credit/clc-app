@@ -11,14 +11,18 @@ export function useOtxTracking(
   options: {
     enabled?: boolean;
     pollMs?: number;
+    queryKey?: string;
+    queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof trackOtx>>>;
   } = {},
 ) {
   const enabled = options.enabled ?? true;
   const pollMs = options.pollMs ?? TRACKING_POLL_MS;
+  const queryKey = options.queryKey ?? "otx-track";
+  const queryFn = options.queryFn ?? trackOtx;
 
   const query = useQuery({
-    queryKey: ["otx-track", trackingId],
-    queryFn: () => trackOtx(trackingId!),
+    queryKey: [queryKey, trackingId],
+    queryFn: () => queryFn(trackingId!),
     enabled: Boolean(trackingId) && enabled,
     retry: false,
     refetchIntervalInBackground: true,

@@ -49,7 +49,10 @@ export function useCaliburSignup(client: RelayerClient) {
   const [error, setError] = useState<string | null>(null);
   const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
   const ephemeralKeyRef = useRef<`0x${string}` | null>(null);
-  const tracking = useOtxTracking(pendingSignup?.trackingId ?? null);
+  const tracking = useOtxTracking(pendingSignup?.trackingId ?? null, {
+    queryKey: "relayer-track",
+    queryFn: async (trackingId) => (await client.trackRelay(trackingId)).result,
+  });
 
   useEffect(() => {
     if (!pendingSignup) return;

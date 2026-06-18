@@ -56,7 +56,10 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
   const [step, setStep] = useState<UpgradeStep>("idle");
   const [error, setError] = useState<string | null>(null);
   const [pendingUpgrade, setPendingUpgrade] = useState<PendingUpgrade | null>(null);
-  const tracking = useOtxTracking(pendingUpgrade?.trackingId ?? null);
+  const tracking = useOtxTracking(pendingUpgrade?.trackingId ?? null, {
+    queryKey: "relayer-track",
+    queryFn: async (trackingId) => (await client.trackRelay(trackingId)).result,
+  });
 
   useEffect(() => {
     if (!pendingUpgrade) return;
