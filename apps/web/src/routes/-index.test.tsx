@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mockNavigate = vi.fn();
@@ -29,6 +29,14 @@ vi.mock("wagmi", () => ({
 
 vi.mock("#/features/auth/state/token", () => ({
   clearAuthToken: () => mockClearAuthToken(),
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-session", () => ({
+  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
+  useCaliburDelegation: () => "checking" as const,
 }));
 
 vi.mock("#/features/onboarding/ui/landing-page", () => ({
@@ -119,9 +127,11 @@ describe("HomePage", () => {
   it("clears auth state and disconnects from settings", async () => {
     render(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: /settings/i }));
-    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+    });
     expect(mockClearAuthToken).toHaveBeenCalledTimes(1);
-    expect(mockDisconnectAsync).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockDisconnectAsync).toHaveBeenCalledTimes(1));
   });
 
   it("does not navigate when connected — routing is IndexPage's concern", () => {

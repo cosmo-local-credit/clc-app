@@ -4,8 +4,10 @@ import {
   buildCaliburNonce,
   computeEIP712Digest,
   eip7702AuthMessage,
+  eip7702DelegationCode,
   encodeRegisterCalldata,
   encodeWebAuthnAuth,
+  isEip7702Delegated,
   normalizeS,
   parseDERSignature,
   secp256k1KeyHash,
@@ -254,5 +256,42 @@ describe("computeEIP712Digest", () => {
     const d0 = computeEIP712Digest({ ...base, nonce: "0" }, ANVIL0, CALIBUR_ADDRESS, CHAIN_ID);
     const d1 = computeEIP712Digest({ ...base, nonce: "1" }, ANVIL0, CALIBUR_ADDRESS, CHAIN_ID);
     expect(d0).not.toEqual(d1);
+  });
+});
+
+describe("eip7702DelegationCode", () => {
+  it("prefixes the address with the EIP-7702 magic and lowercases", () => {
+    expect(eip7702DelegationCode(CALIBUR_ADDRESS)).toBe(
+      `0xef0100${CALIBUR_ADDRESS.slice(2).toLowerCase()}`,
+    );
+  });
+
+  it("normalises an upper-case address to lowercase", () => {
+    const upper = "0x1289FE793392FB1A905F78EA23F632EDD3D15B85" as `0x${string}`;
+    expect(eip7702DelegationCode(upper)).toBe(eip7702DelegationCode(CALIBUR_ADDRESS));
+  });
+});
+
+describe("isEip7702Delegated", () => {
+  it("returns true for the exact delegation bytecode", () => {
+    expect(isEip7702Delegated(eip7702DelegationCode(CALIBUR_ADDRESS), CALIBUR_ADDRESS)).toBe(true);
+  });
+
+  it("is case-insensitive on the observed bytecode", () => {
+    const code = `0xEF0100${CALIBUR_ADDRESS.slice(2)}` as `0x${string}`;
+    expect(isEip7702Delegated(code, CALIBUR_ADDRESS)).toBe(true);
+  });
+
+  it("returns false for a different contract delegation", () => {
+    expect(isEip7702Delegated(`0xef0100${ANVIL0.slice(2)}`, CALIBUR_ADDRESS)).toBe(false);
+  });
+
+  it("returns false for a regular contract (non-delegation code)", () => {
+    expect(isEip7702Delegated("0xdeadbeef", CALIBUR_ADDRESS)).toBe(false);
+  });
+
+  it("returns false for undefined / empty bytecode", () => {
+    expect(isEip7702Delegated(undefined, CALIBUR_ADDRESS)).toBe(false);
+    expect(isEip7702Delegated(null, CALIBUR_ADDRESS)).toBe(false);
   });
 });

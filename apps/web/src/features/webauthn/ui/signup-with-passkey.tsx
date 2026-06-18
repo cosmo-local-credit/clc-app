@@ -24,7 +24,9 @@ export function SignupWithPasskey({
   const [mode, setMode] = useState<"recover" | "signup">("recover");
 
   const isRecovering = ["challenging", "asserting", "verifying"].includes(recoveryStep);
-  const isCreating = ["generating-key", "creating-passkey", "registering"].includes(signupStep);
+  const isCreating = ["generating-key", "creating-passkey", "registering", "confirming"].includes(
+    signupStep,
+  );
   const loading = isRecovering || isCreating;
   const error = recoveryError ?? signupError;
 
@@ -54,9 +56,11 @@ export function SignupWithPasskey({
           ) : (
             <ProviderIcon className="mr-2 size-4" />
           )}
-          {isCreating
-            ? "Creating wallet…"
-            : `Create with ${provider === "apple" ? "Apple ID" : "Google"}`}
+          {signupStep === "confirming"
+            ? "Wallet created — confirming on-chain…"
+            : isCreating
+              ? "Creating wallet…"
+              : `Create with ${provider === "apple" ? "Apple ID" : "Google"}`}
         </Button>
         {!loading ? (
           <Button variant="ghost" className="w-full text-xs" onClick={() => setMode("recover")}>

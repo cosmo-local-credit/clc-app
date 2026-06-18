@@ -53,6 +53,21 @@ describe("getEOANonce", () => {
   });
 });
 
+describe("trackRelay", () => {
+  it("GETs /track/:trackingId and returns the OTX chain", async () => {
+    const spy = mockFetch({
+      ok: true,
+      result: { otx: [{ trackingId: "uuid-1", status: "IN_NETWORK" }] },
+    });
+    const res = await client.trackRelay("uuid-1");
+    expect(spy).toHaveBeenCalledWith(
+      `${BASE}/track/uuid-1`,
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(res.result.otx[0]?.trackingId).toBe("uuid-1");
+  });
+});
+
 describe("getCaliburNonce", () => {
   it("GETs /calibur-nonce/:address for root key", async () => {
     const spy = mockFetch({ ok: true, result: { nonce: "3" } });
@@ -140,7 +155,7 @@ describe("relay", () => {
   it("POSTs a secp256k1 registration payload to /relay", async () => {
     const spy = mockFetch({
       ok: true,
-      result: { txHash: "0xdeadbeef", trackingId: "uuid-1" },
+      result: { trackingId: "uuid-1" },
     });
     const payload = {
       userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
@@ -156,6 +171,6 @@ describe("relay", () => {
     };
     const res = await client.relay(payload);
     expect(spy).toHaveBeenCalledWith(`${BASE}/relay`, expect.objectContaining({ method: "POST" }));
-    expect(res.result.txHash).toBe("0xdeadbeef");
+    expect(res.result.trackingId).toBe("uuid-1");
   });
 });

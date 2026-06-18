@@ -7,12 +7,35 @@ describe("resolveRelyingPartyId", () => {
     expect(resolveRelyingPartyId("   ", "localhost")).toBe("localhost");
   });
 
-  it("uses the trimmed env value when provided", () => {
-    expect(resolveRelyingPartyId(" localhost ", "example.com")).toBe("localhost");
+  it("uses the trimmed env value when it matches the current hostname", () => {
+    expect(resolveRelyingPartyId(" app.cosmolocal.credit ", "app.cosmolocal.credit")).toBe(
+      "app.cosmolocal.credit",
+    );
   });
 
   it("normalizes URL env values to hostnames", () => {
-    expect(resolveRelyingPartyId("https://app.cosmolocal.credit", "example.com")).toBe(
+    expect(resolveRelyingPartyId("https://app.cosmolocal.credit", "app.cosmolocal.credit")).toBe(
+      "app.cosmolocal.credit",
+    );
+  });
+
+  it("keeps a configured suffix when the current hostname is beneath it", () => {
+    expect(
+      resolveRelyingPartyId("https://clc-app.pages.dev", "backend-integration.clc-app.pages.dev"),
+    ).toBe("clc-app.pages.dev");
+  });
+
+  it("falls back to the current hostname when the configured rp id is incompatible", () => {
+    expect(
+      resolveRelyingPartyId(
+        "https://app.cosmolocal.credit",
+        "backend-integration.clc-app.pages.dev",
+      ),
+    ).toBe("backend-integration.clc-app.pages.dev");
+  });
+
+  it("falls back to the production hostname when the configured preview rp id is incompatible", () => {
+    expect(resolveRelyingPartyId("https://clc-app.pages.dev", "app.cosmolocal.credit")).toBe(
       "app.cosmolocal.credit",
     );
   });

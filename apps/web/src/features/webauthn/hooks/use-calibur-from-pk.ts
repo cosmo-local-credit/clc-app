@@ -11,12 +11,12 @@ import {
   webAuthnKeyHash,
 } from "@clc/core/features/webauthn/index";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
-import { createPublicClient, encodeAbiParameters, http, parseSignature } from "viem";
+import { useEffect, useState } from "react";
+import { encodeAbiParameters, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { celo } from "wagmi/chains";
 
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
@@ -24,23 +24,26 @@ import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
   "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
-const PUBLIC_RPC_URL =
-  (import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined) ?? "https://forno.celo.org";
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 const RELYING_PARTY_NAME = import.meta.env.VITE_RELYING_PARTY_NAME ?? "CLC";
-
-const publicClient = createPublicClient({
-  chain: celo,
-  transport: http(PUBLIC_RPC_URL),
-});
 
 export type UpgradeStep =
   | "idle"
   | "authorizing"
   | "creating-passkey"
   | "registering"
+  | "confirming"
   | "done"
   | "error";
+
+type PendingUpgrade = {
+  trackingId: string;
+  credentialId: string;
+  keyHash: `0x${string}`;
+  publicKeyX: string;
+  publicKeyY: string;
+  address: `0x${string}`;
+};
 
 /**
  * Upgrades an existing secp256k1 paper-wallet key to a Calibur smart account.
@@ -52,10 +55,39 @@ export type UpgradeStep =
 export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
   const [step, setStep] = useState<UpgradeStep>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [pendingUpgrade, setPendingUpgrade] = useState<PendingUpgrade | null>(null);
+  const tracking = useOtxTracking(pendingUpgrade?.trackingId ?? null, {
+    queryKey: "relayer-track",
+    queryFn: async (trackingId) => (await client.trackRelay(trackingId)).result,
+  });
+
+  useEffect(() => {
+    if (!pendingUpgrade) return;
+
+    if (tracking.outcome.kind === "success") {
+      storeWebAuthnCredential({
+        credentialId: pendingUpgrade.credentialId,
+        keyHash: pendingUpgrade.keyHash,
+        publicKeyX: pendingUpgrade.publicKeyX,
+        publicKeyY: pendingUpgrade.publicKeyY,
+        address: pendingUpgrade.address,
+      });
+      setPendingUpgrade(null);
+      setStep("done");
+      return;
+    }
+
+    if (tracking.outcome.kind === "error") {
+      setPendingUpgrade(null);
+      setError(tracking.outcome.error);
+      setStep("error");
+    }
+  }, [pendingUpgrade, tracking.outcome]);
 
   const upgradeAndLink = useMutation({
     mutationFn: async () => {
       setError(null);
+      setPendingUpgrade(null);
       assertWebAuthnSupported("create");
 
       const account = privateKeyToAccount(pk);
@@ -82,7 +114,10 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
             name: account.address,
             displayName: "CLC wallet",
           },
-          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          pubKeyCredParams: [
+            { alg: -7, type: "public-key" },
+            { alg: -257, type: "public-key" },
+          ],
           authenticatorSelection: {
             authenticatorAttachment: "platform",
             residentKey: "required",
@@ -107,6 +142,9 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
       ]);
       const caliburNonceStr = caliburNonceResponse.result.nonce;
       const relayerAddress = healthResponse.result.relayerAddress;
+      if (!relayerAddress) {
+        throw new Error("Relayer health response is missing relayerAddress");
+      }
       const executor = relayerAddress as `0x${string}`;
 
       const signedBatch = {
@@ -130,7 +168,7 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
       );
 
       const {
-        result: { txHash },
+        result: { trackingId },
       } = await client.relay({
         userAddress: account.address,
         signedBatch,
@@ -149,15 +187,8 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
         publicKeyY: y.toString(),
       });
 
-      const receipt = await publicClient.waitForTransactionReceipt({
-        hash: txHash as `0x${string}`,
-        timeout: 120_000,
-      });
-      if (receipt.status !== "success") {
-        throw new Error("Passkey registration transaction failed on-chain");
-      }
-
-      storeWebAuthnCredential({
+      setPendingUpgrade({
+        trackingId,
         credentialId: credential.id,
         keyHash,
         publicKeyX: x.toString(),
@@ -165,9 +196,10 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
         address: account.address,
       });
 
-      setStep("done");
+      setStep("confirming");
     },
     onError: (err) => {
+      setPendingUpgrade(null);
       setError(err instanceof Error ? err.message : "Upgrade failed");
       setStep("error");
     },

@@ -214,3 +214,38 @@ describe("OnboardingProfileForm submission", () => {
     expect(screen.getByText(/choose a location/i)).toBeTruthy();
   });
 });
+
+describe("OnboardingProfileForm value restoration", () => {
+  it("populates name, email, and location from initialValues", () => {
+    render(
+      <OnboardingProfileForm
+        initialValues={{
+          name: "Alice",
+          email: "alice@example.com",
+          phone: "",
+          location: {
+            lat: -1.2921,
+            lng: 36.8219,
+            locationName: "Nairobi, Kenya",
+            country: "KE",
+          },
+        }}
+        onNext={vi.fn()}
+      />,
+    );
+
+    expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe(
+      "Alice",
+    );
+    expect((screen.getByRole("textbox", { name: /email/i }) as HTMLInputElement).value).toBe(
+      "alice@example.com",
+    );
+    expect(screen.getByText("Nairobi, Kenya")).toBeTruthy();
+  });
+
+  it("falls back to empty defaults when no initialValues are given", () => {
+    render(<OnboardingProfileForm onNext={vi.fn()} />);
+    expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe("");
+    expect(screen.getByText("No location")).toBeTruthy();
+  });
+});

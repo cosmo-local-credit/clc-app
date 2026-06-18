@@ -1,4 +1,5 @@
 import type { EIP7702Auth, SignedBatch } from "@clc/core/features/webauthn/index";
+import type { OtxTrackResult } from "#/features/auth/api/client";
 
 type OKResponse<T> = { ok: true; description?: string; result: T };
 
@@ -11,6 +12,11 @@ export class RelayerError extends Error {
     super(code);
   }
 }
+
+export type DelegatePayload = {
+  ephemeralAddress: `0x${string}`;
+  authorization: EIP7702Auth;
+};
 
 export type RelayPayload = {
   userAddress: `0x${string}`;
@@ -48,7 +54,7 @@ export function createRelayerClient(baseUrl: string) {
   };
 
   return {
-    getHealth: () => get<{ relayerAddress: string; chainId: number }>("/health"),
+    getHealth: () => get<{ relayerAddress?: string; chainId: number }>("/health"),
 
     getEOANonce: (address: string) => get<{ nonce: string }>(`/nonce/${address}`),
 
@@ -56,6 +62,10 @@ export function createRelayerClient(baseUrl: string) {
       get<{ nonce: string }>(
         keyHash ? `/calibur-nonce/${address}/${keyHash}` : `/calibur-nonce/${address}`,
       ),
+
+    trackRelay: (trackingId: string) => get<OtxTrackResult>(`/track/${trackingId}`),
+
+    delegate: (payload: DelegatePayload) => post<{ trackingId: string }>("/delegate", payload),
 
     getWebAuthnChallenge: () => get<{ challenge: string }>("/webauthn/challenge"),
 
@@ -67,8 +77,7 @@ export function createRelayerClient(baseUrl: string) {
         publicKeyY: string;
       }>("/webauthn/recover", payload),
 
-    relay: (payload: RelayPayload) =>
-      post<{ txHash: string; trackingId: string }>("/relay", payload),
+    relay: (payload: RelayPayload) => post<{ trackingId: string }>("/relay", payload),
   };
 }
 
