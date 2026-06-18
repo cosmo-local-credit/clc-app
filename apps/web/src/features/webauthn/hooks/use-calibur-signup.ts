@@ -77,7 +77,10 @@ export function useCaliburSignup(client: RelayerClient) {
             name: account.address,
             displayName: "CLC wallet",
           },
-          pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+          pubKeyCredParams: [
+            { alg: -7, type: "public-key" },
+            { alg: -257, type: "public-key" },
+          ],
           authenticatorSelection: {
             authenticatorAttachment: "platform",
             residentKey: "required",
