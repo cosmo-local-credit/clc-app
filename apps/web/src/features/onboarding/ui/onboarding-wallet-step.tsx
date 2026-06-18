@@ -203,7 +203,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
               {isRegistering
                 ? t`Creating account...`
                 : upgradeStep === "confirming"
-                  ? t`Passkey linked — confirming on-chain...`
+                  ? t`Passkey linked ... confirming on-chain...`
                   : isUpgrading
                     ? t`Linking passkey...`
                     : isLinked
