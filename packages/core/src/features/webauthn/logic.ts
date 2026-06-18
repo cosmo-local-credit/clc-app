@@ -22,6 +22,34 @@ export function eip7702AuthMessage(args: {
   return keccak256(concat(["0x05", rlp]));
 }
 
+/**
+ * EIP-7702 account code prefix (`0xef0100`) — when an EOA delegates its code to
+ * a contract, `eth_getCode` at the EOA returns this prefix followed by the
+ * delegated contract's 20-byte address. See EIP-7702.
+ */
+export const EIP7702_DELEGATION_PREFIX = "0xef0100" as const;
+
+/**
+ * The exact bytecode `eth_getCode` returns for an EOA that has delegated its
+ * code to `contractAddress` under EIP-7702. Compare this against viem's
+ * `getCode` / wagmi's `useBytecode` result to confirm a delegation is live.
+ */
+export function eip7702DelegationCode(contractAddress: `0x${string}`): `0x${string}` {
+  return concat([EIP7702_DELEGATION_PREFIX, contractAddress]).toLowerCase() as `0x${string}`;
+}
+
+/**
+ * True when `bytecode` (from `getCode` / `useBytecode`) is exactly an
+ * EIP-7702 delegation to `contractAddress`. `undefined` / empty → `false`.
+ */
+export function isEip7702Delegated(
+  bytecode: `0x${string}` | undefined | null,
+  contractAddress: `0x${string}`,
+): boolean {
+  if (!bytecode) return false;
+  return bytecode.toLowerCase() === eip7702DelegationCode(contractAddress);
+}
+
 export function webAuthnKeyHash(x: bigint, y: bigint): `0x${string}` {
   const publicKey = encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [x, y]);
   const publicKeyHash = keccak256(publicKey);

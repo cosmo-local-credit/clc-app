@@ -1,6 +1,13 @@
 packages:
   - "apps/*"
   - "packages/*"
+allowBuilds:
+  "@percy/core": true
+  canvas: true
+  esbuild: true
+  puppeteer: true
+  sharp: true
+  workerd: true
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vitest: npm:@voidzero-dev/vite-plus-test@latest

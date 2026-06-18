@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { connect, getAccount } from "wagmi/actions";
 import { normalizePrivateKey } from "#/connectors/normalize-private-key";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
@@ -43,5 +43,5 @@ export function useScanUrlImport(): {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // runs once on mount
 
-  return { pendingKey, clearPendingKey: () => setPendingKey(null) };
+  return { pendingKey, clearPendingKey: useCallback(() => setPendingKey(null), []) };
 }

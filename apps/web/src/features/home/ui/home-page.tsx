@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 
+import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { clearAuthToken } from "#/features/auth/state/token";
+import { abortWalletSwitch } from "#/lib/wallet-session";
+import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
 import { SettingsPage } from "./settings-page";
@@ -16,7 +19,9 @@ type HomePageProps = {
 
 export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   const { address } = useAccount();
+  const delegationStatus = useCaliburDelegation(address);
   const { disconnectAsync } = useDisconnect();
+  const backendLogout = useBackendLogout();
   const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentTab = activeTab ?? fallbackTab;
@@ -27,8 +32,16 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   }
 
   async function handleSignOut() {
+    // Cancel any in-flight wallet switch first so a pending ?w= import can't
+    // land after disconnect and silently take over the session.
+    abortWalletSwitch();
     setIsSigningOut(true);
     clearAuthToken();
+    try {
+      await backendLogout.mutateAsync();
+    } catch {
+      // Local disconnect must still happen if the session cookie is already gone.
+    }
     try {
       await disconnectAsync();
     } finally {
@@ -49,6 +62,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}
+                delegationStatus={delegationStatus}
                 isSigningOut={isSigningOut}
                 onSignOut={() => {
                   void handleSignOut();

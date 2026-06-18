@@ -41,6 +41,16 @@ Install the **Vite+ extension pack** for your editor:
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guidelines, and feature structure.
 
+## Debugging
+
+### Chrome on Android (experimental)
+
+Forward the device port then connect via the `chrome-devtools` MCP server in `.mcp.json`:
+
+```shell
+adb forward tcp:9222 localabstract:chrome_devtools_remote
+```
+
 ## License
 
 [AGPL-3.0](LICENSE)

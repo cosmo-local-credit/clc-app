@@ -5,6 +5,9 @@ import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-pas
 const {
   mockUpgradeAndLinkMutate,
   mockUpgradeStep,
+  mockBackendSignupMutateAsync,
+  mockDelegateMutate,
+  mockDelegateStep,
   mockConnect,
   mockStorePrivateKey,
   mockIsPasskeyPlatformAvailable,
@@ -14,6 +17,11 @@ const {
 } = vi.hoisted(() => ({
   mockUpgradeAndLinkMutate: vi.fn(),
   mockUpgradeStep: { current: "idle" as string },
+  mockBackendSignupMutateAsync: vi
+    .fn()
+    .mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" }),
+  mockDelegateMutate: vi.fn(),
+  mockDelegateStep: { current: "idle" as string },
   mockConnect: vi.fn().mockResolvedValue(undefined),
   mockStorePrivateKey: vi.fn(),
   mockIsPasskeyPlatformAvailable: vi.fn(() => false),
@@ -60,6 +68,23 @@ vi.mock("#/features/webauthn/api/relayer-client", () => ({
   createRelayerClient: () => ({}),
 }));
 
+vi.mock("#/features/auth/hooks/use-backend-auth", () => ({
+  useBackendSignup: () => ({
+    mutateAsync: mockBackendSignupMutateAsync,
+    isPending: false,
+    error: null,
+  }),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-delegate-from-pk", () => ({
+  useCaliburDelegateFromPk: () => ({
+    step: mockDelegateStep.current,
+    error: null,
+    mutate: mockDelegateMutate,
+    isPending: false,
+  }),
+}));
+
 vi.mock("#/features/webauthn/hooks/use-calibur-from-pk", () => ({
   useCaliburFromPk: () => ({
     step: mockUpgradeStep.current,
@@ -95,6 +120,10 @@ const PROFILE: ProfileInput = {
 
 beforeEach(() => {
   mockUpgradeAndLinkMutate.mockClear();
+  mockBackendSignupMutateAsync.mockReset();
+  mockBackendSignupMutateAsync.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
+  mockDelegateMutate.mockReset();
+  mockDelegateStep.current = "idle";
   mockConnect.mockClear();
   mockStorePrivateKey.mockClear();
   mockOnDone.mockClear();
@@ -178,7 +207,7 @@ describe("OnboardingWalletStep continue flow", () => {
     );
   });
 
-  it("clicking Continue stores the key, connects with pkConnector, and calls onDone", async () => {
+  it("clicking Continue starts smart-wallet activation after backend signup", async () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
     fireEvent.click(screen.getByRole("checkbox"));
 
@@ -186,12 +215,25 @@ describe("OnboardingWalletStep continue flow", () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
     });
 
-    expect(mockStorePrivateKey).toHaveBeenCalledWith(FAKE_PK);
-    expect(mockConnect).toHaveBeenCalledWith(
-      {},
-      expect.objectContaining({ connector: { id: "pk" } }),
-    );
-    expect(mockOnDone).toHaveBeenCalledTimes(1);
+    expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
+      profile: PROFILE,
+      privateKey: FAKE_PK,
+    });
+    expect(mockDelegateMutate).toHaveBeenCalledWith({ privateKey: FAKE_PK });
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockConnect).not.toHaveBeenCalled();
+    expect(mockOnDone).not.toHaveBeenCalled();
+  });
+
+  it("does NOT call storePrivateKey when backendSignup throws", async () => {
+    mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+    });
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockOnDone).not.toHaveBeenCalled();
   });
 });
 
@@ -210,11 +252,27 @@ describe("OnboardingWalletStep link flow", () => {
     );
   });
 
-  it("clicking Link wallet to Google passkey after acknowledging calls upgradeAndLink.mutate", () => {
+  it("clicking Link wallet to Google passkey after acknowledging calls upgradeAndLink.mutate", async () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
+    });
+    expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
+      profile: PROFILE,
+      privateKey: FAKE_PK,
+    });
     expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
+  });
+
+  it("does NOT call upgradeAndLink when backendSignup throws", async () => {
+    mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByRole("checkbox"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
+    });
+    expect(mockUpgradeAndLinkMutate).not.toHaveBeenCalled();
   });
 });
 

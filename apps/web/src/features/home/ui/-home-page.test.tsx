@@ -1,5 +1,9 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi, beforeEach } from "vite-plus/test";
+
+const { mockAbortWalletSwitch } = vi.hoisted(() => ({
+  mockAbortWalletSwitch: vi.fn(),
+}));
 
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
@@ -14,6 +18,18 @@ vi.mock("#/features/auth/state/token", () => ({
   clearAuthToken: vi.fn(),
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-session", () => ({
+  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
+}));
+
+vi.mock("#/lib/wallet-session", () => ({
+  abortWalletSwitch: mockAbortWalletSwitch,
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
+  useCaliburDelegation: () => "checking" as const,
+}));
+
 vi.mock("./wallet-page", () => ({
   WalletPage: () => <div data-testid="wallet-page" />,
 }));
@@ -23,7 +39,13 @@ vi.mock("./market-page", () => ({
 }));
 
 vi.mock("./settings-page", () => ({
-  SettingsPage: () => <div data-testid="settings-page" />,
+  SettingsPage: ({ onSignOut }: { onSignOut: () => void }) => (
+    <div data-testid="settings-page">
+      <button type="button" onClick={onSignOut}>
+        Sign out
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("./undone-page", () => ({
@@ -31,6 +53,10 @@ vi.mock("./undone-page", () => ({
 }));
 
 import { HomePage } from "./home-page";
+
+beforeEach(() => {
+  mockAbortWalletSwitch.mockClear();
+});
 
 describe("HomePage (uncontrolled)", () => {
   it("shows wallet page by default", () => {
@@ -90,5 +116,17 @@ describe("HomePage (controlled)", () => {
     // parent did not update activeTab, so wallet page is still shown
     expect(screen.getByTestId("wallet-page")).toBeTruthy();
     expect(screen.queryByTestId("undone-activity")).toBeNull();
+  });
+});
+
+describe("HomePage sign-out", () => {
+  it("aborts any pending wallet switch on sign-out", async () => {
+    render(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockAbortWalletSwitch).toHaveBeenCalledTimes(1);
+    });
   });
 });

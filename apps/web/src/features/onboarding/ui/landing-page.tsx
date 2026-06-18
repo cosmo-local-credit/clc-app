@@ -2,9 +2,9 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { KeyRound, LoaderCircle, ScanLine, UserPlus, X } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
-import { useAccount, useConnect } from "wagmi";
+import { useConnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
 import { OnboardingMenu } from "#/components/language-selector";
@@ -14,15 +14,12 @@ import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
 import { normalizePrivateKey } from "#/connectors/normalize-private-key";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
-import { useSiweAuth } from "#/features/auth/hooks/use-siwe-auth";
+import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recovery";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
+import { RELAYER_URL } from "#/lib/backend-config";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
-
-const RELAYER_URL: string =
-  (import.meta.env.VITE_RELAYER_URL as string | undefined) ??
-  "http://192.168.1.20:5003/api/v2/relayer";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -30,9 +27,7 @@ export function LandingPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { connect: wagmiConnect } = useConnect();
-  const { isConnected } = useAccount();
-  const siweAttempted = useRef(false);
-  const { authenticate } = useSiweAuth();
+  const backendSignin = useBackendPrivateKeySignin();
   const [showScanner, setShowScanner] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPkInput, setShowPkInput] = useState(false);
@@ -51,7 +46,7 @@ export function LandingPage() {
   } = useCaliburRecovery(relayerClient);
 
   const isRecovering = ["challenging", "asserting", "verifying"].includes(recoveryStep);
-  const connecting = isRecovering || pkConnecting;
+  const connecting = isRecovering || pkConnecting || backendSignin.isPending;
 
   useEffect(() => {
     if (recoveryStep === "done") {
@@ -59,19 +54,11 @@ export function LandingPage() {
     }
   }, [recoveryStep, wagmiConnect]);
 
-  useEffect(() => {
-    if (isConnected && !siweAttempted.current) {
-      siweAttempted.current = true;
-      void authenticate().catch((err: unknown) => {
-        console.warn("[landing] SIWE auth failed:", err);
-      });
-    }
-  }, [isConnected, authenticate]);
-
   async function connectWithKey(key: `0x${string}`) {
     setPkConnecting(true);
     setPkError(null);
     try {
+      await backendSignin.mutateAsync({ privateKey: key });
       storePrivateKey(key);
       await connectAction(wagmiConfig, { connector: pkConnector });
       setPkInput("");
@@ -137,6 +124,12 @@ export function LandingPage() {
               setPkError(null);
             }}
           />
+        ) : null}
+
+        {showScanner && pkError ? (
+          <p role="alert" className="text-destructive text-xs">
+            {pkError}
+          </p>
         ) : null}
 
         {!showScanner && !showPkInput && !connecting ? (
@@ -262,16 +255,20 @@ export function LandingPage() {
               onChange={(e) => setPkInput(e.target.value)}
               placeholder="0x..."
               className="font-mono"
+              aria-invalid={!!pkError}
               aria-label={t`Private key`}
             />
+            {pkError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {pkError}
+              </p>
+            ) : null}
             <Button type="submit" disabled={!pkInput.trim()} className="h-11 w-full">
               <KeyRound className="mr-2 size-4" />
               <Trans>Sign in with private key</Trans>
             </Button>
           </form>
         ) : null}
-
-        {pkError ? <p className="text-destructive text-xs">{pkError}</p> : null}
       </div>
     </div>
   );

@@ -40,6 +40,7 @@ export function OnboardingFlow() {
 
   return (
     <OnboardingProfileForm
+      initialValues={profileData ?? undefined}
       onNext={(data) => {
         setProfileData(data);
         setStep("wallet");

@@ -8,6 +8,7 @@ import {
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
 import { encodeAbiParameters } from "viem";
+import { waitForTrackingCompletion } from "#/features/auth/api/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -103,7 +104,11 @@ export async function sendCaliburTransaction(
     signatureType: "webauthn",
   });
 
-  return result;
+  const completed = await waitForTrackingCompletion(result.trackingId);
+  return {
+    trackingId: result.trackingId,
+    txHash: completed.txHash,
+  };
 }
 
 // Re-export for convenience

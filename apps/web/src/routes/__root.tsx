@@ -5,7 +5,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
 import { useAccount } from "wagmi";
-import { connect } from "wagmi/actions";
+import { connect, disconnect } from "wagmi/actions";
 import { Button } from "#/components/ui/button";
 import {
   DialogBackdrop,
@@ -18,6 +18,7 @@ import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/pri
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
+import { abortWalletSwitch, beginWalletSwitch } from "#/lib/wallet-session";
 import { useScanUrlImport } from "#/lib/scan-url-import";
 import {
   clearWebAuthnCredential,
@@ -80,6 +81,17 @@ function AppInner() {
     [pendingKey],
   );
 
+  // If the session is disconnected (sign-out) while a switch dialog is queued,
+  // drop the pending import so the dialog doesn't linger or re-trigger after
+  // disconnect. Skipped while a switch is actively in flight so a legitimate
+  // account change (walletA -> walletB) isn't mistaken for a disconnect.
+  useEffect(() => {
+    if (!address && pendingKey && !switching) {
+      abortWalletSwitch();
+      clearPendingKey();
+    }
+  }, [address, pendingKey, switching, clearPendingKey]);
+
   useEffect(() => {
     if (import.meta.env.DEV) {
       return;
@@ -94,14 +106,23 @@ function AppInner() {
   async function handleConfirmSwitch() {
     if (!pendingKey) return;
     setSwitching(true);
+    const signal = beginWalletSwitch();
     const previousPrivateKey = getStoredKey();
     const previousWebAuthnCredential = getWebAuthnCredential();
     try {
       storePrivateKey(pendingKey);
       await connect(wagmiConfig, { connector: pkConnector });
+      if (signal.aborted) {
+        // Sign-out (or a newer switch) won. Undo this connect so the session
+        // does not silently switch to the imported wallet after disconnect.
+        await disconnect(wagmiConfig);
+        clearPendingKey();
+        return;
+      }
       clearWebAuthnCredential();
       clearPendingKey();
     } catch {
+      if (signal.aborted) return; // sign-out already tore the session down
       if (previousPrivateKey) {
         storePrivateKey(previousPrivateKey);
       } else {
