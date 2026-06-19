@@ -14,6 +14,7 @@ const {
   mockPickPasskeyProvider,
   mockOnDone,
   mockOnBack,
+  mockEncryptPaperWalletPrivateKey,
 } = vi.hoisted(() => ({
   mockUpgradeAndLinkMutate: vi.fn(),
   mockUpgradeStep: { current: "idle" as string },
@@ -28,6 +29,7 @@ const {
   mockPickPasskeyProvider: vi.fn<() => PasskeyProvider>(() => "google"),
   mockOnDone: vi.fn(),
   mockOnBack: vi.fn(),
+  mockEncryptPaperWalletPrivateKey: vi.fn().mockResolvedValue("6PYEncryptedPaperWallet"),
 }));
 
 const FAKE_PK =
@@ -103,6 +105,10 @@ vi.mock("#/lib/paper-wallet", () => ({
   PAPER_WALLET_ORIGIN: "https://app.example.com",
 }));
 
+vi.mock("#/lib/paper-wallet-encryption", () => ({
+  encryptPaperWalletPrivateKey: (...args: unknown[]) => mockEncryptPaperWalletPrivateKey(...args),
+}));
+
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingWalletStep } from "./onboarding-wallet-step";
 
@@ -128,6 +134,8 @@ beforeEach(() => {
   mockStorePrivateKey.mockClear();
   mockOnDone.mockClear();
   mockOnBack.mockClear();
+  mockEncryptPaperWalletPrivateKey.mockClear();
+  mockEncryptPaperWalletPrivateKey.mockResolvedValue("6PYEncryptedPaperWallet");
   mockConnect.mockResolvedValue(undefined);
   mockUpgradeStep.current = "idle";
   mockIsPasskeyPlatformAvailable.mockReturnValue(false);
@@ -148,7 +156,7 @@ describe("OnboardingWalletStep rendering", () => {
 
   it("shows the acknowledgement checkbox", () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    expect(screen.getByRole("checkbox")).toBeTruthy();
+    expect(screen.getByLabelText(/i have saved this key/i)).toBeTruthy();
   });
 
   it("hides Link button on non-passkey platforms", () => {
@@ -200,7 +208,45 @@ describe("OnboardingWalletStep continue flow", () => {
 
   it("Continue button is enabled after checking the ack checkbox", () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      false,
+    );
+  });
+
+  it("requires applying QR protection before continuing when protection is enabled", async () => {
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      false,
+    );
+
+    fireEvent.click(screen.getByLabelText(/protect qr with a passphrase/i));
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      true,
+    );
+
+    fireEvent.change(screen.getByLabelText(/^passphrase$/i), {
+      target: { value: "wallet passphrase" },
+    });
+    fireEvent.change(screen.getByLabelText(/confirm passphrase/i), {
+      target: { value: "wallet passphrase" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /^protect qr$/i }));
+    });
+
+    expect(mockEncryptPaperWalletPrivateKey).toHaveBeenCalledWith(FAKE_PK, "wallet passphrase");
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      true,
+    );
+
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -209,7 +255,7 @@ describe("OnboardingWalletStep continue flow", () => {
 
   it("clicking Continue starts smart-wallet activation after backend signup", async () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
@@ -228,7 +274,7 @@ describe("OnboardingWalletStep continue flow", () => {
   it("does NOT call storePrivateKey when backendSignup throws", async () => {
     mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
     });
@@ -254,7 +300,7 @@ describe("OnboardingWalletStep link flow", () => {
 
   it("clicking Link wallet to Google passkey after acknowledging calls upgradeAndLink.mutate", async () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
     });
@@ -268,7 +314,7 @@ describe("OnboardingWalletStep link flow", () => {
   it("does NOT call upgradeAndLink when backendSignup throws", async () => {
     mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /link wallet to google passkey/i }));
     });

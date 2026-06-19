@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
 import { useAccount } from "wagmi";
 import { connect, disconnect } from "wagmi/actions";
+import { EncryptedPaperWalletImportForm } from "#/components/encrypted-paper-wallet-import-form";
 import { Button } from "#/components/ui/button";
 import {
   DialogBackdrop,
@@ -73,7 +74,8 @@ function AppContent() {
 function AppInner() {
   const { t } = useLingui();
   const { address } = useAccount();
-  const { pendingKey, clearPendingKey } = useScanUrlImport();
+  const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
+    useScanUrlImport();
   const [switching, setSwitching] = useState(false);
 
   const pendingAddress = useMemo(
@@ -145,9 +147,48 @@ function AppInner() {
     }
   }
 
+  async function handleEncryptedUrlImport(key: `0x${string}`) {
+    if (address) {
+      queuePendingKey(key);
+      return;
+    }
+
+    try {
+      storePrivateKey(key);
+      await connect(wagmiConfig, { connector: pkConnector });
+      clearPendingImport();
+    } catch (err) {
+      clearPrivateKey();
+      throw new Error(err instanceof Error ? err.message : t`Connection failed.`);
+    }
+  }
+
   return (
     <>
       <Outlet />
+      {pendingEncryptedKey ? (
+        <DialogRoot
+          open={true}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) clearPendingImport();
+          }}
+        >
+          <DialogPortal>
+            <DialogBackdrop />
+            <DialogContent className="p-0">
+              <DialogTitle className="sr-only">
+                <Trans>Protected paper wallet</Trans>
+              </DialogTitle>
+              <EncryptedPaperWalletImportForm
+                encryptedKey={pendingEncryptedKey}
+                className="border-0 bg-transparent p-6"
+                onDecrypted={handleEncryptedUrlImport}
+                onCancel={clearPendingImport}
+              />
+            </DialogContent>
+          </DialogPortal>
+        </DialogRoot>
+      ) : null}
       {pendingKey && pendingAddress ? (
         <DialogRoot
           open={true}
@@ -158,13 +199,13 @@ function AppInner() {
           <DialogPortal>
             <DialogBackdrop />
             <DialogContent>
-              <DialogTitle className="font-semibold text-base">
+              <DialogTitle className="text-base font-semibold">
                 <Trans>Switch wallet?</Trans>
               </DialogTitle>
-              <p className="mt-1 text-muted-foreground text-sm">
+              <p className="text-muted-foreground mt-1 text-sm">
                 <Trans>A paper wallet QR was scanned. Import this address?</Trans>
               </p>
-              <p className="mt-2 truncate font-mono text-foreground text-xs">{pendingAddress}</p>
+              <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
                 <Button className="h-11 w-full" disabled={switching} onClick={handleConfirmSwitch}>
                   {switching ? t`Switching…` : t`Switch wallet`}

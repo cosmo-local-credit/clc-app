@@ -18,8 +18,8 @@ import {
   pickPasskeyProvider,
 } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { RELAYER_URL } from "#/lib/backend-config";
-import { buildPaperWalletUrl } from "#/lib/paper-wallet";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
+import { usePaperWalletProtection } from "./paper-wallet-protection";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
@@ -38,12 +38,18 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
   const account = useMemo(() => privateKeyToAccount(pk), [pk]);
   const address = account.address;
-  const qrUrl = buildPaperWalletUrl(pk);
+  const {
+    qrUrl,
+    controls: protectionControls,
+    isReady: paperWalletReady,
+    isEncrypting: paperWalletEncrypting,
+  } = usePaperWalletProtection({ privateKey: pk });
 
   const { card, controls, downloadButton } = usePaperWalletSetup({
     address,
     qrUrl,
     defaultName: profileData.name,
+    downloadDisabled: !paperWalletReady || paperWalletEncrypting,
   });
 
   const [acked, setAcked] = useState(false);
@@ -75,6 +81,12 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   );
   const isRegistering = backendSignup.isPending;
   const isLinked = upgradeStep === "done";
+
+  useEffect(() => {
+    if (!paperWalletReady || paperWalletEncrypting) {
+      setAcked(false);
+    }
+  }, [paperWalletReady, paperWalletEncrypting]);
 
   useEffect(() => {
     if (upgradeStep === "done") {
@@ -144,13 +156,13 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   }
 
   return (
-    <div className="relative flex min-h-[100svh] flex-col bg-background">
+    <div className="bg-background relative flex min-h-[100svh] flex-col">
       <OnboardingMenu />
       <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={onBack}
-          className="mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-sm"
           aria-label={t`Back`}
         >
           <ArrowLeft className="size-4" />
@@ -158,7 +170,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
         </button>
 
         <div className="mb-5 space-y-1">
-          <h1 className="font-bold font-heading text-[1.75rem] leading-tight">
+          <h1 className="font-heading text-[1.75rem] leading-tight font-bold">
             <Trans>Your paper wallet</Trans>
           </h1>
           <p className="text-muted-foreground text-sm">
@@ -171,6 +183,8 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
         {card}
 
+        {protectionControls}
+
         {downloadButton}
 
         {controls}
@@ -180,8 +194,9 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             type="checkbox"
             aria-label={t`I have saved this key`}
             checked={acked}
+            disabled={!paperWalletReady || paperWalletEncrypting}
             onChange={(e) => setAcked(e.target.checked)}
-            className="mt-0.5 size-4 cursor-pointer accent-primary"
+            className="accent-primary mt-0.5 size-4 cursor-pointer"
           />
           <span className="text-muted-foreground text-sm">
             <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
@@ -193,7 +208,14 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             <Button
               className="h-11 w-full"
               onClick={() => void handleLinkPasskey()}
-              disabled={!acked || isRegistering || isUpgrading || isLinked}
+              disabled={
+                !acked ||
+                !paperWalletReady ||
+                paperWalletEncrypting ||
+                isRegistering ||
+                isUpgrading ||
+                isLinked
+              }
             >
               {isRegistering || isUpgrading ? (
                 <LoaderCircle className="mr-2 size-4 animate-spin" />
@@ -225,9 +247,16 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
           <button
             type="button"
-            className="w-full py-2 text-center font-medium text-foreground text-sm underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
+            className="text-foreground w-full py-2 text-center text-sm font-medium underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
             disabled={
-              !acked || connecting || isRegistering || isDelegating || isUpgrading || isLinked
+              !acked ||
+              !paperWalletReady ||
+              paperWalletEncrypting ||
+              connecting ||
+              isRegistering ||
+              isDelegating ||
+              isUpgrading ||
+              isLinked
             }
             onClick={handleContinue}
           >

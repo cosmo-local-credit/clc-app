@@ -9,12 +9,18 @@ const {
   mockConnectAction,
   mockBackendSigninMutateAsync,
   mockStorePrivateKey,
+  mockDecryptPaperWalletPrivateKey,
+  ENCRYPTED_KEY,
 } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockRecoverMutate: vi.fn(),
   mockConnectAction: vi.fn().mockResolvedValue(undefined),
   mockBackendSigninMutateAsync: vi.fn().mockResolvedValue({ userId: 1, role: "USER" }),
   mockStorePrivateKey: vi.fn(),
+  mockDecryptPaperWalletPrivateKey: vi
+    .fn()
+    .mockResolvedValue("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+  ENCRYPTED_KEY: "6PYMvQX3NRvqN2SuLENXqowrkYrKNZ74mA3Lb5zksXxQxTEFcnD2gihvaf",
   mockRecoveryState: {
     step: "idle" as string,
     outcome: null as string | null,
@@ -55,6 +61,9 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
       >
         Simulate scan
       </button>
+      <button type="button" onClick={() => onKeyDecoded(ENCRYPTED_KEY)}>
+        Simulate encrypted scan
+      </button>
       <button type="button" onClick={onCancel}>
         Cancel scan
       </button>
@@ -82,6 +91,11 @@ vi.mock("#/features/webauthn/hooks/use-calibur-recovery", () => ({
 
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
+}));
+
+vi.mock("#/lib/paper-wallet-encryption", () => ({
+  decryptPaperWalletPrivateKey: (...args: unknown[]) => mockDecryptPaperWalletPrivateKey(...args),
+  isEncryptedPaperWalletPayload: (payload: string) => payload === ENCRYPTED_KEY,
 }));
 
 vi.mock("#/connectors/privateKey", () => ({
@@ -121,8 +135,12 @@ beforeEach(() => {
   mockConnectAction.mockClear();
   mockBackendSigninMutateAsync.mockClear();
   mockStorePrivateKey.mockClear();
+  mockDecryptPaperWalletPrivateKey.mockClear();
   mockConnectAction.mockResolvedValue(undefined);
   mockBackendSigninMutateAsync.mockResolvedValue({ userId: 1, role: "USER" });
+  mockDecryptPaperWalletPrivateKey.mockResolvedValue(
+    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  );
   mockRecoveryState.step = "idle";
   mockRecoveryState.outcome = null;
   mockRecoveryState.error = null;
@@ -205,6 +223,37 @@ describe("LandingPage navigation", () => {
     expect(mockConnectAction).toHaveBeenCalledWith(
       {},
       expect.objectContaining({ connector: { id: "pk" } }),
+    );
+  });
+
+  it("unlocks and connects an encrypted paper wallet after scan", async () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
+    });
+
+    expect(screen.getByText(/protected paper wallet/i)).toBeTruthy();
+    expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText(/^passphrase$/i), {
+      target: { value: "wallet passphrase" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /unlock and import/i }));
+    });
+
+    expect(mockDecryptPaperWalletPrivateKey).toHaveBeenCalledWith(
+      ENCRYPTED_KEY,
+      "wallet passphrase",
+    );
+    expect(mockBackendSigninMutateAsync).toHaveBeenCalledWith({
+      privateKey: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    });
+    expect(mockStorePrivateKey).toHaveBeenCalledWith(
+      "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     );
   });
 
