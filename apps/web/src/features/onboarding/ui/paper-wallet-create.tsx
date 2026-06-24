@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ArrowLeft, LoaderCircle } from "lucide-react";
+import { FiArrowLeft, FiLoader } from "react-icons/fi";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
@@ -70,7 +70,7 @@ export function PaperWalletCreate({ onBack }: Props) {
           className="text-muted-foreground hover:text-foreground mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-sm"
           aria-label={t`Go back`}
         >
-          <ArrowLeft className="size-4" />
+          <FiArrowLeft className="size-4" />
           <Trans>Back</Trans>
         </button>
 
@@ -112,7 +112,7 @@ export function PaperWalletCreate({ onBack }: Props) {
           disabled={!acked || connecting || !paperWalletReady || paperWalletEncrypting}
           onClick={handleContinue}
         >
-          {connecting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
+          {connecting ? <FiLoader className="mr-2 size-4 animate-spin" /> : null}
           {connecting ? t`Connecting...` : t`Continue`}
         </Button>
         {connectError ? <p className="text-destructive mt-2 text-xs">{connectError}</p> : null}

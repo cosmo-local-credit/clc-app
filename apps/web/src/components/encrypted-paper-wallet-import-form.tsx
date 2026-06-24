@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { LoaderCircle, LockKeyhole, X } from "lucide-react";
+import { FiLoader, FiLock, FiX } from "react-icons/fi";
 import type { FormEvent } from "react";
 import { useState } from "react";
 
@@ -62,7 +62,7 @@ export function EncryptedPaperWalletImportForm({
           onClick={onCancel}
           disabled={decrypting}
         >
-          <X className="size-4" />
+          <FiX className="size-4" />
         </Button>
       </div>
 
@@ -91,9 +91,9 @@ export function EncryptedPaperWalletImportForm({
 
       <Button type="submit" disabled={!passphrase.trim() || decrypting} className="h-11 w-full">
         {decrypting ? (
-          <LoaderCircle className="mr-2 size-4 animate-spin" />
+          <FiLoader className="mr-2 size-4 animate-spin" />
         ) : (
-          <LockKeyhole className="mr-2 size-4" />
+          <FiLock className="mr-2 size-4" />
         )}
         {decrypting ? t`Unlocking...` : t`Unlock and import`}
       </Button>

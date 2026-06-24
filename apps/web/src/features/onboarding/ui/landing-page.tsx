@@ -1,6 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { KeyRound, LoaderCircle, ScanLine, UserPlus, X } from "lucide-react";
+import { FiKey, FiLoader, FiUserPlus, FiX } from "react-icons/fi";
+import { TbScan } from "react-icons/tb";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
@@ -124,7 +125,7 @@ export function LandingPage() {
       <div className="mt-auto space-y-3 pt-8 pb-2">
         {connecting ? (
           <div className="flex flex-col items-center gap-2 py-3">
-            <LoaderCircle className="text-primary size-6 animate-spin" />
+            <FiLoader className="text-primary size-6 animate-spin" />
             <p className="text-muted-foreground text-sm">
               <Trans>Connecting...</Trans>
             </p>
@@ -167,7 +168,7 @@ export function LandingPage() {
             className="bg-foreground text-background hover:bg-foreground/90 h-11 w-full"
             onClick={() => void navigate({ to: "/onboarding" })}
           >
-            <UserPlus className="mr-2 size-4" aria-hidden="true" />
+            <FiUserPlus className="mr-2 size-4" aria-hidden="true" />
             <Trans>Create an account</Trans>
           </Button>
         ) : null}
@@ -227,7 +228,7 @@ export function LandingPage() {
                 setPkError(null);
               }}
             >
-              <ScanLine className="mr-2 size-4" />
+              <TbScan className="mr-2 size-4" />
               <Trans>Continue with Paper Wallet</Trans>
             </Button>
 
@@ -252,7 +253,7 @@ export function LandingPage() {
                   setPkError(null);
                 }}
               >
-                <KeyRound className="mr-2 size-4" />
+                <FiKey className="mr-2 size-4" />
                 <Trans>Private key</Trans>
               </Button>
             ) : null}
@@ -275,7 +276,7 @@ export function LandingPage() {
                   setPkError(null);
                 }}
               >
-                <X className="size-4" />
+                <FiX className="size-4" />
               </Button>
             </div>
             <Input
@@ -294,7 +295,7 @@ export function LandingPage() {
               </p>
             ) : null}
             <Button type="submit" disabled={!pkInput.trim()} className="h-11 w-full">
-              <KeyRound className="mr-2 size-4" />
+              <FiKey className="mr-2 size-4" />
               <Trans>Sign in with private key</Trans>
             </Button>
           </form>

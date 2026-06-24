@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { LoaderCircle, LockKeyhole, UnlockKeyhole } from "lucide-react";
+import { FiLoader, FiLock, FiUnlock } from "react-icons/fi";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 
@@ -106,9 +106,9 @@ export function usePaperWalletProtection({
           </span>
         </span>
         {enabled ? (
-          <LockKeyhole className="text-primary mt-0.5 size-4 shrink-0" />
+          <FiLock className="text-primary mt-0.5 size-4 shrink-0" />
         ) : (
-          <UnlockKeyhole className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+          <FiUnlock className="text-muted-foreground mt-0.5 size-4 shrink-0" />
         )}
       </label>
 
@@ -148,9 +148,9 @@ export function usePaperWalletProtection({
             onClick={() => void handleProtect()}
           >
             {encrypting ? (
-              <LoaderCircle className="mr-2 size-4 animate-spin" />
+              <FiLoader className="mr-2 size-4 animate-spin" />
             ) : (
-              <LockKeyhole className="mr-2 size-4" />
+              <FiLock className="mr-2 size-4" />
             )}
             {encrypting
               ? t`Protecting QR...`

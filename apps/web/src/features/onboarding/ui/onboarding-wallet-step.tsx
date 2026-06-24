@@ -1,6 +1,6 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ArrowLeft, LoaderCircle } from "lucide-react";
+import { FiArrowLeft, FiLoader } from "react-icons/fi";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -165,7 +165,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
           className="text-muted-foreground hover:text-foreground mb-3 -ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-sm"
           aria-label={t`Back`}
         >
-          <ArrowLeft className="size-4" />
+          <FiArrowLeft className="size-4" />
           <Trans>Back</Trans>
         </button>
 
@@ -218,7 +218,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
               }
             >
               {isRegistering || isUpgrading ? (
-                <LoaderCircle className="mr-2 size-4 animate-spin" />
+                <FiLoader className="mr-2 size-4 animate-spin" />
               ) : (
                 <ProviderIcon className="mr-2 size-4" />
               )}
@@ -261,7 +261,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             onClick={handleContinue}
           >
             {connecting || isRegistering || isDelegating ? (
-              <LoaderCircle className="mr-2 inline size-4 animate-spin" />
+              <FiLoader className="mr-2 inline size-4 animate-spin" />
             ) : null}
             {isRegistering
               ? t`Creating account...`
