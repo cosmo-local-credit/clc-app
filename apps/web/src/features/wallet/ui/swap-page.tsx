@@ -1,51 +1,60 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
-import { RiArrowDownLine, RiArrowDownSLine, RiInformationLine } from "react-icons/ri";
+import { RiArrowDownLine, RiArrowDownSLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { SignHint, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { cn } from "#/lib/utils";
 import { TokenPickerSheet } from "./token-picker-sheet";
-
-const ROUTE_HOPS = ["USDC", "Solar Coop pool", "BABAS"] as const;
 
 function SwapField({
   label,
   token,
   amount,
-  balance,
+  max,
+  onAmountChange,
+  onMax,
   onSelect,
 }: {
   label: React.ReactNode;
   token: WalletToken;
   amount: string;
-  balance?: string;
+  max?: string;
+  onAmountChange: (amount: string) => void;
+  onMax?: () => void;
   onSelect: () => void;
 }) {
   return (
     <div className="border border-border bg-card p-3.5">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-muted-foreground text-xs">{label}</span>
-        {balance ? (
-          <span className="font-mono text-muted-foreground text-[0.6875rem]">
-            <Trans>Balance {balance}</Trans>
-          </span>
+        {max ? (
+          <button
+            type="button"
+            onClick={onMax}
+            className="font-mono text-primary text-[0.6875rem] font-semibold"
+          >
+            <Trans>Max {max}</Trans>
+          </button>
         ) : null}
       </div>
       <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={onSelect}
-          className="flex shrink-0 items-center gap-1.5 border border-border bg-background px-2 py-1.5"
+          className="flex h-9 shrink-0 items-center gap-1.5 border border-border bg-card px-2"
         >
           <TokenLogo token={token} size={24} />
           <span className="text-sm font-bold">{token.symbol}</span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
         </button>
-        <p className="min-w-0 flex-1 overflow-hidden truncate text-right font-heading text-[1.625rem] font-semibold tracking-tight">
-          {amount}
-        </p>
+        <input
+          value={amount}
+          onChange={(event) => onAmountChange(event.target.value)}
+          inputMode="decimal"
+          aria-label={typeof label === "string" ? label : undefined}
+          className="min-w-0 flex-1 bg-transparent text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight outline-none"
+        />
       </div>
     </div>
   );
@@ -57,6 +66,8 @@ export function SwapPage() {
   const [receiveToken, setReceiveToken] = useState<WalletToken>(
     WALLET_TOKENS.find((token) => token.id === "babas") ?? WALLET_TOKENS[0],
   );
+  const [payAmount, setPayAmount] = useState("25.00");
+  const [receiveAmount, setReceiveAmount] = useState("24.85");
   const [picker, setPicker] = useState<null | { field: "pay" | "receive" }>(null);
 
   return (
@@ -71,14 +82,17 @@ export function SwapPage() {
         <SwapField
           label={t`You pay`}
           token={payToken}
-          amount="25.00"
-          balance="245.00"
+          amount={payAmount}
+          max={payToken.amount}
+          onAmountChange={setPayAmount}
+          onMax={() => setPayAmount(payToken.amount)}
           onSelect={() => setPicker({ field: "pay" })}
         />
         <SwapField
           label={t`You receive`}
           token={receiveToken}
-          amount="24.85"
+          amount={receiveAmount}
+          onAmountChange={setReceiveAmount}
           onSelect={() => setPicker({ field: "receive" })}
         />
         <span
@@ -89,37 +103,7 @@ export function SwapPage() {
         </span>
       </div>
 
-      <div className="my-3 border border-primary/30 bg-primary/5 p-3">
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-primary" />
-          <span className="text-xs font-bold">
-            <Trans>Best route · auto-selected</Trans>
-          </span>
-          <RiInformationLine
-            className="ml-auto size-3.5 text-muted-foreground"
-            aria-hidden="true"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {ROUTE_HOPS.map((hop, index) => (
-            <div key={hop} className="flex items-center gap-1.5">
-              <span
-                className={cn(
-                  "border border-border bg-card px-1.5 py-0.5 text-[0.6875rem] font-semibold",
-                  index === 1 ? "font-heading text-muted-foreground" : "font-mono text-foreground",
-                )}
-              >
-                {hop}
-              </span>
-              {index < ROUTE_HOPS.length - 1 ? (
-                <span className="text-muted-foreground text-xs">→</span>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="border border-border bg-card">
+      <div className="mt-3 border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
           <span className="text-muted-foreground text-xs">
             <Trans>Rate</Trans>
@@ -136,7 +120,7 @@ export function SwapPage() {
 
       <div className="flex-1" />
 
-      <SignHint className="mb-2.5" />
+      <SignHint className="mb-2.5 bg-card" />
       <Button className="h-11 w-full">
         <Trans>Swap</Trans>
       </Button>

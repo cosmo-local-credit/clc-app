@@ -4,18 +4,11 @@ import {
   RiBankCardLine,
   RiDownloadLine,
   RiExchangeFundsLine,
-  RiGroupLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import {
-  SectionHeader,
-  TokenLogo,
-  WALLET_POOLS,
-  WALLET_TOKENS,
-  WALLET_TOTAL_BALANCE,
-} from "#/components/wallet";
+import { PicsumLogo, SectionHeader, WALLET_POOLS, WALLET_TOKENS } from "#/components/wallet";
 
 export function WalletPage() {
   const { t } = useLingui();
@@ -31,10 +24,7 @@ export function WalletPage() {
     { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, href: "/wallet/swap" },
     { id: "topup", label: t`Top up`, icon: RiBankCardLine, primary: false, href: "/wallet/top-up" },
   ] as const;
-  const orderedTokens = [...WALLET_TOKENS].sort((left, right) => {
-    if (left.kind === right.kind) return 0;
-    return left.kind === "stable" ? -1 : 1;
-  });
+  const vouchers = WALLET_TOKENS.filter((token) => token.kind === "voucher");
 
   return (
     <div className="space-y-6">
@@ -47,16 +37,7 @@ export function WalletPage() {
         </p>
       </div>
 
-      <section aria-label="Wallet balance" className="space-y-3">
-        <div className="border border-border bg-card p-4">
-          <p className="mb-1 text-muted-foreground text-xs">
-            <Trans>Total balance</Trans>
-          </p>
-          <p className="font-heading text-[2.75rem] font-semibold leading-none tracking-tight">
-            {WALLET_TOTAL_BALANCE}
-          </p>
-        </div>
-
+      <section aria-label={t`Wallet actions`} className="space-y-3">
         <div className="grid grid-cols-4 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
@@ -86,7 +67,7 @@ export function WalletPage() {
           }}
         />
         <div className="border border-border bg-card">
-          {orderedTokens.map((token, index, list) => (
+          {vouchers.map((token, index, list) => (
             <button
               key={token.id}
               type="button"
@@ -98,7 +79,7 @@ export function WalletPage() {
                 window.location.assign(`/wallet/tokens/${token.id}`);
               }}
             >
-              <TokenLogo token={token} size={34} />
+              <PicsumLogo seed={`voucher-${token.id}`} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm tracking-tight">{token.symbol}</p>
                 <p className="truncate text-muted-foreground text-xs">{token.name}</p>
@@ -123,11 +104,10 @@ export function WalletPage() {
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
             >
-              <span className="flex size-7 shrink-0 items-center justify-center bg-muted text-foreground">
-                <RiGroupLine className="size-4" aria-hidden="true" />
-              </span>
+              <PicsumLogo seed={`pool-${pool.id}`} size={34} />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-sm">{pool.name}</p>
+                <p className="font-bold text-sm tracking-tight">{pool.symbol}</p>
+                <p className="truncate text-muted-foreground text-xs">{pool.description}</p>
               </div>
               <RiArrowRightSLine
                 className="size-4 shrink-0 text-muted-foreground"

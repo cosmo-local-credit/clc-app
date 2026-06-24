@@ -1,12 +1,11 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { RiArrowDownSLine, RiUser3Line } from "react-icons/ri";
+import { RiArrowDownSLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import {
-  HighlightAddress,
-  HueAvatar,
+  EllipsizedAddress,
   SignHint,
   TokenLogo,
   WALLET_TOKENS,
@@ -22,6 +21,7 @@ export function SendAmountPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [token, setToken] = useState<WalletToken>(WALLET_TOKENS[0]);
+  const [amount, setAmount] = useState("25.00");
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -33,20 +33,12 @@ export function SendAmountPage() {
       </h1>
 
       {RECIPIENT ? (
-        <div className="mb-2.5 flex items-center gap-2.5 border border-border bg-card p-2.5">
-          <span className="text-muted-foreground text-xs">
+        <div className="mb-2.5 flex h-12 items-center gap-2.5 border border-border bg-card px-3">
+          <span className="shrink-0 text-muted-foreground text-xs">
             <Trans>To</Trans>
           </span>
-          <HueAvatar
-            seed={RECIPIENT.seed}
-            size={24}
-            icon={<RiUser3Line className="size-3" aria-hidden="true" />}
-          />
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold">{RECIPIENT.label}</p>
-            {RECIPIENT.address ? (
-              <HighlightAddress address={RECIPIENT.address} className="text-[0.6875rem]" />
-            ) : null}
+            {RECIPIENT.address ? <EllipsizedAddress address={RECIPIENT.address} /> : null}
           </div>
           <button
             type="button"
@@ -63,7 +55,7 @@ export function SendAmountPage() {
       <button
         type="button"
         onClick={() => setPickerOpen(true)}
-        className="mb-2.5 flex w-full items-center gap-2.5 border border-border bg-card p-3 text-left"
+        className="mb-2.5 flex h-12 w-full items-center gap-2.5 border border-border bg-card px-3 text-left"
       >
         <TokenLogo token={token} size={30} />
         <div className="min-w-0 flex-1">
@@ -77,11 +69,12 @@ export function SendAmountPage() {
 
       <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
         <p className="font-heading text-[2.5rem] font-semibold leading-none tracking-tight">
-          25.00 <span className="text-[1.25rem] text-muted-foreground">{token.symbol}</span>
+          {amount} <span className="text-[1.25rem] text-muted-foreground">{token.symbol}</span>
         </p>
         <button
           type="button"
-          className="mt-3 inline-flex border border-border px-2.5 py-1 text-[0.6875rem] font-semibold"
+          className="mt-3 inline-flex h-8 items-center border border-border bg-card px-2.5 text-[0.6875rem] font-semibold"
+          onClick={() => setAmount(token.amount)}
         >
           <Trans>Use max · {token.amount}</Trans>
         </button>
@@ -89,7 +82,7 @@ export function SendAmountPage() {
 
       <div className="flex-1" />
 
-      <SignHint className="mb-2.5" />
+      <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
         onClick={() => {

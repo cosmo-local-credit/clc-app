@@ -36,13 +36,14 @@ export function TokenPickerSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle className="font-heading text-base font-semibold">
+        <SheetContent className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
+            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
               <Trans>Select a token</Trans>
             </SheetTitle>
           </SheetHeader>
-          <div className="flex-1 overflow-y-auto px-2">
+          {/* Replace this static set with a TanStack Query + TanStack Virtual powered infinite token list when backend pagination is wired. */}
+          <div className="flex-1 overflow-y-auto px-3">
             {tokens.map((token, index, list) => {
               const active = token.id === selectedId;
               return (

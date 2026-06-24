@@ -91,7 +91,7 @@ export function TopUpPage() {
                 if (method.id === "mpesa") setSheetOpen(true);
               }}
               className={[
-                "flex w-full items-center gap-3 p-3.5 text-left",
+                "flex h-14 w-full items-center gap-3 px-3 text-left",
                 index < list.length - 1 ? "border-b border-border" : "",
                 disabled ? "cursor-default opacity-55" : "active:bg-muted",
               ].join(" ")}
@@ -104,7 +104,7 @@ export function TopUpPage() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-sm">{method.name}</p>
-                <p className="text-muted-foreground text-xs">{method.desc}</p>
+                <p className="truncate text-muted-foreground text-xs">{method.desc}</p>
               </div>
               {disabled ? (
                 <span className="shrink-0 border border-border px-1.5 py-0.5 text-[0.5625rem] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
@@ -138,15 +138,15 @@ function MpesaSheet({
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent>
-          <SheetHeader>
+        <SheetContent className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="flex size-8 shrink-0 items-center justify-center border border-primary/30 bg-primary/10 text-primary">
                   <RiSmartphoneLine className="size-3.5" aria-hidden="true" />
                 </span>
                 <div>
-                  <SheetTitle className="font-heading font-bold text-base">
+                  <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
                     <Trans>MPESA</Trans>
                   </SheetTitle>
                   <p className="font-semibold text-primary text-xs">+254 712 345 678</p>
@@ -156,14 +156,14 @@ function MpesaSheet({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 aria-label={t`Close`}
-                className="flex size-7 items-center justify-center bg-muted text-muted-foreground"
+                className="flex size-8 items-center justify-center border border-border bg-card text-muted-foreground"
               >
                 <RiCloseLine className="size-4" aria-hidden="true" />
               </button>
             </div>
           </SheetHeader>
 
-          <div className="px-4 pt-1 pb-2">
+          <div className="px-6 pt-1 pb-2">
             <label
               className="mb-1.5 block text-xs font-medium text-muted-foreground"
               htmlFor="topup-amount"

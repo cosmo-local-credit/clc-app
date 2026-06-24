@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Camera, LoaderCircle, Upload, X } from "lucide-react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "#/components/ui";
 
@@ -11,11 +11,12 @@ type ScanError = { type: "camera-denied"; message: string } | { type: "other"; m
 interface PaperWalletScannerProps {
   onKeyDecoded: (key: string) => void;
   onCancel: () => void;
+  title?: ReactNode;
 }
 
 const SCANNER_ELEMENT_ID = "paper-wallet-scanner";
 
-export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScannerProps) {
+export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalletScannerProps) {
   const { t } = useLingui();
   const [mode, setMode] = useState<ScanMode>("choose");
   const [error, setError] = useState<ScanError | null>(null);
@@ -142,9 +143,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">
-          <Trans>Paper Wallet</Trans>
-        </p>
+        <p className="font-medium text-sm">{title ?? <Trans>Paper Wallet</Trans>}</p>
         <Button
           variant="ghost"
           size="icon-sm"

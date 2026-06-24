@@ -44,6 +44,42 @@ export function TokenLogo({
   );
 }
 
+export function PicsumLogo({
+  seed,
+  size = 34,
+  alt = "",
+  className,
+}: {
+  seed: string;
+  size?: number;
+  alt?: string;
+  className?: string;
+}) {
+  const displaySize = Math.round(size);
+  const encodedSeed = encodeURIComponent(`clc-${seed}`);
+  const src = `https://picsum.photos/seed/${encodedSeed}/${displaySize}/${displaySize}`;
+  const srcSet = `${src} 1x, https://picsum.photos/seed/${encodedSeed}/${displaySize * 2}/${displaySize * 2} 2x`;
+
+  return (
+    <span
+      className={cn("block shrink-0 overflow-hidden rounded-full bg-muted", className)}
+      style={{ width: displaySize, height: displaySize }}
+    >
+      <img
+        src={src}
+        srcSet={srcSet}
+        alt={alt}
+        width={displaySize}
+        height={displaySize}
+        loading="lazy"
+        decoding="async"
+        aria-hidden={alt ? undefined : true}
+        className="size-full object-cover"
+      />
+    </span>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Address helpers                                                    */
 /* ------------------------------------------------------------------ */
@@ -52,16 +88,34 @@ export function TokenLogo({
  * Renders a hex address with the head and tail bytes emphasised — mirrors
  * how block explorers highlight the checksummed portions.
  */
-export function HighlightAddress({ address, className }: { address: string; className?: string }) {
+export function HighlightAddress({
+  address,
+  className,
+  tailLength = 4,
+}: {
+  address: string;
+  className?: string;
+  tailLength?: number;
+}) {
   const head = address.slice(2, 6);
-  const tail = address.slice(-4);
-  const mid = address.slice(6, -4);
+  const tail = address.slice(-tailLength);
+  const mid = address.slice(6, -tailLength);
   return (
     <span className={cn("font-mono text-muted-foreground text-xs", className)}>
       0x
       <span className="font-semibold text-primary">{head}</span>
       {mid}
       <span className="font-semibold text-primary">{tail}</span>
+    </span>
+  );
+}
+
+export function EllipsizedAddress({ address, className }: { address: string; className?: string }) {
+  return (
+    <span className={cn("font-mono text-muted-foreground text-xs", className)}>
+      0x
+      <span className="font-semibold text-primary">{address.slice(2, 6)}</span>…
+      <span className="font-semibold text-primary">{address.slice(-6)}</span>
     </span>
   );
 }

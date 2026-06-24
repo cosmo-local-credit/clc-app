@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { HighlightAddress, SuccessCheck, WALLET_TOKEN_BY_ID } from "#/components/wallet";
+import { EllipsizedAddress, SuccessCheck, WALLET_TOKEN_BY_ID } from "#/components/wallet";
 import { RECENT_RECIPIENTS } from "#/components/wallet/wallet-data";
 
 const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
@@ -21,8 +21,8 @@ function ReceiptRow({ label, children }: { label: React.ReactNode; children: Rea
 
 function CopyableMono({ value }: { value: string }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <span className="font-mono text-muted-foreground text-xs">{value}</span>
+    <div className="flex min-w-0 items-center gap-1.5 text-right">
+      <span className="min-w-0 break-all font-mono text-muted-foreground text-xs">{value}</span>
       <span
         className="flex size-5 shrink-0 items-center justify-center bg-muted text-muted-foreground"
         aria-hidden="true"
@@ -45,9 +45,11 @@ export function SendReceiptPage() {
         <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
           <Trans>Sent 25.00 {token.symbol}</Trans>
         </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>to {RECIPIENT?.label ?? "jamila.clc"}</Trans>
-        </p>
+        {TO_ADDRESS ? (
+          <p className="text-muted-foreground text-sm">
+            <EllipsizedAddress address={TO_ADDRESS} />
+          </p>
+        ) : null}
       </div>
 
       <div className="my-5 border border-border bg-card">
@@ -55,7 +57,7 @@ export function SendReceiptPage() {
           <span className="text-xs font-semibold">25.00 {token.symbol}</span>
         </ReceiptRow>
         <ReceiptRow label={t`To`}>
-          <HighlightAddress address={TO_ADDRESS} />
+          <EllipsizedAddress address={TO_ADDRESS} />
         </ReceiptRow>
         <ReceiptRow label={t`Transaction`}>
           <CopyableMono value={TX_HASH} />

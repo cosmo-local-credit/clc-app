@@ -1,9 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { RiAlertLine, RiFileCopyLine, RiShareLine } from "react-icons/ri";
+import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { AddressQRCode, CopyableAddress, NetworkBadge } from "#/components/wallet";
-import { WALLET_ADDRESS_FULL } from "#/components/wallet/wallet-data";
+import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
+import { WALLET_ADDRESS_FULL, WALLET_ENS_NAME } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 
 export function ReceivePage() {
@@ -17,27 +17,45 @@ export function ReceivePage() {
         <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Receive</Trans>
         </h1>
-        <p className="mt-1 mb-3.5 text-muted-foreground text-sm">
-          <Trans>Share your address to get paid</Trans>
-        </p>
-        <NetworkBadge className="mb-3.5" />
+        <NetworkBadge className="my-3.5" />
         <AddressQRCode value={WALLET_ADDRESS_FULL} size={156} />
         <p className="mt-3.5 mb-1.5 text-muted-foreground text-xs">
-          <Trans>Your Celo address</Trans>
+          <Trans>Receive details</Trans>
         </p>
       </div>
 
-      <CopyableAddress
-        address={WALLET_ADDRESS_FULL}
-        className="mb-3 border border-border bg-card"
-      />
+      <div className="mb-3 border border-border bg-card">
+        <button
+          type="button"
+          className="flex h-12 w-full items-center justify-between gap-3 border-b border-border px-3 text-left"
+          onClick={() => {
+            void navigator.clipboard?.writeText(WALLET_ENS_NAME);
+          }}
+        >
+          <span className="font-mono text-muted-foreground text-xs">{WALLET_ENS_NAME}</span>
+          <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="flex h-12 w-full items-center justify-between gap-3 px-3 text-left"
+          onClick={() => {
+            void navigator.clipboard?.writeText(WALLET_ADDRESS_FULL);
+          }}
+        >
+          <HighlightAddress
+            address={WALLET_ADDRESS_FULL}
+            tailLength={6}
+            className="min-w-0 break-all text-[0.625rem] leading-tight"
+          />
+          <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+      </div>
 
-      <div className="mb-3.5 flex gap-2 border border-border bg-muted p-2.5">
-        <RiAlertLine className="mt-0.5 size-4 shrink-0 text-yellow-500" aria-hidden="true" />
-        <p className="text-muted-foreground text-xs leading-relaxed">
+      <div className="mb-3.5 border border-yellow-300 bg-yellow-50 p-3">
+        <p className="text-yellow-950 text-xs leading-relaxed">
           <Trans>
-            Only send assets on the <strong className="text-foreground">Celo network</strong> to
-            this address. Other networks may be lost.
+            Only send assets on the <strong>Celo network</strong> to this address. Other networks
+            may be lost.
           </Trans>
         </p>
       </div>

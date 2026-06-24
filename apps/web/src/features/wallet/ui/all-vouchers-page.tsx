@@ -1,25 +1,11 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  RiArrowDownSLine,
-  RiMailLine,
-  RiMapPin2Line,
-  RiPhoneLine,
-  RiUser3Line,
-} from "react-icons/ri";
+import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 
-import { HighlightAddress, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
+import { PicsumLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-
-function DetailRow({ icon, value }: { icon: ReactNode; value: string }) {
-  return (
-    <div className="mb-1.5 flex items-center gap-2">
-      <span className="shrink-0 text-muted-foreground">{icon}</span>
-      <span className="text-xs">{value}</span>
-    </div>
-  );
-}
+import { VoucherContactDetails } from "./voucher-contact-details";
 
 function VoucherRow({
   voucher,
@@ -43,7 +29,7 @@ function VoucherRow({
           showBorder ? "border-b border-border" : "",
         ].join(" ")}
       >
-        <TokenLogo token={voucher} size={36} />
+        <PicsumLogo seed={`voucher-${voucher.id}`} size={36} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-bold tracking-tight">{voucher.symbol}</p>
@@ -69,35 +55,16 @@ function VoucherRow({
 
       {open ? (
         <div className={["px-3 pb-3 pt-1", showBorder ? "border-b border-border" : ""].join(" ")}>
-          {voucher.location ? (
-            <DetailRow
-              icon={<RiMapPin2Line className="size-3" aria-hidden="true" />}
-              value={voucher.location}
-            />
-          ) : null}
-          {voucher.phone ? (
-            <DetailRow
-              icon={<RiPhoneLine className="size-3" aria-hidden="true" />}
-              value={voucher.phone}
-            />
-          ) : null}
-          {voucher.email ? (
-            <DetailRow
-              icon={<RiMailLine className="size-3" aria-hidden="true" />}
-              value={voucher.email}
-            />
-          ) : null}
-          {voucher.owner ? (
-            <div className="flex items-center gap-2">
-              <RiUser3Line className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <div className="min-w-0">
-                {voucher.ownerEns ? <span className="text-xs">{voucher.ownerEns}</span> : null}
-                <div>
-                  <HighlightAddress address={voucher.owner} />
-                </div>
-              </div>
-            </div>
-          ) : null}
+          <VoucherContactDetails voucher={voucher} />
+          <Link
+            to="/wallet/tokens/$tokenId"
+            params={{ tokenId: voucher.id }}
+            preload="intent"
+            className="mt-3 flex h-11 items-center justify-center gap-1.5 bg-primary px-3 font-semibold text-primary-foreground text-xs"
+          >
+            <Trans>View voucher</Trans>
+            <RiArrowRightSLine className="size-4" aria-hidden="true" />
+          </Link>
         </div>
       ) : null}
     </div>

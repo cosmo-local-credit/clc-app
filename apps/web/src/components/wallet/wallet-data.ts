@@ -25,6 +25,9 @@ export type WalletToken = {
   email?: string;
   owner?: string;
   ownerEns?: string;
+  contractAddress?: string;
+  lat?: number;
+  lng?: number;
 };
 
 export const WALLET_TOKENS: WalletToken[] = [
@@ -37,6 +40,7 @@ export const WALLET_TOKENS: WalletToken[] = [
     color: "oklch(0.62 0.16 250)",
     kind: "stable",
     glyph: "$",
+    contractAddress: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
   },
   {
     id: "usdt",
@@ -47,6 +51,7 @@ export const WALLET_TOKENS: WalletToken[] = [
     color: "oklch(0.6 0.12 170)",
     kind: "stable",
     glyph: "₮",
+    contractAddress: "0x617f3112bf5397D0467D315cC709EF968D9ba546",
   },
   {
     id: "babas",
@@ -62,6 +67,9 @@ export const WALLET_TOKENS: WalletToken[] = [
     email: "babas@vouchers.co.ke",
     owner: "0xBa5eb14E9c1D7f3A0b6C2e8F4d1a9F57c3b2C0de",
     ownerEns: "babas.sarafu.eth",
+    contractAddress: "0xBaba5Eed3c1D7f3A0b6C2e8F4d1a9F57c3b2C0de",
+    lat: -4.0435,
+    lng: 39.6682,
   },
   {
     id: "grdn",
@@ -77,6 +85,9 @@ export const WALLET_TOKENS: WalletToken[] = [
     email: "garden@community.co.ke",
     owner: "0x7A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4c",
     ownerEns: "grdn.sarafu.eth",
+    contractAddress: "0x6A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4d",
+    lat: -3.6305,
+    lng: 39.8499,
   },
   {
     id: "bkr",
@@ -90,6 +101,9 @@ export const WALLET_TOKENS: WalletToken[] = [
     phone: "+254 712 345 678",
     email: "cosmo@bakery.co.ke",
     owner: "0x4F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2a",
+    contractAddress: "0x5F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2b",
+    lat: -1.2921,
+    lng: 36.8219,
   },
   {
     id: "solar",
@@ -103,6 +117,9 @@ export const WALLET_TOKENS: WalletToken[] = [
     phone: "+254 700 987 654",
     email: "coop@solar.co.ke",
     owner: "0x1A2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8f9A0b",
+    contractAddress: "0x2A2b3C4d5E6f7A8b9C0d1E2f3A4b5C6d7E8f9A0c",
+    lat: 0.5143,
+    lng: 35.2698,
   },
 ];
 
@@ -112,14 +129,13 @@ export const WALLET_TOKEN_BY_ID: Record<string, WalletToken> = Object.fromEntrie
 
 export type WalletPool = {
   id: string;
-  name: string;
-  pair: string;
-  tvl: string;
+  symbol: string;
+  description: string;
 };
 
 export const WALLET_POOLS: WalletPool[] = [
-  { id: "solar", name: "Local Solar Coop", pair: "USDC / SOLAR", tvl: "KSh 1.2M" },
-  { id: "food", name: "Fresh Food Circle", pair: "USDC / BABAS", tvl: "KSh 840K" },
+  { id: "solar", symbol: "COOP", description: "Local Solar Coop liquidity pool" },
+  { id: "food", symbol: "FFC", description: "Fresh Food Circle liquidity pool" },
 ];
 
 /** Total wallet balance, summed across placeholder tokens. */
@@ -127,6 +143,9 @@ export const WALLET_TOTAL_BALANCE = "KSh 12,840";
 
 /** Connected wallet address used on Receive + receipts. */
 export const WALLET_ADDRESS_FULL = "0x7A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4c";
+
+/** Placeholder ENS for the connected wallet. */
+export const WALLET_ENS_NAME = "jamila.sarafu.eth";
 
 export type Recipient = {
   id: string;
@@ -142,22 +161,29 @@ export type Recipient = {
 export const RECENT_RECIPIENTS: Recipient[] = [
   {
     id: "jamila",
-    label: "jamila.clc",
+    label: "jamila.eth",
     seed: "jamila",
     address: "0x91Ab3f5d6C7e8F9a0B1c2D3e4F5a6B7c8D9e0d2E7",
   },
   {
     id: "cosmo",
-    label: "Cosmo Bakery",
-    sub: "+254 712 004 118",
+    label: "+254 712 004 118",
+    sub: "Cosmo Bakery",
     seed: "cosmo",
   },
   {
     id: "0x4f2c",
-    label: "0x4F2c…A810",
+    label: "0x4F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2a",
     sub: "Sent 2 days ago",
     seed: "0x4f2c",
     address: "0x4F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2a",
+  },
+  {
+    id: "amina",
+    label: "amina.sarafu.eth",
+    sub: "Fresh Food Circle",
+    seed: "amina",
+    address: "0x6D3cA2109B4d8E7f1C5a8D2F4e6B0A3C7D9F1E99",
   },
 ];
 

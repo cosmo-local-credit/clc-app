@@ -4,10 +4,10 @@ import { describe, expect, it } from "vite-plus/test";
 import { WalletPage } from "./wallet-page";
 
 describe("WalletPage", () => {
-  it("shows the wallet balance", () => {
+  it("shows the wallet header without the total balance card", () => {
     render(<WalletPage />);
-    expect(screen.getByText(/KSh 12,840/)).toBeTruthy();
-    expect(screen.getByText(/total balance/i)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /wallet/i })).toBeTruthy();
+    expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
   it("shows Send, Receive, Swap, and Top up action buttons", () => {
@@ -18,11 +18,11 @@ describe("WalletPage", () => {
     expect(screen.getByRole("button", { name: /top up/i })).toBeTruthy();
   });
 
-  it("shows the voucher section with placeholder token balances", () => {
+  it("shows the voucher section with placeholder voucher balances", () => {
     render(<WalletPage />);
     expect(screen.getByText(/your vouchers/i)).toBeTruthy();
-    expect(screen.getByText(/USDC/)).toBeTruthy();
-    expect(screen.getByText(/BABAS/)).toBeTruthy();
+    expect(screen.getByText("BABAS")).toBeTruthy();
+    expect(screen.getByText("GRDN")).toBeTruthy();
   });
 
   it("shows the pool section with placeholder pools", () => {
