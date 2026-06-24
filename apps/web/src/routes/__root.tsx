@@ -6,7 +6,6 @@ import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
 import { useAccount } from "wagmi";
 import { connect, disconnect } from "wagmi/actions";
-import { EncryptedPaperWalletImportForm } from "#/components/encrypted-paper-wallet-import-form";
 import { Button } from "#/components/ui/button";
 import {
   DialogBackdrop,
@@ -39,6 +38,12 @@ const AppDevtools = import.meta.env.DEV
       })),
     )
   : null;
+
+const EncryptedPaperWalletImportForm = lazy(() =>
+  import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
+    default: module.EncryptedPaperWalletImportForm,
+  })),
+);
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -179,12 +184,14 @@ function AppInner() {
               <DialogTitle className="sr-only">
                 <Trans>Protected paper wallet</Trans>
               </DialogTitle>
-              <EncryptedPaperWalletImportForm
-                encryptedKey={pendingEncryptedKey}
-                className="border-0 bg-transparent p-6"
-                onDecrypted={handleEncryptedUrlImport}
-                onCancel={clearPendingImport}
-              />
+              <Suspense fallback={null}>
+                <EncryptedPaperWalletImportForm
+                  encryptedKey={pendingEncryptedKey}
+                  className="border-0 bg-transparent p-6"
+                  onDecrypted={handleEncryptedUrlImport}
+                  onCancel={clearPendingImport}
+                />
+              </Suspense>
             </DialogContent>
           </DialogPortal>
         </DialogRoot>

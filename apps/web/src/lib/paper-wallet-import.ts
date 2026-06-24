@@ -1,5 +1,6 @@
 import { normalizePrivateKey } from "#/connectors/normalize-private-key";
-import { isEncryptedPaperWalletPayload } from "./paper-wallet-encryption";
+
+const ENCRYPTED_PAPER_WALLET_PAYLOAD = /^6P[1-9A-HJ-NP-Za-km-z]{56}$/;
 
 export type PaperWalletImportPayload =
   | { type: "raw"; key: `0x${string}` }
@@ -17,8 +18,9 @@ export function parsePaperWalletImportPayload(raw: string): PaperWalletImportPay
     return { type: "raw", key: privateKey.key };
   }
 
-  if (isEncryptedPaperWalletPayload(extracted.payload)) {
-    return { type: "encrypted", encryptedKey: extracted.payload.trim() };
+  const trimmedPayload = extracted.payload.trim();
+  if (ENCRYPTED_PAPER_WALLET_PAYLOAD.test(trimmedPayload)) {
+    return { type: "encrypted", encryptedKey: trimmedPayload };
   }
 
   return { type: "invalid", error: "This QR code does not contain a valid paper wallet." };

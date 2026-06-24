@@ -1,3 +1,5 @@
+import "#/lib/browser-node-globals";
+
 import { Buffer } from "buffer";
 import * as bip38 from "bip38";
 import { bytesToHex, hexToBytes } from "viem";

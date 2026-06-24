@@ -234,7 +234,7 @@ describe("LandingPage navigation", () => {
       fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
     });
 
-    expect(screen.getByText(/protected paper wallet/i)).toBeTruthy();
+    expect(await screen.findByText(/protected paper wallet/i)).toBeTruthy();
     expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByLabelText(/^passphrase$/i), {

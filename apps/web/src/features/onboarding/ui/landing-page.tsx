@@ -3,12 +3,11 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { FiKey, FiLoader, FiUserPlus, FiX } from "react-icons/fi";
 import { TbScan } from "react-icons/tb";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { useConnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
-import { EncryptedPaperWalletImportForm } from "#/components/encrypted-paper-wallet-import-form";
 import { OnboardingMenu } from "#/components/language-selector";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
@@ -25,6 +24,12 @@ import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
+
+const EncryptedPaperWalletImportForm = lazy(() =>
+  import("#/components/encrypted-paper-wallet-import-form").then((module) => ({
+    default: module.EncryptedPaperWalletImportForm,
+  })),
+);
 
 export function LandingPage() {
   const { t } = useLingui();
@@ -143,18 +148,20 @@ export function LandingPage() {
         ) : null}
 
         {encryptedPaperWallet && !connecting ? (
-          <EncryptedPaperWalletImportForm
-            encryptedKey={encryptedPaperWallet}
-            onDecrypted={async (key) => {
-              const connected = await connectWithKey(key);
-              if (!connected) throw new Error(t`Connection failed.`);
-              setEncryptedPaperWallet(null);
-            }}
-            onCancel={() => {
-              setEncryptedPaperWallet(null);
-              setPkError(null);
-            }}
-          />
+          <Suspense fallback={null}>
+            <EncryptedPaperWalletImportForm
+              encryptedKey={encryptedPaperWallet}
+              onDecrypted={async (key) => {
+                const connected = await connectWithKey(key);
+                if (!connected) throw new Error(t`Connection failed.`);
+                setEncryptedPaperWallet(null);
+              }}
+              onCancel={() => {
+                setEncryptedPaperWallet(null);
+                setPkError(null);
+              }}
+            />
+          </Suspense>
         ) : null}
 
         {showScanner && pkError ? (

@@ -52,14 +52,32 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
 
   const fullReactErrors =
     (process.env.VITE_FULL_REACT_ERRORS ?? localEnv.VITE_FULL_REACT_ERRORS) === "true";
+  const browserNodeDefines = {
+    global: "globalThis",
+    "process.browser": "true",
+    "process.version": JSON.stringify("v24.0.0"),
+  };
+  const browserNodeAliases = {
+    assert: "assert/",
+    buffer: "buffer/",
+    crypto: "crypto-browserify",
+    events: "events/",
+    process: "process/browser",
+    stream: "stream-browserify",
+    string_decoder: "string_decoder/",
+    "node:string_decoder": "string_decoder/",
+  };
   const environments = fullReactErrors
     ? {
         client: {
           build: { minify: false, sourcemap: true },
-          define: { "process.env.NODE_ENV": JSON.stringify("development") },
+          define: {
+            ...browserNodeDefines,
+            "process.env.NODE_ENV": JSON.stringify("development"),
+          },
         },
       }
-    : undefined;
+    : { client: { define: browserNodeDefines } };
 
   const plugins: import("vite-plus").PluginOption[] = [
     ...(command === "serve" ? [devtools()] : []),
@@ -78,7 +96,11 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     }),
   ];
 
-  return { environments, resolve: { tsconfigPaths: true }, plugins };
+  return {
+    environments,
+    resolve: { alias: browserNodeAliases, tsconfigPaths: true },
+    plugins,
+  };
 });
 
 export default config;
