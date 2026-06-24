@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -79,7 +79,6 @@ describe("LocationPicker", () => {
   });
 
   it("shows the top four search suggestions without selecting for the user", async () => {
-    vi.useFakeTimers();
     mockSearchLocations.mockResolvedValue([
       {
         address: "Nairobi CBD, Kenya",
@@ -118,12 +117,7 @@ describe("LocationPicker", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
       target: { value: "Nai" },
     });
-    await act(async () => {
-      vi.advanceTimersByTime(400);
-      await Promise.resolve();
-    });
-
-    expect(screen.getAllByRole("option")).toHaveLength(4);
+    expect(await screen.findAllByRole("option")).toHaveLength(4);
     expect(screen.getByRole("option", { name: /nairobi cbd/i })).toBeTruthy();
     expect(screen.queryByRole("option", { name: /nairobi north/i })).toBeNull();
     expect(mockReverseLocation).not.toHaveBeenCalled();
@@ -131,7 +125,6 @@ describe("LocationPicker", () => {
   });
 
   it("pins and reverse-geocodes the suggestion selected by the user", async () => {
-    vi.useFakeTimers();
     mockSearchLocations.mockResolvedValue([
       {
         address: "Nairobi, Kenya",
@@ -149,12 +142,9 @@ describe("LocationPicker", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
       target: { value: "Nairobi" },
     });
+    const option = await screen.findByRole("option", { name: /nairobi/i });
     await act(async () => {
-      vi.advanceTimersByTime(400);
-      await Promise.resolve();
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("option", { name: /nairobi/i }));
+      fireEvent.click(option);
       await Promise.resolve();
     });
 
@@ -163,7 +153,6 @@ describe("LocationPicker", () => {
   });
 
   it("does not show stale suggestions when an older search resolves after the query changes", async () => {
-    vi.useFakeTimers();
     let resolveFirstSearch: (value: unknown) => void = () => undefined;
     mockSearchLocations.mockImplementationOnce(
       () =>
@@ -188,10 +177,7 @@ describe("LocationPicker", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
       target: { value: "Nai" },
     });
-    await act(async () => {
-      vi.advanceTimersByTime(400);
-      await Promise.resolve();
-    });
+    await waitFor(() => expect(mockSearchLocations).toHaveBeenCalledTimes(1));
 
     fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
       target: { value: "Nairo" },
@@ -210,12 +196,7 @@ describe("LocationPicker", () => {
 
     expect(screen.queryByRole("option", { name: /nakuru/i })).toBeNull();
 
-    await act(async () => {
-      vi.advanceTimersByTime(400);
-      await Promise.resolve();
-    });
-
-    expect(screen.getByRole("option", { name: /nairobi west/i })).toBeTruthy();
+    expect(await screen.findByRole("option", { name: /nairobi west/i })).toBeTruthy();
     expect(screen.getByTestId("map-pin").textContent).toBe(",");
   });
 
@@ -411,7 +392,6 @@ describe("LocationPicker", () => {
   });
 
   it("calls onChange with the full LocationInput after suggestion selection and reverse geocode", async () => {
-    vi.useFakeTimers();
     mockSearchLocations.mockResolvedValue([
       {
         address: "Nairobi, Kenya",
@@ -430,12 +410,9 @@ describe("LocationPicker", () => {
     fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
       target: { value: "Nairobi" },
     });
+    const option = await screen.findByRole("option", { name: /nairobi/i });
     await act(async () => {
-      vi.advanceTimersByTime(400);
-      await Promise.resolve();
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByRole("option", { name: /nairobi/i }));
+      fireEvent.click(option);
       await Promise.resolve();
     });
 
