@@ -27,21 +27,14 @@ import { getAccount } from "wagmi/actions";
 import { useScanUrlImport } from "./scan-url-import";
 
 const VALID_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
-const ENCRYPTED_KEY = "6PYMvQX3NRvqN2SuLENXqowrkYrKNZ74mA3Lb5zksXxQxTEFcnD2gihvaf";
+const ENCRYPTED_KEY = "6PYMvQX3P2CjYXVkxczC5ZbPyyiDgRJTZatN6uQUFgYhBbm7idLvfZWzao";
 
 function setSearch(search: string) {
-  Object.defineProperty(window, "location", {
-    value: { ...window.location, search, pathname: "/signup" },
-    writable: true,
-  });
-  vi.spyOn(history, "replaceState").mockImplementation(() => {});
+  window.history.pushState(null, "", `/signup${search}`);
 }
 
 function clearSearch() {
-  Object.defineProperty(window, "location", {
-    value: { ...window.location, search: "", pathname: "/" },
-    writable: true,
-  });
+  window.history.pushState(null, "", "/");
 }
 
 beforeEach(() => {

@@ -20,7 +20,7 @@ const {
   mockDecryptPaperWalletPrivateKey: vi
     .fn()
     .mockResolvedValue("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-  ENCRYPTED_KEY: "6PYMvQX3NRvqN2SuLENXqowrkYrKNZ74mA3Lb5zksXxQxTEFcnD2gihvaf",
+  ENCRYPTED_KEY: "6PYMvQX3P2CjYXVkxczC5ZbPyyiDgRJTZatN6uQUFgYhBbm7idLvfZWzao",
   mockRecoveryState: {
     step: "idle" as string,
     outcome: null as string | null,

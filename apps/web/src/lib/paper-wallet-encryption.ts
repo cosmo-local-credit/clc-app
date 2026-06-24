@@ -11,18 +11,9 @@ export const SARAFU_DEFAULT_SCRYPT_PARAMS: PaperWalletScryptParams = {
   p: 1,
 };
 
-export const BIP38_SCRYPT_PARAMS: PaperWalletScryptParams = {
-  N: 1 << 14,
-  r: 8,
-  p: 8,
-};
+export const PAPER_WALLET_GENERATION_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAMS;
 
-export const PAPER_WALLET_GENERATION_SCRYPT_PARAMS = BIP38_SCRYPT_PARAMS;
-
-export const PAPER_WALLET_IMPORT_SCRYPT_PARAMS = [
-  BIP38_SCRYPT_PARAMS,
-  SARAFU_DEFAULT_SCRYPT_PARAMS,
-] as const;
+export const PAPER_WALLET_IMPORT_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAMS;
 
 const RAW_PRIVATE_KEY_HEX = /^0x[0-9a-fA-F]{64}$/;
 const DECRYPTION_ERROR = "Unable to decrypt paper wallet. Check the passphrase and try again.";
@@ -51,26 +42,17 @@ export async function encryptPaperWalletPrivateKey(
 export async function decryptPaperWalletPrivateKey(
   encryptedKey: string,
   passphrase: string,
-  scryptParams:
-    | PaperWalletScryptParams
-    | readonly PaperWalletScryptParams[] = PAPER_WALLET_IMPORT_SCRYPT_PARAMS,
+  scryptParams: PaperWalletScryptParams = PAPER_WALLET_IMPORT_SCRYPT_PARAMS,
 ): Promise<`0x${string}`> {
   validatePaperWalletPassphrase(passphrase);
 
   const encrypted = encryptedKey.trim();
-  const paramsToTry = Array.isArray(scryptParams) ? scryptParams : [scryptParams];
-
-  for (const params of paramsToTry) {
-    try {
-      const decrypted = await bip38.decryptAsync(encrypted, passphrase, undefined, params);
-      return normalizePaperWalletPrivateKey(bytesToHex(decrypted.privateKey));
-    } catch {
-      // Try the next Sarafu-compatible parameter set before returning the
-      // generic user-facing failure below.
-    }
+  try {
+    const decrypted = await bip38.decryptAsync(encrypted, passphrase, undefined, scryptParams);
+    return normalizePaperWalletPrivateKey(bytesToHex(decrypted.privateKey));
+  } catch {
+    throw new Error(DECRYPTION_ERROR);
   }
-
-  throw new Error(DECRYPTION_ERROR);
 }
 
 function normalizePaperWalletPrivateKey(privateKey: `0x${string}`): `0x${string}` {
