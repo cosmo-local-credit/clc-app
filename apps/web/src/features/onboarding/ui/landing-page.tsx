@@ -13,7 +13,6 @@ import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
-import { normalizePrivateKey } from "#/connectors/normalize-private-key";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
@@ -86,12 +85,18 @@ export function LandingPage() {
   function handlePkSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPkError(null);
-    const result = normalizePrivateKey(pkInput);
-    if (!result.ok) {
-      setPkError(result.error);
+    const result = parsePaperWalletImportPayload(pkInput);
+    if (result.type === "raw") {
+      void connectWithKey(result.key);
       return;
     }
-    void connectWithKey(result.key);
+    if (result.type === "encrypted") {
+      setShowPkInput(false);
+      setPkInput("");
+      setEncryptedPaperWallet(result.encryptedKey);
+      return;
+    }
+    setPkError(t`Enter a valid private key or paper wallet.`);
   }
 
   function handleKeyScanned(raw: string) {

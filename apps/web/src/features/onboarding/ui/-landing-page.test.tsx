@@ -317,9 +317,26 @@ describe("LandingPage private key form validation", () => {
       fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
     });
 
-    expect(screen.getByText(/invalid private key/i)).toBeTruthy();
+    expect(screen.getByText(/valid private key or paper wallet/i)).toBeTruthy();
     expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockConnectAction).not.toHaveBeenCalled();
+  });
+
+  it("prompts for a passphrase when an encrypted paper wallet is pasted into the field", async () => {
+    render(<LandingPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
+
+    const input = screen.getByLabelText(/^private key$/i);
+    fireEvent.change(input, { target: { value: ENCRYPTED_KEY } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
+    });
+
+    expect(await screen.findByText(/protected paper wallet/i)).toBeTruthy();
+    expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
   });
 });
