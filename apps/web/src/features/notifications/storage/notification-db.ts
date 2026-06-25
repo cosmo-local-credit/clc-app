@@ -366,7 +366,7 @@ export async function recordSubscriptionDiagnostic(
   const db = await openNotificationDatabase();
   const diagnostic: NotificationSubscriptionDiagnostic = {
     ...input,
-    createdAt: nowISO(),
+    createdAt: nextDiagnosticTimestamp(),
     diagnosticId: createId(`subscription-${input.status}`),
   };
 
@@ -457,5 +457,13 @@ function nowISO(): string {
 function nextAckTimestamp(): string {
   const timestamp = Math.max(Date.now(), lastAckQueuedAtMs + 1);
   lastAckQueuedAtMs = timestamp;
+  return new Date(timestamp).toISOString();
+}
+
+let lastDiagnosticCreatedAtMs = 0;
+
+function nextDiagnosticTimestamp(): string {
+  const timestamp = Math.max(Date.now(), lastDiagnosticCreatedAtMs + 1);
+  lastDiagnosticCreatedAtMs = timestamp;
   return new Date(timestamp).toISOString();
 }
