@@ -62,6 +62,7 @@ export function WalletPage() {
 
       <section aria-labelledby="your-vouchers-title">
         <SectionHeader
+          id="your-vouchers-title"
           title={<Trans>Your Vouchers</Trans>}
           action={<Trans>View all</Trans>}
           onAction={() => {
@@ -95,7 +96,11 @@ export function WalletPage() {
       </section>
 
       <section aria-labelledby="your-pools-title">
-        <SectionHeader title={<Trans>Your Pools</Trans>} action={<Trans>View all</Trans>} />
+        <SectionHeader
+          id="your-pools-title"
+          title={<Trans>Your Pools</Trans>}
+          action={<Trans>View all</Trans>}
+        />
         <div className="border border-border bg-card">
           {WALLET_POOLS.map((pool, index, list) => (
             <button

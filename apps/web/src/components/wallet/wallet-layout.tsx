@@ -40,12 +40,14 @@ export function BackChevron({
 }
 
 export function SectionHeader({
+  id,
   title,
   action,
   actionTo,
   onAction,
   className,
 }: {
+  id?: string;
   title: ReactNode;
   action?: ReactNode;
   actionTo?: string;
@@ -54,7 +56,9 @@ export function SectionHeader({
 }) {
   return (
     <div className={cn("mb-2 flex items-center justify-between gap-3", className)}>
-      <h2 className="font-heading font-semibold text-base">{title}</h2>
+      <h2 id={id} className="font-heading font-semibold text-base">
+        {title}
+      </h2>
       {action ? (
         actionTo ? (
           <Link

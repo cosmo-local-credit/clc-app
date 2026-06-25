@@ -33,40 +33,39 @@ type TopUpMethod = {
   state: MethodState;
 };
 
-const METHODS: TopUpMethod[] = [
-  {
-    id: "mpesa",
-    name: "MPESA",
-    desc: "+254 712 345 678",
-    icon: <RiSmartphoneLine className="size-4" aria-hidden="true" />,
-    state: "ready",
-  },
-  {
-    id: "card",
-    name: "Debit / Credit card",
-    desc: "Visa, Mastercard",
-    icon: <RiBankCardLine className="size-4" aria-hidden="true" />,
-    state: "soon",
-  },
-  {
-    id: "bank",
-    name: "Bank transfer",
-    desc: "Direct deposit",
-    icon: <RiBankLine className="size-4" aria-hidden="true" />,
-    state: "soon",
-  },
-  {
-    id: "crypto",
-    name: "Tokens",
-    desc: "From another wallet or exchange",
-    icon: <RiDownloadLine className="size-4" aria-hidden="true" />,
-    state: "ready",
-  },
-];
-
 export function TopUpPage() {
   const { t } = useLingui();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const methods: TopUpMethod[] = [
+    {
+      id: "mpesa",
+      name: "MPESA",
+      desc: "+254 712 345 678",
+      icon: <RiSmartphoneLine className="size-4" aria-hidden="true" />,
+      state: "ready",
+    },
+    {
+      id: "card",
+      name: t`Debit / Credit card`,
+      desc: "Visa, Mastercard",
+      icon: <RiBankCardLine className="size-4" aria-hidden="true" />,
+      state: "soon",
+    },
+    {
+      id: "bank",
+      name: t`Bank transfer`,
+      desc: t`Direct deposit`,
+      icon: <RiBankLine className="size-4" aria-hidden="true" />,
+      state: "soon",
+    },
+    {
+      id: "crypto",
+      name: t`Tokens`,
+      desc: t`From another wallet or exchange`,
+      icon: <RiDownloadLine className="size-4" aria-hidden="true" />,
+      state: "ready",
+    },
+  ];
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -80,7 +79,7 @@ export function TopUpPage() {
       </p>
 
       <div className="border border-border bg-card">
-        {METHODS.map((method, index, list) => {
+        {methods.map((method, index, list) => {
           const disabled = method.state === "soon";
           return (
             <button
@@ -147,7 +146,7 @@ function MpesaSheet({
                 </span>
                 <div>
                   <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
-                    <Trans>MPESA</Trans>
+                    MPESA
                   </SheetTitle>
                   <p className="font-semibold text-primary text-xs">+254 712 345 678</p>
                 </div>

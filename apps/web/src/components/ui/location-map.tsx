@@ -1,4 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import { useLingui } from "@lingui/react/macro";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -29,6 +30,7 @@ export function LocationMap({
   onLocationChange,
   className,
 }: LocationMapProps) {
+  const { t } = useLingui();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const markerRef = useRef<MapLibreGL.Marker | null>(null);
@@ -175,7 +177,7 @@ export function LocationMap({
   return (
     <section
       ref={containerRef}
-      aria-label="Location map"
+      aria-label={t`Location map`}
       className={cn(
         "h-52 w-full overflow-hidden rounded-xl border border-border bg-card",
         className,

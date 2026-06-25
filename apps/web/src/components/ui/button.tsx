@@ -58,6 +58,7 @@ function Button({
   if (asChild && isValidElement(children)) {
     const child = children as ReactElement<Record<string, unknown>>;
     return cloneElement(child, {
+      ...props,
       className: cn(classes, child.props.className as string | undefined),
       "data-slot": "button",
       "data-variant": variant,

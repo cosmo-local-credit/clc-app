@@ -25,12 +25,6 @@ type TokenTx = {
   amount: string;
 };
 
-const TXS: TokenTx[] = [
-  { kind: "in", title: "Received", who: "from cosmo.clc", amount: "+ 500.00" },
-  { kind: "out", title: "Sent", who: "to Green Basket", amount: "\u2212 120.00" },
-  { kind: "swap", title: "Swapped", who: "from USDC", amount: "+ 1,470.00" },
-];
-
 const TX_ICON: Record<TxKind, ReactNode> = {
   in: <RiArrowLeftDownLine className="size-3.5" aria-hidden="true" />,
   out: <RiArrowRightUpLine className="size-3.5" aria-hidden="true" />,
@@ -48,7 +42,14 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
   const token = WALLET_TOKEN_BY_ID[tokenId] ?? WALLET_TOKEN_BY_ID.babas;
   const contractAddress = token.contractAddress ?? token.owner;
   const [activeTab, setActiveTab] = useState<VoucherDetailTab>("activity");
+  const txs: TokenTx[] = [
+    { kind: "in", title: t`Received`, who: "from cosmo.clc", amount: "+ 500.00" },
+    { kind: "out", title: t`Sent`, who: "to Green Basket", amount: "\u2212 120.00" },
+    { kind: "swap", title: t`Swapped`, who: "from USDC", amount: "+ 1,470.00" },
+  ];
 
+  // UI-only actions: when token-scoped transaction flows are wired, pass token.id
+  // through these entry points so Send, Receive, and Swap preselect this voucher.
   const actions: { id: string; label: ReactNode; icon: ReactNode }[] = [
     {
       id: "send",
@@ -144,7 +145,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
 
       {activeTab === "activity" ? (
         <div className="border border-border bg-card" role="tabpanel">
-          {TXS.map((tx, index, list) => (
+          {txs.map((tx, index, list) => (
             <div
               key={`${tx.title}-${tx.who}`}
               className={[
@@ -182,6 +183,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
             </Suspense>
           ) : null}
 
+          {/* UI-only CTA: wire to this voucher's marketplace offerings once listings exist. */}
           <Button className="h-11 w-full">
             <Trans>Show offerings</Trans>
           </Button>
