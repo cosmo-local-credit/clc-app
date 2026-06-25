@@ -3,10 +3,8 @@ import { secp256k1 } from "@noble/curves/secp256k1";
 import { ripemd160 } from "@noble/hashes/ripemd160";
 import { scryptAsync } from "@noble/hashes/scrypt";
 import { sha256 } from "@noble/hashes/sha256";
-import { concatBytes, utf8ToBytes } from "@noble/hashes/utils";
 import { base58check } from "@scure/base";
-import { bytesToHex, hexToBytes } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+import { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } from "@noble/hashes/utils";
 
 // BIP38 (the `6P...` "encrypted WIF") implemented directly on audited,
 // browser-native crypto. This is an interop format with Sarafu, so the byte
@@ -99,7 +97,8 @@ export async function encryptPaperWalletPrivateKey(
   scryptParams: PaperWalletScryptParams = PAPER_WALLET_GENERATION_SCRYPT_PARAMS,
 ): Promise<string> {
   validatePaperWalletPassphrase(passphrase);
-  const keyBytes = hexToBytes(normalizePaperWalletPrivateKey(privateKey));
+  const normalized = normalizePaperWalletPrivateKey(privateKey);
+  const keyBytes = hexToBytes(normalized.slice(2));
   const compressed = true;
 
   const salt = addressChecksum(keyBytes, compressed);
@@ -147,7 +146,7 @@ export async function decryptPaperWalletPrivateKey(
     const expected = addressChecksum(privateKeyBytes, compressed);
     if (expected.some((byte, i) => byte !== salt[i])) throw new Error("Address checksum mismatch.");
 
-    return normalizePaperWalletPrivateKey(bytesToHex(privateKeyBytes));
+    return normalizePaperWalletPrivateKey(`0x${bytesToHex(privateKeyBytes)}`);
   } catch {
     throw new Error(DECRYPTION_ERROR);
   }
@@ -158,7 +157,5 @@ function normalizePaperWalletPrivateKey(privateKey: `0x${string}`): `0x${string}
     throw new Error("Invalid private key.");
   }
 
-  const normalized = `0x${privateKey.slice(2).toLowerCase()}` as `0x${string}`;
-  privateKeyToAccount(normalized);
-  return normalized;
+  return `0x${privateKey.slice(2).toLowerCase()}` as `0x${string}`;
 }
