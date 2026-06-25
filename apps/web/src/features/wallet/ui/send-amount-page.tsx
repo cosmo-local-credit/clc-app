@@ -26,7 +26,7 @@ export function SendAmountPage() {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Send`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Send`} to="/" />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Amount</Trans>
@@ -55,7 +55,7 @@ export function SendAmountPage() {
       <button
         type="button"
         onClick={() => setPickerOpen(true)}
-        className="mb-2.5 flex h-12 w-full items-center gap-2.5 border border-border bg-card px-3 text-left"
+        className="mb-2.5 flex h-11 w-full items-center gap-2.5 border border-border bg-card px-3 text-left"
       >
         <TokenLogo token={token} size={30} />
         <div className="min-w-0 flex-1">
@@ -68,16 +68,17 @@ export function SendAmountPage() {
       </button>
 
       <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
-        <p className="font-heading text-[2.5rem] font-semibold leading-none tracking-tight">
+        <p className="min-w-0 truncate font-heading text-[2.5rem] font-semibold leading-none tracking-tight">
           {amount} <span className="text-[1.25rem] text-muted-foreground">{token.symbol}</span>
         </p>
-        <button
-          type="button"
-          className="mt-3 inline-flex h-8 items-center border border-border bg-card px-2.5 text-[0.6875rem] font-semibold"
+        <Button
+          variant="secondary"
+          size="sm"
+          className="mt-3 h-8"
           onClick={() => setAmount(token.amount)}
         >
           <Trans>Use max · {token.amount}</Trans>
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1" />

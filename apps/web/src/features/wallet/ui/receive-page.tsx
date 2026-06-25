@@ -11,7 +11,7 @@ export function ReceivePage() {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Receive`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Receive`} to="/" />
 
       <div className="flex flex-col items-center">
         <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
@@ -51,8 +51,8 @@ export function ReceivePage() {
         </button>
       </div>
 
-      <div className="mb-3.5 border border-yellow-300 bg-yellow-50 p-3">
-        <p className="text-yellow-950 text-xs leading-relaxed">
+      <div className="mb-3.5 border border-primary/30 bg-primary/5 p-3">
+        <p className="text-foreground text-xs leading-relaxed">
           <Trans>
             Only send assets on the <strong>Celo network</strong> to this address. Other networks
             may be lost.

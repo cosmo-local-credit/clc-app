@@ -7,7 +7,7 @@ function DetailRow({ icon, value }: { icon: ReactNode; value: string }) {
   return (
     <div className="flex items-center gap-2">
       <span className="shrink-0 text-muted-foreground">{icon}</span>
-      <span className="text-xs">{value}</span>
+      <span className="min-w-0 break-all text-xs">{value}</span>
     </div>
   );
 }

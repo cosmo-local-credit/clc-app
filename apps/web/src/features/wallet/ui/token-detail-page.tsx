@@ -69,19 +69,19 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Your Vouchers`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Your Vouchers`} to="/" />
 
       <div className="flex flex-col items-center">
         <PicsumLogo seed={`voucher-${token.id}`} size={56} />
         <p className="mt-3 text-muted-foreground text-sm">{token.name}</p>
-        <p className="font-heading text-[2.125rem] font-semibold leading-none tracking-tight">
+        <p className="min-w-0 truncate font-heading text-[2.125rem] font-semibold leading-none tracking-tight">
           {token.amount} <span className="text-sm text-muted-foreground">{token.symbol}</span>
         </p>
       </div>
 
       <div className="my-4 grid grid-cols-3 gap-2">
         {actions.map((action) => (
-          <Button key={action.id} variant="outline" className="h-[4.5rem] flex-col gap-1">
+          <Button key={action.id} variant="outline" className="h-14 flex-col gap-1">
             {action.icon}
             <span className="text-xs font-semibold">{action.label}</span>
           </Button>

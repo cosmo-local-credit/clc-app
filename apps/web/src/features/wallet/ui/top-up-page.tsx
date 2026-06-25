@@ -70,7 +70,7 @@ export function TopUpPage() {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Top up`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Top up`} to="/" />
 
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Add money</Trans>
@@ -170,14 +170,14 @@ function MpesaSheet({
             >
               <Trans>Amount (KSh)</Trans>
             </label>
-            <div className="flex h-[3.25rem] items-center border border-border bg-card px-3.5">
+            <div className="flex items-center border border-border bg-card px-3.5">
               <span className="mr-1.5 text-xs font-semibold text-muted-foreground">KSh</span>
               <Input
                 id="topup-amount"
                 type="text"
                 inputMode="decimal"
                 defaultValue="500"
-                className="h-[3.25rem] border-0 bg-transparent px-0 font-heading text-2xl font-semibold tracking-tight shadow-none focus-visible:border-0"
+                className="h-auto min-h-9 border-0 bg-transparent px-0 font-heading text-2xl font-semibold tracking-tight shadow-none focus-visible:border-0"
               />
             </div>
           </div>

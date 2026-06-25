@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useNavigate } from "@tanstack/react-router";
 import {
   RiArrowRightSLine,
   RiBankCardLine,
@@ -12,17 +13,18 @@ import { PicsumLogo, SectionHeader, WALLET_POOLS, WALLET_TOKENS } from "#/compon
 
 export function WalletPage() {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const actions = [
-    { id: "send", label: t`Send`, icon: RiSendPlane2Line, primary: true, href: "/wallet/send" },
+    { id: "send", label: t`Send`, icon: RiSendPlane2Line, primary: true, to: "/wallet/send" },
     {
       id: "receive",
       label: t`Receive`,
       icon: RiDownloadLine,
       primary: false,
-      href: "/wallet/receive",
+      to: "/wallet/receive",
     },
-    { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, href: "/wallet/swap" },
-    { id: "topup", label: t`Top up`, icon: RiBankCardLine, primary: false, href: "/wallet/top-up" },
+    { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, to: "/wallet/swap" },
+    { id: "topup", label: t`Top up`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
   ] as const;
   const vouchers = WALLET_TOKENS.filter((token) => token.kind === "voucher");
 
@@ -45,9 +47,9 @@ export function WalletPage() {
               <Button
                 key={action.id}
                 variant={action.primary ? "default" : "outline"}
-                className="h-[3.625rem] flex-col gap-1 px-1 text-[0.6875rem]"
+                className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
                 onClick={() => {
-                  window.location.assign(action.href);
+                  void navigate({ to: action.to });
                 }}
               >
                 <Icon className="size-4" aria-hidden="true" />
@@ -63,7 +65,7 @@ export function WalletPage() {
           title={<Trans>Your Vouchers</Trans>}
           action={<Trans>View all</Trans>}
           onAction={() => {
-            window.location.assign("/wallet/vouchers");
+            void navigate({ to: "/wallet/vouchers" });
           }}
         />
         <div className="border border-border bg-card">
@@ -76,7 +78,7 @@ export function WalletPage() {
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
               onClick={() => {
-                window.location.assign(`/wallet/tokens/${token.id}`);
+                void navigate({ to: "/wallet/tokens/$tokenId", params: { tokenId: token.id } });
               }}
             >
               <PicsumLogo seed={`voucher-${token.id}`} size={34} />

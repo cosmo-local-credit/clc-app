@@ -22,7 +22,7 @@ function ReceiptRow({ label, children }: { label: React.ReactNode; children: Rea
 function CopyableMono({ value }: { value: string }) {
   return (
     <div className="flex min-w-0 items-center gap-1.5 text-right">
-      <span className="min-w-0 break-all font-mono text-muted-foreground text-xs">{value}</span>
+      <EllipsizedAddress address={value} />
       <span
         className="flex size-5 shrink-0 items-center justify-center bg-muted text-muted-foreground"
         aria-hidden="true"
@@ -42,20 +42,15 @@ export function SendReceiptPage() {
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
-        <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
-          <Trans>Sent 25.00 {token.symbol}</Trans>
+        <h1 className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight">
+          <span>
+            <Trans>Sent</Trans>
+          </span>
+          <span className="text-primary">25.00 {token.symbol}</span>
         </h1>
-        {TO_ADDRESS ? (
-          <p className="text-muted-foreground text-sm">
-            <EllipsizedAddress address={TO_ADDRESS} />
-          </p>
-        ) : null}
       </div>
 
       <div className="my-5 border border-border bg-card">
-        <ReceiptRow label={t`Amount`}>
-          <span className="text-xs font-semibold">25.00 {token.symbol}</span>
-        </ReceiptRow>
         <ReceiptRow label={t`To`}>
           <EllipsizedAddress address={TO_ADDRESS} />
         </ReceiptRow>
@@ -70,7 +65,7 @@ export function SendReceiptPage() {
             <Trans>Status</Trans>
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-            <span className="size-1.5 rounded-full bg-primary" />
+            <span className="size-2 rounded-full bg-primary" />
             <Trans>Confirmed</Trans>
           </span>
         </div>
@@ -78,14 +73,21 @@ export function SendReceiptPage() {
 
       <div className="flex-1" />
 
-      <Button
-        className="h-11 w-full"
-        onClick={() => {
-          void navigate({ to: "/" });
-        }}
-      >
-        {t`Done`}
-      </Button>
+      <div className="flex gap-3">
+        <Button
+          className="h-11 flex-1"
+          onClick={() => {
+            void navigate({ to: "/" });
+          }}
+        >
+          {t`Done`}
+        </Button>
+        <Button asChild className="h-11 flex-1" variant="outline">
+          <a href={`https://celoscan.io/tx/${TX_HASH}`} rel="noopener noreferrer" target="_blank">
+            Celoscan
+          </a>
+        </Button>
+      </div>
     </div>
   );
 }

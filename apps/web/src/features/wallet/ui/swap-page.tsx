@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RiArrowDownLine, RiArrowDownSLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
 import { SignHint, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { TokenPickerSheet } from "./token-picker-sheet";
@@ -29,13 +30,14 @@ function SwapField({
       <div className="mb-2 flex items-center justify-between">
         <span className="text-muted-foreground text-xs">{label}</span>
         {max ? (
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onMax}
-            className="font-mono text-primary text-[0.6875rem] font-semibold"
+            className="font-mono text-[0.6875rem] font-semibold"
           >
             <Trans>Max {max}</Trans>
-          </button>
+          </Button>
         ) : null}
       </div>
       <div className="flex items-center gap-2.5">
@@ -48,12 +50,12 @@ function SwapField({
           <span className="text-sm font-bold">{token.symbol}</span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
         </button>
-        <input
+        <Input
           value={amount}
           onChange={(event) => onAmountChange(event.target.value)}
           inputMode="decimal"
           aria-label={typeof label === "string" ? label : undefined}
-          className="min-w-0 flex-1 bg-transparent text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight outline-none"
+          className="h-auto min-h-9 flex-1 truncate border-0 bg-transparent px-0 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight shadow-none focus-visible:border-0"
         />
       </div>
     </div>
@@ -72,7 +74,7 @@ export function SwapPage() {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Swap`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Swap`} to="/" />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Swap</Trans>

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 
+import { Button } from "#/components/ui/button";
 import { PicsumLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { VoucherContactDetails } from "./voucher-contact-details";
@@ -19,15 +20,12 @@ function VoucherRow({
   showBorder: boolean;
 }) {
   return (
-    <div>
+    <div className={showBorder ? "border-b border-border" : ""}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className={[
-          "flex w-full items-center gap-2.5 p-3 text-left",
-          showBorder ? "border-b border-border" : "",
-        ].join(" ")}
+        className="flex w-full items-center gap-2.5 p-3 text-left"
       >
         <PicsumLogo seed={`voucher-${voucher.id}`} size={36} />
         <div className="min-w-0 flex-1">
@@ -54,17 +52,14 @@ function VoucherRow({
       </button>
 
       {open ? (
-        <div className={["px-3 pb-3 pt-1", showBorder ? "border-b border-border" : ""].join(" ")}>
+        <div className="px-3 pb-3 pt-1">
           <VoucherContactDetails voucher={voucher} />
-          <Link
-            to="/wallet/tokens/$tokenId"
-            params={{ tokenId: voucher.id }}
-            preload="intent"
-            className="mt-3 flex h-11 items-center justify-center gap-1.5 bg-primary px-3 font-semibold text-primary-foreground text-xs"
-          >
-            <Trans>View voucher</Trans>
-            <RiArrowRightSLine className="size-4" aria-hidden="true" />
-          </Link>
+          <Button asChild className="mt-3 h-11 w-full gap-1.5 text-xs">
+            <Link to="/wallet/tokens/$tokenId" params={{ tokenId: voucher.id }} preload="intent">
+              <Trans>View voucher</Trans>
+              <RiArrowRightSLine className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
         </div>
       ) : null}
     </div>
@@ -78,7 +73,7 @@ export function AllVouchersPage() {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Wallet`} onClick={() => window.history.back()} />
+      <BackChevron label={t`Wallet`} to="/" />
 
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>All Vouchers</Trans>
