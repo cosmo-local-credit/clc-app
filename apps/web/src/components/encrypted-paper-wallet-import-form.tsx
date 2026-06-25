@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { FiLoader, FiLock, FiX } from "react-icons/fi";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -25,6 +25,14 @@ export function EncryptedPaperWalletImportForm({
   const [passphrase, setPassphrase] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [decrypting, setDecrypting] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,11 +41,13 @@ export function EncryptedPaperWalletImportForm({
     try {
       const privateKey = await decryptPaperWalletPrivateKey(encryptedKey, passphrase);
       await onDecrypted(privateKey);
-      setPassphrase("");
+      if (isMounted.current) setPassphrase("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not import this paper wallet.`);
+      if (isMounted.current) {
+        setError(err instanceof Error ? err.message : t`Could not import this paper wallet.`);
+      }
     } finally {
-      setDecrypting(false);
+      if (isMounted.current) setDecrypting(false);
     }
   }
 
@@ -49,16 +59,16 @@ export function EncryptedPaperWalletImportForm({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-foreground text-sm font-medium">
-            <Trans>Protected paper wallet</Trans>
+            <Trans>Password-protected paper wallet</Trans>
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            <Trans>Enter the passphrase to unlock this QR code.</Trans>
+            <Trans>Enter the password to unlock this paper wallet.</Trans>
           </p>
         </div>
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={t`Close protected wallet import`}
+          aria-label={t`Close password-protected wallet import`}
           onClick={onCancel}
           disabled={decrypting}
         >
@@ -67,11 +77,11 @@ export function EncryptedPaperWalletImportForm({
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="encrypted-paper-wallet-passphrase" className="text-sm font-medium">
-          <Trans>Passphrase</Trans>
+        <label htmlFor="encrypted-paper-wallet-password" className="text-sm font-medium">
+          <Trans>Password</Trans>
         </label>
         <Input
-          id="encrypted-paper-wallet-passphrase"
+          id="encrypted-paper-wallet-password"
           type="password"
           autoComplete="current-password"
           value={passphrase}

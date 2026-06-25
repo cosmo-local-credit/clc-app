@@ -223,21 +223,21 @@ describe("OnboardingWalletStep continue flow", () => {
       false,
     );
 
-    fireEvent.click(screen.getByLabelText(/protect qr with a passphrase/i));
+    fireEvent.click(screen.getByLabelText(/protect paper wallet with a password/i));
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
       "disabled",
       true,
     );
 
-    fireEvent.change(screen.getByLabelText(/^passphrase$/i), {
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
       target: { value: "wallet passphrase" },
     });
-    fireEvent.change(screen.getByLabelText(/confirm passphrase/i), {
+    fireEvent.change(screen.getByLabelText(/confirm password/i), {
       target: { value: "wallet passphrase" },
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /^protect qr$/i }));
+      fireEvent.click(screen.getByRole("button", { name: /^protect paper wallet$/i }));
     });
 
     expect(mockEncryptPaperWalletPrivateKey).toHaveBeenCalledWith(FAKE_PK, "wallet passphrase");

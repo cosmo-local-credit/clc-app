@@ -106,13 +106,17 @@ msgstr "Chagua lugha ya programu."
 msgid "Close paper wallet scanner"
 msgstr "Funga kichanganua mkoba wa karatasi"
 
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:71
+msgid "Close password-protected wallet import"
+msgstr "Funga uingizaji wa mkoba uliolindwa kwa nenosiri"
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:284
 msgid "Close private key form"
 msgstr "Funga fomu ya ufunguo binafsi"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:61
-msgid "Close protected wallet import"
-msgstr "Funga uingizaji wa mkoba uliolindwa"
+#~ msgid "Close protected wallet import"
+#~ msgstr "Funga uingizaji wa mkoba uliolindwa"
 
 #: apps/web/src/features/home/ui/undone-page.tsx:26
 msgid "Coming next"
@@ -123,8 +127,12 @@ msgid "Complete the browser permission prompt to continue."
 msgstr "Kamilisha ombi la ruhusa la kivinjari ili kuendelea."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
-msgid "Confirm passphrase"
-msgstr "Thibitisha kauli ya siri"
+#~ msgid "Confirm passphrase"
+#~ msgstr "Thibitisha kauli ya siri"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
+msgid "Confirm password"
+msgstr "Thibitisha nenosiri"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Connected address"
@@ -170,13 +178,17 @@ msgstr "Endelea na Mkoba wa Karatasi"
 #~ msgid "Continue with paper wallet only"
 #~ msgstr "Endelea na mkoba wa karatasi pekee"
 
-#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:38
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
 msgstr "Haikuwezekana kuingiza mkoba huu wa karatasi."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
-msgid "Could not protect this QR code."
-msgstr "Haikuwezekana kulinda msimbo huu wa QR."
+msgid "Could not protect this paper wallet."
+msgstr "Haikuwezekana kulinda mkoba huu wa karatasi."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
+#~ msgid "Could not protect this QR code."
+#~ msgstr "Haikuwezekana kulinda msimbo huu wa QR."
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:90
 msgid "Couldn't identify a country here. Try a nearby spot."
@@ -258,12 +270,20 @@ msgid "Enter a valid private key or paper wallet."
 msgstr "Weka ufunguo binafsi halali au mkoba wa karatasi."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
-msgid "Enter and apply a passphrase before downloading this card."
-msgstr "Weka na utumie kauli ya siri kabla ya kupakua kadi hii."
+#~ msgid "Enter and apply a passphrase before downloading this card."
+#~ msgstr "Weka na utumie kauli ya siri kabla ya kupakua kadi hii."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
+msgid "Enter and apply a password before downloading this card."
+msgstr "Weka na utumie nenosiri kabla ya kupakua kadi hii."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:55
-msgid "Enter the passphrase to unlock this QR code."
-msgstr "Weka kauli ya siri ili kufungua msimbo huu wa QR."
+#~ msgid "Enter the passphrase to unlock this QR code."
+#~ msgstr "Weka kauli ya siri ili kufungua msimbo huu wa QR."
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:65
+msgid "Enter the password to unlock this paper wallet."
+msgstr "Weka nenosiri ili kufungua mkoba huu wa karatasi."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:90
 msgid "Failed to start camera."
@@ -482,6 +502,10 @@ msgstr "Mkoba wa karatasi"
 msgid "Paper Wallet"
 msgstr "Mkoba wa Karatasi"
 
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
+msgid "Paper wallet is protected. Keep the password separate from the card."
+msgstr "Mkoba wa karatasi umelindwa. Weka nenosiri mbali na kadi."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:232
 msgid "Passkey linked"
 msgstr "Passkey imeunganishwa"
@@ -496,16 +520,34 @@ msgstr "Passkey imeunganishwa, lakini muunganisho wa mkoba umeshindikana."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:71
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
-msgid "Passphrase"
-msgstr "Kauli ya siri"
+#~ msgid "Passphrase"
+#~ msgstr "Kauli ya siri"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
-msgid "Passphrase cannot be empty."
-msgstr "Kauli ya siri haiwezi kuwa tupu."
+#~ msgid "Passphrase cannot be empty."
+#~ msgstr "Kauli ya siri haiwezi kuwa tupu."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
-msgid "Passphrases do not match."
-msgstr "Kauli za siri hazifanani."
+#~ msgid "Passphrases do not match."
+#~ msgstr "Kauli za siri hazifanani."
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:81
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:119
+msgid "Password"
+msgstr "Nenosiri"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:63
+msgid "Password cannot be empty."
+msgstr "Nenosiri haliwezi kuwa tupu."
+
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
+#: apps/web/src/routes/__root.tsx:185
+msgid "Password-protected paper wallet"
+msgstr "Mkoba wa karatasi uliolindwa kwa nenosiri"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
+msgid "Passwords do not match."
+msgstr "Manenosiri hayalingani."
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
 msgid "Phone"
@@ -550,21 +592,33 @@ msgid "Private key"
 msgstr "Ufunguo binafsi"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:159
-msgid "Protect QR"
-msgstr "Linda QR"
+msgid "Protect paper wallet"
+msgstr "Linda mkoba wa karatasi"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
-msgid "Protect QR with a passphrase"
-msgstr "Linda QR kwa kauli ya siri"
+msgid "Protect paper wallet with a password"
+msgstr "Linda mkoba wa karatasi kwa nenosiri"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:159
+#~ msgid "Protect QR"
+#~ msgstr "Linda QR"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:94
+#~ msgid "Protect QR with a passphrase"
+#~ msgstr "Linda QR kwa kauli ya siri"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:52
 #: apps/web/src/routes/__root.tsx:185
-msgid "Protected paper wallet"
-msgstr "Mkoba wa karatasi uliolindwa"
+#~ msgid "Protected paper wallet"
+#~ msgstr "Mkoba wa karatasi uliolindwa"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:156
-msgid "Protecting QR..."
-msgstr "Inalinda QR..."
+msgid "Protecting paper wallet..."
+msgstr "Inalinda mkoba wa karatasi..."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:156
+#~ msgid "Protecting QR..."
+#~ msgstr "Inalinda QR..."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:23
@@ -576,8 +630,8 @@ msgid "QR currently contains the raw private key."
 msgstr "QR kwa sasa ina ufunguo binafsi ghafi."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:99
-msgid "QR is protected. Keep the passphrase separate from the card."
-msgstr "QR imelindwa. Weka kauli ya siri mbali na kadi."
+#~ msgid "QR is protected. Keep the passphrase separate from the card."
+#~ msgstr "QR imelindwa. Weka kauli ya siri mbali na kadi."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:81
 msgid "Receive"
@@ -712,17 +766,21 @@ msgstr "jaribu tena"
 msgid "Unable to load language. Reverted to English."
 msgstr "Imeshindikana kupakia lugha. Imerudi Kiingereza."
 
-#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:98
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:108
 msgid "Unlock and import"
 msgstr "Fungua na uingize"
 
-#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:98
+#: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:108
 msgid "Unlocking..."
 msgstr "Inafungua..."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
-msgid "Update protected QR"
-msgstr "Sasisha QR iliyolindwa"
+msgid "Update protected paper wallet"
+msgstr "Sasisha mkoba wa karatasi uliolindwa"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
+#~ msgid "Update protected QR"
+#~ msgstr "Sasisha QR iliyolindwa"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:182
 msgid "Upload Image"

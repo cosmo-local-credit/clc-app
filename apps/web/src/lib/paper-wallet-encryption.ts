@@ -26,7 +26,7 @@ export const PAPER_WALLET_GENERATION_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAM
 export const PAPER_WALLET_IMPORT_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAMS;
 
 const RAW_PRIVATE_KEY_HEX = /^0x[0-9a-fA-F]{64}$/;
-const DECRYPTION_ERROR = "Unable to decrypt paper wallet. Check the passphrase and try again.";
+const DECRYPTION_ERROR = "Unable to decrypt paper wallet. Check the password and try again.";
 
 // BIP38 non-EC-multiply payload: 0x01 0x42 flag | salt(4) | cipher(32) = 39 bytes.
 const BIP38_LENGTH = 39;

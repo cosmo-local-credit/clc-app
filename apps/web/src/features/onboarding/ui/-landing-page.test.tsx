@@ -234,10 +234,10 @@ describe("LandingPage navigation", () => {
       fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
     });
 
-    expect(await screen.findByText(/protected paper wallet/i)).toBeTruthy();
+    expect(await screen.findByText(/password-protected paper wallet/i)).toBeTruthy();
     expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText(/^passphrase$/i), {
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
       target: { value: "wallet passphrase" },
     });
 
@@ -323,7 +323,7 @@ describe("LandingPage private key form validation", () => {
     expect(mockConnectAction).not.toHaveBeenCalled();
   });
 
-  it("prompts for a passphrase when an encrypted paper wallet is pasted into the field", async () => {
+  it("prompts for a password when an encrypted paper wallet is pasted into the field", async () => {
     render(<LandingPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));

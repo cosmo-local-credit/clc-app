@@ -182,7 +182,7 @@ function AppInner() {
             <DialogBackdrop />
             <DialogContent className="p-0">
               <DialogTitle className="sr-only">
-                <Trans>Protected paper wallet</Trans>
+                <Trans>Password-protected paper wallet</Trans>
               </DialogTitle>
               <Suspense fallback={null}>
                 <EncryptedPaperWalletImportForm

@@ -60,12 +60,12 @@ export function usePaperWalletProtection({
     setError(null);
 
     if (passphrase.trim() === "") {
-      setError(t`Passphrase cannot be empty.`);
+      setError(t`Password cannot be empty.`);
       return;
     }
 
     if (passphrase !== confirmPassphrase) {
-      setError(t`Passphrases do not match.`);
+      setError(t`Passwords do not match.`);
       return;
     }
 
@@ -74,7 +74,7 @@ export function usePaperWalletProtection({
       const encrypted = await encryptPaperWalletPrivateKey(privateKey, passphrase);
       setEncryptedPayload(encrypted);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t`Could not protect this QR code.`);
+      setError(err instanceof Error ? err.message : t`Could not protect this paper wallet.`);
     } finally {
       setEncrypting(false);
     }
@@ -91,14 +91,14 @@ export function usePaperWalletProtection({
         />
         <span className="min-w-0 flex-1">
           <span className="text-foreground block text-sm font-medium">
-            <Trans>Protect QR with a passphrase</Trans>
+            <Trans>Protect paper wallet with a password</Trans>
           </span>
           <span className="text-muted-foreground mt-1 block text-xs">
             {enabled ? (
               encryptedPayload ? (
-                <Trans>QR is protected. Keep the passphrase separate from the card.</Trans>
+                <Trans>Paper wallet is protected. Keep the password separate from the card.</Trans>
               ) : (
-                <Trans>Enter and apply a passphrase before downloading this card.</Trans>
+                <Trans>Enter and apply a password before downloading this card.</Trans>
               )
             ) : (
               <Trans>QR currently contains the raw private key.</Trans>
@@ -116,7 +116,7 @@ export function usePaperWalletProtection({
         <div className="mt-4 space-y-3">
           <div className="space-y-2">
             <label htmlFor="pw-passphrase" className="text-foreground text-sm font-medium">
-              <Trans>Passphrase</Trans>
+              <Trans>Password</Trans>
             </label>
             <Input
               id="pw-passphrase"
@@ -130,7 +130,7 @@ export function usePaperWalletProtection({
 
           <div className="space-y-2">
             <label htmlFor="pw-passphrase-confirm" className="text-foreground text-sm font-medium">
-              <Trans>Confirm passphrase</Trans>
+              <Trans>Confirm password</Trans>
             </label>
             <Input
               id="pw-passphrase-confirm"
@@ -153,10 +153,10 @@ export function usePaperWalletProtection({
               <FiLock className="mr-2 size-4" />
             )}
             {encrypting
-              ? t`Protecting QR...`
+              ? t`Protecting paper wallet...`
               : encryptedPayload
-                ? t`Update protected QR`
-                : t`Protect QR`}
+                ? t`Update protected paper wallet`
+                : t`Protect paper wallet`}
           </Button>
 
           {error ? (
