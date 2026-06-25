@@ -9,12 +9,18 @@ const {
   mockConnectAction,
   mockBackendSigninMutateAsync,
   mockStorePrivateKey,
+  mockDecryptPaperWalletPrivateKey,
+  ENCRYPTED_KEY,
 } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockRecoverMutate: vi.fn(),
   mockConnectAction: vi.fn().mockResolvedValue(undefined),
   mockBackendSigninMutateAsync: vi.fn().mockResolvedValue({ userId: 1, role: "USER" }),
   mockStorePrivateKey: vi.fn(),
+  mockDecryptPaperWalletPrivateKey: vi
+    .fn()
+    .mockResolvedValue("0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+  ENCRYPTED_KEY: "6PYMvQX3P2CjYXVkxczC5ZbPyyiDgRJTZatN6uQUFgYhBbm7idLvfZWzao",
   mockRecoveryState: {
     step: "idle" as string,
     outcome: null as string | null,
@@ -55,6 +61,9 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
       >
         Simulate scan
       </button>
+      <button type="button" onClick={() => onKeyDecoded(ENCRYPTED_KEY)}>
+        Simulate encrypted scan
+      </button>
       <button type="button" onClick={onCancel}>
         Cancel scan
       </button>
@@ -82,6 +91,11 @@ vi.mock("#/features/webauthn/hooks/use-calibur-recovery", () => ({
 
 vi.mock("#/components/ui/clc-logo", () => ({
   CLCLogo: () => <svg data-testid="clc-logo" />,
+}));
+
+vi.mock("#/lib/paper-wallet-encryption", () => ({
+  decryptPaperWalletPrivateKey: (...args: unknown[]) => mockDecryptPaperWalletPrivateKey(...args),
+  isEncryptedPaperWalletPayload: (payload: string) => payload === ENCRYPTED_KEY,
 }));
 
 vi.mock("#/connectors/privateKey", () => ({
@@ -113,6 +127,8 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
   }),
 }));
 
+import { BackendApiError } from "#/features/auth/api/client";
+
 import { LandingPage } from "./landing-page";
 
 beforeEach(() => {
@@ -121,8 +137,12 @@ beforeEach(() => {
   mockConnectAction.mockClear();
   mockBackendSigninMutateAsync.mockClear();
   mockStorePrivateKey.mockClear();
+  mockDecryptPaperWalletPrivateKey.mockClear();
   mockConnectAction.mockResolvedValue(undefined);
   mockBackendSigninMutateAsync.mockResolvedValue({ userId: 1, role: "USER" });
+  mockDecryptPaperWalletPrivateKey.mockResolvedValue(
+    "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  );
   mockRecoveryState.step = "idle";
   mockRecoveryState.outcome = null;
   mockRecoveryState.error = null;
@@ -208,6 +228,63 @@ describe("LandingPage navigation", () => {
     );
   });
 
+  it("unlocks and connects an encrypted paper wallet after scan", async () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
+    });
+
+    expect(await screen.findByText(/password-protected paper wallet/i)).toBeTruthy();
+    expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "wallet passphrase" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /unlock and import/i }));
+    });
+
+    expect(mockDecryptPaperWalletPrivateKey).toHaveBeenCalledWith(
+      ENCRYPTED_KEY,
+      "wallet passphrase",
+    );
+    expect(mockBackendSigninMutateAsync).toHaveBeenCalledWith({
+      privateKey: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    });
+    expect(mockStorePrivateKey).toHaveBeenCalledWith(
+      "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    );
+  });
+
+  it("displays a backend error below the encrypted paper wallet card on failed sign-in", async () => {
+    mockBackendSigninMutateAsync.mockRejectedValueOnce(
+      new BackendApiError(403, "account is pending approval by a superadmin", "E10"),
+    );
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
+    });
+
+    expect(await screen.findByText(/password-protected paper wallet/i)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "wallet passphrase" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /unlock and import/i }));
+    });
+
+    expect(
+      await screen.findByText(/E10: account is pending approval by a superadmin/i),
+    ).toBeTruthy();
+  });
+
   it("hides advanced options by default", () => {
     render(<LandingPage />);
     expect(screen.queryByRole("button", { name: /private key/i })).toBeNull();
@@ -268,9 +345,26 @@ describe("LandingPage private key form validation", () => {
       fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
     });
 
-    expect(screen.getByText(/invalid private key/i)).toBeTruthy();
+    expect(screen.getByText(/valid private key or paper wallet/i)).toBeTruthy();
     expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockConnectAction).not.toHaveBeenCalled();
+  });
+
+  it("prompts for a password when an encrypted paper wallet is pasted into the field", async () => {
+    render(<LandingPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /advanced options/i }));
+    fireEvent.click(screen.getByRole("button", { name: /^private key$/i }));
+
+    const input = screen.getByLabelText(/^private key$/i);
+    fireEvent.change(input, { target: { value: ENCRYPTED_KEY } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /sign in with private key/i }));
+    });
+
+    expect(await screen.findByText(/protected paper wallet/i)).toBeTruthy();
+    expect(mockBackendSigninMutateAsync).not.toHaveBeenCalled();
   });
 });
