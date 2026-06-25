@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -11,7 +11,7 @@ import {
 } from "./market-data";
 import { MarketMap } from "./market-map.lazy";
 
-export function MarketPage() {
+export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode }) {
   const { t } = useLingui();
   const geolocation = useBrowserGeolocation();
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
@@ -52,7 +52,11 @@ export function MarketPage() {
         />
       </Suspense>
 
-      {selectedLocation ? <MarketPreview location={selectedLocation} /> : null}
+      {onboardingBanner}
+
+      {selectedLocation ? (
+        <MarketPreview location={selectedLocation} offsetForBanner={!!onboardingBanner} />
+      ) : null}
 
       <div className="absolute right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex">
         <Button
@@ -92,12 +96,23 @@ function useKindLabel(kind: MarketLocationKind): string {
   }
 }
 
-function MarketPreview({ location }: { location: MarketLocation }) {
+function MarketPreview({
+  location,
+  offsetForBanner,
+}: {
+  location: MarketLocation;
+  offsetForBanner: boolean;
+}) {
   const categoryLabel = useKindLabel(location.kind);
   return (
     <button
       type="button"
-      className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)] z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3 text-left"
+      className={[
+        "absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3 text-left",
+        offsetForBanner
+          ? "top-[calc(env(safe-area-inset-top)+8.75rem)]"
+          : "top-[calc(env(safe-area-inset-top)+1rem)]",
+      ].join(" ")}
     >
       <span className="flex min-w-0 items-center gap-2">
         <RiMapPinLine className="size-5 shrink-0 text-primary" aria-hidden="true" />

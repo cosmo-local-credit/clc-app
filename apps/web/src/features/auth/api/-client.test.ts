@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import {
   BackendApiError,
   formatBackendApiError,
+  getSession,
   getSiweNonce,
   signupWithSiwe,
   waitForTrackingCompletion,
@@ -132,6 +133,35 @@ describe("apiFetch — error handling", () => {
 
     const nonce = await getSiweNonce();
     expect(nonce).toBe("abc123");
+  });
+});
+
+describe("getSession", () => {
+  it("returns null for 204 no-session responses", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 204,
+        ok: true,
+      }),
+    );
+
+    await expect(getSession()).resolves.toBeNull();
+  });
+
+  it("returns the bare session body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        body: { address: "0x1234567890123456789012345678901234567890", chainId: 42220 },
+      }),
+    );
+
+    await expect(getSession()).resolves.toEqual({
+      address: "0x1234567890123456789012345678901234567890",
+      chainId: 42220,
+    });
   });
 });
 

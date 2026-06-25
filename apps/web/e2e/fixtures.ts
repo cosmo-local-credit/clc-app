@@ -79,14 +79,13 @@ export async function connectViaOnboarding(page: Page): Promise<void> {
   });
   await continueButton.click();
 
-  // Wait for home page to appear (connected state)
-  await page
-    .getByRole("heading", { name: "Wallet" })
-    .waitFor({ state: "visible", timeout: 20_000 });
+  // Wait for authenticated home shell to appear. The default tab is now Market,
+  // so use the private Wallet nav item as the authenticated-state signal.
+  await page.getByRole("button", { name: "Wallet" }).waitFor({ state: "visible", timeout: 20_000 });
 }
 
 /**
- * Sign out from the home page and return to the landing page.
+ * Sign out from the home page and return to the public market.
  */
 export async function signOut(page: Page): Promise<void> {
   // Navigate to settings tab
@@ -95,8 +94,9 @@ export async function signOut(page: Page): Promise<void> {
   // Click sign out
   await page.getByRole("button", { name: "Sign out" }).click();
 
-  // Wait for landing page
-  await page.getByRole("heading", { name: "CLC" }).waitFor({ state: "visible", timeout: 10_000 });
+  // Wait for guest market banner and hidden private nav.
+  await page.getByText("Join CLC").waitFor({ state: "visible", timeout: 10_000 });
+  await page.getByRole("button", { name: "Wallet" }).waitFor({ state: "hidden", timeout: 10_000 });
 }
 
 export { expect } from "@playwright/test";

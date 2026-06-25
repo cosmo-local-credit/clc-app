@@ -130,6 +130,15 @@ export async function logout(): Promise<void> {
   });
 }
 
+export type SessionResult = {
+  address: string;
+  chainId: number;
+};
+
+export async function getSession(): Promise<SessionResult | null> {
+  return apiFetch<SessionResult | null>("/auth/session", { method: "GET" });
+}
+
 export type ProfilePayload = {
   name: string;
   email: string;
