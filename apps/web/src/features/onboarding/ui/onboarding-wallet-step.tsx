@@ -9,6 +9,7 @@ import { connect } from "wagmi/actions";
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
+import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
 import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
@@ -150,7 +151,11 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
       activatePaperWallet({ privateKey: pk });
     } catch (err) {
       clearPrivateKey();
-      setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
+      if (err instanceof BackendApiError) {
+        setConnectError(formatBackendApiError(err));
+      } else {
+        setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
+      }
       setConnecting(false);
     }
   }
@@ -236,9 +241,11 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
 
           {backendSignup.error ? (
             <p className="text-destructive text-xs">
-              {backendSignup.error instanceof Error
-                ? backendSignup.error.message
-                : t`Account registration failed.`}
+              {backendSignup.error instanceof BackendApiError
+                ? formatBackendApiError(backendSignup.error)
+                : backendSignup.error instanceof Error
+                  ? backendSignup.error.message
+                  : t`Account registration failed.`}
             </p>
           ) : null}
           {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}

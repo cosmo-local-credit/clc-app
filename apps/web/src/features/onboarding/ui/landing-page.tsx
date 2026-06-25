@@ -14,6 +14,7 @@ import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { Input } from "#/components/ui/input";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
+import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recovery";
@@ -75,7 +76,11 @@ export function LandingPage() {
       return true;
     } catch (err) {
       clearPrivateKey();
-      setPkError(err instanceof Error ? err.message : t`Connection failed.`);
+      if (err instanceof BackendApiError) {
+        setPkError(formatBackendApiError(err));
+      } else {
+        setPkError(err instanceof Error ? err.message : t`Connection failed.`);
+      }
       return false;
     } finally {
       setPkConnecting(false);
