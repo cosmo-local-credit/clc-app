@@ -85,7 +85,7 @@ describe("IndexPage routing", () => {
     });
     render(<IndexPage />);
     expect(screen.queryByTestId("landing-page")).toBeNull();
-    expect(screen.getByText(/KSh 12,840/i)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /wallet/i })).toBeTruthy();
   });
 
   it("renders LandingPage while reconnecting without a connected account", () => {

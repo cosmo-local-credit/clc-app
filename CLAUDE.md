@@ -214,13 +214,6 @@ Inputs use default `h-9`; don't override with `h-11`.
 Never use `bg-background` or `bg-transparent` for interactive elements (inputs,
 buttons) placed on the gray page background — they become invisible.
 
-**Input style (locked):**
-
-- `rounded-none` — sharp edges, no corner radius
-- `bg-card` — white fill
-- Focus: `border-foreground` darkens — no ring, no glow, no `shadow`
-- Error: `border-destructive` only — no ring
-
 **Self-check before writing any layout:**
 
 > "Would this look like a card floating in the middle of a phone screen?"

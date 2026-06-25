@@ -12,6 +12,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: action.label
+#: apps/web/src/features/home/ui/wallet-page.tsx:64
+#~ msgid "{0}"
+#~ msgstr "{0}"
+
 #: apps/web/src/routes/__root.tsx:213
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
@@ -34,6 +39,7 @@ msgstr "Active"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:32
 #: apps/web/src/features/home/ui/undone-page.tsx:6
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:126
 msgid "Activity"
 msgstr "Activity"
 
@@ -43,20 +49,51 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:261
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:75
+msgid "Add money"
+msgstr "Add money"
+
+#: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:49
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:57
+msgid "Address"
+msgstr "Address"
+
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:35
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:114
+msgid "Address book"
+msgstr "Address book"
+
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:36
+msgid "Admin"
+msgstr "Admin"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:267
 msgid "Advanced options"
 msgstr "Advanced options"
+
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:79
+msgid "All Vouchers"
+msgstr "All Vouchers"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:200
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:32
+msgid "Amount"
+msgstr "Amount"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:170
+msgid "Amount (KSh)"
+msgstr "Amount (KSh)"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
 #~ msgstr "Appearance"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:211
-#: apps/web/src/components/paper-wallet-scanner.tsx:234
+#: apps/web/src/components/paper-wallet-scanner.tsx:210
+#: apps/web/src/components/paper-wallet-scanner.tsx:233
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:59
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:171
@@ -65,17 +102,44 @@ msgstr "Already have an account?"
 msgid "Back"
 msgstr "Back"
 
+#. placeholder {0}: token.amount
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:64
+msgid "Balance {0}"
+msgstr "Balance {0}"
+
+#: apps/web/src/features/wallet/ui/swap-page.tsx:32
+#~ msgid "Balance {balance}"
+#~ msgstr "Balance {balance}"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:56
+msgid "Bank transfer"
+msgstr "Bank transfer"
+
+#: apps/web/src/features/wallet/ui/swap-page.tsx:96
+#~ msgid "Best route · auto-selected"
+#~ msgstr "Best route · auto-selected"
+
 #: apps/web/src/features/home/ui/market-page.tsx:76
 msgid "Browse all"
 msgstr "Browse all"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:87
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:78
+msgid "Buy USDC with local money or receive crypto."
+msgstr "Buy USDC with local money or receive crypto."
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:88
 msgid "Camera access denied."
 msgstr "Camera access denied."
 
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:57
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/routes/__root.tsx:226
 msgid "Cancel"
 msgstr "Cancel"
+
+#: apps/web/src/components/wallet/wallet-status.tsx:16
+msgid "Celo network"
+msgstr "Celo network"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
@@ -98,7 +162,7 @@ msgstr "Choose a location"
 msgid "Choose between light and dark mode."
 msgstr "Choose between light and dark mode."
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:230
+#: apps/web/src/components/paper-wallet-scanner.tsx:229
 msgid "Choose Image"
 msgstr "Choose Image"
 
@@ -106,7 +170,11 @@ msgstr "Choose Image"
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:151
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:157
+msgid "Close"
+msgstr "Close"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
 msgstr "Close paper wallet scanner"
 
@@ -114,7 +182,7 @@ msgstr "Close paper wallet scanner"
 msgid "Close password-protected wallet import"
 msgstr "Close password-protected wallet import"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:289
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:295
 msgid "Close private key form"
 msgstr "Close private key form"
 
@@ -125,6 +193,10 @@ msgstr "Close private key form"
 #: apps/web/src/features/home/ui/undone-page.tsx:26
 msgid "Coming next"
 msgstr "Coming next"
+
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:82
+msgid "Community vouchers and their details."
+msgstr "Community vouchers and their details."
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:130
 msgid "Complete the browser permission prompt to continue."
@@ -138,18 +210,21 @@ msgstr "Complete the browser permission prompt to continue."
 msgid "Confirm password"
 msgstr "Confirm password"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:69
+msgid "Confirmed"
+msgstr "Confirmed"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Connected address"
 msgstr "Connected address"
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:145
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:237
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:243
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
 msgid "Connecting..."
 msgstr "Connecting..."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:82
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:166
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:157
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:58
@@ -159,6 +234,8 @@ msgstr "Connection failed."
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:156
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:186
 msgid "Continue"
 msgstr "Continue"
 
@@ -166,7 +243,7 @@ msgstr "Continue"
 msgid "Continue to wallet"
 msgstr "Continue to wallet"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:237
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:243
 msgid "Continue with {providerLabel}"
 msgstr "Continue with {providerLabel}"
 
@@ -174,13 +251,33 @@ msgstr "Continue with {providerLabel}"
 msgid "Continue with paper wallet"
 msgstr "Continue with paper wallet"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:249
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:255
 msgid "Continue with Paper Wallet"
 msgstr "Continue with Paper Wallet"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:208
 #~ msgid "Continue with paper wallet only"
 #~ msgstr "Continue with paper wallet only"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:188
+#~ msgid "Contract"
+#~ msgstr "Contract"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:97
+msgid "Contract address"
+msgstr "Contract address"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:110
+msgid "Contract address copied"
+msgstr "Contract address copied"
+
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+msgid "Copy"
+msgstr "Copy"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:101
+msgid "Copy contract address"
+msgstr "Copy contract address"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
@@ -194,6 +291,11 @@ msgstr "Could not protect this paper wallet."
 #~ msgid "Could not protect this QR code."
 #~ msgstr "Could not protect this QR code."
 
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:105
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:111
+msgid "Couldn't copy contract address"
+msgstr "Couldn't copy contract address"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:90
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Couldn't identify a country here. Try a nearby spot."
@@ -202,8 +304,8 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Create account"
 msgstr "Create account"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:189
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:204
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:195
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:210
 msgid "Create an account"
 msgstr "Create an account"
 
@@ -224,6 +326,10 @@ msgstr "Customize"
 msgid "Dark"
 msgstr "Dark"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:49
+msgid "Debit / Credit card"
+msgstr "Debit / Credit card"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:86
 msgid "Delegated to Calibur"
 msgstr "Delegated to Calibur"
@@ -231,6 +337,18 @@ msgstr "Delegated to Calibur"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 msgid "Description"
 msgstr "Description"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:84
+#~ msgid "Details"
+#~ msgstr "Details"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:57
+msgid "Direct deposit"
+msgstr "Direct deposit"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:83
+msgid "Done"
+msgstr "Done"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:156
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:163
@@ -251,6 +369,10 @@ msgstr "Download or photograph this card. Anyone who scans the QR code will "
 #: apps/web/src/features/home/ui/market-page.tsx:87
 msgid "Eatery"
 msgstr "Eatery"
+
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:50
+msgid "Edit"
+msgstr "Edit"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
@@ -273,6 +395,14 @@ msgstr "Enabling notifications..."
 msgid "Enter a valid private key or paper wallet."
 msgstr "Enter a valid private key or paper wallet."
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:55
+#~ msgid "Enter an address, ENS or phone number."
+#~ msgstr "Enter an address, ENS or phone number."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:86
+msgid "Enter an ENS, phone number or address."
+msgstr "Enter an ENS, phone number or address."
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
 #~ msgid "Enter and apply a passphrase before downloading this card."
 #~ msgstr "Enter and apply a passphrase before downloading this card."
@@ -289,9 +419,13 @@ msgstr "Enter and apply a password before downloading this card."
 msgid "Enter the password to unlock this paper wallet."
 msgstr "Enter the password to unlock this paper wallet."
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:90
+#: apps/web/src/components/paper-wallet-scanner.tsx:91
 msgid "Failed to start camera."
 msgstr "Failed to start camera."
+
+#: apps/web/src/features/wallet/ui/swap-page.tsx:117
+msgid "Fees"
+msgstr "Fees"
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
@@ -301,6 +435,10 @@ msgstr "File too large ({0} KB). Maximum is 512 KB."
 #: apps/web/src/features/home/ui/market-page.tsx:30
 msgid "Finding location"
 msgstr "Finding location"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:64
+msgid "From another wallet or exchange"
+msgstr "From another wallet or exchange"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:71
 msgid "Go back"
@@ -326,6 +464,10 @@ msgstr "Identifying location…"
 #: apps/web/src/features/home/ui/settings-page.tsx:112
 msgid "Inactive"
 msgstr "Inactive"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:127
+msgid "Info"
+msgstr "Info"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:201
 msgid "Install the app first"
@@ -375,6 +517,10 @@ msgstr "Location"
 msgid "Location denied"
 msgstr "Location denied"
 
+#: apps/web/src/components/ui/location-map.tsx:180
+msgid "Location map"
+msgstr "Location map"
+
 #: apps/web/src/features/home/ui/market-page.tsx:34
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:196
 msgid "Location unavailable"
@@ -384,7 +530,7 @@ msgstr "Location unavailable"
 msgid "Logo"
 msgstr "Logo"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:55
+#: apps/web/src/features/home/ui/wallet-page.tsx:38
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Manage vouchers, pools, and local payments."
 
@@ -396,13 +542,21 @@ msgstr "Manage your wallet session and app preferences."
 msgid "Market"
 msgstr "Market"
 
+#: apps/web/src/features/wallet/ui/swap-page.tsx:39
+msgid "Max {max}"
+msgstr "Max {max}"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:57
+#~ msgid "Mint to"
+#~ msgstr "Mint to"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:180
-msgid "My pools"
-msgstr "My pools"
+#~ msgid "My pools"
+#~ msgstr "My pools"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
-msgid "My vouchers"
-msgstr "My vouchers"
+#~ msgid "My vouchers"
+#~ msgstr "My vouchers"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
@@ -427,23 +581,27 @@ msgstr "Name must be 80 characters or fewer"
 msgid "Name on wallet"
 msgstr "Name on wallet"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:60
+msgid "Network"
+msgstr "Network"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:72
 msgid "No address available"
 msgstr "No address available"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:57
+#: apps/web/src/components/paper-wallet-scanner.tsx:58
 msgid "No camera found on this device."
 msgstr "No camera found on this device."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:196
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:202
 msgid "No passkey found"
 msgstr "No passkey found"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:199
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:205
 msgid "No passkey is registered on this device."
 msgstr "No passkey is registered on this device."
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:122
+#: apps/web/src/components/paper-wallet-scanner.tsx:123
 msgid "No QR code found. Try again with a clearer image."
 msgstr "No QR code found. Try again with a clearer image."
 
@@ -487,12 +645,18 @@ msgid "Notifications currently require Chrome on Android or the installed "
 msgstr "Notifications currently require Chrome on Android or the installed "
 "iPhone app."
 
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+msgid "Only send assets on the <0>Celo network</0> to this address. Other "
+"networks may be lost."
+msgstr "Only send assets on the <0>Celo network</0> to this address. Other "
+"networks may be lost."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:280
 msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:206
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:225
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:212
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:231
 msgid "or"
 msgstr "or"
 
@@ -588,9 +752,9 @@ msgstr "Preparing..."
 msgid "Primary navigation"
 msgstr "Primary navigation"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:274
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:284
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:307
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:280
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:290
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:313
 msgid "Private key"
 msgstr "Private key"
 
@@ -636,23 +800,50 @@ msgstr "QR currently contains the raw private key."
 #~ msgid "QR is protected. Keep the passphrase separate from the card."
 #~ msgstr "QR is protected. Keep the passphrase separate from the card."
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:81
+#: apps/web/src/features/wallet/ui/swap-page.tsx:111
+msgid "Rate"
+msgstr "Rate"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:21
+#: apps/web/src/features/wallet/ui/receive-page.tsx:14
+#: apps/web/src/features/wallet/ui/receive-page.tsx:18
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:61
 msgid "Receive"
 msgstr "Receive"
+
+#: apps/web/src/features/wallet/ui/receive-page.tsx:23
+msgid "Receive details"
+msgstr "Receive details"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:181
 msgid "Receive voucher, swap, and off-ramp updates when the app is closed."
 msgstr "Receive voucher, swap, and off-ramp updates when the app is closed."
 
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:46
+msgid "Received"
+msgstr "Received"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:175
+#~ msgid "Recent"
+#~ msgstr "Recent"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:104
-msgid "Recent activity"
-msgstr "Recent activity"
+#~ msgid "Recent activity"
+#~ msgstr "Recent activity"
 
 #: apps/web/src/features/home/ui/undone-page.tsx:9
 msgid "Recent voucher sends, redemptions, swaps, and pool events will appear "
 "here."
 msgstr "Recent voucher sends, redemptions, swaps, and pool events will appear "
 "here."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:62
+#~ msgid "Recipient address, ENS or phone"
+#~ msgstr "Recipient address, ENS or phone"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:93
+msgid "Recipient ENS, phone or address"
+msgstr "Recipient ENS, phone or address"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:156
 msgid "Registration failed. Check your connection and try again."
@@ -662,6 +853,10 @@ msgstr "Registration failed. Check your connection and try again."
 msgid "Reset logo"
 msgstr "Reset logo"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:34
+#~ msgid "Resolved"
+#~ msgstr "Resolved"
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:135
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
@@ -670,21 +865,55 @@ msgstr "Route redeemable claims across curated markets with shared standards."
 msgid "Saving…"
 msgstr "Saving…"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:171
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100
+msgid "Scan QR"
+msgstr "Scan QR"
+
+#: apps/web/src/components/paper-wallet-scanner.tsx:170
 msgid "Scan QR Code"
 msgstr "Scan QR Code"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:137
+msgid "Scan recipient address"
+msgstr "Scan recipient address"
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:182
 msgid "Search for a town or place"
 msgstr "Search for a town or place"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:95
+msgid "Search or enter"
+msgstr "Search or enter"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:234
 msgid "Searching places…"
 msgstr "Searching places…"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:77
+#: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:42
+msgid "Select a token"
+msgstr "Select a token"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:18
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:29
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:93
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:80
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:56
 msgid "Send"
 msgstr "Send"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:83
+msgid "Send to"
+msgstr "Send to"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:47
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:47
+msgid "Sent"
+msgstr "Sent"
+
+#. placeholder {0}: token.symbol
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:46
+#~ msgid "Sent 25.00 {0}"
+#~ msgstr "Sent 25.00 {0}"
 
 #: apps/web/src/features/home/ui/market-page.tsx:91
 msgid "Service"
@@ -695,11 +924,23 @@ msgstr "Service"
 msgid "Settings"
 msgstr "Settings"
 
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+msgid "Share"
+msgstr "Share"
+
+#: apps/web/src/features/wallet/ui/receive-page.tsx:21
+#~ msgid "Share your address to get paid"
+#~ msgstr "Share your address to get paid"
+
 #: apps/web/src/features/home/ui/market-page.tsx:89
 msgid "Shop"
 msgstr "Shop"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:316
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:188
+msgid "Show offerings"
+msgstr "Show offerings"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:322
 msgid "Sign in with private key"
 msgstr "Sign in with private key"
 
@@ -711,7 +952,7 @@ msgstr "Sign out"
 msgid "Signing out..."
 msgstr "Signing out..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:269
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:240
 #~ msgid "Smart wallet activated — confirming on-chain..."
 #~ msgstr "Smart wallet activated — confirming on-chain..."
 
@@ -719,9 +960,29 @@ msgstr "Signing out..."
 #~ msgid "Smart wallet activation failed."
 #~ msgstr "Smart wallet activation failed."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:110
+msgid "Soon"
+msgstr "Soon"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:65
+msgid "Status"
+msgstr "Status"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:26
+#: apps/web/src/features/wallet/ui/swap-page.tsx:77
+#: apps/web/src/features/wallet/ui/swap-page.tsx:80
+#: apps/web/src/features/wallet/ui/swap-page.tsx:127
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:66
+msgid "Swap"
+msgstr "Swap"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:48
+msgid "Swapped"
+msgstr "Swapped"
 
 #: apps/web/src/routes/__root.tsx:218
 msgid "Switch wallet"
@@ -751,15 +1012,42 @@ msgstr "This device is subscribed to wallet notifications."
 msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
 
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:38
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:54
+msgid "To"
+msgstr "To"
+
+#. placeholder {0}: RECIPIENT?.label ?? "jamila.clc"
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:49
+#~ msgid "to {0}"
+#~ msgstr "to {0}"
+
 #: apps/web/src/components/theme-selector.tsx:58
 msgid "Toggle theme"
 msgstr "Toggle theme"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:85
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:63
+msgid "Tokens"
+msgstr "Tokens"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:27
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:72
 msgid "Top up"
 msgstr "Top up"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:212
+#: apps/web/src/features/home/ui/wallet-page.tsx:47
+#~ msgid "Total balance"
+#~ msgstr "Total balance"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:57
+msgid "Transaction"
+msgstr "Transaction"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:66
+#~ msgid "Transfer"
+#~ msgstr "Transfer"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:218
 msgid "try again"
 msgstr "try again"
 
@@ -783,11 +1071,11 @@ msgstr "Update protected paper wallet"
 #~ msgid "Update protected QR"
 #~ msgstr "Update protected QR"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:182
+#: apps/web/src/components/paper-wallet-scanner.tsx:181
 msgid "Upload Image"
 msgstr "Upload Image"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:205
+#: apps/web/src/components/paper-wallet-scanner.tsx:204
 msgid "Upload Image Instead"
 msgstr "Upload Image Instead"
 
@@ -795,7 +1083,7 @@ msgstr "Upload Image Instead"
 msgid "Upload logo"
 msgstr "Upload logo"
 
-#: apps/web/src/components/paper-wallet-scanner.tsx:222
+#: apps/web/src/components/paper-wallet-scanner.tsx:221
 msgid "Upload QR code image"
 msgstr "Upload QR code image"
 
@@ -803,20 +1091,37 @@ msgstr "Upload QR code image"
 msgid "Use current location"
 msgstr "Use current location"
 
+#. placeholder {0}: token.amount
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:80
+msgid "Use max · {0}"
+msgstr "Use max · {0}"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:196
 msgid "Use my location"
 msgstr "Use my location"
 
-#: apps/web/src/features/home/ui/wallet-page.tsx:110
-#: apps/web/src/features/home/ui/wallet-page.tsx:149
-#: apps/web/src/features/home/ui/wallet-page.tsx:186
+#: apps/web/src/features/home/ui/wallet-page.tsx:67
+#: apps/web/src/features/home/ui/wallet-page.tsx:102
 msgid "View all"
 msgstr "View all"
 
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:59
+msgid "View voucher"
+msgstr "View voucher"
+
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:122
+msgid "Voucher details"
+msgstr "Voucher details"
+
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:25
-#: apps/web/src/features/home/ui/wallet-page.tsx:52
+#: apps/web/src/features/home/ui/wallet-page.tsx:35
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:76
 msgid "Wallet"
 msgstr "Wallet"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:42
+msgid "Wallet actions"
+msgstr "Wallet actions"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:59
 msgid "Wallet session"
@@ -826,6 +1131,22 @@ msgstr "Wallet session"
 msgid "Website"
 msgstr "Website"
 
+#: apps/web/src/features/wallet/ui/swap-page.tsx:85
+msgid "You pay"
+msgstr "You pay"
+
+#: apps/web/src/features/wallet/ui/swap-page.tsx:94
+msgid "You receive"
+msgstr "You receive"
+
+#: apps/web/src/components/wallet/wallet-status.tsx:30
+msgid "You'll confirm with Face ID, fingerprint or PIN"
+msgstr "You'll confirm with Face ID, fingerprint or PIN"
+
+#: apps/web/src/features/wallet/ui/receive-page.tsx:23
+#~ msgid "Your Celo address"
+#~ msgstr "Your Celo address"
+
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
 msgid "Your name"
 msgstr "Your name"
@@ -834,3 +1155,12 @@ msgstr "Your name"
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:79
 msgid "Your paper wallet"
 msgstr "Your paper wallet"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:101
+msgid "Your Pools"
+msgstr "Your Pools"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:66
+#: apps/web/src/features/wallet/ui/token-detail-page.tsx:73
+msgid "Your Vouchers"
+msgstr "Your Vouchers"

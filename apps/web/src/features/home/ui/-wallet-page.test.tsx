@@ -1,44 +1,38 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
+
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => vi.fn(),
+}));
 
 import { WalletPage } from "./wallet-page";
 
 describe("WalletPage", () => {
-  it("shows the wallet balance", () => {
+  it("shows the wallet header without the total balance card", () => {
     render(<WalletPage />);
-    expect(screen.getByText(/KSh 12,840/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /wallet/i })).toBeTruthy();
+    expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("shows voucher and pool counts", () => {
-    render(<WalletPage />);
-    expect(screen.getByText(/3 vouchers/)).toBeTruthy();
-    expect(screen.getByText(/2 pools/)).toBeTruthy();
-  });
-
-  it("shows Send, Receive, and Top up action buttons", () => {
+  it("shows Send, Receive, Swap, and Top up action buttons", () => {
     render(<WalletPage />);
     expect(screen.getByRole("button", { name: /send/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /receive/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /swap/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /top up/i })).toBeTruthy();
   });
 
-  it("shows recent activity section with placeholder transactions", () => {
+  it("shows the voucher section with placeholder voucher balances", () => {
     render(<WalletPage />);
-    expect(screen.getByText(/recent activity/i)).toBeTruthy();
-    expect(screen.getByText(/Sent to Cosmo Bakery/)).toBeTruthy();
+    expect(screen.getByText(/your vouchers/i)).toBeTruthy();
+    expect(screen.getByText("BABAS")).toBeTruthy();
+    expect(screen.getByText("GRDN")).toBeTruthy();
   });
 
-  it("shows My vouchers section with placeholder vouchers", () => {
+  it("shows the pool section with placeholder pools", () => {
     render(<WalletPage />);
-    expect(screen.getByText(/my vouchers/i)).toBeTruthy();
-    expect(screen.getByText(/Community Garden Access/)).toBeTruthy();
-    expect(screen.getByText(/Bakery Credit/)).toBeTruthy();
-  });
-
-  it("shows My pools section with placeholder pools", () => {
-    render(<WalletPage />);
-    expect(screen.getByText(/my pools/i)).toBeTruthy();
-    expect(screen.getByText(/Local Solar Coop/)).toBeTruthy();
+    expect(screen.getByText(/your pools/i)).toBeTruthy();
+    expect(screen.getAllByText(/Local Solar Coop/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Fresh Food Circle/)).toBeTruthy();
   });
 });
