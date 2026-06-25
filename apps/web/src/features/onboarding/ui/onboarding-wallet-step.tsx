@@ -266,7 +266,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             {isRegistering
               ? t`Creating account...`
               : delegateStep === "confirming"
-                ? t`Smart wallet activated — confirming on-chain...`
+                ? t`Activating on chain...`
                 : isDelegating
                   ? t`Activating smart wallet...`
                   : connecting
