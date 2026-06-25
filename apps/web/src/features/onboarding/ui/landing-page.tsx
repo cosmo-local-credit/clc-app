@@ -158,20 +158,26 @@ export function LandingPage() {
         ) : null}
 
         {encryptedPaperWallet && !connecting ? (
-          <Suspense fallback={null}>
-            <EncryptedPaperWalletImportForm
-              encryptedKey={encryptedPaperWallet}
-              onDecrypted={async (key) => {
-                const connected = await connectWithKey(key);
-                if (!connected) throw new Error(t`Connection failed.`);
-                setEncryptedPaperWallet(null);
-              }}
-              onCancel={() => {
-                setEncryptedPaperWallet(null);
-                setPkError(null);
-              }}
-            />
-          </Suspense>
+          <div className="space-y-3">
+            <Suspense fallback={null}>
+              <EncryptedPaperWalletImportForm
+                encryptedKey={encryptedPaperWallet}
+                onDecrypted={async (key) => {
+                  const connected = await connectWithKey(key);
+                  if (connected) setEncryptedPaperWallet(null);
+                }}
+                onCancel={() => {
+                  setEncryptedPaperWallet(null);
+                  setPkError(null);
+                }}
+              />
+            </Suspense>
+            {pkError ? (
+              <p role="alert" className="text-destructive text-xs">
+                {pkError}
+              </p>
+            ) : null}
+          </div>
         ) : null}
 
         {showScanner && pkError ? (

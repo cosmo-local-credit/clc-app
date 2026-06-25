@@ -127,6 +127,8 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
   }),
 }));
 
+import { BackendApiError } from "#/features/auth/api/client";
+
 import { LandingPage } from "./landing-page";
 
 beforeEach(() => {
@@ -255,6 +257,32 @@ describe("LandingPage navigation", () => {
     expect(mockStorePrivateKey).toHaveBeenCalledWith(
       "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     );
+  });
+
+  it("displays a backend error below the encrypted paper wallet card on failed sign-in", async () => {
+    mockBackendSigninMutateAsync.mockRejectedValueOnce(
+      new BackendApiError(403, "account is pending approval by a superadmin", "E10"),
+    );
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /continue with paper wallet/i }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /simulate encrypted scan/i }));
+    });
+
+    expect(await screen.findByText(/password-protected paper wallet/i)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText(/^password$/i), {
+      target: { value: "wallet passphrase" },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /unlock and import/i }));
+    });
+
+    expect(
+      await screen.findByText(/E10: account is pending approval by a superadmin/i),
+    ).toBeTruthy();
   });
 
   it("hides advanced options by default", () => {
