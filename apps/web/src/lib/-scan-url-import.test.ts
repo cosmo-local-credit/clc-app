@@ -27,20 +27,14 @@ import { getAccount } from "wagmi/actions";
 import { useScanUrlImport } from "./scan-url-import";
 
 const VALID_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" as const;
+const ENCRYPTED_KEY = "6PYMvQX3P2CjYXVkxczC5ZbPyyiDgRJTZatN6uQUFgYhBbm7idLvfZWzao";
 
 function setSearch(search: string) {
-  Object.defineProperty(window, "location", {
-    value: { ...window.location, search, pathname: "/signup" },
-    writable: true,
-  });
-  vi.spyOn(history, "replaceState").mockImplementation(() => {});
+  window.history.pushState(null, "", `/signup${search}`);
 }
 
 function clearSearch() {
-  Object.defineProperty(window, "location", {
-    value: { ...window.location, search: "", pathname: "/" },
-    writable: true,
-  });
+  window.history.pushState(null, "", "/");
 }
 
 beforeEach(() => {
@@ -59,6 +53,7 @@ describe("useScanUrlImport", () => {
   it("returns null pendingKey when no ?w= is present", () => {
     const { result } = renderHook(() => useScanUrlImport());
     expect(result.current.pendingKey).toBeNull();
+    expect(result.current.pendingEncryptedKey).toBeNull();
     expect(mockConnect).not.toHaveBeenCalled();
   });
 
@@ -66,6 +61,7 @@ describe("useScanUrlImport", () => {
     setSearch("?w=not-a-key");
     const { result } = renderHook(() => useScanUrlImport());
     expect(result.current.pendingKey).toBeNull();
+    expect(result.current.pendingEncryptedKey).toBeNull();
     expect(mockConnect).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
   });
@@ -102,6 +98,17 @@ describe("useScanUrlImport", () => {
     expect(mockConnect).not.toHaveBeenCalled();
   });
 
+  it("sets pendingEncryptedKey when ?w= contains an encrypted paper wallet", () => {
+    setSearch(`?w=${ENCRYPTED_KEY}`);
+
+    const { result } = renderHook(() => useScanUrlImport());
+
+    expect(result.current.pendingEncryptedKey).toBe(ENCRYPTED_KEY);
+    expect(result.current.pendingKey).toBeNull();
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockConnect).not.toHaveBeenCalled();
+  });
+
   it("clearPendingKey resets pendingKey to null", () => {
     vi.mocked(getAccount).mockReturnValue({
       isConnected: true,
@@ -115,6 +122,30 @@ describe("useScanUrlImport", () => {
       result.current.clearPendingKey();
     });
     expect(result.current.pendingKey).toBeNull();
+  });
+
+  it("clearPendingImport resets encrypted imports", () => {
+    setSearch(`?w=${ENCRYPTED_KEY}`);
+
+    const { result } = renderHook(() => useScanUrlImport());
+    expect(result.current.pendingEncryptedKey).toBe(ENCRYPTED_KEY);
+
+    act(() => {
+      result.current.clearPendingImport();
+    });
+    expect(result.current.pendingEncryptedKey).toBeNull();
+  });
+
+  it("queuePendingKey replaces an encrypted import with a raw pending key", () => {
+    setSearch(`?w=${ENCRYPTED_KEY}`);
+
+    const { result } = renderHook(() => useScanUrlImport());
+
+    act(() => {
+      result.current.queuePendingKey(VALID_KEY);
+    });
+    expect(result.current.pendingEncryptedKey).toBeNull();
+    expect(result.current.pendingKey).toBe(VALID_KEY);
   });
 
   it("cleans the URL when a valid key is found", () => {

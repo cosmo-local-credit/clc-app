@@ -20,6 +20,7 @@ export type UsePaperWalletSetupProps = {
   address: `0x${string}`;
   qrUrl: string;
   defaultName: string;
+  downloadDisabled?: boolean;
 };
 
 export type PaperWalletSetupSlots = {
@@ -40,6 +41,7 @@ export function usePaperWalletSetup({
   address,
   qrUrl,
   defaultName,
+  downloadDisabled = false,
 }: UsePaperWalletSetupProps): PaperWalletSetupSlots {
   const { t } = useLingui();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -150,7 +152,7 @@ export function usePaperWalletSetup({
       <Button
         className="mt-4 h-11 w-full"
         onClick={handleDownload}
-        disabled={downloading}
+        disabled={downloading || downloadDisabled}
         aria-label={t`Download card`}
       >
         {downloading ? (
@@ -160,7 +162,7 @@ export function usePaperWalletSetup({
         )}
         {downloading ? t`Preparing...` : t`Download card`}
       </Button>
-      {downloadError ? <p className="mt-2 text-destructive text-xs">{downloadError}</p> : null}
+      {downloadError ? <p className="text-destructive mt-2 text-xs">{downloadError}</p> : null}
     </div>
   );
 
