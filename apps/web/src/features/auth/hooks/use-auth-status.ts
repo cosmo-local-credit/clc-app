@@ -30,10 +30,6 @@ export function authSessionQueryKeyForAddress(address: `0x${string}` | undefined
   return [...authSessionQueryKey, address?.toLowerCase() ?? "none"] as const;
 }
 
-export function canSignSiwe(connectorId: string | undefined): boolean {
-  return connectorId !== "calibur-webauthn";
-}
-
 export function useAuthStatus(): AuthStatus {
   const reconnectAttempted = useReconnectAttempted();
   const { address, chainId, connector, status } = useAccount();

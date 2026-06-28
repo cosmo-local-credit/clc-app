@@ -6,7 +6,7 @@ import { lazy, Suspense, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiLoader, FiX } from "react-icons/fi";
 import { TbScan } from "react-icons/tb";
-
+import { useAccount, useDisconnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
@@ -14,15 +14,8 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
-import {
-  useBackendPrivateKeySignin,
-  useBackendWalletSignin,
-} from "#/features/auth/hooks/use-backend-auth";
-import {
-  authSessionQueryKey,
-  canSignSiwe,
-  useAuthStatus,
-} from "#/features/auth/hooks/use-auth-status";
+import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
+import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
@@ -53,9 +46,9 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const auth = useAuthStatus();
+  const { isConnected, connector } = useAccount();
+  const { disconnectAsync } = useDisconnect();
   const backendSignin = useBackendPrivateKeySignin();
-  const backendWalletSignin = useBackendWalletSignin(auth.address, auth.chainId);
   const [panelState, setPanelState] = useState<AuthPanelState>("form");
   const [showScanner, setShowScanner] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -70,7 +63,6 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const { step: signinStep, signin } = useCaliburSignin(relayerClient);
 
   const isSigningIn = signinStep === "asserting" || signinStep === "verifying";
-  const isPasskeyReauth = auth.needsBackendSignin && auth.connectorId === "calibur-webauthn";
   const connecting = isSigningIn || pkConnecting || backendSignin.isPending;
   const currentRedirect =
     sanitizeInternalRedirect(redirectTo) ??
@@ -105,8 +97,20 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   }
 
   async function finishAuthenticated() {
-    await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
+    // refetchType "all" also refetches an inactive session query that was
+    // cached as null before the cookie existed (returning auto-reconnected
+    // user), so the destination renders authenticated without a guest flash.
+    await queryClient.invalidateQueries({ queryKey: authSessionQueryKey, refetchType: "all" });
     onAuthenticated();
+  }
+
+  // Drop any wallet that is already connected before connecting a new one.
+  // A returning user is often auto-reconnected into connectedNoSession, and
+  // wagmi throws ConnectorAlreadyConnectedError if you connect over an active
+  // connector. Disconnecting also clears that connector's stored secret, so
+  // private-key storage must be (re)written after this runs.
+  async function dropActiveConnection() {
+    if (isConnected) await disconnectAsync();
   }
 
   async function connectWithKey(key: `0x${string}`): Promise<boolean> {
@@ -117,6 +121,7 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
     };
     try {
       await backendSignin.mutateAsync({ privateKey: key });
+      await dropActiveConnection();
       storePrivateKey(key);
       await connectAction(wagmiConfig, { connector: pkConnector });
       setPkInput("");
@@ -143,25 +148,13 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
     };
     try {
       await signin.mutateAsync();
-      // Skip connect when re-authenticating an already-connected passkey wallet;
-      // wagmi throws if you connect an already-active connector.
-      if (auth.connectorId !== "calibur-webauthn") {
+      // Already on the passkey connector (e.g. expired-cookie re-auth): the
+      // fresh assertion refreshed the session, no reconnect needed. Otherwise
+      // drop any other active connector and connect Calibur.
+      if (connector?.id !== "calibur-webauthn") {
+        await dropActiveConnection();
         await connectAction(wagmiConfig, { connector: caliburConnector });
       }
-      await finishAuthenticated();
-    } catch (err) {
-      handleBackendError(err, retry);
-    }
-  }
-
-  async function reauthenticateConnectedWallet() {
-    if (!auth.address) return;
-    setError(null);
-    const retry = () => {
-      void reauthenticateConnectedWallet();
-    };
-    try {
-      await backendWalletSignin.mutateAsync();
       await finishAuthenticated();
     } catch (err) {
       handleBackendError(err, retry);
@@ -215,42 +208,6 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
 
   return (
     <div className="space-y-3">
-      {auth.needsBackendSignin && auth.address && canSignSiwe(auth.connectorId) ? (
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="font-medium text-sm">
-            <Trans>Wallet connected</Trans>
-          </p>
-          <p className="mt-1 text-muted-foreground text-xs">
-            <Trans>Sign once to refresh your app session.</Trans>
-          </p>
-          <Button
-            className="mt-3 h-11 w-full"
-            onClick={() => void reauthenticateConnectedWallet()}
-            disabled={backendWalletSignin.isPending}
-          >
-            {backendWalletSignin.isPending ? t`Re-authenticating...` : t`Re-authenticate`}
-          </Button>
-        </div>
-      ) : null}
-
-      {isPasskeyReauth ? (
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="font-medium text-sm">
-            <Trans>Passkey connected</Trans>
-          </p>
-          <p className="mt-1 text-muted-foreground text-xs">
-            <Trans>Confirm your passkey to refresh your app session.</Trans>
-          </p>
-          <Button
-            className="mt-3 h-11 w-full"
-            onClick={() => void signInWithPasskey()}
-            disabled={isSigningIn}
-          >
-            {isSigningIn ? t`Confirming...` : t`Continue with passkey`}
-          </Button>
-        </div>
-      ) : null}
-
       {connecting ? (
         <div className="flex flex-col items-center gap-2 py-3">
           <FiLoader className="size-6 animate-spin text-primary" />
@@ -294,7 +251,7 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
         </p>
       ) : null}
 
-      {!isPasskeyReauth && !showScanner && !showPkInput && !encryptedPaperWallet && !connecting ? (
+      {!showScanner && !showPkInput && !encryptedPaperWallet && !connecting ? (
         <>
           {available ? (
             <Button
