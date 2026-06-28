@@ -2,6 +2,7 @@ import { base64UrlToBytes, bytesToBase64Url } from "@clc/core/features/webauthn/
 
 import type { WebAuthnAssertionPayload } from "#/features/auth/api/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
@@ -21,15 +22,13 @@ export async function collectWebAuthnAssertion(
   } = await client.getWebAuthnChallenge();
   const challengeBytes = base64UrlToBytes(challengeB64);
 
-  const assertion = (await navigator.credentials.get({
+  const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(challengeBytes),
       rpId: RELYING_PARTY_ID,
       userVerification: "required",
     },
-  })) as PublicKeyCredential;
-
-  if (!assertion) throw new Error("WebAuthn assertion cancelled");
+  });
 
   const response = assertion.response as AuthenticatorAssertionResponse;
   return {
