@@ -3,7 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import {
   BackendApiError,
   formatBackendApiError,
+  getSession,
   getSiweNonce,
+  signinWithWebAuthn,
   signupWithSiwe,
   waitForTrackingCompletion,
 } from "./client";
@@ -132,6 +134,105 @@ describe("apiFetch — error handling", () => {
 
     const nonce = await getSiweNonce();
     expect(nonce).toBe("abc123");
+  });
+});
+
+describe("getSession", () => {
+  it("returns null for 204 no-session responses", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 204,
+        ok: true,
+      }),
+    );
+
+    await expect(getSession()).resolves.toBeNull();
+  });
+
+  it("returns the bare session body", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 200,
+        body: { address: "0x1234567890123456789012345678901234567890", chainId: 42220 },
+      }),
+    );
+
+    await expect(getSession()).resolves.toEqual({
+      address: "0x1234567890123456789012345678901234567890",
+      chainId: 42220,
+    });
+  });
+});
+
+describe("signinWithWebAuthn", () => {
+  const assertion = {
+    credentialId: "cred-1",
+    authenticatorData: "ad",
+    clientDataJSON: "cdj",
+    signature: "sig",
+  };
+
+  it("POSTs the assertion to /auth/webauthn/verify and returns the result", async () => {
+    const fetchMock = mockFetch({
+      status: 200,
+      body: {
+        ok: true,
+        result: {
+          userId: 7,
+          role: "USER",
+          address: "0xabc",
+          keyHash: "0xkey",
+          publicKeyX: "1",
+          publicKeyY: "2",
+        },
+      },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(signinWithWebAuthn(assertion)).resolves.toMatchObject({
+      userId: 7,
+      address: "0xabc",
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("/auth/webauthn/verify");
+    expect(init.method).toBe("POST");
+    expect(init.credentials).toBe("include");
+    expect(JSON.parse(init.body as string)).toEqual(assertion);
+  });
+
+  it("throws BackendApiError(404) when the address is not registered", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 404,
+        body: { ok: false, description: "address not registered", code: "E03" },
+        ok: false,
+      }),
+    );
+
+    await expect(signinWithWebAuthn(assertion)).rejects.toMatchObject({
+      name: "BackendApiError",
+      status: 404,
+    });
+  });
+
+  it("throws BackendApiError(403) for pending/rejected accounts", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 403,
+        body: { ok: false, description: "account is pending approval", code: "E10" },
+        ok: false,
+      }),
+    );
+
+    await expect(signinWithWebAuthn(assertion)).rejects.toMatchObject({
+      name: "BackendApiError",
+      status: 403,
+    });
   });
 });
 

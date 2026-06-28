@@ -10,6 +10,7 @@ import {
 import { encodeAbiParameters } from "viem";
 import { waitForTrackingCompletion } from "#/features/auth/api/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
@@ -56,7 +57,7 @@ export async function sendCaliburTransaction(
 
   const digestBytes = computeEIP712Digest(signedBatch, cred.address, CALIBUR_ADDRESS, CHAIN_ID);
 
-  const assertion = (await navigator.credentials.get({
+  const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(digestBytes),
       allowCredentials: [
@@ -67,11 +68,7 @@ export async function sendCaliburTransaction(
       ],
       userVerification: "required",
     },
-  })) as PublicKeyCredential;
-
-  if (!assertion) {
-    throw new Error("WebAuthn assertion cancelled");
-  }
+  });
 
   const response = assertion.response as AuthenticatorAssertionResponse;
   const derSig = new Uint8Array(response.signature);

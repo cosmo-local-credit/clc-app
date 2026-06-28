@@ -1,30 +1,35 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAccount, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
-import { clearAuthToken } from "#/features/auth/state/token";
+import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
+import { OnboardingBanner } from "./onboarding-banner";
 import { SettingsPage } from "./settings-page";
-import type { HomeTab } from "./tabs";
+import { isPrivateHomeTab, type HomeTab } from "./tabs";
 import { UndonePage } from "./undone-page";
 import { WalletPage } from "./wallet-page";
 
 type HomePageProps = {
   activeTab?: HomeTab;
   onTabChange?: (tab: HomeTab) => void;
+  isAuthenticated?: boolean;
 };
 
-export function HomePage({ activeTab, onTabChange }: HomePageProps) {
+export function HomePage({ activeTab, onTabChange, isAuthenticated = true }: HomePageProps) {
   const { address } = useAccount();
   const delegationStatus = useCaliburDelegation(address);
   const { disconnectAsync } = useDisconnect();
+  const queryClient = useQueryClient();
   const backendLogout = useBackendLogout();
-  const [fallbackTab, setFallbackTab] = useState<HomeTab>("wallet");
+  const [fallbackTab, setFallbackTab] = useState<HomeTab>("market");
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const currentTab = activeTab ?? fallbackTab;
+  const requestedTab = activeTab ?? fallbackTab;
+  const currentTab = !isAuthenticated && isPrivateHomeTab(requestedTab) ? "market" : requestedTab;
 
   function handleTabChange(tab: HomeTab) {
     if (!activeTab) setFallbackTab(tab);
@@ -36,7 +41,6 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
     // land after disconnect and silently take over the session.
     abortWalletSwitch();
     setIsSigningOut(true);
-    clearAuthToken();
     try {
       await backendLogout.mutateAsync();
     } catch {
@@ -44,6 +48,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
     }
     try {
       await disconnectAsync();
+      await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
     } finally {
       setIsSigningOut(false);
     }
@@ -52,7 +57,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <MarketPage />
+        <MarketPage onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined} />
       ) : (
         <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
@@ -72,7 +77,11 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
           </main>
         </div>
       )}
-      <BottomNavigation activeTab={currentTab} onTabChange={handleTabChange} />
+      <BottomNavigation
+        activeTab={currentTab}
+        onTabChange={handleTabChange}
+        isAuthenticated={isAuthenticated}
+      />
     </div>
   );
 }

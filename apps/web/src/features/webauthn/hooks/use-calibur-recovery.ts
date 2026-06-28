@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RelayerError } from "#/features/webauthn/api/relayer-client";
+import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -32,15 +33,13 @@ export function useCaliburRecovery(client: RelayerClient) {
       const challengeBytes = base64UrlToBytes(challengeB64);
 
       setStep("asserting");
-      const assertion = (await navigator.credentials.get({
+      const assertion = await requestWebAuthnAssertion({
         publicKey: {
           challenge: toArrayBuffer(challengeBytes),
           rpId: RELYING_PARTY_ID,
           userVerification: "required",
         },
-      })) as PublicKeyCredential;
-
-      if (!assertion) throw new Error("WebAuthn assertion cancelled");
+      });
 
       const response = assertion.response as AuthenticatorAssertionResponse;
 
