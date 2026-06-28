@@ -1,78 +1,21 @@
 import { Trans } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { FiArrowRight } from "react-icons/fi";
 
-import { SignInPanel } from "#/components/auth/sign-in-panel";
-import { LanguageSelector } from "#/components/language-selector";
-import { ThemeToggle } from "#/components/theme-selector";
-import { Button } from "#/components/ui/button";
-import {
-  DialogBackdrop,
-  DialogContent,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from "#/components/ui/dialog";
-
+// Thin top-of-screen announcement strip for guests on the public market. It is
+// purely an entry point: tapping it routes to /onboarding, which handles both
+// sign-up and sign-in. No inline auth here.
 export function OnboardingBanner({ redirectTo }: { redirectTo?: string }) {
-  const navigate = useNavigate();
-  const [signInOpen, setSignInOpen] = useState(false);
-
   return (
-    <div className="pointer-events-none absolute inset-x-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30">
-      <div className="pointer-events-auto rounded-xl border border-border bg-card p-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-heading text-sm font-semibold">
-              <Trans>Join CLC</Trans>
-            </p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              <Trans>Sign up to send, swap, redeem, and manage vouchers.</Trans>
-            </p>
-          </div>
-          <div className="flex shrink-0 items-start gap-2">
-            <ThemeToggle />
-            <LanguageSelector />
-          </div>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Button
-            className="h-11 w-full"
-            onClick={() => {
-              void navigate({
-                to: "/onboarding",
-                search: redirectTo ? { redirect: redirectTo } : {},
-              });
-            }}
-          >
-            <Trans>Sign up</Trans>
-          </Button>
-          <Button variant="outline" className="h-11 w-full" onClick={() => setSignInOpen(true)}>
-            <Trans>Sign in</Trans>
-          </Button>
-        </div>
-      </div>
-
-      <DialogRoot open={signInOpen} onOpenChange={setSignInOpen}>
-        <DialogPortal>
-          <DialogBackdrop />
-          <DialogContent className="p-0">
-            <div className="p-6">
-              <DialogTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
-                <Trans>Sign in</Trans>
-              </DialogTitle>
-              <p className="mb-4 mt-1 text-muted-foreground text-sm">
-                <Trans>Choose a wallet to continue.</Trans>
-              </p>
-              <SignInPanel
-                redirectTo={redirectTo}
-                onAuthenticated={() => setSignInOpen(false)}
-                onCancel={() => setSignInOpen(false)}
-              />
-            </div>
-          </DialogContent>
-        </DialogPortal>
-      </DialogRoot>
+    <div className="absolute inset-x-0 top-0 z-30 pt-[env(safe-area-inset-top)]">
+      <Link
+        to="/onboarding"
+        search={redirectTo ? { redirect: redirectTo } : {}}
+        className="flex items-center justify-center gap-1.5 bg-primary px-4 py-2 text-center font-medium text-primary-foreground text-xs hover:bg-primary/90"
+      >
+        <Trans>Sign up or sign in to send, swap, and redeem vouchers</Trans>
+        <FiArrowRight className="size-3.5 shrink-0" aria-hidden="true" />
+      </Link>
     </div>
   );
 }

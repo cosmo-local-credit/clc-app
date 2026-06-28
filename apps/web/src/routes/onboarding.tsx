@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { sanitizeInternalRedirect } from "#/components/auth/redirect";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { LandingPage } from "#/features/onboarding/ui/landing-page";
 
 const OnboardingFlow = lazy(() =>
   import("#/features/onboarding/ui/onboarding-flow").then((module) => ({
@@ -21,18 +22,21 @@ function OnboardingRoutePage() {
   const auth = useAuthStatus();
   const { redirect } = Route.useSearch();
   const navigate = Route.useNavigate();
+  // "entry" shows the sign-in / create-account screen; "signup" advances into
+  // the profile + wallet flow once the user chooses to create an account.
+  const [mode, setMode] = useState<"entry" | "signup">("entry");
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      if (redirect) {
-        void navigate({ to: redirect as "/", replace: true });
-      } else {
-        void navigate({ to: "/", replace: true });
-      }
+      void navigate({ to: (redirect ?? "/") as "/", replace: true });
     }
   }, [auth.isAuthenticated, navigate, redirect]);
 
   if (auth.isLoading || auth.isAuthenticated) return <OnboardingFallback />;
+
+  if (mode === "entry") {
+    return <LandingPage onCreateAccount={() => setMode("signup")} redirectTo={redirect} />;
+  }
 
   return (
     <Suspense fallback={<OnboardingFallback />}>

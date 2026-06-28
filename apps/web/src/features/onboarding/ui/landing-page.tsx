@@ -7,7 +7,16 @@ import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 
-export function LandingPage() {
+// Auth entry screen reached from the market's onboarding banner. Handles both
+// sign-in (SignInPanel) and the start of sign-up (onCreateAccount advances to
+// the profile/wallet flow). Validated redirect intent is preserved throughout.
+export function LandingPage({
+  onCreateAccount,
+  redirectTo,
+}: {
+  onCreateAccount: () => void;
+  redirectTo?: string;
+}) {
   const navigate = useNavigate();
 
   return (
@@ -26,7 +35,7 @@ export function LandingPage() {
       <div className="mt-auto space-y-3 pt-8 pb-2">
         <Button
           className="h-11 w-full bg-foreground text-background hover:bg-foreground/90"
-          onClick={() => void navigate({ to: "/onboarding" })}
+          onClick={onCreateAccount}
         >
           <FiUserPlus className="mr-2 size-4" aria-hidden="true" />
           <Trans>Create an account</Trans>
@@ -38,7 +47,10 @@ export function LandingPage() {
           </span>
           <div className="h-px flex-1 bg-border" />
         </div>
-        <SignInPanel onAuthenticated={() => void navigate({ to: "/", replace: true })} />
+        <SignInPanel
+          redirectTo={redirectTo}
+          onAuthenticated={() => void navigate({ to: (redirectTo ?? "/") as "/", replace: true })}
+        />
       </div>
     </div>
   );

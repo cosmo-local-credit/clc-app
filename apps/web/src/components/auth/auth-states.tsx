@@ -38,20 +38,3 @@ export function ApprovalRejected({ children }: { children?: ReactNode }) {
     </div>
   );
 }
-
-export function SessionUnavailable({ children }: { children?: ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <h2 className="font-heading text-base font-semibold">
-        <Trans>Passkey sign-in is not available yet</Trans>
-      </h2>
-      <p className="mt-1 text-muted-foreground text-sm">
-        <Trans>
-          Use a paper wallet or private key for now. Passkey sessions will be enabled after the
-          backend supports them.
-        </Trans>
-      </p>
-      {children}
-    </div>
-  );
-}

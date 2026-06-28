@@ -110,7 +110,7 @@ function MarketPreview({
       className={[
         "absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3 text-left",
         offsetForBanner
-          ? "top-[calc(env(safe-area-inset-top)+8.75rem)]"
+          ? "top-[calc(env(safe-area-inset-top)+3rem)]"
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
       ].join(" ")}
     >

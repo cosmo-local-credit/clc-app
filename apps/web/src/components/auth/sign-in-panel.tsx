@@ -2,11 +2,11 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { FormEvent } from "react";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiLoader, FiX } from "react-icons/fi";
 import { TbScan } from "react-icons/tb";
-import { useConnect } from "wagmi";
+
 import { connect as connectAction } from "wagmi/actions";
 
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
@@ -24,12 +24,12 @@ import {
   useAuthStatus,
 } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
-import { useCaliburRecovery } from "#/features/webauthn/hooks/use-calibur-recovery";
+import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { RELAYER_URL } from "#/lib/backend-config";
 import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
-import { ApprovalPending, ApprovalRejected, SessionUnavailable } from "./auth-states";
+import { ApprovalPending, ApprovalRejected } from "./auth-states";
 import { sanitizeInternalRedirect } from "./redirect";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
@@ -40,7 +40,7 @@ const EncryptedPaperWalletImportForm = lazy(() =>
   })),
 );
 
-type AuthPanelState = "form" | "approvalPending" | "approvalRejected" | "sessionUnavailable";
+type AuthPanelState = "form" | "approvalPending" | "approvalRejected";
 
 export type SignInPanelProps = {
   onAuthenticated: () => void;
@@ -53,7 +53,6 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { connect: wagmiConnect } = useConnect();
   const auth = useAuthStatus();
   const backendSignin = useBackendPrivateKeySignin();
   const backendWalletSignin = useBackendWalletSignin(auth.address, auth.chainId);
@@ -68,25 +67,14 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const [retryAction, setRetryAction] = useState<(() => void) | null>(null);
   const { available, provider, label: providerLabel } = usePlatformPasskeyLabel();
   const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
-  const {
-    step: recoveryStep,
-    outcome,
-    error: recoveryError,
-    recover,
-  } = useCaliburRecovery(relayerClient);
+  const { step: signinStep, signin } = useCaliburSignin(relayerClient);
 
-  const isRecovering = ["challenging", "asserting", "verifying"].includes(recoveryStep);
-  const connecting = isRecovering || pkConnecting || backendSignin.isPending;
+  const isSigningIn = signinStep === "asserting" || signinStep === "verifying";
+  const isPasskeyReauth = auth.needsBackendSignin && auth.connectorId === "calibur-webauthn";
+  const connecting = isSigningIn || pkConnecting || backendSignin.isPending;
   const currentRedirect =
     sanitizeInternalRedirect(redirectTo) ??
     sanitizeInternalRedirect(`${location.pathname}${location.searchStr}${location.hash}`);
-
-  useEffect(() => {
-    if (recoveryStep === "done") {
-      wagmiConnect({ connector: caliburConnector });
-      setPanelState("sessionUnavailable");
-    }
-  }, [recoveryStep, wagmiConnect]);
 
   function routeToSignup() {
     void navigate({
@@ -145,6 +133,27 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
     }
   }
 
+  // Passkey sign-in: the assertion authenticates the user and the backend
+  // issues the session cookie, so there is no SIWE step. Connect the Calibur
+  // connector afterwards so chain interactions use the recovered wallet.
+  async function signInWithPasskey() {
+    setError(null);
+    const retry = () => {
+      void signInWithPasskey();
+    };
+    try {
+      await signin.mutateAsync();
+      // Skip connect when re-authenticating an already-connected passkey wallet;
+      // wagmi throws if you connect an already-active connector.
+      if (auth.connectorId !== "calibur-webauthn") {
+        await connectAction(wagmiConfig, { connector: caliburConnector });
+      }
+      await finishAuthenticated();
+    } catch (err) {
+      handleBackendError(err, retry);
+    }
+  }
+
   async function reauthenticateConnectedWallet() {
     if (!auth.address) return;
     setError(null);
@@ -192,22 +201,16 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   }
 
   if (panelState === "approvalPending") {
-    return <ApprovalPending onRetry={retryAction ?? undefined} busy={backendSignin.isPending} />;
+    return (
+      <ApprovalPending
+        onRetry={retryAction ?? undefined}
+        busy={backendSignin.isPending || signin.isPending}
+      />
+    );
   }
 
   if (panelState === "approvalRejected") {
     return <ApprovalRejected />;
-  }
-
-  if (panelState === "sessionUnavailable") {
-    return (
-      <div className="space-y-3">
-        <SessionUnavailable />
-        <Button className="h-11 w-full" onClick={() => setPanelState("form")}>
-          <Trans>Use another sign-in method</Trans>
-        </Button>
-      </div>
-    );
   }
 
   return (
@@ -230,8 +233,22 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
         </div>
       ) : null}
 
-      {auth.needsBackendSignin && auth.connectorId === "calibur-webauthn" ? (
-        <SessionUnavailable />
+      {isPasskeyReauth ? (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="font-medium text-sm">
+            <Trans>Passkey connected</Trans>
+          </p>
+          <p className="mt-1 text-muted-foreground text-xs">
+            <Trans>Confirm your passkey to refresh your app session.</Trans>
+          </p>
+          <Button
+            className="mt-3 h-11 w-full"
+            onClick={() => void signInWithPasskey()}
+            disabled={isSigningIn}
+          >
+            {isSigningIn ? t`Confirming...` : t`Continue with passkey`}
+          </Button>
+        </div>
       ) : null}
 
       {connecting ? (
@@ -277,36 +294,16 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
         </p>
       ) : null}
 
-      {outcome === "not_found" ? (
-        <div className="space-y-1 rounded-xl border border-border bg-card p-4">
-          <p className="text-sm font-medium">
-            <Trans>No passkey found</Trans>
-          </p>
-          <p className="text-muted-foreground text-xs">
-            <Trans>No passkey is registered on this device.</Trans>{" "}
-            <button
-              type="button"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
-              onClick={routeToSignup}
-            >
-              <Trans>Create an account</Trans>
-            </button>
-          </p>
-        </div>
-      ) : recoveryError ? (
-        <p className="text-destructive text-xs">{recoveryError}</p>
-      ) : null}
-
-      {!showScanner && !showPkInput && !encryptedPaperWallet && !connecting ? (
+      {!isPasskeyReauth && !showScanner && !showPkInput && !encryptedPaperWallet && !connecting ? (
         <>
           {available ? (
             <Button
               className="h-11 w-full"
-              onClick={() => recover.mutate()}
-              disabled={isRecovering}
+              onClick={() => void signInWithPasskey()}
+              disabled={isSigningIn}
             >
-              {isRecovering ? null : <ProviderIcon className="mr-2 size-4" />}
-              {isRecovering ? t`Connecting...` : t`Continue with ${providerLabel}`}
+              {isSigningIn ? null : <ProviderIcon className="mr-2 size-4" />}
+              {isSigningIn ? t`Connecting...` : t`Continue with ${providerLabel}`}
             </Button>
           ) : null}
 
