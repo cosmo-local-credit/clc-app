@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { TopUpPage } from "#/features/wallet/ui";
 
 export const Route = createFileRoute("/wallet/top-up")({
@@ -7,5 +8,9 @@ export const Route = createFileRoute("/wallet/top-up")({
 });
 
 function TopUpRoute() {
-  return <TopUpPage />;
+  return (
+    <AuthenticatedRoute>
+      <TopUpPage />
+    </AuthenticatedRoute>
+  );
 }

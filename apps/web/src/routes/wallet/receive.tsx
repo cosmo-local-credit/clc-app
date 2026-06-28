@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { ReceivePage } from "#/features/wallet/ui";
 
 export const Route = createFileRoute("/wallet/receive")({
@@ -7,5 +8,9 @@ export const Route = createFileRoute("/wallet/receive")({
 });
 
 function ReceiveRoute() {
-  return <ReceivePage />;
+  return (
+    <AuthenticatedRoute>
+      <ReceivePage />
+    </AuthenticatedRoute>
+  );
 }
