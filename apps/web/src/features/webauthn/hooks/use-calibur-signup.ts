@@ -17,6 +17,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
+import { createWebAuthnPasskey } from "#/features/webauthn/hooks/credential";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -102,7 +103,7 @@ export function useCaliburSignup(client: RelayerClient) {
 
       setStep("creating-passkey");
       const challenge = crypto.getRandomValues(new Uint8Array(32));
-      const credential = (await navigator.credentials.create({
+      const credential = await createWebAuthnPasskey({
         publicKey: {
           challenge,
           rp: { id: RELYING_PARTY_ID, name: RELYING_PARTY_NAME },
@@ -122,9 +123,7 @@ export function useCaliburSignup(client: RelayerClient) {
           },
           attestation: "none",
         },
-      })) as PublicKeyCredential;
-
-      if (!credential) throw new Error("Passkey creation cancelled");
+      });
 
       const { x, y } = await extractP256Coords(
         credential.response as AuthenticatorAttestationResponse,

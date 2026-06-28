@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { useAccount } from "wagmi";
+import { lazy, Suspense, useEffect } from "react";
 
-import { type HomeTab, parseHomeTab } from "#/features/home/ui/tabs";
-import { LandingPage } from "#/features/onboarding/ui/landing-page";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { isPrivateHomeTab, type HomeTab, parseHomeTab } from "#/features/home/ui/tabs";
 
 const HomePage = lazy(() =>
   import("#/components/home-page").then((module) => ({
@@ -19,28 +18,30 @@ export const Route = createFileRoute("/")({
 });
 
 function IndexPage() {
-  const { isConnected } = useAccount();
+  const auth = useAuthStatus();
   const { tab } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [mounted, setMounted] = useState(false);
+  const activeTab = auth.isAuthenticated ? tab : isPrivateHomeTab(tab ?? "market") ? "market" : tab;
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!auth.isLoading && !auth.isAuthenticated && isPrivateHomeTab(tab ?? "market")) {
+      void navigate({ to: "/", search: { tab: "market" }, replace: true });
+    }
+  }, [auth.isAuthenticated, auth.isLoading, navigate, tab]);
 
-  if (mounted && isConnected) {
-    return (
-      <Suspense fallback={<HomePageFallback />}>
-        <HomePage
-          activeTab={tab}
-          onTabChange={(nextTab) => {
-            void navigate({ to: "/", search: { tab: nextTab }, replace: true });
-          }}
-        />
-      </Suspense>
-    );
-  }
-  return <LandingPage />;
+  if (auth.isLoading) return <HomePageFallback />;
+
+  return (
+    <Suspense fallback={<HomePageFallback />}>
+      <HomePage
+        activeTab={activeTab}
+        isAuthenticated={auth.isAuthenticated}
+        onTabChange={(nextTab) => {
+          void navigate({ to: "/", search: { tab: nextTab }, replace: true });
+        }}
+      />
+    </Suspense>
+  );
 }
 
 function HomePageFallback() {

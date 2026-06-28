@@ -1,5 +1,6 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useQueryClient } from "@tanstack/react-query";
 import { FiArrowLeft, FiLoader } from "react-icons/fi";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
@@ -11,6 +12,7 @@ import { Button } from "#/components/ui/button";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
 import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
+import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
 import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
@@ -33,6 +35,7 @@ type Props = {
 
 export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   const { t } = useLingui();
+  const queryClient = useQueryClient();
   const keyRef = useRef<`0x${string}` | null>(null);
   if (!keyRef.current) keyRef.current = generatePrivateKey();
   const pk = keyRef.current;
@@ -83,6 +86,24 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   const isRegistering = backendSignup.isPending;
   const isLinked = upgradeStep === "done";
 
+  // Progress copy shown below the action buttons. The buttons keep a stable
+  // label and only spin; the live status updates here instead.
+  const statusText = isRegistering
+    ? t`Creating account...`
+    : upgradeStep === "confirming"
+      ? t`Passkey linked ... confirming on-chain...`
+      : isUpgrading
+        ? t`Linking passkey...`
+        : isLinked
+          ? t`Passkey linked`
+          : delegateStep === "confirming"
+            ? t`Activating on chain...`
+            : isDelegating
+              ? t`Activating smart wallet...`
+              : connecting
+                ? t`Opening paper wallet...`
+                : null;
+
   useEffect(() => {
     if (!paperWalletReady || paperWalletEncrypting) {
       setAcked(false);
@@ -93,7 +114,13 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     if (upgradeStep === "done") {
       setLinkConnectError(null);
       void connect(wagmiConfig, { connector: caliburConnector })
-        .then(() => {
+        .then(async () => {
+          // Sign-up already issued the session cookie; refresh the session
+          // query so the destination renders authenticated.
+          await queryClient.invalidateQueries({
+            queryKey: authSessionQueryKey,
+            refetchType: "all",
+          });
           onDone();
         })
         .catch((err: unknown) => {
@@ -102,14 +129,18 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
           );
         });
     }
-  }, [upgradeStep, onDone, t]);
+  }, [upgradeStep, onDone, t, queryClient]);
 
   useEffect(() => {
     if (delegateStep === "done" && connecting) {
       setConnectError(null);
       storePrivateKey(pk);
       void connect(wagmiConfig, { connector: pkConnector })
-        .then(() => {
+        .then(async () => {
+          await queryClient.invalidateQueries({
+            queryKey: authSessionQueryKey,
+            refetchType: "all",
+          });
           onDone();
         })
         .catch((err: unknown) => {
@@ -124,7 +155,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
       clearPrivateKey();
       setConnecting(false);
     }
-  }, [connecting, delegateStep, onDone, pk, t]);
+  }, [connecting, delegateStep, onDone, pk, t, queryClient]);
 
   async function ensureBackendSignup() {
     if (backendRegistered) return;
@@ -227,15 +258,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
               ) : (
                 <ProviderIcon className="mr-2 size-4" />
               )}
-              {isRegistering
-                ? t`Creating account...`
-                : upgradeStep === "confirming"
-                  ? t`Passkey linked ... confirming on-chain...`
-                  : isUpgrading
-                    ? t`Linking passkey...`
-                    : isLinked
-                      ? t`Passkey linked`
-                      : t`Link wallet to ${providerLabel} passkey`}
+              {t`Link wallet to ${providerLabel} passkey`}
             </Button>
           ) : null}
 
@@ -270,18 +293,9 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
             {connecting || isRegistering || isDelegating ? (
               <FiLoader className="mr-2 inline size-4 animate-spin" />
             ) : null}
-            {isRegistering
-              ? t`Creating account...`
-              : delegateStep === "confirming"
-                ? t`Activating on chain...`
-                : isDelegating
-                  ? t`Activating smart wallet...`
-                  : connecting
-                    ? t`Opening paper wallet...`
-                    : available
-                      ? t`Continue with paper wallet`
-                      : t`Continue to wallet`}
+            {available ? t`Continue with paper wallet` : t`Continue to wallet`}
           </button>
+          {statusText ? <p className="text-muted-foreground text-xs">{statusText}</p> : null}
           {connectError ? <p className="text-destructive text-xs">{connectError}</p> : null}
         </div>
       </div>

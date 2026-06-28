@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
@@ -15,6 +16,9 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog";
 import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/privateKey";
+import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
+import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
@@ -79,9 +83,13 @@ function AppContent() {
 function AppInner() {
   const { t } = useLingui();
   const { address } = useAccount();
+  const auth = useAuthStatus();
+  const queryClient = useQueryClient();
+  const backendSignin = useBackendPrivateKeySignin();
   const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
     useScanUrlImport();
   const [switching, setSwitching] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
 
   const pendingAddress = useMemo(
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
@@ -105,18 +113,20 @@ function AppInner() {
     }
 
     void runNotificationRecovery({
-      currentWalletAddress: address,
-      linkedWalletAddresses: address ? [address] : undefined,
+      currentWalletAddress: auth.isAuthenticated ? address : undefined,
+      linkedWalletAddresses: auth.isAuthenticated && address ? [address] : undefined,
     });
-  }, [address]);
+  }, [address, auth.isAuthenticated]);
 
   async function handleConfirmSwitch() {
     if (!pendingKey) return;
     setSwitching(true);
+    setSwitchError(null);
     const signal = beginWalletSwitch();
     const previousPrivateKey = getStoredKey();
     const previousWebAuthnCredential = getWebAuthnCredential();
     try {
+      await backendSignin.mutateAsync({ privateKey: pendingKey });
       storePrivateKey(pendingKey);
       await connect(wagmiConfig, { connector: pkConnector });
       if (signal.aborted) {
@@ -127,8 +137,9 @@ function AppInner() {
         return;
       }
       clearWebAuthnCredential();
+      await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
       clearPendingKey();
-    } catch {
+    } catch (err) {
       if (signal.aborted) return; // sign-out already tore the session down
       if (previousPrivateKey) {
         storePrivateKey(previousPrivateKey);
@@ -147,6 +158,13 @@ function AppInner() {
       } else {
         clearWebAuthnCredential();
       }
+      setSwitchError(
+        err instanceof BackendApiError
+          ? formatBackendApiError(err)
+          : err instanceof Error
+            ? err.message
+            : t`Connection failed.`,
+      );
     } finally {
       setSwitching(false);
     }
@@ -159,12 +177,20 @@ function AppInner() {
     }
 
     try {
+      await backendSignin.mutateAsync({ privateKey: key });
       storePrivateKey(key);
       await connect(wagmiConfig, { connector: pkConnector });
+      await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
       clearPendingImport();
     } catch (err) {
       clearPrivateKey();
-      throw new Error(err instanceof Error ? err.message : t`Connection failed.`);
+      throw new Error(
+        err instanceof BackendApiError
+          ? formatBackendApiError(err)
+          : err instanceof Error
+            ? err.message
+            : t`Connection failed.`,
+      );
     }
   }
 
@@ -207,15 +233,19 @@ function AppInner() {
             <DialogBackdrop />
             <DialogContent>
               <DialogTitle className="text-base font-semibold">
-                <Trans>Switch wallet?</Trans>
+                {address ? <Trans>Switch wallet?</Trans> : <Trans>Import paper wallet?</Trans>}
               </DialogTitle>
               <p className="text-muted-foreground mt-1 text-sm">
-                <Trans>A paper wallet QR was scanned. Import this address?</Trans>
+                {address ? (
+                  <Trans>A paper wallet QR was scanned. Import this address?</Trans>
+                ) : (
+                  <Trans>A paper wallet link was opened. Sign in with this address?</Trans>
+                )}
               </p>
               <p className="text-foreground mt-2 truncate font-mono text-xs">{pendingAddress}</p>
               <div className="mt-5 flex flex-col gap-2">
                 <Button className="h-11 w-full" disabled={switching} onClick={handleConfirmSwitch}>
-                  {switching ? t`Switching…` : t`Switch wallet`}
+                  {switching ? t`Connecting…` : address ? t`Switch wallet` : t`Import wallet`}
                 </Button>
                 <Button
                   variant="ghost"
@@ -226,6 +256,7 @@ function AppInner() {
                   <Trans>Cancel</Trans>
                 </Button>
               </div>
+              {switchError ? <p className="mt-3 text-destructive text-xs">{switchError}</p> : null}
             </DialogContent>
           </DialogPortal>
         </DialogRoot>

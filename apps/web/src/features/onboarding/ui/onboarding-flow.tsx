@@ -19,7 +19,7 @@ type Step = "profile" | "wallet";
  *
  * The flow is disconnected-only; IndexPage handles already-connected users.
  */
-export function OnboardingFlow() {
+export function OnboardingFlow({ redirectTo }: { redirectTo?: string } = {}) {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("profile");
   const [profileData, setProfileData] = useState<ProfileInput | null>(null);
@@ -31,7 +31,11 @@ export function OnboardingFlow() {
           profileData={profileData}
           onBack={() => setStep("profile")}
           onDone={() => {
-            void navigate({ to: "/", replace: true });
+            if (redirectTo) {
+              void navigate({ to: redirectTo as "/", replace: true });
+            } else {
+              void navigate({ to: "/", replace: true });
+            }
           }}
         />
       </Suspense>
