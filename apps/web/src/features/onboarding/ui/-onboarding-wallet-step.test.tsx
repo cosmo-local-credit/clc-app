@@ -36,6 +36,11 @@ const FAKE_PK =
   "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
 const FAKE_ADDRESS = "0xFakeAddress1234567890abcdef1234567890aaaa" as `0x${string}`;
 
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => ({ invalidateQueries: vi.fn().mockResolvedValue(undefined) }),
+}));
+
 vi.mock("viem/accounts", () => ({
   generatePrivateKey: () => FAKE_PK,
   privateKeyToAccount: () => ({ address: FAKE_ADDRESS }),
@@ -185,9 +190,10 @@ describe("OnboardingWalletStep rendering", () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
 
     const linkedButton = screen.getByRole("button", {
-      name: /passkey linked/i,
+      name: /link wallet to google passkey/i,
     });
     expect(linkedButton).toHaveProperty("disabled", true);
+    expect(screen.getByText(/passkey linked/i)).toBeTruthy();
     await act(async () => {});
     expect(mockConnect).toHaveBeenCalledWith(
       {},
