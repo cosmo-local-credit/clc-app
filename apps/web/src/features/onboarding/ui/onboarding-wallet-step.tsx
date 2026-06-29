@@ -65,7 +65,7 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
   const {
     step: delegateStep,
     error: delegateError,
-    mutate: activatePaperWallet,
+    mutateAsync: activatePaperWallet,
     isPending: isDelegating,
   } = useCaliburDelegateFromPk(relayerClient);
 
@@ -131,31 +131,22 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     }
   }, [upgradeStep, onDone, t, queryClient]);
 
-  useEffect(() => {
-    if (delegateStep === "done" && connecting) {
-      setConnectError(null);
-      storePrivateKey(pk);
-      void connect(wagmiConfig, { connector: pkConnector })
-        .then(async () => {
-          await queryClient.invalidateQueries({
-            queryKey: authSessionQueryKey,
-            refetchType: "all",
-          });
-          onDone();
-        })
-        .catch((err: unknown) => {
-          clearPrivateKey();
-          setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
-          setConnecting(false);
-        });
-      return;
-    }
-
-    if (delegateStep === "error" && connecting) {
+  async function connectPaperWallet() {
+    setConnectError(null);
+    storePrivateKey(pk);
+    try {
+      await connect(wagmiConfig, { connector: pkConnector });
+      await queryClient.invalidateQueries({
+        queryKey: authSessionQueryKey,
+        refetchType: "all",
+      });
+      onDone();
+    } catch (err) {
       clearPrivateKey();
+      setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
       setConnecting(false);
     }
-  }, [connecting, delegateStep, onDone, pk, t, queryClient]);
+  }
 
   async function ensureBackendSignup() {
     if (backendRegistered) return;
@@ -179,7 +170,6 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
     setConnectError(null);
     try {
       await ensureBackendSignup();
-      activatePaperWallet({ privateKey: pk });
     } catch (err) {
       clearPrivateKey();
       if (err instanceof BackendApiError) {
@@ -188,7 +178,18 @@ export function OnboardingWalletStep({ profileData, onBack, onDone }: Props) {
         setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
       }
       setConnecting(false);
+      return;
     }
+
+    try {
+      await activatePaperWallet({ privateKey: pk });
+    } catch {
+      // Delegation is a best-effort activation request. Do not block paper-wallet
+      // access: the relayer/backend can retry accepted jobs and the user can
+      // manually retry activation later.
+    }
+
+    await connectPaperWallet();
   }
 
   return (
