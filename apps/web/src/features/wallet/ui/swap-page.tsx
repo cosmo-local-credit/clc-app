@@ -3,12 +3,13 @@ import { useState } from "react";
 import { RiArrowDownLine, RiArrowDownSLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import { SignHint, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { WalletAmountInput } from "./amount-input";
 import { TokenPickerSheet } from "./token-picker-sheet";
 
 function SwapField({
+  id,
   label,
   token,
   amount,
@@ -17,6 +18,7 @@ function SwapField({
   onMax,
   onSelect,
 }: {
+  id: string;
   label: React.ReactNode;
   token: WalletToken;
   amount: string;
@@ -26,10 +28,14 @@ function SwapField({
   onSelect: () => void;
 }) {
   return (
-    <div className="border border-border bg-card p-3.5">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-muted-foreground text-xs">{label}</span>
-        {max ? (
+    <WalletAmountInput
+      id={id}
+      label={label}
+      value={amount}
+      onValueChange={onAmountChange}
+      align="right"
+      action={
+        max ? (
           <Button
             variant="ghost"
             size="sm"
@@ -38,27 +44,20 @@ function SwapField({
           >
             <Trans>Max {max}</Trans>
           </Button>
-        ) : null}
-      </div>
-      <div className="flex items-center gap-2.5">
+        ) : null
+      }
+      leading={
         <button
           type="button"
           onClick={onSelect}
-          className="flex h-9 shrink-0 items-center gap-1.5 border border-border bg-card px-2"
+          className="flex h-9 items-center gap-1.5 border border-border bg-card px-2"
         >
           <TokenLogo token={token} size={24} />
           <span className="text-sm font-bold">{token.symbol}</span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
         </button>
-        <Input
-          value={amount}
-          onChange={(event) => onAmountChange(event.target.value)}
-          inputMode="decimal"
-          aria-label={typeof label === "string" ? label : undefined}
-          className="h-auto min-h-9 flex-1 truncate border-0 bg-transparent px-0 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight shadow-none focus-visible:border-0"
-        />
-      </div>
-    </div>
+      }
+    />
   );
 }
 
@@ -82,6 +81,7 @@ export function SwapPage() {
 
       <div className="relative flex flex-col gap-1">
         <SwapField
+          id="swap-pay-amount"
           label={t`You pay`}
           token={payToken}
           amount={payAmount}
@@ -91,6 +91,7 @@ export function SwapPage() {
           onSelect={() => setPicker({ field: "pay" })}
         />
         <SwapField
+          id="swap-receive-amount"
           label={t`You receive`}
           token={receiveToken}
           amount={receiveAmount}

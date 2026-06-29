@@ -198,6 +198,12 @@ as if there is no desktop, ever.
 — flat, white, outlined. No shadow, no nested card chrome. White (`bg-card`)
 required so the panel is distinguishable from the gray page background.
 
+**Wallet amount fields:** Use `WalletAmountInput` from
+`apps/web/src/features/wallet/ui/amount-input.tsx` for send, swap, top-up, and
+similar wallet amount entry. Do not inline borderless transparent amount-input
+composites in wallet screens; the shared component owns the visible `bg-card`
+surface, focus, error, and disabled states.
+
 **Touch targets:** Primary CTA buttons `h-11` (44 px — iOS HIG minimum).
 Inputs use default `h-9`; don't override with `h-11`.
 

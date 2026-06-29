@@ -11,7 +11,6 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -22,6 +21,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { WalletAmountInput } from "./amount-input";
 
 type MethodState = "ready" | "soon";
 
@@ -133,6 +133,7 @@ function MpesaSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useLingui();
+  const [amount, setAmount] = useState("500");
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
@@ -163,22 +164,14 @@ function MpesaSheet({
           </SheetHeader>
 
           <div className="px-6 pt-1 pb-2">
-            <label
-              className="mb-1.5 block text-xs font-medium text-muted-foreground"
-              htmlFor="topup-amount"
-            >
-              <Trans>Amount (KSh)</Trans>
-            </label>
-            <div className="flex items-center border border-border bg-card px-3.5">
-              <span className="mr-1.5 text-xs font-semibold text-muted-foreground">KSh</span>
-              <Input
-                id="topup-amount"
-                type="text"
-                inputMode="decimal"
-                defaultValue="500"
-                className="h-auto min-h-9 border-0 bg-transparent px-0 font-heading text-2xl font-semibold tracking-tight shadow-none focus-visible:border-0"
-              />
-            </div>
+            <WalletAmountInput
+              id="topup-amount"
+              label={<Trans>Amount (KSh)</Trans>}
+              value={amount}
+              onValueChange={setAmount}
+              align="left"
+              leading={<span className="text-muted-foreground text-xs font-semibold">KSh</span>}
+            />
           </div>
 
           <SheetFooter>

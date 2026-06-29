@@ -13,6 +13,7 @@ import {
 } from "#/components/wallet";
 import { RECENT_RECIPIENTS } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { WalletAmountInput } from "./amount-input";
 import { TokenPickerSheet } from "./token-picker-sheet";
 
 const RECIPIENT = RECENT_RECIPIENTS[0];
@@ -67,18 +68,27 @@ export function SendAmountPage() {
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </button>
 
-      <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
-        <p className="min-w-0 truncate font-heading text-[2.5rem] font-semibold leading-none tracking-tight">
-          {amount} <span className="text-[1.25rem] text-muted-foreground">{token.symbol}</span>
-        </p>
-        <Button
-          variant="secondary"
-          size="sm"
-          className="mt-3 h-8"
-          onClick={() => setAmount(token.amount)}
-        >
-          <Trans>Use max · {token.amount}</Trans>
-        </Button>
+      <div className="mb-2.5">
+        <WalletAmountInput
+          id="send-amount"
+          label={t`Amount`}
+          value={amount}
+          onValueChange={setAmount}
+          variant="display"
+          align="center"
+          hideLabel
+          trailing={token.symbol}
+          footer={
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-8"
+              onClick={() => setAmount(token.amount)}
+            >
+              <Trans>Use max · {token.amount}</Trans>
+            </Button>
+          }
+        />
       </div>
 
       <div className="flex-1" />
