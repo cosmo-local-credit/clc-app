@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { cn } from "#/lib/utils";
 import { type WalletToken } from "./wallet-data";
 
@@ -10,8 +12,32 @@ export function TokenLogo({
   size?: number;
   className?: string;
 }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const displaySize = Math.round(size);
   const glyph =
     token.glyph ?? (token.kind === "stable" ? token.symbol.slice(0, 1) : token.symbol.slice(0, 2));
+
+  if (token.iconUrl && !imageFailed) {
+    return (
+      <span
+        className={cn("block shrink-0 overflow-hidden rounded-full bg-muted", className)}
+        style={{ width: displaySize, height: displaySize }}
+      >
+        <img
+          src={token.iconUrl}
+          alt=""
+          width={displaySize}
+          height={displaySize}
+          loading="lazy"
+          decoding="async"
+          aria-hidden="true"
+          className="size-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      </span>
+    );
+  }
+
   return (
     <span
       aria-hidden="true"

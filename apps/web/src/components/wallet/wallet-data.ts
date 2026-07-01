@@ -26,6 +26,10 @@ export type WalletToken = {
   owner?: string;
   ownerEns?: string;
   contractAddress?: string;
+  iconUrl?: string | null;
+  tokenDecimals?: number;
+  balance?: string;
+  lastDateBlock?: string;
   lat?: number;
   lng?: number;
 };

@@ -6,6 +6,7 @@ import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { ActivityPage } from "./activity-page";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
 import { OnboardingBanner } from "./onboarding-banner";
@@ -61,8 +62,8 @@ export function HomePage({ activeTab, onTabChange, isAuthenticated = true }: Hom
       ) : (
         <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
-            {currentTab === "wallet" ? <WalletPage /> : null}
-            {currentTab === "activity" ? <UndonePage tab="activity" /> : null}
+            {currentTab === "wallet" ? <WalletPage address={address} /> : null}
+            {currentTab === "activity" ? <ActivityPage address={address} /> : null}
             {currentTab === "pool" ? <UndonePage tab="pool" /> : null}
             {currentTab === "settings" ? (
               <SettingsPage

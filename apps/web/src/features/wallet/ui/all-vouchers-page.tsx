@@ -2,9 +2,12 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
+import { useAccount } from "wagmi";
 
 import { Button } from "#/components/ui/button";
-import { PicsumLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
+import { TokenLogo, type WalletToken } from "#/components/wallet";
+import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { VoucherContactDetails } from "./voucher-contact-details";
 
@@ -27,7 +30,7 @@ function VoucherRow({
         aria-expanded={open}
         className="flex w-full items-center gap-2.5 p-3 text-left"
       >
-        <PicsumLogo seed={`voucher-${voucher.id}`} size={36} />
+        <TokenLogo token={voucher} size={36} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-bold tracking-tight">{voucher.symbol}</p>
@@ -68,7 +71,10 @@ function VoucherRow({
 
 export function AllVouchersPage() {
   const { t } = useLingui();
-  const vouchers = WALLET_TOKENS.filter((token) => token.kind === "voucher");
+  const { address } = useAccount();
+  const vouchersQuery = useAccountTokensInfinite(address);
+  const vouchers =
+    vouchersQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   return (
@@ -83,6 +89,31 @@ export function AllVouchersPage() {
       </p>
 
       <div className="border border-border bg-card">
+        {vouchersQuery.isPending ? (
+          <div className="p-3 text-muted-foreground text-sm">
+            <Trans>Loading vouchers…</Trans>
+          </div>
+        ) : null}
+        {vouchersQuery.isError ? (
+          <div className="space-y-2 p-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>Couldn't load vouchers.</Trans>
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 bg-card"
+              onClick={() => vouchersQuery.refetch()}
+            >
+              <Trans>Try again</Trans>
+            </Button>
+          </div>
+        ) : null}
+        {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+          <div className="p-3 text-muted-foreground text-sm">
+            <Trans>No vouchers yet.</Trans>
+          </div>
+        ) : null}
         {vouchers.map((voucher, index, list) => {
           const isOpen = expanded[voucher.id] ?? false;
           return (
@@ -96,6 +127,17 @@ export function AllVouchersPage() {
           );
         })}
       </div>
+
+      {vouchersQuery.hasNextPage ? (
+        <Button
+          variant="outline"
+          className="mt-3 h-11 w-full bg-card"
+          disabled={vouchersQuery.isFetchingNextPage}
+          onClick={() => vouchersQuery.fetchNextPage()}
+        >
+          {vouchersQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
+        </Button>
+      ) : null}
     </div>
   );
 }

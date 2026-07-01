@@ -9,9 +9,11 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { PicsumLogo, SectionHeader, WALLET_POOLS, WALLET_TOKENS } from "#/components/wallet";
+import { PicsumLogo, SectionHeader, TokenLogo, WALLET_POOLS } from "#/components/wallet";
+import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 
-export function WalletPage() {
+export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const actions = [
@@ -26,7 +28,8 @@ export function WalletPage() {
     { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, to: "/wallet/swap" },
     { id: "topup", label: t`Top up`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
   ] as const;
-  const vouchers = WALLET_TOKENS.filter((token) => token.kind === "voucher");
+  const vouchersQuery = useLatestAccountTokens(address);
+  const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
 
   return (
     <div className="space-y-6">
@@ -70,6 +73,31 @@ export function WalletPage() {
           }}
         />
         <div className="border border-border bg-card">
+          {vouchersQuery.isPending ? (
+            <div className="p-3 text-muted-foreground text-sm">
+              <Trans>Loading vouchers…</Trans>
+            </div>
+          ) : null}
+          {vouchersQuery.isError ? (
+            <div className="space-y-2 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load vouchers.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 bg-card"
+                onClick={() => vouchersQuery.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {vouchersQuery.isSuccess && vouchers.length === 0 ? (
+            <div className="p-3 text-muted-foreground text-sm">
+              <Trans>No vouchers yet.</Trans>
+            </div>
+          ) : null}
           {vouchers.map((token, index, list) => (
             <button
               key={token.id}
@@ -82,7 +110,7 @@ export function WalletPage() {
                 void navigate({ to: "/wallet/tokens/$tokenId", params: { tokenId: token.id } });
               }}
             >
-              <PicsumLogo seed={`voucher-${token.id}`} size={34} />
+              <TokenLogo token={token} size={34} />
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-sm tracking-tight">{token.symbol}</p>
                 <p className="truncate text-muted-foreground text-xs">{token.name}</p>
