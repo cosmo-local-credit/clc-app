@@ -14,6 +14,7 @@ import {
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import {
+  EllipsizedAddress,
   HighlightAddress,
   TokenLogo,
   WALLET_TOKEN_BY_ID,
@@ -246,7 +247,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
                   </p>
                   <p className="truncate text-muted-foreground text-[0.6875rem]">
                     {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                    <HighlightAddress address={transfer.counterpartyAddress} tailLength={4} />
+                    <EllipsizedAddress address={transfer.counterpartyAddress} />
                   </p>
                 </div>
                 <span className="shrink-0 font-mono text-xs font-semibold">

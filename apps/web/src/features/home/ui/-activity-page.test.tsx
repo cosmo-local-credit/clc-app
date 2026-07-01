@@ -55,5 +55,6 @@ describe("ActivityPage", () => {
 
     expect(await screen.findByText("Received")).toBeTruthy();
     expect(screen.getByText("+ 1.23 USD₮")).toBeTruthy();
+    expect(document.body.textContent).toContain("0x27c1…16c8E4");
   });
 });

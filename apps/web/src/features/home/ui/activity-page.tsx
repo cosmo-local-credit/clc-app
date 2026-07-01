@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { HighlightAddress } from "#/components/wallet";
+import { EllipsizedAddress } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 
 export function ActivityPage({ address }: { address?: string }) {
@@ -89,7 +89,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 </p>
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
                   {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <HighlightAddress address={transfer.counterpartyAddress} tailLength={4} />
+                  <EllipsizedAddress address={transfer.counterpartyAddress} />
                 </p>
               </div>
               <span className="shrink-0 font-mono text-xs font-semibold">
