@@ -34,14 +34,14 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage — core
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: packages/core/coverage/lcov.info
           flags: core
           token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage — web
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           files: apps/web/coverage/lcov.info
           flags: web
