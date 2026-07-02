@@ -18,8 +18,6 @@ export {
   DEFAULT_SEND_TOKEN,
   hueFromSeed,
   RECENT_RECIPIENTS,
-  WALLET_ADDRESS_FULL,
-  WALLET_ENS_NAME,
   type WalletPool,
   WALLET_POOLS,
   type WalletToken,

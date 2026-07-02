@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ const TX_ICON_CLASS: Record<TxKind, string> = {
 
 export function TokenDetailPage({ tokenId }: { tokenId: string }) {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const { address } = useAccount();
   const tokensQuery = useAccountTokensInfinite(address, 50);
   const transfersQuery = useAccountTransfersInfinite(address);
@@ -104,18 +106,25 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
     transfersQuery.isFetchingNextPage,
   ]);
 
-  // UI-only actions: when token-scoped transaction flows are wired, pass token.id
-  // through these entry points so Send, Receive, and Swap preselect this voucher.
-  const actions: { id: string; label: ReactNode; icon: ReactNode }[] = [
+  // Carry the token's contract address into the send flow so the amount step
+  // preselects this voucher. Swap wiring is deferred.
+  const sendToken = token.contractAddress ?? token.id;
+  const actions: { id: string; label: ReactNode; icon: ReactNode; onClick?: () => void }[] = [
     {
       id: "send",
       label: <Trans>Send</Trans>,
       icon: <RiSendPlane2Line className="size-4" aria-hidden="true" />,
+      onClick: () => {
+        void navigate({ to: "/wallet/send", search: { token: sendToken } });
+      },
     },
     {
       id: "receive",
       label: <Trans>Receive</Trans>,
       icon: <RiDownloadLine className="size-4" aria-hidden="true" />,
+      onClick: () => {
+        void navigate({ to: "/wallet/receive" });
+      },
     },
     {
       id: "swap",
@@ -138,7 +147,13 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
 
       <div className="my-4 grid grid-cols-3 gap-2">
         {actions.map((action) => (
-          <Button key={action.id} variant="outline" className="h-14 flex-col gap-1">
+          <Button
+            key={action.id}
+            variant="outline"
+            className="h-14 flex-col gap-1"
+            disabled={!action.onClick}
+            onClick={action.onClick}
+          >
             {action.icon}
             <span className="text-xs font-semibold">{action.label}</span>
           </Button>

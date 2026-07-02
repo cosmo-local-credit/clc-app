@@ -28,7 +28,7 @@ type ResolvedRecipient = {
   address: string;
 };
 
-export function SendRecipientPage() {
+export function SendRecipientPage({ token }: { token?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -150,7 +150,7 @@ export function SendRecipientPage() {
       <Button
         className="mt-2.5 h-11 w-full"
         onClick={() => {
-          void navigate({ to: "/wallet/send/amount" });
+          void navigate({ to: "/wallet/send/amount", search: { token } });
         }}
       >
         {t`Continue`}
