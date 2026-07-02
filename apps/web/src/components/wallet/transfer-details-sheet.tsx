@@ -1,3 +1,4 @@
+import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 import { Button } from "#/components/ui/button";
@@ -10,12 +11,17 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { EllipsizedAddress } from "./wallet-address";
 
 export type TransferDetails = {
   txHash: string;
   direction: "IN" | "OUT";
   recipientAddress: string;
+  tokenDecimals: number;
+  tokenSymbol: string;
+  amount: string;
+  dateBlock: string;
   success: boolean;
 };
 
@@ -31,6 +37,8 @@ export function TransferDetailsSheet({
   const { t } = useLingui();
   const badge = transfer?.direction === "IN" ? t`Received voucher` : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
+  const amountSign = transfer?.direction === "IN" ? "+" : "−";
+  const transferDate = transfer ? formatTransferDate(transfer.dateBlock) : "";
   const explorerUrl = transfer ? `https://celoscan.io/tx/${transfer.txHash}` : "#";
 
   return (
@@ -54,6 +62,23 @@ export function TransferDetailsSheet({
                   <Trans>Status</Trans>
                 </span>
                 <span className="font-semibold text-sm">{status}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>Amount</Trans>
+                </span>
+                <span className="font-mono text-xs font-semibold">
+                  {amountSign} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                  {transfer.tokenSymbol}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>Date</Trans>
+                </span>
+                <time className="font-mono text-xs font-semibold" dateTime={transfer.dateBlock}>
+                  {transferDate}
+                </time>
               </div>
               <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
                 <span className="text-muted-foreground text-xs">
