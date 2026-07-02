@@ -48,16 +48,22 @@ export type CursorPageParams = {
   next?: boolean;
 };
 
+const ACCOUNT_READ_REQUEST: RequestInit = {
+  method: "GET",
+  cache: "no-store",
+};
+
 export async function getLatestAccountTokens(address: string): Promise<AccountTokensResult> {
-  return apiFetch<AccountTokensResult>(`/api/v2/accounts/${address}/tokens/latest`, {
-    method: "GET",
-  });
+  return apiFetch<AccountTokensResult>(
+    `/api/v2/accounts/${address}/tokens/latest`,
+    ACCOUNT_READ_REQUEST,
+  );
 }
 
 export async function getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
   return apiFetch<AccountTokensResult>(
     `/api/v2/accounts/${params.address}/tokens${formatCursorQuery(params)}`,
-    { method: "GET" },
+    ACCOUNT_READ_REQUEST,
   );
 }
 
@@ -66,7 +72,7 @@ export async function getAccountTransfers(
 ): Promise<AccountTransfersResult> {
   return apiFetch<AccountTransfersResult>(
     `/api/v2/accounts/${params.address}/transfers${formatCursorQuery(params)}`,
-    { method: "GET" },
+    ACCOUNT_READ_REQUEST,
   );
 }
 

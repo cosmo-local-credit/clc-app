@@ -43,7 +43,7 @@ describe("account token balances", () => {
       expect.stringContaining(
         "/api/v2/accounts/0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d/tokens/latest",
       ),
-      expect.objectContaining({ credentials: "include", method: "GET" }),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
 
@@ -62,7 +62,7 @@ describe("account token balances", () => {
       expect.stringContaining(
         "/api/v2/accounts/0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d/transfers?perPage=20&cursor=5&next=true",
       ),
-      expect.objectContaining({ credentials: "include", method: "GET" }),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
 });
