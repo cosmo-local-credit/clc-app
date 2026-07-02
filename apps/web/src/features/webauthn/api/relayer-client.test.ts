@@ -151,6 +151,30 @@ describe("recoverWebAuthn", () => {
   });
 });
 
+describe("relayPreview", () => {
+  it("POSTs a batch preview to /relay/preview", async () => {
+    const spy = mockFetch({
+      ok: true,
+      result: { nonce: "0", digest: `0x${"11".repeat(32)}` },
+    });
+    const payload = {
+      userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as `0x${string}`,
+      batchedCall: { calls: [], revertOnFailure: true },
+      keyHash: `0x${"00".repeat(32)}` as `0x${string}`,
+      executor: "0x1234567890123456789012345678901234567890" as `0x${string}`,
+      deadline: "0",
+    };
+
+    const res = await client.relayPreview(payload);
+
+    expect(spy).toHaveBeenCalledWith(
+      `${BASE}/relay/preview`,
+      expect.objectContaining({ method: "POST", body: JSON.stringify(payload) }),
+    );
+    expect(res.result.digest).toBe(`0x${"11".repeat(32)}`);
+  });
+});
+
 describe("relay", () => {
   it("POSTs a secp256k1 registration payload to /relay", async () => {
     const spy = mockFetch({

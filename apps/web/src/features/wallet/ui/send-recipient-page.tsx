@@ -8,10 +8,16 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { type Recipient } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
+import { useUpsertAddressBookRecipient } from "#/features/wallet/hooks/use-address-book";
+import {
+  useEnsRecipientResolution,
+  usePhoneRecipientResolution,
+  useReverseEnsResolution,
+} from "#/features/wallet/hooks/use-recipient-resolution";
 import { AddressBookSheet } from "./address-book-sheet";
 import { RecipientAddressCard } from "./recipient-address-card";
 import {
-  formatAddressInput,
   isAddress,
   isEns,
   isEnsCandidate,
@@ -20,12 +26,10 @@ import {
   normalizeScannedRecipient,
 } from "./recipient-validation";
 
-const RESOLVED_ENS_ADDRESS = "0x91Ab3f5d6C7e8F9a0B1c2D3e4F5a6B7c8D9e0d2E7";
-const RESOLVED_PHONE_ADDRESS = "0x3C8f21A9D4b7e6F0a2C5d8E1B4f7A0c3D6e9F102";
-
 type ResolvedRecipient = {
   label: string;
-  address: string;
+  address: `0x${string}`;
+  source: AddressBookRecipientSource;
 };
 
 export function SendRecipientPage({ token }: { token?: string }) {
@@ -35,27 +39,44 @@ export function SendRecipientPage({ token }: { token?: string }) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipient | null>(null);
+  const upsertRecipient = useUpsertAddressBookRecipient();
   const trimmedQuery = query.trim();
+  const normalizedPhone = isPhone(query) ? normalizePhone(query) : null;
+  const ensName = isEns(trimmedQuery) ? trimmedQuery : null;
+  const directAddress = isAddress(trimmedQuery) ? (trimmedQuery as `0x${string}`) : null;
+  const phoneResolution = usePhoneRecipientResolution(normalizedPhone);
+  const ensResolution = useEnsRecipientResolution(ensName);
+  const reverseEnsResolution = useReverseEnsResolution(directAddress);
   const ensSuggestions = useMemo(() => {
     if (!isEnsCandidate(query)) return [];
     return [`${trimmedQuery}.eth`, `${trimmedQuery}.sarafu.eth`];
   }, [query, trimmedQuery]);
-  const resolvedEnsAddress = isEns(trimmedQuery) ? RESOLVED_ENS_ADDRESS : null;
-  const directAddress = isAddress(trimmedQuery) ? trimmedQuery : null;
-  const validPhone = isPhone(query);
-  const resolvedPhoneAddress = validPhone ? RESOLVED_PHONE_ADDRESS : null;
   const resolvedRecipient: ResolvedRecipient | null =
     selectedRecipient ??
-    (directAddress ? { label: t`Address`, address: directAddress } : null) ??
-    (resolvedEnsAddress ? { label: trimmedQuery, address: resolvedEnsAddress } : null) ??
-    (resolvedPhoneAddress ? { label: normalizePhone(query), address: resolvedPhoneAddress } : null);
-  const inputValue = resolvedRecipient ? formatAddressInput(resolvedRecipient.address) : query;
+    (directAddress
+      ? {
+          label: reverseEnsResolution.data?.name ?? t`Address`,
+          address: directAddress,
+          source: reverseEnsResolution.data?.name ? "reverse-ens" : "manual",
+        }
+      : null) ??
+    (ensName && ensResolution.data
+      ? { label: ensName, address: ensResolution.data.address, source: "ens" }
+      : null) ??
+    (normalizedPhone && phoneResolution.data
+      ? { label: normalizedPhone, address: phoneResolution.data.address, source: "phone" }
+      : null);
+  const isResolving =
+    (Boolean(normalizedPhone) && phoneResolution.isPending) ||
+    (Boolean(ensName) && ensResolution.isPending);
+  const resolutionError = phoneResolution.error ?? ensResolution.error;
 
   function handleSelectRecipient(recipient: Recipient) {
     if (recipient.address) {
       setSelectedRecipient({
         label: recipient.label.startsWith("0x") ? t`Address` : recipient.label,
-        address: recipient.address,
+        address: recipient.address as `0x${string}`,
+        source: "manual",
       });
       setQuery(recipient.address);
       return;
@@ -75,6 +96,23 @@ export function SendRecipientPage({ token }: { token?: string }) {
     setScannerOpen(false);
   }
 
+  async function handleContinue() {
+    if (!resolvedRecipient) return;
+    await upsertRecipient.mutateAsync({
+      label: resolvedRecipient.label,
+      address: resolvedRecipient.address,
+      source: resolvedRecipient.source,
+    });
+    void navigate({
+      to: "/wallet/send/amount",
+      search: {
+        token,
+        recipient: resolvedRecipient.address,
+        recipientLabel: resolvedRecipient.label,
+      },
+    });
+  }
+
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <BackChevron label={t`Send`} to="/" />
@@ -88,7 +126,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
 
       <div className="mb-2.5 flex gap-2">
         <Input
-          value={inputValue}
+          value={query}
           onChange={(event) => handleInputChange(event.target.value)}
           aria-label={t`Recipient ENS, phone or address`}
           className="font-mono text-sm"
@@ -141,6 +179,18 @@ export function SendRecipientPage({ token }: { token?: string }) {
         </div>
       ) : null}
 
+      {isResolving ? (
+        <p className="mb-3.5 text-muted-foreground text-xs">
+          <Trans>Resolving recipient…</Trans>
+        </p>
+      ) : null}
+
+      {resolutionError ? (
+        <p className="mb-3.5 text-destructive text-xs">
+          <Trans>Couldn't resolve that recipient.</Trans>
+        </p>
+      ) : null}
+
       {resolvedRecipient ? (
         <RecipientAddressCard label={resolvedRecipient.label} address={resolvedRecipient.address} />
       ) : null}
@@ -149,8 +199,9 @@ export function SendRecipientPage({ token }: { token?: string }) {
 
       <Button
         className="mt-2.5 h-11 w-full"
+        disabled={!resolvedRecipient || upsertRecipient.isPending}
         onClick={() => {
-          void navigate({ to: "/wallet/send/amount", search: { token } });
+          void handleContinue();
         }}
       >
         {t`Continue`}

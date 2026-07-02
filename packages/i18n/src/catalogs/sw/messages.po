@@ -67,13 +67,13 @@ msgid "Add money"
 msgstr "Ongeza pesa"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:49
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:57
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:58
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:77
 msgid "Address"
 msgstr "Anwani"
 
-#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:35
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:114
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:38
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:152
 msgid "Address book"
 msgstr "Kitabu cha anwani"
 
@@ -98,8 +98,9 @@ msgid "Already have an account?"
 msgstr "Tayari una akaunti?"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:49
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:112
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:113
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:185
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:311
 msgid "Amount"
 msgstr "Kiasi"
 
@@ -107,7 +108,7 @@ msgstr "Kiasi"
 msgid "Amount (KSh)"
 msgstr "Kiasi (KSh)"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:214
 msgid "Amount exceeds your balance"
 msgstr "Kiasi kinazidi salio lako"
 
@@ -130,7 +131,7 @@ msgid "Back to market"
 msgstr "Rudi sokoni"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:152
 msgid "Balance {0}"
 msgstr "Salio {0}"
 
@@ -146,6 +147,10 @@ msgstr "Hamisho la benki"
 #~ msgid "Best route · auto-selected"
 #~ msgstr "Njia bora · imechaguliwa kiotomatiki"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
+#~ msgid "Block time"
+#~ msgstr "Muda wa bloki"
+
 #: apps/web/src/features/home/ui/market-page.tsx:80
 msgid "Browse all"
 msgstr "Tazama zote"
@@ -159,7 +164,8 @@ msgid "Camera access denied."
 msgstr "Ruhusa ya kamera imekataliwa."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:344
-#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:57
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:342
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/routes/__root.tsx:256
 msgid "Cancel"
@@ -238,6 +244,10 @@ msgstr "Hati za jamii na maelezo yake."
 msgid "Complete the browser permission prompt to continue."
 msgstr "Kamilisha ombi la ruhusa la kivinjari ili kuendelea."
 
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:334
+msgid "Confirm and send"
+msgstr "Thibitisha na utume"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
 #~ msgid "Confirm passphrase"
 #~ msgstr "Thibitisha kauli ya siri"
@@ -246,12 +256,16 @@ msgstr "Kamilisha ombi la ruhusa la kivinjari ili kuendelea."
 msgid "Confirm password"
 msgstr "Thibitisha nenosiri"
 
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:303
+msgid "Confirm send"
+msgstr "Thibitisha kutuma"
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:238
 #~ msgid "Confirm your passkey to refresh your app session."
 #~ msgstr "Thibitisha passkey yako ili kuonyesha upya kipindi chako."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:40
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:69
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:173
 msgid "Confirmed"
 msgstr "Imethibitishwa"
 
@@ -284,7 +298,7 @@ msgstr "Muunganisho umeshindikana."
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:156
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:207
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:186
 msgid "Continue"
 msgstr "Endelea"
@@ -333,6 +347,10 @@ msgstr "Nakili"
 msgid "Copy contract address"
 msgstr "Nakili anwani ya mkataba"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:154
+msgid "Copy transaction hash"
+msgstr "Nakili heshi ya muamala"
+
 #: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet address"
 msgstr "Nakili anwani ya pochi"
@@ -363,6 +381,11 @@ msgstr "Imeshindwa kunakili anwani"
 msgid "Couldn't copy contract address"
 msgstr "Haikuwezekana kunakili anwani ya mkataba"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:70
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:75
+msgid "Couldn't copy transaction hash"
+msgstr "Haikuwezekana kunakili heshi ya muamala"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:90
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
@@ -372,7 +395,7 @@ msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 msgid "Couldn't load activity."
 msgstr "Haikuwezekana kupakia shughuli."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:92
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:160
 msgid "Couldn't load tokens"
 msgstr "Imeshindwa kupakia tokeni"
 
@@ -380,6 +403,10 @@ msgstr "Imeshindwa kupakia tokeni"
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:101
 msgid "Couldn't load vouchers."
 msgstr "Haikuwezekana kupakia hati."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:190
+msgid "Couldn't resolve that recipient."
+msgstr "Haikuwezekana kutambua mpokeaji huyo."
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
 msgid "Create account"
@@ -430,7 +457,8 @@ msgstr "Maelezo"
 msgid "Direct deposit"
 msgstr "Amana ya moja kwa moja"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:83
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:187
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:249
 msgid "Done"
 msgstr "Maliza"
 
@@ -454,7 +482,7 @@ msgstr "Pakua au piga picha kadi hii. Yeyote anayechanganua msimbo wa QR "
 msgid "Eatery"
 msgstr "Baa la chakula"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:67
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:135
 msgid "Edit"
 msgstr "Hariri"
 
@@ -483,7 +511,7 @@ msgstr "Weka ufunguo binafsi halali au mkoba wa karatasi."
 #~ msgid "Enter an address, ENS or phone number."
 #~ msgstr "Weka anwani, ENS au nambari ya simu."
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:86
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:124
 msgid "Enter an ENS, phone number or address."
 msgstr "Weka ENS, nambari ya simu au anwani."
 
@@ -618,6 +646,10 @@ msgstr "Pakia zaidi"
 msgid "Loading activity…"
 msgstr "Inapakia shughuli…"
 
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:44
+msgid "Loading address book…"
+msgstr "Inapakia kitabu cha anwani…"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:243
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:258
 msgid "Loading location map"
@@ -628,7 +660,7 @@ msgstr "Inapakia ramani ya eneo"
 msgid "Loading more…"
 msgstr "Inapakia zaidi…"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:96
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:164
 msgid "Loading tokens…"
 msgstr "Inapakia tokeni…"
 
@@ -717,7 +749,8 @@ msgstr "Jina lazima liwe herufi 80 au pungufu"
 msgid "Name on wallet"
 msgstr "Jina kwenye mkoba"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:60
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:157
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:235
 msgid "Network"
 msgstr "Mtandao"
 
@@ -751,7 +784,11 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "Hakuna msimbo wa QR uliopatikana. Jaribu tena kwa picha iliyo wazi "
 "zaidi."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:94
+#: apps/web/src/features/wallet/ui/address-book-sheet.tsx:49
+msgid "No saved recipients yet."
+msgstr "Hakuna wapokeaji waliohifadhiwa bado."
+
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:162
 msgid "No tokens available"
 msgstr "Hakuna tokeni zinazopatikana"
 
@@ -881,6 +918,10 @@ msgstr "Mkoba wa karatasi uliolindwa kwa nenosiri"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:68
 msgid "Passwords do not match."
 msgstr "Manenosiri hayalingani."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:96
+msgid "Pending"
+msgstr "Inasubiri"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
 msgid "Phone"
@@ -1022,6 +1063,7 @@ msgid "Recent voucher transfers for this wallet."
 msgstr "Hamisho ya hivi karibuni ya hati kwa mkoba huu."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:89
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:319
 msgid "Recipient"
 msgstr "Mpokeaji"
 
@@ -1029,7 +1071,7 @@ msgstr "Mpokeaji"
 #~ msgid "Recipient address, ENS or phone"
 #~ msgstr "Anwani ya mpokeaji, ENS au simu"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:93
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:131
 msgid "Recipient ENS, phone or address"
 msgstr "ENS, simu au anwani ya mpokeaji"
 
@@ -1045,6 +1087,15 @@ msgstr "Weka upya nembo"
 #~ msgid "Resolved"
 #~ msgstr "Imetatuliwa"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:184
+msgid "Resolving recipient…"
+msgstr "Inatafuta mpokeaji…"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:115
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:122
+msgid "Reverted"
+msgstr "Imerejeshwa"
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:30
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
@@ -1054,7 +1105,7 @@ msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 msgid "Saving…"
 msgstr "Inahifadhi…"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:138
 msgid "Scan QR"
 msgstr "Changanua QR"
 
@@ -1062,7 +1113,7 @@ msgstr "Changanua QR"
 msgid "Scan QR Code"
 msgstr "Changanua Msimbo wa QR"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:137
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:175
 msgid "Scan recipient address"
 msgstr "Changanua anwani ya mpokeaji"
 
@@ -1070,7 +1121,7 @@ msgstr "Changanua anwani ya mpokeaji"
 msgid "Search for a town or place"
 msgstr "Tafuta mji au eneo"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:95
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:133
 msgid "Search or enter"
 msgstr "Tafuta au weka"
 
@@ -1083,19 +1134,31 @@ msgid "Select a token"
 msgstr "Chagua tokeni"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:20
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:46
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:148
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:80
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:110
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:227
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:118
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:115
 msgid "Send"
 msgstr "Tuma"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:83
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:231
+#~ msgid "Send failed."
+#~ msgstr "Kutuma kumeshindikana."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:121
 msgid "Send to"
 msgstr "Tuma kwa"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:89
+msgid "Sending"
+msgstr "Inatuma"
+
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:334
+msgid "Sending…"
+msgstr "Inatuma…"
+
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:47
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:140
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:267
 msgid "Sent"
 msgstr "Umetuma"
@@ -1188,9 +1251,14 @@ msgid "Soon"
 msgstr "Hivi karibuni"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:61
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:65
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:169
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:240
 msgid "Status"
 msgstr "Hali"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:161
+msgid "Submitted"
+msgstr "Imewasilishwa"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:40
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
@@ -1243,8 +1311,9 @@ msgid "This QR code does not contain a valid private key."
 msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:55
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:54
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:119
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:148
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:231
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:270
 msgid "To"
 msgstr "Kwa"
@@ -1271,7 +1340,7 @@ msgstr "Ongeza pesa"
 #~ msgid "Total balance"
 #~ msgstr "Jumla ya salio"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:57
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
 msgid "Transaction"
 msgstr "Muamala"
 
@@ -1350,7 +1419,7 @@ msgid "Use current location"
 msgstr "Tumia eneo la sasa"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:209
 msgid "Use max · {0}"
 msgstr "Tumia kiwango chote · {0}"
 
@@ -1374,6 +1443,10 @@ msgstr "Tazama vocha"
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:193
 msgid "Voucher details"
 msgstr "Maelezo ya vocha"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:91
+msgid "Waiting for on-chain confirmation"
+msgstr "Inasubiri uthibitisho kwenye mnyororo"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:29
 #: apps/web/src/features/home/ui/wallet-page.tsx:38
