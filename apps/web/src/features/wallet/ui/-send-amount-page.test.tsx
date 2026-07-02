@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tanstack/react-router", () => ({
@@ -85,5 +85,23 @@ describe("SendAmountPage", () => {
 
     expect(await screen.findByRole("button", { name: /use max · 245/i })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /use max · 1850/i })).toBeNull();
+  });
+
+  it("flags an over-balance amount and disables Send", async () => {
+    mockTokens();
+    renderWithQueryClient(<SendAmountPage token={USDC} />);
+
+    // Wait for balances so the amount input is validated against a real max.
+    await screen.findByRole("button", { name: /use max · 245/i });
+    const amountInput = screen.getByRole("textbox", { name: /amount/i });
+
+    fireEvent.change(amountInput, { target: { value: "300" } });
+    expect(amountInput.getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByText(/exceeds your balance/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
+
+    fireEvent.change(amountInput, { target: { value: "100" } });
+    expect(amountInput.getAttribute("aria-invalid")).toBe("false");
+    expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(false);
   });
 });

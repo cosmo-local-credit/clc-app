@@ -98,13 +98,18 @@ msgid "Already have an account?"
 msgstr "Already have an account?"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:41
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:49
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:112
 msgid "Amount"
 msgstr "Amount"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:170
 msgid "Amount (KSh)"
 msgstr "Amount (KSh)"
+
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
+msgid "Amount exceeds your balance"
+msgstr "Amount exceeds your balance"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
@@ -125,7 +130,7 @@ msgid "Back to market"
 msgstr "Back to market"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:76
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
 msgid "Balance {0}"
 msgstr "Balance {0}"
 
@@ -367,7 +372,7 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Couldn't load activity."
 msgstr "Couldn't load activity."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:92
 msgid "Couldn't load tokens"
 msgstr "Couldn't load tokens"
 
@@ -449,7 +454,7 @@ msgstr "Download or photograph this card. Anyone who scans the QR code will "
 msgid "Eatery"
 msgstr "Eatery"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:59
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:67
 msgid "Edit"
 msgstr "Edit"
 
@@ -623,7 +628,7 @@ msgstr "Loading location map"
 msgid "Loading more…"
 msgstr "Loading more…"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:88
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:96
 msgid "Loading tokens…"
 msgstr "Loading tokens…"
 
@@ -745,7 +750,7 @@ msgstr "No camera found on this device."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "No QR code found. Try again with a clearer image."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:86
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:94
 msgid "No tokens available"
 msgstr "No tokens available"
 
@@ -1075,8 +1080,8 @@ msgid "Select a token"
 msgstr "Select a token"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:20
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:38
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:46
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:148
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:80
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:115
 msgid "Send"
@@ -1235,7 +1240,7 @@ msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:47
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:55
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:54
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:270
 msgid "To"
@@ -1342,7 +1347,7 @@ msgid "Use current location"
 msgstr "Use current location"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:108
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
 msgid "Use max · {0}"
 msgstr "Use max · {0}"
 

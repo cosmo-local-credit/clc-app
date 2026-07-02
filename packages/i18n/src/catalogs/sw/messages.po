@@ -98,13 +98,18 @@ msgid "Already have an account?"
 msgstr "Tayari una akaunti?"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:72
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:41
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:49
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:112
 msgid "Amount"
 msgstr "Kiasi"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:170
 msgid "Amount (KSh)"
 msgstr "Kiasi (KSh)"
+
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:133
+msgid "Amount exceeds your balance"
+msgstr "Kiasi kinazidi salio lako"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
@@ -125,7 +130,7 @@ msgid "Back to market"
 msgstr "Rudi sokoni"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:76
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
 msgid "Balance {0}"
 msgstr "Salio {0}"
 
@@ -367,7 +372,7 @@ msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 msgid "Couldn't load activity."
 msgstr "Haikuwezekana kupakia shughuli."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:84
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:92
 msgid "Couldn't load tokens"
 msgstr "Imeshindwa kupakia tokeni"
 
@@ -449,7 +454,7 @@ msgstr "Pakua au piga picha kadi hii. Yeyote anayechanganua msimbo wa QR "
 msgid "Eatery"
 msgstr "Baa la chakula"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:59
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:67
 msgid "Edit"
 msgstr "Hariri"
 
@@ -623,7 +628,7 @@ msgstr "Inapakia ramani ya eneo"
 msgid "Loading more…"
 msgstr "Inapakia zaidi…"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:88
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:96
 msgid "Loading tokens…"
 msgstr "Inapakia tokeni…"
 
@@ -746,7 +751,7 @@ msgid "No QR code found. Try again with a clearer image."
 msgstr "Hakuna msimbo wa QR uliopatikana. Jaribu tena kwa picha iliyo wazi "
 "zaidi."
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:86
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:94
 msgid "No tokens available"
 msgstr "Hakuna tokeni zinazopatikana"
 
@@ -1078,8 +1083,8 @@ msgid "Select a token"
 msgstr "Chagua tokeni"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:20
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:38
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:46
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:148
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:80
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:115
 msgid "Send"
@@ -1238,7 +1243,7 @@ msgid "This QR code does not contain a valid private key."
 msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:47
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:55
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:54
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:270
 msgid "To"
@@ -1345,7 +1350,7 @@ msgid "Use current location"
 msgstr "Tumia eneo la sasa"
 
 #. placeholder {0}: selectedToken.amount
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:108
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
 msgid "Use max · {0}"
 msgstr "Tumia kiwango chote · {0}"
 

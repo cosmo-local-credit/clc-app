@@ -10,6 +10,7 @@ import { RECENT_RECIPIENTS } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { cn } from "#/lib/utils";
 import { TokenPickerSheet } from "./token-picker-sheet";
 
 const RECIPIENT = RECENT_RECIPIENTS[0];
@@ -32,6 +33,13 @@ export function SendAmountPage({ token }: { token?: string }) {
 
   const [amount, setAmount] = useState("25.00");
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  // Balances are pre-formatted without grouping separators; parse defensively.
+  const maxAmount = selectedToken ? Number(selectedToken.amount.replace(/,/g, "")) : 0;
+  const amountValue = Number(amount);
+  const isValidAmount = amount.trim() !== "" && Number.isFinite(amountValue) && amountValue > 0;
+  const exceedsMax = isValidAmount && amountValue > maxAmount;
+  const canSend = !!selectedToken && isValidAmount && !exceedsMax;
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -94,19 +102,36 @@ export function SendAmountPage({ token }: { token?: string }) {
       </button>
 
       <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
-        <p className="min-w-0 truncate font-heading text-[2.5rem] font-semibold leading-none tracking-tight">
-          {amount}{" "}
+        <div className="flex items-baseline justify-center gap-2">
+          <input
+            type="text"
+            inputMode="decimal"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value.replace(/[^0-9.]/g, ""))}
+            size={Math.max(amount.length, 1)}
+            aria-label={t`Amount`}
+            aria-invalid={exceedsMax}
+            className={cn(
+              "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none",
+              exceedsMax && "text-destructive",
+            )}
+          />
           <span className="text-[1.25rem] text-muted-foreground">{selectedToken?.symbol}</span>
-        </p>
+        </div>
         {selectedToken ? (
           <Button
             variant="secondary"
             size="sm"
             className="mt-3 h-8"
-            onClick={() => setAmount(selectedToken.amount)}
+            onClick={() => setAmount(selectedToken.amount.replace(/,/g, ""))}
           >
             <Trans>Use max · {selectedToken.amount}</Trans>
           </Button>
+        ) : null}
+        {exceedsMax ? (
+          <p className="mt-2 text-destructive text-xs">
+            <Trans>Amount exceeds your balance</Trans>
+          </p>
         ) : null}
       </div>
 
@@ -115,7 +140,7 @@ export function SendAmountPage({ token }: { token?: string }) {
       <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
-        disabled={!selectedToken}
+        disabled={!canSend}
         onClick={() => {
           void navigate({ to: "/wallet/send/receipt" });
         }}
