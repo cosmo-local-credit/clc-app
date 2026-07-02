@@ -3,11 +3,11 @@ import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Toaster } from "sonner";
 import { privateKeyToAccount } from "viem/accounts";
 import { useAccount } from "wagmi";
 import { connect, disconnect } from "wagmi/actions";
 import { Button } from "#/components/ui/button";
+import { AppToaster } from "#/components/ui/toaster";
 import {
   DialogBackdrop,
   DialogContent,
@@ -327,7 +327,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <Toaster richColors closeButton />
+        <AppToaster />
         {AppDevtools ? (
           <Suspense fallback={null}>
             <AppDevtools />
