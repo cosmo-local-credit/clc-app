@@ -2,19 +2,18 @@ import type { ReactNode } from "react";
 import { RiCheckLine, RiFingerprintLine } from "react-icons/ri";
 
 import { Trans } from "@lingui/react/macro";
+import { Badge } from "#/components/ui/badge";
 import { cn } from "#/lib/utils";
 
 export function NetworkBadge({ className }: { className?: string }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 border border-border bg-card px-2 py-0.5 font-semibold text-xs",
-        className,
-      )}
+    <Badge
+      variant="muted"
+      className={cn("h-auto gap-1.5 bg-card px-2 py-0.5 text-xs normal-case", className)}
     >
       <span className="size-2 rounded-full bg-primary" />
       <Trans>Celo network</Trans>
-    </span>
+    </Badge>
   );
 }
 
