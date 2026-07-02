@@ -1,6 +1,7 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -46,44 +47,49 @@ export function TransferDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <span className="rounded-full bg-primary px-3 py-1 font-semibold text-[0.6875rem] text-primary-foreground uppercase tracking-[0.06em]">
-              {badge}
-            </span>
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{badge}</Badge>
             <SheetTitle className="sr-only">
               <Trans>Transaction details</Trans>
             </SheetTitle>
           </SheetHeader>
 
           {transfer ? (
-            <div className="space-y-3 px-6 pb-2">
-              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
-                <span className="text-muted-foreground text-xs">
-                  <Trans>Status</Trans>
-                </span>
-                <span className="font-semibold text-sm">{status}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
-                <span className="text-muted-foreground text-xs">
-                  <Trans>Amount</Trans>
-                </span>
-                <span className="font-mono text-xs font-semibold">
-                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
-                  {transfer.tokenSymbol}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
-                <span className="text-muted-foreground text-xs">
-                  <Trans>Date</Trans>
-                </span>
-                <time className="font-mono text-xs font-semibold" dateTime={transfer.dateBlock}>
-                  {transferDate}
-                </time>
-              </div>
-              <div className="flex items-center justify-between gap-3 border border-border bg-card p-3">
-                <span className="text-muted-foreground text-xs">
-                  <Trans>Recipient</Trans>
-                </span>
-                <EllipsizedAddress address={transfer.recipientAddress} />
+            <div className="px-6 pb-2">
+              <div className="border border-border bg-card">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Status</Trans>
+                  </span>
+                  <Badge
+                    variant={transfer.success ? "primary" : "muted"}
+                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
+                  >
+                    {status}
+                  </Badge>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                    {transfer.tokenSymbol}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Date</Trans>
+                  </span>
+                  <time className="font-mono text-xs font-semibold" dateTime={transfer.dateBlock}>
+                    {transferDate}
+                  </time>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Recipient</Trans>
+                  </span>
+                  <EllipsizedAddress address={transfer.recipientAddress} />
+                </div>
               </div>
             </div>
           ) : null}

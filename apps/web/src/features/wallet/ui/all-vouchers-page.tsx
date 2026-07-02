@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 import { useAccount } from "wagmi";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
@@ -35,9 +36,9 @@ function VoucherRow({
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-bold tracking-tight">{voucher.symbol}</p>
             {voucher.admin ? (
-              <span className="bg-primary px-1 py-px text-[0.5rem] font-bold tracking-[0.06em] uppercase text-primary-foreground">
+              <Badge className="h-4 px-1 text-[0.5rem] uppercase tracking-[0.06em]">
                 <Trans>Admin</Trans>
-              </span>
+              </Badge>
             ) : null}
           </div>
           <p className="text-muted-foreground text-xs">{voucher.name}</p>
