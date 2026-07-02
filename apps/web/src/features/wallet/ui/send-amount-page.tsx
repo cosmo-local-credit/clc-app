@@ -114,18 +114,20 @@ export function SendAmountPage({ token }: { token?: string }) {
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </button>
 
-      <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
-        <div className="flex items-baseline justify-center gap-1">
+      <div className="mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5">
+        <div className="flex items-baseline justify-center gap-1.5">
           <input
             type="text"
             inputMode="decimal"
             value={amount}
             onChange={(event) => setAmount(sanitizeAmount(event.target.value))}
+            // field-sizing sizes the input to its text exactly, so the
+            // number + symbol pair centers true. size is the pre-support fallback.
             size={Math.max(amount.length, 1)}
             aria-label={t`Amount`}
             aria-invalid={exceedsMax}
             className={cn(
-              "min-w-0 bg-transparent text-right font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none",
+              "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none [field-sizing:content]",
               exceedsMax && "text-destructive",
             )}
           />
