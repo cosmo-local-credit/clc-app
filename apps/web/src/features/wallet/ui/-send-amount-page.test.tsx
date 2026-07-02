@@ -104,4 +104,19 @@ describe("SendAmountPage", () => {
     expect(amountInput.getAttribute("aria-invalid")).toBe("false");
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(false);
   });
+
+  it("caps the entered amount at two decimal places", async () => {
+    mockTokens();
+    renderWithQueryClient(<SendAmountPage token={USDC} />);
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    const amountInput = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+
+    fireEvent.change(amountInput, { target: { value: "6.6666" } });
+    expect(amountInput.value).toBe("6.66");
+
+    // Extra decimal points are dropped, not treated as new separators.
+    fireEvent.change(amountInput, { target: { value: "1.2.3" } });
+    expect(amountInput.value).toBe("1.23");
+  });
 });

@@ -15,6 +15,19 @@ import { TokenPickerSheet } from "./token-picker-sheet";
 
 const RECIPIENT = RECENT_RECIPIENTS[0];
 
+/** Keep only digits and a single decimal point, capped at 2 fraction digits. */
+function sanitizeAmount(raw: string): string {
+  const cleaned = raw.replace(/[^0-9.]/g, "");
+  const firstDot = cleaned.indexOf(".");
+  if (firstDot === -1) return cleaned;
+  const whole = cleaned.slice(0, firstDot);
+  const fraction = cleaned
+    .slice(firstDot + 1)
+    .replace(/\./g, "")
+    .slice(0, 2);
+  return `${whole}.${fraction}`;
+}
+
 export function SendAmountPage({ token }: { token?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -102,17 +115,17 @@ export function SendAmountPage({ token }: { token?: string }) {
       </button>
 
       <div className="mb-2.5 border border-border bg-card px-4 py-5 text-center">
-        <div className="flex items-baseline justify-center gap-2">
+        <div className="flex items-baseline justify-center gap-1">
           <input
             type="text"
             inputMode="decimal"
             value={amount}
-            onChange={(event) => setAmount(event.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(event) => setAmount(sanitizeAmount(event.target.value))}
             size={Math.max(amount.length, 1)}
             aria-label={t`Amount`}
             aria-invalid={exceedsMax}
             className={cn(
-              "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none",
+              "min-w-0 bg-transparent text-right font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none",
               exceedsMax && "text-destructive",
             )}
           />
