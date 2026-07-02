@@ -28,7 +28,7 @@ export function formatBackendApiError(err: BackendApiError): string {
   return err.code ? `${err.code}: ${err.description}` : err.description;
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     ...(init?.body ? { "Content-Type": "application/json" } : {}),
     ...(init?.headers as Record<string, string> | undefined),

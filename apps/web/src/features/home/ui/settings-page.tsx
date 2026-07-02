@@ -3,6 +3,7 @@ import { RiCheckboxCircleLine, RiLogoutBoxRLine, RiShieldFlashLine } from "react
 
 import { LanguageSelector } from "#/components/language-selector";
 import { ThemeSelector } from "#/components/theme-selector";
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { NotificationSettingsSection } from "./notification-settings-section";
@@ -112,14 +113,8 @@ function CaliburDelegationBadge({ status }: { status: CaliburDelegationStatus })
   const label = isDelegated ? t`Active` : status === "checking" ? t`Checking…` : t`Inactive`;
 
   return (
-    <span
-      className={`inline-flex h-7 shrink-0 items-center self-center border px-3 font-semibold text-[11px] ${
-        isDelegated
-          ? "border-primary/35 bg-primary/10 text-primary"
-          : "border-border bg-muted text-muted-foreground"
-      }`}
-    >
+    <Badge variant={isDelegated ? "primary" : "muted"} className="self-center">
       {label}
-    </span>
+    </Badge>
   );
 }

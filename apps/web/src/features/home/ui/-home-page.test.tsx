@@ -32,6 +32,10 @@ vi.mock("./wallet-page", () => ({
   WalletPage: () => <div data-testid="wallet-page" />,
 }));
 
+vi.mock("./activity-page", () => ({
+  ActivityPage: () => <div data-testid="activity-page" />,
+}));
+
 vi.mock("./market-page", () => ({
   MarketPage: ({ onboardingBanner }: { onboardingBanner?: ReactNode }) => (
     <div data-testid="market-page">{onboardingBanner}</div>
@@ -84,7 +88,7 @@ describe("HomePage (uncontrolled)", () => {
   it("switches to activity tab", () => {
     renderHome(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: "Activity" }));
-    expect(screen.getByTestId("undone-activity")).toBeTruthy();
+    expect(screen.getByTestId("activity-page")).toBeTruthy();
   });
 
   it("switches to pool tab", () => {

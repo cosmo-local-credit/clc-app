@@ -1,6 +1,8 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -11,19 +13,26 @@ import {
 
 import { Button } from "#/components/ui/button";
 import { LocationMap } from "#/components/ui/location-map.lazy";
-import { HighlightAddress, PicsumLogo, WALLET_TOKEN_BY_ID } from "#/components/wallet";
+import {
+  EllipsizedAddress,
+  HighlightAddress,
+  TokenLogo,
+  TransferDetailsSheet,
+  WALLET_TOKEN_BY_ID,
+  type TransferDetails,
+  type WalletToken,
+} from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import {
+  useAccountTokensInfinite,
+  useAccountTransfersInfinite,
+} from "#/features/wallet/hooks/use-account-balances";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { VoucherContactDetails } from "./voucher-contact-details";
 
 type TxKind = "in" | "out" | "swap";
 type VoucherDetailTab = "activity" | "info";
-
-type TokenTx = {
-  kind: TxKind;
-  title: string;
-  who: string;
-  amount: string;
-};
 
 const TX_ICON: Record<TxKind, ReactNode> = {
   in: <RiArrowLeftDownLine className="size-3.5" aria-hidden="true" />,
@@ -39,14 +48,61 @@ const TX_ICON_CLASS: Record<TxKind, string> = {
 
 export function TokenDetailPage({ tokenId }: { tokenId: string }) {
   const { t } = useLingui();
-  const token = WALLET_TOKEN_BY_ID[tokenId] ?? WALLET_TOKEN_BY_ID.babas;
-  const contractAddress = token.contractAddress ?? token.owner;
+  const { address } = useAccount();
+  const tokensQuery = useAccountTokensInfinite(address, 50);
+  const transfersQuery = useAccountTransfersInfinite(address);
   const [activeTab, setActiveTab] = useState<VoucherDetailTab>("activity");
-  const txs: TokenTx[] = [
-    { kind: "in", title: t`Received`, who: "from cosmo.clc", amount: "+ 500.00" },
-    { kind: "out", title: t`Sent`, who: "to Green Basket", amount: "\u2212 120.00" },
-    { kind: "swap", title: t`Swapped`, who: "from USDC", amount: "+ 1,470.00" },
-  ];
+  const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const fetchedTokens =
+    tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
+  const fetchedToken = fetchedTokens.find((item) => item.id === tokenId.toLowerCase());
+  const staticToken = WALLET_TOKEN_BY_ID[tokenId];
+  const token: WalletToken = fetchedToken ??
+    staticToken ?? {
+      id: tokenId.toLowerCase(),
+      symbol: "TOKEN",
+      name: "Token",
+      amount: "—",
+      fiat: "",
+      color: "oklch(0.58 0.16 210)",
+      kind: "voucher",
+      contractAddress: tokenId,
+    };
+  const contractAddress = token.contractAddress ?? token.owner;
+  const transfers = useMemo(() => {
+    const allTransfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
+    if (!contractAddress) return allTransfers;
+    return allTransfers.filter(
+      (transfer) => transfer.tokenAddress.toLowerCase() === contractAddress.toLowerCase(),
+    );
+  }, [contractAddress, transfersQuery.data]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (
+      !target ||
+      activeTab !== "activity" ||
+      !transfersQuery.hasNextPage ||
+      typeof IntersectionObserver === "undefined"
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry?.isIntersecting && !transfersQuery.isFetchingNextPage) {
+        void transfersQuery.fetchNextPage();
+      }
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [
+    activeTab,
+    transfersQuery.fetchNextPage,
+    transfersQuery.hasNextPage,
+    transfersQuery.isFetchingNextPage,
+  ]);
 
   // UI-only actions: when token-scoped transaction flows are wired, pass token.id
   // through these entry points so Send, Receive, and Swap preselect this voucher.
@@ -73,7 +129,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
       <BackChevron label={t`Your Vouchers`} to="/" />
 
       <div className="flex flex-col items-center">
-        <PicsumLogo seed={`voucher-${token.id}`} size={56} />
+        <TokenLogo token={token} size={56} />
         <p className="mt-3 text-muted-foreground text-sm">{token.name}</p>
         <p className="min-w-0 truncate font-heading text-[2.125rem] font-semibold leading-none tracking-tight">
           {token.amount} <span className="text-sm text-muted-foreground">{token.symbol}</span>
@@ -145,29 +201,79 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
 
       {activeTab === "activity" ? (
         <div className="border border-border bg-card" role="tabpanel">
-          {txs.map((tx, index, list) => (
-            <div
-              key={`${tx.title}-${tx.who}`}
-              className={[
-                "flex items-center gap-2.5 p-3",
-                index < list.length - 1 ? "border-b border-border" : "",
-              ].join(" ")}
-            >
-              <span
-                className={[
-                  "flex size-7 shrink-0 items-center justify-center bg-muted",
-                  TX_ICON_CLASS[tx.kind],
-                ].join(" ")}
-              >
-                {TX_ICON[tx.kind]}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{tx.title}</p>
-                <p className="text-muted-foreground text-[0.6875rem]">{tx.who}</p>
-              </div>
-              <span className="shrink-0 font-mono text-xs font-semibold">{tx.amount}</span>
+          {transfersQuery.isPending ? (
+            <div className="p-3 text-muted-foreground text-sm">
+              <Trans>Loading activity…</Trans>
             </div>
-          ))}
+          ) : null}
+          {transfersQuery.isError ? (
+            <div className="space-y-2 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load activity.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 bg-card"
+                onClick={() => transfersQuery.refetch()}
+              >
+                <Trans>Try again</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {transfersQuery.isSuccess && transfers.length === 0 ? (
+            <div className="p-3 text-muted-foreground text-sm">
+              <Trans>No activity yet.</Trans>
+            </div>
+          ) : null}
+          {transfers.map((transfer, index, list) => {
+            const kind = transfer.direction === "IN" ? "in" : "out";
+            const transferDate = formatTransferDate(transfer.dateBlock);
+            return (
+              <button
+                key={`${transfer.txHash}-${transfer.id}`}
+                type="button"
+                className={[
+                  "flex w-full items-center gap-2.5 p-3 text-left",
+                  index < list.length - 1 ? "border-b border-border" : "",
+                ].join(" ")}
+                onClick={() => setSelectedTransfer(transfer)}
+              >
+                <span
+                  className={[
+                    "flex size-7 shrink-0 items-center justify-center bg-muted",
+                    TX_ICON_CLASS[kind],
+                  ].join(" ")}
+                >
+                  {TX_ICON[kind]}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {transfer.direction === "IN" ? <Trans>Received</Trans> : <Trans>Sent</Trans>}
+                  </p>
+                  <p className="truncate text-muted-foreground text-[0.6875rem]">
+                    {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                    <EllipsizedAddress address={transfer.counterpartyAddress} />
+                    {transferDate ? (
+                      <>
+                        <span aria-hidden="true"> · </span>
+                        <time dateTime={transfer.dateBlock}>{transferDate}</time>
+                      </>
+                    ) : null}
+                  </p>
+                </div>
+                <span className="shrink-0 font-mono text-xs font-semibold">
+                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
+                </span>
+              </button>
+            );
+          })}
+          <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
+          {transfersQuery.isFetchingNextPage ? (
+            <div className="p-3 text-center text-muted-foreground text-xs">
+              <Trans>Loading more…</Trans>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="space-y-3" role="tabpanel">
@@ -189,6 +295,14 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
           </Button>
         </div>
       )}
+
+      <TransferDetailsSheet
+        transfer={selectedTransfer}
+        open={selectedTransfer !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTransfer(null);
+        }}
+      />
     </div>
   );
 }
