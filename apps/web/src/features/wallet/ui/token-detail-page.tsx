@@ -26,6 +26,7 @@ import {
   useAccountTransfersInfinite,
 } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { VoucherContactDetails } from "./voucher-contact-details";
 
 type TxKind = "in" | "out" | "swap";
@@ -225,6 +226,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
           {transfers.map((transfer, index, list) => {
             const kind = transfer.direction === "IN" ? "in" : "out";
             const sign = transfer.direction === "IN" ? "+" : "−";
+            const transferDate = formatTransferDate(transfer.dateBlock);
             return (
               <div
                 key={`${transfer.txHash}-${transfer.id}`}
@@ -248,6 +250,12 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
                   <p className="truncate text-muted-foreground text-[0.6875rem]">
                     {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
                     <EllipsizedAddress address={transfer.counterpartyAddress} />
+                    {transferDate ? (
+                      <>
+                        <span aria-hidden="true"> · </span>
+                        <time dateTime={transfer.dateBlock}>{transferDate}</time>
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <span className="shrink-0 font-mono text-xs font-semibold">

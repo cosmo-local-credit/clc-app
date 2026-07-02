@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
@@ -56,5 +57,6 @@ describe("ActivityPage", () => {
     expect(await screen.findByText("Received")).toBeTruthy();
     expect(screen.getByText("+ 1.23 USD₮")).toBeTruthy();
     expect(document.body.textContent).toContain("0x27c1…16c8E4");
+    expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
   });
 });

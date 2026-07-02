@@ -6,6 +6,7 @@ import { RiArrowLeftDownLine, RiArrowRightUpLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { EllipsizedAddress } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 
 export function ActivityPage({ address }: { address?: string }) {
   const { t } = useLingui();
@@ -67,6 +68,7 @@ export function ActivityPage({ address }: { address?: string }) {
         {transfers.map((transfer, index, list) => {
           const incoming = transfer.direction === "IN";
           const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+          const transferDate = formatTransferDate(transfer.dateBlock);
           return (
             <div
               key={`${transfer.txHash}-${transfer.id}`}
@@ -90,6 +92,12 @@ export function ActivityPage({ address }: { address?: string }) {
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
                   {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
                   <EllipsizedAddress address={transfer.counterpartyAddress} />
+                  {transferDate ? (
+                    <>
+                      <span aria-hidden="true"> · </span>
+                      <time dateTime={transfer.dateBlock}>{transferDate}</time>
+                    </>
+                  ) : null}
                 </p>
               </div>
               <span className="shrink-0 font-mono text-xs font-semibold">
