@@ -7,6 +7,16 @@ import {
 } from "#/features/wallet/api/account-client";
 
 const DEFAULT_PAGE_SIZE = 20;
+const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;
+const WALLET_ACCOUNT_REFETCH_INTERVAL_MS = 5_000;
+
+const walletAccountQueryFreshness = {
+  staleTime: WALLET_ACCOUNT_STALE_TIME_MS,
+  refetchInterval: WALLET_ACCOUNT_REFETCH_INTERVAL_MS,
+  refetchIntervalInBackground: false,
+  refetchOnReconnect: true,
+  refetchOnWindowFocus: true,
+} as const;
 
 export const accountWalletQueryKeys = {
   all: ["account-wallet"] as const,
@@ -23,7 +33,7 @@ export function useLatestAccountTokens(address: string | undefined) {
     queryKey: accountWalletQueryKeys.latestTokens(address),
     queryFn: () => getLatestAccountTokens(requireAddress(address)),
     enabled: !!address,
-    staleTime: 120_000,
+    ...walletAccountQueryFreshness,
   });
 }
 
@@ -41,7 +51,7 @@ export function useAccountTokensInfinite(address: string | undefined, perPage = 
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
       lastPage.tokens.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
-    staleTime: 120_000,
+    ...walletAccountQueryFreshness,
   });
 }
 
@@ -64,7 +74,7 @@ export function useAccountTransfersInfinite(
       lastPage.transfers.length < perPage || lastPage.last === undefined
         ? undefined
         : lastPage.last,
-    staleTime: 120_000,
+    ...walletAccountQueryFreshness,
   });
 }
 
