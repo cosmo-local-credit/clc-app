@@ -1,10 +1,10 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiArrowLeftDownLine, RiArrowRightUpLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress } from "#/components/wallet";
+import { EllipsizedAddress, TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 
@@ -12,6 +12,7 @@ export function ActivityPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const transfersQuery = useAccountTransfersInfinite(address);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
 
   useEffect(() => {
@@ -70,12 +71,14 @@ export function ActivityPage({ address }: { address?: string }) {
           const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
           const transferDate = formatTransferDate(transfer.dateBlock);
           return (
-            <div
+            <button
               key={`${transfer.txHash}-${transfer.id}`}
+              type="button"
               className={[
-                "flex items-center gap-2.5 p-3",
+                "flex w-full items-center gap-2.5 p-3 text-left",
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
+              onClick={() => setSelectedTransfer(transfer)}
             >
               <span
                 className={[
@@ -104,7 +107,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 {incoming ? "+" : "−"} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                 {transfer.tokenSymbol}
               </span>
-            </div>
+            </button>
           );
         })}
         <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
@@ -114,6 +117,14 @@ export function ActivityPage({ address }: { address?: string }) {
           </div>
         ) : null}
       </section>
+
+      <TransferDetailsSheet
+        transfer={selectedTransfer}
+        open={selectedTransfer !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTransfer(null);
+        }}
+      />
     </div>
   );
 }

@@ -17,7 +17,9 @@ import {
   EllipsizedAddress,
   HighlightAddress,
   TokenLogo,
+  TransferDetailsSheet,
   WALLET_TOKEN_BY_ID,
+  type TransferDetails,
   type WalletToken,
 } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
@@ -50,6 +52,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
   const tokensQuery = useAccountTokensInfinite(address, 50);
   const transfersQuery = useAccountTransfersInfinite(address);
   const [activeTab, setActiveTab] = useState<VoucherDetailTab>("activity");
+  const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const fetchedTokens =
     tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
@@ -228,12 +231,14 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
             const sign = transfer.direction === "IN" ? "+" : "−";
             const transferDate = formatTransferDate(transfer.dateBlock);
             return (
-              <div
+              <button
                 key={`${transfer.txHash}-${transfer.id}`}
+                type="button"
                 className={[
-                  "flex items-center gap-2.5 p-3",
+                  "flex w-full items-center gap-2.5 p-3 text-left",
                   index < list.length - 1 ? "border-b border-border" : "",
                 ].join(" ")}
+                onClick={() => setSelectedTransfer(transfer)}
               >
                 <span
                   className={[
@@ -261,7 +266,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
                 <span className="shrink-0 font-mono text-xs font-semibold">
                   {sign} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
                 </span>
-              </div>
+              </button>
             );
           })}
           <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
@@ -291,6 +296,14 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
           </Button>
         </div>
       )}
+
+      <TransferDetailsSheet
+        transfer={selectedTransfer}
+        open={selectedTransfer !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTransfer(null);
+        }}
+      />
     </div>
   );
 }

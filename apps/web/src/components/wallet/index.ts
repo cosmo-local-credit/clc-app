@@ -11,6 +11,8 @@ export {
   SignHint,
   SuccessCheck,
   TokenLogo,
+  TransferDetailsSheet,
+  type TransferDetails,
 } from "./wallet-kit";
 export {
   DEFAULT_SEND_TOKEN,
