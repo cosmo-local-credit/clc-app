@@ -1,14 +1,15 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { toast } from "sonner";
+import { useAccount } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
-import { WALLET_ADDRESS_FULL, WALLET_ENS_NAME } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 
 export function ReceivePage() {
   const { t } = useLingui();
+  const { address } = useAccount();
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -22,19 +23,20 @@ export function ReceivePage() {
   };
 
   const share = async () => {
+    if (!address) return;
     // Prefer the native share sheet; fall back to copying when unavailable.
     if (navigator.share) {
       try {
-        await navigator.share({ title: t`My wallet address`, text: WALLET_ADDRESS_FULL });
+        await navigator.share({ title: t`My wallet address`, text: address });
       } catch (error) {
         // AbortError = user dismissed the sheet; not a failure worth surfacing.
         if (error instanceof Error && error.name !== "AbortError") {
-          copy(WALLET_ADDRESS_FULL);
+          copy(address);
         }
       }
       return;
     }
-    copy(WALLET_ADDRESS_FULL);
+    copy(address);
   };
 
   return (
@@ -46,36 +48,35 @@ export function ReceivePage() {
           <Trans>Receive</Trans>
         </h1>
         <NetworkBadge className="my-3.5" />
-        <AddressQRCode value={WALLET_ADDRESS_FULL} size={156} />
-        <p className="mt-3.5 mb-1.5 text-muted-foreground text-xs">
-          <Trans>Receive details</Trans>
-        </p>
+        {address ? (
+          <>
+            <AddressQRCode value={address} size={156} />
+            <p className="mt-3.5 mb-1.5 text-muted-foreground text-xs">
+              <Trans>Receive details</Trans>
+            </p>
+          </>
+        ) : (
+          <p className="my-6 text-muted-foreground text-sm">
+            <Trans>No wallet address available.</Trans>
+          </p>
+        )}
       </div>
 
-      <div className="mb-3 border border-border bg-card">
-        <button
-          type="button"
-          aria-label={t`Copy wallet name`}
-          className="flex h-12 w-full items-center justify-between gap-3 border-b border-border px-3 text-left"
-          onClick={() => copy(WALLET_ENS_NAME)}
-        >
-          <span className="font-mono text-muted-foreground text-xs">{WALLET_ENS_NAME}</span>
-          <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        </button>
+      {address ? (
         <button
           type="button"
           aria-label={t`Copy wallet address`}
-          className="flex h-12 w-full items-center justify-between gap-3 px-3 text-left"
-          onClick={() => copy(WALLET_ADDRESS_FULL)}
+          className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-left"
+          onClick={() => copy(address)}
         >
           <HighlightAddress
-            address={WALLET_ADDRESS_FULL}
+            address={address}
             tailLength={6}
             className="min-w-0 break-all text-[0.625rem] leading-tight"
           />
           <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
-      </div>
+      ) : null}
 
       <div className="mb-3.5 border border-primary/30 bg-primary/5 p-3">
         <p className="text-foreground text-xs leading-relaxed">
@@ -89,11 +90,16 @@ export function ReceivePage() {
       <div className="flex-1" />
 
       <div className="flex gap-2">
-        <Button variant="outline" className="h-11 flex-1" onClick={() => copy(WALLET_ADDRESS_FULL)}>
+        <Button
+          variant="outline"
+          className="h-11 flex-1"
+          disabled={!address}
+          onClick={() => address && copy(address)}
+        >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>
         </Button>
-        <Button className="h-11 flex-1" onClick={() => void share()}>
+        <Button className="h-11 flex-1" disabled={!address} onClick={() => void share()}>
           <RiShareLine className="size-4" aria-hidden="true" />
           <Trans>Share</Trans>
         </Button>

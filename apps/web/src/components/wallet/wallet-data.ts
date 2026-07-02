@@ -145,12 +145,6 @@ export const WALLET_POOLS: WalletPool[] = [
 /** Total wallet balance, summed across placeholder tokens. */
 export const WALLET_TOTAL_BALANCE = "KSh 12,840";
 
-/** Connected wallet address used on Receive + receipts. */
-export const WALLET_ADDRESS_FULL = "0x7A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4c";
-
-/** Placeholder ENS for the connected wallet. */
-export const WALLET_ENS_NAME = "jamila.sarafu.eth";
-
 export type Recipient = {
   id: string;
   label: string;
