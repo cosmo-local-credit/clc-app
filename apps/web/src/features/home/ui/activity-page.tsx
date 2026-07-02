@@ -104,8 +104,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 </p>
               </div>
               <span className="shrink-0 font-mono text-xs font-semibold">
-                {incoming ? "+" : "−"} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
-                {transfer.tokenSymbol}
+                {formatTokenAmount(transfer.amount, transfer.tokenDecimals)} {transfer.tokenSymbol}
               </span>
             </button>
           );

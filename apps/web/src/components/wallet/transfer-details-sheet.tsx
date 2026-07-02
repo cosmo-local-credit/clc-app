@@ -37,7 +37,6 @@ export function TransferDetailsSheet({
   const { t } = useLingui();
   const badge = transfer?.direction === "IN" ? t`Received voucher` : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
-  const amountSign = transfer?.direction === "IN" ? "+" : "−";
   const transferDate = transfer ? formatTransferDate(transfer.dateBlock) : "";
   const explorerUrl = transfer ? `https://celoscan.io/tx/${transfer.txHash}` : "#";
 
@@ -68,7 +67,7 @@ export function TransferDetailsSheet({
                   <Trans>Amount</Trans>
                 </span>
                 <span className="font-mono text-xs font-semibold">
-                  {amountSign} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
                   {transfer.tokenSymbol}
                 </span>
               </div>

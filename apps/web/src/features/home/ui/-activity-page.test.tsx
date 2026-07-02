@@ -55,7 +55,7 @@ describe("ActivityPage", () => {
     renderWithQueryClient(<ActivityPage address={ADDRESS} />);
 
     expect(await screen.findByText("Received")).toBeTruthy();
-    expect(screen.getByText("+ 1.23 USD₮")).toBeTruthy();
+    expect(screen.getByText("1.23 USD₮")).toBeTruthy();
     expect(document.body.textContent).toContain("0x27c1…16c8E4");
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
   });
@@ -102,7 +102,7 @@ describe("ActivityPage", () => {
     expect(screen.getByText("Status")).toBeTruthy();
     expect(screen.getByText("Confirmed")).toBeTruthy();
     expect(screen.getByText("Recipient")).toBeTruthy();
-    expect(screen.getAllByText("+ 1.23 USD₮").length).toBeGreaterThan(1);
+    expect(screen.getAllByText("1.23 USD₮").length).toBeGreaterThan(1);
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
     expect(document.body.textContent).toContain("0x1a3E…73563d");
     expect(screen.getByRole("link", { name: "View on block explorer" })).toHaveProperty(

@@ -228,7 +228,6 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
           ) : null}
           {transfers.map((transfer, index, list) => {
             const kind = transfer.direction === "IN" ? "in" : "out";
-            const sign = transfer.direction === "IN" ? "+" : "−";
             const transferDate = formatTransferDate(transfer.dateBlock);
             return (
               <button
@@ -264,7 +263,7 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
                   </p>
                 </div>
                 <span className="shrink-0 font-mono text-xs font-semibold">
-                  {sign} {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
+                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
                 </span>
               </button>
             );
