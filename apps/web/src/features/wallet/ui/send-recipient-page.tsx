@@ -47,6 +47,8 @@ export function SendRecipientPage({ token }: { token?: string }) {
   const phoneResolution = usePhoneRecipientResolution(normalizedPhone);
   const ensResolution = useEnsRecipientResolution(ensName);
   const reverseEnsResolution = useReverseEnsResolution(directAddress);
+  const phoneResolvedAddress = normalizedPhone ? (phoneResolution.data?.address ?? null) : null;
+  const phoneReverseEnsResolution = useReverseEnsResolution(phoneResolvedAddress);
   const ensSuggestions = useMemo(() => {
     if (!isEnsCandidate(query)) return [];
     return [`${trimmedQuery}.eth`, `${trimmedQuery}.sarafu.eth`];
@@ -64,7 +66,11 @@ export function SendRecipientPage({ token }: { token?: string }) {
       ? { label: ensName, address: ensResolution.data.address, source: "ens" }
       : null) ??
     (normalizedPhone && phoneResolution.data
-      ? { label: normalizedPhone, address: phoneResolution.data.address, source: "phone" }
+      ? {
+          label: phoneReverseEnsResolution.data?.name ?? normalizedPhone,
+          address: phoneResolution.data.address,
+          source: phoneReverseEnsResolution.data?.name ? "reverse-ens" : "phone",
+        }
       : null);
   const isResolving =
     (Boolean(normalizedPhone) && phoneResolution.isPending) ||

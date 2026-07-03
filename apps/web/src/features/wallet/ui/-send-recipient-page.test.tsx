@@ -33,14 +33,16 @@ function renderWithQueryClient(ui: React.ReactElement) {
 }
 
 function mockFetch(body: unknown, status = 200) {
-  const fetcher = vi.fn().mockResolvedValue(
-    new Response(JSON.stringify(body), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    }),
-  );
+  const fetcher = vi.fn().mockResolvedValue(createJsonResponse(body, status));
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
+}
+
+function createJsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 afterEach(() => {
@@ -77,6 +79,56 @@ describe("SendRecipientPage", () => {
           token: "0xtoken",
           recipient: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
           recipientLabel: "+254711777734",
+        },
+      });
+    });
+  });
+
+  it("uses reverse ENS as the recipient label after resolving a phone number", async () => {
+    const fetcher = vi.fn((url: string) => {
+      if (url.includes("/lookup/address/")) {
+        return Promise.resolve(
+          createJsonResponse({
+            ok: true,
+            description: "Address resolved",
+            result: { address: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
+          }),
+        );
+      }
+      return Promise.resolve(
+        createJsonResponse({
+          ok: true,
+          description: "Name reverse resolved",
+          result: { name: "admin.sarafu.eth" },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetcher);
+    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
+      target: { value: "0711 777 734" },
+    });
+
+    expect(await screen.findByText("admin.sarafu.eth")).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/+254711777734",
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+      expect.objectContaining({ method: "GET" }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/wallet/send/amount",
+        search: {
+          token: "0xtoken",
+          recipient: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+          recipientLabel: "admin.sarafu.eth",
         },
       });
     });
