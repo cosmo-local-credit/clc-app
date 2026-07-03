@@ -18,6 +18,14 @@ export type DelegatePayload = {
   authorization: EIP7702Auth;
 };
 
+export type RelayPreviewPayload = {
+  userAddress: `0x${string}`;
+  batchedCall: SignedBatch["batchedCall"];
+  keyHash?: `0x${string}`;
+  executor: `0x${string}`;
+  deadline: string;
+};
+
 export type RelayPayload = {
   userAddress: `0x${string}`;
   signedBatch: SignedBatch;
@@ -76,6 +84,9 @@ export function createRelayerClient(baseUrl: string) {
         publicKeyX: string;
         publicKeyY: string;
       }>("/webauthn/recover", payload),
+
+    relayPreview: (payload: RelayPreviewPayload) =>
+      post<{ nonce: string; digest: `0x${string}` }>("/relay/preview", payload),
 
     relay: (payload: RelayPayload) => post<{ trackingId: string }>("/relay", payload),
   };
