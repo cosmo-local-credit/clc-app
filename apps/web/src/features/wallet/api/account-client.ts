@@ -53,27 +53,33 @@ const ACCOUNT_READ_REQUEST: RequestInit = {
   cache: "no-store",
 };
 
+// The backend returns `tokens: null` / `transfers: null` for accounts with no
+// history rather than an empty array, so normalize to `[]` at the boundary to
+// keep the typed contract honest and every consumer's `.map` / `.length` safe.
 export async function getLatestAccountTokens(address: string): Promise<AccountTokensResult> {
-  return apiFetch<AccountTokensResult>(
+  const result = await apiFetch<AccountTokensResult>(
     `/api/v2/accounts/${address}/tokens/latest`,
     ACCOUNT_READ_REQUEST,
   );
+  return { ...result, tokens: result.tokens ?? [] };
 }
 
 export async function getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
-  return apiFetch<AccountTokensResult>(
+  const result = await apiFetch<AccountTokensResult>(
     `/api/v2/accounts/${params.address}/tokens${formatCursorQuery(params)}`,
     ACCOUNT_READ_REQUEST,
   );
+  return { ...result, tokens: result.tokens ?? [] };
 }
 
 export async function getAccountTransfers(
   params: CursorPageParams,
 ): Promise<AccountTransfersResult> {
-  return apiFetch<AccountTransfersResult>(
+  const result = await apiFetch<AccountTransfersResult>(
     `/api/v2/accounts/${params.address}/transfers${formatCursorQuery(params)}`,
     ACCOUNT_READ_REQUEST,
   );
+  return { ...result, transfers: result.transfers ?? [] };
 }
 
 function formatCursorQuery(params: CursorPageParams): string {
