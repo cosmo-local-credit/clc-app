@@ -30,17 +30,17 @@ function CopyableMono({
   onCopy: (value: string) => void;
 }) {
   return (
-    <div className="flex min-w-0 items-center gap-1.5 text-right">
+    <button
+      type="button"
+      className="flex min-h-9 min-w-0 items-center gap-2 bg-card py-1 pl-2 text-right"
+      aria-label={label}
+      onClick={() => onCopy(value)}
+    >
       <EllipsizedAddress address={value} />
-      <button
-        type="button"
-        className="flex size-5 shrink-0 items-center justify-center bg-muted text-muted-foreground"
-        aria-label={label}
-        onClick={() => onCopy(value)}
-      >
-        <RiFileCopyLine className="size-3" aria-hidden="true" />
-      </button>
-    </div>
+      <span className="flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+        <RiFileCopyLine className="size-3.5" aria-hidden="true" />
+      </span>
+    </button>
   );
 }
 
@@ -70,8 +70,9 @@ export function SendReceiptPage({
       toast.error(t`Couldn't copy transaction hash`);
       return;
     }
-    navigator.clipboard
+    void navigator.clipboard
       .writeText(value)
+      .then(() => toast.success(t`Transaction hash copied`))
       .catch(() => toast.error(t`Couldn't copy transaction hash`));
   };
 
