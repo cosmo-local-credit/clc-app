@@ -64,7 +64,7 @@ describe("SendRecipientPage", () => {
 
     expect(await screen.findByText("+254711777734")).toBeTruthy();
     expect(fetcher).toHaveBeenCalledWith(
-      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/%2B254711777734",
+      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/+254711777734",
       expect.objectContaining({ method: "GET" }),
     );
 
@@ -82,17 +82,25 @@ describe("SendRecipientPage", () => {
     });
   });
 
-  it("keeps pasted addresses visible in full", async () => {
-    mockFetch({ name: "alice.sarafu.eth" });
+  it("keeps pasted addresses visible in full and shows reverse ENS when present", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      description: "Name reverse resolved",
+      result: { name: "admin.sarafu.eth" },
+    });
     renderWithQueryClient(<SendRecipientPage />);
     const input = screen.getByRole("textbox", { name: /recipient ens, phone or address/i });
 
     fireEvent.change(input, {
-      target: { value: "0xa316408425cF17F1827483dee621c6C3A9B5fad4" },
+      target: { value: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
     });
 
-    expect((input as HTMLInputElement).value).toBe("0xa316408425cF17F1827483dee621c6C3A9B5fad4");
-    expect(await screen.findByText("alice.sarafu.eth")).toBeTruthy();
+    expect((input as HTMLInputElement).value).toBe("0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439");
+    expect(await screen.findByText("admin.sarafu.eth")).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+      expect.objectContaining({ method: "GET" }),
+    );
   });
 
   it("fills the input from a scanned QR address", async () => {

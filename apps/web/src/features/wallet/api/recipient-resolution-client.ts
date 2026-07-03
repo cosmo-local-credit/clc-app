@@ -15,10 +15,7 @@ const LOOKUP_REQUEST: RequestInit = {
 };
 
 export async function resolvePhoneRecipient(phone: string): Promise<RecipientAddressResolution> {
-  const json = await getJson(
-    `${PHONE_LOOKUP_BASE_URL}/${encodeURIComponent(phone)}`,
-    "Phone lookup failed.",
-  );
+  const json = await getJson(`${PHONE_LOOKUP_BASE_URL}/${phone}`, "Phone lookup failed.");
   return { address: extractAddress(json, "Phone lookup response is missing an address.") };
 }
 

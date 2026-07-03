@@ -33,7 +33,7 @@ describe("recipient resolution client", () => {
       address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
     });
     expect(fetcher).toHaveBeenCalledWith(
-      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/%2B254711777734",
+      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/+254711777734",
       expect.objectContaining({ method: "GET", cache: "no-store" }),
     );
   });
@@ -55,11 +55,19 @@ describe("recipient resolution client", () => {
   });
 
   it("reverse resolves an address when a name exists", async () => {
-    mockJson({ name: "alice.sarafu.eth" });
+    const fetcher = mockJson({
+      ok: true,
+      description: "Name reverse resolved",
+      result: { name: "admin.sarafu.eth" },
+    });
 
     await expect(
-      reverseResolveAddress("0xa316408425cF17F1827483dee621c6C3A9B5fad4"),
-    ).resolves.toEqual({ name: "alice.sarafu.eth" });
+      reverseResolveAddress("0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439"),
+    ).resolves.toEqual({ name: "admin.sarafu.eth" });
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
   });
 
   it("treats a missing reverse ENS as optional", async () => {
