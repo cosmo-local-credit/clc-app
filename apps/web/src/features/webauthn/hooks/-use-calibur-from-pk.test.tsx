@@ -18,6 +18,7 @@ function createClientStub(): RelayerClient {
     delegate: vi.fn(),
     getWebAuthnChallenge: vi.fn(),
     recoverWebAuthn: vi.fn(),
+    relayPreview: vi.fn(),
     relay: vi.fn(),
   };
 }

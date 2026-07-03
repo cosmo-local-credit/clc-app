@@ -10,7 +10,8 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { type Recipient, RECENT_RECIPIENTS } from "#/components/wallet/wallet-data";
+import { type Recipient } from "#/components/wallet/wallet-data";
+import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
 import { cn } from "#/lib/utils";
 import { RecentRecipientRow } from "./recent-recipient-row";
 
@@ -24,6 +25,8 @@ export function AddressBookSheet({
   onSelect: (recipient: Recipient) => void;
 }) {
   const { t } = useLingui();
+  const recipientsQuery = useAddressBookRecipients();
+  const recipients = recipientsQuery.data ?? [];
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -35,9 +38,18 @@ export function AddressBookSheet({
               <Trans>Address book</Trans>
             </SheetTitle>
           </SheetHeader>
-          {/* Replace this static set with a TanStack Query + TanStack Virtual powered infinite address-book list when backend pagination is wired. */}
           <div className="flex-1 overflow-y-auto px-3">
-            {RECENT_RECIPIENTS.map((recipient, index, list) => (
+            {recipientsQuery.isPending ? (
+              <p className="px-3 py-4 text-muted-foreground text-sm">
+                <Trans>Loading address book…</Trans>
+              </p>
+            ) : null}
+            {recipientsQuery.isSuccess && recipients.length === 0 ? (
+              <p className="px-3 py-4 text-muted-foreground text-sm">
+                <Trans>No saved recipients yet.</Trans>
+              </p>
+            ) : null}
+            {recipients.map((recipient, index, list) => (
               <div
                 key={recipient.id}
                 className={cn(index < list.length - 1 && "border-b border-border")}

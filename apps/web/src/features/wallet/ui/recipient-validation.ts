@@ -3,22 +3,22 @@ export function formatAddressInput(address: string): string {
 }
 
 export function normalizePhone(value: string): string {
-  return value.replace(/[\s()-]/g, "");
+  const compact = value.replace(/[\s()-]/g, "");
+  if (/^0\d{9}$/.test(compact)) return `+254${compact.slice(1)}`;
+  return compact;
 }
 
 export function normalizeScannedRecipient(value: string): string {
-  const address = value.match(/0x\S{40}/)?.[0];
+  const address = value.match(/0x[a-fA-F0-9]{40}/)?.[0];
   return address ?? value.trim();
 }
 
 export function isAddress(value: string): boolean {
-  const trimmed = value.trim();
-  return trimmed.startsWith("0x") && trimmed.length === 42;
+  return /^0x[a-fA-F0-9]{40}$/.test(value.trim());
 }
 
 export function isPhone(value: string): boolean {
-  const normalized = normalizePhone(value);
-  return /^\+254\d{9}$/.test(normalized) || /^0\d{9}$/.test(normalized);
+  return /^\+254\d{9}$/.test(normalizePhone(value));
 }
 
 export function isEns(value: string): boolean {
