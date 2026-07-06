@@ -26,7 +26,7 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/receive",
     },
     { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, to: "/wallet/swap" },
-    { id: "topup", label: t`Top up`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
+    { id: "topup", label: t`Cash`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
