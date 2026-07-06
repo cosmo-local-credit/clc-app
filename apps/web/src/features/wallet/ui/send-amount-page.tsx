@@ -64,6 +64,7 @@ export function SendAmountPage({
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
 
   const [amount, setAmount] = useState("");
+  const [amountFocused, setAmountFocused] = useState(false);
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -171,24 +172,35 @@ export function SendAmountPage({
 
       <div className="mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5">
         <div className="flex items-baseline justify-center gap-1.5">
-          <input
-            type="text"
-            inputMode="decimal"
-            value={amount}
-            onChange={(event) => {
-              setMaxAmountRaw(null);
-              setAmount(sanitizeAmount(event.target.value));
-            }}
-            // field-sizing sizes the input to its text exactly, so the
-            // number + symbol pair centers true. size is the pre-support fallback.
-            size={Math.max(amount.length, 1)}
-            aria-label={t`Amount`}
-            aria-invalid={exceedsMax}
-            className={cn(
-              "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight outline-none [field-sizing:content]",
-              exceedsMax && "text-destructive",
-            )}
-          />
+          <div className="relative flex items-baseline">
+            <input
+              type="text"
+              inputMode="decimal"
+              autoFocus
+              value={amount}
+              onFocus={() => setAmountFocused(true)}
+              onBlur={() => setAmountFocused(false)}
+              onChange={(event) => {
+                setMaxAmountRaw(null);
+                setAmount(sanitizeAmount(event.target.value));
+              }}
+              // field-sizing sizes the input to its text exactly, so the
+              // number + symbol pair centers true. size is the pre-support fallback.
+              size={Math.max(amount.length, 1)}
+              aria-label={t`Amount`}
+              aria-invalid={exceedsMax}
+              className={cn(
+                "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
+                exceedsMax && "text-destructive",
+              )}
+            />
+            {!amount && !amountFocused ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-1/2 h-9 w-px -translate-x-1/2 -translate-y-1/2 animate-pulse bg-primary"
+              />
+            ) : null}
+          </div>
           <span className="text-[1.25rem] text-muted-foreground">{selectedToken?.symbol}</span>
         </div>
         {selectedToken ? (
