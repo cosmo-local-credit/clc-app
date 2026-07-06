@@ -56,7 +56,7 @@ msgstr "Imewashwa"
 msgid "Activity"
 msgstr "Shughuli"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:36
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:60
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "Ongeza nambari ya simu kwenye wasifu wako ili kutumia MPESA."
 
@@ -70,8 +70,9 @@ msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
 #~ msgid "Add money"
 #~ msgstr "Ongeza pesa"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:62
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:182
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:90
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:237
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:405
 msgid "Add stables"
 msgstr "Ongeza stables"
 
@@ -110,7 +111,7 @@ msgstr "Tayari una akaunti?"
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:113
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:185
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:311
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:210
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:265
 msgid "Amount"
 msgstr "Kiasi"
 
@@ -165,13 +166,23 @@ msgstr "Salio {0}"
 msgid "Browse all"
 msgstr "Tazama zote"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:54
+#. placeholder {0}: ratesQuery.data.buy
+#. placeholder {1}: ratesQuery.data.sell
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:308
+msgid "Buy {0} · Sell {1}"
+msgstr "Nunua {0} · Uza {1}"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:106
+msgid "Buy {PRETIUM_ONRAMP_ASSET} with KES."
+msgstr "Nunua {PRETIUM_ONRAMP_ASSET} kwa KES."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:82
 msgid "Buy or sell stables with local money."
 msgstr "Nunua au uza stables kwa pesa za ndani."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:78
-msgid "Buy stables with KES."
-msgstr "Nunua stables kwa KES."
+#~ msgid "Buy stables with KES."
+#~ msgstr "Nunua stables kwa KES."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:48
 #~ msgid "Buy stables with local money."
@@ -194,8 +205,8 @@ msgid "Cancel"
 msgstr "Ghairi"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:29
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:47
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:51
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:75
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:79
 msgid "Cash"
 msgstr "Pesa"
 
@@ -272,6 +283,10 @@ msgstr "Hati za jamii na maelezo yake."
 msgid "Complete the browser permission prompt to continue."
 msgstr "Kamilisha ombi la ruhusa la kivinjari ili kuendelea."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:219
+msgid "Complete the prompt on your phone."
+msgstr "Kamilisha ombi kwenye simu yako."
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:334
 msgid "Confirm and send"
 msgstr "Thibitisha na utume"
@@ -301,6 +316,10 @@ msgstr "Imethibitishwa"
 #~ msgid "Confirming..."
 #~ msgstr "Inathibitisha..."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:54
+msgid "Connect your wallet to use MPESA."
+msgstr "Unganisha mkoba wako ili kutumia MPESA."
+
 #: apps/web/src/features/home/ui/settings-page.tsx:70
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
@@ -327,7 +346,7 @@ msgstr "Muunganisho umeshindikana."
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:213
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:250
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:337
 msgid "Continue"
 msgstr "Endelea"
 
@@ -423,6 +442,10 @@ msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 msgid "Couldn't load activity."
 msgstr "Haikuwezekana kupakia shughuli."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:371
+msgid "Couldn't load Pretium history."
+msgstr "Hatukuweza kupakia historia ya Pretium."
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:160
 msgid "Couldn't load tokens"
 msgstr "Imeshindwa kupakia tokeni"
@@ -435,6 +458,10 @@ msgstr "Haikuwezekana kupakia hati."
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:196
 msgid "Couldn't resolve that recipient."
 msgstr "Haikuwezekana kutambua mpokeaji huyo."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:223
+msgid "Couldn't start MPESA top up"
+msgstr "Hatukuweza kuanzisha uwekaji pesa wa MPESA"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
 msgid "Create account"
@@ -618,6 +645,10 @@ msgstr "Leta mkoba wa karatasi?"
 msgid "Import wallet"
 msgstr "Leta mkoba"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:400
+msgid "In"
+msgstr "Ndani"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:113
 msgid "Inactive"
 msgstr "Haijawashwa"
@@ -678,6 +709,10 @@ msgstr "Inapakia shughuli…"
 msgid "Loading address book…"
 msgstr "Inapakia kitabu cha anwani…"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:365
+msgid "Loading cash activity…"
+msgstr "Inapakia shughuli za pesa…"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:243
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:258
 msgid "Loading location map"
@@ -688,6 +723,10 @@ msgstr "Inapakia ramani ya eneo"
 msgid "Loading more…"
 msgstr "Inapakia zaidi…"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:296
+msgid "Loading Pretium rates…"
+msgstr "Inapakia viwango vya Pretium…"
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:164
 msgid "Loading tokens…"
 msgstr "Inapakia tokeni…"
@@ -697,7 +736,7 @@ msgstr "Inapakia tokeni…"
 msgid "Loading vouchers…"
 msgstr "Inapakia hati…"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:32
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:56
 msgid "Loading your profile…"
 msgstr "Inapakia wasifu wako…"
 
@@ -746,17 +785,21 @@ msgstr "Kiwango cha juu {max}"
 #~ msgid "Mint to"
 #~ msgstr "Mint kwa"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:38
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:62
 msgid "MPESA cash services need a Kenyan phone number."
 msgstr "Huduma za pesa za MPESA zinahitaji nambari ya simu ya Kenya."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:194
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:249
 msgid "MPESA phone"
 msgstr "Simu ya MPESA"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:75
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:218
+msgid "MPESA prompt sent"
+msgstr "Ombi la MPESA limetumwa"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:103
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:185
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:134
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:240
 msgid "MPESA via Pretium"
 msgstr "MPESA kupitia Pretium"
 
@@ -817,7 +860,7 @@ msgstr "Hakuna anwani inayopatikana"
 msgid "No camera found on this device."
 msgstr "Hakuna kamera iliyopatikana kwenye kifaa hiki."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:121
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:383
 msgid "No cash activity yet."
 msgstr "Bado hakuna shughuli za pesa."
 
@@ -829,7 +872,7 @@ msgstr "Bado hakuna shughuli za pesa."
 #~ msgid "No passkey is registered on this device."
 #~ msgstr "Hakuna passkey iliyosajiliwa kwenye kifaa hiki."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:200
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:255
 msgid "No phone number"
 msgstr "Hakuna nambari ya simu"
 
@@ -908,6 +951,10 @@ msgstr "Inafungua mkoba wa karatasi..."
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 msgid "or"
 msgstr "au"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:400
+msgid "Out"
+msgstr "Nje"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:36
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:58
@@ -1013,13 +1060,17 @@ msgstr "Mapendeleo"
 msgid "Preparing..."
 msgstr "Inaandaa..."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:124
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:386
 msgid "Pretium deposits and withdrawals will appear here."
 msgstr "Amana na utoaji wa Pretium zitaonekana hapa."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:115
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:360
 msgid "Pretium history"
 msgstr "Historia ya Pretium"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:305
+msgid "Pretium rate"
+msgstr "Kiwango cha Pretium"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:21
 msgid "Primary navigation"
@@ -1078,8 +1129,12 @@ msgid "Rate"
 msgstr "Bei"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:244
-msgid "Rates and fees will be shown before you confirm."
-msgstr "Viwango na ada zitaonyeshwa kabla hujathibitisha."
+#~ msgid "Rates and fees will be shown before you confirm."
+#~ msgstr "Viwango na ada zitaonyeshwa kabla hujathibitisha."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:300
+msgid "Rates unavailable. They will be shown before you confirm."
+msgstr "Viwango havipatikani. Vitaonyeshwa kabla hujathibitisha."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:227
 #~ msgid "Re-authenticate"
@@ -1203,7 +1258,7 @@ msgstr "Inatafuta maeneo…"
 msgid "Select a token"
 msgstr "Chagua tokeni"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:106
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:137
 msgid "Sell stables to local money."
 msgstr "Uza stables upate pesa za ndani."
 
@@ -1320,9 +1375,13 @@ msgstr "Inaondoka..."
 #~ msgid "Smart wallet activation failed."
 #~ msgstr "Uwezeshaji wa mkoba mahiri umeshindikana."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:91
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:122
 msgid "Soon"
 msgstr "Hivi karibuni"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:337
+msgid "Starting…"
+msgstr "Inaanza…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:61
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
@@ -1443,6 +1502,7 @@ msgstr "Historia ya hamisho"
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:109
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:235
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:374
 msgid "Try again"
 msgstr "Jaribu tena"
 
@@ -1553,7 +1613,7 @@ msgid "We could not verify your session. Check your connection and try again."
 msgstr "Hatukuweza kuthibitisha kikao chako. Angalia muunganisho wako na "
 "ujaribu tena."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:34
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:58
 msgid "We couldn't load your profile phone number."
 msgstr "Hatukuweza kupakia nambari ya simu kwenye wasifu wako."
 
@@ -1561,7 +1621,8 @@ msgstr "Hatukuweza kupakia nambari ya simu kwenye wasifu wako."
 msgid "Website"
 msgstr "Tovuti"
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:88
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:119
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:407
 msgid "Withdraw"
 msgstr "Toa pesa"
 
