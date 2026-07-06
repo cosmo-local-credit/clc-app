@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { account } = vi.hoisted(() => ({
@@ -67,10 +67,13 @@ describe("TopUpPage", () => {
     expect(screen.getByText("No cash activity yet.")).toBeTruthy();
   });
 
-  it("shows the user's Kenyan M-PESA number and a 20 KES amount", async () => {
+  it("opens the add stables sheet with the user's Kenyan MPESA number and a 20 KES amount", async () => {
     mockProfile("+254712345678");
 
     renderWithQueryClient(<TopUpPage />);
+
+    expect(screen.queryByRole("textbox", { name: /amount/i })).toBeNull();
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
     expect(await screen.findByDisplayValue("+254712345678")).toBeTruthy();
     expect(screen.getByText("KES")).toBeTruthy();
@@ -83,9 +86,9 @@ describe("TopUpPage", () => {
 
     renderWithQueryClient(<TopUpPage />);
 
-    expect(
-      await screen.findByText("M-PESA cash services need a Kenyan phone number."),
-    ).toBeTruthy();
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+
+    expect(await screen.findByText("MPESA cash services need a Kenyan phone number.")).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /amount/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
   });
@@ -95,8 +98,10 @@ describe("TopUpPage", () => {
 
     renderWithQueryClient(<TopUpPage />);
 
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+
     expect(
-      await screen.findByText("Add a phone number to your profile to use M-PESA."),
+      await screen.findByText("Add a phone number to your profile to use MPESA."),
     ).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /amount/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);

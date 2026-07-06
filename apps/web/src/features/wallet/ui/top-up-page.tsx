@@ -5,6 +5,15 @@ import { RiArrowRightSLine, RiErrorWarningLine, RiHistoryLine } from "react-icon
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import {
+  SheetBackdrop,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetPortal,
+  SheetRoot,
+  SheetTitle,
+} from "#/components/ui/sheet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { cn } from "#/lib/utils";
@@ -13,6 +22,7 @@ export function TopUpPage() {
   const { t } = useLingui();
   const profileQuery = useAuthProfile();
   const [amount, setAmount] = useState("20");
+  const [addStablesOpen, setAddStablesOpen] = useState(false);
 
   const phone = profileQuery.data?.phone.trim() ?? "";
   const parsedPhone = phone ? parsePhoneNumber(phone) : undefined;
@@ -23,9 +33,9 @@ export function TopUpPage() {
     : profileQuery.isError
       ? t`We couldn't load your profile phone number.`
       : !hasPhone
-        ? t`Add a phone number to your profile to use M-PESA.`
+        ? t`Add a phone number to your profile to use MPESA.`
         : !hasKenyanPhone
-          ? t`M-PESA cash services need a Kenyan phone number.`
+          ? t`MPESA cash services need a Kenyan phone number.`
           : null;
   const amountValue = Number(amount);
   const hasValidAmount = amount.trim() !== "" && Number.isFinite(amountValue) && amountValue > 0;
@@ -51,86 +61,28 @@ export function TopUpPage() {
             <h2 id="add-stables-title" className="font-heading font-semibold text-base">
               <Trans>Add stables</Trans>
             </h2>
-            <span className="text-muted-foreground text-xs">M-PESA</span>
+            <span className="text-muted-foreground text-xs">MPESA</span>
           </div>
 
-          <div className="space-y-4 border border-border bg-card p-4">
-            <div className="flex items-center gap-3">
-              <img
-                src="/pretium.png"
-                alt=""
-                className="size-11 shrink-0 border border-border bg-card object-contain"
-                aria-hidden="true"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-sm">
-                  <Trans>M-PESA via Pretium</Trans>
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  <Trans>Buy stables with KES.</Trans>
-                </p>
-              </div>
+          <button
+            type="button"
+            onClick={() => setAddStablesOpen(true)}
+            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left active:bg-muted"
+          >
+            <PretiumLogo />
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-sm">
+                <Trans>MPESA via Pretium</Trans>
+              </p>
+              <p className="text-muted-foreground text-xs">
+                <Trans>Buy stables with KES.</Trans>
+              </p>
             </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="topup-phone" className="font-medium text-sm">
-                <Trans>M-PESA phone</Trans>
-              </label>
-              <Input
-                id="topup-phone"
-                type="tel"
-                value={profileQuery.isPending ? "" : phone}
-                placeholder={t`No phone number`}
-                readOnly
-                disabled={entryDisabled}
-                aria-invalid={!!disabledReason && !profileQuery.isPending}
-                className="font-mono"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label htmlFor="topup-amount" className="font-medium text-sm">
-                <Trans>Amount</Trans>
-              </label>
-              <div
-                className={cn(
-                  "flex h-11 items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
-                  entryDisabled && "opacity-50",
-                  !hasValidAmount && "border-destructive",
-                )}
-              >
-                <span className="mr-2 shrink-0 text-muted-foreground text-sm font-semibold">
-                  KES
-                </span>
-                <Input
-                  id="topup-amount"
-                  type="text"
-                  inputMode="decimal"
-                  value={amount}
-                  onChange={(event) => setAmount(event.target.value.replace(/[^0-9.]/g, ""))}
-                  placeholder="20"
-                  disabled={entryDisabled}
-                  aria-invalid={!hasValidAmount}
-                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-0 font-heading text-xl font-semibold tracking-tight focus-visible:border-0"
-                />
-              </div>
-            </div>
-
-            {disabledReason ? (
-              <div className="flex gap-2 border border-border bg-background p-3 text-muted-foreground text-xs">
-                <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <p>{disabledReason}</p>
-              </div>
-            ) : null}
-
-            <p className="text-muted-foreground text-xs">
-              <Trans>Rates and fees will be shown before you confirm.</Trans>
-            </p>
-
-            <Button className="h-11 w-full" disabled={!canContinue}>
-              <Trans>Continue</Trans>
-            </Button>
-          </div>
+            <RiArrowRightSLine
+              className="size-4 shrink-0 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </button>
         </section>
 
         <section aria-labelledby="withdraw-title" className="space-y-2">
@@ -148,15 +100,10 @@ export function TopUpPage() {
             disabled
             className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left opacity-60"
           >
-            <img
-              src="/pretium.png"
-              alt=""
-              className="size-11 shrink-0 border border-border bg-card object-contain"
-              aria-hidden="true"
-            />
+            <PretiumLogo />
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-sm">
-                <Trans>M-PESA via Pretium</Trans>
+                <Trans>MPESA via Pretium</Trans>
               </p>
               <p className="text-muted-foreground text-xs">
                 <Trans>Sell stables to local money.</Trans>
@@ -186,6 +133,142 @@ export function TopUpPage() {
           </div>
         </section>
       </div>
+
+      <AddStablesSheet
+        open={addStablesOpen}
+        onOpenChange={setAddStablesOpen}
+        amount={amount}
+        onAmountChange={setAmount}
+        phone={phone}
+        profilePending={profileQuery.isPending}
+        disabledReason={disabledReason}
+        entryDisabled={entryDisabled}
+        hasValidAmount={hasValidAmount}
+        canContinue={canContinue}
+      />
     </div>
+  );
+}
+
+function AddStablesSheet({
+  open,
+  onOpenChange,
+  amount,
+  onAmountChange,
+  phone,
+  profilePending,
+  disabledReason,
+  entryDisabled,
+  hasValidAmount,
+  canContinue,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  amount: string;
+  onAmountChange: (amount: string) => void;
+  phone: string;
+  profilePending: boolean;
+  disabledReason: string | null;
+  entryDisabled: boolean;
+  hasValidAmount: boolean;
+  canContinue: boolean;
+}) {
+  const { t } = useLingui();
+
+  return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
+            <div className="flex items-center gap-3">
+              <PretiumLogo />
+              <div>
+                <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+                  <Trans>Add stables</Trans>
+                </SheetTitle>
+                <p className="text-muted-foreground text-xs">
+                  <Trans>MPESA via Pretium</Trans>
+                </p>
+              </div>
+            </div>
+          </SheetHeader>
+
+          <div className="space-y-4 px-6 pb-3">
+            <div className="space-y-1.5">
+              <label htmlFor="topup-phone" className="font-medium text-sm">
+                <Trans>MPESA phone</Trans>
+              </label>
+              <Input
+                id="topup-phone"
+                type="tel"
+                value={profilePending ? "" : phone}
+                placeholder={t`No phone number`}
+                readOnly
+                disabled={entryDisabled}
+                aria-invalid={!!disabledReason && !profilePending}
+                className="font-mono"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="topup-amount" className="font-medium text-sm">
+                <Trans>Amount</Trans>
+              </label>
+              <div
+                className={cn(
+                  "flex h-11 items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
+                  entryDisabled && "opacity-50",
+                  !hasValidAmount && "border-destructive",
+                )}
+              >
+                <span className="mr-2 shrink-0 text-muted-foreground text-sm font-semibold">
+                  KES
+                </span>
+                <Input
+                  id="topup-amount"
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="20"
+                  disabled={entryDisabled}
+                  aria-invalid={!hasValidAmount}
+                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-0 font-heading text-xl font-semibold tracking-tight focus-visible:border-0"
+                />
+              </div>
+            </div>
+
+            {disabledReason ? (
+              <div className="flex gap-2 border border-border bg-card p-3 text-muted-foreground text-xs">
+                <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <p>{disabledReason}</p>
+              </div>
+            ) : null}
+
+            <p className="text-muted-foreground text-xs">
+              <Trans>Rates and fees will be shown before you confirm.</Trans>
+            </p>
+          </div>
+
+          <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <Button className="h-11 w-full" disabled={!canContinue}>
+              <Trans>Continue</Trans>
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
+function PretiumLogo() {
+  return (
+    <img
+      src="/pretium.png"
+      alt=""
+      className="size-11 shrink-0 border border-border bg-card object-contain"
+      aria-hidden="true"
+    />
   );
 }
