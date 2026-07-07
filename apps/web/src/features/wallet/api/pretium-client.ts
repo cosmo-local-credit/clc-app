@@ -77,6 +77,39 @@ export async function triggerPretiumOnramp(
   };
 }
 
+export type PretiumLinkStatus = {
+  linked: boolean;
+  phoneNumber: string;
+};
+
+export type CreatePretiumLinkInput = {
+  publicKey: `0x${string}`;
+  phoneNumber: string;
+};
+
+type PretiumLinkStatusResponse = {
+  linked?: unknown;
+  phoneNumber?: unknown;
+};
+
+export async function getPretiumLinkByAddress(address: `0x${string}`): Promise<PretiumLinkStatus> {
+  const result = await apiFetch<PretiumLinkStatusResponse>(
+    `/api/v2/pretium/link-by-address/${address}`,
+    PRETIUM_GET_REQUEST,
+  );
+  return {
+    linked: result.linked === true,
+    phoneNumber: formatValue(result.phoneNumber),
+  };
+}
+
+export async function createPretiumLink(input: CreatePretiumLinkInput): Promise<void> {
+  await apiFetch("/api/v2/pretium/link", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 export async function getPretiumRates(): Promise<PretiumRatesResult> {
   const result = await apiFetch<PretiumRatesResponse>("/api/v2/pretium/rates", PRETIUM_GET_REQUEST);
   return {

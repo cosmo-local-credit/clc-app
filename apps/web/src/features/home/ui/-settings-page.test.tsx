@@ -15,6 +15,10 @@ vi.mock("./notification-settings-section", () => ({
   ),
 }));
 
+vi.mock("./account-settings-section", () => ({
+  AccountSettingsSection: () => <div data-testid="account-settings" />,
+}));
+
 const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {

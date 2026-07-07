@@ -6,6 +6,7 @@ import { ThemeSelector } from "#/components/theme-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { AccountSettingsSection } from "./account-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
 
 export function SettingsPage({
@@ -31,6 +32,8 @@ export function SettingsPage({
           <Trans>Manage your wallet session and app preferences.</Trans>
         </p>
       </div>
+
+      <AccountSettingsSection />
 
       <section aria-labelledby="preferences-title" className="space-y-3">
         <h2 id="preferences-title">
