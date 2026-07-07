@@ -33,6 +33,8 @@ import { AppI18nProvider } from "#/providers/i18n";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
+import { RouteError } from "#/components/route-error";
+import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -67,6 +69,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   }),
   shellComponent: RootDocument,
   component: AppContent,
+  errorComponent: RouteError,
 });
 
 function AppContent() {
@@ -266,6 +269,24 @@ function AppInner() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  // Recover from stale code-split chunks after a deploy. React.lazy imports
+  // don't get TanStack Router's built-in reload-on-module-missing (that lives in
+  // lazyRouteComponent), so without this a failed chunk fetch leaves the tab
+  // stuck on the error boundary. Independent of the service worker: browsers
+  // with SW unsupported/disabled still hit version skew. See stale-chunk-recovery.
+  useEffect(() => {
+    if (import.meta.env.DEV) return;
+    const onPreloadError = (event: WindowEventMap["vite:preloadError"]) => {
+      // Only swallow the error if we actually reload — otherwise let it throw so
+      // the root errorComponent surfaces a persistent failure instead of a hang.
+      if (reloadOnceForStaleChunk(event.payload)) {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("vite:preloadError", onPreloadError);
+    return () => window.removeEventListener("vite:preloadError", onPreloadError);
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!("serviceWorker" in navigator)) return;
