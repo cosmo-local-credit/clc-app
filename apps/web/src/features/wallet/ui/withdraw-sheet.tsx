@@ -11,6 +11,7 @@ import { RiCheckLine, RiErrorWarningLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { TokenLogo } from "#/components/wallet";
 import {
   SheetBackdrop,
   SheetContent,
@@ -31,6 +32,7 @@ import {
   usePretiumRates,
 } from "#/features/wallet/hooks/use-pretium";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
+import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 
@@ -226,6 +228,11 @@ export function WithdrawSheet({
                   {eligible.map(({ token, symbol }, index, list) => {
                     const active = token.tokenAddress === selected?.token.tokenAddress;
                     const tokenBalance = formatTokenAmount(token.balance, token.tokenDecimals);
+                    const displayToken = {
+                      ...accountTokenToWalletToken(token),
+                      symbol,
+                      kind: "stable" as const,
+                    };
                     return (
                       <button
                         key={token.tokenAddress}
@@ -236,6 +243,7 @@ export function WithdrawSheet({
                           index < list.length - 1 && "border-b border-border",
                         )}
                       >
+                        <TokenLogo token={displayToken} size={34} />
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-sm">{symbol}</p>
                           <p className="text-muted-foreground text-xs">

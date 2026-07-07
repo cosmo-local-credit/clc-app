@@ -115,7 +115,6 @@ export function TopUpPage() {
             <h2 id="add-stables-title" className="font-heading font-semibold text-base">
               <Trans>Add stables</Trans>
             </h2>
-            <span className="text-muted-foreground text-xs">MPESA</span>
           </div>
 
           <button
@@ -144,7 +143,6 @@ export function TopUpPage() {
             <h2 id="withdraw-title" className="font-heading font-semibold text-base">
               <Trans>Withdraw</Trans>
             </h2>
-            <span className="text-muted-foreground text-xs">MPESA</span>
           </div>
 
           <button
@@ -317,9 +315,12 @@ function AddStablesSheet({
           <div className="space-y-3 px-6 pb-3">
             <div className="border border-border bg-card">
               <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
-                <label htmlFor="topup-amount" className="text-muted-foreground text-xs">
-                  <Trans>Amount</Trans>
-                </label>
+                <div className="flex items-baseline gap-1.5">
+                  <label htmlFor="topup-amount" className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </label>
+                  <span className="text-muted-foreground text-xs">KES</span>
+                </div>
                 <div className="relative flex items-baseline gap-1.5">
                   <input
                     id="topup-amount"
@@ -345,7 +346,6 @@ function AddStablesSheet({
                       className="pointer-events-none h-4 w-px animate-pulse bg-primary"
                     />
                   ) : null}
-                  <span className="text-muted-foreground text-xs">KES</span>
                 </div>
               </div>
 
@@ -497,7 +497,7 @@ function PretiumHistory({
                 </span>
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-sm">
+                <p className={cn("font-medium text-sm", incoming && "text-primary")}>
                   {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
                 </p>
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
@@ -505,7 +505,7 @@ function PretiumHistory({
                 </p>
               </div>
               <span className="shrink-0 font-mono text-xs font-semibold">
-                KES {transaction.amountKes || "—"}
+                KES {formatHistoryKes(transaction)}
               </span>
             </button>
           );
@@ -821,6 +821,12 @@ function shortenIdentifier(value: string): string {
 function timestamp(date: string): number {
   const value = Date.parse(date);
   return Number.isFinite(value) ? value : 0;
+}
+
+function formatHistoryKes(transaction: PretiumCashTransaction): string {
+  if (!transaction.amountKes) return "—";
+  if (transaction.kind === "onramp") return transaction.amountKes;
+  return transaction.amountKes.split(".")[0] || transaction.amountKes;
 }
 
 function formatCashDate(date: string): string {
