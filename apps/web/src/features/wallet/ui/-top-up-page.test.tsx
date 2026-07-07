@@ -329,10 +329,14 @@ describe("TopUpPage", () => {
     const withdrawButton = screen.getByRole("button", { name: /^withdraw$/i });
     expect(withdrawButton.hasAttribute("disabled")).toBe(true);
 
-    // 10 USDT × 128.5 buy ≈ 1285 KES max; 100 KES is valid.
-    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
-      target: { value: "100" },
-    });
+    // KES is whole-shilling only; decimal input is trimmed at the decimal point.
+    const amountInput = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    fireEvent.change(amountInput, { target: { value: "100.50" } });
+    expect(amountInput.value).toBe("100");
     await waitFor(() => expect(withdrawButton.hasAttribute("disabled")).toBe(false));
+
+    // 10 USDT × 128.5 buy = 1285 KES max, shown without decimal places.
+    fireEvent.click(screen.getByRole("button", { name: /max/i }));
+    expect(amountInput.value).toBe("1285");
   });
 });

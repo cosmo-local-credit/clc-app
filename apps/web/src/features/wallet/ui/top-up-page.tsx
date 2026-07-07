@@ -59,6 +59,7 @@ export function TopUpPage() {
   const [addStablesOpen, setAddStablesOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
+  const [selectedOfframp, setSelectedOfframp] = useState<PretiumCashTransaction | null>(null);
 
   const cashAddress = toChecksumAddress(address);
   const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
@@ -175,6 +176,7 @@ export function TopUpPage() {
             void transactionsQuery.refetch();
           }}
           onSelectOnramp={setSelectedOnramp}
+          onSelectOfframp={setSelectedOfframp}
         />
       </div>
 
@@ -207,6 +209,14 @@ export function TopUpPage() {
         open={selectedOnramp !== null}
         onOpenChange={(open) => {
           if (!open) setSelectedOnramp(null);
+        }}
+      />
+
+      <OfframpDetailsSheet
+        offramp={selectedOfframp}
+        open={selectedOfframp !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOfframp(null);
         }}
       />
     </div>
@@ -412,12 +422,14 @@ function PretiumHistory({
   isError,
   onRetry,
   onSelectOnramp,
+  onSelectOfframp,
 }: {
   transactions: PretiumCashTransaction[];
   isPending: boolean;
   isError: boolean;
   onRetry: () => void;
   onSelectOnramp: (transaction: PretiumCashTransaction) => void;
+  onSelectOfframp: (transaction: PretiumCashTransaction) => void;
 }) {
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
@@ -461,9 +473,13 @@ function PretiumHistory({
             <button
               key={`${transaction.kind}-${transaction.reference}`}
               type="button"
-              // Only onramps have a detail view for now; offramps are not live.
-              disabled={!incoming}
-              onClick={() => onSelectOnramp(transaction)}
+              onClick={() => {
+                if (incoming) {
+                  onSelectOnramp(transaction);
+                  return;
+                }
+                onSelectOfframp(transaction);
+              }}
               className={cn(
                 "flex w-full items-center gap-2.5 p-3 text-left enabled:active:bg-muted",
                 index < list.length - 1 && "border-b border-border",
@@ -584,6 +600,143 @@ function OnrampDetailsSheet({
                   </span>
                   {hasTxHash ? (
                     <EllipsizedAddress address={onramp.txHash} />
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>Pending</Trans>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {hasTxHash ? (
+            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button asChild className="h-11 w-full">
+                <a href={explorerUrl} target="_blank" rel="noreferrer">
+                  <Trans>View on block explorer</Trans>
+                </a>
+              </Button>
+            </SheetFooter>
+          ) : null}
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
+function OfframpDetailsSheet({
+  offramp,
+  open,
+  onOpenChange,
+}: {
+  offramp: PretiumCashTransaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useLingui();
+  const isComplete = offramp ? isCompletePretiumStatus(offramp.status) : false;
+  const hasTxHash = !!offramp?.txHash;
+  const hasMpesaConfirmation = !!offramp?.mpesaConfirmation;
+  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${offramp?.txHash}` : "#";
+
+  const copyPretiumId = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy Pretium ID`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Pretium ID copied`))
+      .catch(() => toast.error(t`Couldn't copy Pretium ID`));
+  };
+
+  return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+              <Trans>Offramp</Trans>
+            </Badge>
+            <SheetTitle className="sr-only">
+              <Trans>Offramp details</Trans>
+            </SheetTitle>
+          </SheetHeader>
+
+          {offramp ? (
+            <div className="px-6 pb-2">
+              <div className="border border-border bg-card">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Status</Trans>
+                  </span>
+                  <Badge
+                    variant={isComplete ? "primary" : "muted"}
+                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
+                  >
+                    {offramp.status}
+                  </Badge>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    KES {offramp.amountKes || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Stable sent</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    {offramp.amountUsd || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>MPESA phone</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    {offramp.phoneNumber || "—"}
+                  </span>
+                </div>
+                {hasMpesaConfirmation ? (
+                  <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>MPESA confirmation</Trans>
+                    </span>
+                    <span className="font-mono text-xs font-semibold">
+                      {offramp.mpesaConfirmation}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Date</Trans>
+                  </span>
+                  <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
+                    {formatCashDate(offramp.createdAt)}
+                  </time>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Pretium ID</Trans>
+                  </span>
+                  <CopyableIdentifier
+                    value={offramp.reference}
+                    label={t`Copy Pretium ID`}
+                    onCopy={copyPretiumId}
+                  />
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Transaction</Trans>
+                  </span>
+                  {hasTxHash ? (
+                    <EllipsizedAddress address={offramp.txHash} />
                   ) : (
                     <span className="text-muted-foreground text-xs">
                       <Trans>Pending</Trans>

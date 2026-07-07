@@ -34,17 +34,9 @@ import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 
-/** Keep only digits and a single decimal point, capped at 2 fraction digits. */
+/** KES cash amounts are whole shillings only. */
 function sanitizeKes(raw: string): string {
-  const cleaned = raw.replace(/[^0-9.]/g, "");
-  const firstDot = cleaned.indexOf(".");
-  if (firstDot === -1) return cleaned;
-  const whole = cleaned.slice(0, firstDot);
-  const fraction = cleaned
-    .slice(firstDot + 1)
-    .replace(/\./g, "")
-    .slice(0, 2);
-  return `${whole}.${fraction}`;
+  return (raw.split(".")[0] ?? "").replace(/\D/g, "").replace(/^0+(?=\d)/, "");
 }
 
 export function WithdrawSheet({
@@ -92,15 +84,13 @@ export function WithdrawSheet({
 
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(undefined);
   const [amount, setAmount] = useState("");
-  const [maxSelected, setMaxSelected] = useState(false);
-  const [amountFocused, setAmountFocused] = useState(false);
 
   const selected =
     eligible.find((item) => item.token.tokenAddress === selectedAddress) ?? eligible[0];
   const decimals = selected?.token.tokenDecimals ?? 2;
   const balanceRaw = selected?.token.balance ?? "0";
   const balanceUsd = selected ? Number(formatTokenAmountFixed(balanceRaw, decimals, 6)) : 0;
-  const maxKes = hasRate ? balanceUsd * buyRate : 0;
+  const maxKes = hasRate ? Math.floor(balanceUsd * buyRate) : 0;
 
   const kesValue = Number(amount);
   const hasValidAmount =
@@ -124,7 +114,6 @@ export function WithdrawSheet({
     createLink.reset();
     setSelectedAddress(undefined);
     setAmount("");
-    setMaxSelected(false);
   }, [open, createLink]);
 
   // Auto re-link once the status check resolves and the address is not already
@@ -148,19 +137,16 @@ export function WithdrawSheet({
   const onSelectToken = (tokenAddress: string) => {
     setSelectedAddress(tokenAddress);
     setAmount("");
-    setMaxSelected(false);
   };
 
   const onWithdraw = async () => {
     if (!address || !selected || !hasValidAmount) return;
-    // MAX sends the exact balance to avoid dust; otherwise reverse the KES
-    // amount through the buy rate and clamp to the balance.
-    let amountRaw = balanceRaw;
-    if (!maxSelected) {
-      const tokenAmount = (kesValue / buyRate).toFixed(Math.min(decimals, 6));
-      amountRaw = parseTokenAmount(tokenAmount, decimals);
-      if (BigInt(amountRaw) > BigInt(balanceRaw)) amountRaw = balanceRaw;
-    }
+    // Reverse the whole-shilling KES amount through the buy rate. MAX also uses
+    // the trimmed whole KES value, so the displayed KES amount and signed token
+    // amount stay consistent.
+    const tokenAmount = (kesValue / buyRate).toFixed(Math.min(decimals, 6));
+    let amountRaw = parseTokenAmount(tokenAmount, decimals);
+    if (BigInt(amountRaw) > BigInt(balanceRaw)) amountRaw = balanceRaw;
 
     try {
       await sendTransfer.mutateAsync({
@@ -269,21 +255,20 @@ export function WithdrawSheet({
 
                 <div className="border border-border bg-card">
                   <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
-                    <label htmlFor="withdraw-amount" className="text-muted-foreground text-xs">
-                      <Trans>Amount</Trans>
-                    </label>
-                    <div className="relative flex items-baseline gap-1.5">
+                    <div className="flex items-baseline gap-1.5">
+                      <label htmlFor="withdraw-amount" className="text-muted-foreground text-xs">
+                        <Trans>Amount</Trans>
+                      </label>
+                      <span className="text-muted-foreground text-xs">KES</span>
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
                       <input
                         id="withdraw-amount"
                         type="text"
-                        inputMode="decimal"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         value={amount}
-                        onFocus={() => setAmountFocused(true)}
-                        onBlur={() => setAmountFocused(false)}
-                        onChange={(event) => {
-                          setMaxSelected(false);
-                          setAmount(sanitizeKes(event.target.value));
-                        }}
+                        onChange={(event) => setAmount(sanitizeKes(event.target.value))}
                         placeholder="0"
                         size={Math.max(amount.length, 2)}
                         aria-invalid={amount !== "" && !hasValidAmount}
@@ -292,20 +277,11 @@ export function WithdrawSheet({
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
-                      {!amount && !amountFocused ? (
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none h-4 w-px animate-pulse bg-primary"
-                        />
-                      ) : null}
-                      <span className="text-muted-foreground text-xs">KES</span>
                       <button
                         type="button"
-                        onClick={() => {
-                          setAmount(maxKes.toFixed(2));
-                          setMaxSelected(true);
-                        }}
-                        className="ml-1 font-semibold text-primary text-xs hover:underline"
+                        disabled={!hasRate || maxKes <= 0}
+                        onClick={() => setAmount(maxKes.toString())}
+                        className="ml-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
                       >
                         <Trans>Max</Trans>
                       </button>
