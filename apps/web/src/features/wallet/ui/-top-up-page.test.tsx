@@ -228,7 +228,8 @@ describe("TopUpPage", () => {
 
     // Row mirrors the activity feed: labelled "Onramp", amount shown, no Pretium id.
     expect(await screen.findByRole("button", { name: /complete.*onramp/i })).toBeTruthy();
-    expect(document.body.textContent).toContain("KES 20.00");
+    expect(document.body.textContent).toContain("KES 20");
+    expect(document.body.textContent).not.toContain("KES 20.00");
     expect(document.body.textContent).not.toContain(pretiumId);
 
     // Clicking the onramp row opens the detail sheet with status, Pretium id + tx hash.

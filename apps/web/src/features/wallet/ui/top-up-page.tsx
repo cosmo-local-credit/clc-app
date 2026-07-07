@@ -825,7 +825,6 @@ function timestamp(date: string): number {
 
 function formatHistoryKes(transaction: PretiumCashTransaction): string {
   if (!transaction.amountKes) return "—";
-  if (transaction.kind === "onramp") return transaction.amountKes;
   return transaction.amountKes.split(".")[0] || transaction.amountKes;
 }
 
