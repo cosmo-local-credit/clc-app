@@ -25,6 +25,10 @@ msgstr "A paper wallet link was opened. Sign in with this address?"
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
+#: apps/web/src/features/home/ui/account-settings-section.tsx:21
+msgid "Account"
+msgstr "Account"
+
 #: apps/web/src/components/auth/auth-states.tsx:10
 msgid "Account awaiting approval"
 msgstr "Account awaiting approval"
@@ -45,7 +49,7 @@ msgstr "Activating on chain..."
 msgid "Activating smart wallet..."
 msgstr "Activating smart wallet..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Active"
 msgstr "Active"
 
@@ -75,6 +79,10 @@ msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:425
 msgid "Add stables"
 msgstr "Add stables"
+
+#: apps/web/src/features/home/ui/account-settings-section.tsx:16
+msgid "Add your contact details"
+msgstr "Add your contact details"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:60
@@ -226,7 +234,7 @@ msgstr "Checking availability..."
 msgid "Checking notification support on this device."
 msgstr "Checking notification support on this device."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Checking…"
 msgstr "Checking…"
 
@@ -239,7 +247,7 @@ msgstr "Choose a location"
 msgid "Choose a wallet to continue."
 msgstr "Choose a wallet to continue."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
 msgstr "Choose between light and dark mode."
 
@@ -247,7 +255,7 @@ msgstr "Choose between light and dark mode."
 msgid "Choose Image"
 msgstr "Choose Image"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:42
+#: apps/web/src/features/home/ui/settings-page.tsx:45
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
@@ -320,7 +328,7 @@ msgstr "Confirmed"
 msgid "Connect your wallet to use MPESA."
 msgstr "Connect your wallet to use MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:70
+#: apps/web/src/features/home/ui/settings-page.tsx:73
 msgid "Connected address"
 msgstr "Connected address"
 
@@ -459,9 +467,18 @@ msgstr "Couldn't load vouchers."
 msgid "Couldn't resolve that recipient."
 msgstr "Couldn't resolve that recipient."
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:100
+msgid "Couldn't save your profile."
+msgstr "Couldn't save your profile."
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:237
 msgid "Couldn't start MPESA top up"
 msgstr "Couldn't start MPESA top up"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:207
+msgid "Country"
+msgstr "Country"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
 msgid "Create account"
@@ -496,7 +513,7 @@ msgstr "Date"
 #~ msgid "Debit / Credit card"
 #~ msgstr "Debit / Credit card"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:87
+#: apps/web/src/features/home/ui/settings-page.tsx:90
 msgid "Delegated to Calibur"
 msgstr "Delegated to Calibur"
 
@@ -541,6 +558,13 @@ msgstr "Eatery"
 msgid "Edit"
 msgstr "Edit"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:37
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:108
+msgid "Edit profile"
+msgstr "Edit profile"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
 msgid "Email"
@@ -649,7 +673,7 @@ msgstr "Import wallet"
 msgid "In"
 msgstr "In"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Inactive"
 msgstr "Inactive"
 
@@ -769,7 +793,7 @@ msgstr "Logo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Manage vouchers, pools, and local payments."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:31
+#: apps/web/src/features/home/ui/settings-page.tsx:32
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
@@ -815,6 +839,8 @@ msgstr "MPESA via Pretium"
 msgid "My wallet address"
 msgstr "My wallet address"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
 msgid "Name"
@@ -852,7 +878,7 @@ msgstr "New to CLC?"
 msgid "No activity yet."
 msgstr "No activity yet."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:73
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "No address available"
 msgstr "No address available"
 
@@ -1027,10 +1053,12 @@ msgstr "Passwords do not match."
 msgid "Pending"
 msgstr "Pending"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
 msgid "Phone"
 msgstr "Phone"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
 msgid "Phone number"
 msgstr "Phone number"
@@ -1055,7 +1083,7 @@ msgstr "Pools"
 #~ msgid "Powered by Pretium"
 #~ msgstr "Powered by Pretium"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:37
+#: apps/web/src/features/home/ui/settings-page.tsx:40
 msgid "Preferences"
 msgstr "Preferences"
 
@@ -1084,6 +1112,10 @@ msgstr "Primary navigation"
 #: apps/web/src/components/auth/sign-in-panel.tsx:333
 msgid "Private key"
 msgstr "Private key"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:88
+msgid "Profile updated"
+msgstr "Profile updated"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:159
 msgid "Protect paper wallet"
@@ -1227,6 +1259,11 @@ msgstr "Reverted"
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+msgid "Save changes"
+msgstr "Save changes"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 msgid "Saving…"
 msgstr "Saving…"
@@ -1310,8 +1347,9 @@ msgstr "Service"
 msgid "Session check failed"
 msgstr "Session check failed"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/settings-page.tsx:28
+#: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Settings"
 
@@ -1348,7 +1386,7 @@ msgstr "Sign in with private key"
 #~ msgid "Sign once to refresh your app session."
 #~ msgstr "Sign once to refresh your app session."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -1364,7 +1402,7 @@ msgstr "Sign up or sign in to send, swap, and redeem vouchers"
 #~ msgid "Sign up to send, swap, redeem, and manage vouchers."
 #~ msgstr "Sign up to send, swap, redeem, and manage vouchers."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Signing out..."
 msgstr "Signing out..."
 
@@ -1506,6 +1544,7 @@ msgstr "Transfer history"
 #~ msgstr "try again"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:42
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:109
@@ -1533,6 +1572,10 @@ msgstr "Update protected paper wallet"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 #~ msgid "Update protected QR"
 #~ msgstr "Update protected QR"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
+msgid "Update your contact details and country."
+msgstr "Update your contact details and country."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:181
 msgid "Upload Image"
@@ -1612,7 +1655,7 @@ msgstr "Wallet actions are available after you sign up or sign in."
 #~ msgid "Wallet connected"
 #~ msgstr "Wallet connected"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:63
 msgid "Wallet session"
 msgstr "Wallet session"
 
@@ -1623,6 +1666,10 @@ msgstr "We could not verify your session. Check your connection and try again."
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:67
 msgid "We couldn't load your profile phone number."
 msgstr "We couldn't load your profile phone number."
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:49
+msgid "We couldn't load your profile."
+msgstr "We couldn't load your profile."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 msgid "Website"
@@ -1655,6 +1702,7 @@ msgstr "Your account is awaiting approval. You will be able to continue once it 
 #~ msgid "Your Celo address"
 #~ msgstr "Your Celo address"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
 msgid "Your name"
 msgstr "Your name"
@@ -1667,6 +1715,10 @@ msgstr "Your paper wallet"
 #: apps/web/src/features/home/ui/wallet-page.tsx:129
 msgid "Your Pools"
 msgstr "Your Pools"
+
+#: apps/web/src/features/home/ui/account-settings-section.tsx:31
+msgid "Your profile"
+msgstr "Your profile"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:69
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:138

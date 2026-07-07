@@ -25,6 +25,10 @@ msgstr "Kiungo cha mkoba wa karatasi kimefunguliwa. Ingia kwa anwani hii?"
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 
+#: apps/web/src/features/home/ui/account-settings-section.tsx:21
+msgid "Account"
+msgstr "Akaunti"
+
 #: apps/web/src/components/auth/auth-states.tsx:10
 msgid "Account awaiting approval"
 msgstr "Akaunti inasubiri idhini"
@@ -45,7 +49,7 @@ msgstr "Inawezesha kwenye mtandao..."
 msgid "Activating smart wallet..."
 msgstr "Inawezesha mkoba mahiri..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Active"
 msgstr "Imewashwa"
 
@@ -75,6 +79,10 @@ msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:425
 msgid "Add stables"
 msgstr "Ongeza stables"
+
+#: apps/web/src/features/home/ui/account-settings-section.tsx:16
+msgid "Add your contact details"
+msgstr "Ongeza maelezo yako ya mawasiliano"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:60
@@ -226,7 +234,7 @@ msgstr "Inakagua upatikanaji..."
 msgid "Checking notification support on this device."
 msgstr "Inakagua uwezo wa arifa kwenye kifaa hiki."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Checking…"
 msgstr "Inakagua…"
 
@@ -239,7 +247,7 @@ msgstr "Chagua eneo"
 msgid "Choose a wallet to continue."
 msgstr "Chagua mkoba ili kuendelea."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
 msgstr "Chagua kati ya hali ya mwanga na giza."
 
@@ -247,7 +255,7 @@ msgstr "Chagua kati ya hali ya mwanga na giza."
 msgid "Choose Image"
 msgstr "Chagua picha"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:42
+#: apps/web/src/features/home/ui/settings-page.tsx:45
 msgid "Choose the app display language."
 msgstr "Chagua lugha ya programu."
 
@@ -320,7 +328,7 @@ msgstr "Imethibitishwa"
 msgid "Connect your wallet to use MPESA."
 msgstr "Unganisha mkoba wako ili kutumia MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:70
+#: apps/web/src/features/home/ui/settings-page.tsx:73
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
 
@@ -459,9 +467,18 @@ msgstr "Haikuwezekana kupakia hati."
 msgid "Couldn't resolve that recipient."
 msgstr "Haikuwezekana kutambua mpokeaji huyo."
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:100
+msgid "Couldn't save your profile."
+msgstr "Imeshindwa kuhifadhi wasifu wako."
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:237
 msgid "Couldn't start MPESA top up"
 msgstr "Hatukuweza kuanzisha uwekaji pesa wa MPESA"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:207
+msgid "Country"
+msgstr "Nchi"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
 msgid "Create account"
@@ -496,7 +513,7 @@ msgstr "Tarehe"
 #~ msgid "Debit / Credit card"
 #~ msgstr "Kadi ya debit / kredit"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:87
+#: apps/web/src/features/home/ui/settings-page.tsx:90
 msgid "Delegated to Calibur"
 msgstr "Imekabidhiwa kwa Calibur"
 
@@ -541,6 +558,13 @@ msgstr "Baa la chakula"
 msgid "Edit"
 msgstr "Hariri"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:37
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:108
+msgid "Edit profile"
+msgstr "Hariri wasifu"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
 msgid "Email"
@@ -649,7 +673,7 @@ msgstr "Leta mkoba"
 msgid "In"
 msgstr "Ndani"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Inactive"
 msgstr "Haijawashwa"
 
@@ -769,7 +793,7 @@ msgstr "Nembo"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Simamia hati, vikundi, na malipo ya mitaa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:31
+#: apps/web/src/features/home/ui/settings-page.tsx:32
 msgid "Manage your wallet session and app preferences."
 msgstr "Simamia kikao cha mkoba na mapendeleo ya programu."
 
@@ -815,6 +839,8 @@ msgstr "MPESA kupitia Pretium"
 msgid "My wallet address"
 msgstr "Anwani ya pochi yangu"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
 msgid "Name"
@@ -852,7 +878,7 @@ msgstr "Mgeni kwenye CLC?"
 msgid "No activity yet."
 msgstr "Bado hakuna shughuli."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:73
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "No address available"
 msgstr "Hakuna anwani inayopatikana"
 
@@ -1028,10 +1054,12 @@ msgstr "Manenosiri hayalingani."
 msgid "Pending"
 msgstr "Inasubiri"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
 msgid "Phone"
 msgstr "Simu"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
 msgid "Phone number"
 msgstr "Nambari ya simu"
@@ -1056,7 +1084,7 @@ msgstr "Vikundi"
 #~ msgid "Powered by Pretium"
 #~ msgstr "Inaendeshwa na Pretium"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:37
+#: apps/web/src/features/home/ui/settings-page.tsx:40
 msgid "Preferences"
 msgstr "Mapendeleo"
 
@@ -1085,6 +1113,10 @@ msgstr "Urambazaji wa msingi"
 #: apps/web/src/components/auth/sign-in-panel.tsx:333
 msgid "Private key"
 msgstr "Ufunguo binafsi"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:88
+msgid "Profile updated"
+msgstr "Wasifu umesasishwa"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:159
 msgid "Protect paper wallet"
@@ -1230,6 +1262,11 @@ msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 "viwango vya pamoja."
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+msgid "Save changes"
+msgstr "Hifadhi mabadiliko"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 msgid "Saving…"
 msgstr "Inahifadhi…"
@@ -1313,8 +1350,9 @@ msgstr "Huduma"
 msgid "Session check failed"
 msgstr "Ukaguzi wa kikao umeshindikana"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:55
-#: apps/web/src/features/home/ui/settings-page.tsx:28
+#: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Mipangilio"
 
@@ -1351,7 +1389,7 @@ msgstr "Ingia kwa ufunguo binafsi"
 #~ msgid "Sign once to refresh your app session."
 #~ msgstr "Saini mara moja ili kusasisha kikao chako cha programu."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Sign out"
 msgstr "Ondoka"
 
@@ -1367,7 +1405,7 @@ msgstr "Jisajili au ingia ili kutuma, kubadilisha na kukomboa vocha"
 #~ msgid "Sign up to send, swap, redeem, and manage vouchers."
 #~ msgstr "Jisajili ili kutuma, kubadilisha, kukomboa, na kusimamia vocha."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:102
+#: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Signing out..."
 msgstr "Inaondoka..."
 
@@ -1509,6 +1547,7 @@ msgstr "Historia ya hamisho"
 #~ msgstr "jaribu tena"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:42
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:109
@@ -1536,6 +1575,10 @@ msgstr "Sasisha mkoba wa karatasi uliolindwa"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 #~ msgid "Update protected QR"
 #~ msgstr "Sasisha QR iliyolindwa"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
+msgid "Update your contact details and country."
+msgstr "Sasisha maelezo yako ya mawasiliano na nchi."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:181
 msgid "Upload Image"
@@ -1615,7 +1658,7 @@ msgstr "Vitendo vya mkoba vinapatikana baada ya kujisajili au kuingia."
 #~ msgid "Wallet connected"
 #~ msgstr "Mkoba umeunganishwa"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:60
+#: apps/web/src/features/home/ui/settings-page.tsx:63
 msgid "Wallet session"
 msgstr "Kikao cha mkoba"
 
@@ -1627,6 +1670,10 @@ msgstr "Hatukuweza kuthibitisha kikao chako. Angalia muunganisho wako na "
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:67
 msgid "We couldn't load your profile phone number."
 msgstr "Hatukuweza kupakia nambari ya simu kwenye wasifu wako."
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:49
+msgid "We couldn't load your profile."
+msgstr "Hatukuweza kupakia wasifu wako."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 msgid "Website"
@@ -1658,6 +1705,7 @@ msgstr "Akaunti yako inasubiri idhini. Utaweza kuendelea ikishaidhinishwa."
 #~ msgid "Your Celo address"
 #~ msgstr "Anwani yako ya Celo"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
 msgid "Your name"
 msgstr "Jina lako"
@@ -1670,6 +1718,10 @@ msgstr "Mkoba wako wa karatasi"
 #: apps/web/src/features/home/ui/wallet-page.tsx:129
 msgid "Your Pools"
 msgstr "Vikundi vyako"
+
+#: apps/web/src/features/home/ui/account-settings-section.tsx:31
+msgid "Your profile"
+msgstr "Wasifu wako"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:69
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:138
