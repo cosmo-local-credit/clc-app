@@ -173,6 +173,22 @@ describe("TopUpPage", () => {
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
   });
 
+  it("can repeatedly open and dismiss the add stables sheet", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    const addButton = (await screen.findAllByText("MPESA via Pretium"))[0]?.closest("button");
+    expect(addButton).toBeTruthy();
+
+    for (let index = 0; index < 4; index += 1) {
+      fireEvent.click(addButton as HTMLButtonElement);
+      expect(await screen.findByRole("textbox", { name: /amount/i })).toBeTruthy();
+      fireEvent.keyDown(document, { key: "Escape" });
+      await waitFor(() => expect(screen.queryByRole("textbox", { name: /amount/i })).toBeNull());
+    }
+  });
+
   it("starts a Pretium onramp from the add stables sheet", async () => {
     const fetchMock = mockPretiumBackend({ phone: "+254712345678" });
 

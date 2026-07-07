@@ -114,7 +114,7 @@ export function WithdrawSheet({
     createLink.reset();
     setSelectedAddress(undefined);
     setAmount("");
-  }, [open, createLink]);
+  }, [open]);
 
   // Auto re-link once the status check resolves and the address is not already
   // correctly linked to the current phone.
@@ -131,7 +131,7 @@ export function WithdrawSheet({
     linkQuery.isSuccess,
     linkQuery.isFetching,
     correctlyLinked,
-    createLink,
+    createLink.isIdle,
   ]);
 
   const onSelectToken = (tokenAddress: string) => {
