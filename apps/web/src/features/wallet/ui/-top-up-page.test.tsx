@@ -41,6 +41,7 @@ function mockPretiumBackend({
   pretiumId = "PTM-1",
   txHash = "0x1111111111111111111111111111111111111111111111111111111111111111",
   tokens = [],
+  onramps,
   offramps = [],
   link = null,
 }: {
@@ -50,6 +51,7 @@ function mockPretiumBackend({
   pretiumId?: string;
   txHash?: string;
   tokens?: unknown[];
+  onramps?: unknown[];
   offramps?: unknown[];
   link?: { linked: boolean; phoneNumber: string } | null;
 }) {
@@ -71,26 +73,27 @@ function mockPretiumBackend({
       return Promise.resolve(jsonResponse({ buy: 128.5, sell: 127.75 }));
     }
     if (url.includes("/api/v2/pretium/transactions-by-address/")) {
+      const historyOnramps =
+        onramps ??
+        (history
+          ? [
+              {
+                ID: 1,
+                PretiumID: pretiumId,
+                PretiumStatus: historyStatus,
+                AmountKES: "20.00",
+                TxHash: txHash,
+                CreatedAt: "2026-07-06T10:00:00Z",
+              },
+            ]
+          : []);
       return Promise.resolve(
-        jsonResponse(
-          history
-            ? {
-                address: account.address,
-                onramps: [
-                  {
-                    ID: 1,
-                    PretiumID: pretiumId,
-                    PretiumStatus: historyStatus,
-                    AmountKES: "20.00",
-                    TxHash: txHash,
-                    CreatedAt: "2026-07-06T10:00:00Z",
-                  },
-                ],
-                offramps,
-                totalCount: 1 + offramps.length,
-              }
-            : { address: account.address, onramps: [], offramps: [], totalCount: 0 },
-        ),
+        jsonResponse({
+          address: account.address,
+          onramps: historyOnramps,
+          offramps,
+          totalCount: historyOnramps.length + offramps.length,
+        }),
       );
     }
     if (url.includes("/api/v2/pretium/trigger-onramp")) {
@@ -216,6 +219,64 @@ describe("TopUpPage", () => {
       asset: "USDT",
       amount: 100,
     });
+  });
+
+  it("shows every returned Pretium history item without trimming", async () => {
+    mockPretiumBackend({
+      phone: "+254712345678",
+      onramps: [
+        {
+          ID: 1,
+          PretiumID: "PTM-1",
+          PretiumStatus: "COMPLETE",
+          AmountKES: "20.00",
+          TxHash: "0x1111111111111111111111111111111111111111111111111111111111111111",
+          CreatedAt: "2026-07-06T10:00:00Z",
+        },
+      ],
+      offramps: [
+        {
+          id: 2,
+          pretium_id: "OFF-1",
+          pretium_status: "SUCCESS",
+          amount_kes: "100.00",
+          tx_hash: "0x2222222222222222222222222222222222222222222222222222222222222222",
+          created_at: "2026-07-06T09:00:00Z",
+        },
+        {
+          id: 3,
+          pretium_id: "OFF-2",
+          pretium_status: "SUCCESS",
+          amount_kes: "200.00",
+          tx_hash: "0x3333333333333333333333333333333333333333333333333333333333333333",
+          created_at: "2026-07-06T08:00:00Z",
+        },
+        {
+          id: 4,
+          pretium_id: "OFF-3",
+          pretium_status: "SUCCESS",
+          amount_kes: "300.00",
+          tx_hash: "0x4444444444444444444444444444444444444444444444444444444444444444",
+          created_at: "2026-07-06T07:00:00Z",
+        },
+        {
+          id: 5,
+          pretium_id: "OFF-4",
+          pretium_status: "SUCCESS",
+          amount_kes: "400.00",
+          tx_hash: "0x5555555555555555555555555555555555555555555555555555555555555555",
+          created_at: "2026-07-06T06:00:00Z",
+        },
+      ],
+    });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    await screen.findByRole("button", { name: /complete.*onramp/i });
+    expect(await screen.findByRole("button", { name: /complete.*offramp.*kes 400/i })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: /complete.*(?:onramp|offramp)/i })).toHaveLength(
+      5,
+    );
   });
 
   it("renders completed onramp history rows and opens the detail sheet with copyable Pretium ID", async () => {

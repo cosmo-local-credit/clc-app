@@ -465,7 +465,7 @@ function PretiumHistory({
             </div>
           </div>
         ) : null}
-        {transactions.slice(0, 4).map((transaction, index, list) => {
+        {transactions.map((transaction, index, list) => {
           const incoming = transaction.kind === "onramp";
           const complete = isCompletePretiumStatus(transaction.status);
           const Icon = complete ? RiCheckLine : RiTimeLine;
