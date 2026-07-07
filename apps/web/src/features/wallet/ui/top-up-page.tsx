@@ -611,7 +611,7 @@ function CopyableIdentifier({
   return (
     <button
       type="button"
-      className="flex min-h-9 min-w-0 items-center gap-2 bg-card py-1 pl-2 text-right"
+      className="flex min-w-0 items-center gap-1.5 bg-card text-right"
       aria-label={label}
       title={value}
       onClick={() => onCopy(value)}
@@ -619,8 +619,8 @@ function CopyableIdentifier({
       <span className="min-w-0 font-mono text-muted-foreground text-xs">
         {shortenIdentifier(value)}
       </span>
-      <span className="flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground">
-        <RiFileCopyLine className="size-3.5" aria-hidden="true" />
+      <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+        <RiFileCopyLine className="size-3" aria-hidden="true" />
       </span>
     </button>
   );
