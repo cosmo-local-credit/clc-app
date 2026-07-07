@@ -1,11 +1,18 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMemo, useState } from "react";
 import { parsePhoneNumber } from "react-phone-number-input";
-import { RiArrowRightSLine, RiErrorWarningLine, RiHistoryLine } from "react-icons/ri";
+import {
+  RiArrowLeftDownLine,
+  RiArrowRightSLine,
+  RiArrowRightUpLine,
+  RiErrorWarningLine,
+  RiHistoryLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useAccount } from "wagmi";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
   SheetBackdrop,
@@ -16,6 +23,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import type { PretiumCashTransaction } from "#/features/wallet/api/pretium-client";
@@ -44,8 +52,9 @@ export function TopUpPage() {
   const { t } = useLingui();
   const { address } = useAccount();
   const profileQuery = useAuthProfile();
-  const [amount, setAmount] = useState("100");
+  const [amount, setAmount] = useState("");
   const [addStablesOpen, setAddStablesOpen] = useState(false);
+  const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
 
   const cashAddress = toChecksumAddress(address);
   const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
@@ -162,6 +171,7 @@ export function TopUpPage() {
           onRetry={() => {
             void transactionsQuery.refetch();
           }}
+          onSelectOnramp={setSelectedOnramp}
         />
       </div>
 
@@ -178,6 +188,14 @@ export function TopUpPage() {
         entryDisabled={entryDisabled}
         hasValidAmount={hasValidAmount}
         canContinue={canContinue}
+      />
+
+      <OnrampDetailsSheet
+        onramp={selectedOnramp}
+        open={selectedOnramp !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOnramp(null);
+        }}
       />
     </div>
   );
@@ -211,6 +229,7 @@ function AddStablesSheet({
   canContinue: boolean;
 }) {
   const { t } = useLingui();
+  const [amountFocused, setAmountFocused] = useState(false);
   const ratesQuery = usePretiumRates(open);
   const triggerOnramp = useTriggerPretiumOnramp();
   const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
@@ -279,25 +298,32 @@ function AddStablesSheet({
                 <label htmlFor="topup-amount" className="text-muted-foreground text-xs">
                   <Trans>Amount</Trans>
                 </label>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-muted-foreground text-xs">KES</span>
+                <div className="relative flex items-baseline gap-1.5">
                   <input
                     id="topup-amount"
                     type="text"
                     inputMode="decimal"
-                    autoFocus
                     value={amount}
+                    onFocus={() => setAmountFocused(true)}
+                    onBlur={() => setAmountFocused(false)}
                     onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
                     placeholder="100"
-                    size={Math.max(amount.length, 2)}
+                    size={Math.max(amount.length, 3)}
                     disabled={entryDisabled}
-                    aria-invalid={!hasValidAmount}
+                    aria-invalid={amount !== "" && !hasValidAmount}
                     className={cn(
-                      "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none [field-sizing:content]",
-                      !hasValidAmount && "text-destructive",
+                      "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      amount !== "" && !hasValidAmount && "text-destructive",
                       entryDisabled && "opacity-50",
                     )}
                   />
+                  {!amount && !amountFocused ? (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none h-4 w-px animate-pulse bg-primary"
+                    />
+                  ) : null}
+                  <span className="text-muted-foreground text-xs">KES</span>
                 </div>
               </div>
 
@@ -373,11 +399,13 @@ function PretiumHistory({
   isPending,
   isError,
   onRetry,
+  onSelectOnramp,
 }: {
   transactions: PretiumCashTransaction[];
   isPending: boolean;
   isError: boolean;
   onRetry: () => void;
+  onSelectOnramp: (transaction: PretiumCashTransaction) => void;
 }) {
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
@@ -413,41 +441,135 @@ function PretiumHistory({
             </div>
           </div>
         ) : null}
-        {transactions.slice(0, 4).map((transaction, index, list) => (
-          <div
-            key={`${transaction.kind}-${transaction.reference}`}
-            className={cn(
-              "flex items-center gap-3 p-3",
-              index < list.length - 1 && "border-b border-border",
-            )}
-          >
-            <span className="flex size-8 shrink-0 items-center justify-center border border-border bg-background text-[0.625rem] font-semibold uppercase">
-              {transaction.kind === "onramp" ? <Trans>In</Trans> : <Trans>Out</Trans>}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm">
-                {transaction.kind === "onramp" ? (
-                  <Trans>Add stables</Trans>
-                ) : (
-                  <Trans>Withdraw</Trans>
+        {transactions.slice(0, 4).map((transaction, index, list) => {
+          const incoming = transaction.kind === "onramp";
+          const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+          return (
+            <button
+              key={`${transaction.kind}-${transaction.reference}`}
+              type="button"
+              // Only onramps have a detail view for now; offramps are not live.
+              disabled={!incoming}
+              onClick={() => onSelectOnramp(transaction)}
+              className={cn(
+                "flex w-full items-center gap-2.5 p-3 text-left enabled:active:bg-muted",
+                index < list.length - 1 && "border-b border-border",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center bg-muted",
+                  incoming ? "text-primary" : "text-destructive",
                 )}
-              </p>
-              <p className="truncate text-muted-foreground text-xs">
-                {transaction.reference} · {formatCashDate(transaction.createdAt)}
-              </p>
-            </div>
-            <div className="shrink-0 text-right">
-              <p className="font-heading text-sm font-semibold tracking-tight">
+              >
+                <Icon className="size-3.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-sm">
+                  {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
+                </p>
+                <p className="truncate text-muted-foreground text-[0.6875rem]">
+                  {formatCashDate(transaction.createdAt)}
+                </p>
+              </div>
+              <span className="shrink-0 font-mono text-xs font-semibold">
                 KES {transaction.amountKes || "—"}
-              </p>
-              <p className="text-muted-foreground text-[0.625rem] uppercase">
-                {transaction.status}
-              </p>
-            </div>
-          </div>
-        ))}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+function OnrampDetailsSheet({
+  onramp,
+  open,
+  onOpenChange,
+}: {
+  onramp: PretiumCashTransaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const isComplete = onramp
+    ? ["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"].includes(onramp.status.toUpperCase())
+    : false;
+  const hasTxHash = !!onramp?.txHash;
+  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${onramp?.txHash}` : "#";
+
+  return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+              <Trans>Onramp</Trans>
+            </Badge>
+            <SheetTitle className="sr-only">
+              <Trans>Onramp details</Trans>
+            </SheetTitle>
+          </SheetHeader>
+
+          {onramp ? (
+            <div className="px-6 pb-2">
+              <div className="border border-border bg-card">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Status</Trans>
+                  </span>
+                  <Badge
+                    variant={isComplete ? "primary" : "muted"}
+                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
+                  >
+                    {onramp.status}
+                  </Badge>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    KES {onramp.amountKes || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Date</Trans>
+                  </span>
+                  <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
+                    {formatCashDate(onramp.createdAt)}
+                  </time>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Transaction</Trans>
+                  </span>
+                  {hasTxHash ? (
+                    <EllipsizedAddress address={onramp.txHash} />
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>Pending</Trans>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {hasTxHash ? (
+            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button asChild className="h-11 w-full">
+                <a href={explorerUrl} target="_blank" rel="noreferrer">
+                  <Trans>View on block explorer</Trans>
+                </a>
+              </Button>
+            </SheetFooter>
+          ) : null}
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
   );
 }
 

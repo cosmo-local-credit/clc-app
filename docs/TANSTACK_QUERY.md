@@ -27,6 +27,15 @@ Current local overrides:
   - `refetchIntervalInBackground: false`
   - Reason: transfers confirm quickly and wallet UI should feel near-realtime while avoiding background polling on mobile.
 
+- `apps/web/src/features/wallet/hooks/use-pretium.ts`
+  - Pretium onramp/offramp history (`usePretiumTransactionsByAddress`)
+  - `staleTime: 4_000`
+  - `refetchInterval: 5_000`
+  - `refetchOnWindowFocus: true`
+  - `refetchOnReconnect: true`
+  - `refetchIntervalInBackground: false`
+  - Reason: the upstream Pretium status poller confirms onramps within seconds; the Cash page shows live status while mounted, mirroring wallet account freshness. Rates stay at `staleTime: 60_000`.
+
 - `apps/web/src/features/auth/hooks/use-otx-tracking.ts`
   - operation tracking
   - polls while the operation is pending, then stops

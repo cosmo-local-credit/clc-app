@@ -7,8 +7,20 @@ import {
   type TriggerPretiumOnrampInput,
 } from "#/features/wallet/api/pretium-client";
 
-const PRETIUM_HISTORY_STALE_TIME_MS = 15_000;
 const PRETIUM_RATES_STALE_TIME_MS = 60_000;
+
+// Mirror the wallet account freshness (use-account-balances.ts): onramp status
+// confirms upstream within seconds via the Pretium status poller, so history
+// should feel near-realtime while the user is on the Cash page, without
+// polling in the background on mobile. See docs/TANSTACK_QUERY.md.
+const pretiumHistoryFreshness = {
+  staleTime: 4_000,
+  refetchInterval: 5_000,
+  refetchIntervalInBackground: false,
+  refetchOnReconnect: true,
+  refetchOnWindowFocus: true,
+  retry: false,
+} as const;
 
 export const pretiumQueryKeys = {
   all: ["pretium"] as const,
@@ -32,8 +44,7 @@ export function usePretiumTransactionsByAddress(address: `0x${string}` | undefin
     queryKey: pretiumQueryKeys.transactionsByAddress(address),
     queryFn: () => getPretiumTransactionsByAddress(requireAddress(address)),
     enabled: !!address,
-    staleTime: PRETIUM_HISTORY_STALE_TIME_MS,
-    retry: false,
+    ...pretiumHistoryFreshness,
   });
 }
 

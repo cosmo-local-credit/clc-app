@@ -50,8 +50,9 @@ function mockPretiumBackend({ phone, history = false }: { phone: string; history
                   {
                     ID: 1,
                     PretiumID: "PTM-1",
-                    PretiumStatus: "PENDING",
+                    PretiumStatus: "COMPLETE",
                     AmountKES: "20.00",
+                    TxHash: "0x1111111111111111111111111111111111111111111111111111111111111111",
                     CreatedAt: "2026-07-06T10:00:00Z",
                   },
                 ],
@@ -119,7 +120,7 @@ describe("TopUpPage", () => {
     expect(await screen.findByText("No cash activity yet.")).toBeTruthy();
   });
 
-  it("opens the add stables sheet with the user's Kenyan MPESA number and a 100 KES amount", async () => {
+  it("opens the add stables sheet with the user's Kenyan MPESA number and a 100 KES placeholder", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
     renderWithQueryClient(<TopUpPage />);
@@ -129,9 +130,13 @@ describe("TopUpPage", () => {
 
     expect(await screen.findByText("+254712345678")).toBeTruthy();
     expect(screen.getByText("KES")).toBeTruthy();
-    expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(
-      "100",
-    );
+    const amountInput = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    // No autofocus / prefilled value here — the field shows a 100 placeholder.
+    expect(amountInput.value).toBe("");
+    expect(amountInput.getAttribute("placeholder")).toBe("100");
+    expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
+
+    fireEvent.change(amountInput, { target: { value: "100" } });
     // 100 KES ÷ 127.75 sell ≈ 0.78 USD₮ (shown instead of the raw buy/sell rate).
     expect(screen.getByText("You'll receive")).toBeTruthy();
     expect(await screen.findByText(/≈ 0.78 USD₮/)).toBeTruthy();
@@ -144,6 +149,9 @@ describe("TopUpPage", () => {
     renderWithQueryClient(<TopUpPage />);
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+    fireEvent.change(await screen.findByRole("textbox", { name: /amount/i }), {
+      target: { value: "100" },
+    });
     fireEvent.click(await screen.findByRole("button", { name: /continue/i }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
@@ -162,14 +170,22 @@ describe("TopUpPage", () => {
     });
   });
 
-  it("renders Pretium history returned by the backend", async () => {
+  it("renders onramp history rows and opens the detail sheet with status and tx hash", async () => {
     mockPretiumBackend({ phone: "+254712345678", history: true });
 
     renderWithQueryClient(<TopUpPage />);
 
-    expect(await screen.findByText("PENDING")).toBeTruthy();
-    expect(document.body.textContent).toContain("PTM-1");
+    // Row mirrors the activity feed: labelled "Onramp", amount shown, no Pretium id.
+    expect(await screen.findByText("Onramp")).toBeTruthy();
     expect(document.body.textContent).toContain("KES 20.00");
+    expect(document.body.textContent).not.toContain("PTM-1");
+
+    // Clicking the onramp row opens the detail sheet with status + tx hash.
+    fireEvent.click(screen.getByRole("button", { name: /onramp/i }));
+    expect(await screen.findByText("COMPLETE")).toBeTruthy();
+    expect(screen.getByText("Status")).toBeTruthy();
+    expect(screen.getByText("Transaction")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /view on block explorer/i })).toBeTruthy();
   });
 
   it("disables cash entry for a non-Kenyan phone number", async () => {
@@ -192,7 +208,10 @@ describe("TopUpPage", () => {
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
     expect(await screen.findByText(/standard Safaricom number/i)).toBeTruthy();
-    expect(screen.getByRole("textbox", { name: /amount/i }).hasAttribute("disabled")).toBe(false);
+    const amountInput = screen.getByRole("textbox", { name: /amount/i });
+    expect(amountInput.hasAttribute("disabled")).toBe(false);
+    // The soft Safaricom warning must not block: a valid amount still enables Continue.
+    fireEvent.change(amountInput, { target: { value: "100" } });
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
   });
 
