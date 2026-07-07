@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  type CreatePretiumLinkInput,
+  createPretiumLink,
+  getPretiumLinkByAddress,
   getPretiumRates,
   getPretiumTransactionsByAddress,
   triggerPretiumOnramp,
@@ -27,6 +30,8 @@ export const pretiumQueryKeys = {
   rates: () => [...pretiumQueryKeys.all, "rates"] as const,
   transactionsByAddress: (address: string | undefined) =>
     [...pretiumQueryKeys.all, "transactions", "address", address?.toLowerCase() ?? "none"] as const,
+  linkByAddress: (address: string | undefined) =>
+    [...pretiumQueryKeys.all, "link", "address", address?.toLowerCase() ?? "none"] as const,
 };
 
 export function usePretiumRates(enabled = true) {
@@ -45,6 +50,30 @@ export function usePretiumTransactionsByAddress(address: `0x${string}` | undefin
     queryFn: () => getPretiumTransactionsByAddress(requireAddress(address)),
     enabled: !!address,
     ...pretiumHistoryFreshness,
+  });
+}
+
+export function usePretiumLinkByAddress(address: `0x${string}` | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: pretiumQueryKeys.linkByAddress(address),
+    queryFn: () => getPretiumLinkByAddress(requireAddress(address)),
+    enabled: enabled && !!address,
+    // Always re-check when the sheet opens so a profile phone change is caught.
+    staleTime: 0,
+    gcTime: 0,
+    retry: false,
+  });
+}
+
+export function useCreatePretiumLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreatePretiumLinkInput) => createPretiumLink(input),
+    onSuccess: (_result, input) => {
+      void queryClient.invalidateQueries({
+        queryKey: pretiumQueryKeys.linkByAddress(input.publicKey),
+      });
+    },
   });
 }
 

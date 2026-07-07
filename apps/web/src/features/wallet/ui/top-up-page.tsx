@@ -34,6 +34,7 @@ import {
   usePretiumRates,
 } from "#/features/wallet/hooks/use-pretium";
 import { cn } from "#/lib/utils";
+import { WithdrawSheet } from "./withdraw-sheet";
 
 // We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
 // backend; `ONRAMP_ASSET_LABEL` is the branded display form (USD₮).
@@ -56,6 +57,7 @@ export function TopUpPage() {
   const profileQuery = useAuthProfile();
   const [amount, setAmount] = useState("");
   const [addStablesOpen, setAddStablesOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
 
   const cashAddress = toChecksumAddress(address);
@@ -69,7 +71,8 @@ export function TopUpPage() {
   );
 
   const phone = profileQuery.data?.phone.trim() ?? "";
-  const parsedPhone = phone ? parsePhoneNumber(phone) : undefined;
+  const parsedPhone = phone ? parsePhoneNumber(phone, "KE") : undefined;
+  const normalizedCashPhone = parsedPhone?.country === "KE" ? parsedPhone.number : phone;
   const hasPhone = phone.length > 0;
   const hasKenyanPhone = parsedPhone?.country === "KE";
   const disabledReason = !cashAddress
@@ -140,15 +143,13 @@ export function TopUpPage() {
             <h2 id="withdraw-title" className="font-heading font-semibold text-base">
               <Trans>Withdraw</Trans>
             </h2>
-            <span className="border border-border px-1.5 py-0.5 text-[0.5625rem] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              <Trans>Soon</Trans>
-            </span>
+            <span className="text-muted-foreground text-xs">MPESA</span>
           </div>
 
           <button
             type="button"
-            disabled
-            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left opacity-60"
+            onClick={() => setWithdrawOpen(true)}
+            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left active:bg-muted"
           >
             <PretiumLogo />
             <div className="min-w-0 flex-1">
@@ -184,12 +185,21 @@ export function TopUpPage() {
         amountValue={amountValue}
         onAmountChange={setAmount}
         address={cashAddress}
-        phone={phone}
+        phone={normalizedCashPhone}
         profilePending={profileQuery.isPending}
         disabledReason={disabledReason}
         entryDisabled={entryDisabled}
         hasValidAmount={hasValidAmount}
         canContinue={canContinue}
+      />
+
+      <WithdrawSheet
+        open={withdrawOpen}
+        onOpenChange={setWithdrawOpen}
+        address={cashAddress}
+        phone={normalizedCashPhone}
+        disabledReason={disabledReason}
+        entryDisabled={entryDisabled}
       />
 
       <OnrampDetailsSheet
@@ -256,7 +266,7 @@ function AddStablesSheet({
       // Pretium's onramp treats the phone as an MPESA shortcode and requires a
       // 10-digit local number (0-prefixed). Profiles store E.164 (+254…), so
       // convert for this call only.
-      const parsed = parsePhoneNumber(phone);
+      const parsed = parsePhoneNumber(phone, "KE");
       const shortcode = parsed ? `0${parsed.nationalNumber}` : phone;
 
       const result = await triggerOnramp.mutateAsync({

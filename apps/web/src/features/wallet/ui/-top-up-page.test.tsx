@@ -16,6 +16,8 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: account.address }),
+  // WithdrawSheet reads delegation via useBytecode; undefined code → not-delegated.
+  useBytecode: () => ({ data: undefined, isPending: false }),
 }));
 
 vi.mock("sonner", () => ({
@@ -38,17 +40,30 @@ function mockPretiumBackend({
   historyStatus = "COMPLETE",
   pretiumId = "PTM-1",
   txHash = "0x1111111111111111111111111111111111111111111111111111111111111111",
+  tokens = [],
+  link = null,
 }: {
   phone: string;
   history?: boolean;
   historyStatus?: string;
   pretiumId?: string;
   txHash?: string;
+  tokens?: unknown[];
+  link?: { linked: boolean; phoneNumber: string } | null;
 }) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = requestUrl(input);
     if (url.includes("/auth/profile")) {
       return Promise.resolve(jsonResponse(profilePayload(phone)));
+    }
+    if (url.includes("/api/v2/accounts/") && url.includes("/tokens")) {
+      return Promise.resolve(jsonResponse({ tokens, first: 0, last: 0 }));
+    }
+    if (url.includes("/api/v2/pretium/link-by-address/")) {
+      return Promise.resolve(jsonResponse(link ?? { linked: false }));
+    }
+    if (url.includes("/api/v2/pretium/link")) {
+      return Promise.resolve(jsonResponse({ publicKey: account.address, phoneNumber: phone }));
     }
     if (url.includes("/api/v2/pretium/rates")) {
       return Promise.resolve(jsonResponse({ buy: 128.5, sell: 127.75 }));
@@ -270,5 +285,54 @@ describe("TopUpPage", () => {
     ).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /amount/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("enables the Withdraw section and opens the offramp sheet", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    // No longer "Soon"; the second MPESA entry is the withdraw trigger.
+    expect(await screen.findByRole("heading", { name: "Withdraw" })).toBeTruthy();
+    expect(screen.queryByText("Soon")).toBeNull();
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[1]);
+    expect(await screen.findByRole("button", { name: /^withdraw$/i })).toBeTruthy();
+  });
+
+  it("lets a linked user pick an eligible token and enables withdraw for a valid amount", async () => {
+    mockPretiumBackend({
+      phone: "+254712345678",
+      link: { linked: true, phoneNumber: "+254712345678" },
+      tokens: [
+        {
+          id: 1,
+          // Celo USD₮ — matched to the offramp allowlist by address.
+          tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+          tokenSymbol: "USD₮",
+          tokenName: "Tether USD",
+          tokenDecimals: 6,
+          balance: "10000000", // 10 USDT
+          iconUrl: null,
+          lastDateBlock: "",
+        },
+      ],
+    });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[1]);
+
+    // Link check passes (already linked to the profile phone) → token is shown.
+    expect(await screen.findByText("USDT")).toBeTruthy();
+
+    const withdrawButton = screen.getByRole("button", { name: /^withdraw$/i });
+    expect(withdrawButton.hasAttribute("disabled")).toBe(true);
+
+    // 10 USDT × 128.5 buy ≈ 1285 KES max; 100 KES is valid.
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
+      target: { value: "100" },
+    });
+    await waitFor(() => expect(withdrawButton.hasAttribute("disabled")).toBe(false));
   });
 });
