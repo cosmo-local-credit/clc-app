@@ -29,6 +29,15 @@ import { cn } from "#/lib/utils";
 
 const PRETIUM_ONRAMP_ASSET = "cUSD" as const;
 
+// Safaricom MSISDN ranges (0/+254/254 prefix). A non-match is a soft signal
+// only: the line may be a ported Safaricom number, so we warn without blocking
+// the top-up. MPESA only settles to Safaricom lines.
+const SAFARICOM_REGEX = /^(?:0|\+?254)(?:11[0-5]|7(?:[0129][0-9]|4[0-3568]|5[7-9]|6[89]))[0-9]{6}$/;
+
+function isSafaricomNumber(phone: string): boolean {
+  return SAFARICOM_REGEX.test(phone.replace(/\s+/g, ""));
+}
+
 export function TopUpPage() {
   const { t } = useLingui();
   const { address } = useAccount();
@@ -204,6 +213,11 @@ function AddStablesSheet({
   const triggerOnramp = useTriggerPretiumOnramp();
   const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
 
+  // Soft, non-blocking check: only warn once the number clears the hard gates
+  // (present + Kenyan). A ported Safaricom line can still work, so we never
+  // disable Continue on this alone.
+  const showSafaricomWarning = !disabledReason && phone.length > 0 && !isSafaricomNumber(phone);
+
   const onContinue = async () => {
     if (!address || !canContinue) return;
 
@@ -258,6 +272,14 @@ function AddStablesSheet({
                 aria-invalid={!!disabledReason && !profilePending}
                 className="font-mono"
               />
+              {showSafaricomWarning ? (
+                <div className="flex gap-2 border border-amber-500/40 bg-card p-2.5 text-amber-700 text-xs dark:text-amber-500">
+                  <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  <p>
+                    <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
+                  </p>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-1.5">
@@ -266,14 +288,12 @@ function AddStablesSheet({
               </label>
               <div
                 className={cn(
-                  "flex h-11 items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
-                  entryDisabled && "opacity-50",
+                  "flex h-9 w-full items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
+                  entryDisabled && "opacity-50 pointer-events-none",
                   !hasValidAmount && "border-destructive",
                 )}
               >
-                <span className="mr-2 shrink-0 text-muted-foreground text-sm font-semibold">
-                  KES
-                </span>
+                <span className="mr-2 shrink-0 font-medium text-muted-foreground text-sm">KES</span>
                 <Input
                   id="topup-amount"
                   type="text"
@@ -285,7 +305,7 @@ function AddStablesSheet({
                   placeholder="20"
                   disabled={entryDisabled}
                   aria-invalid={!hasValidAmount}
-                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-0 font-heading text-xl font-semibold tracking-tight focus-visible:border-0"
+                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-1 text-base md:text-sm focus-visible:border-0"
                 />
               </div>
             </div>
