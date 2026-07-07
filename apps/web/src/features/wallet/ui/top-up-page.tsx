@@ -44,7 +44,7 @@ export function TopUpPage() {
   const { t } = useLingui();
   const { address } = useAccount();
   const profileQuery = useAuthProfile();
-  const [amount, setAmount] = useState("20");
+  const [amount, setAmount] = useState("100");
   const [addStablesOpen, setAddStablesOpen] = useState(false);
 
   const cashAddress = toChecksumAddress(address);
@@ -76,7 +76,7 @@ export function TopUpPage() {
   const hasValidAmount =
     amount.trim() !== "" &&
     Number.isFinite(amountValue) &&
-    amountValue >= 20 &&
+    amountValue >= 100 &&
     amountValue <= 250_000;
   const entryDisabled = !!disabledReason;
   const canContinue = !!cashAddress && hasKenyanPhone && hasValidAmount;
@@ -288,7 +288,7 @@ function AddStablesSheet({
                     autoFocus
                     value={amount}
                     onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
-                    placeholder="20"
+                    placeholder="100"
                     size={Math.max(amount.length, 2)}
                     disabled={entryDisabled}
                     aria-invalid={!hasValidAmount}

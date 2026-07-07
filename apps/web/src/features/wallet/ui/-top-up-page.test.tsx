@@ -119,7 +119,7 @@ describe("TopUpPage", () => {
     expect(await screen.findByText("No cash activity yet.")).toBeTruthy();
   });
 
-  it("opens the add stables sheet with the user's Kenyan MPESA number and a 20 KES amount", async () => {
+  it("opens the add stables sheet with the user's Kenyan MPESA number and a 100 KES amount", async () => {
     mockPretiumBackend({ phone: "+254712345678" });
 
     renderWithQueryClient(<TopUpPage />);
@@ -129,10 +129,12 @@ describe("TopUpPage", () => {
 
     expect(await screen.findByText("+254712345678")).toBeTruthy();
     expect(screen.getByText("KES")).toBeTruthy();
-    expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe("20");
-    // 20 KES ÷ 127.75 sell ≈ 0.16 USD₮ (shown instead of the raw buy/sell rate).
+    expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(
+      "100",
+    );
+    // 100 KES ÷ 127.75 sell ≈ 0.78 USD₮ (shown instead of the raw buy/sell rate).
     expect(screen.getByText("You'll receive")).toBeTruthy();
-    expect(await screen.findByText(/≈ 0.16 USD₮/)).toBeTruthy();
+    expect(await screen.findByText(/≈ 0.78 USD₮/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
   });
 
@@ -156,7 +158,7 @@ describe("TopUpPage", () => {
       // E.164 profile number converted to the 10-digit local MPESA shortcode.
       phoneNumber: "0712345678",
       asset: "USDT",
-      amount: 20,
+      amount: 100,
     });
   });
 
