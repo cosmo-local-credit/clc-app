@@ -41,6 +41,7 @@ function mockPretiumBackend({
   pretiumId = "PTM-1",
   txHash = "0x1111111111111111111111111111111111111111111111111111111111111111",
   tokens = [],
+  offramps = [],
   link = null,
 }: {
   phone: string;
@@ -49,6 +50,7 @@ function mockPretiumBackend({
   pretiumId?: string;
   txHash?: string;
   tokens?: unknown[];
+  offramps?: unknown[];
   link?: { linked: boolean; phoneNumber: string } | null;
 }) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -84,8 +86,8 @@ function mockPretiumBackend({
                     CreatedAt: "2026-07-06T10:00:00Z",
                   },
                 ],
-                offramps: [],
-                totalCount: 1,
+                offramps,
+                totalCount: 1 + offramps.length,
               }
             : { address: account.address, onramps: [], offramps: [], totalCount: 0 },
         ),
@@ -241,6 +243,43 @@ describe("TopUpPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /copy pretium id/i }));
     await waitFor(() => expect(clipboardWrite).toHaveBeenCalledWith(pretiumId));
     expect(toastSuccess).toHaveBeenCalledWith("Pretium ID copied");
+  });
+
+  it("opens completed offramp history rows in the detail sheet", async () => {
+    mockPretiumBackend({
+      phone: "+254712345678",
+      history: true,
+      offramps: [
+        {
+          id: 2,
+          pretium_id: "OFF-1",
+          pretium_status: "SUCCESS",
+          mpesa_confirmation: "QG12ABC123",
+          phone_number: "+254712345678",
+          amount_usd: "7.782101",
+          amount_kes: "1000.00",
+          tx_hash: "0x2222222222222222222222222222222222222222222222222222222222222222",
+          token_address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+          wallet_address: account.address,
+          created_at: "2026-07-06T11:00:00Z",
+        },
+      ],
+    });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    const row = await screen.findByRole("button", { name: /complete.*offramp.*kes 1000/i });
+    expect(row.textContent).toContain("KES 1000");
+    expect(row.textContent).not.toContain("KES 1000.00");
+
+    fireEvent.click(row);
+
+    expect(await screen.findByText("Offramp details")).toBeTruthy();
+    expect(screen.getByText("MPESA confirmation")).toBeTruthy();
+    expect(screen.getByText("QG12ABC123")).toBeTruthy();
+    expect(screen.getByText("Stable sent")).toBeTruthy();
+    expect(screen.getByText("7.782101")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /view on block explorer/i })).toBeTruthy();
   });
 
   it("marks incomplete Pretium history rows with the pending status icon", async () => {
