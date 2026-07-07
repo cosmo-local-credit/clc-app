@@ -127,10 +127,12 @@ describe("TopUpPage", () => {
     expect(screen.queryByRole("textbox", { name: /amount/i })).toBeNull();
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
-    expect(await screen.findByDisplayValue("+254712345678")).toBeTruthy();
+    expect(await screen.findByText("+254712345678")).toBeTruthy();
     expect(screen.getByText("KES")).toBeTruthy();
     expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe("20");
-    expect(await screen.findByText(/buy 128.5 · sell 127.75/i)).toBeTruthy();
+    // 20 KES ÷ 127.75 sell ≈ 0.16 USD₮ (shown instead of the raw buy/sell rate).
+    expect(screen.getByText("You'll receive")).toBeTruthy();
+    expect(await screen.findByText(/≈ 0.16 USD₮/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
   });
 
@@ -151,8 +153,9 @@ describe("TopUpPage", () => {
     expect(typeof onrampBody).toBe("string");
     expect(JSON.parse(onrampBody as string)).toMatchObject({
       address: account.address,
-      phoneNumber: "+254712345678",
-      asset: "cUSD",
+      // E.164 profile number converted to the 10-digit local MPESA shortcode.
+      phoneNumber: "0712345678",
+      asset: "USDT",
       amount: 20,
     });
   });
@@ -198,7 +201,7 @@ describe("TopUpPage", () => {
 
     fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
 
-    expect(await screen.findByDisplayValue("+254712345678")).toBeTruthy();
+    expect(await screen.findByText("+254712345678")).toBeTruthy();
     expect(screen.queryByText(/standard Safaricom number/i)).toBeNull();
   });
 

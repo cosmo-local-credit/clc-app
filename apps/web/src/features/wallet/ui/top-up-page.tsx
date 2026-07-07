@@ -7,7 +7,6 @@ import { getAddress } from "viem";
 import { useAccount } from "wagmi";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -27,7 +26,10 @@ import {
 } from "#/features/wallet/hooks/use-pretium";
 import { cn } from "#/lib/utils";
 
-const PRETIUM_ONRAMP_ASSET = "cUSD" as const;
+// We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
+// backend; `ONRAMP_ASSET_LABEL` is the branded display form (USD₮).
+const ONRAMP_ASSET = "USDT" as const;
+const ONRAMP_ASSET_LABEL = "USD₮";
 
 // Safaricom MSISDN ranges (0/+254/254 prefix). A non-match is a soft signal
 // only: the line may be a ported Safaricom number, so we warn without blocking
@@ -112,7 +114,7 @@ export function TopUpPage() {
                 <Trans>MPESA via Pretium</Trans>
               </p>
               <p className="text-muted-foreground text-xs">
-                <Trans>Buy {PRETIUM_ONRAMP_ASSET} with KES.</Trans>
+                <Trans>Buy USD₮ with KES.</Trans>
               </p>
             </div>
             <RiArrowRightSLine
@@ -218,14 +220,28 @@ function AddStablesSheet({
   // disable Continue on this alone.
   const showSafaricomWarning = !disabledReason && phone.length > 0 && !isSafaricomNumber(phone);
 
+  // Approximate USD₮ received = KES amount ÷ Pretium sell rate. Shown in place
+  // of the raw buy/sell rate; null while rates load, on error, or bad amount.
+  const sellRate = Number(ratesQuery.data?.sell);
+  const approxUsdt =
+    ratesQuery.isSuccess && Number.isFinite(sellRate) && sellRate > 0 && hasValidAmount
+      ? amountValue / sellRate
+      : null;
+
   const onContinue = async () => {
     if (!address || !canContinue) return;
 
     try {
+      // Pretium's onramp treats the phone as an MPESA shortcode and requires a
+      // 10-digit local number (0-prefixed). Profiles store E.164 (+254…), so
+      // convert for this call only.
+      const parsed = parsePhoneNumber(phone);
+      const shortcode = parsed ? `0${parsed.nationalNumber}` : phone;
+
       const result = await triggerOnramp.mutateAsync({
         address,
-        phoneNumber: phone,
-        asset: PRETIUM_ONRAMP_ASSET,
+        phoneNumber: shortcode,
+        asset: ONRAMP_ASSET,
         amount: amountValue,
       });
 
@@ -257,94 +273,83 @@ function AddStablesSheet({
             </div>
           </SheetHeader>
 
-          <div className="space-y-4 px-6 pb-3">
-            <div className="space-y-1.5">
-              <label htmlFor="topup-phone" className="font-medium text-sm">
-                <Trans>MPESA phone</Trans>
-              </label>
-              <Input
-                id="topup-phone"
-                type="tel"
-                value={profilePending ? "" : phone}
-                placeholder={t`No phone number`}
-                readOnly
-                disabled={entryDisabled}
-                aria-invalid={!!disabledReason && !profilePending}
-                className="font-mono"
-              />
-              {showSafaricomWarning ? (
-                <div className="flex gap-2 border border-amber-500/40 bg-card p-2.5 text-amber-700 text-xs dark:text-amber-500">
-                  <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                  <p>
-                    <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
-                  </p>
+          <div className="space-y-3 px-6 pb-3">
+            <div className="border border-border bg-card">
+              <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                <label htmlFor="topup-amount" className="text-muted-foreground text-xs">
+                  <Trans>Amount</Trans>
+                </label>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-muted-foreground text-xs">KES</span>
+                  <input
+                    id="topup-amount"
+                    type="text"
+                    inputMode="decimal"
+                    autoFocus
+                    value={amount}
+                    onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
+                    placeholder="20"
+                    size={Math.max(amount.length, 2)}
+                    disabled={entryDisabled}
+                    aria-invalid={!hasValidAmount}
+                    className={cn(
+                      "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none [field-sizing:content]",
+                      !hasValidAmount && "text-destructive",
+                      entryDisabled && "opacity-50",
+                    )}
+                  />
                 </div>
-              ) : null}
-            </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="topup-amount" className="font-medium text-sm">
-                <Trans>Amount</Trans>
-              </label>
-              <div
-                className={cn(
-                  "flex h-9 w-full items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
-                  entryDisabled && "opacity-50 pointer-events-none",
-                  !hasValidAmount && "border-destructive",
-                )}
-              >
-                <span className="mr-2 shrink-0 font-medium text-muted-foreground text-sm">KES</span>
-                <Input
-                  id="topup-amount"
-                  type="text"
-                  inputMode="decimal"
-                  min={20}
-                  max={250_000}
-                  value={amount}
-                  onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
-                  placeholder="20"
-                  disabled={entryDisabled}
-                  aria-invalid={!hasValidAmount}
-                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-1 text-base md:text-sm focus-visible:border-0"
-                />
+              <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>MPESA phone</Trans>
+                </span>
+                <span className="font-mono text-xs font-semibold">
+                  {profilePending ? "…" : phone || "—"}
+                </span>
+              </div>
+
+              <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>You'll receive</Trans>
+                </span>
+                <span className="font-mono text-xs font-semibold">
+                  {ratesQuery.isPending ? (
+                    <span className="text-muted-foreground">…</span>
+                  ) : approxUsdt !== null ? (
+                    `≈ ${approxUsdt.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })} ${ONRAMP_ASSET_LABEL}`
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </span>
               </div>
             </div>
 
-            <div className="border border-border bg-card p-3 text-xs">
-              {ratesQuery.isPending ? (
-                <p className="text-muted-foreground">
-                  <Trans>Loading Pretium rates…</Trans>
-                </p>
-              ) : ratesQuery.isError ? (
-                <p className="text-muted-foreground">
-                  <Trans>Rates unavailable. They will be shown before you confirm.</Trans>
-                </p>
-              ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">
-                    <Trans>Pretium rate</Trans>
-                  </span>
-                  <span className="font-mono font-semibold">
-                    <Trans>
-                      Buy {ratesQuery.data.buy} · Sell {ratesQuery.data.sell}
-                    </Trans>
-                  </span>
-                </div>
-              )}
-            </div>
+            {showSafaricomWarning ? (
+              <p
+                className="flex items-start gap-2 text-amber-700 text-xs dark:text-amber-500"
+                role="alert"
+              >
+                <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
+              </p>
+            ) : null}
 
             {disabledReason ? (
-              <div className="flex gap-2 border border-border bg-card p-3 text-muted-foreground text-xs">
+              <p className="flex items-start gap-2 text-muted-foreground text-xs">
                 <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <p>{disabledReason}</p>
-              </div>
+                {disabledReason}
+              </p>
             ) : null}
 
             {mutationError ? (
-              <div className="flex gap-2 border border-destructive/30 bg-card p-3 text-destructive text-xs">
+              <p className="flex items-start gap-2 text-destructive text-xs" role="alert">
                 <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <p>{mutationError}</p>
-              </div>
+                {mutationError}
+              </p>
             ) : null}
           </div>
 
