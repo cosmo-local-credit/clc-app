@@ -2,11 +2,12 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useMemo, useState } from "react";
 import { parsePhoneNumber } from "react-phone-number-input";
 import {
-  RiArrowLeftDownLine,
   RiArrowRightSLine,
-  RiArrowRightUpLine,
+  RiCheckLine,
   RiErrorWarningLine,
+  RiFileCopyLine,
   RiHistoryLine,
+  RiTimeLine,
 } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -38,6 +39,7 @@ import { cn } from "#/lib/utils";
 // backend; `ONRAMP_ASSET_LABEL` is the branded display form (USD₮).
 const ONRAMP_ASSET = "USDT" as const;
 const ONRAMP_ASSET_LABEL = "USD₮";
+const COMPLETE_PRETIUM_STATUSES = new Set(["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"]);
 
 // Safaricom MSISDN ranges (0/+254/254 prefix). A non-match is a soft signal
 // only: the line may be a ported Safaricom number, so we warn without blocking
@@ -443,7 +445,8 @@ function PretiumHistory({
         ) : null}
         {transactions.slice(0, 4).map((transaction, index, list) => {
           const incoming = transaction.kind === "onramp";
-          const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+          const complete = isCompletePretiumStatus(transaction.status);
+          const Icon = complete ? RiCheckLine : RiTimeLine;
           return (
             <button
               key={`${transaction.kind}-${transaction.reference}`}
@@ -459,10 +462,13 @@ function PretiumHistory({
               <span
                 className={cn(
                   "flex size-7 shrink-0 items-center justify-center bg-muted",
-                  incoming ? "text-primary" : "text-destructive",
+                  complete ? "text-primary" : "text-amber-700 dark:text-amber-500",
                 )}
               >
                 <Icon className="size-3.5" aria-hidden="true" />
+                <span className="sr-only">
+                  {complete ? <Trans>Complete</Trans> : <Trans>Pending</Trans>}
+                </span>
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-sm">
@@ -492,11 +498,21 @@ function OnrampDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const isComplete = onramp
-    ? ["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"].includes(onramp.status.toUpperCase())
-    : false;
+  const { t } = useLingui();
+  const isComplete = onramp ? isCompletePretiumStatus(onramp.status) : false;
   const hasTxHash = !!onramp?.txHash;
   const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${onramp?.txHash}` : "#";
+
+  const copyPretiumId = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy Pretium ID`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Pretium ID copied`))
+      .catch(() => toast.error(t`Couldn't copy Pretium ID`));
+  };
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -542,6 +558,16 @@ function OnrampDetailsSheet({
                     {formatCashDate(onramp.createdAt)}
                   </time>
                 </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Pretium ID</Trans>
+                  </span>
+                  <CopyableIdentifier
+                    value={onramp.reference}
+                    label={t`Copy Pretium ID`}
+                    onCopy={copyPretiumId}
+                  />
+                </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
                   <span className="text-muted-foreground text-xs">
                     <Trans>Transaction</Trans>
@@ -573,6 +599,33 @@ function OnrampDetailsSheet({
   );
 }
 
+function CopyableIdentifier({
+  value,
+  label,
+  onCopy,
+}: {
+  value: string;
+  label: string;
+  onCopy: (value: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex min-h-9 min-w-0 items-center gap-2 bg-card py-1 pl-2 text-right"
+      aria-label={label}
+      title={value}
+      onClick={() => onCopy(value)}
+    >
+      <span className="min-w-0 font-mono text-muted-foreground text-xs">
+        {shortenIdentifier(value)}
+      </span>
+      <span className="flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+        <RiFileCopyLine className="size-3.5" aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
 function PretiumLogo() {
   return (
     <img
@@ -591,6 +644,15 @@ function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | 
   } catch {
     return undefined;
   }
+}
+
+function isCompletePretiumStatus(status: string): boolean {
+  return COMPLETE_PRETIUM_STATUSES.has(status.trim().toUpperCase());
+}
+
+function shortenIdentifier(value: string): string {
+  if (value.length <= 14) return value;
+  return `${value.slice(0, 8)}…${value.slice(-6)}`;
 }
 
 function timestamp(date: string): number {

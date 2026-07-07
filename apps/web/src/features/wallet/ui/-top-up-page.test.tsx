@@ -2,8 +2,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { account, toastSuccess } = vi.hoisted(() => ({
+const { account, clipboardWrite, toastSuccess } = vi.hoisted(() => ({
   account: { address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as string | undefined },
+  clipboardWrite: vi.fn(),
   toastSuccess: vi.fn(),
 }));
 
@@ -31,7 +32,19 @@ function renderWithQueryClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-function mockPretiumBackend({ phone, history = false }: { phone: string; history?: boolean }) {
+function mockPretiumBackend({
+  phone,
+  history = false,
+  historyStatus = "COMPLETE",
+  pretiumId = "PTM-1",
+  txHash = "0x1111111111111111111111111111111111111111111111111111111111111111",
+}: {
+  phone: string;
+  history?: boolean;
+  historyStatus?: string;
+  pretiumId?: string;
+  txHash?: string;
+}) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = requestUrl(input);
     if (url.includes("/auth/profile")) {
@@ -49,10 +62,10 @@ function mockPretiumBackend({ phone, history = false }: { phone: string; history
                 onramps: [
                   {
                     ID: 1,
-                    PretiumID: "PTM-1",
-                    PretiumStatus: "COMPLETE",
+                    PretiumID: pretiumId,
+                    PretiumStatus: historyStatus,
                     AmountKES: "20.00",
-                    TxHash: "0x1111111111111111111111111111111111111111111111111111111111111111",
+                    TxHash: txHash,
                     CreatedAt: "2026-07-06T10:00:00Z",
                   },
                 ],
@@ -102,7 +115,9 @@ function profilePayload(phone: string) {
 
 afterEach(() => {
   account.address = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+  clipboardWrite.mockReset();
   toastSuccess.mockReset();
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -170,22 +185,39 @@ describe("TopUpPage", () => {
     });
   });
 
-  it("renders onramp history rows and opens the detail sheet with status and tx hash", async () => {
-    mockPretiumBackend({ phone: "+254712345678", history: true });
+  it("renders completed onramp history rows and opens the detail sheet with copyable Pretium ID", async () => {
+    clipboardWrite.mockResolvedValue(undefined);
+    vi.stubGlobal("navigator", { clipboard: { writeText: clipboardWrite } });
+    const pretiumId = "PTM-1234567890-ABCDEFG";
+    mockPretiumBackend({ phone: "+254712345678", history: true, pretiumId });
 
     renderWithQueryClient(<TopUpPage />);
 
     // Row mirrors the activity feed: labelled "Onramp", amount shown, no Pretium id.
-    expect(await screen.findByText("Onramp")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /complete.*onramp/i })).toBeTruthy();
     expect(document.body.textContent).toContain("KES 20.00");
-    expect(document.body.textContent).not.toContain("PTM-1");
+    expect(document.body.textContent).not.toContain(pretiumId);
 
-    // Clicking the onramp row opens the detail sheet with status + tx hash.
-    fireEvent.click(screen.getByRole("button", { name: /onramp/i }));
+    // Clicking the onramp row opens the detail sheet with status, Pretium id + tx hash.
+    fireEvent.click(screen.getByRole("button", { name: /complete.*onramp/i }));
     expect(await screen.findByText("COMPLETE")).toBeTruthy();
     expect(screen.getByText("Status")).toBeTruthy();
+    expect(screen.getByText("Pretium ID")).toBeTruthy();
+    expect(screen.getByText("PTM-1234…BCDEFG")).toBeTruthy();
     expect(screen.getByText("Transaction")).toBeTruthy();
     expect(screen.getByRole("link", { name: /view on block explorer/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /copy pretium id/i }));
+    await waitFor(() => expect(clipboardWrite).toHaveBeenCalledWith(pretiumId));
+    expect(toastSuccess).toHaveBeenCalledWith("Pretium ID copied");
+  });
+
+  it("marks incomplete Pretium history rows with the pending status icon", async () => {
+    mockPretiumBackend({ phone: "+254712345678", history: true, historyStatus: "PENDING" });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    expect(await screen.findByRole("button", { name: /pending.*onramp/i })).toBeTruthy();
   });
 
   it("disables cash entry for a non-Kenyan phone number", async () => {
