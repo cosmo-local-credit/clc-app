@@ -56,6 +56,10 @@ msgstr "Active"
 msgid "Activity"
 msgstr "Activity"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:60
+msgid "Add a phone number to your profile to use MPESA."
+msgstr "Add a phone number to your profile to use MPESA."
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:197
 msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
@@ -63,8 +67,14 @@ msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable 
 "notifications."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:75
-msgid "Add money"
-msgstr "Add money"
+#~ msgid "Add money"
+#~ msgstr "Add money"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:90
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:237
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:405
+msgid "Add stables"
+msgstr "Add stables"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:60
@@ -101,12 +111,13 @@ msgstr "Already have an account?"
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:113
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:185
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:311
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:265
 msgid "Amount"
 msgstr "Amount"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:170
-msgid "Amount (KSh)"
-msgstr "Amount (KSh)"
+#~ msgid "Amount (KSh)"
+#~ msgstr "Amount (KSh)"
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:214
 msgid "Amount exceeds your balance"
@@ -140,8 +151,8 @@ msgstr "Balance {0}"
 #~ msgstr "Balance {balance}"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:56
-msgid "Bank transfer"
-msgstr "Bank transfer"
+#~ msgid "Bank transfer"
+#~ msgstr "Bank transfer"
 
 #: apps/web/src/features/wallet/ui/swap-page.tsx:96
 #~ msgid "Best route · auto-selected"
@@ -155,9 +166,31 @@ msgstr "Bank transfer"
 msgid "Browse all"
 msgstr "Browse all"
 
+#. placeholder {0}: ratesQuery.data.buy
+#. placeholder {1}: ratesQuery.data.sell
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:308
+msgid "Buy {0} · Sell {1}"
+msgstr "Buy {0} · Sell {1}"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:106
+msgid "Buy {PRETIUM_ONRAMP_ASSET} with KES."
+msgstr "Buy {PRETIUM_ONRAMP_ASSET} with KES."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:82
+msgid "Buy or sell stables with local money."
+msgstr "Buy or sell stables with local money."
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:78
-msgid "Buy USDC with local money or receive crypto."
-msgstr "Buy USDC with local money or receive crypto."
+#~ msgid "Buy stables with KES."
+#~ msgstr "Buy stables with KES."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:48
+#~ msgid "Buy stables with local money."
+#~ msgstr "Buy stables with local money."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:78
+#~ msgid "Buy USDC with local money or receive crypto."
+#~ msgstr "Buy USDC with local money or receive crypto."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:88
 msgid "Camera access denied."
@@ -170,6 +203,12 @@ msgstr "Camera access denied."
 #: apps/web/src/routes/__root.tsx:256
 msgid "Cancel"
 msgstr "Cancel"
+
+#: apps/web/src/features/home/ui/wallet-page.tsx:29
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:75
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:79
+msgid "Cash"
+msgstr "Cash"
 
 #: apps/web/src/components/wallet/wallet-status.tsx:15
 msgid "Celo network"
@@ -213,8 +252,8 @@ msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:157
-msgid "Close"
-msgstr "Close"
+#~ msgid "Close"
+#~ msgstr "Close"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
@@ -243,6 +282,10 @@ msgstr "Community vouchers and their details."
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:130
 msgid "Complete the browser permission prompt to continue."
 msgstr "Complete the browser permission prompt to continue."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:219
+msgid "Complete the prompt on your phone."
+msgstr "Complete the prompt on your phone."
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:334
 msgid "Confirm and send"
@@ -273,6 +316,10 @@ msgstr "Confirmed"
 #~ msgid "Confirming..."
 #~ msgstr "Confirming..."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:54
+msgid "Connect your wallet to use MPESA."
+msgstr "Connect your wallet to use MPESA."
+
 #: apps/web/src/features/home/ui/settings-page.tsx:70
 msgid "Connected address"
 msgstr "Connected address"
@@ -299,7 +346,7 @@ msgstr "Connection failed."
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:213
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:186
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:337
 msgid "Continue"
 msgstr "Continue"
 
@@ -395,6 +442,10 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Couldn't load activity."
 msgstr "Couldn't load activity."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:371
+msgid "Couldn't load Pretium history."
+msgstr "Couldn't load Pretium history."
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:160
 msgid "Couldn't load tokens"
 msgstr "Couldn't load tokens"
@@ -407,6 +458,10 @@ msgstr "Couldn't load vouchers."
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:196
 msgid "Couldn't resolve that recipient."
 msgstr "Couldn't resolve that recipient."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:223
+msgid "Couldn't start MPESA top up"
+msgstr "Couldn't start MPESA top up"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
 msgid "Create account"
@@ -438,8 +493,8 @@ msgid "Date"
 msgstr "Date"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:49
-msgid "Debit / Credit card"
-msgstr "Debit / Credit card"
+#~ msgid "Debit / Credit card"
+#~ msgstr "Debit / Credit card"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Delegated to Calibur"
@@ -454,8 +509,8 @@ msgstr "Description"
 #~ msgstr "Details"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:57
-msgid "Direct deposit"
-msgstr "Direct deposit"
+#~ msgid "Direct deposit"
+#~ msgstr "Direct deposit"
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:188
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:250
@@ -558,8 +613,8 @@ msgid "From"
 msgstr "From"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:64
-msgid "From another wallet or exchange"
-msgstr "From another wallet or exchange"
+#~ msgid "From another wallet or exchange"
+#~ msgstr "From another wallet or exchange"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:71
 msgid "Go back"
@@ -589,6 +644,10 @@ msgstr "Import paper wallet?"
 #: apps/web/src/routes/__root.tsx:248
 msgid "Import wallet"
 msgstr "Import wallet"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:400
+msgid "In"
+msgstr "In"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:113
 msgid "Inactive"
@@ -650,6 +709,10 @@ msgstr "Loading activity…"
 msgid "Loading address book…"
 msgstr "Loading address book…"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:365
+msgid "Loading cash activity…"
+msgstr "Loading cash activity…"
+
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:243
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:258
 msgid "Loading location map"
@@ -660,6 +723,10 @@ msgstr "Loading location map"
 msgid "Loading more…"
 msgstr "Loading more…"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:296
+msgid "Loading Pretium rates…"
+msgstr "Loading Pretium rates…"
+
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:164
 msgid "Loading tokens…"
 msgstr "Loading tokens…"
@@ -668,6 +735,10 @@ msgstr "Loading tokens…"
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:95
 msgid "Loading vouchers…"
 msgstr "Loading vouchers…"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:56
+msgid "Loading your profile…"
+msgstr "Loading your profile…"
 
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:139
 msgid "Loading…"
@@ -713,6 +784,24 @@ msgstr "Max {max}"
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:57
 #~ msgid "Mint to"
 #~ msgstr "Mint to"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:62
+msgid "MPESA cash services need a Kenyan phone number."
+msgstr "MPESA cash services need a Kenyan phone number."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:249
+msgid "MPESA phone"
+msgstr "MPESA phone"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:218
+msgid "MPESA prompt sent"
+msgstr "MPESA prompt sent"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:103
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:134
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:240
+msgid "MPESA via Pretium"
+msgstr "MPESA via Pretium"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:180
 #~ msgid "My pools"
@@ -771,6 +860,10 @@ msgstr "No address available"
 msgid "No camera found on this device."
 msgstr "No camera found on this device."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:383
+msgid "No cash activity yet."
+msgstr "No cash activity yet."
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:283
 #~ msgid "No passkey found"
 #~ msgstr "No passkey found"
@@ -778,6 +871,10 @@ msgstr "No camera found on this device."
 #: apps/web/src/components/auth/sign-in-panel.tsx:286
 #~ msgid "No passkey is registered on this device."
 #~ msgstr "No passkey is registered on this device."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:255
+msgid "No phone number"
+msgstr "No phone number"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:123
 msgid "No QR code found. Try again with a clearer image."
@@ -853,6 +950,10 @@ msgstr "Opening paper wallet..."
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 msgid "or"
 msgstr "or"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:400
+msgid "Out"
+msgstr "Out"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:36
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:58
@@ -946,6 +1047,10 @@ msgstr "Pool membership, limits, and stewardship tools will appear here."
 msgid "Pools"
 msgstr "Pools"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:64
+#~ msgid "Powered by Pretium"
+#~ msgstr "Powered by Pretium"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:37
 msgid "Preferences"
 msgstr "Preferences"
@@ -953,6 +1058,18 @@ msgstr "Preferences"
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:163
 msgid "Preparing..."
 msgstr "Preparing..."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:386
+msgid "Pretium deposits and withdrawals will appear here."
+msgstr "Pretium deposits and withdrawals will appear here."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:360
+msgid "Pretium history"
+msgstr "Pretium history"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:305
+msgid "Pretium rate"
+msgstr "Pretium rate"
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:21
 msgid "Primary navigation"
@@ -1009,6 +1126,14 @@ msgstr "QR currently contains the raw private key."
 #: apps/web/src/features/wallet/ui/swap-page.tsx:111
 msgid "Rate"
 msgstr "Rate"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:244
+#~ msgid "Rates and fees will be shown before you confirm."
+#~ msgstr "Rates and fees will be shown before you confirm."
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:300
+msgid "Rates unavailable. They will be shown before you confirm."
+msgstr "Rates unavailable. They will be shown before you confirm."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:227
 #~ msgid "Re-authenticate"
@@ -1130,6 +1255,10 @@ msgstr "Searching places…"
 msgid "Select a token"
 msgstr "Select a token"
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:137
+msgid "Sell stables to local money."
+msgstr "Sell stables to local money."
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:20
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:110
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:227
@@ -1243,9 +1372,13 @@ msgstr "Signing out..."
 #~ msgid "Smart wallet activation failed."
 #~ msgstr "Smart wallet activation failed."
 
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:110
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:122
 msgid "Soon"
 msgstr "Soon"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:337
+msgid "Starting…"
+msgstr "Starting…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:61
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
@@ -1325,13 +1458,13 @@ msgid "Toggle theme"
 msgstr "Toggle theme"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:63
-msgid "Tokens"
-msgstr "Tokens"
+#~ msgid "Tokens"
+#~ msgstr "Tokens"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:29
-#: apps/web/src/features/wallet/ui/top-up-page.tsx:72
-msgid "Top up"
-msgstr "Top up"
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:41
+#~ msgid "Top up"
+#~ msgstr "Top up"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:47
 #~ msgid "Total balance"
@@ -1366,6 +1499,7 @@ msgstr "Transfer history"
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:109
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:235
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:374
 msgid "Try again"
 msgstr "Try again"
 
@@ -1475,9 +1609,18 @@ msgstr "Wallet session"
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "We could not verify your session. Check your connection and try again."
 
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:58
+msgid "We couldn't load your profile phone number."
+msgstr "We couldn't load your profile phone number."
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 msgid "Website"
 msgstr "Website"
+
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:119
+#: apps/web/src/features/wallet/ui/top-up-page.tsx:407
+msgid "Withdraw"
+msgstr "Withdraw"
 
 #: apps/web/src/features/wallet/ui/swap-page.tsx:85
 msgid "You pay"
