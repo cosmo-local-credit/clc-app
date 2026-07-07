@@ -1,13 +1,20 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMemo, useState } from "react";
 import { parsePhoneNumber } from "react-phone-number-input";
-import { RiArrowRightSLine, RiErrorWarningLine, RiHistoryLine } from "react-icons/ri";
+import {
+  RiArrowRightSLine,
+  RiCheckLine,
+  RiErrorWarningLine,
+  RiFileCopyLine,
+  RiHistoryLine,
+  RiTimeLine,
+} from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useAccount } from "wagmi";
 
+import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -17,6 +24,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import type { PretiumCashTransaction } from "#/features/wallet/api/pretium-client";
@@ -26,8 +34,13 @@ import {
   usePretiumRates,
 } from "#/features/wallet/hooks/use-pretium";
 import { cn } from "#/lib/utils";
+import { WithdrawSheet } from "./withdraw-sheet";
 
-const PRETIUM_ONRAMP_ASSET = "cUSD" as const;
+// We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
+// backend; `ONRAMP_ASSET_LABEL` is the branded display form (USD₮).
+const ONRAMP_ASSET = "USDT" as const;
+const ONRAMP_ASSET_LABEL = "USD₮";
+const COMPLETE_PRETIUM_STATUSES = new Set(["COMPLETE", "COMPLETED", "SUCCESS", "SETTLED"]);
 
 // Safaricom MSISDN ranges (0/+254/254 prefix). A non-match is a soft signal
 // only: the line may be a ported Safaricom number, so we warn without blocking
@@ -42,8 +55,11 @@ export function TopUpPage() {
   const { t } = useLingui();
   const { address } = useAccount();
   const profileQuery = useAuthProfile();
-  const [amount, setAmount] = useState("20");
+  const [amount, setAmount] = useState("");
   const [addStablesOpen, setAddStablesOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [selectedOnramp, setSelectedOnramp] = useState<PretiumCashTransaction | null>(null);
+  const [selectedOfframp, setSelectedOfframp] = useState<PretiumCashTransaction | null>(null);
 
   const cashAddress = toChecksumAddress(address);
   const transactionsQuery = usePretiumTransactionsByAddress(cashAddress);
@@ -56,7 +72,8 @@ export function TopUpPage() {
   );
 
   const phone = profileQuery.data?.phone.trim() ?? "";
-  const parsedPhone = phone ? parsePhoneNumber(phone) : undefined;
+  const parsedPhone = phone ? parsePhoneNumber(phone, "KE") : undefined;
+  const normalizedCashPhone = parsedPhone?.country === "KE" ? parsedPhone.number : phone;
   const hasPhone = phone.length > 0;
   const hasKenyanPhone = parsedPhone?.country === "KE";
   const disabledReason = !cashAddress
@@ -74,7 +91,7 @@ export function TopUpPage() {
   const hasValidAmount =
     amount.trim() !== "" &&
     Number.isFinite(amountValue) &&
-    amountValue >= 20 &&
+    amountValue >= 100 &&
     amountValue <= 250_000;
   const entryDisabled = !!disabledReason;
   const canContinue = !!cashAddress && hasKenyanPhone && hasValidAmount;
@@ -98,7 +115,6 @@ export function TopUpPage() {
             <h2 id="add-stables-title" className="font-heading font-semibold text-base">
               <Trans>Add stables</Trans>
             </h2>
-            <span className="text-muted-foreground text-xs">MPESA</span>
           </div>
 
           <button
@@ -112,7 +128,7 @@ export function TopUpPage() {
                 <Trans>MPESA via Pretium</Trans>
               </p>
               <p className="text-muted-foreground text-xs">
-                <Trans>Buy {PRETIUM_ONRAMP_ASSET} with KES.</Trans>
+                <Trans>Buy USD₮ with KES.</Trans>
               </p>
             </div>
             <RiArrowRightSLine
@@ -127,15 +143,12 @@ export function TopUpPage() {
             <h2 id="withdraw-title" className="font-heading font-semibold text-base">
               <Trans>Withdraw</Trans>
             </h2>
-            <span className="border border-border px-1.5 py-0.5 text-[0.5625rem] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
-              <Trans>Soon</Trans>
-            </span>
           </div>
 
           <button
             type="button"
-            disabled
-            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left opacity-60"
+            onClick={() => setWithdrawOpen(true)}
+            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left active:bg-muted"
           >
             <PretiumLogo />
             <div className="min-w-0 flex-1">
@@ -160,6 +173,8 @@ export function TopUpPage() {
           onRetry={() => {
             void transactionsQuery.refetch();
           }}
+          onSelectOnramp={setSelectedOnramp}
+          onSelectOfframp={setSelectedOfframp}
         />
       </div>
 
@@ -170,12 +185,37 @@ export function TopUpPage() {
         amountValue={amountValue}
         onAmountChange={setAmount}
         address={cashAddress}
-        phone={phone}
+        phone={normalizedCashPhone}
         profilePending={profileQuery.isPending}
         disabledReason={disabledReason}
         entryDisabled={entryDisabled}
         hasValidAmount={hasValidAmount}
         canContinue={canContinue}
+      />
+
+      <WithdrawSheet
+        open={withdrawOpen}
+        onOpenChange={setWithdrawOpen}
+        address={cashAddress}
+        phone={normalizedCashPhone}
+        disabledReason={disabledReason}
+        entryDisabled={entryDisabled}
+      />
+
+      <OnrampDetailsSheet
+        onramp={selectedOnramp}
+        open={selectedOnramp !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOnramp(null);
+        }}
+      />
+
+      <OfframpDetailsSheet
+        offramp={selectedOfframp}
+        open={selectedOfframp !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedOfframp(null);
+        }}
       />
     </div>
   );
@@ -209,6 +249,7 @@ function AddStablesSheet({
   canContinue: boolean;
 }) {
   const { t } = useLingui();
+  const [amountFocused, setAmountFocused] = useState(false);
   const ratesQuery = usePretiumRates(open);
   const triggerOnramp = useTriggerPretiumOnramp();
   const mutationError = triggerOnramp.error instanceof Error ? triggerOnramp.error.message : null;
@@ -218,14 +259,28 @@ function AddStablesSheet({
   // disable Continue on this alone.
   const showSafaricomWarning = !disabledReason && phone.length > 0 && !isSafaricomNumber(phone);
 
+  // Approximate USD₮ received = KES amount ÷ Pretium sell rate. Shown in place
+  // of the raw buy/sell rate; null while rates load, on error, or bad amount.
+  const sellRate = Number(ratesQuery.data?.sell);
+  const approxUsdt =
+    ratesQuery.isSuccess && Number.isFinite(sellRate) && sellRate > 0 && hasValidAmount
+      ? amountValue / sellRate
+      : null;
+
   const onContinue = async () => {
     if (!address || !canContinue) return;
 
     try {
+      // Pretium's onramp treats the phone as an MPESA shortcode and requires a
+      // 10-digit local number (0-prefixed). Profiles store E.164 (+254…), so
+      // convert for this call only.
+      const parsed = parsePhoneNumber(phone, "KE");
+      const shortcode = parsed ? `0${parsed.nationalNumber}` : phone;
+
       const result = await triggerOnramp.mutateAsync({
         address,
-        phoneNumber: phone,
-        asset: PRETIUM_ONRAMP_ASSET,
+        phoneNumber: shortcode,
+        asset: ONRAMP_ASSET,
         amount: amountValue,
       });
 
@@ -257,94 +312,92 @@ function AddStablesSheet({
             </div>
           </SheetHeader>
 
-          <div className="space-y-4 px-6 pb-3">
-            <div className="space-y-1.5">
-              <label htmlFor="topup-phone" className="font-medium text-sm">
-                <Trans>MPESA phone</Trans>
-              </label>
-              <Input
-                id="topup-phone"
-                type="tel"
-                value={profilePending ? "" : phone}
-                placeholder={t`No phone number`}
-                readOnly
-                disabled={entryDisabled}
-                aria-invalid={!!disabledReason && !profilePending}
-                className="font-mono"
-              />
-              {showSafaricomWarning ? (
-                <div className="flex gap-2 border border-amber-500/40 bg-card p-2.5 text-amber-700 text-xs dark:text-amber-500">
-                  <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                  <p>
-                    <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
-                  </p>
+          <div className="space-y-3 px-6 pb-3">
+            <div className="border border-border bg-card">
+              <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                <div className="flex items-baseline gap-1.5">
+                  <label htmlFor="topup-amount" className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </label>
+                  <span className="text-muted-foreground text-xs">KES</span>
                 </div>
-              ) : null}
-            </div>
+                <div className="relative flex items-baseline gap-1.5">
+                  <input
+                    id="topup-amount"
+                    type="text"
+                    inputMode="decimal"
+                    value={amount}
+                    onFocus={() => setAmountFocused(true)}
+                    onBlur={() => setAmountFocused(false)}
+                    onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
+                    placeholder="100"
+                    size={Math.max(amount.length, 3)}
+                    disabled={entryDisabled}
+                    aria-invalid={amount !== "" && !hasValidAmount}
+                    className={cn(
+                      "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      amount !== "" && !hasValidAmount && "text-destructive",
+                      entryDisabled && "opacity-50",
+                    )}
+                  />
+                  {!amount && !amountFocused ? (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none h-4 w-px animate-pulse bg-primary"
+                    />
+                  ) : null}
+                </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="topup-amount" className="font-medium text-sm">
-                <Trans>Amount</Trans>
-              </label>
-              <div
-                className={cn(
-                  "flex h-9 w-full items-center border border-input bg-card px-3 transition-[color,border-color] focus-within:border-foreground",
-                  entryDisabled && "opacity-50 pointer-events-none",
-                  !hasValidAmount && "border-destructive",
-                )}
-              >
-                <span className="mr-2 shrink-0 font-medium text-muted-foreground text-sm">KES</span>
-                <Input
-                  id="topup-amount"
-                  type="text"
-                  inputMode="decimal"
-                  min={20}
-                  max={250_000}
-                  value={amount}
-                  onChange={(event) => onAmountChange(event.target.value.replace(/[^0-9.]/g, ""))}
-                  placeholder="20"
-                  disabled={entryDisabled}
-                  aria-invalid={!hasValidAmount}
-                  className="h-auto min-h-0 border-0 bg-transparent px-0 py-1 text-base md:text-sm focus-visible:border-0"
-                />
+              <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>MPESA phone</Trans>
+                </span>
+                <span className="font-mono text-xs font-semibold">
+                  {profilePending ? "…" : phone || "—"}
+                </span>
+              </div>
+
+              <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                <span className="text-muted-foreground text-xs">
+                  <Trans>You'll receive</Trans>
+                </span>
+                <span className="font-mono text-xs font-semibold">
+                  {ratesQuery.isPending ? (
+                    <span className="text-muted-foreground">…</span>
+                  ) : approxUsdt !== null ? (
+                    `≈ ${approxUsdt.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })} ${ONRAMP_ASSET_LABEL}`
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </span>
               </div>
             </div>
 
-            <div className="border border-border bg-card p-3 text-xs">
-              {ratesQuery.isPending ? (
-                <p className="text-muted-foreground">
-                  <Trans>Loading Pretium rates…</Trans>
-                </p>
-              ) : ratesQuery.isError ? (
-                <p className="text-muted-foreground">
-                  <Trans>Rates unavailable. They will be shown before you confirm.</Trans>
-                </p>
-              ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">
-                    <Trans>Pretium rate</Trans>
-                  </span>
-                  <span className="font-mono font-semibold">
-                    <Trans>
-                      Buy {ratesQuery.data.buy} · Sell {ratesQuery.data.sell}
-                    </Trans>
-                  </span>
-                </div>
-              )}
-            </div>
+            {showSafaricomWarning ? (
+              <p
+                className="flex items-start gap-2 text-amber-700 text-xs dark:text-amber-500"
+                role="alert"
+              >
+                <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <Trans>Not a standard Safaricom number. Continue only if it's ported.</Trans>
+              </p>
+            ) : null}
 
             {disabledReason ? (
-              <div className="flex gap-2 border border-border bg-card p-3 text-muted-foreground text-xs">
+              <p className="flex items-start gap-2 text-muted-foreground text-xs">
                 <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <p>{disabledReason}</p>
-              </div>
+                {disabledReason}
+              </p>
             ) : null}
 
             {mutationError ? (
-              <div className="flex gap-2 border border-destructive/30 bg-card p-3 text-destructive text-xs">
+              <p className="flex items-start gap-2 text-destructive text-xs" role="alert">
                 <RiErrorWarningLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                <p>{mutationError}</p>
-              </div>
+                {mutationError}
+              </p>
             ) : null}
           </div>
 
@@ -368,11 +421,15 @@ function PretiumHistory({
   isPending,
   isError,
   onRetry,
+  onSelectOnramp,
+  onSelectOfframp,
 }: {
   transactions: PretiumCashTransaction[];
   isPending: boolean;
   isError: boolean;
   onRetry: () => void;
+  onSelectOnramp: (transaction: PretiumCashTransaction) => void;
+  onSelectOfframp: (transaction: PretiumCashTransaction) => void;
 }) {
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
@@ -408,41 +465,327 @@ function PretiumHistory({
             </div>
           </div>
         ) : null}
-        {transactions.slice(0, 4).map((transaction, index, list) => (
-          <div
-            key={`${transaction.kind}-${transaction.reference}`}
-            className={cn(
-              "flex items-center gap-3 p-3",
-              index < list.length - 1 && "border-b border-border",
-            )}
-          >
-            <span className="flex size-8 shrink-0 items-center justify-center border border-border bg-background text-[0.625rem] font-semibold uppercase">
-              {transaction.kind === "onramp" ? <Trans>In</Trans> : <Trans>Out</Trans>}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm">
-                {transaction.kind === "onramp" ? (
-                  <Trans>Add stables</Trans>
-                ) : (
-                  <Trans>Withdraw</Trans>
+        {transactions.map((transaction, index, list) => {
+          const incoming = transaction.kind === "onramp";
+          const complete = isCompletePretiumStatus(transaction.status);
+          const Icon = complete ? RiCheckLine : RiTimeLine;
+          return (
+            <button
+              key={`${transaction.kind}-${transaction.reference}`}
+              type="button"
+              onClick={() => {
+                if (incoming) {
+                  onSelectOnramp(transaction);
+                  return;
+                }
+                onSelectOfframp(transaction);
+              }}
+              className={cn(
+                "flex w-full items-center gap-2.5 p-3 text-left enabled:active:bg-muted",
+                index < list.length - 1 && "border-b border-border",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center bg-muted",
+                  complete ? "text-primary" : "text-amber-700 dark:text-amber-500",
                 )}
-              </p>
-              <p className="truncate text-muted-foreground text-xs">
-                {transaction.reference} · {formatCashDate(transaction.createdAt)}
-              </p>
-            </div>
-            <div className="shrink-0 text-right">
-              <p className="font-heading text-sm font-semibold tracking-tight">
-                KES {transaction.amountKes || "—"}
-              </p>
-              <p className="text-muted-foreground text-[0.625rem] uppercase">
-                {transaction.status}
-              </p>
-            </div>
-          </div>
-        ))}
+              >
+                <Icon className="size-3.5" aria-hidden="true" />
+                <span className="sr-only">
+                  {complete ? <Trans>Complete</Trans> : <Trans>Pending</Trans>}
+                </span>
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className={cn("font-medium text-sm", incoming && "text-primary")}>
+                  {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
+                </p>
+                <p className="truncate text-muted-foreground text-[0.6875rem]">
+                  {formatCashDate(transaction.createdAt)}
+                </p>
+              </div>
+              <span className="shrink-0 font-mono text-xs font-semibold">
+                KES {formatHistoryKes(transaction)}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+function OnrampDetailsSheet({
+  onramp,
+  open,
+  onOpenChange,
+}: {
+  onramp: PretiumCashTransaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useLingui();
+  const isComplete = onramp ? isCompletePretiumStatus(onramp.status) : false;
+  const hasTxHash = !!onramp?.txHash;
+  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${onramp?.txHash}` : "#";
+
+  const copyPretiumId = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy Pretium ID`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Pretium ID copied`))
+      .catch(() => toast.error(t`Couldn't copy Pretium ID`));
+  };
+
+  return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+              <Trans>Onramp</Trans>
+            </Badge>
+            <SheetTitle className="sr-only">
+              <Trans>Onramp details</Trans>
+            </SheetTitle>
+          </SheetHeader>
+
+          {onramp ? (
+            <div className="px-6 pb-2">
+              <div className="border border-border bg-card">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Status</Trans>
+                  </span>
+                  <Badge
+                    variant={isComplete ? "primary" : "muted"}
+                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
+                  >
+                    {onramp.status}
+                  </Badge>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    KES {onramp.amountKes || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Date</Trans>
+                  </span>
+                  <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
+                    {formatCashDate(onramp.createdAt)}
+                  </time>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Pretium ID</Trans>
+                  </span>
+                  <CopyableIdentifier
+                    value={onramp.reference}
+                    label={t`Copy Pretium ID`}
+                    onCopy={copyPretiumId}
+                  />
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Transaction</Trans>
+                  </span>
+                  {hasTxHash ? (
+                    <EllipsizedAddress address={onramp.txHash} />
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>Pending</Trans>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {hasTxHash ? (
+            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button asChild className="h-11 w-full">
+                <a href={explorerUrl} target="_blank" rel="noreferrer">
+                  <Trans>View on block explorer</Trans>
+                </a>
+              </Button>
+            </SheetFooter>
+          ) : null}
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
+function OfframpDetailsSheet({
+  offramp,
+  open,
+  onOpenChange,
+}: {
+  offramp: PretiumCashTransaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useLingui();
+  const isComplete = offramp ? isCompletePretiumStatus(offramp.status) : false;
+  const hasTxHash = !!offramp?.txHash;
+  const hasMpesaConfirmation = !!offramp?.mpesaConfirmation;
+  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${offramp?.txHash}` : "#";
+
+  const copyPretiumId = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy Pretium ID`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Pretium ID copied`))
+      .catch(() => toast.error(t`Couldn't copy Pretium ID`));
+  };
+
+  return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
+              <Trans>Offramp</Trans>
+            </Badge>
+            <SheetTitle className="sr-only">
+              <Trans>Offramp details</Trans>
+            </SheetTitle>
+          </SheetHeader>
+
+          {offramp ? (
+            <div className="px-6 pb-2">
+              <div className="border border-border bg-card">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Status</Trans>
+                  </span>
+                  <Badge
+                    variant={isComplete ? "primary" : "muted"}
+                    className="h-5 px-2 text-[0.625rem] uppercase tracking-[0.06em]"
+                  >
+                    {offramp.status}
+                  </Badge>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Amount</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    KES {offramp.amountKes || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Stable sent</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    {offramp.amountUsd || "—"}
+                  </span>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>MPESA phone</Trans>
+                  </span>
+                  <span className="font-mono text-xs font-semibold">
+                    {offramp.phoneNumber || "—"}
+                  </span>
+                </div>
+                {hasMpesaConfirmation ? (
+                  <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>MPESA confirmation</Trans>
+                    </span>
+                    <span className="font-mono text-xs font-semibold">
+                      {offramp.mpesaConfirmation}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Date</Trans>
+                  </span>
+                  <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
+                    {formatCashDate(offramp.createdAt)}
+                  </time>
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Pretium ID</Trans>
+                  </span>
+                  <CopyableIdentifier
+                    value={offramp.reference}
+                    label={t`Copy Pretium ID`}
+                    onCopy={copyPretiumId}
+                  />
+                </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Transaction</Trans>
+                  </span>
+                  {hasTxHash ? (
+                    <EllipsizedAddress address={offramp.txHash} />
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      <Trans>Pending</Trans>
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {hasTxHash ? (
+            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button asChild className="h-11 w-full">
+                <a href={explorerUrl} target="_blank" rel="noreferrer">
+                  <Trans>View on block explorer</Trans>
+                </a>
+              </Button>
+            </SheetFooter>
+          ) : null}
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
+  );
+}
+
+function CopyableIdentifier({
+  value,
+  label,
+  onCopy,
+}: {
+  value: string;
+  label: string;
+  onCopy: (value: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+      aria-label={label}
+      title={value}
+      onClick={() => onCopy(value)}
+    >
+      <span className="min-w-0 font-mono text-muted-foreground text-xs">
+        {shortenIdentifier(value)}
+      </span>
+      <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+        <RiFileCopyLine className="size-3" aria-hidden="true" />
+      </span>
+    </button>
   );
 }
 
@@ -466,9 +809,23 @@ function toChecksumAddress(address: `0x${string}` | undefined): `0x${string}` | 
   }
 }
 
+function isCompletePretiumStatus(status: string): boolean {
+  return COMPLETE_PRETIUM_STATUSES.has(status.trim().toUpperCase());
+}
+
+function shortenIdentifier(value: string): string {
+  if (value.length <= 14) return value;
+  return `${value.slice(0, 8)}…${value.slice(-6)}`;
+}
+
 function timestamp(date: string): number {
   const value = Date.parse(date);
   return Number.isFinite(value) ? value : 0;
+}
+
+function formatHistoryKes(transaction: PretiumCashTransaction): string {
+  if (!transaction.amountKes) return "—";
+  return transaction.amountKes.split(".")[0] || transaction.amountKes;
 }
 
 function formatCashDate(date: string): string {

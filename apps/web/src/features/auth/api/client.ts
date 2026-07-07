@@ -1,4 +1,3 @@
-import type { LocationInput } from "@clc/core/features/location/logic";
 import { API_URL } from "#/lib/backend-config";
 
 type ApiOk<T> = {
@@ -173,7 +172,7 @@ export type ProfilePayload = {
   name: string;
   email: string;
   phone: string;
-  location: LocationInput;
+  country: string;
 };
 
 export async function submitProfile(payload: ProfilePayload): Promise<void> {
@@ -183,7 +182,7 @@ export async function submitProfile(payload: ProfilePayload): Promise<void> {
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
-      country: payload.location.country,
+      country: payload.country,
     }),
   });
 }

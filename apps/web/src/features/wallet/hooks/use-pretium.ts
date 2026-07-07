@@ -1,20 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  type CreatePretiumLinkInput,
+  createPretiumLink,
+  getPretiumLinkByAddress,
   getPretiumRates,
   getPretiumTransactionsByAddress,
   triggerPretiumOnramp,
   type TriggerPretiumOnrampInput,
 } from "#/features/wallet/api/pretium-client";
 
-const PRETIUM_HISTORY_STALE_TIME_MS = 15_000;
 const PRETIUM_RATES_STALE_TIME_MS = 60_000;
+
+// Mirror the wallet account freshness (use-account-balances.ts): onramp status
+// confirms upstream within seconds via the Pretium status poller, so history
+// should feel near-realtime while the user is on the Cash page, without
+// polling in the background on mobile. See docs/TANSTACK_QUERY.md.
+const pretiumHistoryFreshness = {
+  staleTime: 4_000,
+  refetchInterval: 5_000,
+  refetchIntervalInBackground: false,
+  refetchOnReconnect: true,
+  refetchOnWindowFocus: true,
+  retry: false,
+} as const;
 
 export const pretiumQueryKeys = {
   all: ["pretium"] as const,
   rates: () => [...pretiumQueryKeys.all, "rates"] as const,
   transactionsByAddress: (address: string | undefined) =>
     [...pretiumQueryKeys.all, "transactions", "address", address?.toLowerCase() ?? "none"] as const,
+  linkByAddress: (address: string | undefined) =>
+    [...pretiumQueryKeys.all, "link", "address", address?.toLowerCase() ?? "none"] as const,
 };
 
 export function usePretiumRates(enabled = true) {
@@ -32,8 +49,31 @@ export function usePretiumTransactionsByAddress(address: `0x${string}` | undefin
     queryKey: pretiumQueryKeys.transactionsByAddress(address),
     queryFn: () => getPretiumTransactionsByAddress(requireAddress(address)),
     enabled: !!address,
-    staleTime: PRETIUM_HISTORY_STALE_TIME_MS,
+    ...pretiumHistoryFreshness,
+  });
+}
+
+export function usePretiumLinkByAddress(address: `0x${string}` | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: pretiumQueryKeys.linkByAddress(address),
+    queryFn: () => getPretiumLinkByAddress(requireAddress(address)),
+    enabled: enabled && !!address,
+    // Always re-check when the sheet opens so a profile phone change is caught.
+    staleTime: 0,
+    gcTime: 0,
     retry: false,
+  });
+}
+
+export function useCreatePretiumLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreatePretiumLinkInput) => createPretiumLink(input),
+    onSuccess: (_result, input) => {
+      void queryClient.invalidateQueries({
+        queryKey: pretiumQueryKeys.linkByAddress(input.publicKey),
+      });
+    },
   });
 }
 
