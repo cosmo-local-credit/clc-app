@@ -179,6 +179,29 @@ describe("TopUpPage", () => {
     expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("warns without blocking for a non-Safaricom Kenyan number", async () => {
+    mockPretiumBackend({ phone: "+254730000000" });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+
+    expect(await screen.findByText(/standard Safaricom number/i)).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /amount/i }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("button", { name: /continue/i }).hasAttribute("disabled")).toBe(false);
+  });
+
+  it("does not warn for a Safaricom number", async () => {
+    mockPretiumBackend({ phone: "+254712345678" });
+
+    renderWithQueryClient(<TopUpPage />);
+
+    fireEvent.click((await screen.findAllByRole("button", { name: /mpesa via pretium/i }))[0]);
+
+    expect(await screen.findByDisplayValue("+254712345678")).toBeTruthy();
+    expect(screen.queryByText(/standard Safaricom number/i)).toBeNull();
+  });
+
   it("disables cash entry when the profile has no phone number", async () => {
     mockPretiumBackend({ phone: "" });
 
