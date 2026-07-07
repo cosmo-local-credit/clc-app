@@ -51,7 +51,7 @@ export function useBackendSignup() {
           name: profile.name,
           email,
           phone: profile.phone,
-          location: profile.location,
+          country: profile.location.country,
         });
       }
 

@@ -127,11 +127,11 @@ describe("useBackendSignup", () => {
       name: string;
       email: string;
       phone: string;
-      location: typeof LOCATION;
+      country: string;
     };
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
-    expect(payload.location).toEqual(LOCATION);
+    expect(payload.country).toBe("KE");
   });
 
   it("skips submitProfile when the address is already registered", async () => {
