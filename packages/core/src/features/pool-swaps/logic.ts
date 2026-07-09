@@ -1,0 +1,235 @@
+import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
+import type { CaliburCall } from "../webauthn/index";
+
+export const erc20ApproveAbi = parseAbi([
+  "function approve(address spender, uint256 value) returns (bool)",
+]);
+export const erc20AllowanceAbi = parseAbi([
+  "function allowance(address owner, address spender) view returns (uint256)",
+]);
+export const erc20BalanceOfAbi = parseAbi([
+  "function balanceOf(address account) view returns (uint256)",
+]);
+
+export const swapPoolDepositAbi = parseAbi(["function deposit(address token, uint256 value)"]);
+export const swapPoolWithdrawToSenderAbi = parseAbi([
+  "function withdraw(address outToken, address inToken, uint256 value)",
+]);
+export const swapPoolWithdrawToRecipientAbi = parseAbi([
+  "function withdraw(address outToken, address inToken, uint256 value, address recipient)",
+]);
+export const swapPoolWithdrawAllFeesAbi = parseAbi(["function withdraw(address outToken)"]);
+export const swapPoolWithdrawExactFeesAbi = parseAbi([
+  "function withdraw(address outToken, uint256 value)",
+]);
+export const swapPoolGetAmountOutAbi = parseAbi([
+  "function getAmountOut(address outToken, address inToken, uint256 amountIn) returns (uint256)",
+]);
+export const swapPoolGetAmountInAbi = parseAbi([
+  "function getAmountIn(address outToken, address inToken, uint256 amountOut) returns (uint256)",
+]);
+export const swapPoolGetQuoteAbi = parseAbi([
+  "function getQuote(address outToken, address inToken, uint256 amount) returns (uint256)",
+]);
+export const swapPoolGetFeeAbi = parseAbi([
+  "function getFee(address inToken, address outToken, uint256 value) view returns (uint256)",
+]);
+export const swapRouterQuoteExactInputAbi = parseAbi([
+  "struct Hop { address pool; address tokenIn; address tokenOut }",
+  "function quoteExactInput(Hop[] path, uint256 amountIn) returns (uint256)",
+]);
+export const swapRouterQuoteExactOutputAbi = parseAbi([
+  "struct Hop { address pool; address tokenIn; address tokenOut }",
+  "function quoteExactOutput(Hop[] path, uint256 amountOut) returns (uint256)",
+]);
+
+const RELAYER_CALL_LIMIT = 16;
+
+export type BuildPoolDepositCallsInput = {
+  poolAddress: `0x${string}`;
+  tokenAddress: `0x${string}`;
+  amountRaw: string;
+};
+
+export type BuildPoolWithdrawCallsInput = {
+  poolAddress: `0x${string}`;
+  tokenIn: `0x${string}`;
+  tokenOut: `0x${string}`;
+  amountInRaw: string;
+  recipientAddress?: `0x${string}`;
+};
+
+export type PoolRouteHop = {
+  poolAddress: `0x${string}`;
+  tokenIn: `0x${string}`;
+  tokenOut: `0x${string}`;
+};
+
+export type BuildPoolRouteCallsInput = {
+  path: PoolRouteHop[];
+  hopAmountIns: string[];
+  recipientAddress?: `0x${string}`;
+};
+
+export type BuildCollectPoolFeesCallsInput = {
+  poolAddress: `0x${string}`;
+  tokenOut: `0x${string}`;
+  amountRaw?: string;
+};
+
+export function buildPoolDepositCalls(input: BuildPoolDepositCallsInput): CaliburCall[] {
+  const amount = parsePositiveAmount(input.amountRaw);
+  const calls = [
+    buildApproveCall(input.tokenAddress, input.poolAddress, 0n),
+    buildApproveCall(input.tokenAddress, input.poolAddress, amount),
+    {
+      to: input.poolAddress,
+      value: "0",
+      data: encodeFunctionData({
+        abi: swapPoolDepositAbi,
+        functionName: "deposit",
+        args: [input.tokenAddress, amount],
+      }),
+    },
+  ];
+  assertRelayerCallLimit(calls);
+  return calls;
+}
+
+export function buildPoolWithdrawCalls(input: BuildPoolWithdrawCallsInput): CaliburCall[] {
+  const amount = parsePositiveAmount(input.amountInRaw);
+  const calls = [
+    buildApproveCall(input.tokenIn, input.poolAddress, 0n),
+    buildApproveCall(input.tokenIn, input.poolAddress, amount),
+    buildWithdrawCall({
+      poolAddress: input.poolAddress,
+      tokenOut: input.tokenOut,
+      tokenIn: input.tokenIn,
+      amountIn: amount,
+      recipientAddress: input.recipientAddress,
+    }),
+  ];
+  assertRelayerCallLimit(calls);
+  return calls;
+}
+
+export function buildPoolRouteCalls(input: BuildPoolRouteCallsInput): CaliburCall[] {
+  if (input.path.length === 0) throw new Error("Pool route path must be non-empty.");
+  if (input.hopAmountIns.length !== input.path.length) {
+    throw new Error("Pool route hop amount length must match path length.");
+  }
+  if (input.recipientAddress) assertRecipientAddress(input.recipientAddress);
+
+  const calls = input.path.flatMap((hop, index) => {
+    const amountIn = parsePositiveAmount(input.hopAmountIns[index] ?? "");
+    const isLastHop = index === input.path.length - 1;
+    return [
+      buildApproveCall(hop.tokenIn, hop.poolAddress, 0n),
+      buildApproveCall(hop.tokenIn, hop.poolAddress, amountIn),
+      buildWithdrawCall({
+        poolAddress: hop.poolAddress,
+        tokenOut: hop.tokenOut,
+        tokenIn: hop.tokenIn,
+        amountIn,
+        recipientAddress: isLastHop ? input.recipientAddress : undefined,
+      }),
+    ];
+  });
+  assertRelayerCallLimit(calls);
+  return calls;
+}
+
+export function buildCollectPoolFeesCalls(input: BuildCollectPoolFeesCallsInput): CaliburCall[] {
+  if (input.amountRaw === undefined) {
+    return [
+      {
+        to: input.poolAddress,
+        value: "0",
+        data: encodeFunctionData({
+          abi: swapPoolWithdrawAllFeesAbi,
+          functionName: "withdraw",
+          args: [input.tokenOut],
+        }),
+      },
+    ];
+  }
+
+  const amount = parsePositiveAmount(input.amountRaw);
+  return [
+    {
+      to: input.poolAddress,
+      value: "0",
+      data: encodeFunctionData({
+        abi: swapPoolWithdrawExactFeesAbi,
+        functionName: "withdraw",
+        args: [input.tokenOut, amount],
+      }),
+    },
+  ];
+}
+
+function buildApproveCall(
+  tokenAddress: `0x${string}`,
+  spenderAddress: `0x${string}`,
+  amount: bigint,
+): CaliburCall {
+  return {
+    to: tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: erc20ApproveAbi,
+      functionName: "approve",
+      args: [spenderAddress, amount],
+    }),
+  };
+}
+
+function buildWithdrawCall(input: {
+  poolAddress: `0x${string}`;
+  tokenOut: `0x${string}`;
+  tokenIn: `0x${string}`;
+  amountIn: bigint;
+  recipientAddress?: `0x${string}`;
+}): CaliburCall {
+  if (!input.recipientAddress) {
+    return {
+      to: input.poolAddress,
+      value: "0",
+      data: encodeFunctionData({
+        abi: swapPoolWithdrawToSenderAbi,
+        functionName: "withdraw",
+        args: [input.tokenOut, input.tokenIn, input.amountIn],
+      }),
+    };
+  }
+
+  assertRecipientAddress(input.recipientAddress);
+  return {
+    to: input.poolAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: swapPoolWithdrawToRecipientAbi,
+      functionName: "withdraw",
+      args: [input.tokenOut, input.tokenIn, input.amountIn, input.recipientAddress],
+    }),
+  };
+}
+
+function parsePositiveAmount(value: string): bigint {
+  if (!/^\d+$/.test(value)) throw new Error("Pool amount must be a positive integer string.");
+  const amount = BigInt(value);
+  if (amount <= 0n) throw new Error("Pool amount must be positive.");
+  return amount;
+}
+
+function assertRecipientAddress(address: `0x${string}`): void {
+  if (!isAddress(address) || address.toLowerCase() === zeroAddress) {
+    throw new Error("Pool swap recipient must be a non-zero address.");
+  }
+}
+
+function assertRelayerCallLimit(calls: CaliburCall[]): void {
+  if (calls.length > RELAYER_CALL_LIMIT) {
+    throw new Error(`Pool relay batch cannot exceed ${RELAYER_CALL_LIMIT} calls.`);
+  }
+}
