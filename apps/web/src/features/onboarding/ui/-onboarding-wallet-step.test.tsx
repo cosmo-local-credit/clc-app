@@ -6,7 +6,7 @@ const {
   mockUpgradeAndLinkMutate,
   mockUpgradeStep,
   mockBackendSignupMutateAsync,
-  mockDelegateMutate,
+  mockDelegateMutateAsync,
   mockDelegateStep,
   mockConnect,
   mockStorePrivateKey,
@@ -21,7 +21,7 @@ const {
   mockBackendSignupMutateAsync: vi
     .fn()
     .mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" }),
-  mockDelegateMutate: vi.fn(),
+  mockDelegateMutateAsync: vi.fn().mockResolvedValue({ result: { trackingId: "tracking-1" } }),
   mockDelegateStep: { current: "idle" as string },
   mockConnect: vi.fn().mockResolvedValue(undefined),
   mockStorePrivateKey: vi.fn(),
@@ -35,6 +35,11 @@ const {
 const FAKE_PK =
   "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
 const FAKE_ADDRESS = "0xFakeAddress1234567890abcdef1234567890aaaa" as `0x${string}`;
+
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => ({ invalidateQueries: vi.fn().mockResolvedValue(undefined) }),
+}));
 
 vi.mock("viem/accounts", () => ({
   generatePrivateKey: () => FAKE_PK,
@@ -82,7 +87,7 @@ vi.mock("#/features/webauthn/hooks/use-calibur-delegate-from-pk", () => ({
   useCaliburDelegateFromPk: () => ({
     step: mockDelegateStep.current,
     error: null,
-    mutate: mockDelegateMutate,
+    mutateAsync: mockDelegateMutateAsync,
     isPending: false,
   }),
 }));
@@ -128,7 +133,8 @@ beforeEach(() => {
   mockUpgradeAndLinkMutate.mockClear();
   mockBackendSignupMutateAsync.mockReset();
   mockBackendSignupMutateAsync.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
-  mockDelegateMutate.mockReset();
+  mockDelegateMutateAsync.mockReset();
+  mockDelegateMutateAsync.mockResolvedValue({ result: { trackingId: "tracking-1" } });
   mockDelegateStep.current = "idle";
   mockConnect.mockClear();
   mockStorePrivateKey.mockClear();
@@ -185,9 +191,10 @@ describe("OnboardingWalletStep rendering", () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
 
     const linkedButton = screen.getByRole("button", {
-      name: /passkey linked/i,
+      name: /link wallet to google passkey/i,
     });
     expect(linkedButton).toHaveProperty("disabled", true);
+    expect(screen.getByText(/passkey linked/i)).toBeTruthy();
     await act(async () => {});
     expect(mockConnect).toHaveBeenCalledWith(
       {},
@@ -253,7 +260,7 @@ describe("OnboardingWalletStep continue flow", () => {
     );
   });
 
-  it("clicking Continue starts smart-wallet activation after backend signup", async () => {
+  it("clicking Continue requests smart-wallet activation after backend signup and opens the wallet", async () => {
     render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
     fireEvent.click(screen.getByLabelText(/i have saved this key/i));
 
@@ -265,10 +272,27 @@ describe("OnboardingWalletStep continue flow", () => {
       profile: PROFILE,
       privateKey: FAKE_PK,
     });
-    expect(mockDelegateMutate).toHaveBeenCalledWith({ privateKey: FAKE_PK });
-    expect(mockStorePrivateKey).not.toHaveBeenCalled();
-    expect(mockConnect).not.toHaveBeenCalled();
-    expect(mockOnDone).not.toHaveBeenCalled();
+    expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: FAKE_PK });
+    expect(mockStorePrivateKey).toHaveBeenCalledWith(FAKE_PK);
+    expect(mockConnect).toHaveBeenCalledWith(
+      {},
+      expect.objectContaining({ connector: { id: "pk" } }),
+    );
+    expect(mockOnDone).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens the wallet when smart-wallet activation request fails", async () => {
+    mockDelegateMutateAsync.mockRejectedValue(new Error("delegate failed"));
+    render(<OnboardingWalletStep profileData={PROFILE} onBack={mockOnBack} onDone={mockOnDone} />);
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+    });
+
+    expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: FAKE_PK });
+    expect(mockStorePrivateKey).toHaveBeenCalledWith(FAKE_PK);
+    expect(mockOnDone).toHaveBeenCalledTimes(1);
   });
 
   it("does NOT call storePrivateKey when backendSignup throws", async () => {
@@ -278,6 +302,7 @@ describe("OnboardingWalletStep continue flow", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
     });
+    expect(mockDelegateMutateAsync).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockOnDone).not.toHaveBeenCalled();
   });

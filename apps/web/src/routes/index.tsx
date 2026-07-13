@@ -5,7 +5,7 @@ import { type HomeTab, parseHomeTab } from "#/features/home/ui/tabs";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search): { tab?: HomeTab } => ({
-    tab: parseHomeTab(search.tab),
+    tab: search.tab === undefined ? undefined : parseHomeTab(search.tab),
   }),
   component: IndexPage,
 });

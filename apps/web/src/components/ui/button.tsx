@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import type * as React from "react";
+import { cloneElement, isValidElement, type ComponentProps, type ReactElement } from "react";
 
 import { cn } from "#/lib/utils.ts";
 
@@ -38,18 +38,48 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = React.ComponentProps<"button"> & VariantProps<typeof buttonVariants>;
+type ButtonProps = ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+  };
 
-function Button({ className, variant = "default", size = "default", ...props }: ButtonProps) {
+function Button({
+  className,
+  variant = "default",
+  size = "default",
+  asChild = false,
+  children,
+  disabled,
+  onClick,
+  type,
+  ...props
+}: ButtonProps) {
+  const classes = cn(buttonVariants({ variant, size, className }));
+  if (asChild && isValidElement(children)) {
+    const child = children as ReactElement<Record<string, unknown>>;
+    return cloneElement(child, {
+      ...props,
+      className: cn(classes, child.props.className as string | undefined),
+      "data-slot": "button",
+      "data-variant": variant,
+      "data-size": size,
+      ...(disabled !== undefined ? { disabled } : {}),
+      ...(onClick !== undefined ? { onClick } : {}),
+    });
+  }
   return (
     <button
-      type={props.type ?? "button"}
+      type={type ?? "button"}
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={classes}
+      disabled={disabled}
+      onClick={onClick}
       {...props}
-    />
+    >
+      {children}
+    </button>
   );
 }
 

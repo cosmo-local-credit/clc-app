@@ -4,12 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const mockGetSiweNonce = vi.fn<() => Promise<string>>();
 const mockSignupWithSiwe = vi.fn();
 const mockSigninWithSiwe = vi.fn();
+const mockSubmitProfile = vi.fn();
 const mockSignMessage = vi.fn<() => Promise<`0x${string}`>>();
 
 vi.mock("../api/client", () => ({
   getSiweNonce: () => mockGetSiweNonce(),
   signupWithSiwe: (payload: unknown) => mockSignupWithSiwe(payload),
   signinWithSiwe: (payload: unknown) => mockSigninWithSiwe(payload),
+  submitProfile: (payload: unknown) => mockSubmitProfile(payload),
 }));
 
 vi.mock("wagmi/actions", () => ({
@@ -51,6 +53,7 @@ beforeEach(() => {
   mockGetSiweNonce.mockResolvedValue("testNonce1234");
   mockSignupWithSiwe.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
   mockSigninWithSiwe.mockResolvedValue({ userId: 1, role: "USER" });
+  mockSubmitProfile.mockResolvedValue(undefined);
   mockSignMessage.mockResolvedValue("0xsignature");
   // jsdom doesn't set window.location
   Object.defineProperty(window, "location", {
@@ -104,6 +107,53 @@ describe("useBackendSignup", () => {
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
     expect(payload.email).toBe("alice@example.com");
+  });
+
+  it("persists phone and location via submitProfile after signup", async () => {
+    const { result } = renderHook(() => useBackendSignup(), {
+      wrapper: createWrapper(),
+    });
+    await result.current.mutateAsync({
+      profile: {
+        name: "Alice",
+        email: "alice@example.com",
+        phone: "+254700000000",
+        location: LOCATION,
+      },
+      privateKey: FAKE_PK,
+    });
+    expect(mockSubmitProfile).toHaveBeenCalledOnce();
+    const payload = mockSubmitProfile.mock.calls[0]?.[0] as {
+      name: string;
+      email: string;
+      phone: string;
+      country: string;
+    };
+    expect(payload.phone).toBe("+254700000000");
+    expect(payload.email).toBe("alice@example.com");
+    expect(payload.country).toBe("KE");
+  });
+
+  it("skips submitProfile when the address is already registered", async () => {
+    mockSignupWithSiwe.mockResolvedValue({
+      userId: null,
+      status: "REGISTERED",
+      role: "USER",
+      alreadyRegistered: true,
+    });
+    const { result } = renderHook(() => useBackendSignup(), {
+      wrapper: createWrapper(),
+    });
+    await result.current.mutateAsync({
+      profile: {
+        name: "Alice",
+        email: "alice@example.com",
+        phone: "+254700000000",
+        location: LOCATION,
+      },
+      privateKey: FAKE_PK,
+    });
+    expect(mockSubmitProfile).not.toHaveBeenCalled();
   });
 });
 

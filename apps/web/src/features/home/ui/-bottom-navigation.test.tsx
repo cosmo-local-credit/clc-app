@@ -17,7 +17,7 @@ const LABELS: Record<HomeTab, string> = {
 };
 
 describe("BottomNavigation", () => {
-  it("renders all five navigation buttons", () => {
+  it("renders all five navigation buttons for authenticated users", () => {
     render(<BottomNavigation activeTab="wallet" onTabChange={vi.fn()} />);
     for (const label of Object.values(LABELS)) {
       expect(screen.getByRole("button", { name: label })).toBeTruthy();
@@ -41,6 +41,15 @@ describe("BottomNavigation", () => {
         expect(button.getAttribute("aria-current")).toBeNull();
       }
     }
+  });
+
+  it("renders only the market button for guests", () => {
+    render(<BottomNavigation activeTab="market" onTabChange={vi.fn()} isAuthenticated={false} />);
+    expect(screen.getByRole("button", { name: "Market" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Activity" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Pool" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Settings" })).toBeNull();
   });
 
   it("calls onTabChange with the clicked tab", () => {

@@ -1,141 +1,61 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mockNavigate = vi.fn();
-const mockDisconnectAsync = vi.fn(() => Promise.resolve());
-const mockClearAuthToken = vi.fn();
-
-type MockAccountState = {
-  isConnected: boolean;
-  status: string;
-  address?: `0x${string}`;
-};
+const { mockUseSearch } = vi.hoisted(() => ({
+  mockUseSearch: vi.fn<() => { tab?: string }>(() => ({})),
+}));
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => (options: Record<string, unknown>) => options,
-  useNavigate: () => mockNavigate,
+  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
+    path,
+    ...options,
+    useSearch: mockUseSearch,
+  }),
 }));
 
-const mockUseAccount = vi.fn<() => MockAccountState>(() => ({
-  isConnected: false,
-  status: "disconnected",
-  address: undefined,
+vi.mock("#/components/home-route-page", () => ({
+  HomeRoutePage: ({ activeTab }: { activeTab: string }) => (
+    <div data-testid={`home-route-${activeTab}`} />
+  ),
 }));
 
-vi.mock("wagmi", () => ({
-  useAccount: () => mockUseAccount(),
-  useDisconnect: () => ({ disconnectAsync: mockDisconnectAsync }),
-}));
+import { Route } from "./index";
 
-vi.mock("#/features/auth/state/token", () => ({
-  clearAuthToken: () => mockClearAuthToken(),
-}));
+type RouteFixture = {
+  component: () => ReactNode;
+  validateSearch: (search: Record<string, unknown>) => { tab?: string };
+};
 
-vi.mock("#/features/auth/hooks/use-auth-session", () => ({
-  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
-}));
-
-vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
-  useCaliburDelegation: () => "checking" as const,
-}));
-
-vi.mock("#/features/onboarding/ui/landing-page", () => ({
-  LandingPage: () => <div data-testid="landing-page">Landing</div>,
-}));
-
-vi.mock("#/components/ui/clc-logo", () => ({
-  CLCLogo: () => <svg data-testid="clc-logo" />,
-}));
-
-import { HomePage } from "#/components/home-page";
-import { LandingPage } from "#/features/onboarding/ui/landing-page";
-
-function IndexPage() {
-  const { isConnected } = mockUseAccount() as {
-    isConnected: boolean;
-    status: string;
-    address?: `0x${string}`;
-  };
-  if (isConnected) return <HomePage />;
-  return <LandingPage />;
+function renderIndex() {
+  const Component = (Route as unknown as RouteFixture).component;
+  render(<Component />);
 }
 
 beforeEach(() => {
-  mockUseAccount.mockReturnValue({
-    isConnected: false,
-    status: "disconnected",
-    address: undefined,
-  });
-  mockNavigate.mockClear();
-  mockDisconnectAsync.mockClear();
-  mockClearAuthToken.mockClear();
+  mockUseSearch.mockReturnValue({});
 });
 
 describe("IndexPage routing", () => {
-  it("renders LandingPage when disconnected", () => {
-    render(<IndexPage />);
-    expect(screen.getByTestId("landing-page")).toBeTruthy();
+  it("keeps a missing legacy tab optional and normalizes supplied values", () => {
+    const { validateSearch } = Route as unknown as RouteFixture;
+
+    expect(validateSearch({})).toEqual({ tab: undefined });
+    expect(validateSearch({ tab: "activity" })).toEqual({ tab: "activity" });
+    expect(validateSearch({ tab: "dashboard" })).toEqual({ tab: "market" });
   });
 
-  it("renders HomePage when connected", () => {
-    mockUseAccount.mockReturnValue({
-      isConnected: true,
-      status: "connected",
-      address: "0x1234567890abcdef1234567890abcdef12345678",
-    });
-    render(<IndexPage />);
-    expect(screen.queryByTestId("landing-page")).toBeNull();
-    expect(screen.getByText(/KSh 12,840/i)).toBeTruthy();
+  it("renders the wallet tab at the root path", () => {
+    renderIndex();
+
+    expect(screen.getByTestId("home-route-wallet")).toBeTruthy();
   });
 
-  it("renders LandingPage while reconnecting without a connected account", () => {
-    mockUseAccount.mockReturnValue({
-      isConnected: false,
-      status: "reconnecting",
-      address: undefined,
-    });
-    render(<IndexPage />);
-    expect(screen.getByTestId("landing-page")).toBeTruthy();
-  });
+  it("passes a legacy search tab to the shared route shell", () => {
+    mockUseSearch.mockReturnValue({ tab: "market" });
 
-  it("renders LandingPage while connecting without a connected account", () => {
-    mockUseAccount.mockReturnValue({
-      isConnected: false,
-      status: "connecting",
-      address: undefined,
-    });
-    render(<IndexPage />);
-    expect(screen.getByTestId("landing-page")).toBeTruthy();
-  });
-});
+    renderIndex();
 
-describe("HomePage", () => {
-  beforeEach(() => {
-    mockUseAccount.mockReturnValue({
-      isConnected: true,
-      status: "connected",
-      address: "0x1234567890abcdef1234567890abcdef12345678",
-    });
-  });
-
-  it("shows the connected address in settings", () => {
-    render(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: /settings/i }));
-    expect(screen.getByText(/0x1234567890abcdef1234567890abcdef12345678/i)).toBeTruthy();
-  });
-
-  it("clears auth state and disconnects from settings", async () => {
-    render(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: /settings/i }));
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
-    });
-    expect(mockClearAuthToken).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(mockDisconnectAsync).toHaveBeenCalledTimes(1));
-  });
-
-  it("does not navigate when connected — routing is IndexPage's concern", () => {
-    render(<HomePage />);
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(screen.getByTestId("home-route-market")).toBeTruthy();
   });
 });

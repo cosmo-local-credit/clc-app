@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
 import { useReconnect, WagmiProvider } from "wagmi";
+import { markReconnectAttempted } from "#/providers/auth-bootstrap";
 import { wagmiConfig } from "#/providers/web3-config";
 
 export function Web3Provider({
@@ -27,7 +28,7 @@ export function Web3Provider({
 function ReconnectOnMount() {
   const { mutate: reconnect } = useReconnect();
   useEffect(() => {
-    reconnect();
+    reconnect(undefined, { onSettled: markReconnectAttempted });
   }, [reconnect]);
   return null;
 }

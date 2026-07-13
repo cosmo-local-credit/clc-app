@@ -1,4 +1,3 @@
-import type { LocationInput } from "@clc/core/features/location/logic";
 import { API_URL } from "#/lib/backend-config";
 
 type ApiOk<T> = {
@@ -28,7 +27,7 @@ export function formatBackendApiError(err: BackendApiError): string {
   return err.code ? `${err.code}: ${err.description}` : err.description;
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     ...(init?.body ? { "Content-Type": "application/json" } : {}),
     ...(init?.headers as Record<string, string> | undefined),
@@ -123,6 +122,36 @@ export async function signinWithSiwe(payload: SigninSiwePayload): Promise<Signin
   });
 }
 
+export type WebAuthnAssertionPayload = {
+  credentialId: string;
+  authenticatorData: string;
+  clientDataJSON: string;
+  signature: string;
+};
+
+export type WebAuthnSigninResult = {
+  userId: number;
+  role: string;
+  address: string;
+  keyHash: string;
+  publicKeyX: string;
+  publicKeyY: string;
+};
+
+// Passkey sign-in. The WebAuthn assertion is itself the authentication, so no
+// SIWE signature is involved — the backend verifies the assertion against the
+// stored credential and issues the session cookie. Mirrors signinWithSiwe's
+// error contract: 404 (not registered), 403 (pending/rejected), 401 (assertion
+// failed).
+export async function signinWithWebAuthn(
+  payload: WebAuthnAssertionPayload,
+): Promise<WebAuthnSigninResult> {
+  return apiFetch<WebAuthnSigninResult>("/auth/webauthn/verify", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function logout(): Promise<void> {
   await apiFetch<Record<string, never>>("/auth/logout", {
     method: "POST",
@@ -130,11 +159,20 @@ export async function logout(): Promise<void> {
   });
 }
 
+export type SessionResult = {
+  address: string;
+  chainId: number;
+};
+
+export async function getSession(): Promise<SessionResult | null> {
+  return apiFetch<SessionResult | null>("/auth/session", { method: "GET" });
+}
+
 export type ProfilePayload = {
   name: string;
   email: string;
   phone: string;
-  location: LocationInput;
+  country: string;
 };
 
 export async function submitProfile(payload: ProfilePayload): Promise<void> {
@@ -144,7 +182,7 @@ export async function submitProfile(payload: ProfilePayload): Promise<void> {
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
-      country: payload.location.country,
+      country: payload.country,
     }),
   });
 }

@@ -9,9 +9,11 @@ import type { HomeTab } from "./tabs";
 export function BottomNavigation({
   activeTab,
   onTabChange,
+  isAuthenticated = true,
 }: {
   activeTab: HomeTab;
   onTabChange: (tab: HomeTab) => void;
+  isAuthenticated?: boolean;
 }) {
   const { t } = useLingui();
   return (
@@ -19,36 +21,44 @@ export function BottomNavigation({
       aria-label={t`Primary navigation`}
       className="fixed inset-x-0 bottom-0 z-50 border-border border-t bg-card px-1 pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="grid h-16 grid-cols-5">
-        <NavButton
-          tab="wallet"
-          label={t`Wallet`}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          icon={<RiWallet3Line />}
-        />
-        <NavButton
-          tab="activity"
-          label={t`Activity`}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          icon={<RiNotification3Line />}
-        />
+      <div className={isAuthenticated ? "grid h-16 grid-cols-5" : "grid h-16 grid-cols-1"}>
+        {isAuthenticated ? (
+          <>
+            <NavButton
+              tab="wallet"
+              label={t`Wallet`}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              icon={<RiWallet3Line />}
+            />
+            <NavButton
+              tab="activity"
+              label={t`Activity`}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              icon={<RiNotification3Line />}
+            />
+          </>
+        ) : null}
         <MarketNavButton label={t`Market`} activeTab={activeTab} onTabChange={onTabChange} />
-        <NavButton
-          tab="pool"
-          label={t`Pool`}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          icon={<RiGroupLine />}
-        />
-        <NavButton
-          tab="settings"
-          label={t`Settings`}
-          activeTab={activeTab}
-          onTabChange={onTabChange}
-          icon={<RiSettings3Line />}
-        />
+        {isAuthenticated ? (
+          <>
+            <NavButton
+              tab="pool"
+              label={t`Pool`}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              icon={<RiGroupLine />}
+            />
+            <NavButton
+              tab="settings"
+              label={t`Settings`}
+              activeTab={activeTab}
+              onTabChange={onTabChange}
+              icon={<RiSettings3Line />}
+            />
+          </>
+        ) : null}
       </div>
     </nav>
   );

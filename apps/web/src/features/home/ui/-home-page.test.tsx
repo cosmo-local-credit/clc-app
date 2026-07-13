@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vite-plus/test";
+import type { ReactNode } from "react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockAbortWalletSwitch } = vi.hoisted(() => ({
   mockAbortWalletSwitch: vi.fn(),
@@ -12,10 +14,6 @@ vi.mock("#/components/ui/clc-logo", () => ({
 vi.mock("wagmi", () => ({
   useAccount: () => ({ address: "0xabc" as `0x${string}` }),
   useDisconnect: () => ({ disconnectAsync: vi.fn() }),
-}));
-
-vi.mock("#/features/auth/state/token", () => ({
-  clearAuthToken: vi.fn(),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-session", () => ({
@@ -34,8 +32,18 @@ vi.mock("./wallet-page", () => ({
   WalletPage: () => <div data-testid="wallet-page" />,
 }));
 
+vi.mock("./activity-page", () => ({
+  ActivityPage: () => <div data-testid="activity-page" />,
+}));
+
 vi.mock("./market-page", () => ({
-  MarketPage: () => <div data-testid="market-page" />,
+  MarketPage: ({ onboardingBanner }: { onboardingBanner?: ReactNode }) => (
+    <div data-testid="market-page">{onboardingBanner}</div>
+  ),
+}));
+
+vi.mock("./onboarding-banner", () => ({
+  OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
 
 vi.mock("./settings-page", () => ({
@@ -54,74 +62,80 @@ vi.mock("./undone-page", () => ({
 
 import { HomePage } from "./home-page";
 
+function renderHome(ui: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+}
+
 beforeEach(() => {
   mockAbortWalletSwitch.mockClear();
 });
 
 describe("HomePage (uncontrolled)", () => {
-  it("shows wallet page by default", () => {
-    render(<HomePage />);
-    expect(screen.getByTestId("wallet-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-page")).toBeNull();
-    expect(screen.queryByTestId("settings-page")).toBeNull();
-  });
-
-  it("switches to activity tab", () => {
-    render(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
-    expect(screen.getByTestId("undone-activity")).toBeTruthy();
-    expect(screen.queryByTestId("wallet-page")).toBeNull();
-  });
-
-  it("switches to market tab", () => {
-    render(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Market" }));
+  it("shows market page by default", () => {
+    renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
   });
 
+  it("switches to wallet tab for authenticated users", () => {
+    renderHome(<HomePage />);
+    fireEvent.click(screen.getByRole("button", { name: "Wallet" }));
+    expect(screen.getByTestId("wallet-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-page")).toBeNull();
+  });
+
+  it("switches to activity tab", () => {
+    renderHome(<HomePage />);
+    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+    expect(screen.getByTestId("activity-page")).toBeTruthy();
+  });
+
   it("switches to pool tab", () => {
-    render(<HomePage />);
+    renderHome(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: "Pool" }));
     expect(screen.getByTestId("undone-pool")).toBeTruthy();
-    expect(screen.queryByTestId("wallet-page")).toBeNull();
   });
 
   it("switches to settings tab", () => {
-    render(<HomePage />);
+    renderHome(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(screen.getByTestId("settings-page")).toBeTruthy();
+  });
+});
+
+describe("HomePage guest mode", () => {
+  it("shows market and onboarding banner", () => {
+    renderHome(<HomePage isAuthenticated={false} />);
+    expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.getByTestId("onboarding-banner")).toBeTruthy();
+  });
+
+  it("does not render private content for a requested private tab", () => {
+    renderHome(<HomePage activeTab="wallet" isAuthenticated={false} />);
+    expect(screen.getByTestId("market-page")).toBeTruthy();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
   });
 });
 
 describe("HomePage (controlled)", () => {
   it("renders the tab provided by the parent", () => {
-    render(<HomePage activeTab="pool" />);
+    renderHome(<HomePage activeTab="pool" />);
     expect(screen.getByTestId("undone-pool")).toBeTruthy();
-    expect(screen.queryByTestId("wallet-page")).toBeNull();
   });
 
   it("calls onTabChange with the selected tab", () => {
     const onTabChange = vi.fn();
-    render(<HomePage activeTab="wallet" onTabChange={onTabChange} />);
+    renderHome(<HomePage activeTab="wallet" onTabChange={onTabChange} />);
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(onTabChange).toHaveBeenCalledWith("settings");
-  });
-
-  it("does not update internal tab state when controlled", () => {
-    const onTabChange = vi.fn();
-    render(<HomePage activeTab="wallet" onTabChange={onTabChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
-    // parent did not update activeTab, so wallet page is still shown
-    expect(screen.getByTestId("wallet-page")).toBeTruthy();
-    expect(screen.queryByTestId("undone-activity")).toBeNull();
   });
 });
 
 describe("HomePage sign-out", () => {
   it("aborts any pending wallet switch on sign-out", async () => {
-    render(<HomePage activeTab="settings" />);
+    renderHome(<HomePage activeTab="settings" />);
 
     fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
 

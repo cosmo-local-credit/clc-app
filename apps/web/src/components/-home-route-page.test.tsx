@@ -3,32 +3,30 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { HomeTab } from "#/features/home/ui/tabs";
 
-const { mockNavigate, mockUseAccount } = vi.hoisted(() => ({
+const { mockNavigate, mockUseAuthStatus } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
-  mockUseAccount: vi.fn(() => ({ isConnected: true })),
+  mockUseAuthStatus: vi.fn(() => ({ isAuthenticated: true, isLoading: false })),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("wagmi", () => ({
-  useAccount: () => mockUseAccount(),
-}));
-
-vi.mock("#/features/onboarding/ui/landing-page", () => ({
-  LandingPage: () => <div data-testid="landing-page" />,
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => mockUseAuthStatus(),
 }));
 
 vi.mock("./home-page", () => ({
   HomePage: ({
     activeTab,
+    isAuthenticated,
     onTabChange,
   }: {
     activeTab: HomeTab;
+    isAuthenticated: boolean;
     onTabChange: (tab: HomeTab) => void;
   }) => (
-    <div data-testid={`home-${activeTab}`}>
+    <div data-testid={`home-${activeTab}-${isAuthenticated ? "auth" : "guest"}`}>
       <button type="button" onClick={() => onTabChange("activity")}>
         Activity tab
       </button>
@@ -46,30 +44,20 @@ import { HomeRoutePage } from "./home-route-page";
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  mockUseAccount.mockReturnValue({ isConnected: true });
+  mockUseAuthStatus.mockReturnValue({ isAuthenticated: true, isLoading: false });
 });
 
 describe("HomeRoutePage", () => {
-  it("renders the activity endpoint tab when connected", async () => {
+  it("renders the requested endpoint tab when authenticated", async () => {
     render(<HomeRoutePage activeTab="activity" />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("home-activity")).toBeTruthy();
-    });
-  });
-
-  it("renders the settings endpoint tab when connected", async () => {
-    render(<HomeRoutePage activeTab="settings" />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("home-settings")).toBeTruthy();
-    });
+    expect(await screen.findByTestId("home-activity-auth")).toBeTruthy();
   });
 
   it("pushes path history when changing tabs", async () => {
     render(<HomeRoutePage activeTab="activity" />);
 
-    await screen.findByTestId("home-activity");
+    await screen.findByTestId("home-activity-auth");
     fireEvent.click(screen.getByRole("button", { name: "Settings tab" }));
 
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/settings" });
@@ -78,17 +66,38 @@ describe("HomeRoutePage", () => {
   it("does not add duplicate history for the current tab", async () => {
     render(<HomeRoutePage activeTab="settings" />);
 
-    await screen.findByTestId("home-settings");
+    await screen.findByTestId("home-settings-auth");
     fireEvent.click(screen.getByRole("button", { name: "Current tab" }));
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("renders the landing page when disconnected", () => {
-    mockUseAccount.mockReturnValue({ isConnected: false });
+  it("redirects a guest from a private tab to the public market", async () => {
+    mockUseAuthStatus.mockReturnValue({ isAuthenticated: false, isLoading: false });
 
     render(<HomeRoutePage activeTab="settings" />);
 
-    expect(screen.getByTestId("landing-page")).toBeTruthy();
+    expect(await screen.findByTestId("home-market-guest")).toBeTruthy();
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/market", replace: true });
+    });
+  });
+
+  it("keeps a guest on the public market path", async () => {
+    mockUseAuthStatus.mockReturnValue({ isAuthenticated: false, isLoading: false });
+
+    render(<HomeRoutePage activeTab="market" />);
+
+    expect(await screen.findByTestId("home-market-guest")).toBeTruthy();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("renders only the fallback while authentication is loading", () => {
+    mockUseAuthStatus.mockReturnValue({ isAuthenticated: false, isLoading: true });
+
+    render(<HomeRoutePage activeTab="wallet" />);
+
+    expect(screen.queryByTestId("home-wallet-guest")).toBeNull();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

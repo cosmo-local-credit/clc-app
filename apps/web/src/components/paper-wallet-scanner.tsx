@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Camera, LoaderCircle, Upload, X } from "lucide-react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui";
 
 type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
@@ -11,11 +11,12 @@ type ScanError = { type: "camera-denied"; message: string } | { type: "other"; m
 interface PaperWalletScannerProps {
   onKeyDecoded: (key: string) => void;
   onCancel: () => void;
+  title?: ReactNode;
 }
 
 const SCANNER_ELEMENT_ID = "paper-wallet-scanner";
 
-export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScannerProps) {
+export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalletScannerProps) {
   const { t } = useLingui();
   const [mode, setMode] = useState<ScanMode>("choose");
   const [error, setError] = useState<ScanError | null>(null);
@@ -142,16 +143,14 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="font-medium text-sm">
-          <Trans>Paper Wallet</Trans>
-        </p>
+        <p className="font-medium text-sm">{title ?? <Trans>Paper Wallet</Trans>}</p>
         <Button
           variant="ghost"
           size="icon-sm"
           aria-label={t`Close paper wallet scanner`}
           onClick={onCancel}
         >
-          <X className="size-4" />
+          <RiCloseLine className="size-4" />
         </Button>
       </div>
 
@@ -167,7 +166,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
       {mode === "choose" ? (
         <div className="space-y-2">
           <Button className="h-11 w-full" onClick={handleCameraScan} disabled={cameraStarting}>
-            <Camera className="mr-2 size-4" />
+            <RiCameraLine className="mr-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
@@ -178,7 +177,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
               setError(null);
             }}
           >
-            <Upload className="mr-2 size-4" />
+            <RiUploadLine className="mr-2 size-4" />
             <Trans>Upload Image</Trans>
           </Button>
         </div>
@@ -186,7 +185,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
         <div className="space-y-3">
           {cameraStarting ? (
             <div className="flex h-[280px] items-center justify-center rounded-none border border-border bg-card">
-              <LoaderCircle className="size-6 animate-spin text-muted-foreground" />
+              <RiLoader4Line className="size-6 animate-spin text-muted-foreground" />
             </div>
           ) : null}
           {error && !cameraStarting ? (
@@ -201,7 +200,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
                     setError(null);
                   }}
                 >
-                  <Upload className="mr-2 size-4" />
+                  <RiUploadLine className="mr-2 size-4" />
                   <Trans>Upload Image Instead</Trans>
                 </Button>
               ) : null}
@@ -226,7 +225,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel }: PaperWalletScanne
             className="h-11 w-full"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Upload className="mr-2 size-4" />
+            <RiUploadLine className="mr-2 size-4" />
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}

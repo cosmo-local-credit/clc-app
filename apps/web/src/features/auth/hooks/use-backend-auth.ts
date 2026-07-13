@@ -5,7 +5,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { signMessage } from "wagmi/actions";
 
 import { wagmiConfig } from "#/providers/web3-config";
-import { getSiweNonce, signinWithSiwe, signupWithSiwe } from "../api/client";
+import { getSiweNonce, signinWithSiwe, signupWithSiwe, submitProfile } from "../api/client";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
@@ -30,13 +30,32 @@ export function useBackendSignup() {
       });
       const signature = await account.signMessage({ message });
 
-      return signupWithSiwe({
+      const email =
+        profile.email.trim() || `pending+${account.address.slice(2).toLowerCase()}@clc.local`;
+
+      const result = await signupWithSiwe({
         message,
         signature,
         name: profile.name,
-        email:
-          profile.email.trim() || `pending+${account.address.slice(2).toLowerCase()}@clc.local`,
+        email,
       });
+
+      // signupWithSiwe only persists name + email (and sets the session
+      // cookie). The remaining profile fields (phone, country) must be written
+      // through the authenticated profile endpoint, otherwise they are silently
+      // dropped and downstream flows (MPESA/Pretium) see no linked phone.
+      // Skipped for an already-registered address: no session cookie was
+      // issued in that case, so the profile write would 401.
+      if (!result.alreadyRegistered) {
+        await submitProfile({
+          name: profile.name,
+          email,
+          phone: profile.phone,
+          country: profile.location.country,
+        });
+      }
+
+      return result;
     },
   });
 }

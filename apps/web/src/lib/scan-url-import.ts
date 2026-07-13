@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-import { connect, getAccount } from "wagmi/actions";
-import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
-import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 
 export type PendingScanUrlImport =
   | { type: "raw"; key: `0x${string}` }
   | { type: "encrypted"; encryptedKey: string };
 
 /**
- * Detects a `?w=<key>` param on the current URL and handles it:
- * - If no wallet is currently connected: auto-imports and connects silently.
- * - If a wallet is already connected: returns the pending key so the caller
- *   can show a confirmation dialog before switching.
+ * Detects a `?w=<key>` param on the current URL and returns an explicit
+ * pending import. The caller must show a confirmation/unlock UI before
+ * connecting, even for guests.
  *
  * Always strips the `?w=` param from the URL bar.
  */
@@ -32,11 +28,12 @@ export function useScanUrlImport(): {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const search = new URLSearchParams(window.location.search);
-    const raw = search.get("w");
+    const url = new URL(window.location.href);
+    const raw = url.searchParams.get("w");
     if (!raw) return;
 
-    history.replaceState(null, "", window.location.pathname);
+    url.searchParams.delete("w");
+    history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 
     const result = parsePaperWalletImportPayload(raw);
     if (result.type === "invalid") return;
@@ -46,18 +43,8 @@ export function useScanUrlImport(): {
       return;
     }
 
-    const { isConnected } = getAccount(wagmiConfig);
-
-    if (isConnected) {
-      setPendingImport({ type: "raw", key: result.key });
-    } else {
-      storePrivateKey(result.key);
-      void connect(wagmiConfig, { connector: pkConnector }).catch(() => {
-        clearPrivateKey();
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // runs once on mount
+    setPendingImport({ type: "raw", key: result.key });
+  }, []);
 
   const clearPendingImport = useCallback(() => setPendingImport(null), []);
   const queuePendingKey = useCallback(

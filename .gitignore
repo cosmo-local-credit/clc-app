@@ -3,7 +3,9 @@ node_modules
 dist
 dist-ssr
 *.local
-.env
+.env*
+!.env.example
+!apps/web/.env.example
 .nitro
 .tanstack
 .wrangler
@@ -32,3 +34,4 @@ log
 scripts
 AI.md
 dev/webpush/data/
+.codex/config.toml
