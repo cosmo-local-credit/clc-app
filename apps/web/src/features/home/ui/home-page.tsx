@@ -27,6 +27,7 @@ export function HomePage({ activeTab, onTabChange }: HomePageProps) {
   const currentTab = activeTab ?? fallbackTab;
 
   function handleTabChange(tab: HomeTab) {
+    if (tab === currentTab) return;
     if (!activeTab) setFallbackTab(tab);
     onTabChange?.(tab);
   }

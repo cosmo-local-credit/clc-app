@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { parseHomeTab } from "./tabs";
+import { homeTabPaths, parseHomeTab } from "./tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
@@ -22,5 +22,17 @@ describe("parseHomeTab", () => {
 
   it("returns 'wallet' for a number", () => {
     expect(parseHomeTab(0)).toBe("wallet");
+  });
+});
+
+describe("homeTabPaths", () => {
+  it("maps tab state to first-class app paths", () => {
+    expect(homeTabPaths).toEqual({
+      wallet: "/",
+      activity: "/activity",
+      market: "/market",
+      pool: "/pool",
+      settings: "/settings",
+    });
   });
 });
