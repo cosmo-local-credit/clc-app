@@ -33,13 +33,7 @@ function IndexPage() {
 
   return (
     <Suspense fallback={<HomePageFallback />}>
-      <HomePage
-        activeTab={activeTab}
-        isAuthenticated={auth.isAuthenticated}
-        onTabChange={(nextTab) => {
-          void navigate({ to: "/", search: { tab: nextTab }, replace: true });
-        }}
-      />
+      <HomePage activeTab={activeTab} isAuthenticated={auth.isAuthenticated} />
     </Suspense>
   );
 }

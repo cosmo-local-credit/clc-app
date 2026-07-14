@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockNavigate, mockUseSearch, mockAuthStatus } = vi.hoisted(() => ({
@@ -35,8 +35,13 @@ vi.mock("#/components/home-page", () => ({
 
 import { Route } from "./index";
 
+type RouteFixture = {
+  component: () => ReactNode;
+  validateSearch: (search: Record<string, unknown>) => { tab?: string };
+};
+
 function renderIndex() {
-  const Component = (Route as unknown as { component: () => ReactNode }).component;
+  const Component = (Route as unknown as RouteFixture).component;
   render(<Component />);
 }
 
@@ -48,6 +53,13 @@ beforeEach(() => {
 });
 
 describe("IndexPage routing", () => {
+  it("keeps market as the default tab", () => {
+    const { validateSearch } = Route as unknown as RouteFixture;
+
+    expect(validateSearch({})).toEqual({ tab: "market" });
+    expect(validateSearch({ tab: "dashboard" })).toEqual({ tab: "market" });
+  });
+
   it("renders a loading shell while auth is loading", () => {
     mockAuthStatus.isLoading = true;
     renderIndex();
@@ -60,10 +72,18 @@ describe("IndexPage routing", () => {
     expect(screen.getByTestId("home-page").getAttribute("data-authenticated")).toBe("false");
   });
 
-  it("falls back to market for private tabs requested by guests", async () => {
+  it("normalizes private tabs for guests without adding history", async () => {
     mockUseSearch.mockReturnValue({ tab: "wallet" });
     renderIndex();
+
     expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({
+        to: "/",
+        search: { tab: "market" },
+        replace: true,
+      });
+    });
   });
 
   it("passes private tabs through for authenticated users", async () => {

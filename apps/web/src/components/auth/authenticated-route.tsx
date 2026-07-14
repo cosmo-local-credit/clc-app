@@ -86,6 +86,7 @@ function AuthRequiredScreen() {
 
         <Link
           to="/"
+          replace
           className="block text-center text-muted-foreground text-sm underline-offset-4 hover:text-foreground hover:underline"
         >
           <Trans>Back to market</Trans>
