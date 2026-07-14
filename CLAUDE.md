@@ -264,6 +264,16 @@ them and computes — hooks have no state of their own and queries are cached.
 Never copy query results into Zustand (two sources of truth → stale UI). Same
 for wagmi: read from hooks at point of use, don't mirror chain/account.
 
+#### Navigation history
+
+- Keep tabs in typed `search` params and use `<Link>` so user navigation pushes
+  history by default. Selecting the active tab must be a no-op.
+- Use `replace` only for redirects/normalization or when leaving a transient
+  screen that Back must not reopen.
+- App Back controls use `useCanGoBack()` plus `router.history.back()`, with an
+  in-app fallback for direct/deep-linked loads.
+- Cover new navigation flows with a `createMemoryHistory` Back regression test.
+
 `@tanstack/react-query` is wired in `apps/web/src/router.tsx` via
 `setupRouterSsrQueryIntegration`. No RHF, no Redux, no Jotai.
 
