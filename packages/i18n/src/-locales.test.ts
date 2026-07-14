@@ -10,6 +10,11 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["en-US"])).toBe("en");
   });
 
+  it("matches Serbian region and script tags", () => {
+    expect(matchSupportedLocale(["sr-RS"])).toBe("sr");
+    expect(matchSupportedLocale(["sr-Cyrl-RS"])).toBe("sr");
+  });
+
   it("falls back to the default locale when nothing matches", () => {
     expect(matchSupportedLocale(["fr", "de"])).toBe(DEFAULT_LOCALE);
   });
