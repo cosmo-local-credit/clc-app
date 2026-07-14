@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
-import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
+import type { MouseEvent, ReactNode } from "react";
 import { RiGroupLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
@@ -8,11 +9,9 @@ import type { HomeTab } from "./tabs";
 
 export function BottomNavigation({
   activeTab,
-  onTabChange,
   isAuthenticated = true,
 }: {
   activeTab: HomeTab;
-  onTabChange: (tab: HomeTab) => void;
   isAuthenticated?: boolean;
 }) {
   const { t } = useLingui();
@@ -24,37 +23,28 @@ export function BottomNavigation({
       <div className={isAuthenticated ? "grid h-16 grid-cols-5" : "grid h-16 grid-cols-1"}>
         {isAuthenticated ? (
           <>
-            <NavButton
+            <NavLink
               tab="wallet"
               label={t`Wallet`}
               activeTab={activeTab}
-              onTabChange={onTabChange}
               icon={<RiWallet3Line />}
             />
-            <NavButton
+            <NavLink
               tab="activity"
               label={t`Activity`}
               activeTab={activeTab}
-              onTabChange={onTabChange}
               icon={<RiNotification3Line />}
             />
           </>
         ) : null}
-        <MarketNavButton label={t`Market`} activeTab={activeTab} onTabChange={onTabChange} />
+        <MarketNavLink label={t`Market`} activeTab={activeTab} />
         {isAuthenticated ? (
           <>
-            <NavButton
-              tab="pool"
-              label={t`Pool`}
-              activeTab={activeTab}
-              onTabChange={onTabChange}
-              icon={<RiGroupLine />}
-            />
-            <NavButton
+            <NavLink tab="pool" label={t`Pool`} activeTab={activeTab} icon={<RiGroupLine />} />
+            <NavLink
               tab="settings"
               label={t`Settings`}
               activeTab={activeTab}
-              onTabChange={onTabChange}
               icon={<RiSettings3Line />}
             />
           </>
@@ -64,52 +54,44 @@ export function BottomNavigation({
   );
 }
 
-function NavButton({
+function NavLink({
   tab,
   label,
   activeTab,
-  onTabChange,
   icon,
 }: {
   tab: HomeTab;
   label: string;
   activeTab: HomeTab;
-  onTabChange: (tab: HomeTab) => void;
   icon: ReactNode;
 }) {
   const active = activeTab === tab;
   return (
-    <button
-      type="button"
+    <Link
+      to="/"
+      search={{ tab }}
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex h-full flex-col items-center justify-center gap-0.5 text-muted-foreground transition-colors active:bg-muted",
         active && "text-foreground",
       )}
-      onClick={() => onTabChange(tab)}
+      onClick={(event) => preventActiveNavigation(event, active)}
     >
       <span className="flex size-6 items-center justify-center [&_svg]:size-4">{icon}</span>
       <span className={cn("font-medium text-[0.6875rem]", active && "font-semibold")}>{label}</span>
-    </button>
+    </Link>
   );
 }
 
-function MarketNavButton({
-  label,
-  activeTab,
-  onTabChange,
-}: {
-  label: string;
-  activeTab: HomeTab;
-  onTabChange: (tab: HomeTab) => void;
-}) {
+function MarketNavLink({ label, activeTab }: { label: string; activeTab: HomeTab }) {
   const active = activeTab === "market";
   return (
-    <button
-      type="button"
+    <Link
+      to="/"
+      search={{ tab: "market" }}
       aria-current={active ? "page" : undefined}
       className="relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted"
-      onClick={() => onTabChange("market")}
+      onClick={(event) => preventActiveNavigation(event, active)}
     >
       <span
         className={cn(
@@ -124,6 +106,12 @@ function MarketNavButton({
       >
         {label}
       </span>
-    </button>
+    </Link>
   );
+}
+
+function preventActiveNavigation(event: MouseEvent<HTMLAnchorElement>, active: boolean) {
+  if (active && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+    event.preventDefault();
+  }
 }

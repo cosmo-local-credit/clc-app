@@ -1,17 +1,26 @@
 import { describe, expect, it } from "vite-plus/test";
-import { homeTabPaths, isPrivateHomeTab, parseHomeTab } from "./tabs";
+import { isPrivateHomeTab, parseHomeTab } from "./tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
-    for (const tab of ["wallet", "activity", "market", "pool", "settings"] as const) {
+    for (const tab of ["wallet", "activity", "market", "pool", "settings"]) {
       expect(parseHomeTab(tab)).toBe(tab);
     }
   });
 
-  it("returns 'market' for invalid values", () => {
+  it("returns 'market' for an unknown string", () => {
     expect(parseHomeTab("dashboard")).toBe("market");
+  });
+
+  it("returns 'market' for null", () => {
     expect(parseHomeTab(null)).toBe("market");
+  });
+
+  it("returns 'market' for undefined", () => {
     expect(parseHomeTab(undefined)).toBe("market");
+  });
+
+  it("returns 'market' for a number", () => {
     expect(parseHomeTab(0)).toBe("market");
   });
 
@@ -21,17 +30,5 @@ describe("parseHomeTab", () => {
     expect(isPrivateHomeTab("pool")).toBe(true);
     expect(isPrivateHomeTab("settings")).toBe(true);
     expect(isPrivateHomeTab("market")).toBe(false);
-  });
-});
-
-describe("homeTabPaths", () => {
-  it("maps tab state to first-class app paths", () => {
-    expect(homeTabPaths).toEqual({
-      wallet: "/",
-      activity: "/activity",
-      market: "/market",
-      pool: "/pool",
-      settings: "/settings",
-    });
   });
 });

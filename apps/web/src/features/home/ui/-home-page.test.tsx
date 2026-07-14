@@ -7,8 +7,20 @@ const { mockAbortWalletSwitch } = vi.hoisted(() => ({
   mockAbortWalletSwitch: vi.fn(),
 }));
 
-vi.mock("#/components/ui/clc-logo", () => ({
-  CLCLogo: () => <svg data-testid="clc-logo" />,
+vi.mock("./bottom-navigation", () => ({
+  BottomNavigation: ({
+    activeTab,
+    isAuthenticated,
+  }: {
+    activeTab: string;
+    isAuthenticated: boolean;
+  }) => (
+    <nav
+      data-testid="bottom-navigation"
+      data-active-tab={activeTab}
+      data-authenticated={String(isAuthenticated)}
+    />
+  ),
 }));
 
 vi.mock("wagmi", () => ({
@@ -71,35 +83,31 @@ beforeEach(() => {
   mockAbortWalletSwitch.mockClear();
 });
 
-describe("HomePage (uncontrolled)", () => {
+describe("HomePage tabs", () => {
   it("shows market page by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
   });
 
-  it("switches to wallet tab for authenticated users", () => {
-    renderHome(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Wallet" }));
+  it("renders the requested wallet tab", () => {
+    renderHome(<HomePage activeTab="wallet" />);
     expect(screen.getByTestId("wallet-page")).toBeTruthy();
-    expect(screen.queryByTestId("market-page")).toBeNull();
+    expect(screen.getByTestId("bottom-navigation").getAttribute("data-active-tab")).toBe("wallet");
   });
 
-  it("switches to activity tab", () => {
-    renderHome(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+  it("renders the requested activity tab", () => {
+    renderHome(<HomePage activeTab="activity" />);
     expect(screen.getByTestId("activity-page")).toBeTruthy();
   });
 
-  it("switches to pool tab", () => {
-    renderHome(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Pool" }));
+  it("renders the requested pool tab", () => {
+    renderHome(<HomePage activeTab="pool" />);
     expect(screen.getByTestId("undone-pool")).toBeTruthy();
   });
 
-  it("switches to settings tab", () => {
-    renderHome(<HomePage />);
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+  it("renders the requested settings tab", () => {
+    renderHome(<HomePage activeTab="settings" />);
     expect(screen.getByTestId("settings-page")).toBeTruthy();
   });
 });
@@ -116,20 +124,6 @@ describe("HomePage guest mode", () => {
     expect(screen.getByTestId("market-page")).toBeTruthy();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
     expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
-  });
-});
-
-describe("HomePage (controlled)", () => {
-  it("renders the tab provided by the parent", () => {
-    renderHome(<HomePage activeTab="pool" />);
-    expect(screen.getByTestId("undone-pool")).toBeTruthy();
-  });
-
-  it("calls onTabChange with the selected tab", () => {
-    const onTabChange = vi.fn();
-    renderHome(<HomePage activeTab="wallet" onTabChange={onTabChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(onTabChange).toHaveBeenCalledWith("settings");
   });
 });
 

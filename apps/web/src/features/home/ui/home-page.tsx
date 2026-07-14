@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
@@ -17,26 +17,17 @@ import { WalletPage } from "./wallet-page";
 
 type HomePageProps = {
   activeTab?: HomeTab;
-  onTabChange?: (tab: HomeTab) => void;
   isAuthenticated?: boolean;
 };
 
-export function HomePage({ activeTab, onTabChange, isAuthenticated = true }: HomePageProps) {
+export function HomePage({ activeTab = "market", isAuthenticated = true }: HomePageProps) {
   const { address } = useAccount();
   const delegationStatus = useCaliburDelegation(address);
   const { disconnectAsync } = useDisconnect();
   const queryClient = useQueryClient();
   const backendLogout = useBackendLogout();
-  const [fallbackTab, setFallbackTab] = useState<HomeTab>("market");
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const requestedTab = activeTab ?? fallbackTab;
-  const currentTab = !isAuthenticated && isPrivateHomeTab(requestedTab) ? "market" : requestedTab;
-
-  function handleTabChange(tab: HomeTab) {
-    if (tab === currentTab) return;
-    if (!activeTab) setFallbackTab(tab);
-    onTabChange?.(tab);
-  }
+  const currentTab = !isAuthenticated && isPrivateHomeTab(activeTab) ? "market" : activeTab;
 
   async function handleSignOut() {
     // Cancel any in-flight wallet switch first so a pending ?w= import can't
@@ -79,11 +70,7 @@ export function HomePage({ activeTab, onTabChange, isAuthenticated = true }: Hom
           </main>
         </div>
       )}
-      <BottomNavigation
-        activeTab={currentTab}
-        onTabChange={handleTabChange}
-        isAuthenticated={isAuthenticated}
-      />
+      <BottomNavigation activeTab={currentTab} isAuthenticated={isAuthenticated} />
     </div>
   );
 }

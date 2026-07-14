@@ -1,4 +1,13 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  RouterProvider,
+  useSearch,
+} from "@tanstack/react-router";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("#/components/ui/clc-logo", () => ({
@@ -6,7 +15,7 @@ vi.mock("#/components/ui/clc-logo", () => ({
 }));
 
 import { BottomNavigation } from "./bottom-navigation";
-import type { HomeTab } from "./tabs";
+import { type HomeTab, parseHomeTab } from "./tabs";
 
 const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
@@ -16,56 +25,103 @@ const LABELS: Record<HomeTab, string> = {
   settings: "Settings",
 };
 
+async function renderNavigation({
+  initialEntry = "/?tab=wallet",
+  isAuthenticated = true,
+}: {
+  initialEntry?: string;
+  isAuthenticated?: boolean;
+} = {}) {
+  function NavigationFixture() {
+    const search = useSearch({ strict: false });
+    return (
+      <BottomNavigation activeTab={parseHomeTab(search.tab)} isAuthenticated={isAuthenticated} />
+    );
+  }
+
+  const rootRoute = createRootRoute({ component: Outlet });
+  const indexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/",
+    validateSearch: (search): { tab: HomeTab } => ({
+      tab: parseHomeTab(search.tab),
+    }),
+    component: NavigationFixture,
+  });
+  const history = createMemoryHistory({ initialEntries: [initialEntry] });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([indexRoute]),
+    history,
+  });
+
+  await router.load();
+  const result = render(<RouterProvider router={router} />);
+  await screen.findByRole("navigation", { name: "Primary navigation" });
+
+  return { ...result, history };
+}
+
 describe("BottomNavigation", () => {
-  it("renders all five navigation buttons for authenticated users", () => {
-    render(<BottomNavigation activeTab="wallet" onTabChange={vi.fn()} />);
-    for (const label of Object.values(LABELS)) {
-      expect(screen.getByRole("button", { name: label })).toBeTruthy();
+  it("renders all five navigation links with typed search-param hrefs", async () => {
+    await renderNavigation();
+
+    for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
+      expect(screen.getByRole("link", { name: label }).getAttribute("href")).toBe(`/?tab=${tab}`);
     }
   });
 
-  it("marks the active tab with aria-current='page'", () => {
-    render(<BottomNavigation activeTab="market" onTabChange={vi.fn()} />);
-    expect(screen.getByRole("button", { name: "Market" }).getAttribute("aria-current")).toBe(
-      "page",
-    );
-  });
+  it("only marks the active tab with aria-current='page'", async () => {
+    await renderNavigation({ initialEntry: "/?tab=pool" });
 
-  it("only marks the active tab; all others have no aria-current", () => {
-    render(<BottomNavigation activeTab="pool" onTabChange={vi.fn()} />);
     for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
-      const button = screen.getByRole("button", { name: label });
+      const link = screen.getByRole("link", { name: label });
       if (tab === "pool") {
-        expect(button.getAttribute("aria-current")).toBe("page");
+        expect(link.getAttribute("aria-current")).toBe("page");
       } else {
-        expect(button.getAttribute("aria-current")).toBeNull();
+        expect(link.getAttribute("aria-current")).toBeNull();
       }
     }
   });
 
-  it("renders only the market button for guests", () => {
-    render(<BottomNavigation activeTab="market" onTabChange={vi.fn()} isAuthenticated={false} />);
-    expect(screen.getByRole("button", { name: "Market" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Activity" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Pool" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Settings" })).toBeNull();
+  it("renders only the market link for guests", async () => {
+    await renderNavigation({ initialEntry: "/?tab=market", isAuthenticated: false });
+
+    expect(screen.getByRole("link", { name: "Market" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Wallet" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Activity" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Pool" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 
-  it("calls onTabChange with the clicked tab", () => {
-    const onTabChange = vi.fn();
-    render(<BottomNavigation activeTab="wallet" onTabChange={onTabChange} />);
+  it("does not add history when the active tab is selected", async () => {
+    const { history } = await renderNavigation({ initialEntry: "/" });
+    const initialHref = history.location.href;
+    const initialLength = history.length;
 
-    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
-    expect(onTabChange).toHaveBeenCalledWith("activity");
+    fireEvent.click(screen.getByRole("link", { name: "Market" }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Market" }));
-    expect(onTabChange).toHaveBeenCalledWith("market");
+    expect(history.location.href).toBe(initialHref);
+    expect(history.length).toBe(initialLength);
+  });
 
-    fireEvent.click(screen.getByRole("button", { name: "Pool" }));
-    expect(onTabChange).toHaveBeenCalledWith("pool");
+  it("restores the previous tab when navigating back", async () => {
+    const { history } = await renderNavigation();
 
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
-    expect(onTabChange).toHaveBeenCalledWith("settings");
+    fireEvent.click(screen.getByRole("link", { name: "Activity" }));
+    await waitFor(() => expect(history.location.href).toBe("/?tab=activity"));
+
+    fireEvent.click(screen.getByRole("link", { name: "Settings" }));
+    await waitFor(() => expect(history.location.href).toBe("/?tab=settings"));
+
+    await act(async () => {
+      history.back();
+    });
+
+    await waitFor(() => {
+      expect(history.location.href).toBe("/?tab=activity");
+      expect(screen.getByRole("link", { name: "Activity" }).getAttribute("aria-current")).toBe(
+        "page",
+      );
+    });
   });
 });

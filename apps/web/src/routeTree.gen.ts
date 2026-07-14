@@ -9,45 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as PoolRouteImport } from './routes/pool'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as MarketRouteImport } from './routes/market'
-import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WalletVouchersRouteImport } from './routes/wallet/vouchers'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletSwapRouteImport } from './routes/wallet/swap'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
-import { Route as SettingsProfileRouteImport } from './routes/settings_/profile'
+import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
 import { Route as WalletTokensTokenIdRouteImport } from './routes/wallet/tokens/$tokenId'
 import { Route as WalletSendReceiptRouteImport } from './routes/wallet/send/receipt'
 import { Route as WalletSendAmountRouteImport } from './routes/wallet/send/amount'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoolRoute = PoolRouteImport.update({
-  id: '/pool',
-  path: '/pool',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketRoute = MarketRouteImport.update({
-  id: '/market',
-  path: '/market',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ActivityRoute = ActivityRouteImport.update({
-  id: '/activity',
-  path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -76,7 +52,7 @@ const WalletReceiveRoute = WalletReceiveRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
-  id: '/settings_/profile',
+  id: '/settings/profile',
   path: '/settings/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -103,11 +79,7 @@ const WalletSendAmountRoute = WalletSendAmountRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
-  '/market': typeof MarketRoute
   '/onboarding': typeof OnboardingRoute
-  '/pool': typeof PoolRoute
-  '/settings': typeof SettingsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
@@ -120,11 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
-  '/market': typeof MarketRoute
   '/onboarding': typeof OnboardingRoute
-  '/pool': typeof PoolRoute
-  '/settings': typeof SettingsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
@@ -138,12 +106,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/activity': typeof ActivityRoute
-  '/market': typeof MarketRoute
   '/onboarding': typeof OnboardingRoute
-  '/pool': typeof PoolRoute
-  '/settings': typeof SettingsRoute
-  '/settings_/profile': typeof SettingsProfileRoute
+  '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -157,11 +121,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/activity'
-    | '/market'
     | '/onboarding'
-    | '/pool'
-    | '/settings'
     | '/settings/profile'
     | '/wallet/receive'
     | '/wallet/swap'
@@ -174,11 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/activity'
-    | '/market'
     | '/onboarding'
-    | '/pool'
-    | '/settings'
     | '/settings/profile'
     | '/wallet/receive'
     | '/wallet/swap'
@@ -191,12 +147,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/activity'
-    | '/market'
     | '/onboarding'
-    | '/pool'
-    | '/settings'
-    | '/settings_/profile'
+    | '/settings/profile'
     | '/wallet/receive'
     | '/wallet/swap'
     | '/wallet/top-up'
@@ -209,11 +161,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ActivityRoute: typeof ActivityRoute
-  MarketRoute: typeof MarketRoute
   OnboardingRoute: typeof OnboardingRoute
-  PoolRoute: typeof PoolRoute
-  SettingsRoute: typeof SettingsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletSwapRoute: typeof WalletSwapRoute
@@ -227,39 +175,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pool': {
-      id: '/pool'
-      path: '/pool'
-      fullPath: '/pool'
-      preLoaderRoute: typeof PoolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/market': {
-      id: '/market'
-      path: '/market'
-      fullPath: '/market'
-      preLoaderRoute: typeof MarketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/activity': {
-      id: '/activity'
-      path: '/activity'
-      fullPath: '/activity'
-      preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -297,8 +217,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletReceiveRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings_/profile': {
-      id: '/settings_/profile'
+    '/settings/profile': {
+      id: '/settings/profile'
       path: '/settings/profile'
       fullPath: '/settings/profile'
       preLoaderRoute: typeof SettingsProfileRouteImport
@@ -337,11 +257,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ActivityRoute: ActivityRoute,
-  MarketRoute: MarketRoute,
   OnboardingRoute: OnboardingRoute,
-  PoolRoute: PoolRoute,
-  SettingsRoute: SettingsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletSwapRoute: WalletSwapRoute,

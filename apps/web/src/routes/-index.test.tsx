@@ -1,22 +1,35 @@
-import { render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockUseSearch } = vi.hoisted(() => ({
-  mockUseSearch: vi.fn<() => { tab?: string }>(() => ({})),
+const { mockNavigate, mockUseSearch, mockAuthStatus } = vi.hoisted(() => ({
+  mockNavigate: vi.fn(),
+  mockUseSearch: vi.fn(() => ({ tab: "market" })),
+  mockAuthStatus: {
+    isLoading: false,
+    isAuthenticated: false,
+  },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: (path: string) => (options: Record<string, unknown>) => ({
-    path,
+  createFileRoute: () => (options: Record<string, unknown>) => ({
     ...options,
     useSearch: mockUseSearch,
+    useNavigate: () => mockNavigate,
   }),
 }));
 
-vi.mock("#/components/home-route-page", () => ({
-  HomeRoutePage: ({ activeTab }: { activeTab: string }) => (
-    <div data-testid={`home-route-${activeTab}`} />
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => mockAuthStatus,
+}));
+
+vi.mock("#/components/home-page", () => ({
+  HomePage: ({ activeTab, isAuthenticated }: { activeTab: string; isAuthenticated: boolean }) => (
+    <div
+      data-testid="home-page"
+      data-tab={activeTab}
+      data-authenticated={String(isAuthenticated)}
+    />
   ),
 }));
 
@@ -33,29 +46,51 @@ function renderIndex() {
 }
 
 beforeEach(() => {
-  mockUseSearch.mockReturnValue({});
+  mockNavigate.mockClear();
+  mockUseSearch.mockReturnValue({ tab: "market" });
+  mockAuthStatus.isLoading = false;
+  mockAuthStatus.isAuthenticated = false;
 });
 
 describe("IndexPage routing", () => {
-  it("keeps a missing legacy tab optional and normalizes supplied values", () => {
+  it("keeps market as the default tab", () => {
     const { validateSearch } = Route as unknown as RouteFixture;
 
-    expect(validateSearch({})).toEqual({ tab: undefined });
-    expect(validateSearch({ tab: "activity" })).toEqual({ tab: "activity" });
+    expect(validateSearch({})).toEqual({ tab: "market" });
     expect(validateSearch({ tab: "dashboard" })).toEqual({ tab: "market" });
   });
 
-  it("renders the wallet tab at the root path", () => {
+  it("renders a loading shell while auth is loading", () => {
+    mockAuthStatus.isLoading = true;
     renderIndex();
-
-    expect(screen.getByTestId("home-route-wallet")).toBeTruthy();
+    expect(screen.queryByTestId("home-page")).toBeNull();
   });
 
-  it("passes a legacy search tab to the shared route shell", () => {
-    mockUseSearch.mockReturnValue({ tab: "market" });
+  it("renders market for disconnected users", async () => {
+    renderIndex();
+    expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
+    expect(screen.getByTestId("home-page").getAttribute("data-authenticated")).toBe("false");
+  });
 
+  it("normalizes private tabs for guests without adding history", async () => {
+    mockUseSearch.mockReturnValue({ tab: "wallet" });
     renderIndex();
 
-    expect(screen.getByTestId("home-route-market")).toBeTruthy();
+    expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("market");
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({
+        to: "/",
+        search: { tab: "market" },
+        replace: true,
+      });
+    });
+  });
+
+  it("passes private tabs through for authenticated users", async () => {
+    mockAuthStatus.isAuthenticated = true;
+    mockUseSearch.mockReturnValue({ tab: "wallet" });
+    renderIndex();
+    expect((await screen.findByTestId("home-page")).getAttribute("data-tab")).toBe("wallet");
+    expect(screen.getByTestId("home-page").getAttribute("data-authenticated")).toBe("true");
   });
 });

@@ -34,7 +34,6 @@ describe("reloadOnceForStaleChunk", () => {
   afterEach(() => {
     sessionStorage.clear();
     window.name = "";
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -62,14 +61,11 @@ describe("reloadOnceForStaleChunk", () => {
   });
 
   it("does not boot-loop when sessionStorage is unavailable (window.name fallback)", () => {
-    vi.stubGlobal("sessionStorage", {
-      clear: vi.fn(),
-      getItem: vi.fn(() => {
-        throw new Error("storage blocked");
-      }),
-      setItem: vi.fn(() => {
-        throw new Error("storage blocked");
-      }),
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("storage blocked");
+    });
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("storage blocked");
     });
 
     expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(true);
