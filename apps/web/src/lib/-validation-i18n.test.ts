@@ -26,6 +26,13 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Serbian", async () => {
+    await activateLocale("sr");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Изаберите локацију");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Неисправан број телефона");
+  });
+
   it("keeps every known validation error wired to a catalog message", async () => {
     await activateLocale("en");
 
