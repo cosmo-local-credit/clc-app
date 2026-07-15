@@ -21,7 +21,7 @@ const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
   activity: "Activity",
   market: "Market",
-  pool: "Pool",
+  pool: "Pools",
   settings: "Settings",
 };
 
@@ -89,7 +89,7 @@ describe("BottomNavigation", () => {
     expect(screen.getByRole("link", { name: "Market" })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Wallet" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Activity" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Pool" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Pools" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 

@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
@@ -12,15 +12,19 @@ import { MarketPage } from "./market-page";
 import { OnboardingBanner } from "./onboarding-banner";
 import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "./tabs";
-import { UndonePage } from "./undone-page";
 import { WalletPage } from "./wallet-page";
 
-type HomePageProps = {
+export type HomePageProps = {
   activeTab?: HomeTab;
   isAuthenticated?: boolean;
+  poolsPage?: ReactNode;
 };
 
-export function HomePage({ activeTab = "market", isAuthenticated = true }: HomePageProps) {
+export function HomePage({
+  activeTab = "market",
+  isAuthenticated = true,
+  poolsPage,
+}: HomePageProps) {
   const { address } = useAccount();
   const delegationStatus = useCaliburDelegation(address);
   const { disconnectAsync } = useDisconnect();
@@ -56,7 +60,7 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? <ActivityPage address={address} /> : null}
-            {currentTab === "pool" ? <UndonePage tab="pool" /> : null}
+            {currentTab === "pool" ? poolsPage : null}
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}

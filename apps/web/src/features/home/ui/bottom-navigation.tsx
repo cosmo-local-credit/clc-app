@@ -40,7 +40,7 @@ export function BottomNavigation({
         <MarketNavLink label={t`Market`} activeTab={activeTab} />
         {isAuthenticated ? (
           <>
-            <NavLink tab="pool" label={t`Pool`} activeTab={activeTab} icon={<RiGroupLine />} />
+            <NavLink tab="pool" label={t`Pools`} activeTab={activeTab} icon={<RiGroupLine />} />
             <NavLink
               tab="settings"
               label={t`Settings`}

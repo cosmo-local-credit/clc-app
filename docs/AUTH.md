@@ -79,7 +79,7 @@ flowchart TD
   Panel --> Session["backend session cookie"]
   Session --> MarketAuth
 
-  MarketAuth --> PrivateTabs["Wallet / Activity / Pool / Settings"]
+  MarketAuth --> PrivateTabs["Wallet / Activity / Pools / Settings"]
   PrivateTabs --> SignOut["Sign out"]
   SignOut --> Logout["POST /auth/logout"]
   Logout --> Disconnect["wagmi disconnect"]

@@ -68,10 +68,6 @@ vi.mock("./settings-page", () => ({
   ),
 }));
 
-vi.mock("./undone-page", () => ({
-  UndonePage: ({ tab }: { tab: string }) => <div data-testid={`undone-${tab}`} />,
-}));
-
 import { HomePage } from "./home-page";
 
 function renderHome(ui: ReactNode) {
@@ -102,8 +98,8 @@ describe("HomePage tabs", () => {
   });
 
   it("renders the requested pool tab", () => {
-    renderHome(<HomePage activeTab="pool" />);
-    expect(screen.getByTestId("undone-pool")).toBeTruthy();
+    renderHome(<HomePage activeTab="pool" poolsPage={<div data-testid="pools-page" />} />);
+    expect(screen.getByTestId("pools-page")).toBeTruthy();
   });
 
   it("renders the requested settings tab", () => {

@@ -80,11 +80,11 @@ describe("WalletPage", () => {
     expect(logo?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("shows the pool section with placeholder pools", () => {
+  it("does not show the old placeholder pool section", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    expect(screen.getByText(/your pools/i)).toBeTruthy();
-    expect(screen.getAllByText(/Local Solar Coop/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Fresh Food Circle/)).toBeTruthy();
+    expect(screen.queryByText(/your pools/i)).toBeNull();
+    expect(screen.queryByText(/Local Solar Coop/)).toBeNull();
+    expect(screen.queryByText(/Fresh Food Circle/)).toBeNull();
   });
 });
