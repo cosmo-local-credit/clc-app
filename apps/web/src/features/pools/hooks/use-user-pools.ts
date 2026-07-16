@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { getUserPoolByAddress, getUserPools } from "#/features/pools/api/pools-client";
+import { getPoolByAddress, getPools } from "#/features/pools/api/pools-client";
 
 /** Matches activity / account list page size so infinite scroll pages meaningfully. */
 export const DEFAULT_POOLS_PAGE_SIZE = 20;
@@ -12,11 +12,12 @@ export const poolQueryKeys = {
     [...poolQueryKeys.all, "by-address", poolAddress?.toLowerCase() ?? "none"] as const,
 };
 
+/** Global confirmed pools catalog with cursor pagination. */
 export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE) {
   return useInfiniteQuery({
     queryKey: poolQueryKeys.list(perPage),
     queryFn: ({ pageParam }) =>
-      getUserPools({
+      getPools({
         perPage,
         cursor: pageParam,
         next: pageParam === undefined ? undefined : true,
@@ -30,7 +31,7 @@ export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE) {
 export function useUserPoolByAddress(poolAddress: string | undefined) {
   return useQuery({
     queryKey: poolQueryKeys.byAddress(poolAddress),
-    queryFn: () => getUserPoolByAddress(requirePoolAddress(poolAddress)),
+    queryFn: () => getPoolByAddress(requirePoolAddress(poolAddress)),
     enabled: !!poolAddress,
   });
 }

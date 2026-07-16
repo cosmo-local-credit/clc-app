@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getUserPoolByAddress, getUserPools, normalizeUserPool } from "./pools-client";
+import { getPoolByAddress, getPools, normalizeUserPool } from "./pools-client";
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -16,34 +16,34 @@ afterEach(() => {
 });
 
 describe("pools client", () => {
-  it("fetches user pools with documented first-page pagination", async () => {
+  it("fetches global pools with first-page pagination", async () => {
     const fetcher = mockFetch({
       ok: true,
       result: { pools: [], first: undefined, last: undefined },
     });
     vi.stubGlobal("fetch", fetcher);
 
-    await getUserPools({ perPage: 100 });
+    await getPools({ perPage: 20 });
 
     expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v2/users/me/pools?perPage=100"),
+      expect.stringContaining("/api/v2/pools?perPage=20"),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
 
-  it("fetches user pools with documented next cursor pagination", async () => {
+  it("fetches global pools with next cursor pagination", async () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [], first: 1, last: 5 } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getUserPools({ perPage: 100, cursor: 5, next: true });
+    await getPools({ perPage: 20, cursor: 5, next: true });
 
     expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v2/users/me/pools?perPage=100&cursor=5&next=true"),
+      expect.stringContaining("/api/v2/pools?perPage=20&cursor=5&next=true"),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
 
-  it("fetches a pool by address for direct detail routes", async () => {
+  it("fetches a pool by address for detail routes", async () => {
     const fetcher = mockFetch({
       ok: true,
       result: {
@@ -59,11 +59,11 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const pool = await getUserPoolByAddress("0x1111111111111111111111111111111111111111");
+    const pool = await getPoolByAddress("0x1111111111111111111111111111111111111111");
 
     expect(pool.name).toBe("Fresh Food Circle");
     expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v2/users/me/pools/0x1111111111111111111111111111111111111111"),
+      expect.stringContaining("/api/v2/pools/0x1111111111111111111111111111111111111111"),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
@@ -72,7 +72,7 @@ describe("pools client", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: null } });
     vi.stubGlobal("fetch", fetcher);
 
-    await expect(getUserPools({ perPage: 100 })).resolves.toEqual({ pools: [] });
+    await expect(getPools({ perPage: 20 })).resolves.toEqual({ pools: [] });
 
     const pool = normalizeUserPool({
       id: "8",
@@ -108,7 +108,7 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const page = await getUserPools({ perPage: 100 });
+    const page = await getPools({ perPage: 20 });
 
     expect(page.pools).toHaveLength(1);
     expect(page.pools[0]?.name).toBe("Valid Pool");

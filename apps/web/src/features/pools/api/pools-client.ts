@@ -63,9 +63,10 @@ const POOL_READ_REQUEST: RequestInit = {
   cache: "no-store",
 };
 
-export async function getUserPools(params: UserPoolsCursorParams): Promise<UserPoolPage> {
+/** Global confirmed pools catalog (not user membership). */
+export async function getPools(params: UserPoolsCursorParams): Promise<UserPoolPage> {
   const result = await apiFetch<BackendPoolPage>(
-    `/api/v2/users/me/pools${formatCursorQuery(params)}`,
+    `/api/v2/pools${formatCursorQuery(params)}`,
     POOL_READ_REQUEST,
   );
   return {
@@ -76,11 +77,9 @@ export async function getUserPools(params: UserPoolsCursorParams): Promise<UserP
   };
 }
 
-export async function getUserPoolByAddress(address: string): Promise<UserPool> {
-  const result = await apiFetch<BackendPoolEnvelope>(
-    `/api/v2/users/me/pools/${address}`,
-    POOL_READ_REQUEST,
-  );
+/** Single confirmed pool by contract address (global). */
+export async function getPoolByAddress(address: string): Promise<UserPool> {
+  const result = await apiFetch<BackendPoolEnvelope>(`/api/v2/pools/${address}`, POOL_READ_REQUEST);
   const pool = normalizeUserPool(result.pool ?? result);
   if (!pool) throw new Error("Pool response did not include a valid address.");
   return pool;
