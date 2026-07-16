@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { PoolsBackButton } from "./pools-back-button";
+import { BackChevron } from "#/components/wallet/wallet-kit";
 import type { PoolVoucherPlaceholder } from "#/features/pools/data/placeholder-pool-vouchers";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
@@ -28,7 +28,7 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
 
   return (
     <div className="space-y-3">
-      <PoolsBackButton label={t`Pools`} />
+      <BackChevron label={t`Pools`} to="/" search={{ tab: "pool" }} />
       <section className="border border-border bg-card p-3">
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
@@ -104,7 +104,7 @@ function DetailShell({ message }: { message: string }) {
   const { t } = useLingui();
   return (
     <div className="space-y-3">
-      <PoolsBackButton label={t`Pools`} />
+      <BackChevron label={t`Pools`} to="/" search={{ tab: "pool" }} />
       <p className="border border-border bg-card p-3 text-muted-foreground text-sm">{message}</p>
     </div>
   );

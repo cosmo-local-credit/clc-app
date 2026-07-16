@@ -6,7 +6,7 @@ import { RiArrowDownLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { SignHint, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
-import { PoolsBackButton } from "./pools-back-button";
+import { BackChevron } from "#/components/wallet/wallet-kit";
 import type { PoolVoucherPlaceholder } from "#/features/pools/data/placeholder-pool-vouchers";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
@@ -31,7 +31,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <PoolsBackButton label={pool.name} />
+      <BackChevron label={pool.name} to="/" search={{ tab: "pool" }} />
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Swap</Trans>
       </h1>
@@ -200,7 +200,7 @@ function SummaryRow({
 function SwapShell({ title, message }: { title: string; message: string }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-      <PoolsBackButton label={title} />
+      <BackChevron label={title} to="/" search={{ tab: "pool" }} />
       <p className="mt-4 text-muted-foreground text-sm">{message}</p>
     </div>
   );

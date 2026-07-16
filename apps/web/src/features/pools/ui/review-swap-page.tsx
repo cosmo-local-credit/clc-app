@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { SignHint } from "#/components/wallet";
-import { PoolsBackButton } from "./pools-back-button";
+import { BackChevron } from "#/components/wallet/wallet-kit";
 
 export type ReviewSwapSearch = {
   placeholder?: boolean;
@@ -39,7 +39,7 @@ export function ReviewSwapPage({
   if (missing.length > 0) {
     return (
       <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <PoolsBackButton label={t`Swap`} />
+        <BackChevron label={t`Swap`} to="/" search={{ tab: "pool" }} />
         <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
           <Trans>Review swap</Trans>
         </h1>
@@ -62,7 +62,7 @@ export function ReviewSwapPage({
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <PoolsBackButton label={t`Swap`} />
+      <BackChevron label={t`Swap`} to="/" search={{ tab: "pool" }} />
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Review swap</Trans>
       </h1>
