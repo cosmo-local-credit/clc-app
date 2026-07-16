@@ -1,15 +1,24 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { RiArrowDownLine } from "react-icons/ri";
+import { RiArrowDownLine, RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import {
+  SheetBackdrop,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetPortal,
+  SheetRoot,
+  SheetTitle,
+} from "#/components/ui/sheet";
 import { SignHint, TokenLogo, WALLET_TOKENS, type WalletToken } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import type { PoolVoucherPlaceholder } from "#/features/pools/data/placeholder-pool-vouchers";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
+import { cn } from "#/lib/utils";
 
 const PLACEHOLDER_RATE = 0.994;
 
@@ -19,42 +28,70 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
+  const receiveTokens = useMemo(
+    () =>
+      vouchers.map(
+        (voucher): WalletToken => ({
+          id: voucher.id,
+          symbol: voucher.symbol,
+          name: voucher.name,
+          amount: "0",
+          fiat: "",
+          color: "oklch(0.55 0.14 250)",
+          kind: "voucher",
+          glyph: voucher.symbol.slice(0, 2),
+        }),
+      ),
+    [vouchers],
+  );
+
+  const [payToken, setPayToken] = useState<WalletToken>(
+    WALLET_TOKENS.find((token) => token.id === "usdc") ?? WALLET_TOKENS[0],
+  );
+  const [receiveTokenId, setReceiveTokenId] = useState<string | undefined>(undefined);
   const [payAmount, setPayAmount] = useState("25.00");
-  const payToken = WALLET_TOKENS.find((token) => token.id === "usdc") ?? WALLET_TOKENS[0];
-  const receiveVoucher = vouchers[0];
+  const [picker, setPicker] = useState<null | { field: "pay" | "receive" }>(null);
+
+  const selectedReceive =
+    receiveTokens.find((token) => token.id === receiveTokenId) ?? receiveTokens[0];
   const estimate = usePlaceholderSwapEstimate(payAmount);
   const isValidAmount = estimate.payAmountNumber > 0;
+  const detailFallback = `/pools/${poolAddress}`;
 
-  if (poolQuery.isLoading) return <SwapShell title={t`Swap`} message={t`Loading pool…`} />;
-  if (poolQuery.isError) return <SwapShell title={t`Swap`} message={t`Couldn't load this pool.`} />;
-  if (!pool) return <SwapShell title={t`Swap`} message={t`Pool not found.`} />;
+  if (poolQuery.isLoading) {
+    return <SwapShell fallbackTo={detailFallback} message={t`Loading pool…`} />;
+  }
+  if (poolQuery.isError) {
+    return <SwapShell fallbackTo={detailFallback} message={t`Couldn't load this pool.`} />;
+  }
+  if (!pool) {
+    return <SwapShell fallbackTo={detailFallback} message={t`Pool not found.`} />;
+  }
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={pool.name} to="/" search={{ tab: "pool" }} />
+      <BackChevron label={t`Swap`} to={detailFallback} />
+
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Swap</Trans>
       </h1>
 
-      <div className="mb-2.5 border border-border bg-card px-3 py-2.5">
-        <p className="text-muted-foreground text-xs">
-          <Trans>Selected pool</Trans>
-        </p>
-        <p className="mt-0.5 font-semibold text-sm">{pool.name}</p>
-      </div>
-
       <div className="relative flex flex-col gap-1">
         <SwapField
-          ariaLabel={t`You give amount`}
-          label={t`You give`}
+          label={t`You pay`}
           token={payToken}
           amount={payAmount}
+          max={payToken.amount}
           onAmountChange={setPayAmount}
+          onMax={() => setPayAmount(payToken.amount)}
+          onSelect={() => setPicker({ field: "pay" })}
         />
-        <ReceiveField
-          ariaLabel={t`You receive amount`}
-          voucher={receiveVoucher}
+        <SwapField
+          label={t`You receive`}
+          token={selectedReceive}
           amount={estimate.receiveAmount}
+          onSelect={() => setPicker({ field: "receive" })}
+          readOnlyAmount
         />
         <span
           aria-hidden="true"
@@ -64,32 +101,45 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         </span>
       </div>
 
-      <p className="mt-2 text-muted-foreground text-xs">
-        <Trans>
-          Estimate uses temporary placeholder pool voucher data. No quote or relay request is made.
-        </Trans>
-      </p>
-
       <div className="mt-3 border border-border bg-card">
-        <SummaryRow
-          label={t`Rate`}
-          value={`1 ${payToken.symbol} = ${PLACEHOLDER_RATE.toFixed(3)} ${receiveVoucher?.symbol ?? "POOL"}`}
-        />
-        <SummaryRow label={t`Fees`} value={t`Fee calculated at confirmation`} last />
+        <div className="flex items-center justify-between border-b border-border px-3 py-2">
+          <span className="text-muted-foreground text-xs">
+            <Trans>Rate</Trans>
+          </span>
+          <span className="font-mono text-xs font-semibold">
+            1 {payToken.symbol} = {PLACEHOLDER_RATE.toFixed(3)} {selectedReceive?.symbol ?? "POOL"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-muted-foreground text-xs">
+            <Trans>Fees</Trans>
+          </span>
+          <span className="font-mono text-xs font-semibold">
+            <Trans>Fee calculated at confirmation</Trans>
+          </span>
+        </div>
       </div>
+
       {!isValidAmount ? (
         <p role="alert" className="mt-2 text-destructive text-xs">
           <Trans>Enter an amount greater than zero.</Trans>
         </p>
       ) : null}
 
+      <p className="mt-2 text-muted-foreground text-xs">
+        <Trans>
+          Swapping in {pool.name}. Estimate uses temporary placeholder pool voucher data.
+        </Trans>
+      </p>
+
       <div className="flex-1" />
+
       <SignHint className="mb-2.5 bg-card" />
       <Button
         className="h-11 w-full"
-        disabled={!isValidAmount || !receiveVoucher}
+        disabled={!isValidAmount || !selectedReceive}
         onClick={() => {
-          if (!receiveVoucher || !isValidAmount) return;
+          if (!selectedReceive || !isValidAmount) return;
           void navigate({
             to: "/pools/$poolAddress/swap/review",
             params: { poolAddress },
@@ -98,109 +148,179 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
               payAmount,
               paySymbol: payToken.symbol,
               receiveAmount: estimate.receiveAmount,
-              receiveSymbol: receiveVoucher.symbol,
-              voucherId: receiveVoucher.id,
+              receiveSymbol: selectedReceive.symbol,
+              voucherId: selectedReceive.id,
               poolName: pool.name,
             },
           });
         }}
       >
-        <Trans>Review swap</Trans>
+        <Trans>Swap</Trans>
       </Button>
+
+      <PoolTokenPickerSheet
+        open={picker?.field === "pay"}
+        onOpenChange={(open) => {
+          if (!open) setPicker(null);
+        }}
+        title={t`You pay`}
+        tokens={WALLET_TOKENS}
+        selectedId={payToken.id}
+        onSelect={setPayToken}
+      />
+      <PoolTokenPickerSheet
+        open={picker?.field === "receive"}
+        onOpenChange={(open) => {
+          if (!open) setPicker(null);
+        }}
+        title={t`You receive`}
+        tokens={receiveTokens}
+        selectedId={selectedReceive?.id}
+        onSelect={(token) => setReceiveTokenId(token.id)}
+      />
     </div>
   );
 }
 
 function SwapField({
-  ariaLabel,
   label,
   token,
   amount,
+  max,
   onAmountChange,
+  onMax,
+  onSelect,
+  readOnlyAmount = false,
 }: {
-  ariaLabel: string;
   label: React.ReactNode;
-  token: WalletToken;
+  token: WalletToken | undefined;
   amount: string;
-  onAmountChange: (amount: string) => void;
+  max?: string;
+  onAmountChange?: (amount: string) => void;
+  onMax?: () => void;
+  onSelect: () => void;
+  readOnlyAmount?: boolean;
 }) {
   return (
     <div className="border border-border bg-card p-3.5">
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <div className="mt-2 flex items-center gap-2.5">
-        <div className="flex h-9 shrink-0 items-center gap-1.5 border border-border bg-card px-2">
-          <TokenLogo token={token} size={24} />
-          <span className="text-sm font-bold">{token.symbol}</span>
-        </div>
-        <Input
-          value={amount}
-          onChange={(event) => onAmountChange(sanitizeAmount(event.target.value))}
-          inputMode="decimal"
-          aria-label={ariaLabel}
-          className="h-auto min-h-9 flex-1 border-0 bg-transparent px-0 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight shadow-none focus-visible:border-0"
-        />
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-muted-foreground text-xs">{label}</span>
+        {max ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMax}
+            className="font-mono text-[0.6875rem] font-semibold"
+          >
+            <Trans>Max {max}</Trans>
+          </Button>
+        ) : null}
       </div>
-    </div>
-  );
-}
-
-function ReceiveField({
-  ariaLabel,
-  voucher,
-  amount,
-}: {
-  ariaLabel: string;
-  voucher: PoolVoucherPlaceholder | undefined;
-  amount: string;
-}) {
-  return (
-    <div className="border border-border bg-card p-3.5">
-      <span className="text-muted-foreground text-xs">
-        <Trans>You receive</Trans>
-      </span>
-      <div className="mt-2 flex items-center gap-2.5">
-        <div className="flex h-9 shrink-0 items-center gap-1.5 border border-border bg-card px-2">
-          <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[0.625rem] font-bold">
-            {voucher?.symbol.slice(0, 2) ?? "--"}
-          </span>
-          <span className="text-sm font-bold">{voucher?.symbol ?? "POOL"}</span>
-        </div>
-        <output
-          aria-label={ariaLabel}
-          className="flex-1 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight"
+      <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onSelect}
+          className="flex h-9 shrink-0 items-center gap-1.5 border border-border bg-card px-2"
         >
-          {amount}
-        </output>
+          {token ? (
+            <TokenLogo token={token} size={24} />
+          ) : (
+            <span className="size-6 rounded-full bg-muted" />
+          )}
+          <span className="text-sm font-bold">{token?.symbol ?? "—"}</span>
+          <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
+        </button>
+        {readOnlyAmount || !onAmountChange ? (
+          <output className="flex-1 truncate text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight">
+            {amount}
+          </output>
+        ) : (
+          <Input
+            value={amount}
+            onChange={(event) => onAmountChange(sanitizeAmount(event.target.value))}
+            inputMode="decimal"
+            aria-label={typeof label === "string" ? label : undefined}
+            className="h-auto min-h-9 flex-1 truncate border-0 bg-transparent px-0 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight shadow-none focus-visible:border-0"
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  last = false,
+function PoolTokenPickerSheet({
+  open,
+  onOpenChange,
+  title,
+  tokens,
+  selectedId,
+  onSelect,
 }: {
-  label: React.ReactNode;
-  value: React.ReactNode;
-  last?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  tokens: WalletToken[];
+  selectedId?: string;
+  onSelect: (token: WalletToken) => void;
 }) {
   return (
-    <div
-      className={`flex items-center justify-between gap-3 px-3 py-2 ${last ? "" : "border-b border-border"}`}
-    >
-      <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
-      <span className="min-w-0 break-words text-right font-mono text-xs font-semibold">
-        {value}
-      </span>
-    </div>
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetPortal>
+        <SheetBackdrop />
+        <SheetContent className="rounded-none border-t border-border shadow-none [&>div:first-child]:hidden">
+          <SheetHeader className="px-6 pt-5 pb-3">
+            <SheetTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
+              {title}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="max-h-[50svh] overflow-y-auto px-2 pb-2">
+            {tokens.length === 0 ? (
+              <p className="px-4 py-3 text-muted-foreground text-sm">
+                <Trans>No tokens available.</Trans>
+              </p>
+            ) : (
+              tokens.map((token) => {
+                const selected = token.id === selectedId;
+                return (
+                  <button
+                    key={token.id}
+                    type="button"
+                    className={cn(
+                      "flex w-full items-center gap-3 px-4 py-3 text-left active:bg-muted",
+                      selected && "bg-muted/60",
+                    )}
+                    onClick={() => {
+                      onSelect(token);
+                      onOpenChange(false);
+                    }}
+                  >
+                    <TokenLogo token={token} size={34} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-heading font-semibold text-sm tracking-tight">
+                        {token.symbol}
+                      </p>
+                      <p className="truncate text-muted-foreground text-xs">{token.name}</p>
+                    </div>
+                    {selected ? (
+                      <RiCheckLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                    ) : null}
+                  </button>
+                );
+              })
+            )}
+          </div>
+          <SheetFooter className="px-6 pb-[max(1rem,env(safe-area-inset-bottom))]" />
+        </SheetContent>
+      </SheetPortal>
+    </SheetRoot>
   );
 }
 
-function SwapShell({ title, message }: { title: string; message: string }) {
+function SwapShell({ fallbackTo, message }: { fallbackTo: string; message: string }) {
+  const { t } = useLingui();
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-      <BackChevron label={title} to="/" search={{ tab: "pool" }} />
+      <BackChevron label={t`Swap`} to={fallbackTo} />
       <p className="mt-4 text-muted-foreground text-sm">{message}</p>
     </div>
   );
@@ -218,6 +338,12 @@ function usePlaceholderSwapEstimate(payAmount: string) {
 
 function sanitizeAmount(raw: string): string {
   const cleaned = raw.replace(/[^0-9.]/g, "");
-  const [whole, ...rest] = cleaned.split(".");
-  return rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
+  const firstDot = cleaned.indexOf(".");
+  if (firstDot === -1) return cleaned;
+  const whole = cleaned.slice(0, firstDot);
+  const fraction = cleaned
+    .slice(firstDot + 1)
+    .replace(/\./g, "")
+    .slice(0, 2);
+  return `${whole}.${fraction}`;
 }

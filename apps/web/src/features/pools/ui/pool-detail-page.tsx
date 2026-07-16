@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -11,7 +11,6 @@ import { PoolLogo } from "./pool-logo";
 
 export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
   const { t } = useLingui();
-  const navigate = useNavigate();
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
@@ -60,13 +59,10 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
         </div>
       </section>
 
-      <Button
-        className="h-11 w-full rounded-none"
-        onClick={() => {
-          void navigate({ to: "/pools/$poolAddress/swap", params: { poolAddress } });
-        }}
-      >
-        <Trans>Swap in this pool</Trans>
+      <Button asChild className="h-11 w-full">
+        <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+          <Trans>Swap in this pool</Trans>
+        </Link>
       </Button>
 
       <section aria-labelledby="pool-vouchers-title" className="space-y-2">

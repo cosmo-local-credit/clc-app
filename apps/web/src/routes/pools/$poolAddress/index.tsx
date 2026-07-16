@@ -4,7 +4,7 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { BottomNavigation } from "#/features/home/ui/bottom-navigation";
 import { PoolDetailPage } from "#/features/pools/ui";
 
-export const Route = createFileRoute("/pools/$poolAddress")({
+export const Route = createFileRoute("/pools/$poolAddress/")({
   component: PoolDetailRoute,
 });
 

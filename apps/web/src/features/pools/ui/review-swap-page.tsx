@@ -36,10 +36,12 @@ export function ReviewSwapPage({
   const [processing, setProcessing] = useState(false);
   const missing = getMissingDetails(details);
 
+  const swapFallback = `/pools/${poolAddress}/swap`;
+
   if (missing.length > 0) {
     return (
       <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <BackChevron label={t`Swap`} to="/" search={{ tab: "pool" }} />
+        <BackChevron label={t`Swap`} to={swapFallback} />
         <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
           <Trans>Review swap</Trans>
         </h1>
@@ -62,12 +64,12 @@ export function ReviewSwapPage({
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Swap`} to="/" search={{ tab: "pool" }} />
+      <BackChevron label={t`Swap`} to={swapFallback} />
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Review swap</Trans>
       </h1>
       <div className="border border-border bg-card">
-        <ReviewRow label={t`You give`} value={payLabel} />
+        <ReviewRow label={t`You pay`} value={payLabel} />
         <ReviewRow label={t`You receive`} value={receiveLabel} />
         <ReviewRow label={t`Pool`} value={details.poolName ?? poolAddress} last />
       </div>
