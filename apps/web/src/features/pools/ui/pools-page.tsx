@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { RiArrowRightSLine, RiSearchLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -12,7 +13,24 @@ import { PoolLogo } from "./pool-logo";
 export function PoolsPage() {
   const { t } = useLingui();
   const poolsQuery = useUserPoolsInfinite();
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const pools = poolsQuery.data?.pages.flatMap((page) => page.pools) ?? [];
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !poolsQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry?.isIntersecting && !poolsQuery.isFetchingNextPage) {
+        void poolsQuery.fetchNextPage();
+      }
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [poolsQuery.fetchNextPage, poolsQuery.hasNextPage, poolsQuery.isFetchingNextPage]);
 
   return (
     <div className="space-y-4">
@@ -79,27 +97,18 @@ export function PoolsPage() {
               <Trans>No pools yet.</Trans>
             </div>
           ) : (
-            <div className="border border-border bg-card">
+            <section className="border border-border bg-card" aria-label={t`Pools list`}>
               {pools.map((pool, index) => (
                 <PoolRow key={pool.address} pool={pool} isLast={index === pools.length - 1} />
               ))}
-            </div>
-          )}
-          {poolsQuery.hasNextPage ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 w-full rounded-none bg-card"
-              disabled={poolsQuery.isFetchingNextPage}
-              onClick={() => poolsQuery.fetchNextPage()}
-            >
+              <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
               {poolsQuery.isFetchingNextPage ? (
-                <Trans>Loading more…</Trans>
-              ) : (
-                <Trans>Load more</Trans>
-              )}
-            </Button>
-          ) : null}
+                <div className="p-3 text-center text-muted-foreground text-xs">
+                  <Trans>Loading more…</Trans>
+                </div>
+              ) : null}
+            </section>
+          )}
         </>
       ) : null}
     </div>

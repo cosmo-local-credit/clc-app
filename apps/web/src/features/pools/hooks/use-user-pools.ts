@@ -2,7 +2,8 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { getUserPoolByAddress, getUserPools } from "#/features/pools/api/pools-client";
 
-export const DEFAULT_POOLS_PAGE_SIZE = 100;
+/** Matches activity / account list page size so infinite scroll pages meaningfully. */
+export const DEFAULT_POOLS_PAGE_SIZE = 20;
 
 export const poolQueryKeys = {
   all: ["pools"] as const,
