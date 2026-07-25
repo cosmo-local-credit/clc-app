@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PoolsIndexRouteImport } from './routes/pools/index'
 import { Route as WalletVouchersRouteImport } from './routes/wallet/vouchers'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletSwapRouteImport } from './routes/wallet/swap'
@@ -32,6 +33,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoolsIndexRoute = PoolsIndexRouteImport.update({
+  id: '/pools/',
+  path: '/pools/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WalletVouchersRoute = WalletVouchersRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/wallet/vouchers': typeof WalletVouchersRoute
+  '/pools/': typeof PoolsIndexRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/wallet/tokens/$tokenId': typeof WalletTokensTokenIdRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/wallet/vouchers': typeof WalletVouchersRoute
+  '/pools': typeof PoolsIndexRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/wallet/tokens/$tokenId': typeof WalletTokensTokenIdRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/wallet/vouchers': typeof WalletVouchersRoute
+  '/pools/': typeof PoolsIndexRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
   '/wallet/tokens/$tokenId': typeof WalletTokensTokenIdRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/wallet/swap'
     | '/wallet/top-up'
     | '/wallet/vouchers'
+    | '/pools/'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/wallet/tokens/$tokenId'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/wallet/swap'
     | '/wallet/top-up'
     | '/wallet/vouchers'
+    | '/pools'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/wallet/tokens/$tokenId'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/wallet/swap'
     | '/wallet/top-up'
     | '/wallet/vouchers'
+    | '/pools/'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
     | '/wallet/tokens/$tokenId'
@@ -205,6 +217,7 @@ export interface RootRouteChildren {
   WalletSwapRoute: typeof WalletSwapRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
   WalletVouchersRoute: typeof WalletVouchersRoute
+  PoolsIndexRoute: typeof PoolsIndexRoute
   WalletSendAmountRoute: typeof WalletSendAmountRoute
   WalletSendReceiptRoute: typeof WalletSendReceiptRoute
   WalletTokensTokenIdRoute: typeof WalletTokensTokenIdRoute
@@ -228,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pools/': {
+      id: '/pools/'
+      path: '/pools'
+      fullPath: '/pools/'
+      preLoaderRoute: typeof PoolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wallet/vouchers': {
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   WalletSwapRoute: WalletSwapRoute,
   WalletTopUpRoute: WalletTopUpRoute,
   WalletVouchersRoute: WalletVouchersRoute,
+  PoolsIndexRoute: PoolsIndexRoute,
   WalletSendAmountRoute: WalletSendAmountRoute,
   WalletSendReceiptRoute: WalletSendReceiptRoute,
   WalletTokensTokenIdRoute: WalletTokensTokenIdRoute,

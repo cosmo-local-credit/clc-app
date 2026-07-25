@@ -21,7 +21,7 @@ const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
   activity: "Activity",
   market: "Market",
-  pool: "Pools",
+  posts: "Posts",
   settings: "Settings",
 };
 
@@ -71,11 +71,11 @@ describe("BottomNavigation", () => {
   });
 
   it("only marks the active tab with aria-current='page'", async () => {
-    await renderNavigation({ initialEntry: "/?tab=pool" });
+    await renderNavigation({ initialEntry: "/?tab=posts" });
 
     for (const [tab, label] of Object.entries(LABELS) as [HomeTab, string][]) {
       const link = screen.getByRole("link", { name: label });
-      if (tab === "pool") {
+      if (tab === "posts") {
         expect(link.getAttribute("aria-current")).toBe("page");
       } else {
         expect(link.getAttribute("aria-current")).toBeNull();
@@ -89,7 +89,7 @@ describe("BottomNavigation", () => {
     expect(screen.getByRole("link", { name: "Market" })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Wallet" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Activity" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Pools" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Posts" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
   });
 

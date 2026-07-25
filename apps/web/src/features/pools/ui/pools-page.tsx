@@ -5,6 +5,7 @@ import { RiArrowRightSLine, RiSearchLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { BackChevron } from "#/components/wallet";
 import type { UserPool } from "#/features/pools/api/pools-client";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -34,6 +35,7 @@ export function PoolsPage() {
 
   return (
     <div className="space-y-4">
+      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
       <div className="space-y-1">
         <h1>
           <Trans>Pools</Trans>

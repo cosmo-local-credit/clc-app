@@ -1,6 +1,6 @@
 export const publicHomeTabs = ["market"] as const;
-export const privateHomeTabs = ["wallet", "activity", "pool", "settings"] as const;
-export const homeTabs = ["wallet", "activity", "market", "pool", "settings"] as const;
+export const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
+export const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 
 export type HomeTab = (typeof homeTabs)[number];
 

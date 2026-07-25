@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import type { MouseEvent, ReactNode } from "react";
-import { RiGroupLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } from "react-icons/ri";
+import { RiArticleLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { cn } from "#/lib/utils";
@@ -40,7 +40,7 @@ export function BottomNavigation({
         <MarketNavLink label={t`Market`} activeTab={activeTab} />
         {isAuthenticated ? (
           <>
-            <NavLink tab="pool" label={t`Pools`} activeTab={activeTab} icon={<RiGroupLine />} />
+            <NavLink tab="posts" label={t`Posts`} activeTab={activeTab} icon={<RiArticleLine />} />
             <NavLink
               tab="settings"
               label={t`Settings`}

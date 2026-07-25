@@ -27,7 +27,7 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
 
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/" search={{ tab: "pool" }} />
+      <BackChevron label={t`Pools`} to="/pools" />
       <section className="border border-border bg-card p-3">
         <div className="flex items-start gap-3">
           <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
@@ -88,7 +88,7 @@ function DetailShell({ message }: { message: string }) {
   const { t } = useLingui();
   return (
     <div className="space-y-3">
-      <BackChevron label={t`Pools`} to="/" search={{ tab: "pool" }} />
+      <BackChevron label={t`Pools`} to="/pools" />
       <p className="border border-border bg-card p-3 text-muted-foreground text-sm">{message}</p>
     </div>
   );

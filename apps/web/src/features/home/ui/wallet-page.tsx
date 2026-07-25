@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
-import { RiBankCardLine, RiDownloadLine, RiSendPlane2Line } from "react-icons/ri";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { RiBankCardLine, RiDownloadLine, RiGroupLine, RiSendPlane2Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { SectionHeader, TokenLogo } from "#/components/wallet";
@@ -11,15 +11,16 @@ export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const actions = [
-    { id: "send", label: t`Send`, icon: RiSendPlane2Line, primary: true, to: "/wallet/send" },
+    { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
       id: "receive",
       label: t`Receive`,
       icon: RiDownloadLine,
-      primary: false,
+      variant: "outline",
       to: "/wallet/receive",
     },
-    { id: "topup", label: t`Cash`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
+    { id: "topup", label: t`Cash`, icon: RiBankCardLine, variant: "outline", to: "/wallet/top-up" },
+    { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
@@ -36,20 +37,20 @@ export function WalletPage({ address }: { address?: string }) {
       </div>
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
             return (
               <Button
                 key={action.id}
-                variant={action.primary ? "default" : "outline"}
+                asChild
+                variant={action.variant}
                 className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-                onClick={() => {
-                  void navigate({ to: action.to });
-                }}
               >
-                <Icon className="size-4" aria-hidden="true" />
-                {action.label}
+                <Link to={action.to}>
+                  <Icon className="size-4" aria-hidden="true" />
+                  {action.label}
+                </Link>
               </Button>
             );
           })}
