@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
+  useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
@@ -178,6 +178,23 @@ describe("SendAmountPage", () => {
     });
 
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("ellipsizes the recipient in the confirmation sheet so it stays on one line", async () => {
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+
+    expect(screen.getByText(/confirm send/i)).toBeTruthy();
+    expect(document.body.textContent).toContain("0xa316…5fad4");
+    expect(document.body.textContent).not.toContain(RECIPIENT);
   });
 
   it("surfaces relay errors inside the open confirmation sheet", async () => {

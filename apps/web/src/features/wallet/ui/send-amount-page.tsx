@@ -3,7 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { EllipsizedAddress, HighlightAddress, SignHint, TokenLogo } from "#/components/wallet";
+import { EllipsizedAddress, SignHint, TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
@@ -48,7 +48,7 @@ export function SendAmountPage({
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
   const tokensQuery = useAccountTokensInfinite(address);
   const sendVoucher = useSendVoucherTransfer();
@@ -330,7 +330,7 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>
                 </span>
-                {recipient ? <HighlightAddress address={recipient} tailLength={6} /> : null}
+                {recipient ? <EllipsizedAddress address={recipient} /> : null}
               </div>
             </div>
           </div>

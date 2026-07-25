@@ -7,12 +7,18 @@ import { cn } from "#/lib/utils";
 export function BackChevron({
   label,
   to,
+  search,
   onClick,
   className,
 }: {
   label: string;
   /** Fallback destination used only when there is no history to go back to. */
   to?: string;
+  /**
+   * Fallback search params for `to` when there is no history (e.g. deep link).
+   * Ignored when `canGoBack` is true — history.back() is used instead.
+   */
+  search?: Record<string, unknown>;
   onClick?: () => void;
   className?: string;
 }) {
@@ -47,7 +53,7 @@ export function BackChevron({
     );
   }
   return (
-    <Link to={to ?? "/"} className={classes}>
+    <Link to={to ?? "/"} search={search} className={classes}>
       {content}
     </Link>
   );

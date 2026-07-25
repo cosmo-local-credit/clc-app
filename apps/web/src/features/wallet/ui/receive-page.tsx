@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { toast } from "sonner";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
@@ -9,7 +9,7 @@ import { BackChevron } from "#/components/wallet/wallet-kit";
 
 export function ReceivePage() {
   const { t } = useLingui();
-  const { address } = useAccount();
+  const { address } = useConnection();
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {

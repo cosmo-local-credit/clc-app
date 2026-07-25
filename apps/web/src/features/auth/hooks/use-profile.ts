@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { getProfile } from "#/features/auth/api/client";
 
@@ -10,7 +10,7 @@ export const authProfileQueryKeys = {
 };
 
 export function useAuthProfile() {
-  const { address } = useAccount();
+  const { address } = useConnection();
 
   return useQuery({
     queryKey: authProfileQueryKeys.current(address),

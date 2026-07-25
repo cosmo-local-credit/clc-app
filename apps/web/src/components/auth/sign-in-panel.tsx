@@ -6,7 +6,7 @@ import { lazy, Suspense, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiLoader, FiX } from "react-icons/fi";
 import { TbScan } from "react-icons/tb";
-import { useAccount, useDisconnect } from "wagmi";
+import { useConnection, useDisconnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
@@ -46,8 +46,8 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { isConnected, connector } = useAccount();
-  const { disconnectAsync } = useDisconnect();
+  const { isConnected, connector } = useConnection();
+  const { mutateAsync: disconnect } = useDisconnect();
   const backendSignin = useBackendPrivateKeySignin();
   const [panelState, setPanelState] = useState<AuthPanelState>("form");
   const [showScanner, setShowScanner] = useState(false);
@@ -110,7 +110,7 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   // connector. Disconnecting also clears that connector's stored secret, so
   // private-key storage must be (re)written after this runs.
   async function dropActiveConnection() {
-    if (isConnected) await disconnectAsync();
+    if (isConnected) await disconnect();
   }
 
   async function connectWithKey(key: `0x${string}`): Promise<boolean> {

@@ -17,7 +17,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: account.address }),
+  useConnection: () => ({ address: account.address }),
 }));
 
 vi.mock("sonner", () => ({

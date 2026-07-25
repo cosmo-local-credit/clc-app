@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAccount, useDisconnect } from "wagmi";
+import { useConnection, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
@@ -10,20 +10,20 @@ import { ActivityPage } from "./activity-page";
 import { BottomNavigation } from "./bottom-navigation";
 import { MarketPage } from "./market-page";
 import { OnboardingBanner } from "./onboarding-banner";
+import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
 import { isPrivateHomeTab, type HomeTab } from "./tabs";
-import { UndonePage } from "./undone-page";
 import { WalletPage } from "./wallet-page";
 
-type HomePageProps = {
+export type HomePageProps = {
   activeTab?: HomeTab;
   isAuthenticated?: boolean;
 };
 
 export function HomePage({ activeTab = "market", isAuthenticated = true }: HomePageProps) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address);
-  const { disconnectAsync } = useDisconnect();
+  const { mutateAsync: disconnect } = useDisconnect();
   const queryClient = useQueryClient();
   const backendLogout = useBackendLogout();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -40,7 +40,7 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
       // Local disconnect must still happen if the session cookie is already gone.
     }
     try {
-      await disconnectAsync();
+      await disconnect();
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
     } finally {
       setIsSigningOut(false);
@@ -56,7 +56,7 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? <ActivityPage address={address} /> : null}
-            {currentTab === "pool" ? <UndonePage tab="pool" /> : null}
+            {currentTab === "posts" ? <PostsPage /> : null}
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}

@@ -4,7 +4,7 @@ import { RiCloseLine, RiFileCopyLine, RiTimeLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, SuccessCheck } from "#/components/wallet";
+import { EllipsizedAddress, SignedAmount, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RELAYER_URL } from "#/lib/backend-config";
@@ -13,8 +13,8 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 
 function ReceiptRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5">
-      <span className="text-muted-foreground text-xs">{label}</span>
+    <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+      <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
       {children}
     </div>
   );
@@ -136,15 +136,17 @@ export function SendReceiptPage({
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
-        <h1 className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight">
-          <span>
-            <Trans>Sent</Trans>
-          </span>
-          {amountLabel ? <span className="text-primary">{amountLabel}</span> : null}
+        <h1 className="font-heading mt-3.5 text-[1.75rem] font-bold leading-tight">
+          <Trans>Sent</Trans>
         </h1>
       </div>
 
       <div className="my-5 border border-border bg-card">
+        {amountLabel ? (
+          <ReceiptRow label={t`Amount`}>
+            <SignedAmount direction="out" amount={amountLabel} />
+          </ReceiptRow>
+        ) : null}
         {toAddress ? (
           <ReceiptRow label={t`To`}>
             <EllipsizedAddress address={toAddress} />
@@ -165,7 +167,7 @@ export function SendReceiptPage({
             </time>
           </ReceiptRow>
         ) : null}
-        <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+        <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
           <span className="text-muted-foreground text-xs">
             <Trans>Status</Trans>
           </span>
@@ -236,7 +238,7 @@ function ReceiptShell({
         <ReceiptRow label={<Trans>Network</Trans>}>
           <span className="text-xs font-semibold">Celo</span>
         </ReceiptRow>
-        <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+        <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
           <span className="text-muted-foreground text-xs">
             <Trans>Status</Trans>
           </span>

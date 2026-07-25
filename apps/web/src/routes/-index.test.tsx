@@ -23,7 +23,7 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mockAuthStatus,
 }));
 
-vi.mock("#/components/home-page", () => ({
+vi.mock("#/features/home/ui/home-page", () => ({
   HomePage: ({ activeTab, isAuthenticated }: { activeTab: string; isAuthenticated: boolean }) => (
     <div
       data-testid="home-page"

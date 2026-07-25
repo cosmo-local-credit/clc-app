@@ -24,8 +24,8 @@ vi.mock("./bottom-navigation", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0xabc" as `0x${string}` }),
-  useDisconnect: () => ({ disconnectAsync: vi.fn() }),
+  useConnection: () => ({ address: "0xabc" as `0x${string}` }),
+  useDisconnect: () => ({ mutateAsync: vi.fn() }),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-session", () => ({
@@ -58,6 +58,10 @@ vi.mock("./onboarding-banner", () => ({
   OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
 
+vi.mock("./posts-page", () => ({
+  PostsPage: () => <div data-testid="posts-page" />,
+}));
+
 vi.mock("./settings-page", () => ({
   SettingsPage: ({ onSignOut }: { onSignOut: () => void }) => (
     <div data-testid="settings-page">
@@ -66,10 +70,6 @@ vi.mock("./settings-page", () => ({
       </button>
     </div>
   ),
-}));
-
-vi.mock("./undone-page", () => ({
-  UndonePage: ({ tab }: { tab: string }) => <div data-testid={`undone-${tab}`} />,
 }));
 
 import { HomePage } from "./home-page";
@@ -101,9 +101,9 @@ describe("HomePage tabs", () => {
     expect(screen.getByTestId("activity-page")).toBeTruthy();
   });
 
-  it("renders the requested pool tab", () => {
-    renderHome(<HomePage activeTab="pool" />);
-    expect(screen.getByTestId("undone-pool")).toBeTruthy();
+  it("renders the requested posts tab", () => {
+    renderHome(<HomePage activeTab="posts" />);
+    expect(screen.getByTestId("posts-page")).toBeTruthy();
   });
 
   it("renders the requested settings tab", () => {
