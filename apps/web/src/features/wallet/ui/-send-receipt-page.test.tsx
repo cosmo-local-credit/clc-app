@@ -83,8 +83,8 @@ describe("SendReceiptPage", () => {
       <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
     );
 
-    expect(screen.getByText(/sent/i)).toBeTruthy();
-    expect(screen.getByText("2.13 USDC")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /^sent$/i })).toBeTruthy();
+    expect(screen.getByText("−2.13 USDC").parentElement?.className).toContain("text-destructive");
     expect(screen.getByText(/submitted/i)).toBeTruthy();
     expect(screen.queryByText("2026-07-02T10:00:00Z")).toBeNull();
 

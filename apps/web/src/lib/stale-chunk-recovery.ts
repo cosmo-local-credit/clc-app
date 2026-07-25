@@ -1,7 +1,7 @@
 // Recovery for stale code-split chunks after a deploy ("version skew").
 //
 // The app loads several chunks via React `lazy(() => import(...))` (e.g.
-// routes/index.tsx -> #/components/home-page, the *.lazy.tsx map wrappers)
+// routes/index.tsx -> #/features/home/ui/home-page, the *.lazy.tsx map wrappers)
 // rather than TanStack Router's `lazyRouteComponent`. Router's built-in
 // stale-deploy auto-reload lives *only* inside `lazyRouteComponent`, so these
 // React.lazy imports get no recovery: after a deploy an outdated tab tries to

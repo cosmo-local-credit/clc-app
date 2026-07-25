@@ -1,15 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
-import {
-  RiArrowRightSLine,
-  RiBankCardLine,
-  RiDownloadLine,
-  RiExchangeFundsLine,
-  RiSendPlane2Line,
-} from "react-icons/ri";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { RiBankCardLine, RiDownloadLine, RiGroupLine, RiSendPlane2Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { PicsumLogo, SectionHeader, TokenLogo, WALLET_POOLS } from "#/components/wallet";
+import { SectionHeader, TokenLogo } from "#/components/wallet";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 
@@ -17,16 +11,16 @@ export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const actions = [
-    { id: "send", label: t`Send`, icon: RiSendPlane2Line, primary: true, to: "/wallet/send" },
+    { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
       id: "receive",
       label: t`Receive`,
       icon: RiDownloadLine,
-      primary: false,
+      variant: "outline",
       to: "/wallet/receive",
     },
-    { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, to: "/wallet/swap" },
-    { id: "topup", label: t`Cash`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
+    { id: "topup", label: t`Cash`, icon: RiBankCardLine, variant: "outline", to: "/wallet/top-up" },
+    { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
@@ -49,14 +43,14 @@ export function WalletPage({ address }: { address?: string }) {
             return (
               <Button
                 key={action.id}
-                variant={action.primary ? "default" : "outline"}
+                asChild
+                variant={action.variant}
                 className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-                onClick={() => {
-                  void navigate({ to: action.to });
-                }}
               >
-                <Icon className="size-4" aria-hidden="true" />
-                {action.label}
+                <Link to={action.to}>
+                  <Icon className="size-4" aria-hidden="true" />
+                  {action.label}
+                </Link>
               </Button>
             );
           })}
@@ -118,36 +112,6 @@ export function WalletPage({ address }: { address?: string }) {
               <div className="shrink-0 text-right">
                 <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
               </div>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section aria-labelledby="your-pools-title">
-        <SectionHeader
-          id="your-pools-title"
-          title={<Trans>Your Pools</Trans>}
-          action={<Trans>View all</Trans>}
-        />
-        <div className="border border-border bg-card">
-          {WALLET_POOLS.map((pool, index, list) => (
-            <button
-              key={pool.id}
-              type="button"
-              className={[
-                "flex w-full items-center gap-3 p-3 text-left",
-                index < list.length - 1 ? "border-b border-border" : "",
-              ].join(" ")}
-            >
-              <PicsumLogo seed={`pool-${pool.id}`} size={34} />
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-sm tracking-tight">{pool.symbol}</p>
-                <p className="truncate text-muted-foreground text-xs">{pool.description}</p>
-              </div>
-              <RiArrowRightSLine
-                className="size-4 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
             </button>
           ))}
         </div>

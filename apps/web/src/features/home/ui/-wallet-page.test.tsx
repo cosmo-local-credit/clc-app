@@ -4,6 +4,11 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
+  Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 import { WalletPage } from "./wallet-page";
@@ -58,13 +63,16 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("shows Send, Receive, Swap, and Cash action buttons", () => {
+  it("links Send, Receive, Cash, and Pools without Swap", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    expect(screen.getByRole("button", { name: /send/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /receive/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /swap/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /cash/i })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
+    expect(screen.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
+      "/wallet/receive",
+    );
+    expect(screen.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe("/wallet/top-up");
+    expect(screen.getByRole("link", { name: /pools/i }).getAttribute("href")).toBe("/pools");
+    expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
   });
 
   it("shows fetched voucher balances with real logos", async () => {
@@ -80,11 +88,11 @@ describe("WalletPage", () => {
     expect(logo?.getAttribute("loading")).toBe("lazy");
   });
 
-  it("shows the pool section with placeholder pools", () => {
+  it("does not show the old placeholder pool section", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    expect(screen.getByText(/your pools/i)).toBeTruthy();
-    expect(screen.getAllByText(/Local Solar Coop/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Fresh Food Circle/)).toBeTruthy();
+    expect(screen.queryByText(/your pools/i)).toBeNull();
+    expect(screen.queryByText(/Local Solar Coop/)).toBeNull();
+    expect(screen.queryByText(/Fresh Food Circle/)).toBeNull();
   });
 });

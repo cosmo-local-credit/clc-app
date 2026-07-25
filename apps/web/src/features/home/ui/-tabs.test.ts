@@ -3,7 +3,7 @@ import { isPrivateHomeTab, parseHomeTab } from "./tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
-    for (const tab of ["wallet", "activity", "market", "pool", "settings"]) {
+    for (const tab of ["wallet", "activity", "market", "posts", "settings"]) {
       expect(parseHomeTab(tab)).toBe(tab);
     }
   });
@@ -27,7 +27,7 @@ describe("parseHomeTab", () => {
   it("identifies private tabs", () => {
     expect(isPrivateHomeTab("wallet")).toBe(true);
     expect(isPrivateHomeTab("activity")).toBe(true);
-    expect(isPrivateHomeTab("pool")).toBe(true);
+    expect(isPrivateHomeTab("posts")).toBe(true);
     expect(isPrivateHomeTab("settings")).toBe(true);
     expect(isPrivateHomeTab("market")).toBe(false);
   });

@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -72,7 +72,7 @@ function VoucherRow({
 
 export function AllVouchersPage() {
   const { t } = useLingui();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const vouchersQuery = useAccountTokensInfinite(address);
   const vouchers =
     vouchersQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];

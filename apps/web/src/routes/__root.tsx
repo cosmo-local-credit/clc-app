@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { privateKeyToAccount } from "viem/accounts";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 import { connect, disconnect } from "wagmi/actions";
 import { Button } from "#/components/ui/button";
 import { AppToaster } from "#/components/ui/toaster";
@@ -85,7 +85,7 @@ function AppContent() {
 
 function AppInner() {
   const { t } = useLingui();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const auth = useAuthStatus();
   const queryClient = useQueryClient();
   const backendSignin = useBackendPrivateKeySignin();

@@ -5,7 +5,7 @@ import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { isPrivateHomeTab, type HomeTab, parseHomeTab } from "#/features/home/ui/tabs";
 
 const HomePage = lazy(() =>
-  import("#/components/home-page").then((module) => ({
+  import("#/features/home/ui/home-page").then((module) => ({
     default: module.HomePage,
   })),
 );

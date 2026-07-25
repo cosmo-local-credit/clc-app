@@ -131,17 +131,6 @@ export const WALLET_TOKEN_BY_ID: Record<string, WalletToken> = Object.fromEntrie
   WALLET_TOKENS.map((token) => [token.id, token]),
 );
 
-export type WalletPool = {
-  id: string;
-  symbol: string;
-  description: string;
-};
-
-export const WALLET_POOLS: WalletPool[] = [
-  { id: "solar", symbol: "COOP", description: "Local Solar Coop liquidity pool" },
-  { id: "food", symbol: "FFC", description: "Fresh Food Circle liquidity pool" },
-];
-
 /** Total wallet balance, summed across placeholder tokens. */
 export const WALLET_TOTAL_BALANCE = "KSh 12,840";
 
