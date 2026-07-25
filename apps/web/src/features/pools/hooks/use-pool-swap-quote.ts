@@ -7,7 +7,8 @@ import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wal
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { isAddress } from "viem";
-import { usePublicClient } from "wagmi";
+import { call, getBlockNumber, multicall } from "viem/actions";
+import { useClient } from "wagmi";
 
 import {
   quotePoolGrossAmountOut,
@@ -41,7 +42,7 @@ export function usePoolSwapQuote(input: {
   tokenInDecimals: number;
   tokenOutDecimals: number;
 }) {
-  const publicClient = usePublicClient();
+  const client = useClient();
   const [debouncedSource, setDebouncedSource] = useState({
     mode: input.mode,
     amount: input.amount,
@@ -81,22 +82,22 @@ export function usePoolSwapQuote(input: {
   const query = useQuery({
     queryKey: poolSwapQuoteQueryKeys.quote({
       mode: input.mode,
-      clientUid: publicClient?.uid ?? "none",
+      clientUid: client?.uid ?? "none",
       poolAddress,
       tokenIn,
       tokenOut,
       amountRaw,
     }),
     queryFn: async () => {
-      if (!publicClient || !poolAddress || !tokenIn || !tokenOut || !amountRaw) {
+      if (!client || !poolAddress || !tokenIn || !tokenOut || !amountRaw) {
         throw new Error("Pool swap quote is missing required parameters.");
       }
-      const blockNumber = await publicClient.getBlockNumber();
+      const blockNumber = await getBlockNumber(client);
       const path = [{ poolAddress, tokenIn, tokenOut }];
       const quotedAmountRaw =
         input.mode === "exact-input"
           ? await quoteRouteExactInput(
-              { call: (args) => publicClient.call(args) },
+              { call: (args) => call(client, args) },
               {
                 routerAddress: SWAP_ROUTER_ADDRESS,
                 path,
@@ -105,7 +106,7 @@ export function usePoolSwapQuote(input: {
               },
             )
           : await quoteRouteExactOutput(
-              { call: (args) => publicClient.call(args) },
+              { call: (args) => call(client, args) },
               {
                 routerAddress: SWAP_ROUTER_ADDRESS,
                 path,
@@ -117,10 +118,10 @@ export function usePoolSwapQuote(input: {
       const amountOutRaw = input.mode === "exact-input" ? quotedAmountRaw : amountRaw;
       const [grossAmountOutRaw, poolState] = await Promise.all([
         quotePoolGrossAmountOut(
-          { call: (args) => publicClient.call(args) },
+          { call: (args) => call(client, args) },
           { poolAddress, tokenIn, tokenOut, amountInRaw, blockNumber },
         ),
-        publicClient.multicall({
+        multicall(client, {
           allowFailure: false,
           blockNumber,
           contracts: [
@@ -169,7 +170,7 @@ export function usePoolSwapQuote(input: {
         blockNumber,
       };
     },
-    enabled: !!publicClient && !!poolAddress && !!tokenIn && !!tokenOut && !!amountRaw,
+    enabled: !!client && !!poolAddress && !!tokenIn && !!tokenOut && !!amountRaw,
     placeholderData: (previousData, previousQuery) =>
       previousQuery?.queryKey[1] === input.mode ? previousData : undefined,
     staleTime: 4_000,

@@ -15,7 +15,7 @@ const { mockAccount, mockReconnectAttempted, mockGetSession } = vi.hoisted(() =>
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => mockAccount,
+  useConnection: () => mockAccount,
 }));
 
 vi.mock("#/providers/auth-bootstrap", () => ({

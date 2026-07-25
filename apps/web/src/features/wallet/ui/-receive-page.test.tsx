@@ -7,9 +7,9 @@ vi.mock("@tanstack/react-router", () => ({
   useCanGoBack: () => false,
 }));
 
-const useAccountMock = vi.fn();
+const useConnectionMock = vi.fn();
 vi.mock("wagmi", () => ({
-  useAccount: () => useAccountMock(),
+  useConnection: () => useConnectionMock(),
 }));
 
 vi.mock("sonner", () => ({
@@ -35,7 +35,7 @@ afterEach(() => {
 
 describe("ReceivePage", () => {
   it("copies the connected wallet address", () => {
-    useAccountMock.mockReturnValue({ address: ADDRESS });
+    useConnectionMock.mockReturnValue({ address: ADDRESS });
     render(<ReceivePage />);
 
     const copyButton = screen.getByRole("button", { name: /^copy$/i });
@@ -45,7 +45,7 @@ describe("ReceivePage", () => {
   });
 
   it("disables actions and shows a message when there is no address", () => {
-    useAccountMock.mockReturnValue({ address: undefined });
+    useConnectionMock.mockReturnValue({ address: undefined });
     render(<ReceivePage />);
 
     expect(screen.getByText(/no wallet address available/i)).toBeTruthy();

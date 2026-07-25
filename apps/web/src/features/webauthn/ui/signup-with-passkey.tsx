@@ -20,7 +20,7 @@ export function SignupWithPasskey({
   const { provider, label } = usePlatformPasskeyLabel();
   const { step: recoveryStep, outcome, error: recoveryError, recover } = useCaliburRecovery(client);
   const { step: signupStep, error: signupError, signup } = useCaliburSignup(client);
-  const { connect } = useConnect();
+  const { mutate: connect } = useConnect();
   const [mode, setMode] = useState<"recover" | "signup">("recover");
 
   const isRecovering = ["challenging", "asserting", "verifying"].includes(recoveryStep);

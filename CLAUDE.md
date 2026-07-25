@@ -17,8 +17,8 @@ create voucher → send/swap/redeem → marketplace → off-ramp.
 TanStack Start (Vite + Nitro 3), Serwist PWA, shadcn on **Base UI** (not Radix),
 `lucide-react` for shadcn internals, `react-icons` for app icons, `sonner` for
 toasts, TanStack Form + zod 4 (Standard Schema), `@tanstack/react-query` for
-server state, `zustand` for client state, **wagmi v2 + viem** for chain
-interactions, **ConnectKit** (family.co) for wallet UI, Celo as the settlement
+server state, `zustand` for client state, **wagmi + viem (latest stable majors)**
+for chain interactions, **ConnectKit** (family.co) for wallet UI, Celo as the settlement
 chain.
 
 pnpm workspace monorepo separating logic (platform-agnostic, testable) from UI.
@@ -279,14 +279,22 @@ for wagmi: read from hooks at point of use, don't mirror chain/account.
 
 ### Web3: wagmi + viem + ConnectKit
 
-- **wagmi v2** for React hooks + connector state (internally zustand);
-  **viem** for chain primitives (clients, contracts, type-safe ABIs);
-  **ConnectKit** (family.co) for wallet UX — `<ConnectKitProvider>` +
+- Use the latest stable major releases of **wagmi** and **viem**. Do not retain
+  stale major-version gates in project guidance. Follow upstream migration docs
+  during major upgrades and remove deprecated compatibility aliases in the same
+  change.
+- **wagmi** owns React hooks + connector state (internally zustand); **viem**
+  owns chain primitives (clients, contracts, type-safe ABIs); **ConnectKit**
+  (family.co) owns wallet UX via `<ConnectKitProvider>` +
   `<ConnectKitButton />`. Don't roll your own connect modal.
 - Read wallet/chain state from wagmi hooks at point of use; don't mirror.
-- Pure-TS contract helpers, ABIs, chain config can live in `packages/core/`
-  using `wagmi/core` actions + viem clients. React hooks (`useAccount`,
-  `useReadContract`, etc.) stay in `apps/web/`.
+- For custom chain reads, prefer `useClient`/`getClient` with individually
+  imported `viem/actions`. Do not use fully decorated `usePublicClient`,
+  `getPublicClient`, `useWalletClient`, or `getWalletClient` by default; they
+  attach complete action sets and can materially increase bundle size.
+- Pure-TS contract helpers, ABIs, and chain config can live in `packages/core/`
+  using viem clients and actions. React hooks (`useConnection`,
+  `useReadContract`, etc.) and wagmi actions stay in `apps/web/`.
 
 ### Serwist (PWA)
 

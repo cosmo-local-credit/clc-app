@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { toast } from "sonner";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -58,7 +58,7 @@ export function TokenDetailPage({
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const tokensQuery = useAccountTokensInfinite(address, 50);
   const transfersQuery = useAccountTransfersInfinite(address);
   const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);

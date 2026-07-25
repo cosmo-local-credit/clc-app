@@ -33,14 +33,15 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
+vi.mock("viem/actions", () => ({
+  call: (_client: unknown, args: unknown) => publicClientCall(args),
+  getBlockNumber: () => Promise.resolve(100n),
+  multicall: (_client: unknown, args: unknown) => publicClientMulticall(args),
+}));
+
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
-  usePublicClient: () => ({
-    uid: "test-public-client",
-    call: publicClientCall,
-    getBlockNumber: () => Promise.resolve(100n),
-    multicall: publicClientMulticall,
-  }),
+  useClient: () => ({ uid: "test-client" }),
+  useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({

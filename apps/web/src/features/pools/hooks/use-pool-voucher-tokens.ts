@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import type { PoolVoucher } from "#/features/pools/api/pools-client";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 
 export function usePoolVoucherTokens(vouchers: PoolVoucher[]) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const accountTokensQuery = useAccountTokensInfinite(address);
 
   return useMemo(() => {

@@ -25,7 +25,7 @@ const { quoteData, swapMutateAsync } = vi.hoisted(() => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
+  useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
 vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({

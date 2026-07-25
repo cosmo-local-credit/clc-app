@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { BackendApiError, getSession, type SessionResult } from "#/features/auth/api/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
@@ -32,7 +32,7 @@ export function authSessionQueryKeyForAddress(address: `0x${string}` | undefined
 
 export function useAuthStatus(): AuthStatus {
   const reconnectAttempted = useReconnectAttempted();
-  const { address, chainId, connector, status } = useAccount();
+  const { address, chainId, connector, status } = useConnection();
   const sessionQuery = useQuery({
     queryKey: authSessionQueryKeyForAddress(address),
     queryFn: getSession,

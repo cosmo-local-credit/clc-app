@@ -24,8 +24,8 @@ vi.mock("./bottom-navigation", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0xabc" as `0x${string}` }),
-  useDisconnect: () => ({ disconnectAsync: vi.fn() }),
+  useConnection: () => ({ address: "0xabc" as `0x${string}` }),
+  useDisconnect: () => ({ mutateAsync: vi.fn() }),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-session", () => ({

@@ -3,7 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -48,7 +48,7 @@ export function SendAmountPage({
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
   const tokensQuery = useAccountTokensInfinite(address);
   const sendVoucher = useSendVoucherTransfer();

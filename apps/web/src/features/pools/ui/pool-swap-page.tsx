@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiArrowDownLine, RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -33,7 +33,7 @@ import { cn } from "#/lib/utils";
 export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
   const swapTransfer = usePoolSwapTransfer();
   const poolQuery = useUserPoolByAddress(poolAddress);

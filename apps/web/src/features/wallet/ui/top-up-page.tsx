@@ -11,7 +11,7 @@ import {
 } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
-import { useAccount } from "wagmi";
+import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -53,7 +53,7 @@ function isSafaricomNumber(phone: string): boolean {
 
 export function TopUpPage() {
   const { t } = useLingui();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const profileQuery = useAuthProfile();
   const [amount, setAmount] = useState("");
   const [addStablesOpen, setAddStablesOpen] = useState(false);

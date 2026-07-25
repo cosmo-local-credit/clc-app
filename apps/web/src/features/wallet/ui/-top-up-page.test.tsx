@@ -15,7 +15,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: account.address }),
+  useConnection: () => ({ address: account.address }),
   // WithdrawSheet reads delegation via useBytecode; undefined code → not-delegated.
   useBytecode: () => ({ data: undefined, isPending: false }),
 }));

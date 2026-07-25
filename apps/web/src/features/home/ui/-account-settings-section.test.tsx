@@ -11,7 +11,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: account.address }),
+  useConnection: () => ({ address: account.address }),
 }));
 
 import { AccountSettingsSection } from "./account-settings-section";

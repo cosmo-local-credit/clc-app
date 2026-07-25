@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useAccount, useDisconnect } from "wagmi";
+import { useConnection, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
@@ -21,9 +21,9 @@ export type HomePageProps = {
 };
 
 export function HomePage({ activeTab = "market", isAuthenticated = true }: HomePageProps) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address);
-  const { disconnectAsync } = useDisconnect();
+  const { mutateAsync: disconnect } = useDisconnect();
   const queryClient = useQueryClient();
   const backendLogout = useBackendLogout();
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -40,7 +40,7 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
       // Local disconnect must still happen if the session cookie is already gone.
     }
     try {
-      await disconnectAsync();
+      await disconnect();
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
     } finally {
       setIsSigningOut(false);
