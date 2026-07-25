@@ -19,11 +19,10 @@ export const Route = createFileRoute("/pools/$poolAddress/swap/receipt")({
 });
 
 function SwapReceiptRoute() {
-  const { poolAddress } = Route.useParams();
   const details = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <SwapReceiptPage poolAddress={poolAddress} details={details} />
+      <SwapReceiptPage details={details} />
     </AuthenticatedRoute>
   );
 }

@@ -20,13 +20,7 @@ export type SwapReceiptSearch = {
   poolName?: string;
 };
 
-export function SwapReceiptPage({
-  poolAddress,
-  details,
-}: {
-  poolAddress: string;
-  details: SwapReceiptSearch;
-}) {
+export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(details.trackingId ?? null, {
@@ -39,8 +33,9 @@ export function SwapReceiptPage({
       : null;
   const sentLabel =
     details.sendAmount && details.sendSymbol ? `${details.sendAmount} ${details.sendSymbol}` : null;
-  const goToPool = () => {
-    void navigate({ to: "/pools/$poolAddress", params: { poolAddress } });
+  // Match send-receipt Done: client navigate home (push), not back to pool detail.
+  const goHome = () => {
+    void navigate({ to: "/" });
   };
 
   if (!details.trackingId) {
@@ -52,7 +47,7 @@ export function SwapReceiptPage({
         message={t`Swap tracking details are missing.`}
         poolName={details.poolName}
         status={<Status tone="error" label={t`Unavailable`} />}
-        onDone={goToPool}
+        onDone={goHome}
       />
     );
   }
@@ -67,7 +62,7 @@ export function SwapReceiptPage({
         message={t`Waiting for on-chain confirmation`}
         poolName={details.poolName}
         status={<Status tone="pending" label={t`Pending`} />}
-        onDone={goToPool}
+        onDone={goHome}
       />
     );
   }
@@ -80,7 +75,7 @@ export function SwapReceiptPage({
         message={outcome.error}
         poolName={details.poolName}
         status={<Status tone="error" label={t`Reverted`} />}
-        onDone={goToPool}
+        onDone={goHome}
       />
     );
   }
@@ -149,7 +144,12 @@ export function SwapReceiptPage({
       </div>
       <div className="flex-1" />
       <div className="flex gap-3">
-        <Button className="h-11 flex-1" onClick={goToPool}>
+        <Button
+          className="h-11 flex-1"
+          onClick={() => {
+            void navigate({ to: "/" });
+          }}
+        >
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (
