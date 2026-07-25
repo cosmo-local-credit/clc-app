@@ -6,7 +6,11 @@ import { storePrivateKey } from "#/connectors/privateKey";
 import { decodeFunctionData } from "viem";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
-import { relayPoolDeposit, relayPoolSwapExactInput } from "./pool-swap-relay";
+import {
+  relayPoolDeposit,
+  relayPoolSwapExactInput,
+  relayPoolSwapExactOutput,
+} from "./pool-swap-relay";
 
 const RELAYER = "0x1234567890123456789012345678901234567890" as const;
 const USER = "0x8fd379246834eac74B8419FfdA202CF8051F7A03" as const;
@@ -101,5 +105,30 @@ describe("pool swap relays", () => {
         data: previewPayload.batchedCall.calls[5].data,
       }).args,
     ).toEqual([TOKEN_C, TOKEN_B, 95n, RECIPIENT]);
+  });
+
+  it("relays an exact-output route using the quoted input amount", async () => {
+    const client = createClientStub();
+    storePrivateKey(PRIVATE_KEY);
+
+    await expect(
+      relayPoolSwapExactOutput(
+        {
+          senderAddress: USER,
+          path: [{ poolAddress: POOL_1, tokenIn: TOKEN_A, tokenOut: TOKEN_B }],
+          hopAmountIns: ["250"],
+        },
+        client,
+      ),
+    ).resolves.toEqual({ trackingId: "tracking-1", signatureType: "secp256k1" });
+
+    const previewPayload = vi.mocked(client.relayPreview).mock.calls[0][0];
+    expect(previewPayload.batchedCall.calls).toHaveLength(3);
+    expect(
+      decodeFunctionData({
+        abi: swapPoolWithdrawToSenderAbi,
+        data: previewPayload.batchedCall.calls[2].data,
+      }).args,
+    ).toEqual([TOKEN_B, TOKEN_A, 250n]);
   });
 });
