@@ -129,23 +129,13 @@ function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
       <PoolLogo imageUrl={pool.imageUrl} name={pool.name} seed={pool.address} size={42} />
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate font-bold text-sm tracking-tight">{pool.name}</p>
-        <p className="line-clamp-2 overflow-hidden text-muted-foreground text-xs break-words">
-          {pool.description}
+        <p className="mt-1 text-primary text-[0.6875rem] font-semibold">
+          {vouchers.length === 1 ? (
+            <Trans>1 voucher</Trans>
+          ) : (
+            <Trans>{vouchers.length} vouchers</Trans>
+          )}
         </p>
-        <div className="mt-1.5 flex flex-wrap gap-1.5">
-          <span className="text-primary text-[0.6875rem] font-semibold">
-            {vouchers.length === 1 ? (
-              <Trans>1 voucher</Trans>
-            ) : (
-              <Trans>{vouchers.length} vouchers</Trans>
-            )}
-          </span>
-          {pool.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="border border-border bg-muted px-1.5 py-0.5 text-[0.625rem]">
-              {tag}
-            </span>
-          ))}
-        </div>
       </div>
       <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>

@@ -24,6 +24,8 @@ import {
   type WalletToken,
 } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
+import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import {
   useAccountTokensInfinite,
   useAccountTransfersInfinite,
@@ -47,20 +49,36 @@ const TX_ICON_CLASS: Record<TxKind, string> = {
   swap: "text-primary",
 };
 
-export function TokenDetailPage({ tokenId }: { tokenId: string }) {
+export function TokenDetailPage({
+  tokenId,
+  poolAddress,
+}: {
+  tokenId: string;
+  poolAddress?: string;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { address } = useAccount();
   const tokensQuery = useAccountTokensInfinite(address, 50);
   const transfersQuery = useAccountTransfersInfinite(address);
+  const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);
   const [activeTab, setActiveTab] = useState<VoucherDetailTab>("activity");
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const fetchedTokens =
     tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
-  const fetchedToken = fetchedTokens.find((item) => item.id === tokenId.toLowerCase());
+  const normalizedTokenId = tokenId.toLowerCase();
+  const fetchedToken = fetchedTokens.find((item) => item.id === normalizedTokenId);
+  const poolVoucher = poolVouchersQuery.data?.pages
+    .flatMap((page) => page.vouchers)
+    .find(
+      (voucher) =>
+        voucher.tokenAddress.toLowerCase() === normalizedTokenId || voucher.id === tokenId,
+    );
+  const catalogToken = poolVoucher ? poolVoucherToWalletToken(poolVoucher) : undefined;
   const staticToken = WALLET_TOKEN_BY_ID[tokenId];
   const token: WalletToken = fetchedToken ??
+    catalogToken ??
     staticToken ?? {
       id: tokenId.toLowerCase(),
       symbol: "TOKEN",
@@ -135,7 +153,10 @@ export function TokenDetailPage({ tokenId }: { tokenId: string }) {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Your Vouchers`} to="/" />
+      <BackChevron
+        label={poolAddress ? t`Pool` : t`Your Vouchers`}
+        to={poolAddress ? `/pools/${poolAddress}` : "/"}
+      />
 
       <div className="flex flex-col items-center">
         <TokenLogo token={token} size={56} />

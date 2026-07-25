@@ -15,7 +15,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { EllipsizedAddress, HighlightAddress, SignHint, TokenLogo } from "#/components/wallet";
+import { EllipsizedAddress, SignHint, TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
@@ -330,7 +330,7 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>
                 </span>
-                {recipient ? <HighlightAddress address={recipient} tailLength={6} /> : null}
+                {recipient ? <EllipsizedAddress address={recipient} /> : null}
               </div>
             </div>
           </div>

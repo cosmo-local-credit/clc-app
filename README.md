@@ -45,10 +45,16 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guideline
 
 ### Chrome on Android (experimental)
 
-Forward the device port then connect via the `chrome-devtools` MCP server in `.mcp.json`:
+The `chrome-devtools` MCP server is reserved for Chrome on the connected Android device. With Android USB debugging enabled and Chrome open, forward its remote debugging socket:
 
 ```shell
 adb forward tcp:9222 localabstract:chrome_devtools_remote
+```
+
+Confirm that the device's CDP endpoint is available, then restart the `chrome-devtools` MCP server:
+
+```shell
+curl http://127.0.0.1:9222/json/version
 ```
 
 ## License

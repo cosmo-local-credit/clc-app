@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { RiCheckLine, RiFingerprintLine } from "react-icons/ri";
+import {
+  RiArrowLeftDownLine,
+  RiArrowRightUpLine,
+  RiCheckLine,
+  RiFingerprintLine,
+} from "react-icons/ri";
 
 import { Trans } from "@lingui/react/macro";
 import { Badge } from "#/components/ui/badge";
@@ -28,6 +33,32 @@ export function SignHint({ label, className }: { label?: ReactNode; className?: 
       <RiFingerprintLine className="size-4 shrink-0 text-primary" aria-hidden="true" />
       <span>{label ?? <Trans>You'll confirm with Face ID, fingerprint or PIN</Trans>}</span>
     </div>
+  );
+}
+
+/** Debited or credited amount, signed and coloured so the chain result reads at a glance. */
+export function SignedAmount({
+  direction,
+  amount,
+  className,
+}: {
+  direction: "in" | "out";
+  amount: string;
+  className?: string;
+}) {
+  const incoming = direction === "in";
+  const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+  return (
+    <span
+      className={cn(
+        "inline-flex min-w-0 items-center gap-1.5 text-right font-mono text-xs font-semibold",
+        incoming ? "text-primary" : "text-destructive",
+        className,
+      )}
+    >
+      <Icon className="size-3.5 shrink-0" aria-hidden="true" />
+      <span className="min-w-0 break-words">{`${incoming ? "+" : "−"}${amount}`}</span>
+    </span>
   );
 }
 

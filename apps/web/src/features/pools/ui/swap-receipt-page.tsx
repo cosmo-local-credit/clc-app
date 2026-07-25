@@ -1,9 +1,10 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { RiCloseLine, RiTimeLine } from "react-icons/ri";
+import { RiCloseLine, RiFileCopyLine, RiTimeLine } from "react-icons/ri";
+import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { SuccessCheck } from "#/components/wallet";
+import { EllipsizedAddress, SignedAmount, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RELAYER_URL } from "#/lib/backend-config";
@@ -11,15 +12,21 @@ import { RELAYER_URL } from "#/lib/backend-config";
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export type SwapReceiptSearch = {
-  placeholder?: boolean;
   trackingId?: string;
+  sendAmount?: string;
+  sendSymbol?: string;
   receiveAmount?: string;
   receiveSymbol?: string;
   poolName?: string;
-  submittedAt?: string;
 };
 
-export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
+export function SwapReceiptPage({
+  poolAddress,
+  details,
+}: {
+  poolAddress: string;
+  details: SwapReceiptSearch;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(details.trackingId ?? null, {
@@ -30,111 +37,129 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
     details.receiveAmount && details.receiveSymbol
       ? `${details.receiveAmount} ${details.receiveSymbol}`
       : null;
-  const goToPools = () => {
-    void navigate({ to: "/", search: { tab: "pool" } });
+  const sentLabel =
+    details.sendAmount && details.sendSymbol ? `${details.sendAmount} ${details.sendSymbol}` : null;
+  const goToPool = () => {
+    void navigate({ to: "/pools/$poolAddress", params: { poolAddress } });
   };
 
-  if (details.trackingId) {
-    const outcome = tracking.outcome;
-    if (outcome.kind === "pending") {
-      return (
-        <ReceiptShell
-          icon={<PendingIcon />}
-          title={t`Swap pending`}
-          amount={amountLabel}
-          message={t`Waiting for on-chain confirmation`}
-          status={<Status tone="pending" label={t`Pending`} />}
-          onDone={goToPools}
-        />
-      );
-    }
-    if (outcome.kind === "error") {
-      return (
-        <ReceiptShell
-          icon={<ErrorIcon />}
-          title={t`Swap reverted`}
-          amount={amountLabel}
-          message={outcome.error}
-          status={<Status tone="error" label={t`Reverted`} />}
-          onDone={goToPools}
-        />
-      );
-    }
-
-    const txHash = outcome.otx.txHash || null;
-    const explorerUrl = txHash ? `https://celoscan.io/tx/${txHash}` : null;
+  if (!details.trackingId) {
     return (
-      <ConfirmedReceipt
-        title={t`Swap confirmed`}
+      <ReceiptShell
+        icon={<ErrorIcon />}
+        title={t`Swap unavailable`}
         amount={amountLabel}
+        message={t`Swap tracking details are missing.`}
         poolName={details.poolName}
-        integrationStatus={txHash ?? t`Tracked transaction`}
-        network="Celo"
-        submittedAt={outcome.otx.createdAt}
-        status={t`Confirmed`}
-        explorerUrl={explorerUrl}
-        onDone={goToPools}
+        status={<Status tone="error" label={t`Unavailable`} />}
+        onDone={goToPool}
       />
     );
   }
 
-  return (
-    <ConfirmedReceipt
-      title={t`Swap confirmed`}
-      amount={amountLabel}
-      poolName={details.poolName}
-      integrationStatus={
-        details.placeholder ? t`Pending endpoint integration` : t`No tracking data`
-      }
-      submittedAt={details.submittedAt}
-      status={details.placeholder ? t`Placeholder confirmed` : t`Confirmed`}
-      onDone={goToPools}
-    />
-  );
-}
+  const outcome = tracking.outcome;
+  if (outcome.kind === "pending") {
+    return (
+      <ReceiptShell
+        icon={<PendingIcon />}
+        title={t`Swapping`}
+        amount={amountLabel}
+        message={t`Waiting for on-chain confirmation`}
+        poolName={details.poolName}
+        status={<Status tone="pending" label={t`Pending`} />}
+        onDone={goToPool}
+      />
+    );
+  }
+  if (outcome.kind === "error") {
+    return (
+      <ReceiptShell
+        icon={<ErrorIcon />}
+        title={t`Swap reverted`}
+        amount={amountLabel}
+        message={outcome.error}
+        poolName={details.poolName}
+        status={<Status tone="error" label={t`Reverted`} />}
+        onDone={goToPool}
+      />
+    );
+  }
 
-function ConfirmedReceipt({
-  title,
-  amount,
-  poolName,
-  integrationStatus,
-  network,
-  submittedAt,
-  status,
-  explorerUrl,
-  onDone,
-}: {
-  title: string;
-  amount: string | null;
-  poolName?: string;
-  integrationStatus: string;
-  network?: string;
-  submittedAt?: string;
-  status: string;
-  explorerUrl?: string | null;
-  onDone: () => void;
-}) {
+  const txHash = outcome.otx.txHash || null;
+  const explorerUrl = txHash ? `https://celoscan.io/tx/${txHash}` : null;
+  const submittedAt = outcome.otx.createdAt || null;
+  const copy = (value: string) => {
+    if (!navigator.clipboard) {
+      toast.error(t`Couldn't copy transaction hash`);
+      return;
+    }
+    void navigator.clipboard
+      .writeText(value)
+      .then(() => toast.success(t`Transaction hash copied`))
+      .catch(() => toast.error(t`Couldn't copy transaction hash`));
+  };
+
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <ReceiptHeader title={title} amount={amount} />
+      <ReceiptHeader title={t`Swapped`} />
       <div className="my-5 border border-border bg-card">
-        {poolName ? <ReceiptRow label={<Trans>Pool</Trans>} value={poolName} /> : null}
-        <ReceiptRow label={<Trans>Transaction</Trans>} value={integrationStatus} />
-        {network ? <ReceiptRow label={<Trans>Network</Trans>} value={network} /> : null}
+        {sentLabel ? (
+          <ReceiptRow label={<Trans>From</Trans>}>
+            <SignedAmount direction="out" amount={sentLabel} />
+          </ReceiptRow>
+        ) : null}
+        {amountLabel ? (
+          <ReceiptRow label={<Trans>To</Trans>}>
+            <SignedAmount direction="in" amount={amountLabel} />
+          </ReceiptRow>
+        ) : null}
+        {details.poolName ? (
+          <ReceiptRow label={<Trans>Pool</Trans>}>
+            <span className="min-w-0 break-words text-right text-xs font-semibold">
+              {details.poolName}
+            </span>
+          </ReceiptRow>
+        ) : null}
+        {txHash ? (
+          <ReceiptRow label={<Trans>Transaction</Trans>}>
+            <button
+              type="button"
+              className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+              aria-label={t`Copy transaction hash`}
+              onClick={() => copy(txHash)}
+            >
+              <EllipsizedAddress address={txHash} />
+              <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
+                <RiFileCopyLine className="size-3" aria-hidden="true" />
+              </span>
+            </button>
+          </ReceiptRow>
+        ) : null}
+        <ReceiptRow label={<Trans>Network</Trans>}>
+          <span className="text-xs font-semibold">Celo</span>
+        </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
-            <time
-              className="min-w-0 break-words text-right font-mono text-xs font-semibold"
-              dateTime={submittedAt}
-            >
+            <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
               {formatSubmittedAt(submittedAt)}
             </time>
           </ReceiptRow>
         ) : null}
-        <StatusRow status={<Status tone="success" label={status} />} />
+        <StatusRow status={<Status tone="success" label={t`Confirmed`} />} />
       </div>
       <div className="flex-1" />
-      <ReceiptActions explorerUrl={explorerUrl} onDone={onDone} />
+      <div className="flex gap-3">
+        <Button className="h-11 flex-1" onClick={goToPool}>
+          <Trans>Done</Trans>
+        </Button>
+        {explorerUrl ? (
+          <Button asChild className="h-11 flex-1" variant="outline">
+            <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
+              Celoscan
+            </a>
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -144,6 +169,7 @@ function ReceiptShell({
   title,
   amount,
   message,
+  poolName,
   status,
   onDone,
 }: {
@@ -151,6 +177,7 @@ function ReceiptShell({
   title: string;
   amount: string | null;
   message: React.ReactNode;
+  poolName?: string;
   status: React.ReactNode;
   onDone: () => void;
 }) {
@@ -158,11 +185,16 @@ function ReceiptShell({
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <ReceiptHeader icon={icon} title={title} amount={amount} message={message} />
       <div className="my-5 border border-border bg-card">
+        {poolName ? (
+          <ReceiptRow label={<Trans>Pool</Trans>}>
+            <span className="min-w-0 break-words text-right text-xs font-semibold">{poolName}</span>
+          </ReceiptRow>
+        ) : null}
         <StatusRow status={status} />
       </div>
       <div className="flex-1" />
       <Button className="h-11 w-full" onClick={onDone}>
-        <Trans>Done to Pools</Trans>
+        <Trans>Done</Trans>
       </Button>
     </div>
   );
@@ -171,18 +203,21 @@ function ReceiptShell({
 function ReceiptHeader({
   icon = <SuccessCheck />,
   title,
-  amount,
+  amount = null,
   message,
 }: {
   icon?: React.ReactNode;
   title: string;
-  amount: string | null;
+  amount?: string | null;
   message?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col items-center text-center">
       {icon}
-      <h1 className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight">
+      <h1
+        aria-label={amount ? `${title} ${amount}` : title}
+        className="font-heading mt-3.5 flex flex-col items-center gap-1 text-[1.75rem] font-bold leading-tight"
+      >
         <span>{title}</span>
         {amount ? <span className="break-words text-primary">{amount}</span> : null}
       </h1>
@@ -191,55 +226,22 @@ function ReceiptHeader({
   );
 }
 
-function ReceiptRow({
-  label,
-  value,
-  children,
-}: {
-  label: React.ReactNode;
-  value?: string;
-  children?: React.ReactNode;
-}) {
+function ReceiptRow({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+    <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
       <span className="shrink-0 text-muted-foreground text-xs">{label}</span>
-      {children ?? (
-        <span className="min-w-0 break-words text-right text-xs font-semibold">{value}</span>
-      )}
+      {children}
     </div>
   );
 }
 
 function StatusRow({ status }: { status: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+    <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
       <span className="text-muted-foreground text-xs">
         <Trans>Status</Trans>
       </span>
       {status}
-    </div>
-  );
-}
-
-function ReceiptActions({
-  explorerUrl,
-  onDone,
-}: {
-  explorerUrl?: string | null;
-  onDone: () => void;
-}) {
-  return (
-    <div className="flex gap-3">
-      <Button className="h-11 flex-1" onClick={onDone}>
-        <Trans>Done to Pools</Trans>
-      </Button>
-      {explorerUrl ? (
-        <Button asChild className="h-11 flex-1" variant="outline">
-          <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
-            Celoscan
-          </a>
-        </Button>
-      ) : null}
     </div>
   );
 }

@@ -1,11 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  RiBankCardLine,
-  RiDownloadLine,
-  RiExchangeFundsLine,
-  RiSendPlane2Line,
-} from "react-icons/ri";
+import { RiBankCardLine, RiDownloadLine, RiSendPlane2Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { SectionHeader, TokenLogo } from "#/components/wallet";
@@ -24,7 +19,6 @@ export function WalletPage({ address }: { address?: string }) {
       primary: false,
       to: "/wallet/receive",
     },
-    { id: "swap", label: t`Swap`, icon: RiExchangeFundsLine, primary: false, to: "/wallet/swap" },
     { id: "topup", label: t`Cash`, icon: RiBankCardLine, primary: false, to: "/wallet/top-up" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
@@ -42,7 +36,7 @@ export function WalletPage({ address }: { address?: string }) {
       </div>
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
             return (

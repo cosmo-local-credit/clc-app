@@ -1,6 +1,7 @@
 import {
   swapPoolGetAmountInAbi,
   swapPoolGetAmountOutAbi,
+  swapPoolGetQuoteAbi,
   swapRouterQuoteExactInputAbi,
   swapRouterQuoteExactOutputAbi,
   type PoolRouteHop,
@@ -8,30 +9,41 @@ import {
 import { decodeFunctionResult, encodeFunctionData, type Address, type Hex } from "viem";
 
 export type PoolQuoteClient = {
-  call(this: void, args: { to: Address; data: Hex }): Promise<{ data?: Hex }>;
+  call(this: void, args: { to: Address; data: Hex; blockNumber?: bigint }): Promise<{ data?: Hex }>;
 };
 
-export type PoolAmountOutQuoteInput = {
+type QuoteAtBlock = {
+  blockNumber?: bigint;
+};
+
+export type PoolAmountOutQuoteInput = QuoteAtBlock & {
   poolAddress: Address;
   tokenOut: Address;
   tokenIn: Address;
   amountInRaw: string;
 };
 
-export type PoolAmountInQuoteInput = {
+export type PoolAmountInQuoteInput = QuoteAtBlock & {
   poolAddress: Address;
   tokenOut: Address;
   tokenIn: Address;
   amountOutRaw: string;
 };
 
-export type RouteExactInputQuoteInput = {
+export type PoolGrossAmountOutQuoteInput = QuoteAtBlock & {
+  poolAddress: Address;
+  tokenOut: Address;
+  tokenIn: Address;
+  amountInRaw: string;
+};
+
+export type RouteExactInputQuoteInput = QuoteAtBlock & {
   routerAddress: Address;
   path: PoolRouteHop[];
   amountInRaw: string;
 };
 
-export type RouteExactOutputQuoteInput = {
+export type RouteExactOutputQuoteInput = QuoteAtBlock & {
   routerAddress: Address;
   path: PoolRouteHop[];
   amountOutRaw: string;
@@ -56,7 +68,11 @@ export async function quotePoolAmountOut(
     functionName: "getAmountOut",
     args: [input.tokenOut, input.tokenIn, parsePositiveAmount(input.amountInRaw)],
   });
-  const result = await client.call({ to: input.poolAddress, data });
+  const result = await client.call({
+    to: input.poolAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
   const amountOut = decodeFunctionResult({
     abi: swapPoolGetAmountOutAbi,
     functionName: "getAmountOut",
@@ -74,13 +90,39 @@ export async function quotePoolAmountIn(
     functionName: "getAmountIn",
     args: [input.tokenOut, input.tokenIn, parsePositiveAmount(input.amountOutRaw)],
   });
-  const result = await client.call({ to: input.poolAddress, data });
+  const result = await client.call({
+    to: input.poolAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
   const amountIn = decodeFunctionResult({
     abi: swapPoolGetAmountInAbi,
     functionName: "getAmountIn",
     data: requireCallData(result.data),
   });
   return amountIn.toString();
+}
+
+export async function quotePoolGrossAmountOut(
+  client: PoolQuoteClient,
+  input: PoolGrossAmountOutQuoteInput,
+): Promise<string> {
+  const data = encodeFunctionData({
+    abi: swapPoolGetQuoteAbi,
+    functionName: "getQuote",
+    args: [input.tokenOut, input.tokenIn, parsePositiveAmount(input.amountInRaw)],
+  });
+  const result = await client.call({
+    to: input.poolAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
+  const grossAmountOut = decodeFunctionResult({
+    abi: swapPoolGetQuoteAbi,
+    functionName: "getQuote",
+    data: requireCallData(result.data),
+  });
+  return grossAmountOut.toString();
 }
 
 export async function quoteRouteExactInput(
@@ -92,7 +134,11 @@ export async function quoteRouteExactInput(
     functionName: "quoteExactInput",
     args: [toRouterPath(input.path), parsePositiveAmount(input.amountInRaw)],
   });
-  const result = await client.call({ to: input.routerAddress, data });
+  const result = await client.call({
+    to: input.routerAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
   const amountOut = decodeFunctionResult({
     abi: swapRouterQuoteExactInputAbi,
     functionName: "quoteExactInput",
@@ -110,7 +156,11 @@ export async function quoteRouteExactOutput(
     functionName: "quoteExactOutput",
     args: [toRouterPath(input.path), parsePositiveAmount(input.amountOutRaw)],
   });
-  const result = await client.call({ to: input.routerAddress, data });
+  const result = await client.call({
+    to: input.routerAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
   const amountIn = decodeFunctionResult({
     abi: swapRouterQuoteExactOutputAbi,
     functionName: "quoteExactOutput",

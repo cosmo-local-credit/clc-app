@@ -5,12 +5,12 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { SwapReceiptPage } from "#/features/pools/ui";
 
 const searchSchema = z.object({
-  placeholder: z.boolean().optional().catch(undefined),
   trackingId: z.string().optional().catch(undefined),
+  sendAmount: z.string().optional().catch(undefined),
+  sendSymbol: z.string().optional().catch(undefined),
   receiveAmount: z.string().optional().catch(undefined),
   receiveSymbol: z.string().optional().catch(undefined),
   poolName: z.string().optional().catch(undefined),
-  submittedAt: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/pools/$poolAddress/swap/receipt")({
@@ -19,10 +19,11 @@ export const Route = createFileRoute("/pools/$poolAddress/swap/receipt")({
 });
 
 function SwapReceiptRoute() {
+  const { poolAddress } = Route.useParams();
   const details = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <SwapReceiptPage details={details} />
+      <SwapReceiptPage poolAddress={poolAddress} details={details} />
     </AuthenticatedRoute>
   );
 }

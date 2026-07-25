@@ -1,10 +1,9 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiMapPinLine } from "react-icons/ri";
-
 import { Button } from "#/components/ui/button";
-import { BackChevron } from "#/components/wallet/wallet-kit";
-import type { PoolVoucherPlaceholder } from "#/features/pools/data/placeholder-pool-vouchers";
+import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
+import type { PoolVoucher } from "#/features/pools/api/pools-client";
+import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { PoolLogo } from "./pool-logo";
@@ -14,6 +13,7 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
+  const voucherTokens = usePoolVoucherTokens(vouchers);
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -47,13 +47,6 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
                   {tag}
                 </span>
               ))}
-              <span className="border border-border bg-muted px-1.5 py-0.5 text-[0.625rem]">
-                {vouchers.length === 1 ? (
-                  <Trans>1 voucher</Trans>
-                ) : (
-                  <Trans>{vouchers.length} vouchers</Trans>
-                )}
-              </span>
             </div>
           </div>
         </div>
@@ -61,7 +54,7 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
 
       <Button asChild className="h-11 w-full">
         <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
-          <Trans>Swap in this pool</Trans>
+          <Trans>Swap</Trans>
         </Link>
       </Button>
 
@@ -78,20 +71,15 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
             {vouchers.map((voucher, index) => (
               <VoucherRow
                 key={voucher.id}
+                poolAddress={poolAddress}
                 voucher={voucher}
+                token={voucherTokens[index]}
                 isLast={index === vouchers.length - 1}
               />
             ))}
           </div>
         )}
       </section>
-
-      <p className="flex items-start gap-2 text-muted-foreground text-xs">
-        <RiMapPinLine className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        <span>
-          <Trans>Open Market to browse each voucher's individual offers.</Trans>
-        </span>
-      </p>
     </div>
   );
 }
@@ -106,19 +94,27 @@ function DetailShell({ message }: { message: string }) {
   );
 }
 
-function VoucherRow({ voucher, isLast }: { voucher: PoolVoucherPlaceholder; isLast: boolean }) {
+function VoucherRow({
+  poolAddress,
+  voucher,
+  token,
+  isLast,
+}: {
+  poolAddress: string;
+  voucher: PoolVoucher;
+  token: WalletToken | undefined;
+  isLast: boolean;
+}) {
   return (
-    <div
+    <Link
+      to="/wallet/tokens/$tokenId"
+      params={{ tokenId: voucher.tokenAddress.toLowerCase() }}
+      search={{ poolAddress }}
       className={["flex items-center gap-3 p-3", isLast ? "" : "border-b border-border"].join(" ")}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-[0.6875rem] font-bold">
-        {voucher.symbol.slice(0, 2)}
-      </span>
+      {token ? <TokenLogo token={token} size={36} /> : null}
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
-        <p className="line-clamp-2 overflow-hidden text-muted-foreground text-xs break-words">
-          {voucher.description}
-        </p>
       </div>
       {voucher.offerCount === null ? null : (
         <span className="shrink-0 text-primary text-[0.6875rem] font-semibold">
@@ -129,6 +125,6 @@ function VoucherRow({ voucher, isLast }: { voucher: PoolVoucherPlaceholder; isLa
           )}
         </span>
       )}
-    </div>
+    </Link>
   );
 }

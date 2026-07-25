@@ -8,6 +8,7 @@ export {
   NetworkBadge,
   PicsumLogo,
   SectionHeader,
+  SignedAmount,
   SignHint,
   SuccessCheck,
   TokenLogo,

@@ -180,6 +180,23 @@ describe("SendAmountPage", () => {
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("ellipsizes the recipient in the confirmation sheet so it stays on one line", async () => {
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
+      target: { value: "1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+
+    expect(screen.getByText(/confirm send/i)).toBeTruthy();
+    expect(document.body.textContent).toContain("0xa316…5fad4");
+    expect(document.body.textContent).not.toContain(RECIPIENT);
+  });
+
   it("surfaces relay errors inside the open confirmation sheet", async () => {
     sendVoucherState.error = new Error("Relay failed");
     mockTokens();

@@ -34,6 +34,8 @@ export const swapPoolGetQuoteAbi = parseAbi([
 export const swapPoolGetFeeAbi = parseAbi([
   "function getFee(address inToken, address outToken, uint256 value) view returns (uint256)",
 ]);
+export const swapPoolFeesAbi = parseAbi(["function fees(address token) view returns (uint256)"]);
+export const swapPoolFeesDecoupledAbi = parseAbi(["function feesDecoupled() view returns (bool)"]);
 export const swapRouterQuoteExactInputAbi = parseAbi([
   "struct Hop { address pool; address tokenIn; address tokenOut }",
   "function quoteExactInput(Hop[] path, uint256 amountIn) returns (uint256)",

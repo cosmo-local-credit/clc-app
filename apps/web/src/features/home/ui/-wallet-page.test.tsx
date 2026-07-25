@@ -58,13 +58,13 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("shows Send, Receive, Swap, and Cash action buttons", () => {
+  it("shows Send, Receive, and Cash action buttons without Swap", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
     expect(screen.getByRole("button", { name: /send/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /receive/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /swap/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /cash/i })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /swap/i })).toBeNull();
   });
 
   it("shows fetched voucher balances with real logos", async () => {
