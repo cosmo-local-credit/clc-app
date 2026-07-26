@@ -36,6 +36,16 @@ Current local overrides:
   - `refetchIntervalInBackground: false`
   - Reason: the upstream Pretium status poller confirms onramps within seconds; the Cash page shows live status while mounted, mirroring wallet account freshness. Rates stay at `staleTime: 60_000`.
 
+- `apps/web/src/features/home/hooks/use-market-vouchers.ts`
+  - public market voucher catalog (full infinite catalog + one bbox bootstrap page)
+  - `staleTime: 10 * 60_000`
+  - `gcTime: 30 * 60_000`
+  - `refetchOnReconnect: false`
+  - Reason: this is a bulk import of static catalog data, not live chain state.
+    The one-minute global `staleTime` would re-walk every cached page of a
+    multi-page import, and the five-minute default GC time would discard the
+    assembled catalog on every home-tab switch, forcing a full re-download.
+
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
   - IP/country camera bootstrap for the Market map
   - `staleTime: Infinity`
