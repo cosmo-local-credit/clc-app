@@ -126,18 +126,17 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
       return this.maxZoom;
     }
 
-    getBounds() {
-      const self = this;
-      return {
-        adjustAntiMeridian() {
-          return this;
-        },
-        getWest: () => self.bounds.west,
-        getSouth: () => self.bounds.south,
-        getEast: () => self.bounds.east,
-        getNorth: () => self.bounds.north,
+    getBounds = () => {
+      const { west, south, east, north } = this.bounds;
+      const view = {
+        adjustAntiMeridian: () => view,
+        getWest: () => west,
+        getSouth: () => south,
+        getEast: () => east,
+        getNorth: () => north,
       };
-    }
+      return view;
+    };
 
     triggerLoad() {
       for (const handler of this.handlers.get("load") ?? []) handler();
@@ -190,7 +189,7 @@ vi.mock("maplibre-gl", () => ({
 
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
-import { EXPLICIT_CAMERA_RANK, MarketMap } from "./market-map";
+import { EXPLICIT_CAMERA_RANK, type MarketCamera, MarketMap } from "./market-map";
 import { resetMarketMarkerCache } from "./market-markers";
 import { SPIDER_PAGE_SIZE } from "./market-stacks";
 
@@ -1298,5 +1297,62 @@ describe("MarketMap fallback copy", () => {
     expect(screen.getByText(/not supported on this device/i)).toBeTruthy();
     // Retrying cannot conjure WebGL; an enabled button would just lie.
     expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
+  });
+});
+
+describe("MarketMap camera scope", () => {
+  function renderScoped(scope: string, camera: MarketCamera | null) {
+    return render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={camera}
+        cameraScope={scope}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+  }
+
+  it("lets a worse-ranked camera apply after the scope changes", () => {
+    const persisted: MarketCamera = { lat: -1.2, lng: 36.7, zoom: 14, rank: 2 };
+    const { rerender } = renderScoped("0xabc", persisted);
+    const map = loadedMap();
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.7, -1.2], zoom: 14 });
+
+    // Session expired: the owner drops to guest and the persisted fix is gone,
+    // leaving only the IP camera. Without resetting the latch, rank 3 >= the
+    // applied rank 2 and the map would sit on the previous owner's position.
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={{ lat: 12, lng: 34, zoom: 11, rank: 3 }}
+        cameraScope="guest"
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.easeTo).toHaveBeenLastCalledWith({ center: [34, 12], zoom: 11 });
+  });
+
+  it("still ignores a worse rank within the same scope", () => {
+    const { rerender } = renderScoped("0xabc", { lat: -1.2, lng: 36.7, zoom: 14, rank: 2 });
+    const map = loadedMap();
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={{ lat: 12, lng: 34, zoom: 11, rank: 3 }}
+        cameraScope="0xabc"
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.easeTo).toHaveBeenCalledTimes(1);
   });
 });

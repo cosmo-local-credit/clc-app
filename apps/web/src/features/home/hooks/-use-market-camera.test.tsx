@@ -12,21 +12,14 @@ type GeoState =
   | { status: "denied" }
   | { status: "unavailable" };
 
-const {
-  geoState,
-  mockRequest,
-  readPersistedLocation,
-  writePersistedLocation,
-  ipCameraResult,
-  connectedAddress,
-} = vi.hoisted(() => ({
-  connectedAddress: { current: undefined as string | undefined },
-  geoState: { current: { status: "idle" } as GeoState },
-  mockRequest: vi.fn(),
-  readPersistedLocation: vi.fn(),
-  writePersistedLocation: vi.fn(),
-  ipCameraResult: { current: { data: undefined as unknown } },
-}));
+const { geoState, mockRequest, readPersistedLocation, writePersistedLocation, ipCameraResult } =
+  vi.hoisted(() => ({
+    geoState: { current: { status: "idle" } as GeoState },
+    mockRequest: vi.fn(),
+    readPersistedLocation: vi.fn(),
+    writePersistedLocation: vi.fn(),
+    ipCameraResult: { current: { data: undefined as unknown } },
+  }));
 
 vi.mock("#/lib/use-browser-geolocation", () => ({
   useBrowserGeolocation: () => ({ state: geoState.current, request: mockRequest }),
@@ -37,10 +30,6 @@ vi.mock("#/features/home/api/last-location-storage", () => ({
   readPersistedLocation,
   writePersistedLocation,
   clearPersistedLocation: vi.fn(),
-}));
-
-vi.mock("wagmi", () => ({
-  useConnection: () => ({ address: connectedAddress.current }),
 }));
 
 vi.mock("./use-ip-camera", () => ({
@@ -63,7 +52,6 @@ const PERSISTED = {
 beforeEach(() => {
   geoState.current = { status: "idle" };
   ipCameraResult.current = { data: undefined };
-  connectedAddress.current = undefined;
   mockRequest.mockReset();
   readPersistedLocation.mockReset();
   readPersistedLocation.mockReturnValue(null);
@@ -76,14 +64,14 @@ afterEach(() => {
 
 describe("useMarketCamera ranking", () => {
   it("has no camera before any source resolves", () => {
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
     expect(result.current.camera).toBeNull();
   });
 
   it("uses a live GPS fix at rank 1 and zoom 14", () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     expect(result.current.camera).toEqual({
       lat: -1.29,
@@ -96,7 +84,7 @@ describe("useMarketCamera ranking", () => {
   it("reads persisted location only after the client boundary", async () => {
     readPersistedLocation.mockReturnValue(PERSISTED);
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() =>
       expect(result.current.camera).toEqual({
@@ -113,7 +101,7 @@ describe("useMarketCamera ranking", () => {
     // whatever survives that filter.
     readPersistedLocation.mockReturnValue(PERSISTED);
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
   });
@@ -122,7 +110,7 @@ describe("useMarketCamera ranking", () => {
     readPersistedLocation.mockReturnValue(PERSISTED);
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.liveGps));
     expect(result.current.camera?.lat).toBe(-1.29);
@@ -133,7 +121,7 @@ describe("useMarketCamera ranking", () => {
       data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" },
     };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     expect(result.current.camera).toEqual({
       lat: 12,
@@ -148,7 +136,7 @@ describe("useMarketCamera ranking", () => {
       data: { lat: -1.2921, lng: 36.8219, zoom: 12, source: "country-default" },
     };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     expect(result.current.camera?.rank).toBe(CAMERA_RANK.countryDefault);
   });
@@ -157,7 +145,7 @@ describe("useMarketCamera ranking", () => {
     readPersistedLocation.mockReturnValue(PERSISTED);
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
   });
@@ -167,7 +155,7 @@ describe("useMarketCamera persistence", () => {
   it("persists a real GPS fix", async () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    renderHook(() => useMarketCamera(), { wrapper });
+    renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() => expect(writePersistedLocation).toHaveBeenCalledTimes(1));
     const written = writePersistedLocation.mock.calls[0]?.[0] as Record<string, unknown>;
@@ -179,7 +167,7 @@ describe("useMarketCamera persistence", () => {
   it("never persists an IP or country camera", async () => {
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
 
-    renderHook(() => useMarketCamera(), { wrapper });
+    renderHook(() => useMarketCamera("guest"), { wrapper });
     await new Promise((resolve) => setTimeout(resolve, 10));
 
     expect(writePersistedLocation).not.toHaveBeenCalled();
@@ -188,7 +176,7 @@ describe("useMarketCamera persistence", () => {
   it("does not rewrite the same fix on every render", async () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    const { rerender } = renderHook(() => useMarketCamera(), { wrapper });
+    const { rerender } = renderHook(() => useMarketCamera("guest"), { wrapper });
     await waitFor(() => expect(writePersistedLocation).toHaveBeenCalledTimes(1));
     rerender();
     rerender();
@@ -199,7 +187,7 @@ describe("useMarketCamera persistence", () => {
 
 describe("useMarketCamera explicit request", () => {
   it("marks a button-driven fix as explicit so the map latch cannot block it", async () => {
-    const { result, rerender } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result, rerender } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     act(() => {
       result.current.requestLocation();
@@ -219,7 +207,7 @@ describe("useMarketCamera explicit request", () => {
 
   it("produces a fresh camera object for a repeat press so the map re-centres", async () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
-    const { result, rerender } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result, rerender } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     act(() => {
       result.current.requestLocation();
@@ -242,7 +230,7 @@ describe("useMarketCamera real fix reporting", () => {
   it("reports a live fix as real", () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     expect(result.current.realFix).toEqual({ lat: -1.29, lng: 36.82 });
     expect(result.current.userLocation).toEqual({ lat: -1.29, lng: 36.82 });
@@ -251,7 +239,7 @@ describe("useMarketCamera real fix reporting", () => {
   it("reports a persisted fix as real but places no user marker", async () => {
     readPersistedLocation.mockReturnValue(PERSISTED);
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     await waitFor(() => expect(result.current.realFix).toEqual({ lat: -1.2, lng: 36.7 }));
     // A stale stored position must not be drawn as "you are here".
@@ -261,7 +249,7 @@ describe("useMarketCamera real fix reporting", () => {
   it("never reports an IP or country camera as a real fix", () => {
     ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
 
-    const { result } = renderHook(() => useMarketCamera(), { wrapper });
+    const { result } = renderHook(() => useMarketCamera("guest"), { wrapper });
 
     // Distance from an IP centroid would be a fabricated number.
     expect(result.current.realFix).toBeNull();
@@ -270,41 +258,62 @@ describe("useMarketCamera real fix reporting", () => {
 });
 
 describe("useMarketCamera location ownership", () => {
-  it("reads and writes a guest fix under the guest owner", async () => {
+  it("reads and writes under the owner it is given", async () => {
     geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
 
-    renderHook(() => useMarketCamera(), { wrapper });
+    renderHook(() => useMarketCamera("0xabc"), { wrapper });
 
     await waitFor(() => expect(writePersistedLocation).toHaveBeenCalled());
-    expect(readPersistedLocation).toHaveBeenCalledWith("guest");
-    expect(writePersistedLocation.mock.calls[0]?.[0]).toMatchObject({ owner: "guest" });
+    expect(readPersistedLocation).toHaveBeenCalledWith("0xabc");
+    expect(writePersistedLocation.mock.calls[0]?.[0]).toMatchObject({ owner: "0xabc" });
   });
 
-  it("scopes a signed-in fix to the lowercased address", async () => {
-    connectedAddress.current = "0xAbC0000000000000000000000000000000000123";
-    geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
-
-    renderHook(() => useMarketCamera(), { wrapper });
-
-    await waitFor(() => expect(writePersistedLocation).toHaveBeenCalled());
-    expect(readPersistedLocation).toHaveBeenCalledWith(
-      "0xabc0000000000000000000000000000000000123",
+  it("drops a persisted fix in the same render the owner changes", async () => {
+    // A connected wallet whose session expired flips to guest. The previous
+    // owner's position must not survive even one render.
+    readPersistedLocation.mockImplementation((owner: string) =>
+      owner === "0xabc" ? PERSISTED : null,
     );
-    expect(writePersistedLocation.mock.calls[0]?.[0]).toMatchObject({
-      owner: "0xabc0000000000000000000000000000000000123",
+    const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
+      wrapper,
+      initialProps: { owner: "0xabc" },
     });
+    await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
+
+    rerender({ owner: "guest" });
+
+    expect(result.current.camera).toBeNull();
+    expect(result.current.realFix).toBeNull();
   });
 
-  it("re-reads under the new owner when the account changes", async () => {
-    connectedAddress.current = "0xaaa";
-    const { rerender } = renderHook(() => useMarketCamera(), { wrapper });
-    await waitFor(() => expect(readPersistedLocation).toHaveBeenCalledWith("0xaaa"));
+  it("does not leak account A's fix to account B", async () => {
+    readPersistedLocation.mockImplementation((owner: string) =>
+      owner === "0xaaa" ? PERSISTED : null,
+    );
+    const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
+      wrapper,
+      initialProps: { owner: "0xaaa" },
+    });
+    await waitFor(() => expect(result.current.realFix).toEqual({ lat: -1.2, lng: 36.7 }));
 
-    connectedAddress.current = "0xbbb";
-    rerender();
+    rerender({ owner: "0xbbb" });
 
-    // Storage returns null for a mismatched owner, so the previous account's
-    // position can never become this account's camera.
-    await waitFor(() => expect(readPersistedLocation).toHaveBeenCalledWith("0xbbb"));
+    expect(result.current.realFix).toBeNull();
+  });
+
+  it("falls back to the IP camera once the previous owner's fix is dropped", async () => {
+    readPersistedLocation.mockImplementation((owner: string) =>
+      owner === "0xabc" ? PERSISTED : null,
+    );
+    ipCameraResult.current = { data: { lat: 12, lng: 34, zoom: 11, source: "ip-city" } };
+    const { result, rerender } = renderHook(({ owner }) => useMarketCamera(owner), {
+      wrapper,
+      initialProps: { owner: "0xabc" },
+    });
+    await waitFor(() => expect(result.current.camera?.rank).toBe(CAMERA_RANK.persistedGps));
+
+    rerender({ owner: "guest" });
+
+    expect(result.current.camera?.rank).toBe(CAMERA_RANK.ipCity);
   });
 });

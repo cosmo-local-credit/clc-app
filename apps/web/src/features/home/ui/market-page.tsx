@@ -4,6 +4,7 @@ import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react"
 import { RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
+import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
 import type { MarketVoucher } from "#/features/home/api/market-client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
@@ -13,9 +14,20 @@ import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
 
-export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode }) {
+export function MarketPage({
+  onboardingBanner,
+  locationOwner = GUEST_LOCATION_OWNER,
+}: {
+  onboardingBanner?: ReactNode;
+  /**
+   * Scope for the persisted GPS fix. Defaults to guest so a caller that forgets
+   * to pass it fails closed rather than sharing a precise location.
+   */
+  locationOwner?: string;
+}) {
   const { t } = useLingui();
-  const { camera, realFix, userLocation, locationStatus, requestLocation } = useMarketCamera();
+  const { camera, realFix, userLocation, locationStatus, requestLocation } =
+    useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
   // Start with nothing selected: the newest catalog row may be anywhere in the
   // world and must not pull the resolved camera to an arbitrary location.
@@ -59,6 +71,7 @@ export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode 
           locations={vouchers}
           selectedLocationId={selectedLocationId}
           camera={camera}
+          cameraScope={locationOwner}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
           onViewportSettled={handleViewportSettled}

@@ -92,6 +92,12 @@ type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
   camera: MarketCamera | null;
+  /**
+   * Who the ranked cameras belong to. When this changes the applied-rank latch
+   * resets, so a safer fallback can take over. Without it a rank-3 IP camera
+   * could never replace a rank-2 fix left behind by the previous owner.
+   */
+  cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
   onViewportSettled?: (viewport: MarketViewport) => void;
@@ -339,6 +345,7 @@ export function MarketMap({
   locations,
   selectedLocationId,
   camera,
+  cameraScope,
   userLocation,
   onSelectLocation,
   onViewportSettled,
@@ -614,6 +621,12 @@ export function MarketMap({
       kindMatchExpression(false),
     ]);
   }, [loaded, selectedLocationId]);
+
+  // A new owner starts from a clean slate, so the previous owner's applied
+  // rank cannot block whatever camera the new scope resolves to.
+  useEffect(() => {
+    appliedCameraRef.current = null;
+  }, [cameraScope]);
 
   // Camera: ranked candidates plus the explicit location button.
   useEffect(() => {

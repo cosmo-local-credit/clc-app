@@ -4,7 +4,10 @@ import { useConnection, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
-import { clearPersistedLocation } from "#/features/home/api/last-location-storage";
+import {
+  GUEST_LOCATION_OWNER,
+  clearPersistedLocation,
+} from "#/features/home/api/last-location-storage";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
@@ -29,6 +32,9 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
   const backendLogout = useBackendLogout();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const currentTab = !isAuthenticated && isPrivateHomeTab(activeTab) ? "market" : activeTab;
+  // A connected wallet without a backend session is still a guest
+  // (docs/AUTH.md), so an expired session must not keep that wallet's scope.
+  const locationOwner = isAuthenticated && address ? address.toLowerCase() : GUEST_LOCATION_OWNER;
 
   async function handleSignOut() {
     // Cancel any in-flight wallet switch first so a pending ?w= import can't
@@ -58,7 +64,10 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <MarketPage onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined} />
+        <MarketPage
+          onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+          locationOwner={locationOwner}
+        />
       ) : (
         <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">

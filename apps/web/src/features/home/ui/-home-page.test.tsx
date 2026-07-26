@@ -37,6 +37,7 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
+  GUEST_LOCATION_OWNER: "guest",
   clearPersistedLocation: mockClearPersistedLocation,
 }));
 
@@ -57,8 +58,16 @@ vi.mock("./activity-page", () => ({
 }));
 
 vi.mock("./market-page", () => ({
-  MarketPage: ({ onboardingBanner }: { onboardingBanner?: ReactNode }) => (
-    <div data-testid="market-page">{onboardingBanner}</div>
+  MarketPage: ({
+    onboardingBanner,
+    locationOwner,
+  }: {
+    onboardingBanner?: ReactNode;
+    locationOwner?: string;
+  }) => (
+    <div data-testid="market-page" data-location-owner={locationOwner}>
+      {onboardingBanner}
+    </div>
   ),
 }));
 
@@ -183,5 +192,21 @@ describe("HomePage sign-out", () => {
     await waitFor(() => {
       expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe("HomePage location scope", () => {
+  it("scopes the location to the address only when authenticated", () => {
+    renderHome(<HomePage />);
+
+    expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("0xabc");
+  });
+
+  it("treats a connected wallet without a session as a guest", () => {
+    // docs/AUTH.md: a connected wallet alone is not authentication. An expired
+    // session must not keep exposing that wallet's persisted location.
+    renderHome(<HomePage isAuthenticated={false} />);
+
+    expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("guest");
   });
 });

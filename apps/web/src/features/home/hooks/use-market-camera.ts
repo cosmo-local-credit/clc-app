@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useConnection } from "wagmi";
-
 import {
-  GUEST_LOCATION_OWNER,
   type PersistedLocation,
   readPersistedLocation,
   writePersistedLocation,
@@ -42,22 +39,31 @@ export type MarketCameraResult = {
   requestLocation: () => void;
 };
 
-export function useMarketCamera(): MarketCameraResult {
-  const { address } = useConnection();
-  // Scope the stored fix so a different account, or a session that lapsed back
-  // to guest, never inherits the previous person's precise position.
-  const owner = address ? address.toLowerCase() : GUEST_LOCATION_OWNER;
+/**
+ * @param owner Who the stored fix belongs to. A connected wallet is NOT enough
+ *   — `docs/AUTH.md` defines authentication as a connected wallet *plus* a
+ *   matching backend session, so the caller resolves this and passes it down.
+ *   A lapsed session must fall back to the guest scope.
+ */
+export function useMarketCamera(owner: string): MarketCameraResult {
   const geolocation = useBrowserGeolocation({ autoRequestIfGranted: true });
   const ipCamera = useIPCamera();
-  const [persisted, setPersisted] = useState<PersistedLocation | null>(null);
+  // Stored with the owner it was read for, so a scope change drops it in the
+  // same render rather than leaking the previous owner for one frame.
+  const [persistedFor, setPersistedFor] = useState<{
+    owner: string;
+    value: PersistedLocation | null;
+  } | null>(null);
   const [explicitRequests, setExplicitRequests] = useState(0);
   const lastWrittenRef = useRef<string | null>(null);
 
   // Rank 2 is read after the client boundary so the server and the hydration
   // render start from the same camera and no mismatch warning is emitted.
   useEffect(() => {
-    setPersisted(readPersistedLocation(owner));
+    setPersistedFor({ owner, value: readPersistedLocation(owner) });
   }, [owner]);
+
+  const persisted = persistedFor?.owner === owner ? persistedFor.value : null;
 
   const gps = geolocation.state.status === "granted" ? geolocation.state : null;
 
