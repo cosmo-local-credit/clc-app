@@ -1210,7 +1210,7 @@ describe("MarketMap style failure", () => {
       map.trigger("error", { error: { message: "NetworkError" } } as never);
     });
 
-    expect(screen.getByText(/map is unavailable/i)).toBeTruthy();
+    expect(screen.getByText(/could not be loaded/i)).toBeTruthy();
   });
 
   it("offers a retry that rebuilds the map", () => {
@@ -1237,7 +1237,66 @@ describe("MarketMap style failure", () => {
       map.trigger("error", { error: { status: 404, message: "tile missing" } } as never);
     });
 
-    expect(screen.queryByText(/map is unavailable/i)).toBeNull();
+    expect(screen.queryByText(/could not be loaded/i)).toBeNull();
     expect(map.remove).not.toHaveBeenCalled();
+  });
+});
+
+describe("MarketMap trailing fan page", () => {
+  it("renders the final one-member page of an oversized stack", () => {
+    const size = SPIDER_PAGE_SIZE + 1;
+    const stack: MarketLocation[] = Array.from({ length: size }, (_, index) => ({
+      id: `t${index}`,
+      name: `Voucher ${index}`,
+      kind: "voucher" as const,
+      lat: -1.283253,
+      lng: 36.817245,
+      locationName: null,
+    }));
+    renderMap(stack);
+    const map = loadedMap();
+
+    const tap = () =>
+      clickFeature(
+        map,
+        "market-stacks",
+        { key: "-1.283253,36.817245", count: size },
+        { type: "Point", coordinates: [36.817245, -1.283253] },
+      );
+
+    tap();
+    const first = map.getSource("market-spider")?.spec.data as { features: unknown[] };
+    expect(first.features.length).toBeGreaterThan(0);
+
+    tap();
+    const second = map.getSource("market-spider")?.spec.data as {
+      features: Array<{ geometry: { type: string } }>;
+    };
+    // The last page holds exactly one member; it must still draw.
+    expect(second.features.filter((f) => f.geometry.type === "Point")).toHaveLength(1);
+  });
+});
+
+describe("MarketMap fallback copy", () => {
+  it("never tells the user to browse a list that does not exist", () => {
+    renderMap(LOCATIONS);
+    const map = firstMap();
+    act(() => {
+      map.trigger("error", { error: { message: "NetworkError" } } as never);
+    });
+
+    // "Browse all" has no handler and no destination; promising a list here
+    // walks unsupported devices into a dead end.
+    expect(screen.queryByText(/as a list/i)).toBeNull();
+    expect(screen.queryByText(/browse vouchers/i)).toBeNull();
+  });
+
+  it("offers no retry on a device that cannot render the map at all", () => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    renderMap(LOCATIONS);
+
+    expect(screen.getByText(/not supported on this device/i)).toBeTruthy();
+    // Retrying cannot conjure WebGL; an enabled button would just lie.
+    expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
   });
 });

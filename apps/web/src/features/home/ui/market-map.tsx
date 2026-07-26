@@ -350,7 +350,8 @@ export function MarketMap({
   const appliedCameraRef = useRef<MarketCamera | null>(null);
   const userHasInteractedRef = useRef(false);
   const loadedRef = useRef(false);
-  const [failed, setFailed] = useState(false);
+  // "unsupported" can never succeed here, so it must not offer a retry.
+  const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
   const [loaded, setLoaded] = useState(false);
   // A stack larger than one fan is paged rather than truncated, so every
   // member stays reachable by tapping the badge again.
@@ -387,9 +388,9 @@ export function MarketMap({
   }, []);
 
   useEffect(() => {
-    if (!maptilerStyle || failed || !containerRef.current || mapRef.current) return;
+    if (!maptilerStyle || failure || !containerRef.current || mapRef.current) return;
     if (!hasWebGlSupport()) {
-      setFailed(true);
+      setFailure("unsupported");
       return;
     }
 
@@ -408,7 +409,7 @@ export function MarketMap({
         attributionControl: false,
       });
     } catch {
-      setFailed(true);
+      setFailure("error");
       return;
     }
 
@@ -507,7 +508,7 @@ export function MarketMap({
     // sprite failures, which are transient and must not blank a working map.
     function handleError() {
       if (loadedRef.current) return;
-      setFailed(true);
+      setFailure("error");
     }
 
     map.on("load", handleLoad);
@@ -536,7 +537,7 @@ export function MarketMap({
       loadedRef.current = false;
       setLoaded(false);
     };
-  }, [failed, maptilerStyle, reportViewport]);
+  }, [failure, maptilerStyle, reportViewport]);
 
   // Data: update the single GeoJSON source in place.
   useEffect(() => {
@@ -650,7 +651,7 @@ export function MarketMap({
       .addTo(map);
   }, [loaded, userLocation]);
 
-  if (!maptilerStyle || failed) {
+  if (!maptilerStyle || failure) {
     // Deliberately does not map over `locations`: a decorative stand-in for
     // thousands of vouchers is both meaningless and expensive.
     return (
@@ -663,14 +664,19 @@ export function MarketMap({
       >
         <div className="flex max-w-[18rem] flex-col items-center gap-3 text-center">
           <p className="text-muted-foreground text-sm">
-            <Trans>The map is unavailable on this device. Browse vouchers as a list instead.</Trans>
+            {/* Never point at a list view: "Browse all" has no destination yet. */}
+            {failure === "error" ? (
+              <Trans>The map could not be loaded.</Trans>
+            ) : (
+              <Trans>The map is not supported on this device.</Trans>
+            )}
           </p>
-          {failed ? (
+          {failure === "error" ? (
             <Button
               variant="outline"
               size="sm"
               className="bg-card"
-              onClick={() => setFailed(false)}
+              onClick={() => setFailure(null)}
             >
               <Trans>Retry</Trans>
             </Button>

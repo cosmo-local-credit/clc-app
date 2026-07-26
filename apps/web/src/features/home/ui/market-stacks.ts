@@ -77,7 +77,12 @@ function coordinateKey(lat: number, lng: number): string {
  */
 export function spiderfyOffsets(count: number): SpiderOffset[] {
   const legs = Math.min(count, SPIDER_PAGE_SIZE);
-  if (legs < 2) return [];
+  if (legs < 1) return [];
+
+  // A stack always has two or more members, but its *last page* can hold one
+  // — a stack of SPIDER_PAGE_SIZE + 1, for instance. Returning nothing there
+  // would render a blank fan the user cannot tell apart from a broken map.
+  if (legs === 1) return [{ dx: 0, dy: -MIN_RING_RADIUS }];
 
   if (legs <= RING_LIMIT) {
     // Radius that keeps neighbouring legs LEG_SPACING apart around the circle.

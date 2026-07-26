@@ -73,8 +73,16 @@ describe("groupByCoordinate", () => {
 });
 
 describe("spiderfyOffsets", () => {
-  it("returns nothing for a single member", () => {
-    expect(spiderfyOffsets(1)).toEqual([]);
+  it("returns nothing for an empty page", () => {
+    expect(spiderfyOffsets(0)).toEqual([]);
+  });
+
+  it("still places a lone member, so a trailing page is never blank", () => {
+    // A stack of SPIDER_PAGE_SIZE + 1 has a final page of exactly one member.
+    // Returning no offsets there renders an empty fan the user cannot escape.
+    const offsets = spiderfyOffsets(1);
+    expect(offsets).toHaveLength(1);
+    expect(Math.hypot(offsets[0]?.dx ?? 0, offsets[0]?.dy ?? 0)).toBeGreaterThan(0);
   });
 
   it("lays small stacks out as an evenly spaced ring", () => {
