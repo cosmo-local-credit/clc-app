@@ -34,6 +34,13 @@ export type MarketVoucherPage = {
   vouchers: MarketVoucher[];
   first: number;
   last: number;
+  /**
+   * How many rows the backend actually sent, before defensive normalization
+   * dropped any. Pagination must terminate on this, not on `vouchers.length`:
+   * a single malformed row in a full page would otherwise look like a short
+   * page and hide the entire rest of the catalog behind it.
+   */
+  receivedCount: number;
 };
 
 export type MarketVouchersParams = CursorParams & { bbox?: MarketBoundingBox };
@@ -73,10 +80,12 @@ export async function getMarketVouchers(
     { method: "GET", credentials: "omit", signal },
   );
 
+  const received = result.vouchers ?? [];
   return {
-    vouchers: (result.vouchers ?? []).map(normalizeMarketVoucher).filter(isPresent),
+    vouchers: received.map(normalizeMarketVoucher).filter(isPresent),
     first: normalizeNumber(result.first) ?? 0,
     last: normalizeNumber(result.last) ?? 0,
+    receivedCount: received.length,
   };
 }
 

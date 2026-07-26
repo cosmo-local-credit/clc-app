@@ -59,10 +59,13 @@ export function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE) {
  * the stop signal. Stop on a short page, an empty-page zero cursor, or a
  * cursor that failed to strictly decrease — the last of which would otherwise
  * page forever against a misbehaving backend.
+ *
+ * "Short" is measured against the rows the backend sent, not the rows that
+ * survived normalization. One malformed voucher must not truncate the catalog.
  */
 function nextCursor(perPage: number) {
   return (lastPage: MarketVoucherPage, allPages: MarketVoucherPage[]): number | undefined => {
-    if (lastPage.vouchers.length < perPage) return undefined;
+    if (lastPage.receivedCount < perPage) return undefined;
     if (lastPage.last === 0) return undefined;
     const previous = allPages.at(-2);
     if (previous && lastPage.last >= previous.last) return undefined;

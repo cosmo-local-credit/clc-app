@@ -256,3 +256,29 @@ describe("viewportToBoundingBoxes", () => {
     expect(viewportToBoundingBoxes({ west: Number.NaN, south: -1, east: 1, north: 1 })).toEqual([]);
   });
 });
+
+describe("getMarketVouchers page size reporting", () => {
+  it("reports the raw row count the backend returned, not the kept count", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({
+        vouchers: [VALID_ROW, { ...VALID_ROW, id: 5, address: "nope" }],
+        first: 2710,
+        last: 5,
+      }),
+    );
+
+    const page = await getMarketVouchers({ perPage: 500 });
+
+    // Pagination terminates on a short page. If the dropped row shrank the
+    // reported size, one malformed voucher would hide the entire rest of the
+    // catalog behind it.
+    expect(page.vouchers).toHaveLength(1);
+    expect(page.receivedCount).toBe(2);
+  });
+
+  it("reports zero for an empty page", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    expect((await getMarketVouchers({ perPage: 500 })).receivedCount).toBe(0);
+  });
+});

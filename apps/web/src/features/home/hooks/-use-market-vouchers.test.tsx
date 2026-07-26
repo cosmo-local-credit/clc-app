@@ -34,7 +34,12 @@ function voucher(id: number, overrides: Partial<MarketVoucher> = {}): MarketVouc
 }
 
 function page(ids: number[], last = ids.at(-1) ?? 0): MarketVoucherPage {
-  return { vouchers: ids.map((id) => voucher(id)), first: ids[0] ?? 0, last };
+  return {
+    vouchers: ids.map((id) => voucher(id)),
+    first: ids[0] ?? 0,
+    last,
+    receivedCount: ids.length,
+  };
 }
 
 /** A full page for the map's page size, so pagination is allowed to continue. */
@@ -112,8 +117,13 @@ describe("useMarketMapVouchers pagination", () => {
 
   it("appends and deduplicates across pages", async () => {
     getMarketVouchers
-      .mockResolvedValueOnce({ vouchers: [voucher(3), voucher(2)], first: 3, last: 2 })
-      .mockResolvedValue({ vouchers: [], first: 0, last: 0 });
+      .mockResolvedValueOnce({
+        vouchers: [voucher(3), voucher(2)],
+        first: 3,
+        last: 2,
+        receivedCount: 2,
+      })
+      .mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
     const client = newClient();
 
     const { result } = renderHook(() => useMarketMapVouchers(null, 2), {
@@ -154,8 +164,18 @@ describe("useMarketMapVouchers viewport bootstrap", () => {
   it("renders the bbox page before the full catalog and deduplicates it away", async () => {
     getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
       params.bbox
-        ? Promise.resolve({ vouchers: [voucher(7, { name: "bbox copy" })], first: 7, last: 7 })
-        : Promise.resolve({ vouchers: [voucher(7, { name: "catalog copy" })], first: 7, last: 7 }),
+        ? Promise.resolve({
+            vouchers: [voucher(7, { name: "bbox copy" })],
+            first: 7,
+            last: 7,
+            receivedCount: 1,
+          })
+        : Promise.resolve({
+            vouchers: [voucher(7, { name: "catalog copy" })],
+            first: 7,
+            last: 7,
+            receivedCount: 1,
+          }),
     );
     const client = newClient();
 
@@ -169,7 +189,7 @@ describe("useMarketMapVouchers viewport bootstrap", () => {
   });
 
   it("requests both halves of an antimeridian-crossing viewport", async () => {
-    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0 });
+    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
     const client = newClient();
 
     renderHook(
@@ -186,7 +206,7 @@ describe("useMarketMapVouchers viewport bootstrap", () => {
   });
 
   it("makes no viewport request below the minimum bbox zoom", async () => {
-    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0 });
+    getMarketVouchers.mockResolvedValue({ vouchers: [], first: 0, last: 0, receivedCount: 0 });
     const client = newClient();
 
     renderHook(
@@ -207,7 +227,12 @@ describe("useMarketMapVouchers viewport bootstrap", () => {
   });
 
   it("makes no viewport request once the full catalog has loaded", async () => {
-    getMarketVouchers.mockResolvedValue({ vouchers: [voucher(1)], first: 1, last: 1 });
+    getMarketVouchers.mockResolvedValue({
+      vouchers: [voucher(1)],
+      first: 1,
+      last: 1,
+      receivedCount: 1,
+    });
     const client = newClient();
 
     const { result, rerender } = renderHook(
@@ -279,5 +304,47 @@ describe("useMarketMapVouchers freshness", () => {
     result.current.retry();
 
     await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
+  });
+});
+
+describe("useMarketMapVouchers pagination robustness", () => {
+  it("keeps paging when a full page contains a malformed row", async () => {
+    // 500 raw rows, one of which the client drops: still a full page.
+    const kept = Array.from({ length: MARKET_MAP_PAGE_SIZE - 1 }, (_, i) => voucher(2000 - i));
+    getMarketVouchers
+      .mockResolvedValueOnce({
+        vouchers: kept,
+        first: 2000,
+        last: 1502,
+        receivedCount: MARKET_MAP_PAGE_SIZE,
+      })
+      .mockResolvedValueOnce({ vouchers: [voucher(1)], first: 1, last: 1, receivedCount: 1 });
+    const client = newClient();
+
+    const { result } = renderHook(() => useMarketMapVouchers(null), {
+      wrapper: wrapper(client),
+    });
+
+    // Without the raw count this stops after page 1 and hides every older
+    // voucher in the catalog.
+    await waitFor(() => expect(getMarketVouchers).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.vouchers).toHaveLength(MARKET_MAP_PAGE_SIZE));
+  });
+
+  it("still stops on a genuinely short page", async () => {
+    getMarketVouchers.mockResolvedValue({
+      vouchers: [voucher(3), voucher(2)],
+      first: 3,
+      last: 2,
+      receivedCount: 2,
+    });
+    const client = newClient();
+
+    const { result } = renderHook(() => useMarketMapVouchers(null), {
+      wrapper: wrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
+    expect(getMarketVouchers).toHaveBeenCalledTimes(1);
   });
 });
