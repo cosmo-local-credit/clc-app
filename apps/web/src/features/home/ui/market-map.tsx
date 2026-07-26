@@ -8,6 +8,7 @@ import MapLibreGL, {
 } from "maplibre-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 import { MARKET_SOURCE_ID, type MarketLocation, type MarketLocationKind } from "./market-data";
 import { addMarketMarkerImages, markerImageIds } from "./market-markers";
@@ -348,6 +349,7 @@ export function MarketMap({
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
   const appliedCameraRef = useRef<MarketCamera | null>(null);
   const userHasInteractedRef = useRef(false);
+  const loadedRef = useRef(false);
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   // A stack larger than one fan is paged rather than truncated, so every
@@ -493,10 +495,23 @@ export function MarketMap({
 
     function handleLoad() {
       addMarketLayers(map, stacksRef.current);
+      loadedRef.current = true;
       setLoaded(true);
     }
 
+    // A style fetch that fails is asynchronous: the constructor succeeds and
+    // then `load` simply never fires, leaving an empty container with no
+    // basemap, no markers and no way back. Surface it instead.
+    //
+    // Only before load. Once the map is up, errors are individual tile or
+    // sprite failures, which are transient and must not blank a working map.
+    function handleError() {
+      if (loadedRef.current) return;
+      setFailed(true);
+    }
+
     map.on("load", handleLoad);
+    map.on("error", handleError);
     map.on("click", handleMapClick);
     map.on("dragstart", handleUserInteraction);
     map.on("zoomstart", handleUserInteraction);
@@ -506,6 +521,7 @@ export function MarketMap({
     return () => {
       clearTimeout(settleTimer);
       map.off("load", handleLoad);
+      map.off("error", handleError);
       map.off("click", handleMapClick);
       map.off("dragstart", handleUserInteraction);
       map.off("zoomstart", handleUserInteraction);
@@ -517,6 +533,7 @@ export function MarketMap({
       mapRef.current = null;
       appliedCameraRef.current = null;
       userHasInteractedRef.current = false;
+      loadedRef.current = false;
       setLoaded(false);
     };
   }, [failed, maptilerStyle, reportViewport]);
@@ -644,9 +661,21 @@ export function MarketMap({
           className,
         )}
       >
-        <p className="max-w-[18rem] text-center text-muted-foreground text-sm">
-          <Trans>The map is unavailable on this device. Browse vouchers as a list instead.</Trans>
-        </p>
+        <div className="flex max-w-[18rem] flex-col items-center gap-3 text-center">
+          <p className="text-muted-foreground text-sm">
+            <Trans>The map is unavailable on this device. Browse vouchers as a list instead.</Trans>
+          </p>
+          {failed ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-card"
+              onClick={() => setFailed(false)}
+            >
+              <Trans>Retry</Trans>
+            </Button>
+          ) : null}
+        </div>
       </section>
     );
   }

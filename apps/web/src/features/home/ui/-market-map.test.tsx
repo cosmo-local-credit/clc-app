@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => {
@@ -1195,5 +1195,49 @@ describe("MarketMap symbol stability", () => {
       expect(layout["icon-allow-overlap"]).toBe(true);
       expect(layout["icon-ignore-placement"]).toBe(true);
     }
+  });
+});
+
+describe("MarketMap style failure", () => {
+  it("shows the unavailable surface when the style fails to load", () => {
+    renderMap(LOCATIONS);
+    const map = firstMap();
+
+    // A style fetch failure is asynchronous: the constructor succeeds, then
+    // MapLibre emits `error` and `load` never fires. Without handling it the
+    // user is left staring at an empty container forever.
+    act(() => {
+      map.trigger("error", { error: { message: "NetworkError" } } as never);
+    });
+
+    expect(screen.getByText(/map is unavailable/i)).toBeTruthy();
+  });
+
+  it("offers a retry that rebuilds the map", () => {
+    renderMap(LOCATIONS);
+    const first = firstMap();
+    act(() => {
+      first.trigger("error", { error: { message: "NetworkError" } } as never);
+    });
+    expect(first.remove).toHaveBeenCalled();
+
+    act(() => {
+      screen.getByRole("button", { name: /retry/i }).click();
+    });
+
+    expect(mapInstances).toHaveLength(2);
+  });
+
+  it("ignores transient tile errors once the map is up", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    // A single failed tile must not blank a working map.
+    act(() => {
+      map.trigger("error", { error: { status: 404, message: "tile missing" } } as never);
+    });
+
+    expect(screen.queryByText(/map is unavailable/i)).toBeNull();
+    expect(map.remove).not.toHaveBeenCalled();
   });
 });
