@@ -250,7 +250,12 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
-    layout: { "text-field": countLabel("voucherCount"), "text-size": 11 },
+    layout: {
+      "text-field": countLabel("voucherCount"),
+      "text-size": 11,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
     paint: { "text-color": "#ffffff" },
   });
 
@@ -263,6 +268,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "icon-image": kindMatchExpression(false),
       "icon-size": 1,
       "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
     },
   });
 
@@ -285,7 +291,12 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: stackFilter,
-    layout: { "text-field": countLabel("count"), "text-size": 11 },
+    layout: {
+      "text-field": countLabel("count"),
+      "text-size": 11,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
     paint: { "text-color": "#ffffff" },
   });
 
@@ -298,6 +309,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "icon-image": kindMatchExpression(true),
       "icon-size": 1,
       "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
     },
   });
 
@@ -387,6 +399,10 @@ export function MarketMap({
         center: [NAIROBI.lng, NAIROBI.lat],
         zoom: DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
+        // Collision fade animates every symbol that appears or disappears.
+        // Expanding a cluster churns the symbol set repeatedly, and each
+        // change cross-fading over 300 ms reads as the map flickering.
+        fadeDuration: 0,
         attributionControl: false,
       });
     } catch {

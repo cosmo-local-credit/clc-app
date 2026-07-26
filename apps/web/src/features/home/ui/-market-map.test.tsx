@@ -16,6 +16,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     center: [number, number];
     zoom: number;
     maxZoom?: number;
+    fadeDuration?: number;
     attributionControl: boolean;
   };
 
@@ -1159,5 +1160,40 @@ describe("MarketMap badge counts", () => {
     // A world-zoom cluster reaches 2,181; four digits do not fit a 28 px circle.
     expect(field).toContain("step");
     expect(field).toContain("k");
+  });
+});
+
+describe("MarketMap symbol stability", () => {
+  it("disables collision fade so zooming does not flicker markers", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    // fadeDuration animates every collision-driven appear/disappear. During a
+    // cluster expansion the symbol set churns repeatedly, and each change
+    // cross-fades — which reads as the map flickering several times.
+    expect(map.options.fadeDuration).toBe(0);
+  });
+
+  it("draws every badge together with its own count", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    for (const id of ["market-cluster-count", "market-stack-count"]) {
+      const layout = (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
+      // A number that collides away leaves a bare disc with no count on it.
+      expect(layout["text-allow-overlap"]).toBe(true);
+      expect(layout["text-ignore-placement"]).toBe(true);
+    }
+  });
+
+  it("keeps marker icons out of collision placement entirely", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    for (const id of ["market-points", "market-point-selected", "market-spider-points"]) {
+      const layout = (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
+      expect(layout["icon-allow-overlap"]).toBe(true);
+      expect(layout["icon-ignore-placement"]).toBe(true);
+    }
   });
 });
