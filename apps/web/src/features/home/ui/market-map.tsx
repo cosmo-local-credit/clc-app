@@ -4,7 +4,6 @@ import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
   type FilterSpecification,
   type GeoJSONSource,
-  type MapLayerMouseEvent,
   type MapMouseEvent,
 } from "maplibre-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -189,6 +188,21 @@ const stackFilter: FilterSpecification = [
   [">", ["get", "count"], 1],
 ];
 
+/**
+ * Query results are ordered by the style's layer order, which is not the same
+ * as "what the user thinks they tapped". Pick explicitly: an open fan's pins
+ * sit above everything, then coincident stacks, then lone vouchers.
+ */
+function pickTopFeature(
+  features: MapLibreGL.MapGeoJSONFeature[],
+): MapLibreGL.MapGeoJSONFeature | null {
+  for (const layerId of INTERACTIVE_LAYER_IDS) {
+    const match = features.find((feature) => feature.layer.id === layerId);
+    if (match) return match;
+  }
+  return features[0] ?? null;
+}
+
 function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
   addMarketMarkerImages(map);
 
@@ -358,36 +372,54 @@ export function MarketMap({
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    function handlePointClick(event: MapLayerMouseEvent) {
-      const id = event.features?.[0]?.properties?.id;
+    // One handler, not several layer-scoped ones. MapLibre fires every matching
+    // listener for a single click, so a separate "close the fan" listener would
+    // race the listener that just opened it and win.
+    function handleMapClick(event: MapMouseEvent) {
+      const hits = map.queryRenderedFeatures(event.point, { layers: INTERACTIVE_LAYER_IDS });
+      const feature = pickTopFeature(hits);
+
+      if (!feature) {
+        setSpiderKey(null);
+        return;
+      }
+
+      if (feature.layer.id === SPIDER_POINT_LAYER_ID) {
+        selectFeature(feature);
+        return;
+      }
+
+      const clusterId = feature.properties?.cluster_id;
+      if (typeof clusterId === "number") {
+        expandCluster(clusterId, feature);
+        return;
+      }
+
+      const key = feature.properties?.key;
+      if (typeof key === "string" && Number(feature.properties?.count) > 1) {
+        setSpiderKey((current) => (current === key ? null : key));
+        return;
+      }
+
       // Selection styles a feature and opens the preview. It deliberately does
       // not move the camera: the marker is already on screen.
+      selectFeature(feature);
+    }
+
+    function selectFeature(feature: MapLibreGL.MapGeoJSONFeature) {
+      const id = feature.properties?.id;
       if (typeof id === "string" && id) onSelectRef.current(id);
     }
 
-    function handleStackClick(event: MapLayerMouseEvent) {
-      const key = event.features?.[0]?.properties?.key;
-      if (typeof key !== "string") return;
-      setSpiderKey((current) => (current === key ? null : key));
-    }
-
-    function handleClusterClick(event: MapLayerMouseEvent) {
-      const feature = event.features?.[0];
-      const clusterId = feature?.properties?.cluster_id;
-      if (typeof clusterId !== "number") return;
+    function expandCluster(clusterId: number, feature: MapLibreGL.MapGeoJSONFeature) {
       const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
       void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
-        if (!feature || feature.geometry.type !== "Point") return;
+        if (feature.geometry.type !== "Point") return;
         map.easeTo({
           center: feature.geometry.coordinates as [number, number],
           zoom: Math.min(zoom, map.getMaxZoom()),
         });
       });
-    }
-
-    function handleBackgroundClick(event: MapMouseEvent) {
-      const hits = map.queryRenderedFeatures(event.point, { layers: INTERACTIVE_LAYER_IDS });
-      if (hits.length === 0) setSpiderKey(null);
     }
 
     function handleUserInteraction(event: { originalEvent?: unknown }) {
@@ -412,13 +444,7 @@ export function MarketMap({
     }
 
     map.on("load", handleLoad);
-    map.on("click", UNCLUSTERED_LAYER_ID, handlePointClick);
-    map.on("click", SELECTED_LAYER_ID, handlePointClick);
-    map.on("click", SPIDER_POINT_LAYER_ID, handlePointClick);
-    map.on("click", STACK_LAYER_ID, handleStackClick);
-    map.on("click", STACK_COUNT_LAYER_ID, handleStackClick);
-    map.on("click", CLUSTERS_LAYER_ID, handleClusterClick);
-    map.on("click", handleBackgroundClick);
+    map.on("click", handleMapClick);
     map.on("dragstart", handleUserInteraction);
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
@@ -427,13 +453,7 @@ export function MarketMap({
     return () => {
       clearTimeout(settleTimer);
       map.off("load", handleLoad);
-      map.off("click", UNCLUSTERED_LAYER_ID, handlePointClick);
-      map.off("click", SELECTED_LAYER_ID, handlePointClick);
-      map.off("click", SPIDER_POINT_LAYER_ID, handlePointClick);
-      map.off("click", STACK_LAYER_ID, handleStackClick);
-      map.off("click", STACK_COUNT_LAYER_ID, handleStackClick);
-      map.off("click", CLUSTERS_LAYER_ID, handleClusterClick);
-      map.off("click", handleBackgroundClick);
+      map.off("click", handleMapClick);
       map.off("dragstart", handleUserInteraction);
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);

@@ -223,6 +223,29 @@ beforeEach(() => {
   vi.stubGlobal("CSS", { supports: () => true });
 });
 
+/** Simulates a real MapLibre click: one global handler + queryRenderedFeatures. */
+function clickFeature(
+  map: ReturnType<typeof loadedMap>,
+  layerId: string,
+  properties: Record<string, unknown>,
+  geometry: { type: string; coordinates: unknown } = {
+    type: "Point",
+    coordinates: [36.82, -1.28],
+  },
+) {
+  map.queryRenderedFeatures.mockReturnValue([{ layer: { id: layerId }, properties, geometry }]);
+  act(() => {
+    map.trigger("click", { point: { x: 100, y: 100 } } as never);
+  });
+}
+
+function clickEmptyMap(map: ReturnType<typeof loadedMap>) {
+  map.queryRenderedFeatures.mockReturnValue([]);
+  act(() => {
+    map.trigger("click", { point: { x: 5, y: 5 } } as never);
+  });
+}
+
 describe("MarketMap lifecycle", () => {
   it("constructs the map once and updates the source when data is appended", () => {
     const onSelect = vi.fn();
@@ -643,17 +666,13 @@ describe("MarketMap spiderfy", () => {
     };
   }
 
-  function openStack(map: ReturnType<typeof loadedMap>) {
-    act(() => {
-      map.triggerLayer("click", "market-stacks", {
-        features: [
-          {
-            properties: { key: "-3.632178,39.854538", count: 3 },
-            geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
-          },
-        ],
-      });
-    });
+  function openStack(map: ReturnType<typeof loadedMap>, count = 3) {
+    clickFeature(
+      map,
+      "market-stacks",
+      { key: "-3.632178,39.854538", count },
+      { type: "Point", coordinates: [39.854538, -3.632178] },
+    );
   }
 
   it("starts closed", () => {
@@ -697,13 +716,15 @@ describe("MarketMap spiderfy", () => {
     const map = loadedMap();
     openStack(map);
 
-    act(() => {
-      map.triggerLayer("click", "market-spider-points", {
-        features: [
-          { properties: { id: "s2" }, geometry: { type: "Point", coordinates: [39.85, -3.63] } },
-        ],
-      });
-    });
+    clickFeature(
+      map,
+      "market-spider-points",
+      { id: "s2" },
+      {
+        type: "Point",
+        coordinates: [39.85, -3.63],
+      },
+    );
 
     expect(onSelect).toHaveBeenCalledWith("s2");
   });
@@ -746,10 +767,7 @@ describe("MarketMap spiderfy", () => {
     const map = loadedMap();
     openStack(map);
 
-    map.queryRenderedFeatures.mockReturnValue([]);
-    act(() => {
-      map.trigger("click", { point: { x: 10, y: 10 } } as never);
-    });
+    clickEmptyMap(map);
 
     expect(spiderData(map).features).toEqual([]);
   });
@@ -759,7 +777,9 @@ describe("MarketMap spiderfy", () => {
     const map = loadedMap();
     openStack(map);
 
-    map.queryRenderedFeatures.mockReturnValue([{ id: "something" }]);
+    map.queryRenderedFeatures.mockReturnValue([
+      { layer: { id: "market-points" }, properties: { id: "1", count: 1 }, geometry: {} },
+    ]);
     act(() => {
       map.trigger("click", { point: { x: 10, y: 10 } } as never);
     });
@@ -778,7 +798,7 @@ describe("MarketMap spiderfy", () => {
     }));
     renderMap(huge);
     const map = loadedMap();
-    openStack(map);
+    openStack(map, 200);
 
     const points = spiderData(map).features.filter((feature) => feature.geometry.type === "Point");
     expect(points).toHaveLength(MAX_SPIDER_LEGS);
@@ -816,13 +836,15 @@ describe("MarketMap selection", () => {
     renderMap(LOCATIONS, { onSelectLocation: onSelect });
     const map = loadedMap();
 
-    act(() => {
-      map.triggerLayer("click", "market-points", {
-        features: [
-          { properties: { id: "2" }, geometry: { type: "Point", coordinates: [36.81, -1.3] } },
-        ],
-      });
-    });
+    clickFeature(
+      map,
+      "market-points",
+      { id: "2", count: 1 },
+      {
+        type: "Point",
+        coordinates: [36.81, -1.3],
+      },
+    );
 
     expect(onSelect).toHaveBeenCalledWith("2");
   });
@@ -900,5 +922,62 @@ describe("MarketMap selection", () => {
     loadedMap();
 
     expect(markerInstances).toHaveLength(0);
+  });
+});
+
+describe("MarketMap click wiring", () => {
+  it("registers exactly one click listener", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    // Regression guard: with a layer-scoped opener AND a global background
+    // closer, MapLibre fires both for one click and the close wins, so a
+    // stack could never be opened on a real map.
+    expect(map.handlers.get("click") ?? []).toHaveLength(1);
+    expect([...map.layerHandlers.keys()].filter((key) => key.startsWith("click:"))).toEqual([]);
+  });
+
+  it("opens the fan on a single real click without immediately closing it", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "market-stacks" },
+        properties: { key: "-3.632178,39.854538", count: 3 },
+        geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
+      },
+    ]);
+    act(() => {
+      map.trigger("click", { point: { x: 100, y: 100 } } as never);
+    });
+
+    const data = map.getSource("market-spider")?.spec.data as { features: unknown[] };
+    expect(data.features.length).toBeGreaterThan(0);
+  });
+
+  it("prefers an open fan's pin over the stack badge underneath it", () => {
+    const onSelect = vi.fn();
+    renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
+    const map = loadedMap();
+
+    // Both are under the cursor; the fan pin is what the user aimed at.
+    map.queryRenderedFeatures.mockReturnValue([
+      {
+        layer: { id: "market-stacks" },
+        properties: { key: "-3.632178,39.854538", count: 3 },
+        geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
+      },
+      {
+        layer: { id: "market-spider-points" },
+        properties: { id: "s3" },
+        geometry: { type: "Point", coordinates: [39.8546, -3.6321] },
+      },
+    ]);
+    act(() => {
+      map.trigger("click", { point: { x: 100, y: 100 } } as never);
+    });
+
+    expect(onSelect).toHaveBeenCalledWith("s3");
   });
 });
