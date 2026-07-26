@@ -12,23 +12,35 @@ type GeoState =
   | { status: "denied" }
   | { status: "unavailable" };
 
-const { geoState, mockRequest, readPersistedLocation, writePersistedLocation, ipCameraResult } =
-  vi.hoisted(() => ({
-    geoState: { current: { status: "idle" } as GeoState },
-    mockRequest: vi.fn(),
-    readPersistedLocation: vi.fn(),
-    writePersistedLocation: vi.fn(),
-    ipCameraResult: { current: { data: undefined as unknown } },
-  }));
+const {
+  geoState,
+  mockRequest,
+  readPersistedLocation,
+  writePersistedLocation,
+  ipCameraResult,
+  connectedAddress,
+} = vi.hoisted(() => ({
+  connectedAddress: { current: undefined as string | undefined },
+  geoState: { current: { status: "idle" } as GeoState },
+  mockRequest: vi.fn(),
+  readPersistedLocation: vi.fn(),
+  writePersistedLocation: vi.fn(),
+  ipCameraResult: { current: { data: undefined as unknown } },
+}));
 
 vi.mock("#/lib/use-browser-geolocation", () => ({
   useBrowserGeolocation: () => ({ state: geoState.current, request: mockRequest }),
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
+  GUEST_LOCATION_OWNER: "guest",
   readPersistedLocation,
   writePersistedLocation,
   clearPersistedLocation: vi.fn(),
+}));
+
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: connectedAddress.current }),
 }));
 
 vi.mock("./use-ip-camera", () => ({
@@ -51,6 +63,7 @@ const PERSISTED = {
 beforeEach(() => {
   geoState.current = { status: "idle" };
   ipCameraResult.current = { data: undefined };
+  connectedAddress.current = undefined;
   mockRequest.mockReset();
   readPersistedLocation.mockReset();
   readPersistedLocation.mockReturnValue(null);
@@ -95,7 +108,9 @@ describe("useMarketCamera ranking", () => {
     );
   });
 
-  it("accepts an old persisted fix without expiring it", async () => {
+  it("trusts storage to decide what is still usable", async () => {
+    // Expiry and owner scoping live in the storage module; the hook applies
+    // whatever survives that filter.
     readPersistedLocation.mockReturnValue(PERSISTED);
 
     const { result } = renderHook(() => useMarketCamera(), { wrapper });
@@ -251,5 +266,45 @@ describe("useMarketCamera real fix reporting", () => {
     // Distance from an IP centroid would be a fabricated number.
     expect(result.current.realFix).toBeNull();
     expect(result.current.userLocation).toBeNull();
+  });
+});
+
+describe("useMarketCamera location ownership", () => {
+  it("reads and writes a guest fix under the guest owner", async () => {
+    geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
+
+    renderHook(() => useMarketCamera(), { wrapper });
+
+    await waitFor(() => expect(writePersistedLocation).toHaveBeenCalled());
+    expect(readPersistedLocation).toHaveBeenCalledWith("guest");
+    expect(writePersistedLocation.mock.calls[0]?.[0]).toMatchObject({ owner: "guest" });
+  });
+
+  it("scopes a signed-in fix to the lowercased address", async () => {
+    connectedAddress.current = "0xAbC0000000000000000000000000000000000123";
+    geoState.current = { status: "granted", lat: -1.29, lng: 36.82, accuracy: 8 };
+
+    renderHook(() => useMarketCamera(), { wrapper });
+
+    await waitFor(() => expect(writePersistedLocation).toHaveBeenCalled());
+    expect(readPersistedLocation).toHaveBeenCalledWith(
+      "0xabc0000000000000000000000000000000000123",
+    );
+    expect(writePersistedLocation.mock.calls[0]?.[0]).toMatchObject({
+      owner: "0xabc0000000000000000000000000000000000123",
+    });
+  });
+
+  it("re-reads under the new owner when the account changes", async () => {
+    connectedAddress.current = "0xaaa";
+    const { rerender } = renderHook(() => useMarketCamera(), { wrapper });
+    await waitFor(() => expect(readPersistedLocation).toHaveBeenCalledWith("0xaaa"));
+
+    connectedAddress.current = "0xbbb";
+    rerender();
+
+    // Storage returns null for a mismatched owner, so the previous account's
+    // position can never become this account's camera.
+    await waitFor(() => expect(readPersistedLocation).toHaveBeenCalledWith("0xbbb"));
   });
 });

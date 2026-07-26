@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useConnection } from "wagmi";
+
 import {
+  GUEST_LOCATION_OWNER,
   type PersistedLocation,
   readPersistedLocation,
   writePersistedLocation,
@@ -40,6 +43,10 @@ export type MarketCameraResult = {
 };
 
 export function useMarketCamera(): MarketCameraResult {
+  const { address } = useConnection();
+  // Scope the stored fix so a different account, or a session that lapsed back
+  // to guest, never inherits the previous person's precise position.
+  const owner = address ? address.toLowerCase() : GUEST_LOCATION_OWNER;
   const geolocation = useBrowserGeolocation({ autoRequestIfGranted: true });
   const ipCamera = useIPCamera();
   const [persisted, setPersisted] = useState<PersistedLocation | null>(null);
@@ -49,24 +56,25 @@ export function useMarketCamera(): MarketCameraResult {
   // Rank 2 is read after the client boundary so the server and the hydration
   // render start from the same camera and no mismatch warning is emitted.
   useEffect(() => {
-    setPersisted(readPersistedLocation());
-  }, []);
+    setPersisted(readPersistedLocation(owner));
+  }, [owner]);
 
   const gps = geolocation.state.status === "granted" ? geolocation.state : null;
 
   // Only a real getCurrentPosition success is ever stored.
   useEffect(() => {
     if (!gps) return;
-    const signature = `${gps.lat},${gps.lng},${gps.accuracy}`;
+    const signature = `${owner}:${gps.lat},${gps.lng},${gps.accuracy}`;
     if (lastWrittenRef.current === signature) return;
     lastWrittenRef.current = signature;
     writePersistedLocation({
+      owner,
       lat: gps.lat,
       lng: gps.lng,
       accuracy: gps.accuracy,
       capturedAt: new Date().toISOString(),
     });
-  }, [gps]);
+  }, [gps, owner]);
 
   const { request } = geolocation;
   const requestLocation = useCallback(() => {
