@@ -36,6 +36,17 @@ Current local overrides:
   - `refetchIntervalInBackground: false`
   - Reason: the upstream Pretium status poller confirms onramps within seconds; the Cash page shows live status while mounted, mirroring wallet account freshness. Rates stay at `staleTime: 60_000`.
 
+- `apps/web/src/features/home/hooks/use-ip-camera.ts`
+  - IP/country camera bootstrap for the Market map
+  - `staleTime: Infinity`
+  - `gcTime: 24 * 60 * 60_000`
+  - `retry: 0`
+  - `refetchOnReconnect: false`
+  - Reason: an IP does not move during a session, so this resolves once and is
+    reused across every home-tab remount. It is the fallback path behind GPS and
+    persisted location, so a failure must fall through immediately rather than
+    retrying — it must never block basemap rendering.
+
 - `apps/web/src/features/auth/hooks/use-otx-tracking.ts`
   - operation tracking
   - polls while the operation is pending, then stops

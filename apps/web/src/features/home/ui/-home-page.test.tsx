@@ -3,9 +3,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockAbortWalletSwitch } = vi.hoisted(() => ({
-  mockAbortWalletSwitch: vi.fn(),
-}));
+const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
+  vi.hoisted(() => ({
+    mockAbortWalletSwitch: vi.fn(),
+    mockClearPersistedLocation: vi.fn(),
+    mockBackendLogout: vi.fn(),
+    mockDisconnect: vi.fn(),
+  }));
 
 vi.mock("./bottom-navigation", () => ({
   BottomNavigation: ({
@@ -25,11 +29,15 @@ vi.mock("./bottom-navigation", () => ({
 
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc" as `0x${string}` }),
-  useDisconnect: () => ({ mutateAsync: vi.fn() }),
+  useDisconnect: () => ({ mutateAsync: mockDisconnect }),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-session", () => ({
-  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
+  useBackendLogout: () => ({ mutateAsync: mockBackendLogout }),
+}));
+
+vi.mock("#/features/home/api/last-location-storage", () => ({
+  clearPersistedLocation: mockClearPersistedLocation,
 }));
 
 vi.mock("#/lib/wallet-session", () => ({
@@ -81,6 +89,11 @@ function renderHome(ui: ReactNode) {
 
 beforeEach(() => {
   mockAbortWalletSwitch.mockClear();
+  mockClearPersistedLocation.mockClear();
+  mockBackendLogout.mockReset();
+  mockBackendLogout.mockResolvedValue(undefined);
+  mockDisconnect.mockReset();
+  mockDisconnect.mockResolvedValue(undefined);
 });
 
 describe("HomePage tabs", () => {
@@ -135,6 +148,40 @@ describe("HomePage sign-out", () => {
 
     await waitFor(() => {
       expect(mockAbortWalletSwitch).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("clears the persisted precise location on sign-out", async () => {
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("clears the persisted location even when backend logout fails", async () => {
+    mockBackendLogout.mockRejectedValueOnce(new Error("network down"));
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    // A precise location must not survive on a shared device just because the
+    // server round-trip failed.
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("clears the persisted location even when disconnect rejects", async () => {
+    mockDisconnect.mockRejectedValueOnce(new Error("connector gone"));
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
     });
   });
 });

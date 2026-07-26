@@ -4,6 +4,7 @@ import { useConnection, useDisconnect } from "wagmi";
 
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
+import { clearPersistedLocation } from "#/features/home/api/last-location-storage";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
@@ -33,6 +34,9 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
     // Cancel any in-flight wallet switch first so a pending ?w= import can't
     // land after disconnect and silently take over the session.
     abortWalletSwitch();
+    // Drop the precise location before any awaits so every failure path below
+    // still leaves it cleared. It must not survive on a shared device.
+    clearPersistedLocation();
     setIsSigningOut(true);
     try {
       await backendLogout.mutateAsync();
@@ -41,6 +45,10 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
     }
     try {
       await disconnect();
+    } catch {
+      // A dead connector must not strand the user in a signed-in-looking UI.
+    }
+    try {
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
     } finally {
       setIsSigningOut(false);
