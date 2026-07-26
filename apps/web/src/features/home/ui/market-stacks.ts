@@ -18,21 +18,35 @@ export type MarketStack = {
 export type SpiderOffset = { dx: number; dy: number };
 
 /**
- * How many members one fan shows at a time.
- *
- * The spiral radius grows as sqrt(n), so this is a screen-space limit, not a
- * taste one: a full page lands inside ~146 px, which still fits a 360 px
- * viewport once the stack is centred. Larger stacks are paged rather than
- * truncated, so every member stays reachable.
+ * Half of the narrowest supported viewport (360 px), less a margin so the
+ * outermost legs stay on screen once the stack is centred.
  */
-export const SPIDER_PAGE_SIZE = 36;
+const MAX_FAN_RADIUS = 168;
 
-/** Marker artwork is 24 px, so legs are spaced to clear roughly one icon. */
-const LEG_SPACING = 30;
+/**
+ * Marker artwork is 24 px. A sunflower's nearest-neighbour distance is about
+ * 1.77x the growth constant, so this spacing keeps legs ~29 px apart: tight
+ * enough to fit a large fan, loose enough that icons never overlap.
+ */
+const LEG_SPACING = 26;
 const MIN_RING_RADIUS = 34;
 const RING_LIMIT = 8;
 /** Golden angle: a sunflower spiral packs evenly at any count. */
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+const SPIRAL_GROWTH = LEG_SPACING * 0.62;
+
+/**
+ * How many members one fan shows at a time.
+ *
+ * Derived from the radius budget rather than picked: the spiral grows as
+ * sqrt(n), so this is the largest fan that still lands inside MAX_FAN_RADIUS.
+ * It comfortably covers the 63-voucher Nairobi CBD stack in a single fan. The
+ * three stacks above it (136, 162, 200) cannot fit on a phone at any spacing,
+ * so those page rather than being truncated.
+ */
+export const SPIDER_PAGE_SIZE = Math.floor(
+  ((MAX_FAN_RADIUS - MIN_RING_RADIUS) / SPIRAL_GROWTH) ** 2,
+);
 
 export function groupByCoordinate(locations: MarketLocation[]): MarketStack[] {
   const stacks = new Map<string, MarketStack>();
@@ -76,7 +90,7 @@ export function spiderfyOffsets(count: number): SpiderOffset[] {
 
   return Array.from({ length: legs }, (_, index) => {
     const step = index + 1;
-    const radius = MIN_RING_RADIUS + LEG_SPACING * 0.62 * Math.sqrt(step);
+    const radius = MIN_RING_RADIUS + SPIRAL_GROWTH * Math.sqrt(step);
     const angle = step * GOLDEN_ANGLE - Math.PI / 2;
     return { dx: radius * Math.cos(angle), dy: radius * Math.sin(angle) };
   });

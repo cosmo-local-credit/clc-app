@@ -46,14 +46,15 @@ const SPIDER_SOURCE_ID = "market-spider";
 const SPIDER_LEG_LAYER_ID = "market-spider-legs";
 const SPIDER_POINT_LAYER_ID = "market-spider-points";
 
+/** Layers a tap can land on. Order here is irrelevant: the query sorts by z-order. */
 const INTERACTIVE_LAYER_IDS = [
-  SPIDER_POINT_LAYER_ID,
+  CLUSTERS_LAYER_ID,
+  CLUSTER_COUNT_LAYER_ID,
+  UNCLUSTERED_LAYER_ID,
   STACK_LAYER_ID,
   STACK_COUNT_LAYER_ID,
   SELECTED_LAYER_ID,
-  UNCLUSTERED_LAYER_ID,
-  CLUSTERS_LAYER_ID,
-  CLUSTER_COUNT_LAYER_ID,
+  SPIDER_POINT_LAYER_ID,
 ];
 
 const VIEWPORT_SETTLE_MS = 400;
@@ -195,11 +196,6 @@ const stackFilter: FilterSpecification = [
 ];
 
 /**
- * Query results are ordered by the style's layer order, which is not the same
- * as "what the user thinks they tapped". Pick explicitly: an open fan's pins
- * sit above everything, then coincident stacks, then lone vouchers.
- */
-/**
  * Badge labels always count vouchers, never map features.
  *
  * Features are grouped per coordinate, so Supercluster's `point_count` counts
@@ -221,16 +217,6 @@ function countLabel(property: string): DataDrivenPropertyValueSpecification<stri
 /** Bigger counts get a slightly bigger disc so three characters still fit. */
 function badgeRadius(property: string): DataDrivenPropertyValueSpecification<number> {
   return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
-}
-
-function pickTopFeature(
-  features: MapLibreGL.MapGeoJSONFeature[],
-): MapLibreGL.MapGeoJSONFeature | null {
-  for (const layerId of INTERACTIVE_LAYER_IDS) {
-    const match = features.find((feature) => feature.layer.id === layerId);
-    if (match) return match;
-  }
-  return features[0] ?? null;
 }
 
 function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
@@ -415,8 +401,12 @@ export function MarketMap({
     // listener for a single click, so a separate "close the fan" listener would
     // race the listener that just opened it and win.
     function handleMapClick(event: MapMouseEvent) {
-      const hits = map.queryRenderedFeatures(event.point, { layers: INTERACTIVE_LAYER_IDS });
-      const feature = pickTopFeature(hits);
+      // queryRenderedFeatures returns features sorted by descending z-order,
+      // topmost first, so index 0 is exactly what the user tapped. The fan's
+      // layers are added last, so its pins win over the badge beneath them.
+      const [feature] = map.queryRenderedFeatures(event.point, {
+        layers: INTERACTIVE_LAYER_IDS,
+      });
 
       if (!feature) {
         setSpider(null);

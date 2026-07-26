@@ -956,22 +956,23 @@ describe("MarketMap click wiring", () => {
     expect(data.features.length).toBeGreaterThan(0);
   });
 
-  it("prefers an open fan's pin over the stack badge underneath it", () => {
+  it("acts on the topmost feature under the tap", () => {
     const onSelect = vi.fn();
     renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
     const map = loadedMap();
 
-    // Both are under the cursor; the fan pin is what the user aimed at.
+    // queryRenderedFeatures sorts topmost first. The fan's pins are the last
+    // layers added, so an open fan's pin outranks the badge beneath it.
     map.queryRenderedFeatures.mockReturnValue([
-      {
-        layer: { id: "market-stacks" },
-        properties: { key: "-3.632178,39.854538", count: 3 },
-        geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
-      },
       {
         layer: { id: "market-spider-points" },
         properties: { id: "s3" },
         geometry: { type: "Point", coordinates: [39.8546, -3.6321] },
+      },
+      {
+        layer: { id: "market-stacks" },
+        properties: { key: "-3.632178,39.854538", count: 3 },
+        geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
       },
     ]);
     act(() => {
@@ -979,6 +980,15 @@ describe("MarketMap click wiring", () => {
     });
 
     expect(onSelect).toHaveBeenCalledWith("s3");
+  });
+
+  it("adds the fan layers above the badge layers", () => {
+    renderMap(KILIFI_STACK);
+    const ids = loadedMap().layers.map((layer) => layer.id);
+
+    // The z-order the tap logic relies on must actually hold.
+    expect(ids.indexOf("market-spider-points")).toBeGreaterThan(ids.indexOf("market-stacks"));
+    expect(ids.indexOf("market-spider-points")).toBeGreaterThan(ids.indexOf("market-points"));
   });
 });
 
@@ -1012,29 +1022,40 @@ describe("MarketMap fan paging", () => {
       .map((feature) => feature.properties.id);
   }
 
-  it("walks every member of a 63-stack across two taps", () => {
+  it("fans the whole 63-voucher CBD stack in one go", () => {
     renderMap(bigStack(63));
     const map = loadedMap();
 
     tapBadge(map, 63);
+
+    expect(fanIds(map)).toHaveLength(63);
+  });
+
+  it("walks every member of an oversized stack across taps", () => {
+    const size = SPIDER_PAGE_SIZE + 12;
+    renderMap(bigStack(size));
+    const map = loadedMap();
+
+    tapBadge(map, size);
     const first = fanIds(map);
     expect(first).toHaveLength(SPIDER_PAGE_SIZE);
 
-    tapBadge(map, 63);
+    tapBadge(map, size);
     const second = fanIds(map);
-    expect(second).toHaveLength(63 - SPIDER_PAGE_SIZE);
+    expect(second).toHaveLength(12);
 
     // Together the pages cover the stack exactly once.
-    expect(new Set([...first, ...second]).size).toBe(63);
+    expect(new Set([...first, ...second]).size).toBe(size);
   });
 
   it("closes after the last page", () => {
-    renderMap(bigStack(63));
+    const size = SPIDER_PAGE_SIZE + 12;
+    renderMap(bigStack(size));
     const map = loadedMap();
 
-    tapBadge(map, 63);
-    tapBadge(map, 63);
-    tapBadge(map, 63);
+    tapBadge(map, size);
+    tapBadge(map, size);
+    tapBadge(map, size);
 
     expect(fanIds(map)).toEqual([]);
   });

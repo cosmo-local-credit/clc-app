@@ -128,7 +128,7 @@ describe("spiderfyOffsets", () => {
 
   it("never lays out more than one page of legs", () => {
     expect(spiderfyOffsets(200)).toHaveLength(SPIDER_PAGE_SIZE);
-    expect(spiderfyOffsets(63)).toHaveLength(SPIDER_PAGE_SIZE);
+    expect(spiderfyOffsets(SPIDER_PAGE_SIZE + 40)).toHaveLength(SPIDER_PAGE_SIZE);
   });
 
   it("keeps a full page inside a phone-sized fan radius", () => {
@@ -136,6 +136,26 @@ describe("spiderfyOffsets", () => {
     // Half of a 360 px screen, less a small margin: the fan must not run off
     // the edge once the stack is centred.
     expect(Math.max(...radii)).toBeLessThan(170);
+  });
+
+  it("fits the 63-stack inside the same budget", () => {
+    const radii = spiderfyOffsets(63).map((o) => Math.hypot(o.dx, o.dy));
+    expect(radii).toHaveLength(63);
+    expect(Math.max(...radii)).toBeLessThan(170);
+  });
+
+  it("never lets neighbouring spiral legs overlap a 24 px icon", () => {
+    const offsets = spiderfyOffsets(SPIDER_PAGE_SIZE);
+    let closest = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < offsets.length; i++) {
+      for (let j = i + 1; j < offsets.length; j++) {
+        const a = offsets[i];
+        const b = offsets[j];
+        if (!a || !b) continue;
+        closest = Math.min(closest, Math.hypot(a.dx - b.dx, a.dy - b.dy));
+      }
+    }
+    expect(closest).toBeGreaterThanOrEqual(24);
   });
 
   it("is deterministic", () => {
@@ -153,8 +173,12 @@ describe("spider paging", () => {
 
   it("splits a stack larger than one page", () => {
     expect(spiderPageCount(SPIDER_PAGE_SIZE + 1)).toBe(2);
-    expect(spiderPageCount(63)).toBe(2);
     expect(spiderPageCount(200)).toBe(Math.ceil(200 / SPIDER_PAGE_SIZE));
+  });
+
+  it("fans the 63-voucher Nairobi CBD stack in a single page", () => {
+    expect(spiderPageCount(63)).toBe(1);
+    expect(spiderPageMembers(members, 0)).toHaveLength(63);
   });
 
   it("has no pages for an empty stack", () => {
@@ -162,8 +186,9 @@ describe("spider paging", () => {
   });
 
   it("returns a full first page and the remainder on the second", () => {
-    expect(spiderPageMembers(members, 0)).toHaveLength(SPIDER_PAGE_SIZE);
-    expect(spiderPageMembers(members, 1)).toHaveLength(63 - SPIDER_PAGE_SIZE);
+    const huge = Array.from({ length: SPIDER_PAGE_SIZE + 12 }, (_, i) => at(String(i), 2, 2));
+    expect(spiderPageMembers(huge, 0)).toHaveLength(SPIDER_PAGE_SIZE);
+    expect(spiderPageMembers(huge, 1)).toHaveLength(12);
   });
 
   it("covers every member exactly once across all pages", () => {
@@ -176,7 +201,7 @@ describe("spider paging", () => {
   });
 
   it("returns nothing beyond the last page", () => {
-    expect(spiderPageMembers(members, 2)).toEqual([]);
+    expect(spiderPageMembers(members, spiderPageCount(members.length))).toEqual([]);
     expect(spiderPageMembers(members, -1)).toEqual([]);
   });
 });
