@@ -1,35 +1,41 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
-import type { MarketLocation, MarketLocationKind } from "./market-data";
+import type { MarketVoucher } from "#/features/home/api/market-client";
+import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
+import type { MarketLocationKind } from "./market-data";
+import type { MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
+
+type Coordinates = { lat: number; lng: number };
 
 export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode }) {
   const { t } = useLingui();
-  const geolocation = useBrowserGeolocation({ autoRequestIfGranted: true });
+  const { camera, realFix, userLocation, locationStatus, requestLocation } = useMarketCamera();
+  const [viewport, setViewport] = useState<MarketViewport | null>(null);
   // Start with nothing selected: the newest catalog row may be anywhere in the
   // world and must not pull the resolved camera to an arbitrary location.
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  const locations: MarketLocation[] = useMemo(() => [], []);
-  const selectedLocation = useMemo(
-    () => locations.find((location) => location.id === selectedLocationId) ?? null,
-    [locations, selectedLocationId],
+  const { vouchers, isCatalogComplete, error, retry } = useMarketMapVouchers(viewport);
+
+  // Derived, never mirrored: a refreshed dataset that no longer contains the
+  // selection simply stops matching, so the preview closes on its own.
+  const selectedVoucher = useMemo(
+    () => vouchers.find((voucher) => voucher.id === selectedLocationId) ?? null,
+    [vouchers, selectedLocationId],
   );
 
-  const userLocation =
-    geolocation.state.status === "granted"
-      ? { lat: geolocation.state.lat, lng: geolocation.state.lng }
-      : null;
   const locationButtonLabel =
-    geolocation.state.status === "requesting"
+    locationStatus === "requesting"
       ? t`Finding location`
-      : geolocation.state.status === "denied"
+      : locationStatus === "denied"
         ? t`Location denied`
-        : geolocation.state.status === "unavailable"
+        : locationStatus === "unavailable"
           ? t`Location unavailable`
           : t`Use current location`;
 
@@ -37,25 +43,68 @@ export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode 
     setSelectedLocationId(id);
   }, []);
 
+  const handleViewportSettled = useCallback((settled: MarketViewport) => {
+    setViewport(settled);
+  }, []);
+
+  const isEmpty = isCatalogComplete && vouchers.length === 0;
+
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
+      {/* The basemap is never unmounted for loading, error, or empty states. */}
       <Suspense
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >
         <MarketMap
-          locations={locations}
+          locations={vouchers}
           selectedLocationId={selectedLocationId}
-          camera={null}
+          camera={camera}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
+          onViewportSettled={handleViewportSettled}
           className="absolute inset-0 h-full w-full"
         />
       </Suspense>
 
       {onboardingBanner}
 
-      {selectedLocation ? (
-        <MarketPreview location={selectedLocation} offsetForBanner={!!onboardingBanner} />
+      {selectedVoucher ? (
+        <MarketPreview
+          voucher={selectedVoucher}
+          realFix={realFix}
+          offsetForBanner={!!onboardingBanner}
+        />
+      ) : null}
+
+      {error ? (
+        <div
+          className={[
+            "absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3",
+            onboardingBanner
+              ? "top-[calc(env(safe-area-inset-top)+3rem)]"
+              : "top-[calc(env(safe-area-inset-top)+1rem)]",
+          ].join(" ")}
+        >
+          <span className="min-w-0 text-sm">
+            <Trans>Could not load vouchers.</Trans>
+          </span>
+          <Button size="sm" variant="outline" className="bg-card" onClick={retry}>
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {isEmpty && !error ? (
+        <div
+          className={[
+            "absolute inset-x-4 z-20 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm",
+            onboardingBanner
+              ? "top-[calc(env(safe-area-inset-top)+3rem)]"
+              : "top-[calc(env(safe-area-inset-top)+1rem)]",
+          ].join(" ")}
+        >
+          <Trans>No vouchers to show yet.</Trans>
+        </div>
       ) : null}
 
       <div className="absolute right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex">
@@ -64,11 +113,11 @@ export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode 
           className="h-11 w-11 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
           aria-label={locationButtonLabel}
           disabled={
-            geolocation.state.status === "requesting" ||
-            geolocation.state.status === "denied" ||
-            geolocation.state.status === "unavailable"
+            locationStatus === "requesting" ||
+            locationStatus === "denied" ||
+            locationStatus === "unavailable"
           }
-          onClick={geolocation.request}
+          onClick={requestLocation}
         >
           <RiFocus3Line className="size-5" aria-hidden="true" />
         </Button>
@@ -96,19 +145,43 @@ function useKindLabel(kind: MarketLocationKind): string {
   }
 }
 
+/**
+ * Distance is only ever shown for a real GPS fix (camera rank 1 or 2). The
+ * complete unit-bearing message goes through Lingui so Serbian and Swahili can
+ * reorder value and unit; a translated unit fragment is never concatenated.
+ */
+function useDistanceLabel(from: Coordinates | null, to: Coordinates): string | null {
+  const { t } = useLingui();
+  if (!from) return null;
+
+  try {
+    const distance = formatDistance(haversineMeters(from, to));
+    return distance.unit === "m"
+      ? t`${distance.value} m`
+      : t`${distance.value.toFixed(distance.fractionDigits)} km`;
+  } catch {
+    // A catalog row with impossible coordinates must not break the preview.
+    return null;
+  }
+}
+
 function MarketPreview({
-  location,
+  voucher,
+  realFix,
   offsetForBanner,
 }: {
-  location: MarketLocation;
+  voucher: MarketVoucher;
+  realFix: Coordinates | null;
   offsetForBanner: boolean;
 }) {
-  const kindLabel = useKindLabel(location.kind);
+  const kindLabel = useKindLabel(voucher.kind);
+  const distanceLabel = useDistanceLabel(realFix, voucher);
+
   return (
     // Not a button: there is no voucher-detail destination yet, and an inert
     // focusable control announced as actionable is worse than plain text.
     <section
-      aria-label={location.name}
+      aria-label={voucher.name}
       className={[
         "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
         offsetForBanner
@@ -118,13 +191,15 @@ function MarketPreview({
     >
       <RiMapPinLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
       <span className="min-w-0">
-        <span className="block truncate font-heading font-semibold text-sm">{location.name}</span>
+        <span className="block truncate font-heading font-semibold text-sm">{voucher.name}</span>
         <span className="mt-1 flex items-center gap-2">
           <span className="inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
             {kindLabel}
           </span>
-          {location.locationName ? (
-            <span className="truncate text-muted-foreground text-xs">{location.locationName}</span>
+          {distanceLabel ? (
+            <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
+          ) : voucher.locationName ? (
+            <span className="truncate text-muted-foreground text-xs">{voucher.locationName}</span>
           ) : null}
         </span>
       </span>

@@ -1,133 +1,328 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-type GeoState =
-  | { status: "idle" }
-  | { status: "requesting" }
-  | { status: "granted"; lat: number; lng: number; accuracy: number }
-  | { status: "denied" }
-  | { status: "unavailable" }
-  | { status: "error"; message: string };
+import type { MarketVoucher } from "#/features/home/api/market-client";
+import type { MarketCamera } from "./market-map";
 
-type GeoReturn = { state: GeoState; request: () => void };
+type MapProps = {
+  locations: MarketVoucher[];
+  selectedLocationId: string | null;
+  camera: MarketCamera | null;
+  userLocation: { lat: number; lng: number } | null;
+  onSelectLocation: (id: string) => void;
+  onViewportSettled?: (viewport: {
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+    zoom: number;
+  }) => void;
+};
 
-const mockRequest = vi.fn();
-const mockUseBrowserGeolocation = vi.fn<() => GeoReturn>(() => ({
-  state: { status: "idle" },
-  request: mockRequest,
+const { cameraResult, vouchersResult, lastMapProps, mockRequestLocation, mockRetry } = vi.hoisted(
+  () => ({
+    cameraResult: {
+      current: {
+        camera: null as MarketCamera | null,
+        realFix: null as { lat: number; lng: number } | null,
+        userLocation: null as { lat: number; lng: number } | null,
+        locationStatus: "idle" as string,
+        requestLocation: () => {},
+      },
+    },
+    vouchersResult: {
+      current: {
+        vouchers: [] as MarketVoucher[],
+        isLoading: false,
+        isCatalogComplete: false,
+        error: null as Error | null,
+        retry: () => {},
+      },
+    },
+    lastMapProps: { current: null as MapProps | null },
+    mockRequestLocation: vi.fn(),
+    mockRetry: vi.fn(),
+  }),
+);
+
+vi.mock("#/features/home/hooks/use-market-camera", () => ({
+  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  useMarketCamera: () => cameraResult.current,
 }));
 
-vi.mock("#/lib/use-browser-geolocation", () => ({
-  useBrowserGeolocation: () => mockUseBrowserGeolocation(),
-}));
-
-vi.mock("#/features/home/api/last-location-storage", () => ({
-  readPersistedLocation: () => null,
-  writePersistedLocation: vi.fn(),
-  clearPersistedLocation: vi.fn(),
+vi.mock("#/features/home/hooks/use-market-vouchers", () => ({
+  MARKET_MAP_PAGE_SIZE: 500,
+  MIN_VIEWPORT_BBOX_ZOOM: 11,
+  useMarketMapVouchers: () => vouchersResult.current,
 }));
 
 vi.mock("./market-map.lazy", () => ({
-  MarketMap: () => <div data-testid="market-map" />,
+  MarketMap: (props: MapProps) => {
+    lastMapProps.current = props;
+    return (
+      <div data-testid="market-map">
+        {props.locations.map((location) => (
+          <button
+            key={location.id}
+            type="button"
+            data-testid={`marker-${location.id}`}
+            onClick={() => props.onSelectLocation(location.id)}
+          >
+            {location.name}
+          </button>
+        ))}
+      </div>
+    );
+  },
 }));
 
 import { MarketPage } from "./market-page";
 
+function voucher(id: string, overrides: Partial<MarketVoucher> = {}): MarketVoucher {
+  return {
+    id,
+    chainId: 42220,
+    address: "0xAbC0000000000000000000000000000000000123",
+    name: `Voucher ${id}`,
+    symbol: "VOUCHER",
+    locationName: null,
+    lat: -1.29,
+    lng: 36.82,
+    kind: "voucher",
+    ...overrides,
+  };
+}
+
+function renderPage(node: ReactNode = <MarketPage />) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}>{node}</QueryClientProvider>);
+}
+
 beforeEach(() => {
-  mockRequest.mockClear();
-  mockUseBrowserGeolocation.mockReturnValue({
-    state: { status: "idle" },
-    request: mockRequest,
+  mockRequestLocation.mockReset();
+  mockRetry.mockReset();
+  lastMapProps.current = null;
+  cameraResult.current = {
+    camera: null,
+    realFix: null,
+    userLocation: null,
+    locationStatus: "idle",
+    requestLocation: mockRequestLocation,
+  };
+  vouchersResult.current = {
+    vouchers: [],
+    isLoading: false,
+    isCatalogComplete: false,
+    error: null,
+    retry: mockRetry,
+  };
+});
+
+describe("MarketPage location button", () => {
+  it.each([
+    ["idle", "Use current location", false],
+    ["requesting", "Finding location", true],
+    ["denied", "Location denied", true],
+    ["unavailable", "Location unavailable", true],
+  ])("labels and enables the button for %s", (status, label, disabled) => {
+    cameraResult.current = { ...cameraResult.current, locationStatus: status };
+    renderPage();
+
+    const button = screen.getByRole("button", { name: label }) as HTMLButtonElement;
+    expect(button.disabled).toBe(disabled);
+  });
+
+  it("asks the camera hook for an explicit fix when pressed", () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
+    expect(mockRequestLocation).toHaveBeenCalledTimes(1);
   });
 });
 
-describe("MarketPage", () => {
-  it("shows 'Use current location' button in idle state", () => {
-    render(<MarketPage />);
-    expect(screen.getByRole("button", { name: "Use current location" })).toBeTruthy();
-  });
-
-  it("shows 'Finding location' label when geolocation is requesting", () => {
-    mockUseBrowserGeolocation.mockReturnValue({
-      state: { status: "requesting" },
-      request: mockRequest,
-    });
-    render(<MarketPage />);
-    expect(screen.getByRole("button", { name: "Finding location" })).toBeTruthy();
-  });
-
-  it("shows 'Location denied' label when geolocation is denied", () => {
-    mockUseBrowserGeolocation.mockReturnValue({
-      state: { status: "denied" },
-      request: mockRequest,
-    });
-    render(<MarketPage />);
-    expect(screen.getByRole("button", { name: "Location denied" })).toBeTruthy();
-  });
-
-  it("shows 'Location unavailable' label when geolocation is unavailable", () => {
-    mockUseBrowserGeolocation.mockReturnValue({
-      state: { status: "unavailable" },
-      request: mockRequest,
-    });
-    render(<MarketPage />);
-    expect(screen.getByRole("button", { name: "Location unavailable" })).toBeTruthy();
-  });
-
-  it("enables the location button in idle state", () => {
-    render(<MarketPage />);
-    const button = screen.getByRole("button", {
-      name: "Use current location",
-    }) as HTMLButtonElement;
-    expect(button.disabled).toBe(false);
-  });
-
-  it("disables the location button when requesting", () => {
-    mockUseBrowserGeolocation.mockReturnValue({
-      state: { status: "requesting" },
-      request: mockRequest,
-    });
-    render(<MarketPage />);
-    const button = screen.getByRole("button", {
-      name: "Finding location",
-    }) as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
-  });
-
-  it("disables the location button when denied", () => {
-    mockUseBrowserGeolocation.mockReturnValue({
-      state: { status: "denied" },
-      request: mockRequest,
-    });
-    render(<MarketPage />);
-    const button = screen.getByRole("button", {
-      name: "Location denied",
-    }) as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
-  });
-
-  it("calls geolocation.request when the location button is clicked", () => {
-    render(<MarketPage />);
-    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
-    expect(mockRequest).toHaveBeenCalledTimes(1);
-  });
-
-  it("starts with no voucher selected", () => {
-    // The newest catalog row may be anywhere on earth; auto-selecting it would
-    // drag the resolved camera to an arbitrary location.
-    render(<MarketPage />);
-    expect(screen.queryByRole("region")).toBeNull();
-  });
-
+describe("MarketPage data states", () => {
   it("contains no placeholder eatery, shop, or service data", () => {
-    render(<MarketPage />);
+    renderPage();
     expect(screen.queryByText(/Cosmo Bakery/)).toBeNull();
     expect(screen.queryByText(/Green Basket Market/)).toBeNull();
     expect(screen.queryByText(/Mtaa Repair Hub/)).toBeNull();
   });
 
-  it("shows a 'Browse all' button", () => {
-    render(<MarketPage />);
+  it("keeps the basemap mounted while vouchers load", () => {
+    vouchersResult.current = { ...vouchersResult.current, isLoading: true };
+    renderPage();
+
+    expect(screen.getByTestId("market-map")).toBeTruthy();
+  });
+
+  it("shows an empty state without inventing markers", () => {
+    vouchersResult.current = { ...vouchersResult.current, isCatalogComplete: true };
+    renderPage();
+
+    expect(screen.getByText(/no vouchers/i)).toBeTruthy();
+    expect(lastMapProps.current?.locations).toEqual([]);
+  });
+
+  it("offers a retry over the map when loading fails", () => {
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+    renderPage();
+
+    // The basemap must stay visible behind a non-blocking error.
+    expect(screen.getByTestId("market-map")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    expect(mockRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes real vouchers straight to the map", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { kind: "goods" }), voucher("2", { kind: "services" })],
+    };
+    renderPage();
+
+    expect(lastMapProps.current?.locations).toHaveLength(2);
+    expect(lastMapProps.current?.locations[0]?.kind).toBe("goods");
+  });
+});
+
+describe("MarketPage preview", () => {
+  it("starts with nothing selected", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+
+    expect(screen.queryByRole("region")).toBeNull();
+  });
+
+  it("shows the voucher name and translated kind after a marker tap", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { name: "Priscilah Malii", kind: "goods" })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.getAllByText("Priscilah Malii").length).toBeGreaterThan(0);
+    expect(screen.getByText("Goods")).toBeTruthy();
+  });
+
+  it.each([
+    ["goods", "Goods"],
+    ["services", "Services"],
+    ["voucher", "Voucher"],
+  ] as const)("labels a %s voucher as %s", (kind, label) => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1", { kind })] };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.getByText(label)).toBeTruthy();
+  });
+
+  it("is not focusable and exposes no inert button or chevron", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    const preview = screen.getByRole("region");
+    expect(preview.tagName).not.toBe("BUTTON");
+    expect(preview.querySelector("button")).toBeNull();
+    expect(preview.querySelector("a")).toBeNull();
+    expect(preview.getAttribute("tabindex")).toBeNull();
+  });
+
+  it("clears the selection when a refreshed dataset drops the voucher", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { rerender } = render(
+      <QueryClientProvider client={client}>
+        <MarketPage />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByTestId("marker-1"));
+    expect(screen.getByRole("region")).toBeTruthy();
+
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("2")] };
+    rerender(
+      <QueryClientProvider client={client}>
+        <MarketPage key="same" />
+      </QueryClientProvider>,
+    );
+
+    expect(screen.queryByRole("region")).toBeNull();
+  });
+
+  it("keeps 'Browse all' present without introducing a list", () => {
+    renderPage();
+
     expect(screen.getByRole("button", { name: /browse all/i })).toBeTruthy();
+    expect(screen.queryByRole("list")).toBeNull();
+  });
+});
+
+describe("MarketPage distance", () => {
+  it("shows a translated distance from a real GPS fix", () => {
+    cameraResult.current = { ...cameraResult.current, realFix: { lat: -1.29, lng: 36.82 } };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { lat: -1.2921, lng: 36.8219 })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    // A few hundred metres away, rounded to the nearest ten metres.
+    expect(screen.getByText(/^\d+ m$/)).toBeTruthy();
+  });
+
+  it("switches to kilometres for a distant voucher", () => {
+    cameraResult.current = { ...cameraResult.current, realFix: { lat: -1.29, lng: 36.82 } };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { lat: -4.0435, lng: 39.6682 })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.getByText(/km$/)).toBeTruthy();
+  });
+
+  it("never shows a distance without a real fix, falling back to the place name", () => {
+    // An IP city or country default must not produce a distance label.
+    cameraResult.current = {
+      ...cameraResult.current,
+      realFix: null,
+      camera: { lat: 12, lng: 34, zoom: 11, rank: 3 },
+    };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { locationName: "C96, KEN" })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.queryByText(/^\d+ m$/)).toBeNull();
+    expect(screen.queryByText(/km$/)).toBeNull();
+    expect(screen.getByText("C96, KEN")).toBeTruthy();
+  });
+});
+
+describe("MarketPage viewport", () => {
+  it("forwards settled map bounds to the voucher query", () => {
+    renderPage();
+
+    expect(typeof lastMapProps.current?.onViewportSettled).toBe("function");
+  });
+
+  it("hands the resolved camera to the map", () => {
+    const camera: MarketCamera = { lat: -1.29, lng: 36.82, zoom: 14, rank: 1 };
+    cameraResult.current = { ...cameraResult.current, camera };
+    renderPage();
+
+    expect(lastMapProps.current?.camera).toEqual(camera);
   });
 });
