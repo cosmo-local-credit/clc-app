@@ -16,6 +16,7 @@ import { Route as WalletVouchersRouteImport } from './routes/wallet/vouchers'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletSwapRouteImport } from './routes/wallet/swap'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
+import { Route as VouchersVoucherAddressRouteImport } from './routes/vouchers/$voucherAddress'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
 import { Route as PoolsPoolAddressIndexRouteImport } from './routes/pools/$poolAddress/index'
@@ -58,6 +59,11 @@ const WalletSwapRoute = WalletSwapRouteImport.update({
 const WalletReceiveRoute = WalletReceiveRouteImport.update({
   id: '/wallet/receive',
   path: '/wallet/receive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VouchersVoucherAddressRoute = VouchersVoucherAddressRouteImport.update({
+  id: '/vouchers/$voucherAddress',
+  path: '/vouchers/$voucherAddress',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/swap': typeof WalletSwapRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/settings/profile'
+    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/swap'
     | '/wallet/top-up'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/settings/profile'
+    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/swap'
     | '/wallet/top-up'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/settings/profile'
+    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/swap'
     | '/wallet/top-up'
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
+  VouchersVoucherAddressRoute: typeof VouchersVoucherAddressRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletSwapRoute: typeof WalletSwapRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletReceiveRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vouchers/$voucherAddress': {
+      id: '/vouchers/$voucherAddress'
+      path: '/vouchers/$voucherAddress'
+      fullPath: '/vouchers/$voucherAddress'
+      preLoaderRoute: typeof VouchersVoucherAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings/profile': {
       id: '/settings/profile'
       path: '/settings/profile'
@@ -341,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsProfileRoute: SettingsProfileRoute,
+  VouchersVoucherAddressRoute: VouchersVoucherAddressRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletSwapRoute: WalletSwapRoute,
   WalletTopUpRoute: WalletTopUpRoute,

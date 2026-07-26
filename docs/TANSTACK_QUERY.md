@@ -45,6 +45,17 @@ Current local overrides:
     The one-minute global `staleTime` would re-walk every cached page of a
     multi-page import, and the five-minute default GC time would discard the
     assembled catalog on every home-tab switch, forcing a full re-download.
+  - Exported as `MARKET_QUERY_FRESHNESS` and reused by
+    `use-market-voucher-detail.ts`, below.
+
+- `apps/web/src/features/home/hooks/use-market-voucher-detail.ts`
+  - one public voucher by contract address (`GET /api/v2/vouchers/:address`)
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: the same static catalog, read one row at a time. The map card and the
+    voucher page share a single cache entry — the key lowercases the address, so
+    tapping a marker warms exactly the entry the page then reads and navigation
+    renders with no loading state. Under the global one-minute `staleTime` every
+    reopened card would refetch instead.
 
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
   - IP/country camera bootstrap for the Market map

@@ -21,9 +21,10 @@ export const MIN_VIEWPORT_BBOX_ZOOM = 11;
 
 /**
  * Local freshness overrides (see `docs/TANSTACK_QUERY.md`). This is a bulk
- * import of static catalog data, not live chain state.
+ * import of static catalog data, not live chain state. Shared with the
+ * per-voucher detail query, which reads the same static catalog.
  */
-const MARKET_QUERY_FRESHNESS = {
+export const MARKET_QUERY_FRESHNESS = {
   staleTime: 10 * 60_000,
   gcTime: 30 * 60_000,
   refetchOnReconnect: false,

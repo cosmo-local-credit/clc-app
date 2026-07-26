@@ -1,16 +1,20 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { formatVoucherRate } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
+import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
+import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
 import type { MarketVoucher } from "#/features/home/api/market-client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
 import type { MarketLocationKind } from "./market-data";
 import type { MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
+import { VoucherAvatar } from "./voucher-avatar";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -178,6 +182,14 @@ function useDistanceLabel(from: Coordinates | null, to: Coordinates): string | n
   }
 }
 
+/**
+ * The selected voucher, and the way into its page.
+ *
+ * Renders immediately from the catalog row the map already holds, then fills in
+ * the profile image and rate from the per-voucher detail query. That query is
+ * keyed exactly as the voucher page keys it, so selecting a marker warms the
+ * cache the page reads and navigation arrives with no loading state.
+ */
 function MarketPreview({
   voucher,
   realFix,
@@ -189,11 +201,13 @@ function MarketPreview({
 }) {
   const kindLabel = useKindLabel(voucher.kind);
   const distanceLabel = useDistanceLabel(realFix, voucher);
+  const { data: detail } = useMarketVoucherDetail(voucher.address);
+  const rate = formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null);
 
   return (
-    // Not a button: there is no voucher-detail destination yet, and an inert
-    // focusable control announced as actionable is worse than plain text.
-    <section
+    <Link
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress: voucher.address }}
       aria-label={voucher.name}
       className={[
         "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
@@ -202,9 +216,30 @@ function MarketPreview({
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
       ].join(" ")}
     >
-      <RiMapPinLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
-      <span className="min-w-0">
-        <span className="block truncate font-heading font-semibold text-sm">{voucher.name}</span>
+      <VoucherAvatar
+        address={voucher.address}
+        symbol={voucher.symbol}
+        iconUrl={detail?.iconUrl ?? null}
+        size={40}
+      />
+      <span className="min-w-0 flex-1">
+        <span className="flex items-baseline gap-2">
+          <span className="min-w-0 truncate font-heading font-semibold text-sm">
+            {voucher.name}
+          </span>
+          <span className="shrink-0 font-medium font-mono text-[0.6875rem] text-muted-foreground">
+            {voucher.symbol}
+          </span>
+        </span>
+        {/* Only rendered once detail resolves: an empty rate line would reserve
+            space for a claim the app cannot yet make. */}
+        {rate ? (
+          <span className="mt-0.5 block truncate font-mono text-[0.6875rem] text-muted-foreground">
+            <Trans>
+              1 {voucher.symbol} = {rate.value} {rate.unit}
+            </Trans>
+          </span>
+        ) : null}
         <span className="mt-1 flex items-center gap-2">
           <span className="inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
             {kindLabel}
@@ -216,6 +251,7 @@ function MarketPreview({
           ) : null}
         </span>
       </span>
-    </section>
+      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </Link>
   );
 }

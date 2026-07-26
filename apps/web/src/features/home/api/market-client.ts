@@ -6,6 +6,7 @@ import {
   isPresent,
   normalizeHex,
   normalizeNumber,
+  normalizeNumericText,
   normalizeText,
 } from "#/lib/api-normalize";
 
@@ -20,6 +21,39 @@ export type MarketVoucher = {
   locationName: string | null;
   lat: number;
   lng: number;
+  kind: MarketVoucherKind;
+};
+
+/**
+ * One voucher's public detail, from `GET /api/v2/vouchers/:address`. Backs both
+ * the map's selection card and the voucher page, which is why it is fetched per
+ * selection rather than shipped on every catalog row: the icon alone would add
+ * roughly 170 KB across 2,181 rows to display one image at a time.
+ *
+ * Coordinates are nullable here, unlike `MarketVoucher`. A voucher without them
+ * still has a readable page, it simply renders no map.
+ */
+export type MarketVoucherDetail = {
+  id: string;
+  chainId: number | null;
+  address: HexAddress;
+  name: string;
+  symbol: string;
+  decimals: number | null;
+  ownerAddress: HexAddress | null;
+  description: string | null;
+  /** Free text from the issuer (`KSH`, `Ksh`, `usd`, `Hour`). Never normalized. */
+  voucherUoa: string | null;
+  /** Kept as text: the column is NUMERIC and a double would lose scale. */
+  voucherValue: string | null;
+  locationName: string | null;
+  lat: number | null;
+  lng: number | null;
+  email: string | null;
+  website: string | null;
+  phone: string | null;
+  iconUrl: string | null;
+  bannerUrl: string | null;
   kind: MarketVoucherKind;
 };
 
@@ -57,6 +91,20 @@ type BackendMarketVoucher = Partial<{
   kind: string;
 }>;
 
+type BackendMarketVoucherDetail = BackendMarketVoucher &
+  Partial<{
+    decimals: string | number | null;
+    ownerAddress: string | null;
+    description: string | null;
+    voucherUoa: string | null;
+    voucherValue: string | number | null;
+    email: string | null;
+    website: string | null;
+    phone: string | null;
+    iconUrl: string | null;
+    bannerUrl: string | null;
+  }>;
+
 type BackendMarketVoucherPage = {
   vouchers?: BackendMarketVoucher[] | null;
   first?: number;
@@ -87,6 +135,24 @@ export async function getMarketVouchers(
     last: normalizeNumber(result.last) ?? 0,
     receivedCount: received.length,
   };
+}
+
+/**
+ * One voucher by contract address. Public and cacheable for the same reasons as
+ * the catalog, so it sends no credentials either.
+ */
+export async function getMarketVoucher(
+  address: string,
+  signal?: AbortSignal,
+): Promise<MarketVoucherDetail> {
+  const result = await apiFetch<{ voucher?: BackendMarketVoucherDetail | null }>(
+    `/api/v2/vouchers/${encodeURIComponent(address)}`,
+    { method: "GET", credentials: "omit", signal },
+  );
+
+  const voucher = normalizeMarketVoucherDetail(result.voucher);
+  if (!voucher) throw new Error("Voucher response did not include a valid address.");
+  return voucher;
 }
 
 function formatMarketQuery({ bbox, ...cursor }: MarketVouchersParams): string {
@@ -129,6 +195,63 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
     lng,
     kind: kind as MarketVoucherKind,
   };
+}
+
+function normalizeMarketVoucherDetail(
+  voucher: BackendMarketVoucherDetail | null | undefined,
+): MarketVoucherDetail | null {
+  if (!voucher) return null;
+
+  const address = normalizeHex(voucher.address);
+  const kind = voucher.kind;
+  if (!address || voucher.id === undefined || voucher.id === null) return null;
+
+  // A map needs both halves of a coordinate, so a row carrying only one is
+  // treated as having none rather than being pinned on a meridian.
+  const lat = normalizeCoordinate(voucher.geoLat, 90);
+  const lng = normalizeCoordinate(voucher.geoLng, 180);
+  const hasLocation = lat !== null && lng !== null;
+
+  return {
+    id: String(voucher.id),
+    chainId: normalizeNumber(voucher.chainId),
+    address,
+    name: normalizeText(voucher.name) ?? "Community Voucher",
+    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    decimals: normalizeNumber(voucher.decimals),
+    ownerAddress: normalizeHex(voucher.ownerAddress),
+    description: normalizeText(voucher.description),
+    voucherUoa: normalizeText(voucher.voucherUoa),
+    voucherValue: normalizeNumericText(voucher.voucherValue),
+    locationName: normalizeText(voucher.locationName),
+    lat: hasLocation ? lat : null,
+    lng: hasLocation ? lng : null,
+    email: normalizeText(voucher.email),
+    website: normalizeText(voucher.website),
+    phone: normalizeText(voucher.phone),
+    iconUrl: normalizeImageUrl(voucher.iconUrl),
+    bannerUrl: normalizeImageUrl(voucher.bannerUrl),
+    // Unlike a catalog row, an unrecognised kind is not grounds for discarding
+    // the whole voucher: it only picks a marker glyph.
+    kind:
+      typeof kind === "string" && MARKET_KINDS.has(kind) ? (kind as MarketVoucherKind) : "voucher",
+  };
+}
+
+/**
+ * Only absolute http(s) URLs reach an `<img src>`. Catalog values are imported
+ * third-party strings, so `javascript:` and `data:` are rejected here rather
+ * than relied on being harmless in an image context.
+ */
+function normalizeImageUrl(value: unknown): string | null {
+  const text = normalizeText(value);
+  if (!text) return null;
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeCoordinate(value: unknown, bound: number): number | null {

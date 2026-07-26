@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import type { MarketVoucher, MarketVoucherDetail } from "#/features/home/api/market-client";
 import type { MarketCamera } from "./market-map";
 
 type MapProps = {
@@ -21,31 +21,41 @@ type MapProps = {
   }) => void;
 };
 
-const { cameraResult, vouchersResult, lastMapProps, mockRequestLocation, mockRetry } = vi.hoisted(
-  () => ({
-    cameraResult: {
-      current: {
-        camera: null as MarketCamera | null,
-        realFix: null as { lat: number; lng: number } | null,
-        userLocation: null as { lat: number; lng: number } | null,
-        locationStatus: "idle" as string,
-        requestLocation: () => {},
-      },
+const {
+  cameraResult,
+  vouchersResult,
+  detailResult,
+  detailRequests,
+  lastMapProps,
+  mockRequestLocation,
+  mockRetry,
+} = vi.hoisted(() => ({
+  detailResult: {
+    current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
+  },
+  detailRequests: { current: [] as (string | undefined)[] },
+  cameraResult: {
+    current: {
+      camera: null as MarketCamera | null,
+      realFix: null as { lat: number; lng: number } | null,
+      userLocation: null as { lat: number; lng: number } | null,
+      locationStatus: "idle" as string,
+      requestLocation: () => {},
     },
-    vouchersResult: {
-      current: {
-        vouchers: [] as MarketVoucher[],
-        isLoading: false,
-        isCatalogComplete: false,
-        error: null as Error | null,
-        retry: () => {},
-      },
+  },
+  vouchersResult: {
+    current: {
+      vouchers: [] as MarketVoucher[],
+      isLoading: false,
+      isCatalogComplete: false,
+      error: null as Error | null,
+      retry: () => {},
     },
-    lastMapProps: { current: null as MapProps | null },
-    mockRequestLocation: vi.fn(),
-    mockRetry: vi.fn(),
-  }),
-);
+  },
+  lastMapProps: { current: null as MapProps | null },
+  mockRequestLocation: vi.fn(),
+  mockRetry: vi.fn(),
+}));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
@@ -56,6 +66,39 @@ vi.mock("#/features/home/hooks/use-market-vouchers", () => ({
   MARKET_MAP_PAGE_SIZE: 500,
   MIN_VIEWPORT_BBOX_ZOOM: 11,
   useMarketMapVouchers: () => vouchersResult.current,
+}));
+
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: (address: string | undefined) => {
+    detailRequests.current.push(address);
+    return detailResult.current;
+  },
+}));
+
+// Real routing is covered by src/routes/-voucher-navigation.test.tsx, which
+// drives an actual router over memory history. Here the page is unit tested, so
+// Link only needs to resolve params into an href.
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    params,
+    children,
+    ...rest
+  }: {
+    to: string;
+    params?: Record<string, string>;
+    children?: ReactNode;
+  }) => (
+    <a
+      href={Object.entries(params ?? {}).reduce(
+        (path, [key, value]) => path.replace(`$${key}`, value),
+        to,
+      )}
+      {...rest}
+    >
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("./market-map.lazy", () => ({
@@ -104,6 +147,8 @@ beforeEach(() => {
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
   lastMapProps.current = null;
+  detailRequests.current = [];
+  detailResult.current = { data: undefined, isPending: false };
   cameraResult.current = {
     camera: null,
     realFix: null,
@@ -191,7 +236,7 @@ describe("MarketPage preview", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
-    expect(screen.queryByRole("region")).toBeNull();
+    expect(screen.queryByRole("link")).toBeNull();
   });
 
   it("shows the voucher name and translated kind after a marker tap", () => {
@@ -220,17 +265,111 @@ describe("MarketPage preview", () => {
     expect(screen.getByText(label)).toBeTruthy();
   });
 
-  it("is not focusable and exposes no inert button or chevron", () => {
-    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+  // Replaces an earlier assertion that the card exposed no link. That was
+  // correct while no voucher page existed; now the card is the way in.
+  it("links the selected voucher to its page", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { address: "0xAbC0000000000000000000000000000000000123" })],
+    };
     renderPage();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const preview = screen.getByRole("region");
-    expect(preview.tagName).not.toBe("BUTTON");
-    expect(preview.querySelector("button")).toBeNull();
-    expect(preview.querySelector("a")).toBeNull();
-    expect(preview.getAttribute("tabindex")).toBeNull();
+    const link = screen.getByRole("link");
+    expect(link.getAttribute("href")).toBe("/vouchers/0xAbC0000000000000000000000000000000000123");
+    // One tap target for the whole card, not a link nested inside a region.
+    expect(link.querySelector("a")).toBeNull();
+  });
+
+  it("shows the symbol beside the name", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { name: "Priscilah Malii", symbol: "MALII" })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    const link = screen.getByRole("link");
+    expect(link.textContent).toContain("Priscilah Malii");
+    expect(link.textContent).toContain("MALII");
+  });
+
+  // Selecting a marker is what warms the cache the voucher page then reads, so
+  // the card must actually ask for the detail of the voucher that was tapped.
+  it("requests detail for the selected voucher and nothing before that", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { address: "0xAbC0000000000000000000000000000000000123" })],
+    };
+    renderPage();
+
+    expect(detailRequests.current.filter(Boolean)).toEqual([]);
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(detailRequests.current).toContain("0xAbC0000000000000000000000000000000000123");
+  });
+
+  it("adds the profile image and rate once detail arrives", () => {
+    detailResult.current = {
+      current: undefined,
+      ...detailResult.current,
+      data: {
+        id: "1",
+        chainId: 42220,
+        address: "0xAbC0000000000000000000000000000000000123",
+        name: "Priscilah Malii",
+        symbol: "MALII",
+        decimals: 6,
+        ownerAddress: null,
+        description: null,
+        voucherUoa: "KSH",
+        voucherValue: "10",
+        locationName: null,
+        lat: -1.29,
+        lng: 36.82,
+        email: null,
+        website: null,
+        phone: null,
+        iconUrl: "https://content.example/icon.jpg",
+        bannerUrl: null,
+        kind: "goods",
+      },
+    } as typeof detailResult.current;
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { symbol: "MALII" })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    const link = screen.getByRole("link");
+    expect(link.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
+    expect(link.textContent).toContain("1 MALII = 10 KSH");
+  });
+
+  // Detail is a second request. The card must be readable the instant a marker
+  // is tapped, from the catalog row the map already had.
+  it("stays readable before detail resolves", () => {
+    detailResult.current = { data: undefined, isPending: true };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("1", { name: "Priscilah Malii", symbol: "MALII", kind: "goods" })],
+    };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    const link = screen.getByRole("link");
+    expect(link.textContent).toContain("Priscilah Malii");
+    expect(link.textContent).toContain("MALII");
+    expect(link.textContent).toContain("Goods");
+    // No image and no rate yet, but also no broken image and no empty rate line.
+    expect(link.querySelector("img")).toBeNull();
+    expect(link.textContent).not.toContain("=");
   });
 
   it("clears the selection when a refreshed dataset drops the voucher", () => {
@@ -242,7 +381,7 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
     fireEvent.click(screen.getByTestId("marker-1"));
-    expect(screen.getByRole("region")).toBeTruthy();
+    expect(screen.getByRole("link")).toBeTruthy();
 
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("2")] };
     rerender(
@@ -251,7 +390,7 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.queryByRole("region")).toBeNull();
+    expect(screen.queryByRole("link")).toBeNull();
   });
 
   it("keeps 'Browse all' present without introducing a list", () => {

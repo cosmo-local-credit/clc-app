@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getMarketVouchers, type MarketVoucher, viewportToBoundingBoxes } from "./market-client";
+import {
+  getMarketVoucher,
+  getMarketVouchers,
+  type MarketVoucher,
+  viewportToBoundingBoxes,
+} from "./market-client";
 
 const fetchMock = vi.fn();
 
@@ -280,5 +285,186 @@ describe("getMarketVouchers page size reporting", () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
     expect((await getMarketVouchers({ perPage: 500 })).receivedCount).toBe(0);
+  });
+});
+
+const DETAIL_ROW = {
+  id: 2710,
+  chainId: 42220,
+  address: "0xAbC0000000000000000000000000000000000123",
+  name: "Priscilah Malii",
+  symbol: "MALII",
+  decimals: 6,
+  ownerAddress: "0xDeF0000000000000000000000000000000000456",
+  description: "Community voucher",
+  voucherUoa: "KSH",
+  voucherValue: "10",
+  locationName: "C96, KEN",
+  geoLat: -1.450979,
+  geoLng: 38.235115,
+  email: "issuer@example.org",
+  website: "https://example.org",
+  phone: "+254700000000",
+  iconUrl: "https://content.example/icon.jpg",
+  bannerUrl: "https://content.example/banner.jpg",
+  kind: "goods",
+};
+
+function detailResponse(voucher: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    text: () =>
+      Promise.resolve(
+        JSON.stringify({ ok: true, description: "Market voucher", result: { voucher } }),
+      ),
+  } as Response;
+}
+
+describe("getMarketVoucher", () => {
+  it("reads the voucher the card and the page render", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+
+    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(requestedUrl()).toContain(`/api/v2/vouchers/${DETAIL_ROW.address}`);
+    expect(voucher).toMatchObject({
+      id: "2710",
+      chainId: 42220,
+      address: "0xAbC0000000000000000000000000000000000123",
+      name: "Priscilah Malii",
+      symbol: "MALII",
+      voucherUoa: "KSH",
+      voucherValue: "10",
+      email: "issuer@example.org",
+      iconUrl: "https://content.example/icon.jpg",
+      bannerUrl: "https://content.example/banner.jpg",
+      lat: -1.450979,
+      lng: 38.235115,
+      kind: "goods",
+    });
+  });
+
+  // Roughly two thirds of the imported catalog has no icon, banner, phone, or
+  // coordinates. Absent must arrive as null so the UI can pick a fallback,
+  // never as an empty string that renders as a broken image.
+  it("returns null for every field the catalog left empty", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({
+        id: 2710,
+        chainId: 42220,
+        address: DETAIL_ROW.address,
+        kind: "voucher",
+      }),
+    );
+
+    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher).toMatchObject({
+      iconUrl: null,
+      bannerUrl: null,
+      email: null,
+      website: null,
+      phone: null,
+      ownerAddress: null,
+      description: null,
+      voucherUoa: null,
+      voucherValue: null,
+      locationName: null,
+      lat: null,
+      lng: null,
+    });
+    // Name and symbol still fall back, because something has to be the heading.
+    expect(voucher.name).toBe("Community Voucher");
+    expect(voucher.symbol).toBe("VOUCHER");
+  });
+
+  // Image URLs are imported third-party strings that go straight into an
+  // <img src>. Only absolute http(s) is accepted rather than trusting that a
+  // scripting scheme is inert in an image context.
+  it.each([
+    ["javascript", "javascript:alert(1)"],
+    ["data", "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="],
+    ["protocol-relative", "//content.example/icon.jpg"],
+    ["site-relative", "/icon.jpg"],
+    ["not a url", "content.example/icon.jpg"],
+  ])("rejects a %s image URL", async (_label, iconUrl) => {
+    fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, iconUrl, bannerUrl: iconUrl }));
+
+    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.iconUrl).toBeNull();
+    expect(voucher.bannerUrl).toBeNull();
+  });
+
+  it("keeps an absolute http and https image URL", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({
+        ...DETAIL_ROW,
+        iconUrl: "http://content.example/icon.jpg",
+        bannerUrl: "https://content.example/banner.jpg",
+      }),
+    );
+
+    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.iconUrl).toBe("http://content.example/icon.jpg");
+    expect(voucher.bannerUrl).toBe("https://content.example/banner.jpg");
+  });
+
+  // Half a coordinate would pin the voucher on a meridian somewhere it is not.
+  it.each([
+    ["only latitude", { geoLat: -1.45, geoLng: null }],
+    ["only longitude", { geoLat: null, geoLng: 38.23 }],
+    ["latitude out of range", { geoLat: 91, geoLng: 38.23 }],
+    ["longitude out of range", { geoLat: -1.45, geoLng: 181 }],
+  ])("drops both coordinates given %s", async (_label, coords) => {
+    fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, ...coords }));
+
+    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.lat).toBeNull();
+    expect(voucher.lng).toBeNull();
+  });
+
+  it.each([
+    ["an absent voucher", undefined],
+    ["a null voucher", null],
+    ["a malformed address", { ...DETAIL_ROW, address: "nope" }],
+    ["a missing id", { ...DETAIL_ROW, id: undefined }],
+  ])("throws on %s so the page shows its error state", async (_label, voucher) => {
+    fetchMock.mockResolvedValue(detailResponse(voucher));
+
+    await expect(getMarketVoucher(DETAIL_ROW.address)).rejects.toThrow();
+  });
+
+  // An unrecognised kind only picks a marker glyph, so unlike a catalog row it
+  // must not discard an otherwise readable voucher.
+  it("falls back to the voucher kind rather than failing", async () => {
+    fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, kind: "eatery" }));
+
+    expect((await getMarketVoucher(DETAIL_ROW.address)).kind).toBe("voucher");
+  });
+
+  // The address arrives from a route param, so a hostile value must stay inside
+  // its path segment: no extra segment, no query string of its own.
+  it("keeps the address inside one path segment", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+
+    await getMarketVoucher("../vouchers?perPage=1");
+
+    const url = new URL(requestedUrl());
+    expect(url.pathname).toBe("/api/v2/vouchers/..%2Fvouchers%3FperPage%3D1");
+    expect(url.search).toBe("");
+  });
+
+  it("sends no credentials, so a shared cache stays usable", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+
+    await getMarketVoucher(DETAIL_ROW.address);
+
+    expect(requestedInit().credentials).toBe("omit");
+    expect(requestedInit().cache).toBeUndefined();
   });
 });
