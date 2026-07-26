@@ -1,6 +1,18 @@
 import { apiFetch } from "#/features/auth/api/client";
+import {
+  type CursorParams,
+  type HexAddress,
+  formatCursorQuery,
+  isPresent,
+  normalizeHex,
+  normalizeID,
+  normalizeNumber,
+  normalizeNumericText,
+  normalizeStringArray,
+  normalizeText,
+} from "#/lib/api-normalize";
 
-export type HexAddress = `0x${string}`;
+export type { CursorParams, HexAddress };
 
 export type UserPool = {
   id: string;
@@ -109,14 +121,6 @@ export type OfferingPage = {
   first?: number;
   last?: number;
 };
-
-export type CursorParams = {
-  perPage: number;
-  cursor?: number;
-  next?: boolean;
-};
-
-export type UserPoolsCursorParams = CursorParams;
 
 type BackendPool = Partial<{
   id: string | number;
@@ -236,7 +240,7 @@ const POOL_READ_REQUEST: RequestInit = {
 };
 
 /** Global network pool catalog (not user membership). */
-export async function getPools(params: UserPoolsCursorParams): Promise<UserPoolPage> {
+export async function getPools(params: CursorParams): Promise<UserPoolPage> {
   const result = await apiFetch<BackendPoolPage>(
     `/api/v2/pools${formatCursorQuery(params)}`,
     POOL_READ_REQUEST,
@@ -410,51 +414,4 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     createdAt: offering.createdAt,
     updatedAt: offering.updatedAt,
   };
-}
-
-function formatCursorQuery(params: CursorParams): string {
-  const search = new URLSearchParams({ perPage: params.perPage.toString() });
-  if (params.cursor !== undefined) search.set("cursor", params.cursor.toString());
-  if (params.next !== undefined) search.set("next", params.next ? "true" : "false");
-  return `?${search.toString()}`;
-}
-
-function normalizeText(value: unknown): string | null {
-  return typeof value === "string" && value.trim() ? value.trim() : null;
-}
-
-function normalizeNumericText(value: unknown): string | null {
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return normalizeText(value);
-}
-
-function normalizeNumber(value: unknown): number | null {
-  if (typeof value !== "number" && typeof value !== "string") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeID(value: unknown): string | null {
-  return typeof value === "number" || (typeof value === "string" && value.length > 0)
-    ? String(value)
-    : null;
-}
-
-function normalizeStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value
-        .filter((item): item is string => typeof item === "string")
-        .map((item) => item.trim())
-        .filter(Boolean)
-    : [];
-}
-
-function normalizeHex(value: unknown): HexAddress | null {
-  return typeof value === "string" && /^0x[0-9a-fA-F]{40}$/.test(value)
-    ? (value as HexAddress)
-    : null;
-}
-
-function isPresent<T>(value: T | null): value is T {
-  return value !== null;
 }
