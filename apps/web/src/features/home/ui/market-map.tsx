@@ -5,34 +5,54 @@ import MapLibreGL, {
   type FilterSpecification,
   type GeoJSONSource,
   type MapLayerMouseEvent,
+  type MapMouseEvent,
 } from "maplibre-gl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "#/lib/utils";
 import { MARKET_SOURCE_ID, type MarketLocation, type MarketLocationKind } from "./market-data";
 import { addMarketMarkerImages, markerImageIds } from "./market-markers";
+import { type MarketStack, groupByCoordinate, spiderfyOffsets } from "./market-stacks";
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const DEFAULT_ZOOM = 12;
+const MAP_MAX_ZOOM = 20;
 
 /**
- * Supercluster exposes raw points at `clusterMaxZoom + 1`. Keeping the cluster
- * ceiling at the map's reachable maximum means an exactly-coincident stack
- * stays one terminal count badge at every zoom the user can reach, instead of
- * exploding into hundreds of overlapping symbols. The source maximum is one
- * higher because MapLibre expects `maxzoom > clusterMaxZoom`.
+ * Distance clustering exists only to keep country- and world-level views
+ * drawable. From zoom 14 (roughly a 5 km view) every distinct coordinate gets
+ * its own marker: a badge the user cannot open is worse than a busy map.
+ *
+ * Vouchers sharing one exact coordinate are a separate problem — 76% of the
+ * imported catalog does, with stacks as large as 200, because whole towns were
+ * geocoded to a single centroid. No zoom can separate those, so they are
+ * grouped up front and fanned out on tap.
  */
-const MAP_MAX_ZOOM = 21;
-const SOURCE_MAX_ZOOM = 22;
-/** ~1.9 m at the equator at zoom 21, so distinct traders can still separate. */
+const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
 
 const CLUSTERS_LAYER_ID = "market-clusters";
 const CLUSTER_COUNT_LAYER_ID = "market-cluster-count";
 const UNCLUSTERED_LAYER_ID = "market-points";
 const SELECTED_LAYER_ID = "market-point-selected";
+const STACK_LAYER_ID = "market-stacks";
+const STACK_COUNT_LAYER_ID = "market-stack-count";
+const SPIDER_SOURCE_ID = "market-spider";
+const SPIDER_LEG_LAYER_ID = "market-spider-legs";
+const SPIDER_POINT_LAYER_ID = "market-spider-points";
+
+const INTERACTIVE_LAYER_IDS = [
+  SPIDER_POINT_LAYER_ID,
+  STACK_LAYER_ID,
+  STACK_COUNT_LAYER_ID,
+  SELECTED_LAYER_ID,
+  UNCLUSTERED_LAYER_ID,
+  CLUSTERS_LAYER_ID,
+  CLUSTER_COUNT_LAYER_ID,
+];
 
 const VIEWPORT_SETTLE_MS = 400;
+const BADGE_COLOR = "#1f2430";
 
 type UserLocation = { lat: number; lng: number };
 
@@ -71,30 +91,56 @@ type MarketMapProps = {
   className?: string;
 };
 
-type MarketFeature = {
+type StackFeature = {
   type: "Feature";
-  properties: { id: string; kind: MarketLocationKind; name: string };
+  properties: {
+    key: string;
+    count: number;
+    id: string;
+    kind: MarketLocationKind;
+    name: string;
+  };
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
-type MarketFeatureCollection = {
-  type: "FeatureCollection";
-  features: MarketFeature[];
+type SpiderFeature = {
+  type: "Feature";
+  properties: { id: string; kind: MarketLocationKind; name: string };
+  geometry:
+    | { type: "Point"; coordinates: [number, number] }
+    | { type: "LineString"; coordinates: [number, number][] };
 };
+
+type FeatureCollection<T> = { type: "FeatureCollection"; features: T[] };
 
 function hasWebGlSupport(): boolean {
   const canvas = document.createElement("canvas");
   return !!(canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl"));
 }
 
-function createMarketFeatureCollection(locations: MarketLocation[]): MarketFeatureCollection {
+function emptyCollection<T>(): FeatureCollection<T> {
+  return { type: "FeatureCollection", features: [] };
+}
+
+function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
   return {
     type: "FeatureCollection",
-    features: locations.map((location) => ({
-      type: "Feature",
-      properties: { id: location.id, kind: location.kind, name: location.name },
-      geometry: { type: "Point", coordinates: [location.lng, location.lat] },
-    })),
+    features: stacks.map((stack) => {
+      const first = stack.members[0];
+      const single = stack.members.length === 1 && first ? first : null;
+      return {
+        type: "Feature",
+        properties: {
+          key: stack.key,
+          count: stack.members.length,
+          // Only a lone voucher carries an id; a stack must be opened first.
+          id: single ? single.id : "",
+          kind: single?.kind ?? first?.kind ?? "voucher",
+          name: single?.name ?? "",
+        },
+        geometry: { type: "Point", coordinates: [stack.lng, stack.lat] },
+      };
+    }),
   };
 }
 
@@ -121,24 +167,46 @@ function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecific
   ];
 }
 
-function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[]) {
+/** Selected styling is a filtered overlay: promoteId is not forwarded to Supercluster. */
+function selectedFilter(selectedId: string | null): FilterSpecification {
+  return [
+    "all",
+    ["!", ["has", "point_count"]],
+    ["==", ["get", "count"], 1],
+    ["==", ["get", "id"], selectedId ?? ""],
+  ];
+}
+
+const singleFilter: FilterSpecification = [
+  "all",
+  ["!", ["has", "point_count"]],
+  ["==", ["get", "count"], 1],
+];
+
+const stackFilter: FilterSpecification = [
+  "all",
+  ["!", ["has", "point_count"]],
+  [">", ["get", "count"], 1],
+];
+
+function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
   addMarketMarkerImages(map);
 
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
-    data: createMarketFeatureCollection(locations),
+    data: createStackCollection(stacks),
     cluster: true,
-    clusterMaxZoom: MAP_MAX_ZOOM,
+    clusterMaxZoom: CLUSTER_MAX_ZOOM,
     clusterRadius: CLUSTER_RADIUS,
-    maxzoom: SOURCE_MAX_ZOOM,
   });
+  map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
   map.addLayer({
     id: CLUSTERS_LAYER_ID,
     type: "circle",
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
-    paint: { "circle-color": "#1f2430", "circle-radius": 14, "circle-stroke-width": 0 },
+    paint: { "circle-color": BADGE_COLOR, "circle-radius": 14, "circle-stroke-width": 0 },
   });
   map.addLayer({
     id: CLUSTER_COUNT_LAYER_ID,
@@ -148,20 +216,42 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[]) {
     layout: { "text-field": "{point_count_abbreviated}", "text-size": 11 },
     paint: { "text-color": "#ffffff" },
   });
+
   map.addLayer({
     id: UNCLUSTERED_LAYER_ID,
     type: "symbol",
     source: MARKET_SOURCE_ID,
-    filter: ["!", ["has", "point_count"]],
+    filter: singleFilter,
     layout: {
       "icon-image": kindMatchExpression(false),
       "icon-size": 1,
       "icon-allow-overlap": true,
     },
   });
-  // Selection is a filtered overlay layer, not setFeatureState: MapLibre does
-  // not forward promoteId into Supercluster's cluster options, so the voucher
-  // property id is not a usable source feature id on a clustered source.
+
+  // A coincident stack keeps a white ring so it reads as openable, unlike a
+  // distance cluster which simply expands when you zoom.
+  map.addLayer({
+    id: STACK_LAYER_ID,
+    type: "circle",
+    source: MARKET_SOURCE_ID,
+    filter: stackFilter,
+    paint: {
+      "circle-color": BADGE_COLOR,
+      "circle-radius": 14,
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+    },
+  });
+  map.addLayer({
+    id: STACK_COUNT_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: stackFilter,
+    layout: { "text-field": ["to-string", ["get", "count"]], "text-size": 11 },
+    paint: { "text-color": "#ffffff" },
+  });
+
   map.addLayer({
     id: SELECTED_LAYER_ID,
     type: "symbol",
@@ -173,10 +263,26 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[]) {
       "icon-allow-overlap": true,
     },
   });
-}
 
-function selectedFilter(selectedId: string | null): FilterSpecification {
-  return ["all", ["!", ["has", "point_count"]], ["==", ["get", "id"], selectedId ?? ""]];
+  map.addLayer({
+    id: SPIDER_LEG_LAYER_ID,
+    type: "line",
+    source: SPIDER_SOURCE_ID,
+    filter: ["==", ["geometry-type"], "LineString"],
+    paint: { "line-color": BADGE_COLOR, "line-width": 1.25, "line-opacity": 0.6 },
+  });
+  map.addLayer({
+    id: SPIDER_POINT_LAYER_ID,
+    type: "symbol",
+    source: SPIDER_SOURCE_ID,
+    filter: ["==", ["geometry-type"], "Point"],
+    layout: {
+      "icon-image": kindMatchExpression(false),
+      "icon-size": 1,
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+    },
+  });
 }
 
 export function MarketMap({
@@ -195,16 +301,20 @@ export function MarketMap({
   const userHasInteractedRef = useRef(false);
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [spiderKey, setSpiderKey] = useState<string | null>(null);
 
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
   const maptilerStyle = maptilerKey
     ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
     : null;
 
+  const stacks = useMemo(() => groupByCoordinate(locations), [locations]);
+  const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
+
   // Latest-value refs keep the construction effect free of data, selection, and
   // callback dependencies, so the map is built once per style/container.
-  const locationsRef = useRef(locations);
-  locationsRef.current = locations;
+  const stacksRef = useRef(stacks);
+  stacksRef.current = stacks;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
   const onViewportSettledRef = useRef(onViewportSettled);
@@ -251,9 +361,14 @@ export function MarketMap({
     function handlePointClick(event: MapLayerMouseEvent) {
       const id = event.features?.[0]?.properties?.id;
       // Selection styles a feature and opens the preview. It deliberately does
-      // not move the camera: the marker is already on screen, so animating to
-      // it fights the user and triggers a needless viewport request.
-      if (typeof id === "string") onSelectRef.current(id);
+      // not move the camera: the marker is already on screen.
+      if (typeof id === "string" && id) onSelectRef.current(id);
+    }
+
+    function handleStackClick(event: MapLayerMouseEvent) {
+      const key = event.features?.[0]?.properties?.key;
+      if (typeof key !== "string") return;
+      setSpiderKey((current) => (current === key ? null : key));
     }
 
     function handleClusterClick(event: MapLayerMouseEvent) {
@@ -263,8 +378,6 @@ export function MarketMap({
       const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
       void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
         if (!feature || feature.geometry.type !== "Point") return;
-        // A fully coincident cluster expands to the source maximum, which is
-        // past the reachable ceiling. Clamping keeps it a terminal badge.
         map.easeTo({
           center: feature.geometry.coordinates as [number, number],
           zoom: Math.min(zoom, map.getMaxZoom()),
@@ -272,9 +385,20 @@ export function MarketMap({
       });
     }
 
+    function handleBackgroundClick(event: MapMouseEvent) {
+      const hits = map.queryRenderedFeatures(event.point, { layers: INTERACTIVE_LAYER_IDS });
+      if (hits.length === 0) setSpiderKey(null);
+    }
+
     function handleUserInteraction(event: { originalEvent?: unknown }) {
       // Programmatic camera moves emit the same events without an originalEvent.
       if (event?.originalEvent) userHasInteractedRef.current = true;
+    }
+
+    function handleZoomStart() {
+      // Legs are laid out in screen pixels, so zooming would slide them off
+      // their anchor. Closing on zoom matches every other map.
+      setSpiderKey(null);
     }
 
     function handleMoveEnd() {
@@ -283,16 +407,21 @@ export function MarketMap({
     }
 
     function handleLoad() {
-      addMarketLayers(map, locationsRef.current);
+      addMarketLayers(map, stacksRef.current);
       setLoaded(true);
     }
 
     map.on("load", handleLoad);
     map.on("click", UNCLUSTERED_LAYER_ID, handlePointClick);
     map.on("click", SELECTED_LAYER_ID, handlePointClick);
+    map.on("click", SPIDER_POINT_LAYER_ID, handlePointClick);
+    map.on("click", STACK_LAYER_ID, handleStackClick);
+    map.on("click", STACK_COUNT_LAYER_ID, handleStackClick);
     map.on("click", CLUSTERS_LAYER_ID, handleClusterClick);
+    map.on("click", handleBackgroundClick);
     map.on("dragstart", handleUserInteraction);
     map.on("zoomstart", handleUserInteraction);
+    map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
 
     return () => {
@@ -300,9 +429,14 @@ export function MarketMap({
       map.off("load", handleLoad);
       map.off("click", UNCLUSTERED_LAYER_ID, handlePointClick);
       map.off("click", SELECTED_LAYER_ID, handlePointClick);
+      map.off("click", SPIDER_POINT_LAYER_ID, handlePointClick);
+      map.off("click", STACK_LAYER_ID, handleStackClick);
+      map.off("click", STACK_COUNT_LAYER_ID, handleStackClick);
       map.off("click", CLUSTERS_LAYER_ID, handleClusterClick);
+      map.off("click", handleBackgroundClick);
       map.off("dragstart", handleUserInteraction);
       map.off("zoomstart", handleUserInteraction);
+      map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
@@ -319,14 +453,62 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
-    source?.setData(createMarketFeatureCollection(locations));
-  }, [loaded, locations]);
+    source?.setData(createStackCollection(stacks));
+  }, [loaded, stacks]);
 
-  // Selection: swap the overlay layer's filter only.
+  // A refreshed dataset that no longer contains the open stack closes it.
+  useEffect(() => {
+    if (spiderKey && !stacksByKey.has(spiderKey)) setSpiderKey(null);
+  }, [spiderKey, stacksByKey]);
+
+  // Spiderfy: fan the open stack's members out around their shared anchor.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    const source = map.getSource(SPIDER_SOURCE_ID) as GeoJSONSource | undefined;
+    if (!source) return;
+
+    const stack = spiderKey ? stacksByKey.get(spiderKey) : undefined;
+    if (!stack) {
+      source.setData(emptyCollection<SpiderFeature>());
+      return;
+    }
+
+    const anchor = map.project([stack.lng, stack.lat]);
+    const offsets = spiderfyOffsets(stack.members.length);
+    const features: SpiderFeature[] = [];
+
+    offsets.forEach((offset, index) => {
+      const member = stack.members[index];
+      if (!member) return;
+      const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
+      const coordinates: [number, number] = [point.lng, point.lat];
+      features.push({
+        type: "Feature",
+        properties: { id: member.id, kind: member.kind, name: member.name },
+        geometry: { type: "LineString", coordinates: [[stack.lng, stack.lat], coordinates] },
+      });
+      features.push({
+        type: "Feature",
+        properties: { id: member.id, kind: member.kind, name: member.name },
+        geometry: { type: "Point", coordinates },
+      });
+    });
+
+    source.setData({ type: "FeatureCollection", features });
+  }, [loaded, spiderKey, stacksByKey]);
+
+  // Selection: swap the overlay filter and the spider layer's icon expression.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
     map.setFilter(SELECTED_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
+      "case",
+      ["==", ["get", "id"], selectedLocationId ?? ""],
+      kindMatchExpression(true),
+      kindMatchExpression(false),
+    ]);
   }, [loaded, selectedLocationId]);
 
   // Camera: ranked candidates plus the explicit location button.

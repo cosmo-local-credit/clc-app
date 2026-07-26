@@ -57,6 +57,10 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
       if (layer) layer.filter = filter;
     });
     setFeatureState = vi.fn();
+    setLayoutProperty = vi.fn();
+    queryRenderedFeatures = vi.fn(() => [] as unknown[]);
+    project = vi.fn((lngLat: [number, number]) => ({ x: lngLat[0] * 100, y: lngLat[1] * 100 }));
+    unproject = vi.fn((point: [number, number]) => ({ lng: point[0] / 100, lat: point[1] / 100 }));
     addImage = vi.fn((id: string) => {
       this.images.add(id);
     });
@@ -186,7 +190,8 @@ vi.mock("maplibre-gl", () => ({
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK, MarketMap } from "./market-map";
-import { markerImageIds, resetMarketMarkerCache } from "./market-markers";
+import { resetMarketMarkerCache } from "./market-markers";
+import { MAX_SPIDER_LEGS } from "./market-stacks";
 
 const LOCATIONS: MarketLocation[] = [
   { id: "1", name: "Alpha", kind: "goods", lat: -1.28, lng: 36.82, locationName: "Nairobi" },
@@ -323,218 +328,6 @@ describe("MarketMap lifecycle", () => {
     unmount();
 
     expect(map.remove).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("MarketMap clustering ceiling", () => {
-  it("locks the source and map zoom so coincident points stay a terminal badge", () => {
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    const map = loadedMap();
-    const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
-
-    expect(spec?.cluster).toBe(true);
-    expect(spec?.clusterMaxZoom).toBe(21);
-    expect(spec?.clusterRadius).toBe(50);
-    // MapLibre requires maxzoom > clusterMaxZoom, so the raw-point tree exists
-    // at 22 but is unreachable.
-    expect(spec?.maxzoom).toBe(22);
-    expect(map.options.maxZoom).toBe(21);
-  });
-
-  it("clamps a fully coincident cluster's expansion to the reachable maximum", async () => {
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    const map = loadedMap();
-    const source = map.getSource(MARKET_SOURCE_ID);
-    if (source) source.expansionZoom = 22;
-
-    await act(async () => {
-      map.triggerLayer("click", "market-clusters", {
-        features: [
-          {
-            properties: { cluster_id: 7 },
-            geometry: { type: "Point", coordinates: [36.82, -1.28] },
-          },
-        ],
-      });
-      await Promise.resolve();
-    });
-
-    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.82, -1.28], zoom: 21 });
-  });
-
-  it("still zooms to a normal cluster's own expansion zoom", async () => {
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    const map = loadedMap();
-    const source = map.getSource(MARKET_SOURCE_ID);
-    if (source) source.expansionZoom = 15;
-
-    await act(async () => {
-      map.triggerLayer("click", "market-clusters", {
-        features: [
-          {
-            properties: { cluster_id: 3 },
-            geometry: { type: "Point", coordinates: [36.9, -1.2] },
-          },
-        ],
-      });
-      await Promise.resolve();
-    });
-
-    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.9, -1.2], zoom: 15 });
-  });
-});
-
-describe("MarketMap selection", () => {
-  it("registers exactly the six base and selected voucher marker images", () => {
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    const map = loadedMap();
-
-    expect([...map.images].sort()).toEqual(
-      [
-        markerImageIds.base.goods,
-        markerImageIds.base.services,
-        markerImageIds.base.voucher,
-        markerImageIds.selected.goods,
-        markerImageIds.selected.services,
-        markerImageIds.selected.voucher,
-      ].sort(),
-    );
-    expect(map.images.size).toBe(6);
-  });
-
-  it("selects a voucher when its point is tapped", () => {
-    const onSelect = vi.fn();
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={onSelect}
-      />,
-    );
-    const map = loadedMap();
-
-    act(() => {
-      map.triggerLayer("click", "market-points", {
-        features: [
-          { properties: { id: "2" }, geometry: { type: "Point", coordinates: [36.81, -1.3] } },
-        ],
-      });
-    });
-
-    expect(onSelect).toHaveBeenCalledWith("2");
-  });
-
-  it("renders selection through a filtered overlay layer, never setFeatureState", () => {
-    const { rerender } = render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    const map = loadedMap();
-
-    rerender(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId="3"
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-
-    expect(map.setFeatureState).not.toHaveBeenCalled();
-    expect(map.setFilter).toHaveBeenCalledWith("market-point-selected", [
-      "all",
-      ["!", ["has", "point_count"]],
-      ["==", ["get", "id"], "3"],
-    ]);
-    // The overlay must sit above the base marker layer.
-    const ids = map.layers.map((layer) => layer.id);
-    expect(ids.indexOf("market-point-selected")).toBeGreaterThan(ids.indexOf("market-points"));
-  });
-
-  it("never moves the camera or requests a viewport when a point is selected", () => {
-    const onViewportSettled = vi.fn();
-    const { rerender } = render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId={null}
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-        onViewportSettled={onViewportSettled}
-      />,
-    );
-    const map = loadedMap();
-
-    rerender(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId="1"
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-        onViewportSettled={onViewportSettled}
-      />,
-    );
-
-    expect(map.flyTo).not.toHaveBeenCalled();
-    expect(map.easeTo).not.toHaveBeenCalled();
-    expect(map.jumpTo).not.toHaveBeenCalled();
-    expect(onViewportSettled).not.toHaveBeenCalled();
-  });
-
-  it("does not create a DOM marker per voucher", () => {
-    render(
-      <MarketMap
-        locations={LOCATIONS}
-        selectedLocationId="1"
-        camera={null}
-        userLocation={null}
-        onSelectLocation={vi.fn()}
-      />,
-    );
-    loadedMap();
-
-    expect(markerInstances).toHaveLength(0);
   });
 });
 
@@ -761,9 +554,249 @@ describe("MarketMap viewport reporting", () => {
   });
 });
 
-describe("MarketMap clustering invariants", () => {
-  it("keeps Supercluster's raw-point tree beyond the reachable zoom", () => {
-    render(
+const KILIFI_STACK: MarketLocation[] = [
+  {
+    id: "s1",
+    name: "Farm Star",
+    kind: "goods",
+    lat: -3.632178,
+    lng: 39.854538,
+    locationName: null,
+  },
+  { id: "s2", name: "Beta", kind: "services", lat: -3.632178, lng: 39.854538, locationName: null },
+  { id: "s3", name: "Gamma", kind: "voucher", lat: -3.632178, lng: 39.854538, locationName: null },
+];
+
+function renderMap(locations: MarketLocation[], extra = {}) {
+  return render(
+    <MarketMap
+      locations={locations}
+      selectedLocationId={null}
+      camera={null}
+      userLocation={null}
+      onSelectLocation={vi.fn()}
+      {...extra}
+    />,
+  );
+}
+
+describe("MarketMap clustering scope", () => {
+  it("clusters by distance only below zoom 14", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
+
+    // Above clusterMaxZoom Supercluster returns raw points, so every distinct
+    // coordinate is its own marker from zoom 14 — roughly a 5 km view.
+    expect(spec?.cluster).toBe(true);
+    expect(spec?.clusterMaxZoom).toBe(13);
+    expect((spec?.clusterMaxZoom ?? 0) + 1).toBe(14);
+    // Premises-level zoom must remain reachable.
+    expect(map.options.maxZoom).toBeGreaterThanOrEqual(18);
+  });
+
+  it("emits one feature per distinct coordinate, not per voucher", () => {
+    renderMap([...LOCATIONS, ...KILIFI_STACK]);
+    const map = loadedMap();
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: { count: number; key: string; id: string } }>;
+    };
+
+    // 3 distinct + 1 shared coordinate carrying 3 members.
+    expect(data.features).toHaveLength(4);
+    expect(data.features.filter((feature) => feature.properties.count === 1)).toHaveLength(3);
+    const stack = data.features.find((feature) => feature.properties.count === 3);
+    expect(stack).toBeDefined();
+    // A stack carries no voucher id: it must be opened before anything is selected.
+    expect(stack?.properties.id).toBe("");
+  });
+
+  it("separates the stack layer from the distance-cluster layer", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+    const ids = map.layers.map((layer) => layer.id);
+
+    expect(ids).toContain("market-stacks");
+    expect(ids).toContain("market-stack-count");
+    expect(ids).toContain("market-clusters");
+    // Single vouchers and stacks never render through the same filter.
+    expect(map.getLayer("market-points")?.filter).toEqual([
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+    ]);
+    expect(map.getLayer("market-stacks")?.filter).toEqual([
+      "all",
+      ["!", ["has", "point_count"]],
+      [">", ["get", "count"], 1],
+    ]);
+  });
+});
+
+describe("MarketMap spiderfy", () => {
+  function spiderData(map: ReturnType<typeof loadedMap>) {
+    return map.getSource("market-spider")?.spec.data as {
+      features: Array<{
+        properties: { id: string };
+        geometry: { type: string; coordinates: unknown };
+      }>;
+    };
+  }
+
+  function openStack(map: ReturnType<typeof loadedMap>) {
+    act(() => {
+      map.triggerLayer("click", "market-stacks", {
+        features: [
+          {
+            properties: { key: "-3.632178,39.854538", count: 3 },
+            geometry: { type: "Point", coordinates: [39.854538, -3.632178] },
+          },
+        ],
+      });
+    });
+  }
+
+  it("starts closed", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    expect(spiderData(map).features).toEqual([]);
+  });
+
+  it("fans every member out with a leader line when the stack is tapped", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    openStack(map);
+
+    const features = spiderData(map).features;
+    const points = features.filter((feature) => feature.geometry.type === "Point");
+    const legs = features.filter((feature) => feature.geometry.type === "LineString");
+
+    expect(points).toHaveLength(3);
+    expect(legs).toHaveLength(3);
+    expect(points.map((point) => point.properties.id).sort()).toEqual(["s1", "s2", "s3"]);
+  });
+
+  it("places every fanned pin somewhere different from the shared anchor", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    openStack(map);
+
+    const points = spiderData(map)
+      .features.filter((feature) => feature.geometry.type === "Point")
+      .map((feature) => JSON.stringify(feature.geometry.coordinates));
+    expect(new Set(points).size).toBe(3);
+    expect(points).not.toContain(JSON.stringify([39.854538, -3.632178]));
+  });
+
+  it("selects the tapped member of an open stack", () => {
+    const onSelect = vi.fn();
+    renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
+    const map = loadedMap();
+    openStack(map);
+
+    act(() => {
+      map.triggerLayer("click", "market-spider-points", {
+        features: [
+          { properties: { id: "s2" }, geometry: { type: "Point", coordinates: [39.85, -3.63] } },
+        ],
+      });
+    });
+
+    expect(onSelect).toHaveBeenCalledWith("s2");
+  });
+
+  it("does not select anything when the stack badge itself is tapped", () => {
+    const onSelect = vi.fn();
+    renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
+    const map = loadedMap();
+
+    openStack(map);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("closes when the same stack is tapped again", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    openStack(map);
+    expect(spiderData(map).features.length).toBeGreaterThan(0);
+    openStack(map);
+
+    expect(spiderData(map).features).toEqual([]);
+  });
+
+  it("closes on zoom, because legs are laid out in screen pixels", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+    openStack(map);
+
+    act(() => {
+      map.trigger("zoomstart", { originalEvent: new WheelEvent("wheel") });
+    });
+
+    expect(spiderData(map).features).toEqual([]);
+  });
+
+  it("closes when the map background is tapped", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+    openStack(map);
+
+    map.queryRenderedFeatures.mockReturnValue([]);
+    act(() => {
+      map.trigger("click", { point: { x: 10, y: 10 } } as never);
+    });
+
+    expect(spiderData(map).features).toEqual([]);
+  });
+
+  it("stays open when the tap lands on another marker", () => {
+    renderMap(KILIFI_STACK);
+    const map = loadedMap();
+    openStack(map);
+
+    map.queryRenderedFeatures.mockReturnValue([{ id: "something" }]);
+    act(() => {
+      map.trigger("click", { point: { x: 10, y: 10 } } as never);
+    });
+
+    expect(spiderData(map).features.length).toBeGreaterThan(0);
+  });
+
+  it("caps a very large stack so the fan stays navigable", () => {
+    const huge = Array.from({ length: 200 }, (_, index) => ({
+      id: `h${index}`,
+      name: `Voucher ${index}`,
+      kind: "voucher" as const,
+      lat: -3.632178,
+      lng: 39.854538,
+      locationName: null,
+    }));
+    renderMap(huge);
+    const map = loadedMap();
+    openStack(map);
+
+    const points = spiderData(map).features.filter((feature) => feature.geometry.type === "Point");
+    expect(points).toHaveLength(MAX_SPIDER_LEGS);
+
+    // The badge still reports the true total, not the capped one.
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: { count: number } }>;
+    };
+    expect(data.features[0]?.properties.count).toBe(200);
+  });
+
+  it("closes when a refreshed dataset drops the open stack", () => {
+    const { rerender } = renderMap(KILIFI_STACK);
+    const map = loadedMap();
+    openStack(map);
+    expect(spiderData(map).features.length).toBeGreaterThan(0);
+
+    rerender(
       <MarketMap
         locations={LOCATIONS}
         selectedLocationId={null}
@@ -772,21 +805,100 @@ describe("MarketMap clustering invariants", () => {
         onSelectLocation={vi.fn()}
       />,
     );
-    const map = loadedMap();
-    const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
-    const clusterMaxZoom = spec?.clusterMaxZoom ?? Number.NaN;
-    const sourceMaxZoom = spec?.maxzoom ?? Number.NaN;
-    const reachableMaxZoom = map.options.maxZoom ?? Number.NaN;
 
-    // Supercluster exposes unclustered points at clusterMaxZoom + 1. Holding
-    // that strictly above the reachable ceiling is what makes an exactly
-    // coincident stack a terminal badge at zoom 15 AND at zoom 21, instead of
-    // a 200-symbol pile. Assert the relationship, not just the numbers.
-    expect(clusterMaxZoom).toBeGreaterThanOrEqual(reachableMaxZoom);
-    expect(clusterMaxZoom + 1).toBeGreaterThan(reachableMaxZoom);
-    // MapLibre warns unless the source maximum exceeds the cluster maximum.
-    expect(sourceMaxZoom).toBeGreaterThan(clusterMaxZoom);
-    // Premises-level zoom must survive the ceiling.
-    expect(reachableMaxZoom).toBeGreaterThanOrEqual(18);
+    expect(spiderData(map).features).toEqual([]);
+  });
+});
+
+describe("MarketMap selection", () => {
+  it("selects a lone voucher when its point is tapped", () => {
+    const onSelect = vi.fn();
+    renderMap(LOCATIONS, { onSelectLocation: onSelect });
+    const map = loadedMap();
+
+    act(() => {
+      map.triggerLayer("click", "market-points", {
+        features: [
+          { properties: { id: "2" }, geometry: { type: "Point", coordinates: [36.81, -1.3] } },
+        ],
+      });
+    });
+
+    expect(onSelect).toHaveBeenCalledWith("2");
+  });
+
+  it("renders selection through a filtered overlay, never setFeatureState", () => {
+    const { rerender } = renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId="3"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.setFeatureState).not.toHaveBeenCalled();
+    expect(map.setFilter).toHaveBeenCalledWith("market-point-selected", [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+      ["==", ["get", "id"], "3"],
+    ]);
+    const ids = map.layers.map((layer) => layer.id);
+    expect(ids.indexOf("market-point-selected")).toBeGreaterThan(ids.indexOf("market-points"));
+  });
+
+  it("highlights a selected member inside an open fan", () => {
+    const { rerender } = renderMap(KILIFI_STACK);
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={KILIFI_STACK}
+        selectedLocationId="s2"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.setLayoutProperty).toHaveBeenCalledWith(
+      "market-spider-points",
+      "icon-image",
+      expect.anything(),
+    );
+  });
+
+  it("never moves the camera or requests a viewport when a point is selected", () => {
+    const onViewportSettled = vi.fn();
+    const { rerender } = renderMap(LOCATIONS, { onViewportSettled });
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId="1"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        onViewportSettled={onViewportSettled}
+      />,
+    );
+
+    expect(map.flyTo).not.toHaveBeenCalled();
+    expect(map.easeTo).not.toHaveBeenCalled();
+    expect(map.jumpTo).not.toHaveBeenCalled();
+    expect(onViewportSettled).not.toHaveBeenCalled();
+  });
+
+  it("does not create a DOM marker per voucher", () => {
+    renderMap(LOCATIONS, { selectedLocationId: "1" });
+    loadedMap();
+
+    expect(markerInstances).toHaveLength(0);
   });
 });
