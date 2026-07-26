@@ -17,8 +17,15 @@ export type MarketStack = {
 
 export type SpiderOffset = { dx: number; dy: number };
 
-/** Beyond this a fan stops being readable; the badge keeps the true total. */
-export const MAX_SPIDER_LEGS = 36;
+/**
+ * How many members one fan shows at a time.
+ *
+ * The spiral radius grows as sqrt(n), so this is a screen-space limit, not a
+ * taste one: a full page lands inside ~146 px, which still fits a 360 px
+ * viewport once the stack is centred. Larger stacks are paged rather than
+ * truncated, so every member stays reachable.
+ */
+export const SPIDER_PAGE_SIZE = 36;
 
 /** Marker artwork is 24 px, so legs are spaced to clear roughly one icon. */
 const LEG_SPACING = 30;
@@ -55,7 +62,7 @@ function coordinateKey(lat: number, lng: number): string {
  * the member count.
  */
 export function spiderfyOffsets(count: number): SpiderOffset[] {
-  const legs = Math.min(count, MAX_SPIDER_LEGS);
+  const legs = Math.min(count, SPIDER_PAGE_SIZE);
   if (legs < 2) return [];
 
   if (legs <= RING_LIMIT) {
@@ -73,4 +80,13 @@ export function spiderfyOffsets(count: number): SpiderOffset[] {
     const angle = step * GOLDEN_ANGLE - Math.PI / 2;
     return { dx: radius * Math.cos(angle), dy: radius * Math.sin(angle) };
   });
+}
+
+export function spiderPageCount(memberCount: number): number {
+  return Math.ceil(Math.max(0, memberCount) / SPIDER_PAGE_SIZE);
+}
+
+export function spiderPageMembers<T>(members: T[], page: number): T[] {
+  if (page < 0) return [];
+  return members.slice(page * SPIDER_PAGE_SIZE, (page + 1) * SPIDER_PAGE_SIZE);
 }

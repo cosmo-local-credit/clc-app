@@ -11,7 +11,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "#/lib/utils";
 import { MARKET_SOURCE_ID, type MarketLocation, type MarketLocationKind } from "./market-data";
 import { addMarketMarkerImages, markerImageIds } from "./market-markers";
-import { type MarketStack, groupByCoordinate, spiderfyOffsets } from "./market-stacks";
+import {
+  type MarketStack,
+  groupByCoordinate,
+  spiderPageCount,
+  spiderPageMembers,
+  spiderfyOffsets,
+} from "./market-stacks";
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const DEFAULT_ZOOM = 12;
@@ -193,6 +199,30 @@ const stackFilter: FilterSpecification = [
  * as "what the user thinks they tapped". Pick explicitly: an open fan's pins
  * sit above everything, then coincident stacks, then lone vouchers.
  */
+/**
+ * Badge labels always count vouchers, never map features.
+ *
+ * Features are grouped per coordinate, so Supercluster's `point_count` counts
+ * locations. Rendering that would make the same spot read "3" at one zoom and
+ * "63" at the next — a number that grows as you zoom in is just wrong. Summing
+ * the per-feature voucher counts keeps the number partitioning as you zoom.
+ */
+function countLabel(property: string): DataDrivenPropertyValueSpecification<string> {
+  return [
+    "step",
+    ["get", property],
+    ["to-string", ["get", property]],
+    // Four digits do not fit a 28 px circle; a world-zoom cluster hits 2,181.
+    1000,
+    ["concat", ["to-string", ["round", ["/", ["get", property], 1000]]], "k"],
+  ];
+}
+
+/** Bigger counts get a slightly bigger disc so three characters still fit. */
+function badgeRadius(property: string): DataDrivenPropertyValueSpecification<number> {
+  return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
+}
+
 function pickTopFeature(
   features: MapLibreGL.MapGeoJSONFeature[],
 ): MapLibreGL.MapGeoJSONFeature | null {
@@ -212,6 +242,9 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     cluster: true,
     clusterMaxZoom: CLUSTER_MAX_ZOOM,
     clusterRadius: CLUSTER_RADIUS,
+    // Sum the vouchers behind each grouped coordinate so a cluster badge and a
+    // stack badge mean the same thing: how many vouchers are here.
+    clusterProperties: { voucherCount: ["+", ["get", "count"]] },
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
@@ -220,14 +253,18 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     type: "circle",
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
-    paint: { "circle-color": BADGE_COLOR, "circle-radius": 14, "circle-stroke-width": 0 },
+    paint: {
+      "circle-color": BADGE_COLOR,
+      "circle-radius": badgeRadius("voucherCount"),
+      "circle-stroke-width": 0,
+    },
   });
   map.addLayer({
     id: CLUSTER_COUNT_LAYER_ID,
     type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
-    layout: { "text-field": "{point_count_abbreviated}", "text-size": 11 },
+    layout: { "text-field": countLabel("voucherCount"), "text-size": 11 },
     paint: { "text-color": "#ffffff" },
   });
 
@@ -252,7 +289,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     filter: stackFilter,
     paint: {
       "circle-color": BADGE_COLOR,
-      "circle-radius": 14,
+      "circle-radius": badgeRadius("count"),
       "circle-stroke-width": 2,
       "circle-stroke-color": "#ffffff",
     },
@@ -262,7 +299,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     type: "symbol",
     source: MARKET_SOURCE_ID,
     filter: stackFilter,
-    layout: { "text-field": ["to-string", ["get", "count"]], "text-size": 11 },
+    layout: { "text-field": countLabel("count"), "text-size": 11 },
     paint: { "text-color": "#ffffff" },
   });
 
@@ -315,7 +352,9 @@ export function MarketMap({
   const userHasInteractedRef = useRef(false);
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [spiderKey, setSpiderKey] = useState<string | null>(null);
+  // A stack larger than one fan is paged rather than truncated, so every
+  // member stays reachable by tapping the badge again.
+  const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
 
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
   const maptilerStyle = maptilerKey
@@ -380,7 +419,7 @@ export function MarketMap({
       const feature = pickTopFeature(hits);
 
       if (!feature) {
-        setSpiderKey(null);
+        setSpider(null);
         return;
       }
 
@@ -396,8 +435,16 @@ export function MarketMap({
       }
 
       const key = feature.properties?.key;
-      if (typeof key === "string" && Number(feature.properties?.count) > 1) {
-        setSpiderKey((current) => (current === key ? null : key));
+      const count = Number(feature.properties?.count);
+      if (typeof key === "string" && count > 1) {
+        const pageCount = spiderPageCount(count);
+        setSpider((current) => {
+          if (current?.key !== key) return { key, page: 0 };
+          const next = current.page + 1;
+          // Tapping past the last page closes the fan, so a single-page stack
+          // still toggles shut on a second tap.
+          return next >= pageCount ? null : { key, page: next };
+        });
         return;
       }
 
@@ -430,7 +477,7 @@ export function MarketMap({
     function handleZoomStart() {
       // Legs are laid out in screen pixels, so zooming would slide them off
       // their anchor. Closing on zoom matches every other map.
-      setSpiderKey(null);
+      setSpider(null);
     }
 
     function handleMoveEnd() {
@@ -478,28 +525,29 @@ export function MarketMap({
 
   // A refreshed dataset that no longer contains the open stack closes it.
   useEffect(() => {
-    if (spiderKey && !stacksByKey.has(spiderKey)) setSpiderKey(null);
-  }, [spiderKey, stacksByKey]);
+    if (spider && !stacksByKey.has(spider.key)) setSpider(null);
+  }, [spider, stacksByKey]);
 
-  // Spiderfy: fan the open stack's members out around their shared anchor.
+  // Spiderfy: fan the open stack's current page out around the shared anchor.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
     const source = map.getSource(SPIDER_SOURCE_ID) as GeoJSONSource | undefined;
     if (!source) return;
 
-    const stack = spiderKey ? stacksByKey.get(spiderKey) : undefined;
+    const stack = spider ? stacksByKey.get(spider.key) : undefined;
     if (!stack) {
       source.setData(emptyCollection<SpiderFeature>());
       return;
     }
 
+    const page = spiderPageMembers(stack.members, spider?.page ?? 0);
     const anchor = map.project([stack.lng, stack.lat]);
-    const offsets = spiderfyOffsets(stack.members.length);
+    const offsets = spiderfyOffsets(page.length);
     const features: SpiderFeature[] = [];
 
     offsets.forEach((offset, index) => {
-      const member = stack.members[index];
+      const member = page[index];
       if (!member) return;
       const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
       const coordinates: [number, number] = [point.lng, point.lat];
@@ -516,6 +564,18 @@ export function MarketMap({
     });
 
     source.setData({ type: "FeatureCollection", features });
+  }, [loaded, spider, stacksByKey]);
+
+  // Centre the stack when its fan opens: a badge near a screen edge would
+  // otherwise throw half its legs off-screen. Pan only, never zoom, so the
+  // pixel geometry of the fan is unchanged.
+  const spiderKey = spider?.key ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !spiderKey) return;
+    const stack = stacksByKey.get(spiderKey);
+    if (!stack) return;
+    map.easeTo({ center: [stack.lng, stack.lat] });
   }, [loaded, spiderKey, stacksByKey]);
 
   // Selection: swap the overlay filter and the spider layer's icon expression.

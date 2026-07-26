@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { MarketLocation } from "./market-data";
-import { MAX_SPIDER_LEGS, groupByCoordinate, spiderfyOffsets } from "./market-stacks";
+import {
+  SPIDER_PAGE_SIZE,
+  groupByCoordinate,
+  spiderPageCount,
+  spiderPageMembers,
+  spiderfyOffsets,
+} from "./market-stacks";
 
 function at(id: string, lat: number, lng: number): MarketLocation {
   return { id, name: `Voucher ${id}`, kind: "voucher", lat, lng, locationName: null };
@@ -105,7 +111,7 @@ describe("spiderfyOffsets", () => {
   });
 
   it("never places two members on the same spot", () => {
-    for (const count of [2, 7, 13, 30, MAX_SPIDER_LEGS]) {
+    for (const count of [2, 7, 13, 30, SPIDER_PAGE_SIZE]) {
       const offsets = spiderfyOffsets(count);
       const seen = new Set(
         offsets.map((offset) => `${offset.dx.toFixed(2)},${offset.dy.toFixed(2)}`),
@@ -120,12 +126,57 @@ describe("spiderfyOffsets", () => {
     }
   });
 
-  it("caps the number of legs so a 200-stack stays navigable", () => {
-    expect(spiderfyOffsets(200)).toHaveLength(MAX_SPIDER_LEGS);
-    expect(spiderfyOffsets(63)).toHaveLength(MAX_SPIDER_LEGS);
+  it("never lays out more than one page of legs", () => {
+    expect(spiderfyOffsets(200)).toHaveLength(SPIDER_PAGE_SIZE);
+    expect(spiderfyOffsets(63)).toHaveLength(SPIDER_PAGE_SIZE);
+  });
+
+  it("keeps a full page inside a phone-sized fan radius", () => {
+    const radii = spiderfyOffsets(SPIDER_PAGE_SIZE).map((o) => Math.hypot(o.dx, o.dy));
+    // Half of a 360 px screen, less a small margin: the fan must not run off
+    // the edge once the stack is centred.
+    expect(Math.max(...radii)).toBeLessThan(170);
   });
 
   it("is deterministic", () => {
     expect(spiderfyOffsets(17)).toEqual(spiderfyOffsets(17));
+  });
+});
+
+describe("spider paging", () => {
+  const members = Array.from({ length: 63 }, (_, index) => at(String(index), 1, 1));
+
+  it("treats a stack that fits as a single page", () => {
+    expect(spiderPageCount(3)).toBe(1);
+    expect(spiderPageCount(SPIDER_PAGE_SIZE)).toBe(1);
+  });
+
+  it("splits a stack larger than one page", () => {
+    expect(spiderPageCount(SPIDER_PAGE_SIZE + 1)).toBe(2);
+    expect(spiderPageCount(63)).toBe(2);
+    expect(spiderPageCount(200)).toBe(Math.ceil(200 / SPIDER_PAGE_SIZE));
+  });
+
+  it("has no pages for an empty stack", () => {
+    expect(spiderPageCount(0)).toBe(0);
+  });
+
+  it("returns a full first page and the remainder on the second", () => {
+    expect(spiderPageMembers(members, 0)).toHaveLength(SPIDER_PAGE_SIZE);
+    expect(spiderPageMembers(members, 1)).toHaveLength(63 - SPIDER_PAGE_SIZE);
+  });
+
+  it("covers every member exactly once across all pages", () => {
+    const seen = [];
+    for (let page = 0; page < spiderPageCount(members.length); page++) {
+      seen.push(...spiderPageMembers(members, page));
+    }
+    expect(seen).toHaveLength(members.length);
+    expect(new Set(seen.map((m) => m.id)).size).toBe(members.length);
+  });
+
+  it("returns nothing beyond the last page", () => {
+    expect(spiderPageMembers(members, 2)).toEqual([]);
+    expect(spiderPageMembers(members, -1)).toEqual([]);
   });
 });

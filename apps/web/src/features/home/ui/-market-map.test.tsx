@@ -191,7 +191,7 @@ import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK, MarketMap } from "./market-map";
 import { resetMarketMarkerCache } from "./market-markers";
-import { MAX_SPIDER_LEGS } from "./market-stacks";
+import { SPIDER_PAGE_SIZE } from "./market-stacks";
 
 const LOCATIONS: MarketLocation[] = [
   { id: "1", name: "Alpha", kind: "goods", lat: -1.28, lng: 36.82, locationName: "Nairobi" },
@@ -787,7 +787,7 @@ describe("MarketMap spiderfy", () => {
     expect(spiderData(map).features.length).toBeGreaterThan(0);
   });
 
-  it("caps a very large stack so the fan stays navigable", () => {
+  it("fans one page at a time for a very large stack", () => {
     const huge = Array.from({ length: 200 }, (_, index) => ({
       id: `h${index}`,
       name: `Voucher ${index}`,
@@ -801,7 +801,7 @@ describe("MarketMap spiderfy", () => {
     openStack(map, 200);
 
     const points = spiderData(map).features.filter((feature) => feature.geometry.type === "Point");
-    expect(points).toHaveLength(MAX_SPIDER_LEGS);
+    expect(points).toHaveLength(SPIDER_PAGE_SIZE);
 
     // The badge still reports the true total, not the capped one.
     const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
@@ -979,5 +979,164 @@ describe("MarketMap click wiring", () => {
     });
 
     expect(onSelect).toHaveBeenCalledWith("s3");
+  });
+});
+
+describe("MarketMap fan paging", () => {
+  function bigStack(size: number): MarketLocation[] {
+    return Array.from({ length: size }, (_, index) => ({
+      id: `b${index}`,
+      name: `Voucher ${index}`,
+      kind: "voucher" as const,
+      lat: -1.283253,
+      lng: 36.817245,
+      locationName: null,
+    }));
+  }
+
+  function tapBadge(map: ReturnType<typeof loadedMap>, count: number) {
+    clickFeature(
+      map,
+      "market-stacks",
+      { key: "-1.283253,36.817245", count },
+      { type: "Point", coordinates: [36.817245, -1.283253] },
+    );
+  }
+
+  function fanIds(map: ReturnType<typeof loadedMap>) {
+    const data = map.getSource("market-spider")?.spec.data as {
+      features: Array<{ properties: { id: string }; geometry: { type: string } }>;
+    };
+    return data.features
+      .filter((feature) => feature.geometry.type === "Point")
+      .map((feature) => feature.properties.id);
+  }
+
+  it("walks every member of a 63-stack across two taps", () => {
+    renderMap(bigStack(63));
+    const map = loadedMap();
+
+    tapBadge(map, 63);
+    const first = fanIds(map);
+    expect(first).toHaveLength(SPIDER_PAGE_SIZE);
+
+    tapBadge(map, 63);
+    const second = fanIds(map);
+    expect(second).toHaveLength(63 - SPIDER_PAGE_SIZE);
+
+    // Together the pages cover the stack exactly once.
+    expect(new Set([...first, ...second]).size).toBe(63);
+  });
+
+  it("closes after the last page", () => {
+    renderMap(bigStack(63));
+    const map = loadedMap();
+
+    tapBadge(map, 63);
+    tapBadge(map, 63);
+    tapBadge(map, 63);
+
+    expect(fanIds(map)).toEqual([]);
+  });
+
+  it("still toggles shut on a second tap when the stack fits one page", () => {
+    renderMap(bigStack(5));
+    clickFeature(
+      loadedMap(),
+      "market-stacks",
+      { key: "-1.283253,36.817245", count: 5 },
+      { type: "Point", coordinates: [36.817245, -1.283253] },
+    );
+    const map = firstMap();
+    expect(fanIds(map)).toHaveLength(5);
+
+    tapBadge(map, 5);
+    expect(fanIds(map)).toEqual([]);
+  });
+
+  it("pages a 200-stack without ever dropping a member", () => {
+    renderMap(bigStack(200));
+    const map = loadedMap();
+
+    const seen = new Set<string>();
+    for (let page = 0; page < Math.ceil(200 / SPIDER_PAGE_SIZE); page++) {
+      tapBadge(map, 200);
+      for (const id of fanIds(map)) seen.add(id);
+    }
+
+    expect(seen.size).toBe(200);
+  });
+
+  it("centres the stack when the fan opens so legs cannot fall off-screen", () => {
+    renderMap(bigStack(63));
+    const map = loadedMap();
+
+    tapBadge(map, 63);
+
+    // Pan only: a zoom would change the pixel scale the legs were laid out in.
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [36.817245, -1.283253] });
+    const call = map.easeTo.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+    expect(call).not.toHaveProperty("zoom");
+  });
+});
+
+describe("MarketMap badge counts", () => {
+  const CBD_STACK: MarketLocation[] = Array.from({ length: 63 }, (_, index) => ({
+    id: `c${index}`,
+    name: `Voucher ${index}`,
+    kind: "voucher" as const,
+    lat: -1.283253,
+    lng: 36.817245,
+    locationName: null,
+  }));
+
+  it("makes a distance cluster count vouchers, not locations", () => {
+    renderMap([...CBD_STACK, ...LOCATIONS]);
+    const map = loadedMap();
+    const spec = map.getSource(MARKET_SOURCE_ID)?.spec as {
+      clusterProperties?: Record<string, unknown>;
+    };
+
+    // Without this, a cluster over the 63-stack plus two singles reads "3"
+    // (features) and then jumps to "63" once zoomed past clusterMaxZoom. A
+    // count that grows as you zoom in is simply wrong.
+    expect(spec.clusterProperties).toBeDefined();
+    expect(spec.clusterProperties?.voucherCount).toEqual(["+", ["get", "count"]]);
+  });
+
+  it("labels clusters from the summed voucher count", () => {
+    renderMap(CBD_STACK);
+    const map = loadedMap();
+    const layer = map.getLayer("market-cluster-count") as {
+      layout?: { "text-field"?: unknown };
+    };
+
+    expect(JSON.stringify(layer.layout?.["text-field"])).toContain("voucherCount");
+    // point_count would be the location count, which is the bug.
+    expect(JSON.stringify(layer.layout?.["text-field"])).not.toContain("point_count");
+  });
+
+  it("labels a coincident stack from its own voucher count", () => {
+    renderMap(CBD_STACK);
+    const map = loadedMap();
+    const layer = map.getLayer("market-stack-count") as {
+      layout?: { "text-field"?: unknown };
+    };
+
+    expect(JSON.stringify(layer.layout?.["text-field"])).toContain('"count"');
+  });
+
+  it("abbreviates counts that cannot fit inside the badge", () => {
+    renderMap(CBD_STACK);
+    const map = loadedMap();
+    const field = JSON.stringify(
+      (map.getLayer("market-cluster-count") as { layout?: { "text-field"?: unknown } }).layout?.[
+        "text-field"
+      ],
+    );
+
+    // A world-zoom cluster reaches 2,181; four digits do not fit a 28 px circle.
+    expect(field).toContain("step");
+    expect(field).toContain("k");
   });
 });
