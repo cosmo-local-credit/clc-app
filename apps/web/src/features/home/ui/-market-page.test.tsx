@@ -21,6 +21,12 @@ vi.mock("#/lib/use-browser-geolocation", () => ({
   useBrowserGeolocation: () => mockUseBrowserGeolocation(),
 }));
 
+vi.mock("#/features/home/api/last-location-storage", () => ({
+  readPersistedLocation: () => null,
+  writePersistedLocation: vi.fn(),
+  clearPersistedLocation: vi.fn(),
+}));
+
 vi.mock("./market-map.lazy", () => ({
   MarketMap: () => <div data-testid="market-map" />,
 }));
@@ -106,9 +112,18 @@ describe("MarketPage", () => {
     expect(mockRequest).toHaveBeenCalledTimes(1);
   });
 
-  it("shows the first market location preview by default", () => {
+  it("starts with no voucher selected", () => {
+    // The newest catalog row may be anywhere on earth; auto-selecting it would
+    // drag the resolved camera to an arbitrary location.
     render(<MarketPage />);
-    expect(screen.getByText(/Cosmo Bakery/)).toBeTruthy();
+    expect(screen.queryByRole("region")).toBeNull();
+  });
+
+  it("contains no placeholder eatery, shop, or service data", () => {
+    render(<MarketPage />);
+    expect(screen.queryByText(/Cosmo Bakery/)).toBeNull();
+    expect(screen.queryByText(/Green Basket Market/)).toBeNull();
+    expect(screen.queryByText(/Mtaa Repair Hub/)).toBeNull();
   });
 
   it("shows a 'Browse all' button", () => {

@@ -1,26 +1,25 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiArrowRightSLine, RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
+import { RiFocus3Line, RiListUnordered, RiMapPinLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
-import {
-  type MarketLocation,
-  type MarketLocationKind,
-  placeholderMarketLocations,
-} from "./market-data";
+import type { MarketLocation, MarketLocationKind } from "./market-data";
 import { MarketMap } from "./market-map.lazy";
 
 export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode }) {
   const { t } = useLingui();
-  const geolocation = useBrowserGeolocation();
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    placeholderMarketLocations[0]?.id ?? null,
-  );
+  const geolocation = useBrowserGeolocation({ autoRequestIfGranted: true });
+  // Start with nothing selected: the newest catalog row may be anywhere in the
+  // world and must not pull the resolved camera to an arbitrary location.
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  const locations: MarketLocation[] = useMemo(() => [], []);
   const selectedLocation = useMemo(
-    () => placeholderMarketLocations.find((location) => location.id === selectedLocationId) ?? null,
-    [selectedLocationId],
+    () => locations.find((location) => location.id === selectedLocationId) ?? null,
+    [locations, selectedLocationId],
   );
+
   const userLocation =
     geolocation.state.status === "granted"
       ? { lat: geolocation.state.lat, lng: geolocation.state.lng }
@@ -44,8 +43,9 @@ export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode 
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >
         <MarketMap
-          locations={placeholderMarketLocations}
+          locations={locations}
           selectedLocationId={selectedLocationId}
+          camera={null}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
           className="absolute inset-0 h-full w-full"
@@ -87,12 +87,12 @@ export function MarketPage({ onboardingBanner }: { onboardingBanner?: ReactNode 
 function useKindLabel(kind: MarketLocationKind): string {
   const { t } = useLingui();
   switch (kind) {
-    case "eatery":
-      return t`Eatery`;
-    case "shop":
-      return t`Shop`;
-    case "service":
-      return t`Service`;
+    case "goods":
+      return t`Goods`;
+    case "services":
+      return t`Services`;
+    case "voucher":
+      return t`Voucher`;
   }
 }
 
@@ -103,29 +103,31 @@ function MarketPreview({
   location: MarketLocation;
   offsetForBanner: boolean;
 }) {
-  const categoryLabel = useKindLabel(location.kind);
+  const kindLabel = useKindLabel(location.kind);
   return (
-    <button
-      type="button"
+    // Not a button: there is no voucher-detail destination yet, and an inert
+    // focusable control announced as actionable is worse than plain text.
+    <section
+      aria-label={location.name}
       className={[
-        "absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3 text-left",
+        "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
         offsetForBanner
           ? "top-[calc(env(safe-area-inset-top)+3rem)]"
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
       ].join(" ")}
     >
-      <span className="flex min-w-0 items-center gap-2">
-        <RiMapPinLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
-        <span className="min-w-0">
-          <span className="block truncate font-heading font-semibold text-sm">
-            {location.name} · {location.distance}
+      <RiMapPinLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
+      <span className="min-w-0">
+        <span className="block truncate font-heading font-semibold text-sm">{location.name}</span>
+        <span className="mt-1 flex items-center gap-2">
+          <span className="inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
+            {kindLabel}
           </span>
-          <span className="mt-1 inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
-            {categoryLabel}
-          </span>
+          {location.locationName ? (
+            <span className="truncate text-muted-foreground text-xs">{location.locationName}</span>
+          ) : null}
         </span>
       </span>
-      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-    </button>
+    </section>
   );
 }
