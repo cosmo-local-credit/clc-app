@@ -59,7 +59,11 @@ function VoucherRow({
         <div className="px-3 pb-3 pt-1">
           <VoucherContactDetails voucher={voucher} />
           <Button asChild className="mt-3 h-11 w-full gap-1.5 text-xs">
-            <Link to="/wallet/tokens/$tokenId" params={{ tokenId: voucher.id }} preload="intent">
+            <Link
+              to="/vouchers/$voucherAddress"
+              params={{ voucherAddress: voucher.id }}
+              preload="intent"
+            >
               <Trans>View voucher</Trans>
               <RiArrowRightSLine className="size-4" aria-hidden="true" />
             </Link>

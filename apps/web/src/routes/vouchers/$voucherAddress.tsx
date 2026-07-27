@@ -1,15 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
-import { VoucherDetailPage } from "#/features/home/ui/voucher-detail-page";
+import { VoucherDetailPage } from "#/features/wallet/ui";
+
+const searchSchema = z.object({
+  tab: z.enum(["offerings", "activity", "info", "reviews"]).optional().catch(undefined),
+  poolAddress: z.string().optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/vouchers/$voucherAddress")({
+  validateSearch: searchSchema,
   component: VoucherDetailRoute,
 });
 
-// Public, like the Market tab it is reached from: a shared voucher link must
-// open for a signed-out visitor, so this route is deliberately not wrapped in
-// AuthenticatedRoute.
 function VoucherDetailRoute() {
   const { voucherAddress } = Route.useParams();
-  return <VoucherDetailPage voucherAddress={voucherAddress} />;
+  const { poolAddress, tab } = Route.useSearch();
+  return (
+    <VoucherDetailPage
+      voucherAddress={voucherAddress}
+      activeTab={tab ?? "offerings"}
+      poolAddress={poolAddress}
+    />
+  );
 }

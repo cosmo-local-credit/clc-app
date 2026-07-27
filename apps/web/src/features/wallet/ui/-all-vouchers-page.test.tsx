@@ -14,10 +14,13 @@ vi.mock("@tanstack/react-router", () => ({
   }: {
     children: ReactNode;
     className?: string;
-    params?: { tokenId?: string };
+    params?: { voucherAddress?: string };
     to: string;
   }) => (
-    <a href={params?.tokenId ? to.replace("$tokenId", params.tokenId) : to} className={className}>
+    <a
+      href={params?.voucherAddress ? to.replace("$voucherAddress", params.voucherAddress) : to}
+      className={className}
+    >
       {children}
     </a>
   ),
@@ -93,7 +96,7 @@ describe("AllVouchersPage", () => {
 
     expect(voucherRow.getAttribute("aria-expanded")).toBe("true");
     expect(screen.getByRole("link", { name: /view voucher/i }).getAttribute("href")).toBe(
-      `/wallet/tokens/${token.tokenAddress}`,
+      `/vouchers/${token.tokenAddress}`,
     );
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20`),

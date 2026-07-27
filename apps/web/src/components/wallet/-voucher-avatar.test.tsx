@@ -14,12 +14,20 @@ function renderAvatar(props: Partial<Parameters<typeof VoucherAvatar>[0]> = {}) 
 }
 
 describe("VoucherAvatar", () => {
-  it("renders the profile image when the catalog has one", () => {
-    const { image } = renderAvatar({ iconUrl: "https://content.example/icon.jpg" });
+  it("hides the profile image behind a skeleton until it finishes loading", () => {
+    const { root, image } = renderAvatar({ iconUrl: "https://content.example/icon.jpg" });
+    const img = image();
 
-    expect(image()?.getAttribute("src")).toBe("https://content.example/icon.jpg");
+    expect(img?.getAttribute("src")).toBe("https://content.example/icon.jpg");
     // Third-party images on a mobile map: never block the basemap for them.
-    expect(image()?.getAttribute("loading")).toBe("lazy");
+    expect(img?.getAttribute("loading")).toBe("lazy");
+    expect(img?.dataset.state).toBe("loading");
+    expect(root.querySelector('[data-slot="skeleton"]')).not.toBeNull();
+
+    fireEvent.load(img as HTMLImageElement);
+
+    expect(image()?.dataset.state).toBe("loaded");
+    expect(root.querySelector('[data-slot="skeleton"]')).toBeNull();
   });
 
   // Roughly two thirds of the imported catalog has no icon, so the fallback is

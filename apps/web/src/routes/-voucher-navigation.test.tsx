@@ -7,6 +7,7 @@ import {
   Outlet,
   RouterProvider,
   useParams,
+  useSearch,
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -17,6 +18,14 @@ vi.mock("#/features/home/api/market-client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
   return { ...actual, getMarketVoucher };
 });
+
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: undefined }),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div data-testid="location-map" />,
@@ -80,7 +89,7 @@ vi.mock("#/features/home/ui/market-map.lazy", () => ({
 }));
 
 import { MarketPage } from "#/features/home/ui/market-page";
-import { VoucherDetailPage } from "#/features/home/ui/voucher-detail-page";
+import { VoucherDetailPage } from "#/features/wallet/ui";
 
 const VOUCHER_ADDRESS = "0xAbC0000000000000000000000000000000000123";
 
@@ -118,9 +127,20 @@ function renderAt(initialPath: string) {
   const voucherRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/vouchers/$voucherAddress",
+    validateSearch: (search): { tab?: "activity" | "info" | "reviews" } => ({
+      tab:
+        search.tab === "activity" || search.tab === "info" || search.tab === "reviews"
+          ? search.tab
+          : undefined,
+    }),
     component: () => {
       const { voucherAddress } = useParams({ strict: false });
-      return voucherAddress ? <VoucherDetailPage voucherAddress={voucherAddress} /> : null;
+      const { tab } = useSearch({ strict: false });
+      const activeTab =
+        tab === "activity" || tab === "info" || tab === "reviews" ? tab : "offerings";
+      return voucherAddress ? (
+        <VoucherDetailPage voucherAddress={voucherAddress} activeTab={activeTab} />
+      ) : null;
     },
   });
 
@@ -150,7 +170,7 @@ afterEach(() => {
 });
 
 describe("voucher navigation", () => {
-  it("opens the voucher page from the map card and Back returns to the map", async () => {
+  it("opens the unified voucher page and preserves tab history before returning to the map", async () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
@@ -161,25 +181,35 @@ describe("voucher navigation", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
-    expect(screen.getByText("issuer@example.org")).toBeTruthy();
+    expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Info" }));
+    await waitFor(() => expect(screen.getByText("issuer@example.org")).toBeTruthy());
+    expect(router.state.location.search).toMatchObject({ tab: "info" });
 
     await act(async () => {
       router.history.back();
     });
+    await waitFor(() =>
+      expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy(),
+    );
 
+    await act(async () => {
+      router.history.back();
+    });
     await waitFor(() => expect(router.state.location.pathname).toBe("/"));
     expect(screen.getByTestId("marker-2710")).toBeTruthy();
   });
 
   // A pasted or shared link arrives with no in-app history and no warm cache.
   it("renders a deep-linked voucher and offers a way back to the market", async () => {
-    renderAt(`/vouchers/${VOUCHER_ADDRESS}`);
+    renderAt(`/vouchers/${VOUCHER_ADDRESS}?tab=info`);
 
     await waitFor(() =>
       expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Priscilah Malii"),
     );
     expect(getMarketVoucher).toHaveBeenCalledWith(VOUCHER_ADDRESS, expect.anything());
-    expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Vouchers" }).getAttribute("href")).toBe("/");
   });
 
   // The card and the page share one query key, so the tap that opened the card
@@ -194,8 +224,9 @@ describe("voucher navigation", () => {
     fireEvent.click(screen.getByRole("link", { name: "Priscilah Malii" }));
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/"));
 
-    // Rendered from cache: the rate is on screen and no second request was made.
-    expect(screen.getByText("1 MALII = 10 KSH")).toBeTruthy();
+    // Rendered from cache: detail-backed info opens with no second request.
+    fireEvent.click(screen.getByRole("tab", { name: "Info" }));
+    expect(await screen.findByText("1 MALII = 10 KSH")).toBeTruthy();
     expect(getMarketVoucher).toHaveBeenCalledTimes(1);
   });
 });

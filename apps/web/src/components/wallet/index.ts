@@ -14,6 +14,7 @@ export {
   TokenLogo,
   TransferDetailsSheet,
   type TransferDetails,
+  VoucherAvatar,
 } from "./wallet-kit";
 export {
   DEFAULT_SEND_TOKEN,

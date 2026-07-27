@@ -38,13 +38,31 @@ msgstr "{0} пулова"
 msgid "{0} vouchers"
 msgstr "{0} ваучера"
 
+#. placeholder {0}: token.symbol
+#. placeholder {1}: rate.value
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:178
+#~ msgid "1 {0} = {1}"
+#~ msgstr "1 {0} = {1}"
+
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
 #. placeholder {2}: rate.unit
 #: apps/web/src/features/home/ui/market-page.tsx:238
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:65
 msgid "1 {0} = {1} {2}"
 msgstr "1 {0} = {1} {2}"
+
+#. placeholder {0}: token.symbol
+#. placeholder {1}: rate.value
+#. placeholder {2}: rate.unit
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:174
+#~ msgid "1 {0} = {1} <0>{2}</0>"
+#~ msgstr "1 {0} = {1} <0>{2}</0>"
+
+#. placeholder {0}: rate.value
+#. placeholder {1}: rate.unit
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:484
+msgid "1 {symbol} = {0} {1}"
+msgstr "1 {symbol} = {0} {1}"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:122
 msgid "1 offer"
@@ -92,7 +110,7 @@ msgstr "Активно"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:37
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:34
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:218
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:222
 msgid "Activity"
 msgstr "Активност"
 
@@ -138,7 +156,7 @@ msgstr "Администратор"
 msgid "Advanced options"
 msgstr "Напредне опције"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:86
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:90
 msgid "All Vouchers"
 msgstr "Сви ваучери"
 
@@ -180,6 +198,10 @@ msgstr "Назад на тржиште"
 #: apps/web/src/features/pools/ui/review-swap-page.tsx:56
 #~ msgid "Back to swap"
 #~ msgstr "Назад на размјену"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:165
+msgid "Balance"
+msgstr "Стање"
 
 #. placeholder {0}: selectedToken.amount
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:153
@@ -278,7 +300,7 @@ msgstr "Затвори образац за приватни кључ"
 msgid "Coming next"
 msgstr "Ускоро"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:89
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:93
 msgid "Community vouchers and their details."
 msgstr "Ваучери заједнице и њихови детаљи."
 
@@ -371,11 +393,11 @@ msgstr "Настави са папирним новчаником"
 msgid "Continue with Paper Wallet"
 msgstr "Настави са папирним новчаником"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:189
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:497
 msgid "Contract address"
 msgstr "Адреса уговора"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:202
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:510
 msgid "Contract address copied"
 msgstr "Адреса уговора је копирана"
 
@@ -383,7 +405,7 @@ msgstr "Адреса уговора је копирана"
 msgid "Copy"
 msgstr "Копирај"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:193
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:501
 msgid "Copy contract address"
 msgstr "Копирај адресу уговора"
 
@@ -418,8 +440,8 @@ msgstr "Овај папирни новчаник није могуће зашт�
 msgid "Couldn't copy address"
 msgstr "Адресу није могуће копирати"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:197
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:203
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:505
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:511
 msgid "Couldn't copy contract address"
 msgstr "Адресу уговора није могуће копирати"
 
@@ -448,7 +470,7 @@ msgstr "На овој локацији није могуће одредити з
 "тачком."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:52
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:248
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:368
 msgid "Couldn't load activity."
 msgstr "Активност није могуће учитати."
 
@@ -465,7 +487,7 @@ msgstr "Pretium историју није могуће учитати."
 msgid "Couldn't load this pool."
 msgstr "Овај пул није могуће учитати."
 
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:19
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
 msgid "Couldn't load this voucher."
 msgstr "Овај ваучер није могуће учитати."
 
@@ -474,7 +496,7 @@ msgid "Couldn't load tokens"
 msgstr "Токене није могуће учитати"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:78
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:101
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:105
 msgid "Couldn't load vouchers."
 msgstr "Ваучере није могуће учитати."
 
@@ -590,9 +612,9 @@ msgstr "Измијени профил"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:524
 msgid "Email"
 msgstr "Имејл"
 
@@ -669,7 +691,7 @@ msgstr "Проналажење локације"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:240
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:373
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:102
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:291
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:411
 msgid "From"
 msgstr "Од"
 
@@ -717,7 +739,7 @@ msgstr "Увези новчаник"
 msgid "Inactive"
 msgstr "Неактивно"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:219
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:224
 msgid "Info"
 msgstr "Информације"
 
@@ -740,7 +762,7 @@ msgstr "Неисправна локација"
 msgid "Invalid phone number"
 msgstr "Неисправан број телефона"
 
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:153
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:554
 msgid "Issuer"
 msgstr "Издавалац"
 
@@ -760,12 +782,12 @@ msgstr "Повежите новчаник са приступним кључем
 msgid "Linking passkey..."
 msgstr "Повезивање приступног кључа..."
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:139
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:143
 msgid "Load more"
 msgstr "Учитај још"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:46
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:242
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:362
 msgid "Loading activity…"
 msgstr "Учитавање активности…"
 
@@ -788,7 +810,7 @@ msgstr "Учитавање мапе локације"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:115
 #: apps/web/src/features/pools/ui/pools-page.tsx:109
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:310
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:430
 msgid "Loading more…"
 msgstr "Учитавање још садржаја…"
 
@@ -805,12 +827,12 @@ msgstr "Учитавање пулова…"
 msgid "Loading tokens…"
 msgstr "Учитавање токена…"
 
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:16
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:95
 msgid "Loading voucher…"
 msgstr "Учитавање ваучера…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:72
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:95
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:99
 msgid "Loading vouchers…"
 msgstr "Учитавање ваучера…"
 
@@ -818,12 +840,10 @@ msgstr "Учитавање ваучера…"
 msgid "Loading your profile…"
 msgstr "Учитавање вашег профила…"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:139
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:143
 msgid "Loading…"
 msgstr "Учитавање…"
 
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:182
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:192
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:174
 msgid "Location"
 msgstr "Локација"
@@ -853,9 +873,11 @@ msgstr "Управљајте ваучерима, тржницама и лока�
 msgid "Manage your wallet session and app preferences."
 msgstr "Управљајте сесијом новчаника и подешавањима апликације."
 
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:553
+#~ msgid "Map"
+#~ msgstr "Мапа"
+
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:40
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:37
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:206
 msgid "Market"
 msgstr "Тржиште"
 
@@ -940,7 +962,7 @@ msgid "New to CLC?"
 msgstr "Нови сте у CLC-у?"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:66
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:262
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:382
 msgid "No activity yet."
 msgstr "Још нема активности."
 
@@ -993,7 +1015,7 @@ msgid "No vouchers to show yet."
 msgstr "Још нема ваучера за приказ."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:92
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:115
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:119
 msgid "No vouchers yet."
 msgstr "Још нема ваучера."
 
@@ -1046,6 +1068,14 @@ msgid "Notifications currently require Chrome on Android or the installed "
 msgstr "За обавјештења је тренутно потребан Chrome на Android-у или инсталирана "
 "iPhone апликација."
 
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:220
+msgid "Offerings"
+msgstr "Понуде"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:270
+msgid "Offerings for this voucher will appear here."
+msgstr "Понуде за овај ваучер ће се појавити овдје."
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:501
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:661
 msgid "Offramp"
@@ -1069,6 +1099,10 @@ msgstr "Уплата"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:553
 msgid "Onramp details"
 msgstr "Детаљи уплате"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:573
+msgid "Open in Maps"
+msgstr "Отвори у мапама"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:92
 #~ msgid "Open Market to browse each voucher's individual offers."
@@ -1138,8 +1172,8 @@ msgstr "На чекању"
 #~ msgstr "Интеграција endpoint-а је на чекању"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:146
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:548
 msgid "Phone"
 msgstr "Телефон"
 
@@ -1159,7 +1193,7 @@ msgstr "Привремени екран"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:379
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:112
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:189
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:157
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:149
 msgid "Pool"
 msgstr "Тржница"
 
@@ -1271,7 +1305,7 @@ msgstr "Курс"
 #: apps/web/src/features/home/ui/wallet-page.tsx:17
 #: apps/web/src/features/wallet/ui/receive-page.tsx:44
 #: apps/web/src/features/wallet/ui/receive-page.tsx:48
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:141
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:198
 msgid "Receive"
 msgstr "Прими"
 
@@ -1285,7 +1319,7 @@ msgstr "Примајте обавјештења о ваучерима, разм�
 "апликација затворена."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:288
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:408
 msgid "Received"
 msgstr "Примљено"
 
@@ -1312,6 +1346,10 @@ msgstr "Прималац"
 msgid "Recipient ENS, phone or address"
 msgstr "ENS, телефон или адреса примаоца"
 
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:183
+msgid "Redeem"
+msgstr "Искористи"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:156
 msgid "Registration failed. Check your connection and try again."
 msgstr "Регистрација није успјела. Провјерите везу и покушајте поново."
@@ -1326,7 +1364,7 @@ msgstr "Проналажење примаоца…"
 
 #: apps/web/src/features/home/ui/market-map.tsx:694
 #: apps/web/src/features/home/ui/market-page.tsx:109
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:21
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:106
 msgid "Retry"
 msgstr "Покушај поново"
 
@@ -1344,6 +1382,14 @@ msgstr "Поништено"
 #: apps/web/src/features/pools/ui/review-swap-page.tsx:69
 #~ msgid "Review swap"
 #~ msgstr "Преглед размјене"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:226
+msgid "Reviews"
+msgstr "Рецензије"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:293
+msgid "Reviews for this voucher will appear here."
+msgstr "Рецензије за овај ваучер ће се појавити овдје."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:30
 msgid "Route redeemable claims across curated markets with shared standards."
@@ -1404,7 +1450,7 @@ msgstr "Продајте стабилне токене за локални но�
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:111
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:239
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:124
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:133
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:190
 msgid "Send"
 msgstr "Пошаљи"
 
@@ -1422,7 +1468,7 @@ msgstr "Слање…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:140
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:288
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:408
 msgid "Sent"
 msgstr "Послато"
 
@@ -1457,8 +1503,8 @@ msgstr "Подијели"
 #~ msgstr "Продавница"
 
 #: apps/web/src/features/wallet/ui/token-detail-page.tsx:330
-msgid "Show offerings"
-msgstr "Прикажи понуде"
+#~ msgid "Show offerings"
+#~ msgstr "Прикажи понуде"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:71
 #: apps/web/src/components/auth/authenticated-route.tsx:102
@@ -1468,6 +1514,10 @@ msgstr "Пријави се"
 #: apps/web/src/components/auth/authenticated-route.tsx:62
 msgid "Sign in to continue"
 msgstr "Пријавите се да бисте наставили"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:357
+msgid "Sign in to view activity."
+msgstr "Пријавите се да бисте видјели активност."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:337
 msgid "Sign in with private key"
@@ -1528,7 +1578,7 @@ msgstr "SVG датотеке нису подржане. Користите PNG, 
 #: apps/web/src/features/wallet/ui/swap-page.tsx:77
 #: apps/web/src/features/wallet/ui/swap-page.tsx:80
 #: apps/web/src/features/wallet/ui/swap-page.tsx:127
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:149
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:206
 msgid "Swap"
 msgstr "Размјена"
 
@@ -1657,7 +1707,7 @@ msgstr "Овај QR код не садржи важећи приватни кљ�
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:151
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:291
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:411
 msgid "To"
 msgstr "За"
 
@@ -1694,9 +1744,9 @@ msgstr "Историја преноса"
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/wallet-page.tsx:86
 #: apps/web/src/features/pools/ui/pools-page.tsx:87
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:109
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:256
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:113
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:376
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:209
 msgid "Try again"
 msgstr "Покушај поново"
@@ -1764,7 +1814,7 @@ msgstr "Прикажи све"
 msgid "View on block explorer"
 msgstr "Прикажи у прегледачу блокова"
 
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:63
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:67
 msgid "View voucher"
 msgstr "Прикажи ваучер"
 
@@ -1772,9 +1822,18 @@ msgstr "Прикажи ваучер"
 msgid "Voucher"
 msgstr "Ваучер"
 
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:214
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:176
+msgid "Voucher actions"
+msgstr "Радње са ваучером"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:215
 msgid "Voucher details"
 msgstr "Детаљи ваучера"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:149
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:596
+msgid "Vouchers"
+msgstr "Ваучери"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:63
 msgid "Vouchers in this pool"
@@ -1788,7 +1847,7 @@ msgstr "Чекање потврде на ланцу"
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:28
 #: apps/web/src/features/home/ui/wallet-page.tsx:32
 #: apps/web/src/features/pools/ui/pools-page.tsx:38
-#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:83
+#: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:87
 msgid "Wallet"
 msgstr "Новчаник"
 
@@ -1817,8 +1876,8 @@ msgstr "Нисмо могли да учитамо број телефона са
 msgid "We couldn't load your profile."
 msgstr "Нисмо могли да учитамо ваш профил."
 
-#: apps/web/src/features/home/ui/voucher-detail-page.tsx:133
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:533
 msgid "Website"
 msgstr "Веб-сајт"
 
@@ -1893,6 +1952,5 @@ msgid "Your profile"
 msgstr "Ваш профил"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:63
-#: apps/web/src/features/wallet/ui/token-detail-page.tsx:157
 msgid "Your Vouchers"
 msgstr "Ваши ваучери"

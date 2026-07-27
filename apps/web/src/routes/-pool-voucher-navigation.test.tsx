@@ -21,7 +21,7 @@ vi.mock("sonner", () => ({
 }));
 
 import { PoolDetailPage } from "#/features/pools/ui";
-import { TokenDetailPage } from "#/features/wallet/ui";
+import { VoucherDetailPage } from "#/features/wallet/ui";
 
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const TOKEN_ADDRESS = "0x2222222222222222222222222222222222222222";
@@ -46,21 +46,27 @@ describe("pool voucher navigation", () => {
         return poolAddress ? <PoolDetailPage poolAddress={poolAddress} /> : null;
       },
     });
-    const tokenRoute = createRoute({
+    const voucherRoute = createRoute({
       getParentRoute: () => rootRoute,
-      path: "/wallet/tokens/$tokenId",
+      path: "/vouchers/$voucherAddress",
       validateSearch: (search): { poolAddress?: string } => ({
         poolAddress: typeof search.poolAddress === "string" ? search.poolAddress : undefined,
       }),
       component: () => {
-        const { tokenId } = useParams({ strict: false });
+        const { voucherAddress } = useParams({ strict: false });
         const { poolAddress } = useSearch({ strict: false });
-        return tokenId ? <TokenDetailPage tokenId={tokenId} poolAddress={poolAddress} /> : null;
+        return voucherAddress ? (
+          <VoucherDetailPage
+            voucherAddress={voucherAddress}
+            activeTab="offerings"
+            poolAddress={poolAddress}
+          />
+        ) : null;
       },
     });
     const history = createMemoryHistory({ initialEntries: [`/pools/${POOL_ADDRESS}`] });
     const router = createRouter({
-      routeTree: rootRoute.addChildren([poolRoute, tokenRoute]),
+      routeTree: rootRoute.addChildren([poolRoute, voucherRoute]),
       history,
     });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -75,11 +81,11 @@ describe("pool voucher navigation", () => {
     fireEvent.click(await screen.findByRole("link", { name: /trade token/i }));
 
     await waitFor(() => {
-      expect(history.location.pathname).toBe(`/wallet/tokens/${TOKEN_ADDRESS.toLowerCase()}`);
+      expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
       expect(history.location.search).toBe(`?poolAddress=${POOL_ADDRESS}`);
     });
     expect(await screen.findByText("Trade Token")).toBeTruthy();
-    expect(screen.getByText("TTX").parentElement?.textContent).toMatch(/0\s*TTX/);
+    expect(screen.getByLabelText("Balance").textContent).toMatch(/0\s*TTX/);
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Pool" }));
@@ -116,6 +122,20 @@ function mockRequests() {
       if (url.includes(`/api/v2/pools/${POOL_ADDRESS}`)) {
         return Promise.resolve(
           response({ address: POOL_ADDRESS, name: "Trade Pool", symbol: "TRD" }),
+        );
+      }
+      if (url.includes(`/api/v2/vouchers/${TOKEN_ADDRESS}`)) {
+        return Promise.resolve(
+          response({
+            voucher: {
+              id: 2,
+              address: TOKEN_ADDRESS,
+              name: "Trade Token",
+              symbol: "TTX",
+              decimals: 6,
+              iconUrl: "https://pool.example/ttx.png",
+            },
+          }),
         );
       }
       if (url.includes("/api/v2/accounts/") && url.includes("/tokens")) {

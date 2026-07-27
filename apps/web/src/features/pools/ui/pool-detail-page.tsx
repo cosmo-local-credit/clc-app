@@ -107,8 +107,8 @@ function VoucherRow({
 }) {
   return (
     <Link
-      to="/wallet/tokens/$tokenId"
-      params={{ tokenId: voucher.tokenAddress.toLowerCase() }}
+      to="/vouchers/$voucherAddress"
+      params={{ voucherAddress: voucher.tokenAddress.toLowerCase() }}
       search={{ poolAddress }}
       className={["flex items-center gap-3 p-3", isLast ? "" : "border-b border-border"].join(" ")}
     >

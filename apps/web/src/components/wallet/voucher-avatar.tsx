@@ -1,17 +1,10 @@
 import { useState } from "react";
 
-import { hueFromSeed } from "#/components/wallet";
+import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { cn } from "#/lib/utils";
+import { hueFromSeed } from "./wallet-data";
 
-/**
- * A voucher's profile image, with the fallback treated as the common case:
- * roughly two thirds of the imported catalog has no `iconUrl`, and the URLs
- * that do exist point at a third-party host that sometimes 404s.
- *
- * The fallback colour is seeded from the contract address rather than the
- * symbol, so the same voucher looks identical on the map card and on its page
- * even though only one of them is showing a symbol at any moment.
- */
+/** Voucher identity shared by the market card and voucher detail screen. */
 export function VoucherAvatar({
   address,
   symbol,
@@ -25,24 +18,25 @@ export function VoucherAvatar({
   size: number;
   className?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const imageUrl = iconUrl && failedUrl !== iconUrl ? iconUrl : null;
 
-  if (iconUrl && !imageFailed) {
+  if (imageUrl) {
     return (
       <span
         aria-hidden="true"
-        className={cn("block shrink-0 overflow-hidden rounded-full bg-muted", className)}
+        className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", className)}
         style={{ width: size, height: size }}
       >
-        <img
-          src={iconUrl}
+        <ProgressiveImage
+          src={imageUrl}
           alt=""
           width={size}
           height={size}
           loading="lazy"
-          decoding="async"
           className="size-full object-cover"
-          onError={() => setImageFailed(true)}
+          skeletonClassName="rounded-full"
+          onError={() => setFailedUrl(imageUrl)}
         />
       </span>
     );
