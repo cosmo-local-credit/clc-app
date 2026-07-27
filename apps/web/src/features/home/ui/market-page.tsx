@@ -1,6 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
-import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
@@ -12,7 +11,7 @@ import type { MarketVoucher } from "#/features/home/api/market-client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
-import type { MarketLocationKind } from "./market-data";
+import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
 import type { MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
@@ -141,45 +140,15 @@ export function MarketPage({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
-        <Button className="pointer-events-auto h-11 px-5">
-          <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
-          <Trans>Browse all</Trans>
+        <Button asChild className="pointer-events-auto h-11 px-5">
+          <Link to="/" search={{ tab: "market", view: "list" }}>
+            <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
+            <Trans>Browse all</Trans>
+          </Link>
         </Button>
       </div>
     </main>
   );
-}
-
-function useKindLabel(kind: MarketLocationKind): string {
-  const { t } = useLingui();
-  switch (kind) {
-    case "goods":
-      return t`Goods`;
-    case "services":
-      return t`Services`;
-    case "voucher":
-      return t`Voucher`;
-  }
-}
-
-/**
- * Distance is only ever shown for a real GPS fix (camera rank 1 or 2). The
- * complete unit-bearing message goes through Lingui so Serbian and Swahili can
- * reorder value and unit; a translated unit fragment is never concatenated.
- */
-function useDistanceLabel(from: Coordinates | null, to: Coordinates): string | null {
-  const { t } = useLingui();
-  if (!from) return null;
-
-  try {
-    const distance = formatDistance(haversineMeters(from, to));
-    return distance.unit === "m"
-      ? t`${distance.value} m`
-      : t`${distance.value.toFixed(distance.fractionDigits)} km`;
-  } catch {
-    // A catalog row with impossible coordinates must not break the preview.
-    return null;
-  }
 }
 
 /**
@@ -199,8 +168,8 @@ function MarketPreview({
   realFix: Coordinates | null;
   offsetForBanner: boolean;
 }) {
-  const kindLabel = useKindLabel(voucher.kind);
-  const distanceLabel = useDistanceLabel(realFix, voucher);
+  const kindLabel = useMarketKindLabel(voucher.kind);
+  const distanceLabel = useMarketDistanceLabel(realFix, voucher);
   const { data: detail } = useMarketVoucherDetail(voucher.address);
   const rate = formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null);
 

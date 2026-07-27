@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isPrivateHomeTab, parseHomeTab } from "./tabs";
+import { isPrivateHomeTab, parseHomeTab, parseMarketView } from "./tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
@@ -30,5 +30,12 @@ describe("parseHomeTab", () => {
     expect(isPrivateHomeTab("posts")).toBe(true);
     expect(isPrivateHomeTab("settings")).toBe(true);
     expect(isPrivateHomeTab("market")).toBe(false);
+  });
+
+  it("defaults the market to the map and accepts only the explicit list view", () => {
+    expect(parseMarketView(undefined)).toBe("map");
+    expect(parseMarketView("map")).toBe("map");
+    expect(parseMarketView("list")).toBe("list");
+    expect(parseMarketView("grid")).toBe("map");
   });
 });

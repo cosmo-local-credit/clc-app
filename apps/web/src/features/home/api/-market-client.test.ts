@@ -25,6 +25,7 @@ const VALID_ROW = {
   address: "0xAbC0000000000000000000000000000000000123",
   name: "Priscilah Malii",
   symbol: "VOUCHER",
+  iconUrl: "https://content.example/icon.jpg",
   locationName: "C96, KEN",
   geoLat: -1.450979,
   geoLng: 38.235115,
@@ -119,6 +120,7 @@ describe("getMarketVouchers normalization", () => {
         address: "0xAbC0000000000000000000000000000000000123",
         name: "Priscilah Malii",
         symbol: "VOUCHER",
+        iconUrl: "https://content.example/icon.jpg",
         locationName: "C96, KEN",
         lat: -1.450979,
         lng: 38.235115,
@@ -159,6 +161,21 @@ describe("getMarketVouchers normalization", () => {
       symbol: "VOUCHER",
       locationName: null,
     });
+  });
+
+  it("rejects an unsafe catalog icon URL without dropping the voucher", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({
+        vouchers: [{ ...VALID_ROW, iconUrl: "javascript:alert(1)" }],
+        first: 2710,
+        last: 2710,
+      }),
+    );
+
+    const page = await getMarketVouchers({ perPage: 500 });
+
+    expect(page.vouchers).toHaveLength(1);
+    expect(page.vouchers[0]?.iconUrl).toBeNull();
   });
 
   it("treats an absent voucher list as an empty page", async () => {

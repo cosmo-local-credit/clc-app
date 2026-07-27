@@ -57,6 +57,13 @@ Current local overrides:
     renders with no loading state. Under the global one-minute `staleTime` every
     reopened card would refetch instead.
 
+- `apps/web/src/features/home/hooks/use-voucher-offerings.ts`
+  - public per-voucher offerings (`GET /api/v2/vouchers/:address/offerings`)
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: offerings come from the same bulk-imported static catalog as market
+    vouchers. Keeping the assembled pages for 30 minutes avoids a public
+    voucher page refetch whenever the user switches tabs or revisits it.
+
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
   - IP/country camera bootstrap for the Market map
   - `staleTime: Infinity`

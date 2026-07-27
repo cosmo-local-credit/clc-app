@@ -12,19 +12,25 @@ import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
 import { BottomNavigation } from "./bottom-navigation";
+import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
 import { OnboardingBanner } from "./onboarding-banner";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
-import { isPrivateHomeTab, type HomeTab } from "./tabs";
+import { isPrivateHomeTab, type HomeTab, type MarketView } from "./tabs";
 import { WalletPage } from "./wallet-page";
 
 export type HomePageProps = {
   activeTab?: HomeTab;
+  marketView?: MarketView;
   isAuthenticated?: boolean;
 };
 
-export function HomePage({ activeTab = "market", isAuthenticated = true }: HomePageProps) {
+export function HomePage({
+  activeTab = "market",
+  marketView = "map",
+  isAuthenticated = true,
+}: HomePageProps) {
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address);
   const { mutateAsync: disconnect } = useDisconnect();
@@ -64,10 +70,17 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        <MarketPage
-          onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-          locationOwner={locationOwner}
-        />
+        marketView === "map" ? (
+          <MarketPage
+            onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+            locationOwner={locationOwner}
+          />
+        ) : (
+          <MarketListPage
+            onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+            locationOwner={locationOwner}
+          />
+        )
       ) : (
         <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
@@ -87,7 +100,11 @@ export function HomePage({ activeTab = "market", isAuthenticated = true }: HomeP
           </main>
         </div>
       )}
-      <BottomNavigation activeTab={currentTab} isAuthenticated={isAuthenticated} />
+      <BottomNavigation
+        activeTab={currentTab}
+        marketView={marketView}
+        isAuthenticated={isAuthenticated}
+      />
     </div>
   );
 }

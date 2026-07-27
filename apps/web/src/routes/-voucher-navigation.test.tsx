@@ -68,6 +68,19 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
   };
 });
 
+vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
+  useVoucherOfferingsInfinite: () => ({
+    data: { pages: [{ offerings: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  }),
+}));
+
 vi.mock("#/features/home/ui/market-map.lazy", () => ({
   MarketMap: (props: {
     locations: { id: string; name: string }[];
@@ -194,7 +207,7 @@ describe("voucher navigation", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
-    expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy();
+    expect(screen.getByText("No offerings yet")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("tab", { name: "Info" }));
     await waitFor(() => expect(screen.getByText("issuer@example.org")).toBeTruthy());

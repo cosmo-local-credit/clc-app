@@ -14,14 +14,17 @@ const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mo
 vi.mock("./bottom-navigation", () => ({
   BottomNavigation: ({
     activeTab,
+    marketView,
     isAuthenticated,
   }: {
     activeTab: string;
+    marketView: string;
     isAuthenticated: boolean;
   }) => (
     <nav
       data-testid="bottom-navigation"
       data-active-tab={activeTab}
+      data-market-view={marketView}
       data-authenticated={String(isAuthenticated)}
     />
   ),
@@ -71,6 +74,20 @@ vi.mock("./market-page", () => ({
   ),
 }));
 
+vi.mock("./market-list-page", () => ({
+  MarketListPage: ({
+    onboardingBanner,
+    locationOwner,
+  }: {
+    onboardingBanner?: ReactNode;
+    locationOwner?: string;
+  }) => (
+    <div data-testid="market-list-page" data-location-owner={locationOwner}>
+      {onboardingBanner}
+    </div>
+  ),
+}));
+
 vi.mock("./onboarding-banner", () => ({
   OnboardingBanner: () => <div data-testid="onboarding-banner" />,
 }));
@@ -106,10 +123,17 @@ beforeEach(() => {
 });
 
 describe("HomePage tabs", () => {
-  it("shows market page by default", () => {
+  it("shows the market map by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-list-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
+  });
+
+  it("shows the Browse-all list for the explicit market list view", () => {
+    renderHome(<HomePage marketView="list" />);
+    expect(screen.getByTestId("market-list-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-page")).toBeNull();
   });
 
   it("renders the requested wallet tab", () => {

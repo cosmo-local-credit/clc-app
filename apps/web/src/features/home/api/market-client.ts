@@ -18,6 +18,7 @@ export type MarketVoucher = {
   address: HexAddress;
   name: string;
   symbol: string;
+  iconUrl: string | null;
   locationName: string | null;
   lat: number;
   lng: number;
@@ -26,9 +27,9 @@ export type MarketVoucher = {
 
 /**
  * One voucher's public detail, from `GET /api/v2/vouchers/:address`. Backs both
- * the map's selection card and the voucher page, which is why it is fetched per
- * selection rather than shipped on every catalog row: the icon alone would add
- * roughly 170 KB across 2,181 rows to display one image at a time.
+ * the map's selection card and the voucher page. The catalog carries the small
+ * icon field needed by the list; larger descriptive and banner fields remain
+ * detail-only.
  *
  * Coordinates are nullable here, unlike `MarketVoucher`. A voucher without them
  * still has a readable page, it simply renders no map.
@@ -85,6 +86,7 @@ type BackendMarketVoucher = Partial<{
   address: string | null;
   name: string | null;
   symbol: string | null;
+  iconUrl: string | null;
   locationName: string | null;
   geoLat: string | number | null;
   geoLng: string | number | null;
@@ -190,6 +192,7 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
     symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    iconUrl: normalizeImageUrl(voucher.iconUrl),
     locationName: normalizeText(voucher.locationName),
     lat,
     lng,

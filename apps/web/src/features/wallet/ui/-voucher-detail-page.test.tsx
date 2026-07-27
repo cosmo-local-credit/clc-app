@@ -13,6 +13,45 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   openDefaultMaps: vi.fn(),
+  offeringAddress: undefined as string | undefined,
+  offeringsResult: {
+    data: undefined as
+      | {
+          pages: Array<{
+            offerings: Array<{
+              id: string;
+              voucherAddress: `0x${string}`;
+              sellerAddress: `0x${string}`;
+              voucherId: string;
+              sourceId: null;
+              voucherName: string | null;
+              voucherSymbol: string | null;
+              voucherDecimals: number | null;
+              commodityName: string;
+              commodityType: string;
+              description: string;
+              quantity: string;
+              unit: string | null;
+              frequency: "day" | "week" | "month" | "year" | null;
+              price: string | null;
+              available: boolean;
+              locationName: string | null;
+              geoLat: number | null;
+              geoLng: number | null;
+              imageUrl: string | null;
+              tags: string[];
+            }>;
+          }>;
+        }
+      | undefined,
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  },
 }));
 
 vi.mock("wagmi", () => ({
@@ -102,6 +141,13 @@ vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
   usePoolVouchersInfinite: () => ({ data: undefined, isPending: false }),
 }));
 
+vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
+  useVoucherOfferingsInfinite: (address: string | undefined) => {
+    mocks.offeringAddress = address;
+    return mocks.offeringsResult;
+  },
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({ lat, lng }: { lat: number; lng: number }) => (
     <div data-testid="location-map" data-lat={lat} data-lng={lng} />
@@ -146,6 +192,70 @@ beforeEach(() => {
     isError: false,
     refetch: vi.fn(),
   };
+  mocks.offeringAddress = undefined;
+  mocks.offeringsResult = {
+    data: {
+      pages: [
+        {
+          offerings: [
+            {
+              id: "1",
+              sourceId: null,
+              voucherId: "10",
+              voucherAddress: ADDRESS,
+              voucherName: "Priscilah Malii",
+              voucherSymbol: "MALII",
+              voucherDecimals: 2,
+              sellerAddress: "0x1111111111111111111111111111111111111111",
+              commodityName: "Vegetables",
+              commodityType: "GOOD",
+              description: "Fresh produce",
+              quantity: "5",
+              unit: "kg",
+              frequency: "week",
+              price: "10",
+              available: true,
+              locationName: "Kangemi Market",
+              geoLat: null,
+              geoLng: null,
+              imageUrl: "https://content.example/vegetables.jpg",
+              tags: ["Produce", "Fresh"],
+            },
+            {
+              id: "2",
+              sourceId: null,
+              voucherId: "10",
+              voucherAddress: ADDRESS,
+              voucherName: "Priscilah Malii",
+              voucherSymbol: "MALII",
+              voucherDecimals: 2,
+              sellerAddress: "0x1111111111111111111111111111111111111111",
+              commodityName: "Farm training",
+              commodityType: "SERVICE",
+              description: "",
+              quantity: "1000000000",
+              unit: null,
+              frequency: null,
+              price: null,
+              available: true,
+              locationName: null,
+              geoLat: null,
+              geoLng: null,
+              imageUrl: null,
+              tags: [],
+            },
+          ],
+        },
+      ],
+    },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  };
 });
 
 afterEach(() => {
@@ -178,7 +288,120 @@ describe("VoucherDetailPage", () => {
     expect(screen.getByRole("tab", { name: "Offerings" }).getAttribute("aria-selected")).toBe(
       "true",
     );
-    expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy();
+    const offerings = screen.getByRole("tabpanel");
+    expect(within(offerings).getByText("Vegetables")).toBeTruthy();
+    expect(within(offerings).getByText("10 MALII")).toBeTruthy();
+    expect(within(offerings).getByText("Price on request")).toBeTruthy();
+    expect(
+      within(offerings).getByText(
+        (_content, element) =>
+          element?.tagName === "SPAN" && element.textContent === "5 kg · Weekly",
+      ),
+    ).toBeTruthy();
+    expect(within(offerings).getByText("1B")).toBeTruthy();
+    expect(offerings.querySelector(".grid")?.className).toContain("grid-cols-2");
+    // Every image is pinned to one height and cannot absorb a stretched row's
+    // slack, so two tiles with different amounts of text still line up.
+    expect(
+      Array.from(offerings.querySelectorAll('[data-slot="offering-media"]')).every(
+        (media) => media.className.includes("h-36") && media.className.includes("shrink-0"),
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(offerings.querySelectorAll('[data-slot="offering-media"]')).every((media) =>
+        media.parentElement?.className.includes("flex-col"),
+      ),
+    ).toBe(true);
+    expect(
+      within(offerings).getAllByRole("button", { name: /View offering details:/ }),
+    ).toHaveLength(2);
+    expect(screen.queryByText("Fresh produce")).toBeNull();
+
+    fireEvent.click(
+      within(offerings).getByRole("button", {
+        name: "View offering details: Vegetables",
+      }),
+    );
+
+    const dialog = screen.getByRole("dialog");
+    // The description is the value alone — no "Description" key above it — but
+    // it gets its own card rather than floating on the sheet background.
+    const description = within(dialog).getByText("Fresh produce");
+    expect(within(dialog).queryByText("Description")).toBeNull();
+    expect(description.parentElement?.className).toContain("bg-card");
+    expect(description.parentElement?.className).toContain("border-border");
+    // Redundant with the voucher itself, and replaced by the quantity stepper.
+    expect(within(dialog).queryByText("Kangemi Market")).toBeNull();
+    expect(within(dialog).queryByText("Seller")).toBeNull();
+    // Tapping outside dismisses, so the only close control is screen-reader only.
+    expect(within(dialog).getByText("Close").className).toContain("sr-only");
+  });
+
+  it("colours each tag from its own name so a tag looks the same everywhere", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "View offering details: Vegetables" }));
+
+    const dialog = screen.getByRole("dialog");
+    const produce = within(dialog).getByText("Produce");
+    const fresh = within(dialog).getByText("Fresh");
+
+    expect(produce.style.backgroundColor).toBeTruthy();
+    expect(fresh.style.backgroundColor).toBeTruthy();
+    expect(produce.style.backgroundColor).not.toBe(fresh.style.backgroundColor);
+  });
+
+  it("gives the quantity and total rows one shared height", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "View offering details: Vegetables" }));
+
+    const dialog = screen.getByRole("dialog");
+    const quantityRow = within(dialog).getByText("Quantity").parentElement;
+    const totalRow = within(dialog).getByText("Total").parentElement;
+
+    expect(quantityRow?.className).toContain("h-14");
+    expect(totalRow?.className).toContain("h-14");
+  });
+
+  it("multiplies the unit price into a running total as the quantity changes", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "View offering details: Vegetables" }));
+
+    const dialog = screen.getByRole("dialog");
+    const totalRow = () => within(dialog).getByText("Total").parentElement?.textContent;
+    const decrease = within(dialog).getByRole("button", {
+      name: "Decrease quantity",
+    }) as HTMLButtonElement;
+
+    expect(within(dialog).getByText("10 MALII each")).toBeTruthy();
+    expect(totalRow()).toContain("10 MALII");
+    // One is the floor, so the minus is inert until the quantity leaves it.
+    expect(decrease.disabled).toBe(true);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
+
+    expect(totalRow()).toContain("30 MALII");
+    expect(decrease.disabled).toBe(false);
+
+    fireEvent.click(decrease);
+
+    expect(totalRow()).toContain("20 MALII");
+    expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
+  });
+
+  it("shows no total for an offering the issuer never priced", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "View offering details: Farm training" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Price on request")).toBeTruthy();
+    expect(within(dialog).queryByText("Total")).toBeNull();
+    // The quantity is still selectable: an unpriced item is still orderable.
+    expect(within(dialog).getByRole("button", { name: "Increase quantity" })).toBeTruthy();
   });
 
   it("disables Redeem when the voucher has no known issuer to send back to", () => {
@@ -190,6 +413,32 @@ describe("VoucherDetailPage", () => {
     expect(
       (within(actions).getByRole("button", { name: "Redeem" }) as HTMLButtonElement).disabled,
     ).toBe(true);
+  });
+
+  it("skips the offerings request when the voucher kind proves the tab is empty", () => {
+    mocks.detailResult.data = detail({ kind: "voucher" });
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByText("No offerings yet")).toBeTruthy();
+    expect(mocks.offeringAddress).toBeUndefined();
+  });
+
+  it("offers a working retry when offerings fail to load", () => {
+    const refetch = vi.fn();
+    mocks.offeringsResult = {
+      ...mocks.offeringsResult,
+      data: undefined,
+      isError: true,
+      isSuccess: false,
+      refetch,
+    };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByText("Couldn't load offerings.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 
   it("shows zero when the account has no balance for the voucher", () => {
@@ -214,12 +463,26 @@ describe("VoucherDetailPage", () => {
     expect(container.querySelector('img[src="https://content.example/banner.jpg"]')).toBeNull();
     expect(avatar.getAttribute("loading")).toBe("lazy");
     expect(avatar.dataset.state).toBe("loading");
-    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(1);
+    expect(avatar.parentElement?.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(1);
 
     fireEvent.load(avatar);
 
     expect(avatar.dataset.state).toBe("loaded");
-    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(0);
+    expect(avatar.parentElement?.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(0);
+  });
+
+  it("removes a failed offering image instead of leaving a broken image glyph", () => {
+    const { container } = render(
+      <VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />,
+    );
+    const offeringImage = container.querySelector(
+      'img[src="https://content.example/vegetables.jpg"]',
+    ) as HTMLImageElement;
+
+    fireEvent.error(offeringImage);
+
+    expect(container.querySelector('img[src="https://content.example/vegetables.jpg"]')).toBeNull();
+    expect(container.querySelector('[data-slot="offering-media"]')?.textContent).toContain("V");
   });
 
   it("separates UOA, description, metadata, and location into purpose-built info surfaces", () => {
@@ -289,7 +552,7 @@ describe("VoucherDetailPage", () => {
       <VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />,
     );
 
-    expect(container.querySelectorAll("img")).toHaveLength(0);
+    expect(container.querySelector('img[src="https://content.example/icon.jpg"]')).toBeNull();
     expect(container.textContent).toContain("MA");
   });
 

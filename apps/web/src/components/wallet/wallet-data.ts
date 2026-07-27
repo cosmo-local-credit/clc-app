@@ -174,13 +174,22 @@ export const RECENT_RECIPIENTS: Recipient[] = [
   },
 ];
 
-/** Deterministic hue from a seed string — used for avatar backgrounds. */
-export function hueFromSeed(seed: string): string {
+/**
+ * Deterministic hue angle from a seed string. Callers pick their own lightness
+ * and chroma, because a colour that carries white avatar initials is not the
+ * same colour that has to stay legible behind 11px badge text.
+ */
+export function hueDegreesFromSeed(seed: string): number {
   let h = 0;
   for (let i = 0; i < seed.length; i++) {
     h = (h * 31 + seed.charCodeAt(i)) % 360;
   }
-  return `oklch(0.58 0.16 ${h})`;
+  return h;
+}
+
+/** Deterministic hue from a seed string — used for avatar backgrounds. */
+export function hueFromSeed(seed: string): string {
+  return `oklch(0.58 0.16 ${hueDegreesFromSeed(seed)})`;
 }
 
 /** Default token used by Send + Swap placeholders. */

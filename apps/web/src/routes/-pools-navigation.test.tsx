@@ -74,7 +74,7 @@ function createTestRouter(initialEntry: string) {
     path: "/pools/$poolAddress",
     component: () => {
       const { poolAddress } = poolDetailRoute.useParams();
-      return <PoolDetailPage poolAddress={poolAddress} />;
+      return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
     },
   });
   return createRouter({

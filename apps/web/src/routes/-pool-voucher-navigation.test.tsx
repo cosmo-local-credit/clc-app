@@ -43,7 +43,9 @@ describe("pool voucher navigation", () => {
       path: "/pools/$poolAddress",
       component: () => {
         const { poolAddress } = useParams({ strict: false });
-        return poolAddress ? <PoolDetailPage poolAddress={poolAddress} /> : null;
+        return poolAddress ? (
+          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
+        ) : null;
       },
     });
     const voucherRoute = createRoute({

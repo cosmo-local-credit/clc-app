@@ -78,32 +78,6 @@ export type PoolVoucher = {
   updatedAt?: string;
 };
 
-export type Offering = {
-  id: string;
-  sourceId: string | null;
-  voucherId: string;
-  voucherAddress: HexAddress;
-  voucherName: string | null;
-  voucherSymbol: string | null;
-  voucherDecimals: number | null;
-  sellerAddress: HexAddress;
-  commodityName: string;
-  commodityType: string;
-  description: string;
-  quantity: string;
-  unit: string | null;
-  frequency: string | null;
-  price: string | null;
-  available: boolean;
-  locationName: string | null;
-  geoLat: number | null;
-  geoLng: number | null;
-  imageUrl: string | null;
-  tags: string[];
-  createdAt?: string;
-  updatedAt?: string;
-};
-
 export type UserPoolPage = {
   pools: UserPool[];
   first?: number;
@@ -112,12 +86,6 @@ export type UserPoolPage = {
 
 export type PoolVoucherPage = {
   vouchers: PoolVoucher[];
-  first?: number;
-  last?: number;
-};
-
-export type OfferingPage = {
-  offerings: Offering[];
   first?: number;
   last?: number;
 };
@@ -188,32 +156,6 @@ type BackendPoolVoucher = Partial<{
   updatedAt: string;
 }>;
 
-type BackendOffering = Partial<{
-  id: string | number;
-  sourceId: string | number | null;
-  voucherId: string | number;
-  voucherAddress: string;
-  voucherName: string | null;
-  voucherSymbol: string | null;
-  voucherDecimals: string | number | null;
-  sellerAddress: string;
-  commodityName: string;
-  commodityType: string;
-  description: string;
-  quantity: string | number;
-  unit: string | null;
-  frequency: string | null;
-  price: string | number | null;
-  available: boolean;
-  locationName: string | null;
-  geoLat: string | number | null;
-  geoLng: string | number | null;
-  imageUrl: string | null;
-  tags: string[] | null;
-  createdAt: string;
-  updatedAt: string;
-}>;
-
 type BackendPoolPage = {
   pools?: BackendPool[] | null;
   first?: number;
@@ -222,12 +164,6 @@ type BackendPoolPage = {
 
 type BackendPoolVoucherPage = {
   vouchers?: BackendPoolVoucher[] | null;
-  first?: number;
-  last?: number;
-};
-
-type BackendOfferingPage = {
-  offerings?: BackendOffering[] | null;
   first?: number;
   last?: number;
 };
@@ -274,31 +210,6 @@ export async function getPoolVouchers(
   return {
     ...result,
     vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
-  };
-}
-
-export async function getOfferings(params: CursorParams): Promise<OfferingPage> {
-  const result = await apiFetch<BackendOfferingPage>(
-    `/api/v2/offerings${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
-  );
-  return {
-    ...result,
-    offerings: (result.offerings ?? []).map(normalizeOffering).filter(isPresent),
-  };
-}
-
-export async function getVoucherOfferings(
-  voucherAddress: string,
-  params: CursorParams,
-): Promise<OfferingPage> {
-  const result = await apiFetch<BackendOfferingPage>(
-    `/api/v2/vouchers/${encodeURIComponent(voucherAddress)}/offerings${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
-  );
-  return {
-    ...result,
-    offerings: (result.offerings ?? []).map(normalizeOffering).filter(isPresent),
   };
 }
 
@@ -375,43 +286,5 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
     syncedAt: voucher.syncedAt,
     createdAt: voucher.createdAt,
     updatedAt: voucher.updatedAt,
-  };
-}
-
-function normalizeOffering(offering: BackendOffering): Offering | null {
-  const voucherAddress = normalizeHex(offering.voucherAddress);
-  const sellerAddress = normalizeHex(offering.sellerAddress);
-  if (
-    !voucherAddress ||
-    !sellerAddress ||
-    offering.id === undefined ||
-    offering.voucherId === undefined
-  ) {
-    return null;
-  }
-  return {
-    id: String(offering.id),
-    sourceId: normalizeID(offering.sourceId),
-    voucherId: String(offering.voucherId),
-    voucherAddress,
-    voucherName: normalizeText(offering.voucherName),
-    voucherSymbol: normalizeText(offering.voucherSymbol),
-    voucherDecimals: normalizeNumber(offering.voucherDecimals),
-    sellerAddress,
-    commodityName: normalizeText(offering.commodityName) ?? "Offering",
-    commodityType: normalizeText(offering.commodityType) ?? "UNKNOWN",
-    description: normalizeText(offering.description) ?? "",
-    quantity: normalizeNumericText(offering.quantity) ?? "0",
-    unit: normalizeText(offering.unit),
-    frequency: normalizeText(offering.frequency),
-    price: normalizeNumericText(offering.price),
-    available: offering.available !== false,
-    locationName: normalizeText(offering.locationName),
-    geoLat: normalizeNumber(offering.geoLat),
-    geoLng: normalizeNumber(offering.geoLng),
-    imageUrl: normalizeText(offering.imageUrl),
-    tags: normalizeStringArray(offering.tags),
-    createdAt: offering.createdAt,
-    updatedAt: offering.updatedAt,
   };
 }

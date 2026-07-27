@@ -5,13 +5,15 @@ import { RiArticleLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } fr
 
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { cn } from "#/lib/utils";
-import type { HomeTab } from "./tabs";
+import type { HomeTab, MarketView } from "./tabs";
 
 export function BottomNavigation({
   activeTab,
+  marketView = "map",
   isAuthenticated = true,
 }: {
   activeTab: HomeTab;
+  marketView?: MarketView;
   isAuthenticated?: boolean;
 }) {
   const { t } = useLingui();
@@ -37,7 +39,7 @@ export function BottomNavigation({
             />
           </>
         ) : null}
-        <MarketNavLink label={t`Market`} activeTab={activeTab} />
+        <MarketNavLink label={t`Market`} activeTab={activeTab} marketView={marketView} />
         {isAuthenticated ? (
           <>
             <NavLink tab="posts" label={t`Posts`} activeTab={activeTab} icon={<RiArticleLine />} />
@@ -83,7 +85,15 @@ function NavLink({
   );
 }
 
-function MarketNavLink({ label, activeTab }: { label: string; activeTab: HomeTab }) {
+function MarketNavLink({
+  label,
+  activeTab,
+  marketView,
+}: {
+  label: string;
+  activeTab: HomeTab;
+  marketView: MarketView;
+}) {
   const active = activeTab === "market";
   return (
     <Link
@@ -91,7 +101,9 @@ function MarketNavLink({ label, activeTab }: { label: string; activeTab: HomeTab
       search={{ tab: "market" }}
       aria-current={active ? "page" : undefined}
       className="relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted"
-      onClick={(event) => preventActiveNavigation(event, active)}
+      // Tapping Market on the map is a no-op; from the Browse-all list it
+      // returns to the map, which is what the tab means.
+      onClick={(event) => preventActiveNavigation(event, active && marketView === "map")}
     >
       <span
         className={cn(

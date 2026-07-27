@@ -7,8 +7,19 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { PoolLogo } from "./pool-logo";
+import { PoolOfferingsPanel } from "./pool-offerings-panel";
 
-export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
+export type PoolDetailTab = "offerings" | "vouchers";
+
+const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers"];
+
+export function PoolDetailPage({
+  poolAddress,
+  activeTab,
+}: {
+  poolAddress: string;
+  activeTab: PoolDetailTab;
+}) {
   const { t } = useLingui();
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
@@ -58,28 +69,79 @@ export function PoolDetailPage({ poolAddress }: { poolAddress: string }) {
         </Link>
       </Button>
 
-      <section aria-labelledby="pool-vouchers-title" className="space-y-2">
-        <h2 id="pool-vouchers-title" className="font-heading font-semibold text-base">
-          <Trans>Vouchers in this pool</Trans>
-        </h2>
-        {vouchers.length === 0 ? (
-          <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
-            <Trans>No vouchers in this pool yet.</Trans>
-          </div>
-        ) : (
-          <div className="border border-border bg-card">
-            {vouchers.map((voucher, index) => (
-              <VoucherRow
-                key={voucher.id}
-                poolAddress={poolAddress}
-                voucher={voucher}
-                token={voucherTokens[index]}
-                isLast={index === vouchers.length - 1}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      <div
+        className="grid grid-cols-2 border border-border bg-card p-1"
+        role="tablist"
+        aria-label={t`Pool contents`}
+      >
+        {POOL_TABS.map((tab) => {
+          const label = tab === "offerings" ? <Trans>Offerings</Trans> : <Trans>Vouchers</Trans>;
+          const className = [
+            "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
+            activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
+          ].join(" ");
+
+          if (activeTab === tab) {
+            return (
+              <button
+                key={tab}
+                type="button"
+                id={`pool-tab-${tab}`}
+                role="tab"
+                aria-selected="true"
+                aria-controls={`pool-panel-${tab}`}
+                className={className}
+              >
+                {label}
+              </button>
+            );
+          }
+
+          return (
+            <Link
+              key={tab}
+              id={`pool-tab-${tab}`}
+              role="tab"
+              aria-selected="false"
+              aria-controls={`pool-panel-${tab}`}
+              to="/pools/$poolAddress"
+              params={{ poolAddress }}
+              search={{ tab: tab === "offerings" ? undefined : tab }}
+              // Switching panel on the same screen is not a navigation: Back
+              // must leave the pool, not walk back through visited tabs.
+              replace
+              resetScroll={false}
+              className={className}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {activeTab === "offerings" ? <PoolOfferingsPanel poolAddress={poolAddress} /> : null}
+
+      {activeTab === "vouchers" ? (
+        <div id="pool-panel-vouchers" role="tabpanel" aria-labelledby="pool-tab-vouchers">
+          {vouchers.length === 0 ? (
+            <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
+              <Trans>No vouchers in this pool yet.</Trans>
+            </div>
+          ) : (
+            <div className="border border-border bg-card">
+              {vouchers.map((voucher, index) => (
+                <VoucherRow
+                  key={voucher.id}
+                  poolAddress={poolAddress}
+                  voucher={voucher}
+                  token={voucherTokens[index]}
+                  isLast={index === vouchers.length - 1}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

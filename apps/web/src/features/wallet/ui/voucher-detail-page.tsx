@@ -37,6 +37,7 @@ import {
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { openDefaultMaps } from "#/lib/default-maps";
+import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
 
 type TxKind = "in" | "out";
 type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews";
@@ -297,9 +298,11 @@ export function VoucherDetailPage({
       </div>
 
       {activeTab === "offerings" ? (
-        <EmptyTabPanel tab="offerings">
-          <Trans>Offerings for this voucher will appear here.</Trans>
-        </EmptyTabPanel>
+        <VoucherOfferingsPanel
+          voucherAddress={contractAddress}
+          voucherSymbol={token.symbol}
+          isKnownEmpty={detail?.kind === "voucher"}
+        />
       ) : null}
       {activeTab === "activity" ? (
         <VoucherActivityPanel accountAddress={address} contractAddress={contractAddress} />
@@ -328,7 +331,7 @@ export function VoucherDetailPage({
   );
 }
 
-function EmptyTabPanel({ tab, children }: { tab: "offerings" | "reviews"; children: ReactNode }) {
+function EmptyTabPanel({ tab, children }: { tab: "reviews"; children: ReactNode }) {
   return (
     <div
       id={`voucher-panel-${tab}`}

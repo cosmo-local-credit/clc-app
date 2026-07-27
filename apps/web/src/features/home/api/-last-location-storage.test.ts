@@ -21,12 +21,13 @@ afterEach(() => {
 
 describe("persisted location storage", () => {
   it("round-trips a real GPS fix", () => {
+    const capturedAt = new Date().toISOString();
     writePersistedLocation({
       owner: OWNER,
       lat: -1.2921,
       lng: 36.8219,
       accuracy: 12.5,
-      capturedAt: "2026-07-26T08:00:00.000Z",
+      capturedAt,
     });
 
     expect(readPersistedLocation(OWNER)).toEqual({
@@ -34,7 +35,7 @@ describe("persisted location storage", () => {
       lat: -1.2921,
       lng: 36.8219,
       accuracy: 12.5,
-      capturedAt: "2026-07-26T08:00:00.000Z",
+      capturedAt,
     });
   });
 

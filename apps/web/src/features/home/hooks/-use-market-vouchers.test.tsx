@@ -25,6 +25,7 @@ function voucher(id: number, overrides: Partial<MarketVoucher> = {}): MarketVouc
     address: "0xAbC0000000000000000000000000000000000123",
     name: `Voucher ${id}`,
     symbol: "VOUCHER",
+    iconUrl: null,
     locationName: null,
     lat: -1.29,
     lng: 36.82,

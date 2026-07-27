@@ -82,23 +82,30 @@ vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     params,
+    search,
     children,
     ...rest
   }: {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, string | undefined>;
     children?: ReactNode;
-  }) => (
-    <a
-      href={Object.entries(params ?? {}).reduce(
-        (path, [key, value]) => path.replace(`$${key}`, value),
-        to,
-      )}
-      {...rest}
-    >
-      {children}
-    </a>
-  ),
+  }) => {
+    const path = Object.entries(params ?? {}).reduce(
+      (path, [key, value]) => path.replace(`$${key}`, value),
+      to,
+    );
+    const query = new URLSearchParams(
+      Object.entries(search ?? {}).flatMap(([key, value]) =>
+        value === undefined ? [] : [[key, value]],
+      ),
+    ).toString();
+    return (
+      <a href={query ? `${path}?${query}` : path} {...rest}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 vi.mock("./market-map.lazy", () => ({
@@ -130,6 +137,7 @@ function voucher(id: string, overrides: Partial<MarketVoucher> = {}): MarketVouc
     address: "0xAbC0000000000000000000000000000000000123",
     name: `Voucher ${id}`,
     symbol: "VOUCHER",
+    iconUrl: null,
     locationName: null,
     lat: -1.29,
     lng: 36.82,
@@ -236,7 +244,7 @@ describe("MarketPage preview", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
-    expect(screen.queryByRole("link")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
   });
 
   it("shows the voucher name and translated kind after a marker tap", () => {
@@ -276,7 +284,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: "Voucher 1" });
     expect(link.getAttribute("href")).toBe("/vouchers/0xAbC0000000000000000000000000000000000123");
     // One tap target for the whole card, not a link nested inside a region.
     expect(link.querySelector("a")).toBeNull();
@@ -291,7 +299,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: "Priscilah Malii" });
     expect(link.textContent).toContain("Priscilah Malii");
     expect(link.textContent).toContain("MALII");
   });
@@ -346,7 +354,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: "Voucher 1" });
     expect(link.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
     expect(link.textContent).toContain("1 MALII = 10 KSH");
   });
@@ -363,7 +371,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link");
+    const link = screen.getByRole("link", { name: "Priscilah Malii" });
     expect(link.textContent).toContain("Priscilah Malii");
     expect(link.textContent).toContain("MALII");
     expect(link.textContent).toContain("Goods");
@@ -381,7 +389,7 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
     fireEvent.click(screen.getByTestId("marker-1"));
-    expect(screen.getByRole("link")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Voucher 1" })).toBeTruthy();
 
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("2")] };
     rerender(
@@ -390,13 +398,15 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
 
-    expect(screen.queryByRole("link")).toBeNull();
+    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
   });
 
-  it("keeps 'Browse all' present without introducing a list", () => {
+  it("links Browse all to the marketplace list without rendering it over the map", () => {
     renderPage();
 
-    expect(screen.getByRole("button", { name: /browse all/i })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe(
+      "/?tab=market&view=list",
+    );
     expect(screen.queryByRole("list")).toBeNull();
   });
 });
