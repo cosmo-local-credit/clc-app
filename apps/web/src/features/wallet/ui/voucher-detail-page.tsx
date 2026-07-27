@@ -8,7 +8,6 @@ import {
   RiArrowRightUpLine,
   RiCoinLine,
   RiDownloadLine,
-  RiExchangeFundsLine,
   RiFileCopyLine,
   RiNavigationLine,
   RiSendPlane2Line,
@@ -42,6 +41,9 @@ import { openDefaultMaps } from "#/lib/default-maps";
 type TxKind = "in" | "out";
 type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews";
 
+/** Which screen opened this voucher — drives the Back label and its fallback. */
+export type VoucherOrigin = "market" | "wallet" | "vouchers";
+
 const VOUCHER_TABS: VoucherDetailTab[] = ["offerings", "info", "activity", "reviews"];
 
 const TX_ICON: Record<TxKind, ReactNode> = {
@@ -54,18 +56,36 @@ const TX_ICON_CLASS: Record<TxKind, string> = {
   out: "text-destructive",
 };
 
+/**
+ * Back target for the voucher page. A voucher is reachable from the market map,
+ * the wallet balances, the all-vouchers list, and a pool, so the chevron names
+ * the screen the user actually came from. `to`/`search` are only consulted on a
+ * deep link, where there is no history to pop.
+ */
+function useVoucherBackTarget(origin: VoucherOrigin, poolAddress: string | undefined) {
+  const { t } = useLingui();
+  if (poolAddress) return { label: t`Pool`, to: `/pools/${poolAddress}`, search: undefined };
+  if (origin === "wallet") return { label: t`Wallet`, to: "/", search: { tab: "wallet" } };
+  if (origin === "vouchers")
+    return { label: t`Vouchers`, to: "/wallet/vouchers", search: undefined };
+  return { label: t`Market`, to: "/", search: undefined };
+}
+
 export function VoucherDetailPage({
   voucherAddress,
   activeTab,
+  origin = "market",
   poolAddress,
 }: {
   voucherAddress: string;
   activeTab: VoucherDetailTab;
+  origin?: VoucherOrigin;
   poolAddress?: string;
 }) {
   const { t } = useLingui();
   const { address } = useConnection();
-  const tokensQuery = useAccountTokensInfinite(address, 50);
+  const back = useVoucherBackTarget(origin, poolAddress);
+  const tokensQuery = useAccountTokensInfinite(address, { perPage: 50 });
   const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);
   const normalizedVoucherAddress = voucherAddress.toLowerCase();
   const fetchedTokens =
@@ -92,11 +112,11 @@ export function VoucherDetailPage({
     (!!address && tokensQuery.isPending) || (!!poolAddress && poolVouchersQuery.isPending);
 
   if (!baseToken && !detail && (detailQuery.isPending || supportingDataPending)) {
-    return <VoucherShell message={t`Loading voucher…`} />;
+    return <VoucherShell back={back} message={t`Loading voucher…`} />;
   }
   if (!baseToken && !detail && detailQuery.isError) {
     return (
-      <VoucherShell message={t`Couldn't load this voucher.`}>
+      <VoucherShell back={back} message={t`Couldn't load this voucher.`}>
         <Button
           variant="outline"
           size="sm"
@@ -142,13 +162,20 @@ export function VoucherDetailPage({
   const lat = detail?.lat ?? token.lat ?? null;
   const lng = detail?.lng ?? token.lng ?? null;
   const sendToken = contractAddress ?? token.id;
+  const issuerAddress = token.owner ?? null;
+  // Redeeming is sending the voucher back to whoever issued it.
+  const redeemContent = (
+    <>
+      <RiCoinLine className="size-4" aria-hidden="true" />
+      <span className="text-[0.6875rem] font-semibold">
+        <Trans>Redeem</Trans>
+      </span>
+    </>
+  );
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron
-        label={poolAddress ? t`Pool` : t`Vouchers`}
-        to={poolAddress ? `/pools/${poolAddress}` : "/"}
-      />
+      <BackChevron label={back.label} to={back.to} search={back.search} />
 
       <div className="mt-1 flex items-start gap-3">
         <VoucherAvatar
@@ -173,16 +200,21 @@ export function VoucherDetailPage({
         </div>
       </div>
 
-      <div className="my-4 grid grid-cols-4 gap-2" aria-label={t`Voucher actions`}>
-        <Button
-          className="h-14 flex-col gap-1 px-1 disabled:bg-primary disabled:text-primary-foreground disabled:opacity-70"
-          disabled
-        >
-          <RiCoinLine className="size-4" aria-hidden="true" />
-          <span className="text-[0.6875rem] font-semibold">
-            <Trans>Redeem</Trans>
-          </span>
-        </Button>
+      <div className="my-4 grid grid-cols-3 gap-2" aria-label={t`Voucher actions`}>
+        {issuerAddress ? (
+          <Button asChild className="h-14 flex-col gap-1 px-1">
+            <Link to="/wallet/send/amount" search={{ token: sendToken, recipient: issuerAddress }}>
+              {redeemContent}
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            className="h-14 flex-col gap-1 px-1 disabled:bg-primary disabled:text-primary-foreground disabled:opacity-70"
+            disabled
+          >
+            {redeemContent}
+          </Button>
+        )}
         <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
           <Link to="/wallet/send" search={{ token: sendToken }}>
             <RiSendPlane2Line className="size-4" aria-hidden="true" />
@@ -196,14 +228,6 @@ export function VoucherDetailPage({
             <RiDownloadLine className="size-4" aria-hidden="true" />
             <span className="text-[0.6875rem] font-semibold">
               <Trans>Receive</Trans>
-            </span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
-          <Link to="/wallet/swap">
-            <RiExchangeFundsLine className="size-4" aria-hidden="true" />
-            <span className="text-[0.6875rem] font-semibold">
-              <Trans>Swap</Trans>
             </span>
           </Link>
         </Button>
@@ -255,7 +279,14 @@ export function VoucherDetailPage({
               aria-controls={`voucher-panel-${tab}`}
               to="/vouchers/$voucherAddress"
               params={{ voucherAddress }}
-              search={{ tab: tab === "offerings" ? undefined : tab, poolAddress }}
+              search={{
+                tab: tab === "offerings" ? undefined : tab,
+                from: origin === "market" ? undefined : origin,
+                poolAddress,
+              }}
+              // Switching panel on the same screen is not a navigation: Back
+              // must leave the voucher, not walk back through visited tabs.
+              replace
               resetScroll={false}
               className={className}
             >
@@ -317,7 +348,7 @@ function VoucherActivityPanel({
   accountAddress: string | undefined;
   contractAddress: string | undefined;
 }) {
-  const transfersQuery = useAccountTransfersInfinite(accountAddress);
+  const transfersQuery = useAccountTransfersInfinite(accountAddress, { poll: true });
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const transfers = useMemo(() => {
@@ -588,11 +619,18 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function VoucherShell({ message, children }: { message: string; children?: ReactNode }) {
-  const { t } = useLingui();
+function VoucherShell({
+  back,
+  message,
+  children,
+}: {
+  back: { label: string; to: string; search: Record<string, unknown> | undefined };
+  message: string;
+  children?: ReactNode;
+}) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Vouchers`} to="/" />
+      <BackChevron label={back.label} to={back.to} search={back.search} />
       <p className="mt-6 text-muted-foreground text-sm">{message}</p>
       {children ? <div className="mt-3">{children}</div> : null}
     </div>

@@ -10,7 +10,7 @@ import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 
 export function ActivityPage({ address }: { address?: string }) {
   const { t } = useLingui();
-  const transfersQuery = useAccountTransfersInfinite(address);
+  const transfersQuery = useAccountTransfersInfinite(address, { poll: true });
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];

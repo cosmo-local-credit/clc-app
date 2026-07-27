@@ -89,7 +89,7 @@ vi.mock("#/features/home/ui/market-map.lazy", () => ({
 }));
 
 import { MarketPage } from "#/features/home/ui/market-page";
-import { VoucherDetailPage } from "#/features/wallet/ui";
+import { VoucherDetailPage, type VoucherOrigin } from "#/features/wallet/ui";
 
 const VOUCHER_ADDRESS = "0xAbC0000000000000000000000000000000000123";
 
@@ -122,24 +122,35 @@ function renderAt(initialPath: string) {
   const marketRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
+    validateSearch: (search): { tab?: string } => ({
+      tab: typeof search.tab === "string" ? search.tab : undefined,
+    }),
     component: () => <MarketPage />,
   });
   const voucherRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/vouchers/$voucherAddress",
-    validateSearch: (search): { tab?: "activity" | "info" | "reviews" } => ({
+    validateSearch: (search): { tab?: "activity" | "info" | "reviews"; from?: VoucherOrigin } => ({
       tab:
         search.tab === "activity" || search.tab === "info" || search.tab === "reviews"
           ? search.tab
           : undefined,
+      from:
+        search.from === "wallet" || search.from === "vouchers" || search.from === "market"
+          ? search.from
+          : undefined,
     }),
     component: () => {
       const { voucherAddress } = useParams({ strict: false });
-      const { tab } = useSearch({ strict: false });
+      const { tab, from } = useSearch({ strict: false });
       const activeTab =
         tab === "activity" || tab === "info" || tab === "reviews" ? tab : "offerings";
       return voucherAddress ? (
-        <VoucherDetailPage voucherAddress={voucherAddress} activeTab={activeTab} />
+        <VoucherDetailPage
+          voucherAddress={voucherAddress}
+          activeTab={activeTab}
+          origin={from ?? "market"}
+        />
       ) : null;
     },
   });
@@ -170,7 +181,9 @@ afterEach(() => {
 });
 
 describe("voucher navigation", () => {
-  it("opens the unified voucher page and preserves tab history before returning to the map", async () => {
+  // Tabs are panels on one screen, not destinations: switching them replaces the
+  // entry so a single Back leaves the voucher instead of retracing the tabs.
+  it("opens the unified voucher page and returns to the map in one Back after tab switches", async () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
@@ -187,11 +200,9 @@ describe("voucher navigation", () => {
     await waitFor(() => expect(screen.getByText("issuer@example.org")).toBeTruthy());
     expect(router.state.location.search).toMatchObject({ tab: "info" });
 
-    await act(async () => {
-      router.history.back();
-    });
+    fireEvent.click(screen.getByRole("tab", { name: "Reviews" }));
     await waitFor(() =>
-      expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy(),
+      expect(screen.getByText("Reviews for this voucher will appear here.")).toBeTruthy(),
     );
 
     await act(async () => {
@@ -209,7 +220,18 @@ describe("voucher navigation", () => {
       expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Priscilah Malii"),
     );
     expect(getMarketVoucher).toHaveBeenCalledWith(VOUCHER_ADDRESS, expect.anything());
-    expect(screen.getByRole("link", { name: "Vouchers" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe("/");
+  });
+
+  // Opened from the wallet balances, Back must name — and fall back to — the
+  // wallet, not the market map.
+  it("names the wallet as the origin when the voucher was opened from balances", async () => {
+    renderAt(`/vouchers/${VOUCHER_ADDRESS}?from=wallet`);
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 1 }).textContent).toContain("Priscilah Malii"),
+    );
+    expect(screen.getByRole("link", { name: "Wallet" }).getAttribute("href")).toBe("/?tab=wallet");
   });
 
   // The card and the page share one query key, so the tap that opened the card

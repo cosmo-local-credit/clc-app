@@ -29,23 +29,25 @@ vi.mock("@tanstack/react-router", () => ({
     params,
     search,
     to,
+    replace: _replace,
     resetScroll: _resetScroll,
     ...props
   }: {
     children: ReactNode;
     params?: { voucherAddress?: string };
-    search?: { tab?: string; token?: string };
+    search?: Record<string, string | undefined>;
     to: string;
+    replace?: boolean;
     resetScroll?: boolean;
   }) => {
     const path = params?.voucherAddress ? to.replace("$voucherAddress", params.voucherAddress) : to;
-    const query = search?.tab
-      ? `?tab=${search.tab}`
-      : search?.token
-        ? `?token=${search.token}`
-        : "";
+    const query = new URLSearchParams(
+      Object.entries(search ?? {}).flatMap(([key, value]) =>
+        value === undefined ? [] : [[key, value] as [string, string]],
+      ),
+    ).toString();
     return (
-      <a href={`${path}${query}`} {...props}>
+      <a href={query ? `${path}?${query}` : path} {...props}>
         {children}
       </a>
     );
@@ -151,7 +153,7 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
-  it("puts balance and the four voucher actions above the tabs", () => {
+  it("puts balance and the three voucher actions above the tabs", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
     expect(screen.getByRole("heading", { name: "Priscilah Malii" })).toBeTruthy();
@@ -159,10 +161,13 @@ describe("VoucherDetailPage", () => {
     expect(screen.queryByText("KSH")).toBeNull();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toMatch(/RedeemSendReceiveSwap/);
-    const redeem = within(actions).getByRole("button", { name: "Redeem" });
+    expect(actions.textContent).toBe("RedeemSendReceive");
+    // Redeem is a send to the issuer, with the voucher already selected.
+    const redeem = within(actions).getByRole("link", { name: "Redeem" });
     expect(redeem.getAttribute("data-variant")).toBe("default");
-    expect((redeem as HTMLButtonElement).disabled).toBe(true);
+    expect(redeem.getAttribute("href")).toBe(
+      `/wallet/send/amount?token=${ADDRESS}&recipient=0xDeF0000000000000000000000000000000000456`,
+    );
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
@@ -174,6 +179,17 @@ describe("VoucherDetailPage", () => {
       "true",
     );
     expect(screen.getByText("Offerings for this voucher will appear here.")).toBeTruthy();
+  });
+
+  it("disables Redeem when the voucher has no known issuer to send back to", () => {
+    mocks.detailResult.data = detail({ ownerAddress: null });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const actions = screen.getByLabelText("Voucher actions");
+    expect(within(actions).queryByRole("link", { name: "Redeem" })).toBeNull();
+    expect(
+      (within(actions).getByRole("button", { name: "Redeem" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it("shows zero when the account has no balance for the voucher", () => {

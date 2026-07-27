@@ -104,6 +104,7 @@ export function WalletPage({ address }: { address?: string }) {
                 void navigate({
                   to: "/vouchers/$voucherAddress",
                   params: { voucherAddress: token.id },
+                  search: { from: "wallet" },
                 });
               }}
             >

@@ -62,6 +62,7 @@ function VoucherRow({
             <Link
               to="/vouchers/$voucherAddress"
               params={{ voucherAddress: voucher.id }}
+              search={{ from: "vouchers" }}
               preload="intent"
             >
               <Trans>View voucher</Trans>
@@ -77,7 +78,8 @@ function VoucherRow({
 export function AllVouchersPage() {
   const { t } = useLingui();
   const { address } = useConnection();
-  const vouchersQuery = useAccountTokensInfinite(address);
+  // The voucher list is this screen's whole purpose, so it keeps a live poll.
+  const vouchersQuery = useAccountTokensInfinite(address, { poll: true });
   const vouchers =
     vouchersQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
