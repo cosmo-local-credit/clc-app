@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { isPrivateHomeTab, type HomeTab, parseHomeTab } from "#/features/home/ui/tabs";
+import {
+  isPrivateHomeTab,
+  type HomeTab,
+  type MarketView,
+  parseHomeTab,
+  parseMarketView,
+} from "#/features/home/ui/tabs";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -11,15 +17,16 @@ const HomePage = lazy(() =>
 );
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search): { tab?: HomeTab } => ({
+  validateSearch: (search): { tab?: HomeTab; view?: MarketView } => ({
     tab: parseHomeTab(search.tab),
+    view: parseMarketView(search.view),
   }),
   component: IndexPage,
 });
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab } = Route.useSearch();
+  const { tab, view } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeTab = auth.isAuthenticated ? tab : isPrivateHomeTab(tab ?? "market") ? "market" : tab;
 
@@ -33,7 +40,7 @@ function IndexPage() {
 
   return (
     <Suspense fallback={<HomePageFallback />}>
-      <HomePage activeTab={activeTab} isAuthenticated={auth.isAuthenticated} />
+      <HomePage activeTab={activeTab} marketView={view} isAuthenticated={auth.isAuthenticated} />
     </Suspense>
   );
 }

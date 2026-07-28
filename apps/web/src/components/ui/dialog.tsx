@@ -6,6 +6,7 @@ import { cn } from "#/lib/utils.ts";
 export const DialogRoot = Dialog.Root;
 export const DialogPortal = Dialog.Portal;
 export const DialogTitle = Dialog.Title;
+export const DialogClose = Dialog.Close;
 
 function DialogBackdrop({ className, ...props }: React.ComponentProps<"div">) {
   return (

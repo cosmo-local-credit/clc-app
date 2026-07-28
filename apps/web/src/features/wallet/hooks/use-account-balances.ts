@@ -10,13 +10,30 @@ const DEFAULT_PAGE_SIZE = 20;
 const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;
 const WALLET_ACCOUNT_REFETCH_INTERVAL_MS = 5_000;
 
+/**
+ * Shared freshness for every account read. Deliberately carries no interval:
+ * a 5s poll belongs to the screens whose job is a continuously updating list,
+ * not to every screen that merely needs a balance lookup (pool detail, send,
+ * voucher detail, off-ramp), which would otherwise keep it running app-wide.
+ */
 const walletAccountQueryFreshness = {
   staleTime: WALLET_ACCOUNT_STALE_TIME_MS,
-  refetchInterval: WALLET_ACCOUNT_REFETCH_INTERVAL_MS,
-  refetchIntervalInBackground: false,
   refetchOnReconnect: true,
   refetchOnWindowFocus: true,
 } as const;
+
+export type AccountPageQueryOptions = {
+  perPage?: number;
+  /** Hold the 5s poll open while mounted. Opt in per screen. */
+  poll?: boolean;
+};
+
+function pollOptions(poll: boolean) {
+  return {
+    refetchInterval: poll ? WALLET_ACCOUNT_REFETCH_INTERVAL_MS : (false as const),
+    refetchIntervalInBackground: false,
+  };
+}
 
 export const accountWalletQueryKeys = {
   all: ["account-wallet"] as const,
@@ -28,16 +45,21 @@ export const accountWalletQueryKeys = {
     [...accountWalletQueryKeys.all, normalizeAddress(address), "transfers", { perPage }] as const,
 };
 
+/** Backs the wallet screen's "Your Vouchers" list — the one live balance poll. */
 export function useLatestAccountTokens(address: string | undefined) {
   return useQuery({
     queryKey: accountWalletQueryKeys.latestTokens(address),
     queryFn: () => getLatestAccountTokens(requireAddress(address)),
     enabled: !!address,
     ...walletAccountQueryFreshness,
+    ...pollOptions(true),
   });
 }
 
-export function useAccountTokensInfinite(address: string | undefined, perPage = DEFAULT_PAGE_SIZE) {
+export function useAccountTokensInfinite(
+  address: string | undefined,
+  { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
+) {
   return useInfiniteQuery({
     queryKey: accountWalletQueryKeys.tokens(address, perPage),
     queryFn: ({ pageParam }) =>
@@ -52,12 +74,13 @@ export function useAccountTokensInfinite(address: string | undefined, perPage = 
     getNextPageParam: (lastPage) =>
       lastPage.tokens.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
     ...walletAccountQueryFreshness,
+    ...pollOptions(poll),
   });
 }
 
 export function useAccountTransfersInfinite(
   address: string | undefined,
-  perPage = DEFAULT_PAGE_SIZE,
+  { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
 ) {
   return useInfiniteQuery({
     queryKey: accountWalletQueryKeys.transfers(address, perPage),
@@ -75,6 +98,7 @@ export function useAccountTransfersInfinite(
         ? undefined
         : lastPage.last,
     ...walletAccountQueryFreshness,
+    ...pollOptions(poll),
   });
 }
 

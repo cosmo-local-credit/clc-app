@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { cn } from "#/lib/utils";
 import { type WalletToken } from "./wallet-data";
 
@@ -12,27 +13,27 @@ export function TokenLogo({
   size?: number;
   className?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const displaySize = Math.round(size);
   const glyph =
     token.glyph ?? (token.kind === "stable" ? token.symbol.slice(0, 1) : token.symbol.slice(0, 2));
 
-  if (token.iconUrl && !imageFailed) {
+  if (token.iconUrl && failedUrl !== token.iconUrl) {
     return (
       <span
-        className={cn("block shrink-0 overflow-hidden rounded-full bg-muted", className)}
+        aria-hidden="true"
+        className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", className)}
         style={{ width: displaySize, height: displaySize }}
       >
-        <img
+        <ProgressiveImage
           src={token.iconUrl}
           alt=""
           width={displaySize}
           height={displaySize}
           loading="lazy"
-          decoding="async"
-          aria-hidden="true"
           className="size-full object-cover"
-          onError={() => setImageFailed(true)}
+          skeletonClassName="rounded-full"
+          onError={() => setFailedUrl(token.iconUrl ?? null)}
         />
       </span>
     );
@@ -77,19 +78,19 @@ export function PicsumLogo({
 
   return (
     <span
-      className={cn("block shrink-0 overflow-hidden rounded-full bg-muted", className)}
+      className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", className)}
       style={{ width: displaySize, height: displaySize }}
     >
-      <img
+      <ProgressiveImage
         src={src}
         srcSet={srcSet}
         alt={alt}
         width={displaySize}
         height={displaySize}
         loading="lazy"
-        decoding="async"
         aria-hidden={alt ? undefined : true}
         className="size-full object-cover"
+        skeletonClassName="rounded-full"
       />
     </span>
   );

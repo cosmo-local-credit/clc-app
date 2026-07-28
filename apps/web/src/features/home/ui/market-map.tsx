@@ -1,157 +1,159 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import MapLibreGL, { type GeoJSONSource, type MapLayerMouseEvent } from "maplibre-gl";
-import { useEffect, useRef, useState } from "react";
-import { RiCupLine, RiShoppingBagLine, RiToolsLine } from "react-icons/ri";
+import { Trans } from "@lingui/react/macro";
+import MapLibreGL, {
+  type DataDrivenPropertyValueSpecification,
+  type FilterSpecification,
+  type GeoJSONSource,
+  type MapMouseEvent,
+} from "maplibre-gl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
-import type { MarketLocation, MarketLocationKind } from "./market-data";
+import { MARKET_SOURCE_ID, type MarketLocation, type MarketLocationKind } from "./market-data";
+import { addMarketMarkerImages, markerImageIds } from "./market-markers";
+import {
+  type MarketStack,
+  groupByCoordinate,
+  spiderPageCount,
+  spiderPageMembers,
+  spiderfyOffsets,
+} from "./market-stacks";
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
-const USER_ZOOM = 14;
-const MARKET_ZOOM = 15;
-const SOURCE_ID = "market-locations";
+const DEFAULT_ZOOM = 12;
+const MAP_MAX_ZOOM = 20;
+
+/**
+ * Distance clustering exists only to keep country- and world-level views
+ * drawable. From zoom 14 (roughly a 5 km view) every distinct coordinate gets
+ * its own marker: a badge the user cannot open is worse than a busy map.
+ *
+ * Vouchers sharing one exact coordinate are a separate problem — 76% of the
+ * imported catalog does, with stacks as large as 200, because whole towns were
+ * geocoded to a single centroid. No zoom can separate those, so they are
+ * grouped up front and fanned out on tap.
+ */
+const CLUSTER_MAX_ZOOM = 13;
+const CLUSTER_RADIUS = 50;
+
 const CLUSTERS_LAYER_ID = "market-clusters";
 const CLUSTER_COUNT_LAYER_ID = "market-cluster-count";
 const UNCLUSTERED_LAYER_ID = "market-points";
+const SELECTED_LAYER_ID = "market-point-selected";
+const STACK_LAYER_ID = "market-stacks";
+const STACK_COUNT_LAYER_ID = "market-stack-count";
+const SPIDER_SOURCE_ID = "market-spider";
+const SPIDER_LEG_LAYER_ID = "market-spider-legs";
+const SPIDER_POINT_LAYER_ID = "market-spider-points";
+
+/** Layers a tap can land on. Order here is irrelevant: the query sorts by z-order. */
+const INTERACTIVE_LAYER_IDS = [
+  CLUSTERS_LAYER_ID,
+  CLUSTER_COUNT_LAYER_ID,
+  UNCLUSTERED_LAYER_ID,
+  STACK_LAYER_ID,
+  STACK_COUNT_LAYER_ID,
+  SELECTED_LAYER_ID,
+  SPIDER_POINT_LAYER_ID,
+];
+
+const VIEWPORT_SETTLE_MS = 400;
+const BADGE_COLOR = "#1f2430";
 
 type UserLocation = { lat: number; lng: number };
 
-type MarketFeature = {
-  type: "Feature";
-  properties: {
-    id: string;
-    kind: MarketLocationKind;
-    name: string;
-  };
-  geometry: {
-    type: "Point";
-    coordinates: [number, number];
-  };
+/**
+ * A camera candidate resolved by rank, never by arrival order. Lower rank
+ * wins, and a candidate only applies when it beats the already-applied rank.
+ */
+export type MarketCamera = {
+  lat: number;
+  lng: number;
+  zoom: number;
+  rank: number;
 };
 
-type MarketFeatureCollection = {
-  type: "FeatureCollection";
-  features: MarketFeature[];
-};
+/**
+ * The black location button is an explicit user request, so it outranks every
+ * automatic candidate and is exempt from the interaction latch.
+ */
+export const EXPLICIT_CAMERA_RANK = 0;
 
-const markerColors: Record<MarketLocationKind, string> = {
-  eatery: "#f97316",
-  shop: "#0ea5e9",
-  service: "#22c55e",
+export type MarketViewport = {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+  zoom: number;
 };
-
-const markerImageIds: Record<MarketLocationKind, string> = {
-  eatery: "market-eatery",
-  shop: "market-shop",
-  service: "market-service",
-};
-
-function MarkerGlyph({ kind }: { kind: MarketLocationKind }) {
-  if (kind === "eatery") return <RiCupLine className="size-3.5" aria-hidden="true" />;
-  if (kind === "shop") return <RiShoppingBagLine className="size-3.5" aria-hidden="true" />;
-  return <RiToolsLine className="size-3.5" aria-hidden="true" />;
-}
 
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
+  camera: MarketCamera | null;
+  /**
+   * Who the ranked cameras belong to. When this changes the applied-rank latch
+   * resets, so a safer fallback can take over. Without it a rank-3 IP camera
+   * could never replace a rank-2 fix left behind by the previous owner.
+   */
+  cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
+  onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
+
+type StackFeature = {
+  type: "Feature";
+  properties: {
+    key: string;
+    count: number;
+    id: string;
+    kind: MarketLocationKind;
+    name: string;
+  };
+  geometry: { type: "Point"; coordinates: [number, number] };
+};
+
+type SpiderFeature = {
+  type: "Feature";
+  properties: { id: string; kind: MarketLocationKind; name: string };
+  geometry:
+    | { type: "Point"; coordinates: [number, number] }
+    | { type: "LineString"; coordinates: [number, number][] };
+};
+
+type FeatureCollection<T> = { type: "FeatureCollection"; features: T[] };
 
 function hasWebGlSupport(): boolean {
   const canvas = document.createElement("canvas");
   return !!(canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl"));
 }
 
-function createMarketFeatureCollection(locations: MarketLocation[]): MarketFeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: locations.map((location) => ({
-      type: "Feature",
-      properties: {
-        id: location.id,
-        kind: location.kind,
-        name: location.name,
-      },
-      geometry: {
-        type: "Point",
-        coordinates: [location.lng, location.lat],
-      },
-    })),
-  };
+function emptyCollection<T>(): FeatureCollection<T> {
+  return { type: "FeatureCollection", features: [] };
 }
 
-function createMarkerImage(kind: MarketLocationKind): {
-  data: ImageData;
-  pixelRatio: number;
-} {
-  const canvas = document.createElement("canvas");
-  const pixelRatio = window.devicePixelRatio || 1;
-  const size = 20;
-  canvas.width = size * pixelRatio;
-  canvas.height = size * pixelRatio;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return { data: new ImageData(size, size), pixelRatio: 1 };
-
-  ctx.scale(pixelRatio, pixelRatio);
-  ctx.clearRect(0, 0, size, size);
-  ctx.fillStyle = markerColors[kind];
-  ctx.beginPath();
-  ctx.arc(size / 2, size / 2, 8, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "#ffffff";
-  ctx.fillStyle = "#ffffff";
-  ctx.lineWidth = 1.4;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  if (kind === "eatery") {
-    ctx.beginPath();
-    ctx.moveTo(7, 6);
-    ctx.lineTo(7, 15);
-    ctx.moveTo(5.5, 6);
-    ctx.lineTo(5.5, 9);
-    ctx.moveTo(8.5, 6);
-    ctx.lineTo(8.5, 9);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(13, 6);
-    ctx.lineTo(13, 15);
-    ctx.moveTo(11.5, 6);
-    ctx.quadraticCurveTo(15.5, 8, 13, 11);
-    ctx.stroke();
-    return {
-      data: ctx.getImageData(0, 0, canvas.width, canvas.height),
-      pixelRatio,
-    };
-  }
-
-  if (kind === "shop") {
-    ctx.strokeRect(6, 8, 8, 7);
-    ctx.beginPath();
-    ctx.moveTo(7.5, 8);
-    ctx.quadraticCurveTo(10, 4.5, 12.5, 8);
-    ctx.stroke();
-    return {
-      data: ctx.getImageData(0, 0, canvas.width, canvas.height),
-      pixelRatio,
-    };
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(7, 14);
-  ctx.lineTo(13, 8);
-  ctx.moveTo(12, 6.5);
-  ctx.lineTo(15, 9.5);
-  ctx.moveTo(5.5, 15.5);
-  ctx.lineTo(8, 13);
-  ctx.stroke();
+function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
   return {
-    data: ctx.getImageData(0, 0, canvas.width, canvas.height),
-    pixelRatio,
+    type: "FeatureCollection",
+    features: stacks.map((stack) => {
+      const first = stack.members[0];
+      const single = stack.members.length === 1 && first ? first : null;
+      return {
+        type: "Feature",
+        properties: {
+          key: stack.key,
+          count: stack.members.length,
+          // Only a lone voucher carries an id; a stack must be opened first.
+          id: single ? single.id : "",
+          kind: single?.kind ?? first?.kind ?? "voucher",
+          name: single?.name ?? "",
+        },
+        geometry: { type: "Point", coordinates: [stack.lng, stack.lat] },
+      };
+    }),
   };
 }
 
@@ -163,68 +165,178 @@ function createUserMarker(): HTMLDivElement {
   return marker;
 }
 
-function addMarketImages(map: MapLibreGL.Map) {
-  for (const kind of ["eatery", "shop", "service"] as const) {
-    const imageId = markerImageIds[kind];
-    if (!map.hasImage(imageId)) {
-      const image = createMarkerImage(kind);
-      map.addImage(imageId, image.data, { pixelRatio: image.pixelRatio });
-    }
-  }
+function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecification<string> {
+  const ids = selected ? markerImageIds.selected : markerImageIds.base;
+  return [
+    "match",
+    ["get", "kind"],
+    "goods",
+    ids.goods,
+    "services",
+    ids.services,
+    "voucher",
+    ids.voucher,
+    ids.voucher,
+  ];
 }
 
-function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[]) {
-  addMarketImages(map);
-  map.addSource(SOURCE_ID, {
+/** Selected styling is a filtered overlay: promoteId is not forwarded to Supercluster. */
+function selectedFilter(selectedId: string | null): FilterSpecification {
+  return [
+    "all",
+    ["!", ["has", "point_count"]],
+    ["==", ["get", "count"], 1],
+    ["==", ["get", "id"], selectedId ?? ""],
+  ];
+}
+
+const singleFilter: FilterSpecification = [
+  "all",
+  ["!", ["has", "point_count"]],
+  ["==", ["get", "count"], 1],
+];
+
+const stackFilter: FilterSpecification = [
+  "all",
+  ["!", ["has", "point_count"]],
+  [">", ["get", "count"], 1],
+];
+
+/**
+ * Badge labels always count vouchers, never map features.
+ *
+ * Features are grouped per coordinate, so Supercluster's `point_count` counts
+ * locations. Rendering that would make the same spot read "3" at one zoom and
+ * "63" at the next — a number that grows as you zoom in is just wrong. Summing
+ * the per-feature voucher counts keeps the number partitioning as you zoom.
+ */
+function countLabel(property: string): DataDrivenPropertyValueSpecification<string> {
+  return [
+    "step",
+    ["get", property],
+    ["to-string", ["get", property]],
+    // Four digits do not fit a 28 px circle; a world-zoom cluster hits 2,181.
+    1000,
+    ["concat", ["to-string", ["round", ["/", ["get", property], 1000]]], "k"],
+  ];
+}
+
+/** Bigger counts get a slightly bigger disc so three characters still fit. */
+function badgeRadius(property: string): DataDrivenPropertyValueSpecification<number> {
+  return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
+}
+
+function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
+  addMarketMarkerImages(map);
+
+  map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
-    data: createMarketFeatureCollection(locations),
+    data: createStackCollection(stacks),
     cluster: true,
-    clusterMaxZoom: 13,
-    clusterRadius: 80,
+    clusterMaxZoom: CLUSTER_MAX_ZOOM,
+    clusterRadius: CLUSTER_RADIUS,
+    // Sum the vouchers behind each grouped coordinate so a cluster badge and a
+    // stack badge mean the same thing: how many vouchers are here.
+    clusterProperties: { voucherCount: ["+", ["get", "count"]] },
   });
+  map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
+
   map.addLayer({
     id: CLUSTERS_LAYER_ID,
     type: "circle",
-    source: SOURCE_ID,
+    source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
     paint: {
-      "circle-color": "#111827",
-      "circle-radius": 14,
+      "circle-color": BADGE_COLOR,
+      "circle-radius": badgeRadius("voucherCount"),
       "circle-stroke-width": 0,
     },
   });
   map.addLayer({
     id: CLUSTER_COUNT_LAYER_ID,
     type: "symbol",
-    source: SOURCE_ID,
+    source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
     layout: {
-      "text-field": "{point_count_abbreviated}",
+      "text-field": countLabel("voucherCount"),
       "text-size": 11,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
     },
-    paint: {
-      "text-color": "#ffffff",
-    },
+    paint: { "text-color": "#ffffff" },
   });
+
   map.addLayer({
     id: UNCLUSTERED_LAYER_ID,
     type: "symbol",
-    source: SOURCE_ID,
-    filter: ["!", ["has", "point_count"]],
+    source: MARKET_SOURCE_ID,
+    filter: singleFilter,
     layout: {
-      "icon-image": [
-        "match",
-        ["get", "kind"],
-        "eatery",
-        markerImageIds.eatery,
-        "shop",
-        markerImageIds.shop,
-        "service",
-        markerImageIds.service,
-        markerImageIds.shop,
-      ],
+      "icon-image": kindMatchExpression(false),
       "icon-size": 1,
       "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+    },
+  });
+
+  // A coincident stack keeps a white ring so it reads as openable, unlike a
+  // distance cluster which simply expands when you zoom.
+  map.addLayer({
+    id: STACK_LAYER_ID,
+    type: "circle",
+    source: MARKET_SOURCE_ID,
+    filter: stackFilter,
+    paint: {
+      "circle-color": BADGE_COLOR,
+      "circle-radius": badgeRadius("count"),
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+    },
+  });
+  map.addLayer({
+    id: STACK_COUNT_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: stackFilter,
+    layout: {
+      "text-field": countLabel("count"),
+      "text-size": 11,
+      "text-allow-overlap": true,
+      "text-ignore-placement": true,
+    },
+    paint: { "text-color": "#ffffff" },
+  });
+
+  map.addLayer({
+    id: SELECTED_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: selectedFilter(null),
+    layout: {
+      "icon-image": kindMatchExpression(true),
+      "icon-size": 1,
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
+    },
+  });
+
+  map.addLayer({
+    id: SPIDER_LEG_LAYER_ID,
+    type: "line",
+    source: SPIDER_SOURCE_ID,
+    filter: ["==", ["geometry-type"], "LineString"],
+    paint: { "line-color": BADGE_COLOR, "line-width": 1.25, "line-opacity": 0.6 },
+  });
+  map.addLayer({
+    id: SPIDER_POINT_LAYER_ID,
+    type: "symbol",
+    source: SPIDER_SOURCE_ID,
+    filter: ["==", ["geometry-type"], "Point"],
+    layout: {
+      "icon-image": kindMatchExpression(false),
+      "icon-size": 1,
+      "icon-allow-overlap": true,
+      "icon-ignore-placement": true,
     },
   });
 }
@@ -232,161 +344,357 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[]) {
 export function MarketMap({
   locations,
   selectedLocationId,
+  camera,
+  cameraScope,
   userLocation,
   onSelectLocation,
+  onViewportSettled,
   className,
 }: MarketMapProps) {
   const containerRef = useRef<HTMLElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
-  const [failed, setFailed] = useState(false);
+  const appliedCameraRef = useRef<MarketCamera | null>(null);
+  const userHasInteractedRef = useRef(false);
+  const loadedRef = useRef(false);
+  // "unsupported" can never succeed here, so it must not offer a retry.
+  const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
   const [loaded, setLoaded] = useState(false);
+  // A stack larger than one fan is paged rather than truncated, so every
+  // member stays reachable by tapping the badge again.
+  const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
+
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
   const maptilerStyle = maptilerKey
     ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
     : null;
 
+  const stacks = useMemo(() => groupByCoordinate(locations), [locations]);
+  const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
+
+  // Latest-value refs keep the construction effect free of data, selection, and
+  // callback dependencies, so the map is built once per style/container.
+  const stacksRef = useRef(stacks);
+  stacksRef.current = stacks;
+  const onSelectRef = useRef(onSelectLocation);
+  onSelectRef.current = onSelectLocation;
+  const onViewportSettledRef = useRef(onViewportSettled);
+  onViewportSettledRef.current = onViewportSettled;
+
+  const reportViewport = useCallback((map: MapLibreGL.Map) => {
+    const report = onViewportSettledRef.current;
+    if (!report) return;
+    const bounds = map.getBounds().adjustAntiMeridian();
+    report({
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+      zoom: map.getZoom(),
+    });
+  }, []);
+
   useEffect(() => {
-    if (!maptilerStyle || failed || !containerRef.current || mapRef.current) {
-      return;
-    }
+    if (!maptilerStyle || failure || !containerRef.current || mapRef.current) return;
     if (!hasWebGlSupport()) {
-      setFailed(true);
+      setFailure("unsupported");
       return;
     }
 
-    const center: [number, number] = userLocation
-      ? [userLocation.lng, userLocation.lat]
-      : [NAIROBI.lng, NAIROBI.lat];
     let map: MapLibreGL.Map;
     try {
       map = new MapLibreGL.Map({
         container: containerRef.current,
         style: maptilerStyle,
-        center,
-        zoom: userLocation ? USER_ZOOM : 12,
+        center: [NAIROBI.lng, NAIROBI.lat],
+        zoom: DEFAULT_ZOOM,
+        maxZoom: MAP_MAX_ZOOM,
+        // Collision fade animates every symbol that appears or disappears.
+        // Expanding a cluster churns the symbol set repeatedly, and each
+        // change cross-fading over 300 ms reads as the map flickering.
+        fadeDuration: 0,
         attributionControl: false,
       });
     } catch {
-      setFailed(true);
+      setFailure("error");
       return;
     }
 
     mapRef.current = map;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    function handlePointClick(event: MapLayerMouseEvent) {
-      const id = event.features?.[0]?.properties?.id;
-      if (typeof id === "string") onSelectLocation(id);
+    // One handler, not several layer-scoped ones. MapLibre fires every matching
+    // listener for a single click, so a separate "close the fan" listener would
+    // race the listener that just opened it and win.
+    function handleMapClick(event: MapMouseEvent) {
+      // queryRenderedFeatures returns features sorted by descending z-order,
+      // topmost first, so index 0 is exactly what the user tapped. The fan's
+      // layers are added last, so its pins win over the badge beneath them.
+      const [feature] = map.queryRenderedFeatures(event.point, {
+        layers: INTERACTIVE_LAYER_IDS,
+      });
+
+      if (!feature) {
+        setSpider(null);
+        return;
+      }
+
+      if (feature.layer.id === SPIDER_POINT_LAYER_ID) {
+        selectFeature(feature);
+        return;
+      }
+
+      const clusterId = feature.properties?.cluster_id;
+      if (typeof clusterId === "number") {
+        expandCluster(clusterId, feature);
+        return;
+      }
+
+      const key = feature.properties?.key;
+      const count = Number(feature.properties?.count);
+      if (typeof key === "string" && count > 1) {
+        const pageCount = spiderPageCount(count);
+        setSpider((current) => {
+          if (current?.key !== key) return { key, page: 0 };
+          const next = current.page + 1;
+          // Tapping past the last page closes the fan, so a single-page stack
+          // still toggles shut on a second tap.
+          return next >= pageCount ? null : { key, page: next };
+        });
+        return;
+      }
+
+      // Selection styles a feature and opens the preview. It deliberately does
+      // not move the camera: the marker is already on screen.
+      selectFeature(feature);
     }
 
-    function handleClusterClick(event: MapLayerMouseEvent) {
-      const feature = event.features?.[0];
-      const clusterId = feature?.properties?.cluster_id;
-      if (typeof clusterId !== "number") return;
-      const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    function selectFeature(feature: MapLibreGL.MapGeoJSONFeature) {
+      const id = feature.properties?.id;
+      if (typeof id === "string" && id) onSelectRef.current(id);
+    }
+
+    function expandCluster(clusterId: number, feature: MapLibreGL.MapGeoJSONFeature) {
+      const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
       void source?.getClusterExpansionZoom(clusterId).then((zoom) => {
-        if (!feature) return;
-        const coordinates = feature.geometry.type === "Point" ? feature.geometry.coordinates : null;
-        if (!coordinates) return;
-        map.easeTo({ center: coordinates as [number, number], zoom });
+        if (feature.geometry.type !== "Point") return;
+        map.easeTo({
+          center: feature.geometry.coordinates as [number, number],
+          zoom: Math.min(zoom, map.getMaxZoom()),
+        });
       });
     }
 
+    function handleUserInteraction(event: { originalEvent?: unknown }) {
+      // Programmatic camera moves emit the same events without an originalEvent.
+      if (event?.originalEvent) userHasInteractedRef.current = true;
+    }
+
+    function handleZoomStart() {
+      // Legs are laid out in screen pixels, so zooming would slide them off
+      // their anchor. Closing on zoom matches every other map.
+      setSpider(null);
+    }
+
+    function handleMoveEnd() {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => reportViewport(map), VIEWPORT_SETTLE_MS);
+    }
+
     function handleLoad() {
-      addMarketLayers(map, locations);
-      map.on("click", UNCLUSTERED_LAYER_ID, handlePointClick);
-      map.on("click", CLUSTERS_LAYER_ID, handleClusterClick);
+      addMarketLayers(map, stacksRef.current);
+      loadedRef.current = true;
       setLoaded(true);
     }
 
+    // A style fetch that fails is asynchronous: the constructor succeeds and
+    // then `load` simply never fires, leaving an empty container with no
+    // basemap, no markers and no way back. Surface it instead.
+    //
+    // Only before load. Once the map is up, errors are individual tile or
+    // sprite failures, which are transient and must not blank a working map.
+    function handleError() {
+      if (loadedRef.current) return;
+      setFailure("error");
+    }
+
     map.on("load", handleLoad);
+    map.on("error", handleError);
+    map.on("click", handleMapClick);
+    map.on("dragstart", handleUserInteraction);
+    map.on("zoomstart", handleUserInteraction);
+    map.on("zoomstart", handleZoomStart);
+    map.on("moveend", handleMoveEnd);
 
     return () => {
+      clearTimeout(settleTimer);
       map.off("load", handleLoad);
-      map.off("click", UNCLUSTERED_LAYER_ID, handlePointClick);
-      map.off("click", CLUSTERS_LAYER_ID, handleClusterClick);
+      map.off("error", handleError);
+      map.off("click", handleMapClick);
+      map.off("dragstart", handleUserInteraction);
+      map.off("zoomstart", handleUserInteraction);
+      map.off("zoomstart", handleZoomStart);
+      map.off("moveend", handleMoveEnd);
       userMarkerRef.current?.remove();
       userMarkerRef.current = null;
       map.remove();
       mapRef.current = null;
+      appliedCameraRef.current = null;
+      userHasInteractedRef.current = false;
+      loadedRef.current = false;
       setLoaded(false);
     };
-  }, [failed, locations, maptilerStyle, onSelectLocation, userLocation]);
+  }, [failure, maptilerStyle, reportViewport]);
 
+  // Data: update the single GeoJSON source in place.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
-    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
+    source?.setData(createStackCollection(stacks));
+  }, [loaded, stacks]);
+
+  // A refreshed dataset that no longer contains the open stack closes it.
+  useEffect(() => {
+    if (spider && !stacksByKey.has(spider.key)) setSpider(null);
+  }, [spider, stacksByKey]);
+
+  // Spiderfy: fan the open stack's current page out around the shared anchor.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    const source = map.getSource(SPIDER_SOURCE_ID) as GeoJSONSource | undefined;
     if (!source) return;
-    source.setData(createMarketFeatureCollection(locations));
-  }, [loaded, locations]);
 
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded) return;
-
-    if (userLocation) {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
-      } else {
-        userMarkerRef.current = new MapLibreGL.Marker({
-          element: createUserMarker(),
-        })
-          .setLngLat([userLocation.lng, userLocation.lat])
-          .addTo(map);
-      }
-      map.flyTo({
-        center: [userLocation.lng, userLocation.lat],
-        zoom: USER_ZOOM,
-      });
+    const stack = spider ? stacksByKey.get(spider.key) : undefined;
+    if (!stack) {
+      source.setData(emptyCollection<SpiderFeature>());
       return;
     }
 
-    userMarkerRef.current?.remove();
-    userMarkerRef.current = null;
-  }, [loaded, userLocation]);
+    const page = spiderPageMembers(stack.members, spider?.page ?? 0);
+    const anchor = map.project([stack.lng, stack.lat]);
+    const offsets = spiderfyOffsets(page.length);
+    const features: SpiderFeature[] = [];
 
+    offsets.forEach((offset, index) => {
+      const member = page[index];
+      if (!member) return;
+      const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
+      const coordinates: [number, number] = [point.lng, point.lat];
+      features.push({
+        type: "Feature",
+        properties: { id: member.id, kind: member.kind, name: member.name },
+        geometry: { type: "LineString", coordinates: [[stack.lng, stack.lat], coordinates] },
+      });
+      features.push({
+        type: "Feature",
+        properties: { id: member.id, kind: member.kind, name: member.name },
+        geometry: { type: "Point", coordinates },
+      });
+    });
+
+    source.setData({ type: "FeatureCollection", features });
+  }, [loaded, spider, stacksByKey]);
+
+  // Centre the stack when its fan opens: a badge near a screen edge would
+  // otherwise throw half its legs off-screen. Pan only, never zoom, so the
+  // pixel geometry of the fan is unchanged.
+  const spiderKey = spider?.key ?? null;
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !loaded || !selectedLocationId || userLocation) return;
-    const selected = locations.find((location) => location.id === selectedLocationId);
-    if (!selected) return;
-    map.flyTo({ center: [selected.lng, selected.lat], zoom: MARKET_ZOOM });
-  }, [loaded, locations, selectedLocationId, userLocation]);
+    if (!map || !loaded || !spiderKey) return;
+    const stack = stacksByKey.get(spiderKey);
+    if (!stack) return;
+    map.easeTo({ center: [stack.lng, stack.lat] });
+  }, [loaded, spiderKey, stacksByKey]);
 
-  if (!maptilerStyle || failed) {
+  // Selection: swap the overlay filter and the spider layer's icon expression.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    map.setFilter(SELECTED_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
+      "case",
+      ["==", ["get", "id"], selectedLocationId ?? ""],
+      kindMatchExpression(true),
+      kindMatchExpression(false),
+    ]);
+  }, [loaded, selectedLocationId]);
+
+  // A new owner starts from a clean slate, so the previous owner's applied
+  // rank cannot block whatever camera the new scope resolves to.
+  useEffect(() => {
+    appliedCameraRef.current = null;
+  }, [cameraScope]);
+
+  // Camera: ranked candidates plus the explicit location button.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !camera) return;
+    if (appliedCameraRef.current === camera) return;
+
+    const applied = appliedCameraRef.current;
+    if (camera.rank !== EXPLICIT_CAMERA_RANK) {
+      if (userHasInteractedRef.current) return;
+      if (applied && camera.rank >= applied.rank) return;
+    }
+
+    appliedCameraRef.current = camera;
+    map.easeTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
+  }, [camera, loaded]);
+
+  // The only DOM marker on the map is the user's own position.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+
+    if (!userLocation) {
+      userMarkerRef.current?.remove();
+      userMarkerRef.current = null;
+      return;
+    }
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
+      return;
+    }
+    userMarkerRef.current = new MapLibreGL.Marker({ element: createUserMarker() })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(map);
+  }, [loaded, userLocation]);
+
+  if (!maptilerStyle || failure) {
+    // Deliberately does not map over `locations`: a decorative stand-in for
+    // thousands of vouchers is both meaningless and expensive.
     return (
       <section
         aria-label="Market map"
-        className={cn("market-map-fallback relative overflow-hidden bg-card", className)}
+        className={cn(
+          "market-map-fallback relative flex items-center justify-center overflow-hidden bg-card px-6",
+          className,
+        )}
       >
-        <div className="absolute top-1/2 left-1/2 z-10 flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-transparent">
-          <span className="absolute size-5 animate-ping rounded-full bg-foreground/30" />
-          <span className="relative size-2 rounded-full bg-foreground" />
-        </div>
-        {locations.map((location, index) => {
-          const positions = [
-            "left-[62%] top-[30%]",
-            "left-[24%] top-[64%]",
-            "left-[16%] top-[44%]",
-          ];
-          return (
-            <button
-              key={location.id}
-              type="button"
-              aria-label={`${location.name}, ${location.distance}`}
-              className={cn(
-                "absolute z-20 flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-transparent text-white transition-transform active:scale-95",
-                positions[index] ?? "top-1/2 left-1/2",
-                selectedLocationId === location.id && "scale-110",
-              )}
-              style={{ backgroundColor: markerColors[location.kind] }}
-              onClick={() => onSelectLocation(location.id)}
+        <div className="flex max-w-[18rem] flex-col items-center gap-3 text-center">
+          <p className="text-muted-foreground text-sm">
+            {/* Never point at a list view: "Browse all" has no destination yet. */}
+            {failure === "error" ? (
+              <Trans>The map could not be loaded.</Trans>
+            ) : (
+              <Trans>The map is not supported on this device.</Trans>
+            )}
+          </p>
+          {failure === "error" ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-card"
+              onClick={() => setFailure(null)}
             >
-              <MarkerGlyph kind={location.kind} />
-            </button>
-          );
-        })}
+              <Trans>Retry</Trans>
+            </Button>
+          ) : null}
+        </div>
       </section>
     );
   }

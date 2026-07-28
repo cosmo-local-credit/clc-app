@@ -101,7 +101,11 @@ export function WalletPage({ address }: { address?: string }) {
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
               onClick={() => {
-                void navigate({ to: "/wallet/tokens/$tokenId", params: { tokenId: token.id } });
+                void navigate({
+                  to: "/vouchers/$voucherAddress",
+                  params: { voucherAddress: token.id },
+                  search: { from: "wallet" },
+                });
               }}
             >
               <TokenLogo token={token} size={34} />

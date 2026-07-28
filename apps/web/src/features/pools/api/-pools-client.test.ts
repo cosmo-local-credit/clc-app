@@ -1,13 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import {
-  getOfferings,
-  getPoolByAddress,
-  getPools,
-  getPoolVouchers,
-  getVoucherOfferings,
-  normalizeUserPool,
-} from "./pools-client";
+import { getPoolByAddress, getPools, getPoolVouchers, normalizeUserPool } from "./pools-client";
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -165,54 +158,6 @@ describe("pools client", () => {
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v2/pools/0x1111111111111111111111111111111111111111/vouchers?perPage=20&cursor=11&next=true",
-      ),
-      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
-    );
-  });
-
-  it("fetches global and voucher-scoped offering pages", async () => {
-    const fetcher = mockFetch({
-      ok: true,
-      result: {
-        first: 3,
-        last: 3,
-        offerings: [
-          {
-            id: 3,
-            voucherId: 10,
-            voucherAddress: "0x4444444444444444444444444444444444444444",
-            sellerAddress: "0x6666666666666666666666666666666666666666",
-            commodityName: "Vegetables",
-            commodityType: "GOOD",
-            description: "Fresh produce",
-            quantity: "5",
-            price: "10",
-            available: true,
-            tags: ["Market"],
-            createdAt: "2026-07-24T00:00:00Z",
-            updatedAt: "2026-07-24T00:00:00Z",
-          },
-        ],
-      },
-    });
-    vi.stubGlobal("fetch", fetcher);
-
-    await expect(getOfferings({ perPage: 20 })).resolves.toMatchObject({
-      offerings: [{ commodityName: "Vegetables", quantity: "5" }],
-    });
-    await expect(
-      getVoucherOfferings("0x4444444444444444444444444444444444444444", { perPage: 20 }),
-    ).resolves.toMatchObject({ offerings: [{ price: "10" }] });
-
-    expect(fetcher).toHaveBeenNthCalledWith(
-      1,
-      expect.stringContaining("/api/v2/offerings?perPage=20"),
-      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
-    );
-    expect(fetcher).toHaveBeenNthCalledWith(
-      2,
-      expect.stringContaining(
-        "/api/v2/vouchers/0x4444444444444444444444444444444444444444/offerings?perPage=20",
       ),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );

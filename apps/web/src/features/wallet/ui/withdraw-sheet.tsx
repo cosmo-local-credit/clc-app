@@ -70,7 +70,7 @@ export function WithdrawSheet({
   const createLink = useCreatePretiumLink();
   const correctlyLinked = linkQuery.data?.linked === true && linkQuery.data.phoneNumber === phone;
 
-  const tokensQuery = useAccountTokensInfinite(address, 100);
+  const tokensQuery = useAccountTokensInfinite(address, { perPage: 100 });
   const eligible = useMemo(() => {
     const all = tokensQuery.data?.pages.flatMap((page) => page.tokens) ?? [];
     return all.flatMap((token) => {

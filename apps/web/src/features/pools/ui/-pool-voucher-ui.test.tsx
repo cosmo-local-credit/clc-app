@@ -25,8 +25,19 @@ const {
 }));
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <a className={className}>{children}</a>
+  // Router props are dropped, but ARIA and identity props are forwarded: the
+  // pool tab strip is built from Links and its roles are part of the contract.
+  Link: ({
+    children,
+    to: _to,
+    params: _params,
+    search: _search,
+    replace: _replace,
+    resetScroll: _resetScroll,
+    preload: _preload,
+    ...props
+  }: Record<string, unknown> & { children?: React.ReactNode }) => (
+    <a {...(props as React.ComponentProps<"a">)}>{children}</a>
   ),
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
@@ -125,6 +136,50 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
           }),
         );
       }
+      if (url.includes(`/api/v2/pools/${POOL_ADDRESS}/offerings`)) {
+        return Promise.resolve(
+          response({
+            offerings: [
+              {
+                id: 91,
+                voucherId: 1,
+                voucherAddress: USDC_ADDRESS,
+                voucherName: "USD Coin",
+                voucherSymbol: "USDC",
+                sellerAddress: "0x1111111111111111111111111111111111111111",
+                commodityName: "Maize",
+                commodityType: "GOOD",
+                description: "A sack of maize",
+                quantity: "4",
+                unit: "bag",
+                frequency: "week",
+                price: "25",
+                available: true,
+                tags: [],
+              },
+              {
+                id: 90,
+                voucherId: 2,
+                voucherAddress: TTX_ADDRESS,
+                voucherName: "Trade Token",
+                voucherSymbol: "TTX",
+                sellerAddress: "0x2222222222222222222222222222222222222222",
+                commodityName: "Tailoring",
+                commodityType: "SERVICE",
+                description: "",
+                quantity: "1",
+                unit: null,
+                frequency: null,
+                price: "8",
+                available: true,
+                tags: [],
+              },
+            ],
+            first: 91,
+            last: 90,
+          }),
+        );
+      }
       if (url.includes(`/api/v2/pools/${POOL_ADDRESS}`)) {
         return Promise.resolve(
           response({
@@ -201,13 +256,61 @@ afterEach(() => {
 describe("pool voucher UI", () => {
   it("renders wallet image logos for pool vouchers instead of text glyphs", async () => {
     mockPoolRequests();
-    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} />);
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="vouchers" />);
 
     expect(await screen.findByText("USD Coin")).toBeTruthy();
     await waitFor(() => {
       expect(document.querySelector('img[src="https://wallet.example/usdc.png"]')).toBeTruthy();
       expect(document.querySelector('img[src="https://wallet.example/ttx.png"]')).toBeTruthy();
     });
+  });
+
+  it("lists every pool offering and shows the voucher symbol each one is priced in", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(await within(panel).findByText("Maize")).toBeTruthy();
+    expect(within(panel).getByText("Tailoring")).toBeTruthy();
+
+    // A pool's offerings come from different vouchers, so each tile has to say
+    // which one it belongs to — the voucher page deliberately does not.
+    const attributions = Array.from(panel.querySelectorAll('[data-slot="offering-voucher"]'));
+    expect(attributions.map((element) => element.textContent)).toEqual(["USDC", "TTX"]);
+    // The same blue the wallet's Pools action uses.
+    expect(attributions.every((element) => element.className.includes("text-info"))).toBe(true);
+
+    expect(within(panel).getByText("25 USDC")).toBeTruthy();
+    expect(within(panel).getByText("8 TTX")).toBeTruthy();
+    expect(panel.querySelector(".grid")?.className).toContain("grid-cols-2");
+  });
+
+  it("opens the same offering sheet from a pool as from a voucher page", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "View offering details: Maize" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
+    expect(within(dialog).getByText("25 USDC each")).toBeTruthy();
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USDC");
+    expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USDC");
+  });
+
+  it("puts offerings first and links the vouchers tab without stacking history", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
+
+    const tabs = await screen.findAllByRole("tab");
+    expect(tabs.map((tab) => tab.textContent)).toEqual(["Offerings", "Vouchers"]);
+    expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
+    expect(tabs[0]?.getAttribute("aria-controls")).toBe("pool-panel-offerings");
+    expect(tabs[1]?.getAttribute("aria-controls")).toBe("pool-panel-vouchers");
+    expect(screen.getByRole("tabpanel").id).toBe("pool-panel-offerings");
   });
 
   it("uses pool vouchers, wallet logos, and selected voucher balances in both swap fields", async () => {

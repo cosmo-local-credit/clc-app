@@ -6,6 +6,7 @@ export {
 } from "./wallet-address";
 export { HueAvatar } from "./wallet-avatar";
 export { TokenLogo, PicsumLogo } from "./wallet-logos";
+export { VoucherAvatar } from "./voucher-avatar";
 export { TransferDetailsSheet, type TransferDetails } from "./transfer-details-sheet";
 export { NetworkBadge, SignedAmount, SignHint, SuccessCheck } from "./wallet-status";
 export { AddressQRCode } from "./wallet-qr";

@@ -3,21 +3,28 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockAbortWalletSwitch } = vi.hoisted(() => ({
-  mockAbortWalletSwitch: vi.fn(),
-}));
+const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
+  vi.hoisted(() => ({
+    mockAbortWalletSwitch: vi.fn(),
+    mockClearPersistedLocation: vi.fn(),
+    mockBackendLogout: vi.fn(),
+    mockDisconnect: vi.fn(),
+  }));
 
 vi.mock("./bottom-navigation", () => ({
   BottomNavigation: ({
     activeTab,
+    marketView,
     isAuthenticated,
   }: {
     activeTab: string;
+    marketView: string;
     isAuthenticated: boolean;
   }) => (
     <nav
       data-testid="bottom-navigation"
       data-active-tab={activeTab}
+      data-market-view={marketView}
       data-authenticated={String(isAuthenticated)}
     />
   ),
@@ -25,11 +32,16 @@ vi.mock("./bottom-navigation", () => ({
 
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc" as `0x${string}` }),
-  useDisconnect: () => ({ mutateAsync: vi.fn() }),
+  useDisconnect: () => ({ mutateAsync: mockDisconnect }),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-session", () => ({
-  useBackendLogout: () => ({ mutateAsync: vi.fn().mockResolvedValue(undefined) }),
+  useBackendLogout: () => ({ mutateAsync: mockBackendLogout }),
+}));
+
+vi.mock("#/features/home/api/last-location-storage", () => ({
+  GUEST_LOCATION_OWNER: "guest",
+  clearPersistedLocation: mockClearPersistedLocation,
 }));
 
 vi.mock("#/lib/wallet-session", () => ({
@@ -49,8 +61,30 @@ vi.mock("./activity-page", () => ({
 }));
 
 vi.mock("./market-page", () => ({
-  MarketPage: ({ onboardingBanner }: { onboardingBanner?: ReactNode }) => (
-    <div data-testid="market-page">{onboardingBanner}</div>
+  MarketPage: ({
+    onboardingBanner,
+    locationOwner,
+  }: {
+    onboardingBanner?: ReactNode;
+    locationOwner?: string;
+  }) => (
+    <div data-testid="market-page" data-location-owner={locationOwner}>
+      {onboardingBanner}
+    </div>
+  ),
+}));
+
+vi.mock("./market-list-page", () => ({
+  MarketListPage: ({
+    onboardingBanner,
+    locationOwner,
+  }: {
+    onboardingBanner?: ReactNode;
+    locationOwner?: string;
+  }) => (
+    <div data-testid="market-list-page" data-location-owner={locationOwner}>
+      {onboardingBanner}
+    </div>
   ),
 }));
 
@@ -81,13 +115,25 @@ function renderHome(ui: ReactNode) {
 
 beforeEach(() => {
   mockAbortWalletSwitch.mockClear();
+  mockClearPersistedLocation.mockClear();
+  mockBackendLogout.mockReset();
+  mockBackendLogout.mockResolvedValue(undefined);
+  mockDisconnect.mockReset();
+  mockDisconnect.mockResolvedValue(undefined);
 });
 
 describe("HomePage tabs", () => {
-  it("shows market page by default", () => {
+  it("shows the market map by default", () => {
     renderHome(<HomePage />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-list-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
+  });
+
+  it("shows the Browse-all list for the explicit market list view", () => {
+    renderHome(<HomePage marketView="list" />);
+    expect(screen.getByTestId("market-list-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-page")).toBeNull();
   });
 
   it("renders the requested wallet tab", () => {
@@ -136,5 +182,55 @@ describe("HomePage sign-out", () => {
     await waitFor(() => {
       expect(mockAbortWalletSwitch).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("clears the persisted precise location on sign-out", async () => {
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("clears the persisted location even when backend logout fails", async () => {
+    mockBackendLogout.mockRejectedValueOnce(new Error("network down"));
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    // A precise location must not survive on a shared device just because the
+    // server round-trip failed.
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("clears the persisted location even when disconnect rejects", async () => {
+    mockDisconnect.mockRejectedValueOnce(new Error("connector gone"));
+    renderHome(<HomePage activeTab="settings" />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+describe("HomePage location scope", () => {
+  it("scopes the location to the address only when authenticated", () => {
+    renderHome(<HomePage />);
+
+    expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("0xabc");
+  });
+
+  it("treats a connected wallet without a session as a guest", () => {
+    // docs/AUTH.md: a connected wallet alone is not authentication. An expired
+    // session must not keep exposing that wallet's persisted location.
+    renderHome(<HomePage isAuthenticated={false} />);
+
+    expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("guest");
   });
 });

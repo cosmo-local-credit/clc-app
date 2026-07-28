@@ -15,7 +15,7 @@ vi.mock("#/components/ui/clc-logo", () => ({
 }));
 
 import { BottomNavigation } from "./bottom-navigation";
-import { type HomeTab, parseHomeTab } from "./tabs";
+import { type HomeTab, parseHomeTab, parseMarketView } from "./tabs";
 
 const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
@@ -35,7 +35,11 @@ async function renderNavigation({
   function NavigationFixture() {
     const search = useSearch({ strict: false });
     return (
-      <BottomNavigation activeTab={parseHomeTab(search.tab)} isAuthenticated={isAuthenticated} />
+      <BottomNavigation
+        activeTab={parseHomeTab(search.tab)}
+        marketView={parseMarketView(search.view)}
+        isAuthenticated={isAuthenticated}
+      />
     );
   }
 
@@ -43,8 +47,9 @@ async function renderNavigation({
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
-    validateSearch: (search): { tab: HomeTab } => ({
+    validateSearch: (search): { tab: HomeTab; view?: "list" } => ({
       tab: parseHomeTab(search.tab),
+      view: search.view === "list" ? "list" : undefined,
     }),
     component: NavigationFixture,
   });
@@ -102,6 +107,20 @@ describe("BottomNavigation", () => {
 
     expect(history.location.href).toBe(initialHref);
     expect(history.length).toBe(initialLength);
+  });
+
+  it("returns the active Browse-all subview to the map and Back restores the list", async () => {
+    const { history } = await renderNavigation({ initialEntry: "/?tab=market&view=list" });
+
+    fireEvent.click(screen.getByRole("link", { name: "Market" }));
+
+    await waitFor(() => expect(history.location.href).toBe("/?tab=market"));
+
+    await act(async () => {
+      history.back();
+    });
+
+    await waitFor(() => expect(history.location.href).toBe("/?tab=market&view=list"));
   });
 
   it("restores the previous tab when navigating back", async () => {
