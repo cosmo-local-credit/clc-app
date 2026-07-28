@@ -1,41 +1,22 @@
-export type MarketLocationKind = "eatery" | "shop" | "service";
+/**
+ * Marker kinds are derived by the backend from a voucher's available
+ * offerings (see `GET /api/v2/vouchers`). There is no eatery/shop/service
+ * taxonomy — that was placeholder data.
+ */
+export type MarketLocationKind = "goods" | "services" | "voucher";
 
+/**
+ * The minimal shape the map needs from a voucher. `MarketVoucher` from the
+ * market client is structurally assignable to this, so real catalog rows are
+ * passed straight through with no intermediate view model to keep in sync.
+ */
 export type MarketLocation = {
   id: string;
   name: string;
-  category: string;
   kind: MarketLocationKind;
-  distance: string;
   lat: number;
   lng: number;
+  locationName: string | null;
 };
 
-export const placeholderMarketLocations: MarketLocation[] = [
-  {
-    id: "bakery",
-    name: "Cosmo Bakery",
-    category: "Eatery",
-    kind: "eatery",
-    distance: "150m away",
-    lat: -1.2864,
-    lng: 36.8233,
-  },
-  {
-    id: "market",
-    name: "Green Basket Market",
-    category: "Shop",
-    kind: "shop",
-    distance: "420m away",
-    lat: -1.3011,
-    lng: 36.8126,
-  },
-  {
-    id: "repair",
-    name: "Mtaa Repair Hub",
-    category: "Service",
-    kind: "service",
-    distance: "680m away",
-    lat: -1.2758,
-    lng: 36.8347,
-  },
-];
+export const MARKET_SOURCE_ID = "market-vouchers";

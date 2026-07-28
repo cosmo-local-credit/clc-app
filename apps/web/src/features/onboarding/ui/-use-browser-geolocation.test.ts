@@ -275,3 +275,125 @@ describe("useBrowserGeolocation", () => {
     expect(result.current.state.status).toBe("granted");
   });
 });
+
+describe("useBrowserGeolocation({ autoRequestIfGranted })", () => {
+  it("does not auto-request by default, preserving the onboarding picker", async () => {
+    renderHook(() => useBrowserGeolocation());
+
+    await act(async () => {
+      resolvePermission({ state: "granted" });
+      await Promise.resolve();
+    });
+
+    expect(mockGetCurrentPosition).not.toHaveBeenCalled();
+  });
+
+  it("auto-requests once when permission is already granted", async () => {
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      resolvePermission({ state: "granted" });
+      await Promise.resolve();
+    });
+
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      capturedSuccess(makePosition(-1.2921, 36.8219, 8));
+    });
+
+    expect(result.current.state).toEqual({
+      status: "granted",
+      lat: -1.2921,
+      lng: 36.8219,
+      accuracy: 8,
+    });
+  });
+
+  it("stays silent on prompt so no permission dialog is triggered", async () => {
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      resolvePermission({ state: "prompt" });
+      await Promise.resolve();
+    });
+
+    expect(mockGetCurrentPosition).not.toHaveBeenCalled();
+    expect(result.current.state.status).toBe("idle");
+  });
+
+  it("stays silent on denied", async () => {
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      resolvePermission({ state: "denied" });
+      await Promise.resolve();
+    });
+
+    expect(mockGetCurrentPosition).not.toHaveBeenCalled();
+    expect(result.current.state.status).toBe("idle");
+  });
+
+  it("stays silent when the Permissions API rejects, the WebKit/iOS shape", async () => {
+    mockPermissionsQuery.mockImplementation(() =>
+      Promise.reject(new TypeError("geolocation is not a valid PermissionName")),
+    );
+
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    // Calling GPS here would risk an unprompted permission dialog on iOS.
+    expect(mockGetCurrentPosition).not.toHaveBeenCalled();
+    expect(result.current.state.status).toBe("idle");
+  });
+
+  it("stays silent when the Permissions API is missing entirely", async () => {
+    Object.defineProperty(navigator, "permissions", {
+      value: undefined,
+      configurable: true,
+      writable: true,
+    });
+
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mockGetCurrentPosition).not.toHaveBeenCalled();
+    expect(result.current.state.status).toBe("idle");
+  });
+
+  it("still allows an explicit request on every platform after a rejected probe", async () => {
+    mockPermissionsQuery.mockImplementation(() => Promise.reject(new TypeError("unsupported")));
+
+    const { result } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    act(() => {
+      result.current.request();
+    });
+
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(1);
+    expect(result.current.state.status).toBe("requesting");
+  });
+
+  it("auto-requests only once across re-renders", async () => {
+    const { rerender } = renderHook(() => useBrowserGeolocation({ autoRequestIfGranted: true }));
+
+    await act(async () => {
+      resolvePermission({ state: "granted" });
+      await Promise.resolve();
+    });
+    rerender();
+    rerender();
+
+    expect(mockGetCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+});

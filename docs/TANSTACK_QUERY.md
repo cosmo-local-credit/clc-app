@@ -36,6 +36,53 @@ Current local overrides:
   - `refetchIntervalInBackground: false`
   - Reason: the upstream Pretium status poller confirms onramps within seconds; the Cash page shows live status while mounted, mirroring wallet account freshness. Rates stay at `staleTime: 60_000`.
 
+- `apps/web/src/features/home/hooks/use-market-vouchers.ts`
+  - public market voucher catalog (full infinite catalog + one bbox bootstrap page)
+  - `staleTime: 10 * 60_000`
+  - `gcTime: 30 * 60_000`
+  - `refetchOnReconnect: false`
+  - Reason: this is a bulk import of static catalog data, not live chain state.
+    The one-minute global `staleTime` would re-walk every cached page of a
+    multi-page import, and the five-minute default GC time would discard the
+    assembled catalog on every home-tab switch, forcing a full re-download.
+  - Exported as `MARKET_QUERY_FRESHNESS` and reused by
+    `use-market-voucher-detail.ts`, below.
+
+- `apps/web/src/features/home/hooks/use-market-voucher-detail.ts`
+  - one public voucher by contract address (`GET /api/v2/vouchers/:address`)
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: the same static catalog, read one row at a time. The map card and the
+    voucher page share a single cache entry — the key lowercases the address, so
+    tapping a marker warms exactly the entry the page then reads and navigation
+    renders with no loading state. Under the global one-minute `staleTime` every
+    reopened card would refetch instead.
+
+- `apps/web/src/features/home/hooks/use-voucher-offerings.ts`
+  - public per-voucher offerings (`GET /api/v2/vouchers/:address/offerings`)
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: offerings come from the same bulk-imported static catalog as market
+    vouchers. Keeping the assembled pages for 30 minutes avoids a public
+    voucher page refetch whenever the user switches tabs or revisits it.
+
+- `apps/web/src/features/home/hooks/use-reports.ts`
+  - report feed (`GET /api/v2/reports`) and one report's detail
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: reports are the same bulk-imported static catalog as market
+    vouchers. The feed unmounts on every home-tab change, so the global
+    one-minute `staleTime` would re-walk every cached page each time Posts is
+    reopened.
+
+- `apps/web/src/features/home/hooks/use-ip-camera.ts`
+  - IP/country camera bootstrap for the Market map
+  - `staleTime: Infinity`
+  - `gcTime: 24 * 60 * 60_000`
+  - `retry: 0`
+  - `refetchOnReconnect: false`
+  - Reason: an IP does not move during a session, so this resolves once and is
+    reused across every home-tab remount. It is the fallback path behind GPS and
+    persisted location, so a failure must fall through immediately rather than
+    retrying — it must never block basemap rendering.
+
 - `apps/web/src/features/auth/hooks/use-otx-tracking.ts`
   - operation tracking
   - polls while the operation is pending, then stops

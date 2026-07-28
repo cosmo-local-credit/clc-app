@@ -74,7 +74,7 @@ function createTestRouter(initialEntry: string) {
     path: "/pools/$poolAddress",
     component: () => {
       const { poolAddress } = poolDetailRoute.useParams();
-      return <PoolDetailPage poolAddress={poolAddress} />;
+      return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
     },
   });
   return createRouter({
@@ -123,7 +123,7 @@ describe("pools navigation", () => {
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Pools" }));
+      fireEvent.click(screen.getByRole("link", { name: "Pools" }));
     });
 
     await waitFor(() => {

@@ -1,6 +1,18 @@
 import { apiFetch } from "#/features/auth/api/client";
+import {
+  type CursorParams,
+  type HexAddress,
+  formatCursorQuery,
+  isPresent,
+  normalizeHex,
+  normalizeID,
+  normalizeNumber,
+  normalizeNumericText,
+  normalizeStringArray,
+  normalizeText,
+} from "#/lib/api-normalize";
 
-export type HexAddress = `0x${string}`;
+export type { CursorParams, HexAddress };
 
 export type UserPool = {
   id: string;
@@ -66,32 +78,6 @@ export type PoolVoucher = {
   updatedAt?: string;
 };
 
-export type Offering = {
-  id: string;
-  sourceId: string | null;
-  voucherId: string;
-  voucherAddress: HexAddress;
-  voucherName: string | null;
-  voucherSymbol: string | null;
-  voucherDecimals: number | null;
-  sellerAddress: HexAddress;
-  commodityName: string;
-  commodityType: string;
-  description: string;
-  quantity: string;
-  unit: string | null;
-  frequency: string | null;
-  price: string | null;
-  available: boolean;
-  locationName: string | null;
-  geoLat: number | null;
-  geoLng: number | null;
-  imageUrl: string | null;
-  tags: string[];
-  createdAt?: string;
-  updatedAt?: string;
-};
-
 export type UserPoolPage = {
   pools: UserPool[];
   first?: number;
@@ -103,20 +89,6 @@ export type PoolVoucherPage = {
   first?: number;
   last?: number;
 };
-
-export type OfferingPage = {
-  offerings: Offering[];
-  first?: number;
-  last?: number;
-};
-
-export type CursorParams = {
-  perPage: number;
-  cursor?: number;
-  next?: boolean;
-};
-
-export type UserPoolsCursorParams = CursorParams;
 
 type BackendPool = Partial<{
   id: string | number;
@@ -184,32 +156,6 @@ type BackendPoolVoucher = Partial<{
   updatedAt: string;
 }>;
 
-type BackendOffering = Partial<{
-  id: string | number;
-  sourceId: string | number | null;
-  voucherId: string | number;
-  voucherAddress: string;
-  voucherName: string | null;
-  voucherSymbol: string | null;
-  voucherDecimals: string | number | null;
-  sellerAddress: string;
-  commodityName: string;
-  commodityType: string;
-  description: string;
-  quantity: string | number;
-  unit: string | null;
-  frequency: string | null;
-  price: string | number | null;
-  available: boolean;
-  locationName: string | null;
-  geoLat: string | number | null;
-  geoLng: string | number | null;
-  imageUrl: string | null;
-  tags: string[] | null;
-  createdAt: string;
-  updatedAt: string;
-}>;
-
 type BackendPoolPage = {
   pools?: BackendPool[] | null;
   first?: number;
@@ -222,12 +168,6 @@ type BackendPoolVoucherPage = {
   last?: number;
 };
 
-type BackendOfferingPage = {
-  offerings?: BackendOffering[] | null;
-  first?: number;
-  last?: number;
-};
-
 type BackendPoolEnvelope = { pool?: BackendPool | null } & BackendPool;
 
 const POOL_READ_REQUEST: RequestInit = {
@@ -236,7 +176,7 @@ const POOL_READ_REQUEST: RequestInit = {
 };
 
 /** Global network pool catalog (not user membership). */
-export async function getPools(params: UserPoolsCursorParams): Promise<UserPoolPage> {
+export async function getPools(params: CursorParams): Promise<UserPoolPage> {
   const result = await apiFetch<BackendPoolPage>(
     `/api/v2/pools${formatCursorQuery(params)}`,
     POOL_READ_REQUEST,
@@ -270,31 +210,6 @@ export async function getPoolVouchers(
   return {
     ...result,
     vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
-  };
-}
-
-export async function getOfferings(params: CursorParams): Promise<OfferingPage> {
-  const result = await apiFetch<BackendOfferingPage>(
-    `/api/v2/offerings${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
-  );
-  return {
-    ...result,
-    offerings: (result.offerings ?? []).map(normalizeOffering).filter(isPresent),
-  };
-}
-
-export async function getVoucherOfferings(
-  voucherAddress: string,
-  params: CursorParams,
-): Promise<OfferingPage> {
-  const result = await apiFetch<BackendOfferingPage>(
-    `/api/v2/vouchers/${encodeURIComponent(voucherAddress)}/offerings${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
-  );
-  return {
-    ...result,
-    offerings: (result.offerings ?? []).map(normalizeOffering).filter(isPresent),
   };
 }
 
@@ -372,89 +287,4 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
     createdAt: voucher.createdAt,
     updatedAt: voucher.updatedAt,
   };
-}
-
-function normalizeOffering(offering: BackendOffering): Offering | null {
-  const voucherAddress = normalizeHex(offering.voucherAddress);
-  const sellerAddress = normalizeHex(offering.sellerAddress);
-  if (
-    !voucherAddress ||
-    !sellerAddress ||
-    offering.id === undefined ||
-    offering.voucherId === undefined
-  ) {
-    return null;
-  }
-  return {
-    id: String(offering.id),
-    sourceId: normalizeID(offering.sourceId),
-    voucherId: String(offering.voucherId),
-    voucherAddress,
-    voucherName: normalizeText(offering.voucherName),
-    voucherSymbol: normalizeText(offering.voucherSymbol),
-    voucherDecimals: normalizeNumber(offering.voucherDecimals),
-    sellerAddress,
-    commodityName: normalizeText(offering.commodityName) ?? "Offering",
-    commodityType: normalizeText(offering.commodityType) ?? "UNKNOWN",
-    description: normalizeText(offering.description) ?? "",
-    quantity: normalizeNumericText(offering.quantity) ?? "0",
-    unit: normalizeText(offering.unit),
-    frequency: normalizeText(offering.frequency),
-    price: normalizeNumericText(offering.price),
-    available: offering.available !== false,
-    locationName: normalizeText(offering.locationName),
-    geoLat: normalizeNumber(offering.geoLat),
-    geoLng: normalizeNumber(offering.geoLng),
-    imageUrl: normalizeText(offering.imageUrl),
-    tags: normalizeStringArray(offering.tags),
-    createdAt: offering.createdAt,
-    updatedAt: offering.updatedAt,
-  };
-}
-
-function formatCursorQuery(params: CursorParams): string {
-  const search = new URLSearchParams({ perPage: params.perPage.toString() });
-  if (params.cursor !== undefined) search.set("cursor", params.cursor.toString());
-  if (params.next !== undefined) search.set("next", params.next ? "true" : "false");
-  return `?${search.toString()}`;
-}
-
-function normalizeText(value: unknown): string | null {
-  return typeof value === "string" && value.trim() ? value.trim() : null;
-}
-
-function normalizeNumericText(value: unknown): string | null {
-  if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  return normalizeText(value);
-}
-
-function normalizeNumber(value: unknown): number | null {
-  if (typeof value !== "number" && typeof value !== "string") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeID(value: unknown): string | null {
-  return typeof value === "number" || (typeof value === "string" && value.length > 0)
-    ? String(value)
-    : null;
-}
-
-function normalizeStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value
-        .filter((item): item is string => typeof item === "string")
-        .map((item) => item.trim())
-        .filter(Boolean)
-    : [];
-}
-
-function normalizeHex(value: unknown): HexAddress | null {
-  return typeof value === "string" && /^0x[0-9a-fA-F]{40}$/.test(value)
-    ? (value as HexAddress)
-    : null;
-}
-
-function isPresent<T>(value: T | null): value is T {
-  return value !== null;
 }

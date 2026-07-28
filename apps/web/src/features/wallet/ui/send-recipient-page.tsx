@@ -27,7 +27,12 @@ import {
 } from "./recipient-validation";
 
 type ResolvedRecipient = {
-  label: string;
+  /**
+   * Human name for the address — an ENS name, a phone number, or a saved
+   * contact. `null` for a bare address, so downstream screens show the
+   * ellipsized address itself rather than a meaningless placeholder word.
+   */
+  name: string | null;
   address: `0x${string}`;
   source: AddressBookRecipientSource;
 };
@@ -57,17 +62,17 @@ export function SendRecipientPage({ token }: { token?: string }) {
     selectedRecipient ??
     (directAddress
       ? {
-          label: reverseEnsResolution.data?.name ?? t`Address`,
+          name: reverseEnsResolution.data?.name ?? null,
           address: directAddress,
           source: reverseEnsResolution.data?.name ? "reverse-ens" : "manual",
         }
       : null) ??
     (ensName && ensResolution.data
-      ? { label: ensName, address: ensResolution.data.address, source: "ens" }
+      ? { name: ensName, address: ensResolution.data.address, source: "ens" }
       : null) ??
     (normalizedPhone && phoneResolution.data
       ? {
-          label: phoneReverseEnsResolution.data?.name ?? normalizedPhone,
+          name: phoneReverseEnsResolution.data?.name ?? normalizedPhone,
           address: phoneResolution.data.address,
           source: phoneReverseEnsResolution.data?.name ? "reverse-ens" : "phone",
         }
@@ -80,7 +85,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
   function handleSelectRecipient(recipient: Recipient) {
     if (recipient.address) {
       setSelectedRecipient({
-        label: recipient.label.startsWith("0x") ? t`Address` : recipient.label,
+        name: recipient.label.startsWith("0x") ? null : recipient.label,
         address: recipient.address as `0x${string}`,
         source: "manual",
       });
@@ -104,8 +109,11 @@ export function SendRecipientPage({ token }: { token?: string }) {
 
   async function handleContinue() {
     if (!resolvedRecipient) return;
+    // A nameless recipient is stored under its own address; the address book
+    // row renders that as an ellipsized address, and nothing persists a
+    // placeholder word that could later masquerade as a name.
     await upsertRecipient.mutateAsync({
-      label: resolvedRecipient.label,
+      label: resolvedRecipient.name ?? resolvedRecipient.address,
       address: resolvedRecipient.address,
       source: resolvedRecipient.source,
     });
@@ -114,7 +122,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
       search: {
         token,
         recipient: resolvedRecipient.address,
-        recipientLabel: resolvedRecipient.label,
+        recipientLabel: resolvedRecipient.name ?? undefined,
       },
     });
   }
@@ -198,7 +206,10 @@ export function SendRecipientPage({ token }: { token?: string }) {
       ) : null}
 
       {resolvedRecipient ? (
-        <RecipientAddressCard label={resolvedRecipient.label} address={resolvedRecipient.address} />
+        <RecipientAddressCard
+          label={resolvedRecipient.name ?? t`Address`}
+          address={resolvedRecipient.address}
+        />
       ) : null}
 
       <div className="flex-1" />
