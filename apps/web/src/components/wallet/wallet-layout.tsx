@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { RiArrowLeftLine } from "react-icons/ri";
 
 import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
@@ -42,18 +42,30 @@ export function BackChevron({
       </button>
     );
   }
-  // Prefer real history navigation so back returns to the actual previous
-  // screen. Fall back to `to` (or the index) only on a fresh/deep-linked load
-  // where there is no in-app history to pop.
-  if (canGoBack) {
-    return (
-      <button type="button" onClick={() => router.history.back()} className={classes}>
-        {content}
-      </button>
-    );
-  }
+  // Keep the anchor stable across SSR and hydration: the server cannot know
+  // whether client history can go back. An ordinary click uses real history;
+  // modified clicks retain normal link behavior to the deep-link fallback.
   return (
-    <Link to={to ?? "/"} search={search} className={classes}>
+    <Link
+      to={to ?? "/"}
+      search={search}
+      className={classes}
+      onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+        if (
+          !canGoBack ||
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        ) {
+          return;
+        }
+        event.preventDefault();
+        router.history.back();
+      }}
+    >
       {content}
     </Link>
   );

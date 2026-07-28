@@ -90,7 +90,7 @@ describe("pool voucher navigation", () => {
     expect(screen.getByLabelText("Balance").textContent).toMatch(/0\s*TTX/);
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Pool" }));
+      fireEvent.click(screen.getByRole("link", { name: "Pool" }));
     });
 
     await waitFor(() => {

@@ -123,7 +123,7 @@ describe("pools navigation", () => {
     });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Pools" }));
+      fireEvent.click(screen.getByRole("link", { name: "Pools" }));
     });
 
     await waitFor(() => {
