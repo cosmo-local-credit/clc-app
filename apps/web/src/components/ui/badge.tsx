@@ -2,7 +2,7 @@ import type * as React from "react";
 
 import { cn } from "#/lib/utils";
 
-type BadgeVariant = "primary" | "muted";
+type BadgeVariant = "primary" | "muted" | "outline";
 
 export function Badge({
   className,
@@ -15,7 +15,9 @@ export function Badge({
         "inline-flex h-7 shrink-0 items-center border px-3 font-semibold text-[11px]",
         variant === "primary"
           ? "border-primary/35 bg-primary/10 text-primary"
-          : "border-border bg-muted text-muted-foreground",
+          : variant === "muted"
+            ? "border-border bg-muted text-muted-foreground"
+            : "border-border bg-card text-foreground",
         className,
       )}
       {...props}

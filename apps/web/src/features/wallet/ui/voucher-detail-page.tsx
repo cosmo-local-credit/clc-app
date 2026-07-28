@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { InfoRow } from "#/components/ui/info-row";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
@@ -607,17 +608,6 @@ function VoucherInfoPanel({
           </Button>
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function InfoRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex h-12 items-center justify-between gap-3 border-b border-border px-3 last:border-b-0">
-      <dt className="shrink-0 text-muted-foreground text-xs">{label}</dt>
-      <dd className="flex min-w-0 items-center justify-end overflow-hidden text-right text-sm">
-        {children}
-      </dd>
     </div>
   );
 }

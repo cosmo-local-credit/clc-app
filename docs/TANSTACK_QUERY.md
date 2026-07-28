@@ -64,6 +64,14 @@ Current local overrides:
     vouchers. Keeping the assembled pages for 30 minutes avoids a public
     voucher page refetch whenever the user switches tabs or revisits it.
 
+- `apps/web/src/features/home/hooks/use-reports.ts`
+  - report feed (`GET /api/v2/reports`) and one report's detail
+  - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
+  - Reason: reports are the same bulk-imported static catalog as market
+    vouchers. The feed unmounts on every home-tab change, so the global
+    one-minute `staleTime` would re-walk every cached page each time Posts is
+    reopened.
+
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
   - IP/country camera bootstrap for the Market map
   - `staleTime: Infinity`

@@ -17,6 +17,7 @@ import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
 import { Route as VouchersVoucherAddressRouteImport } from './routes/vouchers/$voucherAddress'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
+import { Route as PostsReportIdRouteImport } from './routes/posts/$reportId'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
 import { Route as PoolsPoolAddressIndexRouteImport } from './routes/pools/$poolAddress/index'
 import { Route as WalletSendReceiptRouteImport } from './routes/wallet/send/receipt'
@@ -64,6 +65,11 @@ const SettingsProfileRoute = SettingsProfileRouteImport.update({
   path: '/settings/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostsReportIdRoute = PostsReportIdRouteImport.update({
+  id: '/posts/$reportId',
+  path: '/posts/$reportId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalletSendIndexRoute = WalletSendIndexRouteImport.update({
   id: '/wallet/send/',
   path: '/wallet/send/',
@@ -100,6 +106,7 @@ const PoolsPoolAddressSwapReceiptRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
+  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
+  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
+  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
+    | '/posts/$reportId'
     | '/settings/profile'
     | '/vouchers/$voucherAddress'
     | '/wallet/receive'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/onboarding'
+    | '/posts/$reportId'
     | '/settings/profile'
     | '/vouchers/$voucherAddress'
     | '/wallet/receive'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/onboarding'
+    | '/posts/$reportId'
     | '/settings/profile'
     | '/vouchers/$voucherAddress'
     | '/wallet/receive'
@@ -200,6 +212,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OnboardingRoute: typeof OnboardingRoute
+  PostsReportIdRoute: typeof PostsReportIdRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   VouchersVoucherAddressRoute: typeof VouchersVoucherAddressRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/posts/$reportId': {
+      id: '/posts/$reportId'
+      path: '/posts/$reportId'
+      fullPath: '/posts/$reportId'
+      preLoaderRoute: typeof PostsReportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wallet/send/': {
       id: '/wallet/send/'
       path: '/wallet/send'
@@ -320,6 +340,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OnboardingRoute: OnboardingRoute,
+  PostsReportIdRoute: PostsReportIdRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   VouchersVoucherAddressRoute: VouchersVoucherAddressRoute,
   WalletReceiveRoute: WalletReceiveRoute,

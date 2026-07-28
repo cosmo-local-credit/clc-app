@@ -4,18 +4,10 @@ import {
   formatOfferingTotal,
 } from "@clc/core/features/market/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ComponentProps,
-  type CSSProperties,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { RiAddLine, RiShoppingCartLine, RiSubtractLine } from "react-icons/ri";
 import { toast } from "sonner";
 
-import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import {
@@ -28,7 +20,8 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { hueDegreesFromSeed, hueFromSeed } from "#/components/wallet/wallet-data";
+import { TagBadge } from "#/components/ui/tag-badge";
+import { hueFromSeed } from "#/components/wallet/wallet-data";
 import type { Offering, OfferingFrequency } from "#/features/home/api/offerings-client";
 import { cn } from "#/lib/utils";
 
@@ -355,9 +348,7 @@ function OfferingDetailsSheet({
             {offering.tags.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-1.5 px-6">
                 {offering.tags.map((tag) => (
-                  <Badge key={tag} className="border-transparent text-white" style={tagColor(tag)}>
-                    {tag}
-                  </Badge>
+                  <TagBadge key={tag} tag={tag} />
                 ))}
               </div>
             ) : null}
@@ -475,17 +466,6 @@ function OfferingImage({
       {initials}
     </span>
   );
-}
-
-/**
- * A stable colour per tag, so "Education" is the same colour on every offering.
- *
- * Solid rather than a tinted background: the sheet renders in both themes, and
- * a fixed light tint that carries dark text in light mode is unreadable in dark
- * mode. Lightness is held at 0.45 so white text clears 4.5:1 at every hue.
- */
-function tagColor(tag: string): CSSProperties {
-  return { backgroundColor: `oklch(0.45 0.15 ${hueDegreesFromSeed(tag)})` };
 }
 
 /** Up to two initials from issuer-authored, sometimes non-Latin, free text. */
