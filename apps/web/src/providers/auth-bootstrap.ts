@@ -18,7 +18,7 @@ export function resetReconnectAttemptedForTest(): void {
   emit();
 }
 
-export function getReconnectAttemptedSnapshot(): boolean {
+function getReconnectAttemptedSnapshot(): boolean {
   return reconnectAttempted;
 }
 

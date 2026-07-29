@@ -4,7 +4,7 @@ import { useConnection } from "wagmi";
 import { BackendApiError, getSession, type SessionResult } from "#/features/auth/api/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
 
-export type AuthStatusState =
+type AuthStatusState =
   | "loading"
   | "guest"
   | "connectedNoSession"

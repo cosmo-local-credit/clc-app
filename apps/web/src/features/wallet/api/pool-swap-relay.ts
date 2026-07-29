@@ -35,7 +35,7 @@ export type RelayPoolSwapExactOutputInput = RelayPoolBatchOptions & {
   recipientAddress?: `0x${string}`;
 };
 
-export type RelayCollectPoolFeesInput = RelayPoolBatchOptions & {
+type RelayCollectPoolFeesInput = RelayPoolBatchOptions & {
   poolAddress: `0x${string}`;
   tokenOut: `0x${string}`;
   amountRaw?: string;

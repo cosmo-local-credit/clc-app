@@ -21,10 +21,6 @@ export const SARAFU_DEFAULT_SCRYPT_PARAMS: PaperWalletScryptParams = {
   p: 1,
 };
 
-export const PAPER_WALLET_GENERATION_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAMS;
-
-export const PAPER_WALLET_IMPORT_SCRYPT_PARAMS = SARAFU_DEFAULT_SCRYPT_PARAMS;
-
 const RAW_PRIVATE_KEY_HEX = /^0x[0-9a-fA-F]{64}$/;
 const DECRYPTION_ERROR = "Unable to decrypt paper wallet. Check the password and try again.";
 
@@ -94,7 +90,7 @@ export function isEncryptedPaperWalletPayload(payload: string): boolean {
 export async function encryptPaperWalletPrivateKey(
   privateKey: `0x${string}`,
   passphrase: string,
-  scryptParams: PaperWalletScryptParams = PAPER_WALLET_GENERATION_SCRYPT_PARAMS,
+  scryptParams: PaperWalletScryptParams = SARAFU_DEFAULT_SCRYPT_PARAMS,
 ): Promise<string> {
   validatePaperWalletPassphrase(passphrase);
   const normalized = normalizePaperWalletPrivateKey(privateKey);
@@ -117,7 +113,7 @@ export async function encryptPaperWalletPrivateKey(
 export async function decryptPaperWalletPrivateKey(
   encryptedKey: string,
   passphrase: string,
-  scryptParams: PaperWalletScryptParams = PAPER_WALLET_IMPORT_SCRYPT_PARAMS,
+  scryptParams: PaperWalletScryptParams = SARAFU_DEFAULT_SCRYPT_PARAMS,
 ): Promise<`0x${string}`> {
   validatePaperWalletPassphrase(passphrase);
 

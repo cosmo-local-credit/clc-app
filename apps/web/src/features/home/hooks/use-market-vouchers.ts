@@ -37,7 +37,7 @@ export const marketVoucherQueryKeys = {
     [...marketVoucherQueryKeys.all, "viewport", { boxes, perPage }] as const,
 };
 
-export function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE) {
+function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE) {
   return useInfiniteQuery({
     queryKey: marketVoucherQueryKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>

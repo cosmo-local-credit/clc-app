@@ -34,7 +34,7 @@ export type WalletToken = {
   lng?: number;
 };
 
-export const WALLET_TOKENS: WalletToken[] = [
+const WALLET_TOKENS: WalletToken[] = [
   {
     id: "usdc",
     symbol: "USDC",

@@ -1,11 +1,7 @@
 import { z } from "zod";
 import { normalizeNotificationTargetUrl } from "./target-url";
 
-export const notificationKinds = [
-  "voucher.received",
-  "swap.completed",
-  "offramp.completed",
-] as const;
+const notificationKinds = ["voucher.received", "swap.completed", "offramp.completed"] as const;
 
 export const notificationKindSchema = z.enum(notificationKinds);
 
@@ -15,9 +11,9 @@ export const notificationPrioritySchema = z.enum(["very-low", "low", "normal", "
 
 export type NotificationPriority = z.infer<typeof notificationPrioritySchema>;
 
-export type NotificationInteractionMode = "click-only";
-export type NotificationSettingsScope = "device";
-export type NotificationSignOutPolicy = "retain-until-explicit-disable";
+type NotificationInteractionMode = "click-only";
+type NotificationSettingsScope = "device";
+type NotificationSignOutPolicy = "retain-until-explicit-disable";
 
 export type NotificationKindPolicy = {
   interactionMode: NotificationInteractionMode;
@@ -33,7 +29,7 @@ const sharedV1Policy = {
   signOutPolicy: "retain-until-explicit-disable",
 } as const;
 
-export const notificationKindPolicies = {
+const notificationKindPolicies = {
   "voucher.received": {
     ...sharedV1Policy,
     priority: "high",
@@ -55,7 +51,7 @@ export function getNotificationKindPolicy(kind: NotificationKind): NotificationK
   return notificationKindPolicies[kind];
 }
 
-export const notificationActionSchema = z.object({
+const notificationActionSchema = z.object({
   action: trimmedString().min(1).max(64),
   title: trimmedString().min(1).max(64),
 });

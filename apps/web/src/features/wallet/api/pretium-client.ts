@@ -1,6 +1,6 @@
 import { apiFetch } from "#/features/auth/api/client";
 
-export type PretiumAsset = "USDT" | "USDC" | "cUSD";
+type PretiumAsset = "USDT" | "USDC" | "cUSD";
 
 export type TriggerPretiumOnrampInput = {
   address: `0x${string}`;
@@ -20,7 +20,7 @@ export type PretiumRatesResult = {
   sell: string;
 };
 
-export type PretiumCashTransactionKind = "onramp" | "offramp";
+type PretiumCashTransactionKind = "onramp" | "offramp";
 
 export type PretiumCashTransaction = {
   kind: PretiumCashTransactionKind;

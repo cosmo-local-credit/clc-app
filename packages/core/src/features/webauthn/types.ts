@@ -4,7 +4,7 @@ const hex = z.custom<`0x${string}`>((v) => typeof v === "string" && /^0x[0-9a-fA
 const decString = z.string().regex(/^\d+$/, "Must be a decimal string");
 const checksumAddr = hex;
 
-export const eip7702AuthSchema = z.object({
+const eip7702AuthSchema = z.object({
   chainId: decString,
   contractAddress: checksumAddr,
   nonce: decString,
@@ -14,19 +14,19 @@ export const eip7702AuthSchema = z.object({
 });
 export type EIP7702Auth = z.infer<typeof eip7702AuthSchema>;
 
-export const caliburCallSchema = z.object({
+const caliburCallSchema = z.object({
   to: checksumAddr,
   value: decString,
   data: hex,
 });
 export type CaliburCallInput = z.infer<typeof caliburCallSchema>;
 
-export const caliburBatchedCallSchema = z.object({
+const caliburBatchedCallSchema = z.object({
   calls: z.array(caliburCallSchema).min(1),
   revertOnFailure: z.boolean(),
 });
 
-export const signedBatchSchema = z.object({
+const signedBatchSchema = z.object({
   batchedCall: caliburBatchedCallSchema,
   nonce: decString,
   keyHash: hex,
@@ -35,7 +35,7 @@ export const signedBatchSchema = z.object({
 });
 export type SignedBatchInput = z.infer<typeof signedBatchSchema>;
 
-export const webAuthnCredentialSchema = z.object({
+const webAuthnCredentialSchema = z.object({
   credentialId: z.string().min(1),
   keyHash: hex,
   publicKeyX: decString,

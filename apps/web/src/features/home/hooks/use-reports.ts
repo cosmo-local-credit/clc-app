@@ -38,7 +38,7 @@ export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE) {
   });
 }
 
-export function reportQuery(id: string) {
+function reportQuery(id: string) {
   return queryOptions({
     queryKey: reportQueryKeys.byId(id),
     queryFn: ({ signal }) => getReport(id, signal),
