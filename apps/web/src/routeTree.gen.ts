@@ -10,19 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as PoolsIndexRouteImport } from './routes/pools/index'
-import { Route as WalletVouchersRouteImport } from './routes/wallet/vouchers'
+import { Route as NavRouteImport } from './routes/_nav'
+import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
-import { Route as VouchersVoucherAddressRouteImport } from './routes/vouchers/$voucherAddress'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
-import { Route as PostsReportIdRouteImport } from './routes/posts/$reportId'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
-import { Route as PoolsPoolAddressIndexRouteImport } from './routes/pools/$poolAddress/index'
+import { Route as NavPoolsIndexRouteImport } from './routes/_nav/pools/index'
 import { Route as WalletSendReceiptRouteImport } from './routes/wallet/send/receipt'
 import { Route as WalletSendAmountRouteImport } from './routes/wallet/send/amount'
+import { Route as NavWalletVouchersRouteImport } from './routes/_nav/wallet/vouchers'
+import { Route as NavVouchersVoucherAddressRouteImport } from './routes/_nav/vouchers/$voucherAddress'
+import { Route as NavPostsReportIdRouteImport } from './routes/_nav/posts/$reportId'
 import { Route as PoolsPoolAddressSwapIndexRouteImport } from './routes/pools/$poolAddress/swap/index'
+import { Route as NavPoolsPoolAddressIndexRouteImport } from './routes/_nav/pools/$poolAddress/index'
 import { Route as PoolsPoolAddressSwapReceiptRouteImport } from './routes/pools/$poolAddress/swap/receipt'
 
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -30,20 +31,14 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const NavRoute = NavRouteImport.update({
+  id: '/_nav',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NavIndexRoute = NavIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoolsIndexRoute = PoolsIndexRouteImport.update({
-  id: '/pools/',
-  path: '/pools/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WalletVouchersRoute = WalletVouchersRouteImport.update({
-  id: '/wallet/vouchers',
-  path: '/wallet/vouchers',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => NavRoute,
 } as any)
 const WalletTopUpRoute = WalletTopUpRouteImport.update({
   id: '/wallet/top-up',
@@ -55,19 +50,9 @@ const WalletReceiveRoute = WalletReceiveRouteImport.update({
   path: '/wallet/receive',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VouchersVoucherAddressRoute = VouchersVoucherAddressRouteImport.update({
-  id: '/vouchers/$voucherAddress',
-  path: '/vouchers/$voucherAddress',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostsReportIdRoute = PostsReportIdRouteImport.update({
-  id: '/posts/$reportId',
-  path: '/posts/$reportId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WalletSendIndexRoute = WalletSendIndexRouteImport.update({
@@ -75,10 +60,10 @@ const WalletSendIndexRoute = WalletSendIndexRouteImport.update({
   path: '/wallet/send/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PoolsPoolAddressIndexRoute = PoolsPoolAddressIndexRouteImport.update({
-  id: '/pools/$poolAddress/',
-  path: '/pools/$poolAddress/',
-  getParentRoute: () => rootRouteImport,
+const NavPoolsIndexRoute = NavPoolsIndexRouteImport.update({
+  id: '/pools/',
+  path: '/pools/',
+  getParentRoute: () => NavRoute,
 } as any)
 const WalletSendReceiptRoute = WalletSendReceiptRouteImport.update({
   id: '/wallet/send/receipt',
@@ -90,11 +75,33 @@ const WalletSendAmountRoute = WalletSendAmountRouteImport.update({
   path: '/wallet/send/amount',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NavWalletVouchersRoute = NavWalletVouchersRouteImport.update({
+  id: '/wallet/vouchers',
+  path: '/wallet/vouchers',
+  getParentRoute: () => NavRoute,
+} as any)
+const NavVouchersVoucherAddressRoute =
+  NavVouchersVoucherAddressRouteImport.update({
+    id: '/vouchers/$voucherAddress',
+    path: '/vouchers/$voucherAddress',
+    getParentRoute: () => NavRoute,
+  } as any)
+const NavPostsReportIdRoute = NavPostsReportIdRouteImport.update({
+  id: '/posts/$reportId',
+  path: '/posts/$reportId',
+  getParentRoute: () => NavRoute,
+} as any)
 const PoolsPoolAddressSwapIndexRoute =
   PoolsPoolAddressSwapIndexRouteImport.update({
     id: '/pools/$poolAddress/swap/',
     path: '/pools/$poolAddress/swap/',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const NavPoolsPoolAddressIndexRoute =
+  NavPoolsPoolAddressIndexRouteImport.update({
+    id: '/pools/$poolAddress/',
+    path: '/pools/$poolAddress/',
+    getParentRoute: () => NavRoute,
   } as any)
 const PoolsPoolAddressSwapReceiptRoute =
   PoolsPoolAddressSwapReceiptRouteImport.update({
@@ -104,55 +111,56 @@ const PoolsPoolAddressSwapReceiptRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof NavIndexRoute
   '/onboarding': typeof OnboardingRoute
-  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
-  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
-  '/wallet/vouchers': typeof WalletVouchersRoute
-  '/pools/': typeof PoolsIndexRoute
+  '/posts/$reportId': typeof NavPostsReportIdRoute
+  '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
+  '/wallet/vouchers': typeof NavWalletVouchersRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
-  '/pools/$poolAddress/': typeof PoolsPoolAddressIndexRoute
+  '/pools/': typeof NavPoolsIndexRoute
   '/wallet/send/': typeof WalletSendIndexRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
+  '/pools/$poolAddress/': typeof NavPoolsPoolAddressIndexRoute
   '/pools/$poolAddress/swap/': typeof PoolsPoolAddressSwapIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
-  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
-  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
-  '/wallet/vouchers': typeof WalletVouchersRoute
-  '/pools': typeof PoolsIndexRoute
+  '/': typeof NavIndexRoute
+  '/posts/$reportId': typeof NavPostsReportIdRoute
+  '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
+  '/wallet/vouchers': typeof NavWalletVouchersRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
-  '/pools/$poolAddress': typeof PoolsPoolAddressIndexRoute
+  '/pools': typeof NavPoolsIndexRoute
   '/wallet/send': typeof WalletSendIndexRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
+  '/pools/$poolAddress': typeof NavPoolsPoolAddressIndexRoute
   '/pools/$poolAddress/swap': typeof PoolsPoolAddressSwapIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_nav': typeof NavRouteWithChildren
   '/onboarding': typeof OnboardingRoute
-  '/posts/$reportId': typeof PostsReportIdRoute
   '/settings/profile': typeof SettingsProfileRoute
-  '/vouchers/$voucherAddress': typeof VouchersVoucherAddressRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
-  '/wallet/vouchers': typeof WalletVouchersRoute
-  '/pools/': typeof PoolsIndexRoute
+  '/_nav/': typeof NavIndexRoute
+  '/_nav/posts/$reportId': typeof NavPostsReportIdRoute
+  '/_nav/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
+  '/_nav/wallet/vouchers': typeof NavWalletVouchersRoute
   '/wallet/send/amount': typeof WalletSendAmountRoute
   '/wallet/send/receipt': typeof WalletSendReceiptRoute
-  '/pools/$poolAddress/': typeof PoolsPoolAddressIndexRoute
+  '/_nav/pools/': typeof NavPoolsIndexRoute
   '/wallet/send/': typeof WalletSendIndexRoute
   '/pools/$poolAddress/swap/receipt': typeof PoolsPoolAddressSwapReceiptRoute
+  '/_nav/pools/$poolAddress/': typeof NavPoolsPoolAddressIndexRoute
   '/pools/$poolAddress/swap/': typeof PoolsPoolAddressSwapIndexRoute
 }
 export interface FileRouteTypes {
@@ -160,68 +168,64 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
-    | '/posts/$reportId'
     | '/settings/profile'
-    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/top-up'
+    | '/posts/$reportId'
+    | '/vouchers/$voucherAddress'
     | '/wallet/vouchers'
-    | '/pools/'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
-    | '/pools/$poolAddress/'
+    | '/pools/'
     | '/wallet/send/'
     | '/pools/$poolAddress/swap/receipt'
+    | '/pools/$poolAddress/'
     | '/pools/$poolAddress/swap/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/onboarding'
-    | '/posts/$reportId'
     | '/settings/profile'
-    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/top-up'
+    | '/'
+    | '/posts/$reportId'
+    | '/vouchers/$voucherAddress'
     | '/wallet/vouchers'
-    | '/pools'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
-    | '/pools/$poolAddress'
+    | '/pools'
     | '/wallet/send'
     | '/pools/$poolAddress/swap/receipt'
+    | '/pools/$poolAddress'
     | '/pools/$poolAddress/swap'
   id:
     | '__root__'
-    | '/'
+    | '/_nav'
     | '/onboarding'
-    | '/posts/$reportId'
     | '/settings/profile'
-    | '/vouchers/$voucherAddress'
     | '/wallet/receive'
     | '/wallet/top-up'
-    | '/wallet/vouchers'
-    | '/pools/'
+    | '/_nav/'
+    | '/_nav/posts/$reportId'
+    | '/_nav/vouchers/$voucherAddress'
+    | '/_nav/wallet/vouchers'
     | '/wallet/send/amount'
     | '/wallet/send/receipt'
-    | '/pools/$poolAddress/'
+    | '/_nav/pools/'
     | '/wallet/send/'
     | '/pools/$poolAddress/swap/receipt'
+    | '/_nav/pools/$poolAddress/'
     | '/pools/$poolAddress/swap/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  NavRoute: typeof NavRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
-  PostsReportIdRoute: typeof PostsReportIdRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
-  VouchersVoucherAddressRoute: typeof VouchersVoucherAddressRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
-  WalletVouchersRoute: typeof WalletVouchersRoute
-  PoolsIndexRoute: typeof PoolsIndexRoute
   WalletSendAmountRoute: typeof WalletSendAmountRoute
   WalletSendReceiptRoute: typeof WalletSendReceiptRoute
-  PoolsPoolAddressIndexRoute: typeof PoolsPoolAddressIndexRoute
   WalletSendIndexRoute: typeof WalletSendIndexRoute
   PoolsPoolAddressSwapReceiptRoute: typeof PoolsPoolAddressSwapReceiptRoute
   PoolsPoolAddressSwapIndexRoute: typeof PoolsPoolAddressSwapIndexRoute
@@ -236,26 +240,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_nav': {
+      id: '/_nav'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof NavRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_nav/': {
+      id: '/_nav/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pools/': {
-      id: '/pools/'
-      path: '/pools'
-      fullPath: '/pools/'
-      preLoaderRoute: typeof PoolsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/wallet/vouchers': {
-      id: '/wallet/vouchers'
-      path: '/wallet/vouchers'
-      fullPath: '/wallet/vouchers'
-      preLoaderRoute: typeof WalletVouchersRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof NavIndexRouteImport
+      parentRoute: typeof NavRoute
     }
     '/wallet/top-up': {
       id: '/wallet/top-up'
@@ -271,25 +268,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletReceiveRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/vouchers/$voucherAddress': {
-      id: '/vouchers/$voucherAddress'
-      path: '/vouchers/$voucherAddress'
-      fullPath: '/vouchers/$voucherAddress'
-      preLoaderRoute: typeof VouchersVoucherAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/settings/profile': {
       id: '/settings/profile'
       path: '/settings/profile'
       fullPath: '/settings/profile'
       preLoaderRoute: typeof SettingsProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/posts/$reportId': {
-      id: '/posts/$reportId'
-      path: '/posts/$reportId'
-      fullPath: '/posts/$reportId'
-      preLoaderRoute: typeof PostsReportIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wallet/send/': {
@@ -299,12 +282,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletSendIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pools/$poolAddress/': {
-      id: '/pools/$poolAddress/'
-      path: '/pools/$poolAddress'
-      fullPath: '/pools/$poolAddress/'
-      preLoaderRoute: typeof PoolsPoolAddressIndexRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_nav/pools/': {
+      id: '/_nav/pools/'
+      path: '/pools'
+      fullPath: '/pools/'
+      preLoaderRoute: typeof NavPoolsIndexRouteImport
+      parentRoute: typeof NavRoute
     }
     '/wallet/send/receipt': {
       id: '/wallet/send/receipt'
@@ -320,12 +303,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletSendAmountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_nav/wallet/vouchers': {
+      id: '/_nav/wallet/vouchers'
+      path: '/wallet/vouchers'
+      fullPath: '/wallet/vouchers'
+      preLoaderRoute: typeof NavWalletVouchersRouteImport
+      parentRoute: typeof NavRoute
+    }
+    '/_nav/vouchers/$voucherAddress': {
+      id: '/_nav/vouchers/$voucherAddress'
+      path: '/vouchers/$voucherAddress'
+      fullPath: '/vouchers/$voucherAddress'
+      preLoaderRoute: typeof NavVouchersVoucherAddressRouteImport
+      parentRoute: typeof NavRoute
+    }
+    '/_nav/posts/$reportId': {
+      id: '/_nav/posts/$reportId'
+      path: '/posts/$reportId'
+      fullPath: '/posts/$reportId'
+      preLoaderRoute: typeof NavPostsReportIdRouteImport
+      parentRoute: typeof NavRoute
+    }
     '/pools/$poolAddress/swap/': {
       id: '/pools/$poolAddress/swap/'
       path: '/pools/$poolAddress/swap'
       fullPath: '/pools/$poolAddress/swap/'
       preLoaderRoute: typeof PoolsPoolAddressSwapIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_nav/pools/$poolAddress/': {
+      id: '/_nav/pools/$poolAddress/'
+      path: '/pools/$poolAddress'
+      fullPath: '/pools/$poolAddress/'
+      preLoaderRoute: typeof NavPoolsPoolAddressIndexRouteImport
+      parentRoute: typeof NavRoute
     }
     '/pools/$poolAddress/swap/receipt': {
       id: '/pools/$poolAddress/swap/receipt'
@@ -337,19 +348,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface NavRouteChildren {
+  NavIndexRoute: typeof NavIndexRoute
+  NavPostsReportIdRoute: typeof NavPostsReportIdRoute
+  NavVouchersVoucherAddressRoute: typeof NavVouchersVoucherAddressRoute
+  NavWalletVouchersRoute: typeof NavWalletVouchersRoute
+  NavPoolsIndexRoute: typeof NavPoolsIndexRoute
+  NavPoolsPoolAddressIndexRoute: typeof NavPoolsPoolAddressIndexRoute
+}
+
+const NavRouteChildren: NavRouteChildren = {
+  NavIndexRoute: NavIndexRoute,
+  NavPostsReportIdRoute: NavPostsReportIdRoute,
+  NavVouchersVoucherAddressRoute: NavVouchersVoucherAddressRoute,
+  NavWalletVouchersRoute: NavWalletVouchersRoute,
+  NavPoolsIndexRoute: NavPoolsIndexRoute,
+  NavPoolsPoolAddressIndexRoute: NavPoolsPoolAddressIndexRoute,
+}
+
+const NavRouteWithChildren = NavRoute._addFileChildren(NavRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  NavRoute: NavRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
-  PostsReportIdRoute: PostsReportIdRoute,
   SettingsProfileRoute: SettingsProfileRoute,
-  VouchersVoucherAddressRoute: VouchersVoucherAddressRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletTopUpRoute: WalletTopUpRoute,
-  WalletVouchersRoute: WalletVouchersRoute,
-  PoolsIndexRoute: PoolsIndexRoute,
   WalletSendAmountRoute: WalletSendAmountRoute,
   WalletSendReceiptRoute: WalletSendReceiptRoute,
-  PoolsPoolAddressIndexRoute: PoolsPoolAddressIndexRoute,
   WalletSendIndexRoute: WalletSendIndexRoute,
   PoolsPoolAddressSwapReceiptRoute: PoolsPoolAddressSwapReceiptRoute,
   PoolsPoolAddressSwapIndexRoute: PoolsPoolAddressSwapIndexRoute,

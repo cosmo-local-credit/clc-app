@@ -11,25 +11,6 @@ const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mo
     mockDisconnect: vi.fn(),
   }));
 
-vi.mock("./bottom-navigation", () => ({
-  BottomNavigation: ({
-    activeTab,
-    marketView,
-    isAuthenticated,
-  }: {
-    activeTab: string;
-    marketView: string;
-    isAuthenticated: boolean;
-  }) => (
-    <nav
-      data-testid="bottom-navigation"
-      data-active-tab={activeTab}
-      data-market-view={marketView}
-      data-authenticated={String(isAuthenticated)}
-    />
-  ),
-}));
-
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc" as `0x${string}` }),
   useDisconnect: () => ({ mutateAsync: mockDisconnect }),
@@ -139,7 +120,6 @@ describe("HomePage tabs", () => {
   it("renders the requested wallet tab", () => {
     renderHome(<HomePage activeTab="wallet" />);
     expect(screen.getByTestId("wallet-page")).toBeTruthy();
-    expect(screen.getByTestId("bottom-navigation").getAttribute("data-active-tab")).toBe("wallet");
   });
 
   it("renders the requested activity tab", () => {

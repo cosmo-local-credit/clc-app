@@ -42,7 +42,7 @@ vi.mock("#/features/home/ui/home-page", () => ({
   ),
 }));
 
-import { Route } from "./index";
+import { Route } from "./_nav/index";
 
 type RouteFixture = {
   component: () => ReactNode;

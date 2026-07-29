@@ -20,7 +20,13 @@ export type SwapReceiptSearch = {
   poolName?: string;
 };
 
-export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
+export function SwapReceiptPage({
+  poolAddress,
+  details,
+}: {
+  poolAddress: string;
+  details: SwapReceiptSearch;
+}) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(details.trackingId ?? null, {
@@ -33,9 +39,12 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
       : null;
   const sentLabel =
     details.sendAmount && details.sendSymbol ? `${details.sendAmount} ${details.sendSymbol}` : null;
-  // Match send-receipt Done: client navigate home (push), not back to pool detail.
-  const goHome = () => {
-    void navigate({ to: "/" });
+  const exitReceipt = () => {
+    void navigate({
+      to: "/pools/$poolAddress",
+      params: { poolAddress },
+      replace: true,
+    });
   };
 
   if (!details.trackingId) {
@@ -47,7 +56,7 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
         message={t`Swap tracking details are missing.`}
         poolName={details.poolName}
         status={<Status tone="error" label={t`Unavailable`} />}
-        onDone={goHome}
+        onDone={exitReceipt}
       />
     );
   }
@@ -62,7 +71,7 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
         message={t`Waiting for on-chain confirmation`}
         poolName={details.poolName}
         status={<Status tone="pending" label={t`Pending`} />}
-        onDone={goHome}
+        onDone={exitReceipt}
       />
     );
   }
@@ -75,7 +84,7 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
         message={outcome.error}
         poolName={details.poolName}
         status={<Status tone="error" label={t`Reverted`} />}
-        onDone={goHome}
+        onDone={exitReceipt}
       />
     );
   }
@@ -144,12 +153,7 @@ export function SwapReceiptPage({ details }: { details: SwapReceiptSearch }) {
       </div>
       <div className="flex-1" />
       <div className="flex gap-3">
-        <Button
-          className="h-11 flex-1"
-          onClick={() => {
-            void navigate({ to: "/" });
-          }}
-        >
+        <Button className="h-11 flex-1" onClick={exitReceipt}>
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (

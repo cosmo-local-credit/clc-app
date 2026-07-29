@@ -1,0 +1,117 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
+import { describe, expect, it } from "vite-plus/test";
+
+type RoutePolicy = {
+  id: string;
+  fullPath: string;
+  source: string;
+  navOwner?: "home" | "posts" | "wallet" | "voucher";
+};
+
+const ROUTES_DIR = resolve(import.meta.dirname);
+const GENERATED_TREE = resolve(ROUTES_DIR, "../routeTree.gen.ts");
+
+const routePolicy = [
+  { id: "/_nav/", fullPath: "/", source: "_nav/index.tsx", navOwner: "home" },
+  {
+    id: "/_nav/posts/$reportId",
+    fullPath: "/posts/$reportId",
+    source: "_nav/posts/$reportId.tsx",
+    navOwner: "posts",
+  },
+  {
+    id: "/_nav/wallet/vouchers",
+    fullPath: "/wallet/vouchers",
+    source: "_nav/wallet/vouchers.tsx",
+    navOwner: "wallet",
+  },
+  { id: "/_nav/pools/", fullPath: "/pools/", source: "_nav/pools/index.tsx", navOwner: "wallet" },
+  {
+    id: "/_nav/pools/$poolAddress/",
+    fullPath: "/pools/$poolAddress/",
+    source: "_nav/pools/$poolAddress/index.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/vouchers/$voucherAddress",
+    fullPath: "/vouchers/$voucherAddress",
+    source: "_nav/vouchers/$voucherAddress.tsx",
+    navOwner: "voucher",
+  },
+  { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
+  {
+    id: "/settings/profile",
+    fullPath: "/settings/profile",
+    source: "settings/profile.tsx",
+  },
+  { id: "/wallet/receive", fullPath: "/wallet/receive", source: "wallet/receive.tsx" },
+  { id: "/wallet/top-up", fullPath: "/wallet/top-up", source: "wallet/top-up.tsx" },
+  { id: "/wallet/send/", fullPath: "/wallet/send/", source: "wallet/send/index.tsx" },
+  {
+    id: "/wallet/send/amount",
+    fullPath: "/wallet/send/amount",
+    source: "wallet/send/amount.tsx",
+  },
+  {
+    id: "/wallet/send/receipt",
+    fullPath: "/wallet/send/receipt",
+    source: "wallet/send/receipt.tsx",
+  },
+  {
+    id: "/pools/$poolAddress/swap/",
+    fullPath: "/pools/$poolAddress/swap/",
+    source: "pools/$poolAddress/swap/index.tsx",
+  },
+  {
+    id: "/pools/$poolAddress/swap/receipt",
+    fullPath: "/pools/$poolAddress/swap/receipt",
+    source: "pools/$poolAddress/swap/receipt.tsx",
+  },
+] satisfies RoutePolicy[];
+
+function interfaceKeys(source: string, interfaceName: string): string[] {
+  const body = source.match(
+    new RegExp(`export interface ${interfaceName} \\{([\\s\\S]*?)\\n\\}`),
+  )?.[1];
+  if (!body) throw new Error(`Missing ${interfaceName} in generated route tree`);
+  return [...body.matchAll(/^\s*'([^']+)':/gm)].map((match) => match[1]);
+}
+
+function routeFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) return routeFiles(path);
+    return entry.name.endsWith(".tsx") && !entry.name.startsWith("-") ? [path] : [];
+  });
+}
+
+describe("bottom-navigation route policy", () => {
+  it("keeps browse routes in the shared shell and focused routes outside it without changing URLs", () => {
+    const generatedSource = readFileSync(GENERATED_TREE, "utf8");
+    const routeIds = interfaceKeys(generatedSource, "FileRoutesById");
+    const fullPaths = interfaceKeys(generatedSource, "FileRoutesByFullPath");
+
+    for (const route of routePolicy) {
+      expect(routeIds, `${route.fullPath} should use route ID ${route.id}`).toContain(route.id);
+      expect(fullPaths, `${route.id} should keep public path ${route.fullPath}`).toContain(
+        route.fullPath,
+      );
+
+      if (route.navOwner) {
+        const routeSource = readFileSync(resolve(ROUTES_DIR, route.source), "utf8");
+        expect(routeSource).toContain(`navOwner: "${route.navOwner}"`);
+      }
+    }
+
+    expect(fullPaths.sort()).toEqual(routePolicy.map((route) => route.fullPath).sort());
+
+    const navDirectory = resolve(ROUTES_DIR, "_nav");
+    for (const file of routeFiles(navDirectory)) {
+      expect(
+        readFileSync(file, "utf8"),
+        `${relative(ROUTES_DIR, file)} must declare navOwner`,
+      ).toMatch(/navOwner:\s*"(?:home|posts|wallet|voucher)"/);
+    }
+  });
+});
