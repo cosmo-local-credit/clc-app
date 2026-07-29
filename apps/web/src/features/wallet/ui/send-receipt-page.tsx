@@ -64,6 +64,9 @@ export function SendReceiptPage({
   const toAddress = recipient ?? null;
   const amountLabel = amount && symbol ? `${amount} ${symbol}` : null;
   const outcome = tracking.outcome;
+  const goToWallet = () => {
+    void navigate({ to: "/", search: { tab: "wallet" }, replace: true });
+  };
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -97,7 +100,7 @@ export function SendReceiptPage({
             <Trans>Pending</Trans>
           </span>
         }
-        onDone={() => navigate({ to: "/" })}
+        onDone={goToWallet}
       />
     );
   }
@@ -123,7 +126,7 @@ export function SendReceiptPage({
             <Trans>Reverted</Trans>
           </span>
         }
-        onDone={() => navigate({ to: "/" })}
+        onDone={goToWallet}
       />
     );
   }
@@ -181,12 +184,7 @@ export function SendReceiptPage({
       <div className="flex-1" />
 
       <div className="flex gap-3">
-        <Button
-          className="h-11 flex-1"
-          onClick={() => {
-            void navigate({ to: "/" });
-          }}
-        >
+        <Button className="h-11 flex-1" onClick={goToWallet}>
           {t`Done`}
         </Button>
         {explorerUrl ? (

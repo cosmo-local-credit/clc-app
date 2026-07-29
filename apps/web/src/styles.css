@@ -8,6 +8,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+	--bottom-nav-offset: 0px;
 	--background: oklch(0.965 0 0);
 	--foreground: oklch(0.145 0 0);
 	--card: oklch(1 0 0);
@@ -161,6 +162,14 @@ body {
 .maplibregl-ctrl-attrib,
 .maplibregl-ctrl-logo {
 	display: none !important;
+}
+
+@utility pb-bottom-nav {
+	padding-bottom: max(
+		1.5rem,
+		env(safe-area-inset-bottom),
+		calc(var(--bottom-nav-offset) + 0.75rem)
+	);
 }
 
 @layer base {

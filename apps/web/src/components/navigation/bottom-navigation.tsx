@@ -4,53 +4,52 @@ import type { MouseEvent, ReactNode } from "react";
 import { RiArticleLine, RiNotification3Line, RiSettings3Line, RiWallet3Line } from "react-icons/ri";
 
 import { CLCLogo } from "#/components/ui/clc-logo";
+import type { HomeTab } from "#/lib/navigation/home-tabs";
 import { cn } from "#/lib/utils";
-import type { HomeTab, MarketView } from "./tabs";
 
 export function BottomNavigation({
   activeTab,
-  marketView = "map",
-  isAuthenticated = true,
+  atActiveTabRoot,
 }: {
   activeTab: HomeTab;
-  marketView?: MarketView;
-  isAuthenticated?: boolean;
+  atActiveTabRoot: boolean;
 }) {
   const { t } = useLingui();
   return (
     <nav
       aria-label={t`Primary navigation`}
-      className="fixed inset-x-0 bottom-0 z-50 border-border border-t bg-card px-1 pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-30 border-border border-t bg-card px-1 pb-[env(safe-area-inset-bottom)]"
     >
-      <div className={isAuthenticated ? "grid h-16 grid-cols-5" : "grid h-16 grid-cols-1"}>
-        {isAuthenticated ? (
-          <>
-            <NavLink
-              tab="wallet"
-              label={t`Wallet`}
-              activeTab={activeTab}
-              icon={<RiWallet3Line />}
-            />
-            <NavLink
-              tab="activity"
-              label={t`Activity`}
-              activeTab={activeTab}
-              icon={<RiNotification3Line />}
-            />
-          </>
-        ) : null}
-        <MarketNavLink label={t`Market`} activeTab={activeTab} marketView={marketView} />
-        {isAuthenticated ? (
-          <>
-            <NavLink tab="posts" label={t`Posts`} activeTab={activeTab} icon={<RiArticleLine />} />
-            <NavLink
-              tab="settings"
-              label={t`Settings`}
-              activeTab={activeTab}
-              icon={<RiSettings3Line />}
-            />
-          </>
-        ) : null}
+      <div className="grid h-16 grid-cols-5">
+        <NavLink
+          tab="wallet"
+          label={t`Wallet`}
+          activeTab={activeTab}
+          atActiveTabRoot={atActiveTabRoot}
+          icon={<RiWallet3Line />}
+        />
+        <NavLink
+          tab="activity"
+          label={t`Activity`}
+          activeTab={activeTab}
+          atActiveTabRoot={atActiveTabRoot}
+          icon={<RiNotification3Line />}
+        />
+        <MarketNavLink label={t`Market`} activeTab={activeTab} atActiveTabRoot={atActiveTabRoot} />
+        <NavLink
+          tab="posts"
+          label={t`Posts`}
+          activeTab={activeTab}
+          atActiveTabRoot={atActiveTabRoot}
+          icon={<RiArticleLine />}
+        />
+        <NavLink
+          tab="settings"
+          label={t`Settings`}
+          activeTab={activeTab}
+          atActiveTabRoot={atActiveTabRoot}
+          icon={<RiSettings3Line />}
+        />
       </div>
     </nav>
   );
@@ -60,11 +59,13 @@ function NavLink({
   tab,
   label,
   activeTab,
+  atActiveTabRoot,
   icon,
 }: {
   tab: HomeTab;
   label: string;
   activeTab: HomeTab;
+  atActiveTabRoot: boolean;
   icon: ReactNode;
 }) {
   const active = activeTab === tab;
@@ -72,12 +73,13 @@ function NavLink({
     <Link
       to="/"
       search={{ tab }}
-      aria-current={active ? "page" : undefined}
+      activeOptions={{ exact: true, explicitUndefined: true }}
+      aria-current={active ? (atActiveTabRoot ? "page" : "true") : undefined}
       className={cn(
         "flex h-full flex-col items-center justify-center gap-0.5 text-muted-foreground transition-colors active:bg-muted",
         active && "text-foreground",
       )}
-      onClick={(event) => preventActiveNavigation(event, active)}
+      onClick={(event) => preventActiveNavigation(event, active && atActiveTabRoot)}
     >
       <span className="flex size-6 items-center justify-center [&_svg]:size-4">{icon}</span>
       <span className={cn("font-medium text-[0.6875rem]", active && "font-semibold")}>{label}</span>
@@ -88,22 +90,21 @@ function NavLink({
 function MarketNavLink({
   label,
   activeTab,
-  marketView,
+  atActiveTabRoot,
 }: {
   label: string;
   activeTab: HomeTab;
-  marketView: MarketView;
+  atActiveTabRoot: boolean;
 }) {
   const active = activeTab === "market";
   return (
     <Link
       to="/"
-      search={{ tab: "market" }}
-      aria-current={active ? "page" : undefined}
+      search={{ tab: "market", view: undefined }}
+      activeOptions={{ exact: true, explicitUndefined: true }}
+      aria-current={active ? (atActiveTabRoot ? "page" : "true") : undefined}
       className="relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted"
-      // Tapping Market on the map is a no-op; from the Browse-all list it
-      // returns to the map, which is what the tab means.
-      onClick={(event) => preventActiveNavigation(event, active && marketView === "map")}
+      onClick={(event) => preventActiveNavigation(event, active && atActiveTabRoot)}
     >
       <span
         className={cn(
@@ -122,8 +123,8 @@ function MarketNavLink({
   );
 }
 
-function preventActiveNavigation(event: MouseEvent<HTMLAnchorElement>, active: boolean) {
-  if (active && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+function preventActiveNavigation(event: MouseEvent<HTMLAnchorElement>, atActiveRoot: boolean) {
+  if (atActiveRoot && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
     event.preventDefault();
   }
 }

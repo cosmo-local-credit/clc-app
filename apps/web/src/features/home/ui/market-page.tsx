@@ -123,7 +123,7 @@ export function MarketPage({
         </div>
       ) : null}
 
-      <div className="absolute right-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex">
+      <div className="absolute right-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex">
         <Button
           size="icon-lg"
           className="h-11 w-11 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
@@ -139,7 +139,7 @@ export function MarketPage({
         </Button>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-20 flex justify-center px-6">
+      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex justify-center px-6">
         <Button asChild className="pointer-events-auto h-11 px-5">
           <Link to="/" search={{ tab: "market", view: "list" }}>
             <RiListUnordered className="mr-2 size-4" aria-hidden="true" />

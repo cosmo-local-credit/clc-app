@@ -10,7 +10,8 @@ const searchSchema = z.object({
   poolAddress: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/vouchers/$voucherAddress")({
+export const Route = createFileRoute("/_nav/vouchers/$voucherAddress")({
+  staticData: { navOwner: "voucher" },
   validateSearch: searchSchema,
   component: VoucherDetailRoute,
 });

@@ -15,7 +15,7 @@ vi.mock("#/components/ui/clc-logo", () => ({
 }));
 
 import { BottomNavigation } from "./bottom-navigation";
-import { type HomeTab, parseHomeTab, parseMarketView } from "./tabs";
+import { type HomeTab, parseHomeTab, parseMarketView } from "#/lib/navigation/home-tabs";
 
 const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
@@ -27,18 +27,22 @@ const LABELS: Record<HomeTab, string> = {
 
 async function renderNavigation({
   initialEntry = "/?tab=wallet",
-  isAuthenticated = true,
+  activeTab,
+  atActiveTabRoot,
 }: {
   initialEntry?: string;
-  isAuthenticated?: boolean;
+  activeTab?: HomeTab;
+  atActiveTabRoot?: boolean;
 } = {}) {
   function NavigationFixture() {
     const search = useSearch({ strict: false });
+    const selectedTab = activeTab ?? parseHomeTab(search.tab);
     return (
       <BottomNavigation
-        activeTab={parseHomeTab(search.tab)}
-        marketView={parseMarketView(search.view)}
-        isAuthenticated={isAuthenticated}
+        activeTab={selectedTab}
+        atActiveTabRoot={
+          atActiveTabRoot ?? (selectedTab !== "market" || parseMarketView(search.view) === "map")
+        }
       />
     );
   }
@@ -88,16 +92,6 @@ describe("BottomNavigation", () => {
     }
   });
 
-  it("renders only the market link for guests", async () => {
-    await renderNavigation({ initialEntry: "/?tab=market", isAuthenticated: false });
-
-    expect(screen.getByRole("link", { name: "Market" })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Wallet" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Activity" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Posts" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Settings" })).toBeNull();
-  });
-
   it("does not add history when the active tab is selected", async () => {
     const { history } = await renderNavigation({ initialEntry: "/" });
     const initialHref = history.location.href;
@@ -109,8 +103,27 @@ describe("BottomNavigation", () => {
     expect(history.length).toBe(initialLength);
   });
 
+  it("marks an active descendant and navigates it to the owning root", async () => {
+    const { history } = await renderNavigation({
+      initialEntry: "/?tab=market",
+      activeTab: "wallet",
+      atActiveTabRoot: false,
+    });
+    const walletLink = screen.getByRole("link", { name: "Wallet" });
+
+    expect(walletLink.getAttribute("aria-current")).toBe("true");
+    fireEvent.click(walletLink);
+
+    await waitFor(() => expect(history.location.href).toBe("/?tab=wallet"));
+  });
+
   it("returns the active Browse-all subview to the map and Back restores the list", async () => {
-    const { history } = await renderNavigation({ initialEntry: "/?tab=market&view=list" });
+    const { history } = await renderNavigation({
+      initialEntry: "/?tab=market&view=list",
+      activeTab: "market",
+      atActiveTabRoot: false,
+    });
+    expect(screen.getByRole("link", { name: "Market" }).getAttribute("aria-current")).toBe("true");
 
     fireEvent.click(screen.getByRole("link", { name: "Market" }));
 

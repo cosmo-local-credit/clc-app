@@ -8,7 +8,8 @@ const searchSchema = z.object({
   tab: z.enum(["offerings", "vouchers"]).optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/pools/$poolAddress/")({
+export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
+  staticData: { navOwner: "wallet" },
   validateSearch: searchSchema,
   component: PoolDetailRoute,
 });
@@ -18,8 +19,8 @@ function PoolDetailRoute() {
   const { tab } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <div className="min-h-[100svh] bg-background text-foreground">
-        <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
+        <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
           <PoolDetailPage poolAddress={poolAddress} activeTab={tab ?? "offerings"} />
         </main>
       </div>

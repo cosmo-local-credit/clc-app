@@ -92,6 +92,35 @@ describe("SendReceiptPage", () => {
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(TX_HASH));
   });
 
+  it("Done replaces the receipt with the Wallet destination", () => {
+    useOtxTracking.mockReturnValue({
+      outcome: {
+        kind: "success",
+        otx: {
+          id: 1,
+          trackingId: "tracking-1",
+          otxType: "RELAY_EXEC",
+          txHash: TX_HASH,
+          nonce: 1,
+          replaced: false,
+          createdAt: "2026-07-02T10:00:00Z",
+          status: "SUCCESS",
+        },
+      },
+    });
+
+    render(
+      <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^done$/i }));
+
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/",
+      search: { tab: "wallet" },
+      replace: true,
+    });
+  });
+
   it("does not render fabricated receipt data when fields are absent", () => {
     useOtxTracking.mockReturnValue({
       outcome: {

@@ -113,7 +113,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Swap`} to={detailFallback} />
+      <BackChevron label={t`Pool`} to={detailFallback} />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Swap</Trans>
@@ -569,7 +569,7 @@ function SwapShell({ fallbackTo, message }: { fallbackTo: string; message: strin
   const { t } = useLingui();
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-      <BackChevron label={t`Swap`} to={fallbackTo} />
+      <BackChevron label={t`Pool`} to={fallbackTo} />
       <p className="mt-4 text-muted-foreground text-sm">{message}</p>
     </div>
   );

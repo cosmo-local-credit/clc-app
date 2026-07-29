@@ -8,7 +8,7 @@ import {
   type MarketView,
   parseHomeTab,
   parseMarketView,
-} from "#/features/home/ui/tabs";
+} from "#/lib/navigation/home-tabs";
 
 const HomePage = lazy(() =>
   import("#/features/home/ui/home-page").then((module) => ({
@@ -16,7 +16,8 @@ const HomePage = lazy(() =>
   })),
 );
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_nav/")({
+  staticData: { navOwner: "home" },
   validateSearch: (search): { tab?: HomeTab; view?: MarketView } => ({
     tab: parseHomeTab(search.tab),
     view: parseMarketView(search.view),

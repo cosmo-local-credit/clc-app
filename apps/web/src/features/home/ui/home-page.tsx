@@ -11,13 +11,12 @@ import {
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
-import { BottomNavigation } from "./bottom-navigation";
 import { MarketListPage } from "./market-list-page";
 import { MarketPage } from "./market-page";
 import { OnboardingBanner } from "./onboarding-banner";
 import { PostsPage } from "./posts-page";
 import { SettingsPage } from "./settings-page";
-import { isPrivateHomeTab, type HomeTab, type MarketView } from "./tabs";
+import { isPrivateHomeTab, type HomeTab, type MarketView } from "#/lib/navigation/home-tabs";
 import { WalletPage } from "./wallet-page";
 
 export type HomePageProps = {
@@ -82,7 +81,7 @@ export function HomePage({
           />
         )
       ) : (
-        <div className="min-h-[100svh] pb-[calc(4.75rem+env(safe-area-inset-bottom))]">
+        <div className="min-h-[100svh] pb-bottom-nav">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? <ActivityPage address={address} /> : null}
@@ -100,11 +99,6 @@ export function HomePage({
           </main>
         </div>
       )}
-      <BottomNavigation
-        activeTab={currentTab}
-        marketView={marketView}
-        isAuthenticated={isAuthenticated}
-      />
     </div>
   );
 }
