@@ -26,7 +26,7 @@ export type AuthStatus = {
 
 export const authSessionQueryKey = ["auth", "session"] as const;
 
-export function authSessionQueryKeyForAddress(address: `0x${string}` | undefined) {
+function authSessionQueryKeyForAddress(address: `0x${string}` | undefined) {
   return [...authSessionQueryKey, address?.toLowerCase() ?? "none"] as const;
 }
 

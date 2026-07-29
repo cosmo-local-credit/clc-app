@@ -3,9 +3,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import type { UserPool } from "#/features/pools/api/pools-client";
 import { getPoolVouchers } from "#/features/pools/api/pools-client";
 
-export const DEFAULT_POOL_VOUCHERS_PAGE_SIZE = 20;
+const DEFAULT_POOL_VOUCHERS_PAGE_SIZE = 20;
 
-export const poolVoucherQueryKeys = {
+const poolVoucherQueryKeys = {
   all: ["pool-vouchers"] as const,
   list: (poolAddress: string | undefined, perPage: number) =>
     [

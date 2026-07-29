@@ -6,7 +6,7 @@ import {
   type UpsertAddressBookRecipientInput,
 } from "#/features/wallet/api/address-book-storage";
 
-export const addressBookQueryKeys = {
+const addressBookQueryKeys = {
   all: ["address-book"] as const,
   recipients: () => [...addressBookQueryKeys.all, "recipients"] as const,
 };
