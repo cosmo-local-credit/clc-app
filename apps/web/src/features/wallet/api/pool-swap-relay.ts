@@ -1,5 +1,4 @@
 import {
-  buildCollectPoolFeesCalls,
   buildPoolDepositCalls,
   buildPoolRouteCalls,
   type PoolRouteHop,
@@ -33,12 +32,6 @@ export type RelayPoolSwapExactOutputInput = RelayPoolBatchOptions & {
   path: PoolRouteHop[];
   hopAmountIns: string[];
   recipientAddress?: `0x${string}`;
-};
-
-type RelayCollectPoolFeesInput = RelayPoolBatchOptions & {
-  poolAddress: `0x${string}`;
-  tokenOut: `0x${string}`;
-  amountRaw?: string;
 };
 
 export async function relayPoolDeposit(
@@ -81,18 +74,6 @@ export async function relayPoolSwapExactOutput(
     path: input.path,
     hopAmountIns: input.hopAmountIns,
     recipientAddress: input.recipientAddress,
-  });
-  return relayPoolCalls(input, calls, client);
-}
-
-export async function relayCollectPoolFees(
-  input: RelayCollectPoolFeesInput,
-  client: RelayerClient,
-): Promise<RelayCaliburBatchResult> {
-  const calls = buildCollectPoolFeesCalls({
-    poolAddress: input.poolAddress,
-    tokenOut: input.tokenOut,
-    amountRaw: input.amountRaw,
   });
   return relayPoolCalls(input, calls, client);
 }
