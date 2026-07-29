@@ -1,12 +1,9 @@
 export {
   AddressQRCode,
   BackChevron,
-  CopyableAddress,
   EllipsizedAddress,
   HighlightAddress,
-  HueAvatar,
   NetworkBadge,
-  PicsumLogo,
   SectionHeader,
   SignedAmount,
   SignHint,
