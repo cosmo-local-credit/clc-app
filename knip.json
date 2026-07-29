@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "treatConfigHintsAsErrors": true,
+  "includeEntryExports": true,
+  "ignoreFiles": ["lingui.config.ts"],
+  "ignoreDependencies": ["@tanstack/cli", "@ticktockbent/charlotte"],
+  "rules": {
+    "catalog": "warn"
+  },
+  "workspaces": {
+    "apps/web": {
+      "entry": ["src/sw.ts!"]
+    }
+  }
+}
