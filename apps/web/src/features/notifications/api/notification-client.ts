@@ -99,7 +99,7 @@ export type SyncNotificationInboxRequest = {
   linkedWalletAddresses?: string[];
 };
 
-export type BackendNotificationPayload = {
+type BackendNotificationPayload = {
   actions?: NotificationAction[];
   body: string;
   createdAt: string;
@@ -135,13 +135,13 @@ export type SyncNotificationInboxResponse = {
   nextSyncCursor: string;
 };
 
-export type DevSendNotificationRequest = {
+type DevSendNotificationRequest = {
   deviceId?: string;
   notification: Partial<BackendNotificationPayload> & Pick<BackendNotificationPayload, "kind">;
   walletAddress?: string;
 };
 
-export type DevSendNotificationResponse = {
+type DevSendNotificationResponse = {
   notificationId: string;
   recipients: Array<{
     deviceId: string;
@@ -151,7 +151,7 @@ export type DevSendNotificationResponse = {
   }>;
 };
 
-export type DevDebugStateResponse = {
+type DevDebugStateResponse = {
   allowOrigins: string[];
   keyVersion: string;
   state: {
@@ -384,12 +384,23 @@ export async function syncNotificationInbox(
   );
 }
 
+/**
+ * Client half of the local Web Push harness in dev/webpush (GET /debug/state).
+ * Imported on demand during device testing, so it has no permanent call site.
+ *
+ * @devtool
+ */
 export async function devGetNotificationDebugState(
   options?: NotificationClientOptions,
 ): Promise<DevDebugStateResponse> {
   return notificationFetch("/debug/state", devDebugStateResponseSchema, { method: "GET" }, options);
 }
 
+/**
+ * Client half of the local Web Push harness in dev/webpush (POST /debug/send).
+ *
+ * @devtool
+ */
 export async function devSendNotification(
   request: DevSendNotificationRequest,
   options?: NotificationClientOptions,
