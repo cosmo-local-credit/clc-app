@@ -1,7 +1,3 @@
-export function formatAddressInput(address: string): string {
-  return `${address.slice(0, 6)}…${address.slice(-6)}`;
-}
-
 export function normalizePhone(value: string): string {
   const compact = value.replace(/[\s()-]/g, "");
   if (/^0\d{9}$/.test(compact)) return `+254${compact.slice(1)}`;

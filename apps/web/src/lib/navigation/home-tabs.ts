@@ -1,4 +1,3 @@
-export const publicHomeTabs = ["market"] as const;
 const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
 const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 
