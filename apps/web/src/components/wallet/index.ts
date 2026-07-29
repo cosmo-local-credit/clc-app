@@ -16,12 +16,4 @@ export {
   type TransferDetails,
   VoucherAvatar,
 } from "./wallet-kit";
-export {
-  DEFAULT_SEND_TOKEN,
-  hueFromSeed,
-  RECENT_RECIPIENTS,
-  type WalletToken,
-  WALLET_TOKEN_BY_ID,
-  WALLET_TOKENS,
-  WALLET_TOTAL_BALANCE,
-} from "./wallet-data";
+export { type WalletToken, WALLET_TOKEN_BY_ID } from "./wallet-data";

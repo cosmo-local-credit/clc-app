@@ -6,7 +6,7 @@
  * complete while the data layer is built out.
  */
 
-export type TokenKind = "stable" | "voucher";
+type TokenKind = "stable" | "voucher";
 
 export type WalletToken = {
   id: string;
@@ -131,9 +131,6 @@ export const WALLET_TOKEN_BY_ID: Record<string, WalletToken> = Object.fromEntrie
   WALLET_TOKENS.map((token) => [token.id, token]),
 );
 
-/** Total wallet balance, summed across placeholder tokens. */
-export const WALLET_TOTAL_BALANCE = "KSh 12,840";
-
 export type Recipient = {
   id: string;
   label: string;
@@ -144,35 +141,6 @@ export type Recipient = {
   /** Avatar hue seed (usually the label). */
   seed: string;
 };
-
-export const RECENT_RECIPIENTS: Recipient[] = [
-  {
-    id: "jamila",
-    label: "jamila.eth",
-    seed: "jamila",
-    address: "0x91Ab3f5d6C7e8F9a0B1c2D3e4F5a6B7c8D9e0d2E7",
-  },
-  {
-    id: "cosmo",
-    label: "+254 712 004 118",
-    sub: "Cosmo Bakery",
-    seed: "cosmo",
-  },
-  {
-    id: "0x4f2c",
-    label: "0x4F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2a",
-    sub: "Sent 2 days ago",
-    seed: "0x4f2c",
-    address: "0x4F2cA8103B6d9E7f1C5a8D2F4e6B0A3C7D9F1E2a",
-  },
-  {
-    id: "amina",
-    label: "amina.sarafu.eth",
-    sub: "Fresh Food Circle",
-    seed: "amina",
-    address: "0x6D3cA2109B4d8E7f1C5a8D2F4e6B0A3C7D9F1E99",
-  },
-];
 
 /**
  * Deterministic hue angle from a seed string. Callers pick their own lightness
@@ -191,6 +159,3 @@ export function hueDegreesFromSeed(seed: string): number {
 export function hueFromSeed(seed: string): string {
   return `oklch(0.58 0.16 ${hueDegreesFromSeed(seed)})`;
 }
-
-/** Default token used by Send + Swap placeholders. */
-export const DEFAULT_SEND_TOKEN = WALLET_TOKEN_BY_ID.usdc;
