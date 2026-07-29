@@ -72,7 +72,7 @@ export function MarketListPage({
           : t`Use current location`;
 
   return (
-    <main className="relative min-h-[100svh] bg-background px-6 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+    <main className="relative min-h-[100svh] bg-background px-6 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
       {onboardingBanner}
       <div
         className={

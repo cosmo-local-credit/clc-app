@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isPrivateHomeTab, parseHomeTab, parseMarketView } from "./tabs";
+import { isPrivateHomeTab, parseHomeTab, parseMarketView } from "./home-tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {

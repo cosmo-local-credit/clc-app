@@ -12,7 +12,7 @@ function DialogBackdrop({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <Dialog.Backdrop
       className={cn(
-        "fixed inset-0 min-h-dvh bg-black/50 transition-opacity duration-150",
+        "fixed inset-0 z-40 min-h-dvh bg-black/50 transition-opacity duration-150",
         "data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
         "supports-[-webkit-touch-callout:none]:absolute",
         className,

@@ -108,7 +108,7 @@ export function SendAmountPage({
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-      <BackChevron label={t`Send`} to="/" />
+      <BackChevron label={t`Send`} to="/wallet/send" search={{ token: tokenParam }} />
 
       <h1 className="font-heading mb-3.5 text-[1.75rem] font-bold leading-tight">
         <Trans>Amount</Trans>

@@ -38,13 +38,16 @@ import {
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { openDefaultMaps } from "#/lib/default-maps";
+import {
+  resolveVoucherNavigationOwner,
+  type VoucherOrigin,
+} from "#/lib/navigation/voucher-navigation-owner";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+
+export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
 type TxKind = "in" | "out";
 type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews";
-
-/** Which screen opened this voucher — drives the Back label and its fallback. */
-export type VoucherOrigin = "market" | "wallet" | "vouchers";
 
 const VOUCHER_TABS: VoucherDetailTab[] = ["offerings", "info", "activity", "reviews"];
 
@@ -57,21 +60,6 @@ const TX_ICON_CLASS: Record<TxKind, string> = {
   in: "text-primary",
   out: "text-destructive",
 };
-
-/**
- * Back target for the voucher page. A voucher is reachable from the market map,
- * the wallet balances, the all-vouchers list, and a pool, so the chevron names
- * the screen the user actually came from. `to`/`search` are only consulted on a
- * deep link, where there is no history to pop.
- */
-function useVoucherBackTarget(origin: VoucherOrigin, poolAddress: string | undefined) {
-  const { t } = useLingui();
-  if (poolAddress) return { label: t`Pool`, to: `/pools/${poolAddress}`, search: undefined };
-  if (origin === "wallet") return { label: t`Wallet`, to: "/", search: { tab: "wallet" } };
-  if (origin === "vouchers")
-    return { label: t`Vouchers`, to: "/wallet/vouchers", search: undefined };
-  return { label: t`Market`, to: "/", search: undefined };
-}
 
 export function VoucherDetailPage({
   voucherAddress,
@@ -86,7 +74,19 @@ export function VoucherDetailPage({
 }) {
   const { t } = useLingui();
   const { address } = useConnection();
-  const back = useVoucherBackTarget(origin, poolAddress);
+  const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress });
+  const back = {
+    label:
+      voucherNavigation.backDestination === "pool"
+        ? t`Pool`
+        : voucherNavigation.backDestination === "wallet"
+          ? t`Wallet`
+          : voucherNavigation.backDestination === "vouchers"
+            ? t`Vouchers`
+            : t`Market`,
+    to: voucherNavigation.to,
+    search: voucherNavigation.search,
+  };
   const tokensQuery = useAccountTokensInfinite(address, { perPage: 50 });
   const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);
   const normalizedVoucherAddress = voucherAddress.toLowerCase();
@@ -176,7 +176,7 @@ export function VoucherDetailPage({
   );
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={back.label} to={back.to} search={back.search} />
 
       <div className="mt-1 flex items-start gap-3">
@@ -622,7 +622,7 @@ function VoucherShell({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={back.label} to={back.to} search={back.search} />
       <p className="mt-6 text-muted-foreground text-sm">{message}</p>
       {children ? <div className="mt-3">{children}</div> : null}
