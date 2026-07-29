@@ -42,12 +42,4 @@ function DialogContent({ className, children, ...props }: React.ComponentProps<"
   );
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-1.5 pb-4", className)} {...props} />;
-}
-
-function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-2 pt-4", className)} {...props} />;
-}
-
-export { DialogBackdrop, DialogContent, DialogFooter, DialogHeader };
+export { DialogBackdrop, DialogContent };

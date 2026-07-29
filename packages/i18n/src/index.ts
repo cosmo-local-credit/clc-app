@@ -4,20 +4,11 @@ import { messages as enMessages } from "./catalogs/en/messages.po";
 import {
   DEFAULT_LOCALE,
   isSupportedLocale,
-  LOCALE_OPTIONS,
   matchSupportedLocale,
-  SUPPORTED_LOCALES,
   type SupportedLocale,
 } from "./locales";
 
-export {
-  DEFAULT_LOCALE,
-  isSupportedLocale,
-  LOCALE_OPTIONS,
-  matchSupportedLocale,
-  SUPPORTED_LOCALES,
-  type SupportedLocale,
-};
+export { DEFAULT_LOCALE, isSupportedLocale, matchSupportedLocale, type SupportedLocale };
 
 const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages }>> = {
   en: async () => ({ messages: enMessages }),

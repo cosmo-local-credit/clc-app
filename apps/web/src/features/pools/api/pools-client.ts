@@ -12,7 +12,7 @@ import {
   normalizeText,
 } from "#/lib/api-normalize";
 
-export type { CursorParams, HexAddress };
+export type { CursorParams };
 
 export type UserPool = {
   id: string;
