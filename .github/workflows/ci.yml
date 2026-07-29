@@ -27,7 +27,6 @@ jobs:
         run: vp run knip:cycles
 
       - name: Dead-code analysis
-        continue-on-error: true
         run: vp run knip:ci
 
       - name: Dead-code report
