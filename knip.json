@@ -10,6 +10,12 @@
   "workspaces": {
     "apps/web": {
       "entry": ["src/sw.ts!"]
+    },
+    "packages/core": {
+      "ignoreIssues": {
+        "src/features/pool-swaps/logic.ts": ["exports"],
+        "src/features/webauthn/types.ts": ["exports", "types"]
+      }
     }
   }
 }
