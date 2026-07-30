@@ -44,7 +44,6 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
 
   class HoistedMockMap {
     options: MockMapOptions;
-    // Several handlers may share one event (e.g. dragstart + zoomstart latch).
     handlers = new Map<string, MapHandler[]>();
     layerHandlers = new Map<string, MapHandler[]>();
     sources = new Map<string, HoistedMockSource>();
@@ -52,6 +51,7 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     images = new Set<string>();
     flyTo = vi.fn();
     easeTo = vi.fn();
+    fitBounds = vi.fn();
     jumpTo = vi.fn();
     setFilter = vi.fn((layerId: string, filter: unknown) => {
       const layer = this.layers.find((entry) => entry.id === layerId);
@@ -223,7 +223,6 @@ beforeEach(() => {
   vi.stubGlobal("CSS", { supports: () => true });
 });
 
-/** Simulates a real MapLibre click: one global handler + queryRenderedFeatures. */
 function clickFeature(
   map: ReturnType<typeof loadedMap>,
   layerId: string,
@@ -263,7 +262,6 @@ describe("MarketMap lifecycle", () => {
     const source = map.getSource(MARKET_SOURCE_ID);
     expect(source).toBeDefined();
 
-    // A second backend page arrives.
     rerender(
       <MarketMap
         locations={LOCATIONS}
@@ -398,7 +396,6 @@ describe("MarketMap ranked camera", () => {
     const map = loadedMap();
     expect(map.easeTo).toHaveBeenCalledTimes(1);
 
-    // A late MapTiler IP response must not drag the camera off a real fix.
     rerender(
       <MarketMap
         locations={LOCATIONS}
@@ -456,7 +453,6 @@ describe("MarketMap ranked camera", () => {
     const { rerender } = renderWithCamera(null);
     const map = loadedMap();
 
-    // A programmatic easeTo emits the same events with no originalEvent.
     act(() => {
       map.trigger("dragstart", {});
       map.trigger("zoomstart", {});
@@ -609,12 +605,9 @@ describe("MarketMap clustering scope", () => {
     const map = loadedMap();
     const spec = map.getSource(MARKET_SOURCE_ID)?.spec;
 
-    // Above clusterMaxZoom Supercluster returns raw points, so every distinct
-    // coordinate is its own marker from zoom 14 — roughly a 5 km view.
     expect(spec?.cluster).toBe(true);
     expect(spec?.clusterMaxZoom).toBe(13);
     expect((spec?.clusterMaxZoom ?? 0) + 1).toBe(14);
-    // Premises-level zoom must remain reachable.
     expect(map.options.maxZoom).toBeGreaterThanOrEqual(18);
   });
 
@@ -625,12 +618,10 @@ describe("MarketMap clustering scope", () => {
       features: Array<{ properties: { count: number; key: string; id: string } }>;
     };
 
-    // 3 distinct + 1 shared coordinate carrying 3 members.
     expect(data.features).toHaveLength(4);
     expect(data.features.filter((feature) => feature.properties.count === 1)).toHaveLength(3);
     const stack = data.features.find((feature) => feature.properties.count === 3);
     expect(stack).toBeDefined();
-    // A stack carries no voucher id: it must be opened before anything is selected.
     expect(stack?.properties.id).toBe("");
   });
 
@@ -642,7 +633,6 @@ describe("MarketMap clustering scope", () => {
     expect(ids).toContain("market-stacks");
     expect(ids).toContain("market-stack-count");
     expect(ids).toContain("market-clusters");
-    // Single vouchers and stacks never render through the same filter.
     expect(map.getLayer("market-points")?.filter).toEqual([
       "all",
       ["!", ["has", "point_count"]],
@@ -803,7 +793,6 @@ describe("MarketMap spiderfy", () => {
     const points = spiderData(map).features.filter((feature) => feature.geometry.type === "Point");
     expect(points).toHaveLength(SPIDER_PAGE_SIZE);
 
-    // The badge still reports the true total, not the capped one.
     const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
       features: Array<{ properties: { count: number } }>;
     };
@@ -930,9 +919,6 @@ describe("MarketMap click wiring", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
 
-    // Regression guard: with a layer-scoped opener AND a global background
-    // closer, MapLibre fires both for one click and the close wins, so a
-    // stack could never be opened on a real map.
     expect(map.handlers.get("click") ?? []).toHaveLength(1);
     expect([...map.layerHandlers.keys()].filter((key) => key.startsWith("click:"))).toEqual([]);
   });
@@ -961,8 +947,6 @@ describe("MarketMap click wiring", () => {
     renderMap(KILIFI_STACK, { onSelectLocation: onSelect });
     const map = loadedMap();
 
-    // queryRenderedFeatures sorts topmost first. The fan's pins are the last
-    // layers added, so an open fan's pin outranks the badge beneath it.
     map.queryRenderedFeatures.mockReturnValue([
       {
         layer: { id: "market-spider-points" },
@@ -986,7 +970,6 @@ describe("MarketMap click wiring", () => {
     renderMap(KILIFI_STACK);
     const ids = loadedMap().layers.map((layer) => layer.id);
 
-    // The z-order the tap logic relies on must actually hold.
     expect(ids.indexOf("market-spider-points")).toBeGreaterThan(ids.indexOf("market-stacks"));
     expect(ids.indexOf("market-spider-points")).toBeGreaterThan(ids.indexOf("market-points"));
   });
@@ -1044,7 +1027,6 @@ describe("MarketMap fan paging", () => {
     const second = fanIds(map);
     expect(second).toHaveLength(12);
 
-    // Together the pages cover the stack exactly once.
     expect(new Set([...first, ...second]).size).toBe(size);
   });
 
@@ -1094,7 +1076,6 @@ describe("MarketMap fan paging", () => {
 
     tapBadge(map, 63);
 
-    // Pan only: a zoom would change the pixel scale the legs were laid out in.
     expect(map.easeTo).toHaveBeenCalledWith({ center: [36.817245, -1.283253] });
     const call = map.easeTo.mock.calls.at(-1)?.[0] as Record<string, unknown>;
     expect(call).not.toHaveProperty("zoom");
@@ -1118,9 +1099,6 @@ describe("MarketMap badge counts", () => {
       clusterProperties?: Record<string, unknown>;
     };
 
-    // Without this, a cluster over the 63-stack plus two singles reads "3"
-    // (features) and then jumps to "63" once zoomed past clusterMaxZoom. A
-    // count that grows as you zoom in is simply wrong.
     expect(spec.clusterProperties).toBeDefined();
     expect(spec.clusterProperties?.voucherCount).toEqual(["+", ["get", "count"]]);
   });
@@ -1133,7 +1111,6 @@ describe("MarketMap badge counts", () => {
     };
 
     expect(JSON.stringify(layer.layout?.["text-field"])).toContain("voucherCount");
-    // point_count would be the location count, which is the bug.
     expect(JSON.stringify(layer.layout?.["text-field"])).not.toContain("point_count");
   });
 
@@ -1156,7 +1133,6 @@ describe("MarketMap badge counts", () => {
       ],
     );
 
-    // A world-zoom cluster reaches 2,181; four digits do not fit a 28 px circle.
     expect(field).toContain("step");
     expect(field).toContain("k");
   });
@@ -1167,9 +1143,6 @@ describe("MarketMap symbol stability", () => {
     renderMap(LOCATIONS);
     const map = loadedMap();
 
-    // fadeDuration animates every collision-driven appear/disappear. During a
-    // cluster expansion the symbol set churns repeatedly, and each change
-    // cross-fades — which reads as the map flickering several times.
     expect(map.options.fadeDuration).toBe(0);
   });
 
@@ -1179,7 +1152,6 @@ describe("MarketMap symbol stability", () => {
 
     for (const id of ["market-cluster-count", "market-stack-count"]) {
       const layout = (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
-      // A number that collides away leaves a bare disc with no count on it.
       expect(layout["text-allow-overlap"]).toBe(true);
       expect(layout["text-ignore-placement"]).toBe(true);
     }
@@ -1202,9 +1174,6 @@ describe("MarketMap style failure", () => {
     renderMap(LOCATIONS);
     const map = firstMap();
 
-    // A style fetch failure is asynchronous: the constructor succeeds, then
-    // MapLibre emits `error` and `load` never fires. Without handling it the
-    // user is left staring at an empty container forever.
     act(() => {
       map.trigger("error", { error: { message: "NetworkError" } } as never);
     });
@@ -1231,7 +1200,6 @@ describe("MarketMap style failure", () => {
     renderMap(LOCATIONS);
     const map = loadedMap();
 
-    // A single failed tile must not blank a working map.
     act(() => {
       map.trigger("error", { error: { status: 404, message: "tile missing" } } as never);
     });
@@ -1271,7 +1239,6 @@ describe("MarketMap trailing fan page", () => {
     const second = map.getSource("market-spider")?.spec.data as {
       features: Array<{ geometry: { type: string } }>;
     };
-    // The last page holds exactly one member; it must still draw.
     expect(second.features.filter((f) => f.geometry.type === "Point")).toHaveLength(1);
   });
 });
@@ -1284,8 +1251,6 @@ describe("MarketMap fallback copy", () => {
       map.trigger("error", { error: { message: "NetworkError" } } as never);
     });
 
-    // "Browse all" has no handler and no destination; promising a list here
-    // walks unsupported devices into a dead end.
     expect(screen.queryByText(/as a list/i)).toBeNull();
     expect(screen.queryByText(/browse vouchers/i)).toBeNull();
   });
@@ -1295,7 +1260,6 @@ describe("MarketMap fallback copy", () => {
     renderMap(LOCATIONS);
 
     expect(screen.getByText(/not supported on this device/i)).toBeTruthy();
-    // Retrying cannot conjure WebGL; an enabled button would just lie.
     expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
   });
 });
@@ -1320,9 +1284,6 @@ describe("MarketMap camera scope", () => {
     const map = loadedMap();
     expect(map.easeTo).toHaveBeenCalledWith({ center: [36.7, -1.2], zoom: 14 });
 
-    // Session expired: the owner drops to guest and the persisted fix is gone,
-    // leaving only the IP camera. Without resetting the latch, rank 3 >= the
-    // applied rank 2 and the map would sit on the previous owner's position.
     rerender(
       <MarketMap
         locations={LOCATIONS}
@@ -1354,5 +1315,138 @@ describe("MarketMap camera scope", () => {
     );
 
     expect(map.easeTo).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("MarketMap filtered framing", () => {
+  const BOUNDS = { key: "art", west: 36.8, south: -1.5, east: 37.1, north: -1.2 };
+
+  it("frames the bounds once, capped so a lone result keeps its context", () => {
+    const { rerender } = renderMap(LOCATIONS, { fitBounds: BOUNDS });
+    const map = loadedMap();
+
+    expect(map.fitBounds).toHaveBeenCalledTimes(1);
+    expect(map.fitBounds).toHaveBeenCalledWith(
+      [
+        [36.8, -1.5],
+        [37.1, -1.2],
+      ],
+      expect.objectContaining({ maxZoom: 14 }),
+    );
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        fitBounds={{ ...BOUNDS }}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    expect(map.fitBounds).toHaveBeenCalledTimes(1);
+  });
+
+  it("caps the zoom for degenerate single-result bounds", () => {
+    const single = { key: "solo", west: 36.82, south: -1.29, east: 36.82, north: -1.29 };
+    renderMap(LOCATIONS, { fitBounds: single });
+    const map = loadedMap();
+
+    const [bounds, options] = map.fitBounds.mock.calls[0] as [number[][], { maxZoom: number }];
+    expect(bounds).toEqual([
+      [36.82, -1.29],
+      [36.82, -1.29],
+    ]);
+    expect(options.maxZoom).toBe(14);
+    expect(options.maxZoom).toBeLessThan(map.maxZoom);
+  });
+
+  it("does not let a late automatic camera pan away from the results", () => {
+    const { rerender } = renderMap(LOCATIONS, { fitBounds: BOUNDS });
+    const map = loadedMap();
+    expect(map.fitBounds).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={{ lat: -4.05, lng: 39.66, zoom: 12, rank: 2 }}
+        fitBounds={BOUNDS}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.easeTo).not.toHaveBeenCalled();
+  });
+
+  it("still lets the explicit location button win while framed", () => {
+    const { rerender } = renderMap(LOCATIONS, { fitBounds: BOUNDS });
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={{ lat: -4.05, lng: 39.66, zoom: 12, rank: EXPLICIT_CAMERA_RANK }}
+        fitBounds={BOUNDS}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.easeTo).toHaveBeenCalledWith({ center: [39.66, -4.05], zoom: 12 });
+  });
+
+  it("does not fire a suppressed automatic camera once the filter clears", () => {
+    const { rerender } = renderMap(LOCATIONS, { fitBounds: BOUNDS });
+    const map = loadedMap();
+
+    const late = { lat: -4.05, lng: 39.66, zoom: 12, rank: 2 };
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={late}
+        fitBounds={BOUNDS}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={late}
+        fitBounds={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.easeTo).not.toHaveBeenCalled();
+  });
+
+  it("re-arms so the same filter frames again after being cleared", () => {
+    const { rerender } = renderMap(LOCATIONS, { fitBounds: BOUNDS });
+    const map = loadedMap();
+    expect(map.fitBounds).toHaveBeenCalledTimes(1);
+
+    const withBounds = (fitBounds: typeof BOUNDS | null) => (
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        fitBounds={fitBounds}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />
+    );
+
+    rerender(withBounds(null));
+    rerender(withBounds(BOUNDS));
+
+    expect(map.fitBounds).toHaveBeenCalledTimes(2);
   });
 });

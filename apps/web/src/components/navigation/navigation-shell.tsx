@@ -2,7 +2,7 @@ import { Outlet, useMatches, useSearch } from "@tanstack/react-router";
 import type { CSSProperties } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { type HomeTab, parseHomeTab, parseMarketView } from "#/lib/navigation/home-tabs";
+import { type HomeTab, isAtHomeTabRoot, parseHomeTab } from "#/lib/navigation/home-tabs";
 import type { NavOwner } from "#/lib/navigation/navigation-owner";
 import {
   resolveVoucherNavigationOwner,
@@ -28,7 +28,7 @@ export function NavigationShell() {
 
   if (navOwner === "home") {
     activeTab = parseHomeTab(search.tab);
-    atActiveTabRoot = activeTab !== "market" || parseMarketView(search.view) === "map";
+    atActiveTabRoot = isAtHomeTabRoot(search);
   } else if (navOwner === "voucher") {
     const from: VoucherOrigin | undefined =
       search.from === "market" || search.from === "wallet" || search.from === "vouchers"

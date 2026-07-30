@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isPrivateHomeTab, parseHomeTab, parseMarketView } from "./home-tabs";
+import { isAtHomeTabRoot, isPrivateHomeTab, parseHomeTab, parseMarketView } from "./home-tabs";
 
 describe("parseHomeTab", () => {
   it("returns each valid tab unchanged", () => {
@@ -37,5 +37,33 @@ describe("parseHomeTab", () => {
     expect(parseMarketView("map")).toBe("map");
     expect(parseMarketView("list")).toBe("list");
     expect(parseMarketView("grid")).toBe("map");
+  });
+});
+
+describe("isAtHomeTabRoot", () => {
+  it("treats every non-market tab as its own root", () => {
+    expect(isAtHomeTabRoot({ tab: "wallet" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "settings", view: "list" })).toBe(true);
+  });
+
+  it("treats the unfiltered map as the Market root and the list as a descendant", () => {
+    expect(isAtHomeTabRoot({ tab: "market" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "market", view: "map" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "market", view: "list" })).toBe(false);
+  });
+
+  it("does not treat a filtered map as the root", () => {
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "art" })).toBe(false);
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", tags: "Art" })).toBe(false);
+  });
+
+  it("does not treat an over-limit filter as the root either", () => {
+    const tags = Array.from({ length: 13 }, (_, index) => `Tag${index}`);
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", tags })).toBe(false);
+  });
+
+  it("ignores a term too short to filter anything", () => {
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "a" })).toBe(true);
+    expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "   " })).toBe(true);
   });
 });

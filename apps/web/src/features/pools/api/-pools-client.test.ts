@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getPoolByAddress, getPools, getPoolVouchers, normalizeUserPool } from "./pools-client";
+import {
+  getFilteredPools,
+  getPoolByAddress,
+  getPools,
+  getPoolVouchers,
+  normalizeUserPool,
+} from "./pools-client";
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -72,7 +78,7 @@ describe("pools client", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: null } });
     vi.stubGlobal("fetch", fetcher);
 
-    await expect(getPools({ perPage: 20 })).resolves.toEqual({ pools: [] });
+    await expect(getPools({ perPage: 20 })).resolves.toEqual({ pools: [], receivedCount: 0 });
 
     const pool = normalizeUserPool({
       id: "8",
@@ -161,5 +167,156 @@ describe("pools client", () => {
       ),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
+  });
+});
+
+describe("getPools pagination and cancellation", () => {
+  it("reports the sent row count, not the surviving one", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        pools: [
+          { id: 1, address: "0x6666666666666666666666666666666666666666", name: "Kept" },
+          { id: 2, address: "not-an-address", name: "Dropped" },
+        ],
+        first: 2,
+        last: 1,
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    const page = await getPools({ perPage: 20 });
+
+    expect(page.pools).toHaveLength(1);
+    expect(page.receivedCount).toBe(2);
+  });
+
+  it("forwards an abort signal", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+    const controller = new AbortController();
+
+    await getPools({ perPage: 20 }, controller.signal);
+
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: controller.signal, cache: "no-store" }),
+    );
+  });
+});
+
+describe("getFilteredPools request", () => {
+  const FILTER = { term: "", tags: [] as readonly string[], tagMatch: "any" as const };
+
+  it("encodes a term and comma-joins tags in one key", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await getFilteredPools({
+      perPage: 100,
+      filter: { ...FILTER, term: "fresh food", tags: ["Food", "Common Spaces"] },
+    });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    expect(url.searchParams.get("q")).toBe("fresh food");
+    expect(url.searchParams.get("tags")).toBe("Food,Common Spaces");
+    expect(url.searchParams.getAll("tags")).toHaveLength(1);
+    expect(url.searchParams.get("perPage")).toBe("100");
+  });
+
+  it("omits every filter key it has nothing to say about", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await getFilteredPools({ perPage: 100, filter: FILTER });
+
+    const url = new URL(String(fetcher.mock.calls[0]?.[0]));
+    for (const key of ["q", "tags", "tagMatch", "facets"]) {
+      expect(url.searchParams.has(key)).toBe(false);
+    }
+  });
+
+  it("sends tagMatch only when two or more tags make the modes differ", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await getFilteredPools({
+      perPage: 100,
+      filter: { ...FILTER, tags: ["Food"], tagMatch: "all" },
+    });
+    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.has("tagMatch")).toBe(false);
+
+    await getFilteredPools({
+      perPage: 100,
+      filter: { ...FILTER, tags: ["Food", "Growing"], tagMatch: "all" },
+    });
+    expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.get("tagMatch")).toBe("all");
+  });
+
+  it("keeps the authenticated pool read policy, unlike the public catalog", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+    const controller = new AbortController();
+
+    await getFilteredPools({ perPage: 100, filter: FILTER, facets: true }, controller.signal);
+
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining("facets=true"),
+      expect.objectContaining({
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+      }),
+    );
+  });
+
+  it("normalizes the pool tag facet and distinguishes absent from empty", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        ok: true,
+        result: {
+          pools: [],
+          tagFacets: [
+            { tag: "Food", count: 2 },
+            { tag: "Growing", count: 0 },
+            { tag: "", count: 1 },
+            { tag: "Negative", count: -1 },
+          ],
+        },
+      }),
+    );
+
+    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+
+    expect(page.tagFacets).toEqual([
+      { tag: "Food", count: 2 },
+      { tag: "Growing", count: 0 },
+    ]);
+
+    vi.stubGlobal("fetch", mockFetch({ ok: true, result: { pools: [] } }));
+    expect((await getFilteredPools({ perPage: 100, filter: FILTER })).tagFacets).toBeNull();
+  });
+
+  it("reports the sent row count so a filtered walk cannot truncate", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        ok: true,
+        result: {
+          pools: [
+            { id: 1, address: "0x7777777777777777777777777777777777777777", name: "Kept" },
+            { id: 2, address: "bad", name: "Dropped" },
+          ],
+          first: 2,
+          last: 1,
+        },
+      }),
+    );
+
+    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+
+    expect(page.pools).toHaveLength(1);
+    expect(page.receivedCount).toBe(2);
   });
 });

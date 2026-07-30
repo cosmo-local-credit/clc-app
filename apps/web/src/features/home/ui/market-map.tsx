@@ -24,16 +24,6 @@ const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const DEFAULT_ZOOM = 12;
 const MAP_MAX_ZOOM = 20;
 
-/**
- * Distance clustering exists only to keep country- and world-level views
- * drawable. From zoom 14 (roughly a 5 km view) every distinct coordinate gets
- * its own marker: a badge the user cannot open is worse than a busy map.
- *
- * Vouchers sharing one exact coordinate are a separate problem — 76% of the
- * imported catalog does, with stacks as large as 200, because whole towns were
- * geocoded to a single centroid. No zoom can separate those, so they are
- * grouped up front and fanned out on tap.
- */
 const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
 
@@ -47,7 +37,6 @@ const SPIDER_SOURCE_ID = "market-spider";
 const SPIDER_LEG_LAYER_ID = "market-spider-legs";
 const SPIDER_POINT_LAYER_ID = "market-spider-points";
 
-/** Layers a tap can land on. Order here is irrelevant: the query sorts by z-order. */
 const INTERACTIVE_LAYER_IDS = [
   CLUSTERS_LAYER_ID,
   CLUSTER_COUNT_LAYER_ID,
@@ -63,10 +52,6 @@ const BADGE_COLOR = "#1f2430";
 
 type UserLocation = { lat: number; lng: number };
 
-/**
- * A camera candidate resolved by rank, never by arrival order. Lower rank
- * wins, and a candidate only applies when it beats the already-applied rank.
- */
 export type MarketCamera = {
   lat: number;
   lng: number;
@@ -74,10 +59,6 @@ export type MarketCamera = {
   rank: number;
 };
 
-/**
- * The black location button is an explicit user request, so it outranks every
- * automatic candidate and is exempt from the interaction latch.
- */
 export const EXPLICIT_CAMERA_RANK = 0;
 
 export type MarketViewport = {
@@ -88,15 +69,23 @@ export type MarketViewport = {
   zoom: number;
 };
 
+export type MarketFitBounds = {
+  key: string;
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+};
+
+const FILTER_FIT_MAX_ZOOM = 14;
+
+const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
+
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
   camera: MarketCamera | null;
-  /**
-   * Who the ranked cameras belong to. When this changes the applied-rank latch
-   * resets, so a safer fallback can take over. Without it a rank-3 IP camera
-   * could never replace a rank-2 fix left behind by the previous owner.
-   */
+  fitBounds?: MarketFitBounds | null;
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
@@ -146,7 +135,6 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
         properties: {
           key: stack.key,
           count: stack.members.length,
-          // Only a lone voucher carries an id; a stack must be opened first.
           id: single ? single.id : "",
           kind: single?.kind ?? first?.kind ?? "voucher",
           name: single?.name ?? "",
@@ -180,7 +168,6 @@ function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecific
   ];
 }
 
-/** Selected styling is a filtered overlay: promoteId is not forwarded to Supercluster. */
 function selectedFilter(selectedId: string | null): FilterSpecification {
   return [
     "all",
@@ -202,26 +189,16 @@ const stackFilter: FilterSpecification = [
   [">", ["get", "count"], 1],
 ];
 
-/**
- * Badge labels always count vouchers, never map features.
- *
- * Features are grouped per coordinate, so Supercluster's `point_count` counts
- * locations. Rendering that would make the same spot read "3" at one zoom and
- * "63" at the next — a number that grows as you zoom in is just wrong. Summing
- * the per-feature voucher counts keeps the number partitioning as you zoom.
- */
 function countLabel(property: string): DataDrivenPropertyValueSpecification<string> {
   return [
     "step",
     ["get", property],
     ["to-string", ["get", property]],
-    // Four digits do not fit a 28 px circle; a world-zoom cluster hits 2,181.
     1000,
     ["concat", ["to-string", ["round", ["/", ["get", property], 1000]]], "k"],
   ];
 }
 
-/** Bigger counts get a slightly bigger disc so three characters still fit. */
 function badgeRadius(property: string): DataDrivenPropertyValueSpecification<number> {
   return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
 }
@@ -235,8 +212,6 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     cluster: true,
     clusterMaxZoom: CLUSTER_MAX_ZOOM,
     clusterRadius: CLUSTER_RADIUS,
-    // Sum the vouchers behind each grouped coordinate so a cluster badge and a
-    // stack badge mean the same thing: how many vouchers are here.
     clusterProperties: { voucherCount: ["+", ["get", "count"]] },
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
@@ -279,8 +254,6 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     },
   });
 
-  // A coincident stack keeps a white ring so it reads as openable, unlike a
-  // distance cluster which simply expands when you zoom.
   map.addLayer({
     id: STACK_LAYER_ID,
     type: "circle",
@@ -345,6 +318,7 @@ export function MarketMap({
   locations,
   selectedLocationId,
   camera,
+  fitBounds,
   cameraScope,
   userLocation,
   onSelectLocation,
@@ -355,13 +329,11 @@ export function MarketMap({
   const mapRef = useRef<MapLibreGL.Map | null>(null);
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
   const appliedCameraRef = useRef<MarketCamera | null>(null);
+  const appliedFitKeyRef = useRef<string | null>(null);
   const userHasInteractedRef = useRef(false);
   const loadedRef = useRef(false);
-  // "unsupported" can never succeed here, so it must not offer a retry.
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
   const [loaded, setLoaded] = useState(false);
-  // A stack larger than one fan is paged rather than truncated, so every
-  // member stays reachable by tapping the badge again.
   const [spider, setSpider] = useState<{ key: string; page: number } | null>(null);
 
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
@@ -372,8 +344,6 @@ export function MarketMap({
   const stacks = useMemo(() => groupByCoordinate(locations), [locations]);
   const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
 
-  // Latest-value refs keep the construction effect free of data, selection, and
-  // callback dependencies, so the map is built once per style/container.
   const stacksRef = useRef(stacks);
   stacksRef.current = stacks;
   const onSelectRef = useRef(onSelectLocation);
@@ -409,9 +379,6 @@ export function MarketMap({
         center: [NAIROBI.lng, NAIROBI.lat],
         zoom: DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
-        // Collision fade animates every symbol that appears or disappears.
-        // Expanding a cluster churns the symbol set repeatedly, and each
-        // change cross-fading over 300 ms reads as the map flickering.
         fadeDuration: 0,
         attributionControl: false,
       });
@@ -423,13 +390,7 @@ export function MarketMap({
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // One handler, not several layer-scoped ones. MapLibre fires every matching
-    // listener for a single click, so a separate "close the fan" listener would
-    // race the listener that just opened it and win.
     function handleMapClick(event: MapMouseEvent) {
-      // queryRenderedFeatures returns features sorted by descending z-order,
-      // topmost first, so index 0 is exactly what the user tapped. The fan's
-      // layers are added last, so its pins win over the badge beneath them.
       const [feature] = map.queryRenderedFeatures(event.point, {
         layers: INTERACTIVE_LAYER_IDS,
       });
@@ -457,15 +418,11 @@ export function MarketMap({
         setSpider((current) => {
           if (current?.key !== key) return { key, page: 0 };
           const next = current.page + 1;
-          // Tapping past the last page closes the fan, so a single-page stack
-          // still toggles shut on a second tap.
           return next >= pageCount ? null : { key, page: next };
         });
         return;
       }
 
-      // Selection styles a feature and opens the preview. It deliberately does
-      // not move the camera: the marker is already on screen.
       selectFeature(feature);
     }
 
@@ -486,13 +443,10 @@ export function MarketMap({
     }
 
     function handleUserInteraction(event: { originalEvent?: unknown }) {
-      // Programmatic camera moves emit the same events without an originalEvent.
       if (event?.originalEvent) userHasInteractedRef.current = true;
     }
 
     function handleZoomStart() {
-      // Legs are laid out in screen pixels, so zooming would slide them off
-      // their anchor. Closing on zoom matches every other map.
       setSpider(null);
     }
 
@@ -507,12 +461,6 @@ export function MarketMap({
       setLoaded(true);
     }
 
-    // A style fetch that fails is asynchronous: the constructor succeeds and
-    // then `load` simply never fires, leaving an empty container with no
-    // basemap, no markers and no way back. Surface it instead.
-    //
-    // Only before load. Once the map is up, errors are individual tile or
-    // sprite failures, which are transient and must not blank a working map.
     function handleError() {
       if (loadedRef.current) return;
       setFailure("error");
@@ -540,13 +488,13 @@ export function MarketMap({
       map.remove();
       mapRef.current = null;
       appliedCameraRef.current = null;
+      appliedFitKeyRef.current = null;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       setLoaded(false);
     };
   }, [failure, maptilerStyle, reportViewport]);
 
-  // Data: update the single GeoJSON source in place.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
@@ -554,12 +502,10 @@ export function MarketMap({
     source?.setData(createStackCollection(stacks));
   }, [loaded, stacks]);
 
-  // A refreshed dataset that no longer contains the open stack closes it.
   useEffect(() => {
     if (spider && !stacksByKey.has(spider.key)) setSpider(null);
   }, [spider, stacksByKey]);
 
-  // Spiderfy: fan the open stack's current page out around the shared anchor.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
@@ -597,9 +543,6 @@ export function MarketMap({
     source.setData({ type: "FeatureCollection", features });
   }, [loaded, spider, stacksByKey]);
 
-  // Centre the stack when its fan opens: a badge near a screen edge would
-  // otherwise throw half its legs off-screen. Pan only, never zoom, so the
-  // pixel geometry of the fan is unchanged.
   const spiderKey = spider?.key ?? null;
   useEffect(() => {
     const map = mapRef.current;
@@ -609,7 +552,6 @@ export function MarketMap({
     map.easeTo({ center: [stack.lng, stack.lat] });
   }, [loaded, spiderKey, stacksByKey]);
 
-  // Selection: swap the overlay filter and the spider layer's icon expression.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
@@ -622,13 +564,10 @@ export function MarketMap({
     ]);
   }, [loaded, selectedLocationId]);
 
-  // A new owner starts from a clean slate, so the previous owner's applied
-  // rank cannot block whatever camera the new scope resolves to.
   useEffect(() => {
     appliedCameraRef.current = null;
   }, [cameraScope]);
 
-  // Camera: ranked candidates plus the explicit location button.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !camera) return;
@@ -638,13 +577,38 @@ export function MarketMap({
     if (camera.rank !== EXPLICIT_CAMERA_RANK) {
       if (userHasInteractedRef.current) return;
       if (applied && camera.rank >= applied.rank) return;
+
+      if (fitBounds) {
+        appliedCameraRef.current = camera;
+        return;
+      }
     }
 
     appliedCameraRef.current = camera;
     map.easeTo({ center: [camera.lng, camera.lat], zoom: camera.zoom });
-  }, [camera, loaded]);
+  }, [camera, fitBounds, loaded]);
 
-  // The only DOM marker on the map is the user's own position.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+
+    if (!fitBounds) {
+      appliedFitKeyRef.current = null;
+      return;
+    }
+
+    if (appliedFitKeyRef.current === fitBounds.key) return;
+
+    appliedFitKeyRef.current = fitBounds.key;
+    map.fitBounds(
+      [
+        [fitBounds.west, fitBounds.south],
+        [fitBounds.east, fitBounds.north],
+      ],
+      { maxZoom: FILTER_FIT_MAX_ZOOM, padding: FILTER_FIT_PADDING },
+    );
+  }, [fitBounds, loaded]);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
@@ -665,8 +629,6 @@ export function MarketMap({
   }, [loaded, userLocation]);
 
   if (!maptilerStyle || failure) {
-    // Deliberately does not map over `locations`: a decorative stand-in for
-    // thousands of vouchers is both meaningless and expensive.
     return (
       <section
         aria-label="Market map"
@@ -677,7 +639,6 @@ export function MarketMap({
       >
         <div className="flex max-w-[18rem] flex-col items-center gap-3 text-center">
           <p className="text-muted-foreground text-sm">
-            {/* Never point at a list view: "Browse all" has no destination yet. */}
             {failure === "error" ? (
               <Trans>The map could not be loaded.</Trans>
             ) : (

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
+  getFilteredMarketVouchers,
   getMarketVoucher,
   getMarketVouchers,
   type MarketVoucher,
@@ -77,8 +78,6 @@ describe("getMarketVouchers request", () => {
     await getMarketVouchers({ perPage: 500 });
 
     const init = requestedInit();
-    // The catalog is public and representation-invariant: a cookie would only
-    // poison the shared cache, and no-store would defeat max-age entirely.
     expect(init.credentials).toBe("omit");
     expect(init.cache).toBeUndefined();
     expect(init.method).toBe("GET");
@@ -239,7 +238,6 @@ describe("viewportToBoundingBoxes", () => {
   });
 
   it("normalizes longitudes past the dateline from renderWorldCopies", () => {
-    // renderWorldCopies defaults to true, so bounds can exceed +/-180.
     const [box] = viewportToBoundingBoxes({ west: 396.6, south: -1.5, east: 397.1, north: -1.1 });
 
     expect(box?.minLng).toBeCloseTo(36.6, 6);
@@ -254,7 +252,6 @@ describe("viewportToBoundingBoxes", () => {
       { minLng: 179, minLat: -1.5, maxLng: 180, maxLat: -1.1 },
       { minLng: -180, minLat: -1.5, maxLng: -179, maxLat: -1.1 },
     ]);
-    // A single inverted box is invalid and must never be produced.
     for (const box of boxes) {
       expect(box.minLng).toBeLessThanOrEqual(box.maxLng);
       expect(box.minLat).toBeLessThanOrEqual(box.maxLat);
@@ -291,9 +288,6 @@ describe("getMarketVouchers page size reporting", () => {
 
     const page = await getMarketVouchers({ perPage: 500 });
 
-    // Pagination terminates on a short page. If the dropped row shrank the
-    // reported size, one malformed voucher would hide the entire rest of the
-    // catalog behind it.
     expect(page.vouchers).toHaveLength(1);
     expect(page.receivedCount).toBe(2);
   });
@@ -363,9 +357,6 @@ describe("getMarketVoucher", () => {
     });
   });
 
-  // Roughly two thirds of the imported catalog has no icon, banner, phone, or
-  // coordinates. Absent must arrive as null so the UI can pick a fallback,
-  // never as an empty string that renders as a broken image.
   it("returns null for every field the catalog left empty", async () => {
     fetchMock.mockResolvedValue(
       detailResponse({
@@ -392,14 +383,10 @@ describe("getMarketVoucher", () => {
       lat: null,
       lng: null,
     });
-    // Name and symbol still fall back, because something has to be the heading.
     expect(voucher.name).toBe("Community Voucher");
     expect(voucher.symbol).toBe("VOUCHER");
   });
 
-  // Image URLs are imported third-party strings that go straight into an
-  // <img src>. Only absolute http(s) is accepted rather than trusting that a
-  // scripting scheme is inert in an image context.
   it.each([
     ["javascript", "javascript:alert(1)"],
     ["data", "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="],
@@ -430,7 +417,6 @@ describe("getMarketVoucher", () => {
     expect(voucher.bannerUrl).toBe("https://content.example/banner.jpg");
   });
 
-  // Half a coordinate would pin the voucher on a meridian somewhere it is not.
   it.each([
     ["only latitude", { geoLat: -1.45, geoLng: null }],
     ["only longitude", { geoLat: null, geoLng: 38.23 }],
@@ -456,16 +442,12 @@ describe("getMarketVoucher", () => {
     await expect(getMarketVoucher(DETAIL_ROW.address)).rejects.toThrow();
   });
 
-  // An unrecognised kind only picks a marker glyph, so unlike a catalog row it
-  // must not discard an otherwise readable voucher.
   it("falls back to the voucher kind rather than failing", async () => {
     fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, kind: "eatery" }));
 
     expect((await getMarketVoucher(DETAIL_ROW.address)).kind).toBe("voucher");
   });
 
-  // The address arrives from a route param, so a hostile value must stay inside
-  // its path segment: no extra segment, no query string of its own.
   it("keeps the address inside one path segment", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
@@ -483,5 +465,166 @@ describe("getMarketVoucher", () => {
 
     expect(requestedInit().credentials).toBe("omit");
     expect(requestedInit().cache).toBeUndefined();
+  });
+});
+
+describe("getFilteredMarketVouchers request", () => {
+  const FILTER = { term: "", tags: [] as readonly string[], tagMatch: "any" as const };
+
+  it("encodes a term and comma-joins tags in one key", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({
+      perPage: 500,
+      filter: { ...FILTER, term: "sarafu network", tags: ["Art", "Food production"] },
+    });
+
+    const url = new URL(requestedUrl());
+    expect(url.searchParams.get("q")).toBe("sarafu network");
+    expect(url.searchParams.get("tags")).toBe("Art,Food production");
+    expect(url.searchParams.getAll("tags")).toHaveLength(1);
+    expect(url.searchParams.get("perPage")).toBe("500");
+  });
+
+  it("omits a filter key it has nothing to say about", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+
+    const url = new URL(requestedUrl());
+    expect(url.searchParams.has("q")).toBe(false);
+    expect(url.searchParams.has("tags")).toBe(false);
+    expect(url.searchParams.has("tagMatch")).toBe(false);
+    expect(url.searchParams.has("facets")).toBe(false);
+  });
+
+  it("sends tagMatch only when two or more tags make the modes differ", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({
+      perPage: 500,
+      filter: { ...FILTER, tags: ["Art"], tagMatch: "all" },
+    });
+    expect(new URL(requestedUrl(0)).searchParams.has("tagMatch")).toBe(false);
+
+    await getFilteredMarketVouchers({
+      perPage: 500,
+      filter: { ...FILTER, tags: ["Art", "Culture"], tagMatch: "all" },
+    });
+    expect(new URL(requestedUrl(1)).searchParams.get("tagMatch")).toBe("all");
+  });
+
+  it("sends facets only as the literal true the backend accepts", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: true });
+    expect(new URL(requestedUrl(0)).searchParams.get("facets")).toBe("true");
+
+    await getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: false });
+    expect(new URL(requestedUrl(1)).searchParams.has("facets")).toBe(false);
+  });
+
+  it("carries the cursor and next flag for a later page of the walk", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({ perPage: 500, cursor: 2501, next: true, filter: FILTER });
+
+    const url = new URL(requestedUrl());
+    expect(url.searchParams.get("cursor")).toBe("2501");
+    expect(url.searchParams.get("next")).toBe("true");
+  });
+
+  it("encodes a bounding box alongside the filter", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await getFilteredMarketVouchers({
+      perPage: 500,
+      bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
+      filter: { ...FILTER, term: "art" },
+    });
+
+    const url = new URL(requestedUrl());
+    expect(url.searchParams.get("bbox")).toBe("36.6,-1.5,37.1,-1.1");
+    expect(url.searchParams.get("q")).toBe("art");
+  });
+
+  it("sends no credentials and forwards the abort signal", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+    const controller = new AbortController();
+
+    await getFilteredMarketVouchers({ perPage: 500, filter: FILTER }, controller.signal);
+
+    expect(requestedInit().credentials).toBe("omit");
+    expect(requestedInit().cache).toBeUndefined();
+    expect(requestedInit().signal).toBe(controller.signal);
+  });
+});
+
+describe("getFilteredMarketVouchers response", () => {
+  const FILTER = { term: "art", tags: [] as readonly string[], tagMatch: "any" as const };
+
+  it("normalizes the tag facet", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({
+        vouchers: [VALID_ROW],
+        first: 2710,
+        last: 2710,
+        tagFacets: [
+          { tag: "Art", count: 3 },
+          { tag: "Culture", count: 0 },
+        ],
+      }),
+    );
+
+    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+
+    expect(page.tagFacets).toEqual([
+      { tag: "Art", count: 3 },
+      { tag: "Culture", count: 0 },
+    ]);
+  });
+
+  it("distinguishes an absent facet from an empty one", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+    expect(
+      (await getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets,
+    ).toBeNull();
+
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0, tagFacets: [] }));
+    expect((await getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets).toEqual(
+      [],
+    );
+  });
+
+  it("drops malformed facet rows rather than rendering them", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({
+        vouchers: [],
+        first: 0,
+        last: 0,
+        tagFacets: [
+          { tag: "Art", count: 3 },
+          { tag: "", count: 1 },
+          { tag: "NoCount" },
+          { tag: "Negative", count: -1 },
+          { count: 2 },
+        ],
+      }),
+    );
+
+    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+
+    expect(page.tagFacets).toEqual([{ tag: "Art", count: 3 }]);
+  });
+
+  it("reports the count the backend sent, before normalization dropped rows", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({ vouchers: [VALID_ROW, { id: 1 }], first: 2710, last: 1 }),
+    );
+
+    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+
+    expect(page.vouchers).toHaveLength(1);
+    expect(page.receivedCount).toBe(2);
   });
 });

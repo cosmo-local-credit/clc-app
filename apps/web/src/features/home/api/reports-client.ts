@@ -1,3 +1,5 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+
 import { apiFetch } from "#/features/auth/api/client";
 import {
   type HexAddress,
@@ -15,11 +17,6 @@ export type ReportVoucher = {
   symbol: string;
 };
 
-/**
- * One image from a report body, already filtered to `http(s)` by the backend.
- * Dimensions are whatever the editor recorded and may be missing, so they are
- * only ever used to reserve space, never required.
- */
 export type ReportImage = {
   url: string;
   width: number | null;
@@ -38,30 +35,18 @@ export type ReportSummary = {
   periodTo: string | null;
   authorAddress: HexAddress | null;
   createdAt: string | null;
-  /** The feed's only displayed timestamp, and what it is ordered by. */
   updatedAt: string | null;
   tags: string[];
   vouchers: ReportVoucher[];
 };
 
-/**
- * A report's full detail. `images`, `hostName`, `participants`, and `timeTaken`
- * are extracted from the report body by the backend, so this client never sees
- * a ProseMirror document.
- */
 export type ReportDetail = ReportSummary & {
   images: ReportImage[];
   hostName: string | null;
   participants: string | null;
-  /** Issuer free text: "2", "1 hour", "2hrs" all occur. Never parsed. */
   timeTaken: string | null;
 };
 
-/**
- * The feed's keyset position. Reports are ordered by `updatedAt`, which bears
- * almost no relation to id order in the imported catalog, so the cursor is the
- * pair rather than a single id.
- */
 export type ReportCursor = {
   updatedAt: string;
   id: string;
@@ -69,8 +54,27 @@ export type ReportCursor = {
 
 export type ReportPage = {
   reports: ReportSummary[];
-  /** `null` on the last page — the backend's explicit end-of-feed signal. */
   next: ReportCursor | null;
+};
+
+export type ReportTagFacet = {
+  tag: string;
+  count: number;
+};
+
+export type FilteredReportsParams = {
+  perPage: number;
+  cursor?: ReportCursor;
+  filter: CatalogFilter;
+  facets?: boolean;
+};
+
+export type FilteredReportPage = ReportPage & {
+  tagFacets: ReportTagFacet[] | null;
+};
+
+type BackendFilteredReportPage = BackendReportPage & {
+  tagFacets?: { tag?: unknown; count?: unknown }[] | null;
 };
 
 type BackendReportVoucher = Partial<{
@@ -111,10 +115,6 @@ type BackendReportPage = {
   next?: Partial<{ updatedAt: string | null; id: string | number }> | null;
 };
 
-/**
- * The report feed. Authenticated like the pool routes, so it sends the session
- * cookie and `no-store` rather than the public market cache policy.
- */
 export async function getReports(
   params: { perPage: number; cursor?: ReportCursor },
   signal?: AbortSignal,
@@ -137,6 +137,42 @@ export async function getReports(
   };
 }
 
+export async function getFilteredReports(
+  { filter, facets, perPage, cursor }: FilteredReportsParams,
+  signal?: AbortSignal,
+): Promise<FilteredReportPage> {
+  const query = new URLSearchParams({ perPage: String(perPage) });
+  if (cursor) {
+    query.set("cursorUpdatedAt", cursor.updatedAt);
+    query.set("cursorId", cursor.id);
+  }
+  if (filter.term !== "") query.set("q", filter.term);
+  if (filter.tags.length > 0) query.set("tags", filter.tags.join(","));
+  if (filter.tags.length > 1 && filter.tagMatch === "all") query.set("tagMatch", "all");
+  if (facets) query.set("facets", "true");
+
+  const result = await apiFetch<BackendFilteredReportPage>(`/api/v2/reports?${query.toString()}`, {
+    method: "GET",
+    cache: "no-store",
+    signal,
+  });
+
+  return {
+    reports: (result.reports ?? []).map(normalizeReportSummary).filter(isPresent),
+    next: normalizeCursor(result.next),
+    tagFacets: result.tagFacets
+      ? result.tagFacets.map(normalizeReportTagFacet).filter(isPresent)
+      : null,
+  };
+}
+
+function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): ReportTagFacet | null {
+  const tag = normalizeText(facet.tag);
+  const count = normalizeNumber(facet.count);
+  if (!tag || count === null || count < 0) return null;
+  return { tag, count };
+}
+
 export async function getReport(id: string, signal?: AbortSignal): Promise<ReportDetail> {
   const result = await apiFetch<{ report?: BackendReport | null }>(
     `/api/v2/reports/${encodeURIComponent(id)}`,
@@ -150,7 +186,6 @@ export async function getReport(id: string, signal?: AbortSignal): Promise<Repor
 
 function normalizeCursor(next: BackendReportPage["next"] | undefined): ReportCursor | null {
   const updatedAt = normalizeText(next?.updatedAt);
-  // Both halves or neither: a half cursor would re-request the first page.
   if (!updatedAt || next?.id === undefined || next.id === null) return null;
   return { updatedAt, id: String(next.id) };
 }
@@ -158,8 +193,6 @@ function normalizeCursor(next: BackendReportPage["next"] | undefined): ReportCur
 function normalizeReportSummary(report: BackendReport): ReportSummary | null {
   if (report.id === undefined || report.id === null) return null;
 
-  // A map needs both halves of a coordinate, so a row carrying one is treated
-  // as having none rather than being pinned on a meridian.
   const lat = normalizeCoordinate(report.geoLat, 90);
   const lng = normalizeCoordinate(report.geoLng, 180);
   const hasLocation = lat !== null && lng !== null;
@@ -216,11 +249,6 @@ function normalizeReportImage(image: BackendReportImage): ReportImage | null {
   };
 }
 
-/**
- * Only absolute http(s) URLs reach an `<img src>`. The backend already filters
- * report images, but report bodies contain base64 `data:` URIs up to ~470 KB,
- * so this client does not take that filtering on trust.
- */
 function normalizeImageUrl(value: unknown): string | null {
   const text = normalizeText(value);
   if (!text) return null;

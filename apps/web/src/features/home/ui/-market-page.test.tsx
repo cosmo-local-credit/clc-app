@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { BackendApiError } from "#/features/auth/api/client";
 import type { MarketVoucher, MarketVoucherDetail } from "#/features/home/api/market-client";
 import type { MarketCamera } from "./market-map";
 
@@ -10,6 +11,13 @@ type MapProps = {
   locations: MarketVoucher[];
   selectedLocationId: string | null;
   camera: MarketCamera | null;
+  fitBounds?: {
+    key: string;
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+  } | null;
   userLocation: { lat: number; lng: number } | null;
   onSelectLocation: (id: string) => void;
   onViewportSettled?: (viewport: {
@@ -29,6 +37,9 @@ const {
   lastMapProps,
   mockRequestLocation,
   mockRetry,
+  routeSearch,
+  mockNavigate,
+  filteredResult,
 } = vi.hoisted(() => ({
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
@@ -55,18 +66,50 @@ const {
   lastMapProps: { current: null as MapProps | null },
   mockRequestLocation: vi.fn(),
   mockRetry: vi.fn(),
+  routeSearch: { current: {} as Record<string, unknown> },
+  mockNavigate: vi.fn(),
+  filteredResult: {
+    current: {
+      data: undefined as { vouchers: MarketVoucher[]; tagFacets: null } | undefined,
+      error: null as Error | null,
+      isPlaceholderData: false,
+      refetch: vi.fn(),
+    },
+  },
 }));
+
+function scalar(key: string, value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  throw new Error(`search value for ${key} is not a URL scalar`);
+}
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
   useMarketCamera: () => cameraResult.current,
 }));
 
-vi.mock("#/features/home/hooks/use-market-vouchers", () => ({
-  MARKET_MAP_PAGE_SIZE: 500,
-  MIN_VIEWPORT_BBOX_ZOOM: 11,
-  useMarketMapVouchers: () => vouchersResult.current,
-}));
+vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/features/home/hooks/use-market-vouchers")>();
+  return {
+    ...actual,
+    useMarketMapVouchers: (_viewport: unknown, _perPage: unknown, enabled = true) =>
+      enabled ? vouchersResult.current : { ...vouchersResult.current, vouchers: [] },
+  };
+});
+
+vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("#/features/home/hooks/use-filtered-market-vouchers")>();
+  return {
+    ...actual,
+    useFilteredMarketVouchers: (filter: unknown) => ({
+      ...filteredResult.current,
+      isEnabled: filter !== null,
+    }),
+    useMarketFacetVocabulary: () => ({ data: undefined }),
+  };
+});
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: (address: string | undefined) => {
@@ -75,10 +118,9 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   },
 }));
 
-// Real routing is covered by src/routes/-voucher-navigation.test.tsx, which
-// drives an actual router over memory history. Here the page is unit tested, so
-// Link only needs to resolve params into an href.
 vi.mock("@tanstack/react-router", () => ({
+  useSearch: () => routeSearch.current,
+  useNavigate: () => mockNavigate,
   Link: ({
     to,
     params,
@@ -88,17 +130,22 @@ vi.mock("@tanstack/react-router", () => ({
   }: {
     to: string;
     params?: Record<string, string>;
-    search?: Record<string, string | undefined>;
+    search?:
+      | Record<string, string | undefined>
+      | ((previous: Record<string, unknown>) => Record<string, unknown>);
     children?: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
       (path, [key, value]) => path.replace(`$${key}`, value),
       to,
     );
+    const resolved = typeof search === "function" ? search(routeSearch.current) : (search ?? {});
     const query = new URLSearchParams(
-      Object.entries(search ?? {}).flatMap(([key, value]) =>
-        value === undefined ? [] : [[key, value]],
-      ),
+      Object.entries(resolved).flatMap(([key, value]): [string, string][] => {
+        if (value === undefined) return [];
+        if (Array.isArray(value)) return value.map((entry) => [key, scalar(key, entry)]);
+        return [[key, scalar(key, value)]];
+      }),
     ).toString();
     return (
       <a href={query ? `${path}?${query}` : path} {...rest}>
@@ -152,6 +199,7 @@ function renderPage(node: ReactNode = <MarketPage />) {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   mockRequestLocation.mockReset();
   mockRetry.mockReset();
   lastMapProps.current = null;
@@ -170,6 +218,14 @@ beforeEach(() => {
     isCatalogComplete: false,
     error: null,
     retry: mockRetry,
+  };
+  routeSearch.current = {};
+  mockNavigate.mockReset();
+  filteredResult.current = {
+    data: undefined,
+    error: null,
+    isPlaceholderData: false,
+    refetch: vi.fn(),
   };
 });
 
@@ -221,7 +277,6 @@ describe("MarketPage data states", () => {
     vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
     renderPage();
 
-    // The basemap must stay visible behind a non-blocking error.
     expect(screen.getByTestId("market-map")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /retry/i }));
     expect(mockRetry).toHaveBeenCalledTimes(1);
@@ -273,8 +328,6 @@ describe("MarketPage preview", () => {
     expect(screen.getByText(label)).toBeTruthy();
   });
 
-  // Replaces an earlier assertion that the card exposed no link. That was
-  // correct while no voucher page existed; now the card is the way in.
   it("links the selected voucher to its page", () => {
     vouchersResult.current = {
       ...vouchersResult.current,
@@ -286,7 +339,6 @@ describe("MarketPage preview", () => {
 
     const link = screen.getByRole("link", { name: "Voucher 1" });
     expect(link.getAttribute("href")).toBe("/vouchers/0xAbC0000000000000000000000000000000000123");
-    // One tap target for the whole card, not a link nested inside a region.
     expect(link.querySelector("a")).toBeNull();
   });
 
@@ -304,8 +356,6 @@ describe("MarketPage preview", () => {
     expect(link.textContent).toContain("MALII");
   });
 
-  // Selecting a marker is what warms the cache the voucher page then reads, so
-  // the card must actually ask for the detail of the voucher that was tapped.
   it("requests detail for the selected voucher and nothing before that", () => {
     vouchersResult.current = {
       ...vouchersResult.current,
@@ -359,8 +409,6 @@ describe("MarketPage preview", () => {
     expect(link.textContent).toContain("1 MALII = 10 KSH");
   });
 
-  // Detail is a second request. The card must be readable the instant a marker
-  // is tapped, from the catalog row the map already had.
   it("stays readable before detail resolves", () => {
     detailResult.current = { data: undefined, isPending: true };
     vouchersResult.current = {
@@ -375,7 +423,6 @@ describe("MarketPage preview", () => {
     expect(link.textContent).toContain("Priscilah Malii");
     expect(link.textContent).toContain("MALII");
     expect(link.textContent).toContain("Goods");
-    // No image and no rate yet, but also no broken image and no empty rate line.
     expect(link.querySelector("img")).toBeNull();
     expect(link.textContent).not.toContain("=");
   });
@@ -422,7 +469,6 @@ describe("MarketPage distance", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    // A few hundred metres away, rounded to the nearest ten metres.
     expect(screen.getByText(/^\d+ m$/)).toBeTruthy();
   });
 
@@ -440,7 +486,6 @@ describe("MarketPage distance", () => {
   });
 
   it("never shows a distance without a real fix, falling back to the place name", () => {
-    // An IP city or country default must not produce a distance label.
     cameraResult.current = {
       ...cameraResult.current,
       realFix: null,
@@ -473,5 +518,195 @@ describe("MarketPage viewport", () => {
     renderPage();
 
     expect(lastMapProps.current?.camera).toEqual(camera);
+  });
+});
+
+describe("MarketPage filtering", () => {
+  const voucherAt = (id: number, lat: number, lng: number): MarketVoucher => ({
+    id: String(id),
+    chainId: 42220,
+    address: `0x${id.toString(16).padStart(40, "0")}`,
+    name: `Voucher ${id}`,
+    symbol: `V${id}`,
+    iconUrl: null,
+    locationName: null,
+    lat,
+    lng,
+    kind: "voucher",
+  });
+
+  it("draws the filtered set and never the unfiltered import", () => {
+    routeSearch.current = { q: "art" };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucherAt(99, -4.05, 39.66)],
+      isCatalogComplete: true,
+    };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+    };
+
+    render(<MarketPage />);
+
+    expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
+  });
+
+  it("frames the filtered results", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: {
+        vouchers: [voucherAt(1, -1.29, 36.82), voucherAt(2, -1.5, 37.1)],
+        tagFacets: null,
+      },
+    };
+
+    render(<MarketPage />);
+
+    const fit = lastMapProps.current?.fitBounds;
+    expect(fit).toMatchObject({ west: 36.82, east: 37.1, south: -1.5, north: -1.29 });
+    expect(fit?.key).toContain("art");
+  });
+
+  it("produces degenerate bounds for a single match, for the map to cap", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+    };
+
+    render(<MarketPage />);
+
+    expect(lastMapProps.current?.fitBounds).toMatchObject({
+      west: 36.82,
+      east: 36.82,
+      south: -1.29,
+      north: -1.29,
+    });
+  });
+
+  it("does not frame anything while a filter is still resolving", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+      isPlaceholderData: true,
+    };
+
+    render(<MarketPage />);
+
+    expect(lastMapProps.current?.fitBounds).toBeNull();
+  });
+
+  it("does not frame anything when unfiltered", () => {
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucherAt(1, -1.29, 36.82)],
+      isCatalogComplete: true,
+    };
+
+    render(<MarketPage />);
+
+    expect(lastMapProps.current?.fitBounds).toBeNull();
+  });
+
+  it("shows the filter summary with a way to clear and a way to edit", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+    };
+
+    render(<MarketPage />);
+
+    expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
+    const edit = screen.getByRole("link", { name: "Edit filters" });
+    expect(edit.getAttribute("href")).toContain("view=list");
+    expect(edit.getAttribute("href")).toContain("q=art");
+  });
+
+  it("hides the summary when nothing is filtered", () => {
+    render(<MarketPage />);
+
+    expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
+  });
+
+  it("preserves the filter when leaving for the list", () => {
+    routeSearch.current = { q: "art", tags: "Art" };
+
+    render(<MarketPage />);
+
+    const href = screen.getByRole("link", { name: "Browse all" }).getAttribute("href");
+    expect(href).toContain("q=art");
+    expect(href).toContain("tags=Art");
+    expect(href).toContain("view=list");
+  });
+
+  it("distinguishes a filtered-empty map from an empty catalog", () => {
+    routeSearch.current = { q: "zzzz" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [], tagFacets: null },
+    };
+
+    render(<MarketPage />);
+
+    expect(screen.getByText("No vouchers match this search.")).toBeTruthy();
+    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+    expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
+  });
+
+  it("says nothing about matches while a cold filtered load is pending", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = { ...filteredResult.current, data: undefined };
+
+    render(<MarketPage />);
+
+    expect(screen.queryByText("No vouchers match this search.")).toBeNull();
+    expect(screen.queryByText("No vouchers to show yet.")).toBeNull();
+  });
+});
+
+describe("MarketPage filter failures", () => {
+  it("offers Clear rather than Retry for an invalid filter", () => {
+    routeSearch.current = { tags: "NotATag" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      error: new BackendApiError(400, "tags contains a value outside the tag vocabulary", "E04"),
+    };
+
+    render(<MarketPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("These filters aren't valid.");
+    expect(within(alert).queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(within(alert).getByRole("button", { name: "Clear filters" })).toBeTruthy();
+  });
+
+  it("offers no action at all for a rate limit", () => {
+    routeSearch.current = { q: "art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      error: new BackendApiError(429, "rate limit exceeded"),
+    };
+
+    render(<MarketPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Too many searches");
+    expect(within(alert).queryByRole("button")).toBeNull();
+  });
+
+  it("still offers Retry for a transient failure", () => {
+    filteredResult.current = { ...filteredResult.current, error: null };
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+
+    render(<MarketPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Could not load vouchers.");
+    expect(within(alert).getByRole("button", { name: "Retry" })).toBeTruthy();
   });
 });

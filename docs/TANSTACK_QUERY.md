@@ -42,6 +42,14 @@ Current local overrides:
   - `gcTime: 30 * 60_000`
   - `refetchOnReconnect: false`
   - Reason: this is a bulk import of static catalog data, not live chain state.
+
+- `apps/web/src/features/home/hooks/use-filtered-market-vouchers.ts`
+  - filtered public market voucher catalog (one atomic cursor walk per filter)
+  - `staleTime: 10 * 60_000` and `refetchOnReconnect: false`, shared with the unfiltered catalog
+  - `gcTime: 5 * 60_000` — deliberately shorter than the unfiltered catalog's 30 minutes
+  - `placeholderData: keepPreviousData`
+  - `retry`: never for a 4xx or for the page-cap failure; otherwise the global single retry
+  - Reason: there is one unfiltered catalog entry and holding it makes returning to the Market tab instant, but filtered entries are one per distinct filter a user settles on, each holding up to `MAX_FILTERED_PAGES × 500` rows. Under a 30-minute window a long session of searching accumulates dozens of them for no benefit — nobody returns to their twelfth search — so five minutes still covers back-navigation while bounding memory on a low-end device. `keepPreviousData` is what keeps the last complete result on screen while the next filter resolves; it is only trustworthy because the walk is atomic. The retry exclusions exist because the router's global `retry: 1` would otherwise double an invalid filter, a 429 against the burst it just exhausted, and a deterministic cap failure that re-walks every page to fail identically.
     The one-minute global `staleTime` would re-walk every cached page of a
     multi-page import, and the five-minute default GC time would discard the
     assembled catalog on every home-tab switch, forcing a full re-download.

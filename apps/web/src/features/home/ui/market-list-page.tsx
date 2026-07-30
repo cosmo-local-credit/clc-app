@@ -2,14 +2,17 @@ import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { RiArrowRightSLine, RiFocus3Line, RiMap2Line } from "react-icons/ri";
+import { RiArrowRightSLine, RiMap2Line } from "react-icons/ri";
 
+import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
 import type { MarketVoucher } from "#/features/home/api/market-client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
-import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
+import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
 
 const MARKET_LIST_BATCH_SIZE = 20;
@@ -21,11 +24,20 @@ export function MarketListPage({
   onboardingBanner?: ReactNode;
   locationOwner?: string;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const { realFix, locationStatus, requestLocation } = useMarketCamera(locationOwner);
-  const { vouchers, isCatalogComplete, error, retry } = useMarketMapVouchers(null);
+  const filter = useMarketFilter();
+  const catalog = useMarketCatalogVouchers(filter, null, !filter.isRestoringPreference);
+  const { vouchers, isCatalogComplete, error, retry } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const filterKey = catalog.filterKey;
+  const previousFilterKey = useRef(filterKey);
+  if (previousFilterKey.current !== filterKey) {
+    previousFilterKey.current = filterKey;
+    setVisibleCount(MARKET_LIST_BATCH_SIZE);
+  }
 
   const sortedVouchers = useMemo(() => {
     if (!realFix) return vouchers;
@@ -40,7 +52,19 @@ export function MarketListPage({
 
   const visibleVouchers = sortedVouchers.slice(0, visibleCount);
   const hasMoreVisible = visibleCount < sortedVouchers.length;
-  const canRenderCatalog = realFix === null || isCatalogComplete;
+  const canRenderCatalog = filter.isFiltered
+    ? catalog.status !== "loading"
+    : realFix === null || isCatalogComplete;
+
+  const showLoading = filter.isFiltered
+    ? catalog.status === "loading"
+    : !isCatalogComplete && !error && (!canRenderCatalog || visibleVouchers.length === 0);
+
+  const showEmpty =
+    sortedVouchers.length === 0 &&
+    !error &&
+    filter.result.ok &&
+    (filter.isFiltered ? catalog.status === "ready" : isCatalogComplete);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -62,17 +86,12 @@ export function MarketListPage({
     return () => observer.disconnect();
   }, [canRenderCatalog, hasMoreVisible, sortedVouchers.length]);
 
-  const locationButtonLabel =
-    locationStatus === "requesting"
-      ? t`Finding location`
-      : locationStatus === "denied"
-        ? t`Location denied`
-        : locationStatus === "unavailable"
-          ? t`Location unavailable`
-          : t`Use current location`;
+  const resultCountLabel = i18n._("{count, plural, one {# voucher} other {# vouchers}}", {
+    count: sortedVouchers.length,
+  });
 
   return (
-    <main className="relative min-h-[100svh] bg-background px-6 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
+    <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
       {onboardingBanner}
       <div
         className={
@@ -82,68 +101,72 @@ export function MarketListPage({
         }
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-              <Trans>Marketplace</Trans>
-            </h1>
-            <p className="mt-1 text-muted-foreground text-sm">
-              {realFix ? (
-                <Trans>Vouchers ordered by approximate distance.</Trans>
-              ) : (
-                <Trans>Explore community vouchers.</Trans>
-              )}
-            </p>
+          <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
+            <Trans>Marketplace</Trans>
+          </h1>
+          <div className="flex shrink-0 items-center gap-2">
+            <MarketFilterSheet
+              filter={filter}
+              facets={catalog.tagFacets}
+              hasLocation={realFix !== null}
+              locationStatus={locationStatus}
+              onRequestLocation={requestLocation}
+            />
+            <Button
+              asChild
+              variant="outline"
+              size="icon-lg"
+              className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
+            >
+              <Link
+                to="/"
+                search={(previous) => ({ ...previous, tab: "market", view: "map" })}
+                aria-label={t`Map`}
+              >
+                <RiMap2Line className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
-          <Button asChild variant="outline" className="h-11 bg-card px-3">
-            <Link to="/" search={{ tab: "market", view: "map" }}>
-              <RiMap2Line className="size-4" aria-hidden="true" />
-              <Trans>Map</Trans>
-            </Link>
-          </Button>
         </div>
 
-        {!realFix ? (
-          <Button
-            variant="outline"
-            className="mt-4 h-11 w-full bg-card"
-            disabled={
-              locationStatus === "requesting" ||
-              locationStatus === "denied" ||
-              locationStatus === "unavailable"
-            }
-            onClick={requestLocation}
+        <div className="mt-4">
+          <CatalogSearchField filter={filter} label={t`Search by name or symbol`} />
+        </div>
+
+        <MarketFilterFeedback filter={filter} error={error} onRetry={retry} />
+
+        {!error && (filter.isFiltered ? catalog.status !== "loading" : isCatalogComplete) ? (
+          <p
+            className="mt-4 font-medium text-sm tabular-nums"
+            aria-live={filter.isFiltered ? "polite" : undefined}
           >
-            <RiFocus3Line className="size-4" aria-hidden="true" />
-            {locationButtonLabel}
-          </Button>
+            {resultCountLabel}
+          </p>
         ) : null}
 
-        {!isCatalogComplete && !error && (!canRenderCatalog || visibleVouchers.length === 0) ? (
+        {showLoading ? (
           <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
             <Trans>Loading marketplace…</Trans>
           </div>
         ) : null}
 
-        {error ? (
-          <div className="mt-4 space-y-3 border border-border bg-card p-4">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Could not load vouchers.</Trans>
-            </p>
-            <Button variant="outline" size="sm" className="h-9 bg-card" onClick={retry}>
-              <Trans>Retry</Trans>
-            </Button>
-          </div>
-        ) : null}
-
-        {isCatalogComplete && !error && sortedVouchers.length === 0 ? (
-          <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
-            <Trans>No vouchers to show yet.</Trans>
-          </div>
+        {showEmpty ? (
+          filter.isFiltered ? (
+            <MarketFilteredEmpty onClear={filter.clear} />
+          ) : (
+            <div className="mt-4 border border-border bg-card p-4 text-muted-foreground text-sm">
+              <Trans>No vouchers to show yet.</Trans>
+            </div>
+          )
         ) : null}
 
         {canRenderCatalog && visibleVouchers.length > 0 ? (
           <section
-            className="mt-4 border border-border bg-card"
+            className={[
+              "mt-3 overflow-hidden border border-border bg-card",
+              catalog.status === "refining" ? "opacity-60 transition-opacity" : "",
+            ].join(" ")}
+            aria-busy={catalog.status === "refining"}
             aria-label={t`Marketplace vouchers`}
           >
             {visibleVouchers.map((voucher, index) => (
