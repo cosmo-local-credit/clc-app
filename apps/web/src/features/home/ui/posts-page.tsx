@@ -2,86 +2,111 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 
+import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
 import type { ReportSummary } from "#/features/home/api/reports-client";
+import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
+import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { formatReportDate } from "./report-display";
+import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
 
-/** Keep each row compact enough to scan on a 360px screen. */
 const VISIBLE_TAGS = 2;
 const VISIBLE_VOUCHERS = 1;
 
 export function PostsPage() {
-  const { t } = useLingui();
-  const reportsQuery = useReportsInfinite();
+  const { t, i18n } = useLingui();
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.posts);
+  const reportsQuery = useReportsInfinite(
+    undefined,
+    !filter.isFiltered && !filter.isRestoringPreference,
+  );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const reports = reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [];
+
+  const feed = useReportFeed(filter, {
+    reports: reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [],
+    isPending: reportsQuery.isPending,
+    error: reportsQuery.error ?? null,
+    retry: () => void reportsQuery.refetch(),
+    hasNextPage: reportsQuery.hasNextPage,
+    fetchNextPage: () => void reportsQuery.fetchNextPage(),
+    isFetchingNextPage: reportsQuery.isFetchingNextPage,
+  });
+  const reports = feed.reports;
+  const resultCountLabel = i18n._("{count, plural, one {# post} other {# posts}}", {
+    count: reports.length,
+  });
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !reportsQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
+    if (!target || !feed.hasMore || typeof IntersectionObserver === "undefined") {
       return;
     }
 
     const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting && !reportsQuery.isFetchingNextPage) {
-        void reportsQuery.fetchNextPage();
+      if (entries[0]?.isIntersecting && !feed.isLoadingMore) {
+        feed.loadMore();
       }
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [reportsQuery.fetchNextPage, reportsQuery.hasNextPage, reportsQuery.isFetchingNextPage]);
+  }, [feed.hasMore, feed.isLoadingMore, feed.loadMore]);
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1">
-        <h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Posts</Trans>
         </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Field reports from pools, service providers, and stewards.</Trans>
-        </p>
+        <ReportFilterSheet filter={filter} facets={feed.tagFacets} />
       </div>
 
-      {reportsQuery.isPending ? (
+      <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />
+
+      <ReportFilterFeedback filter={filter} error={feed.error} onRetry={feed.retry} />
+
+      {feed.status === "loading" ? (
         <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
           <Trans>Loading posts…</Trans>
         </div>
       ) : null}
 
-      {reportsQuery.isError ? (
-        <div className="space-y-3 border border-border bg-card p-4">
-          <p className="text-muted-foreground text-sm">
-            <Trans>Couldn't load posts.</Trans>
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => reportsQuery.refetch()}
-          >
-            <Trans>Try again</Trans>
-          </Button>
-        </div>
-      ) : null}
-
-      {reportsQuery.isSuccess && reports.length === 0 ? (
-        <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold">
-            <Trans>No posts yet</Trans>
-          </p>
-          <p className="mt-1 text-muted-foreground text-sm">
-            <Trans>Approved field reports will appear here.</Trans>
-          </p>
-        </div>
+      {feed.status === "ready" && filter.result.ok ? (
+        <>
+          <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
+          {reports.length === 0 ? (
+            <div className="space-y-3 border border-border bg-card p-4">
+              <p className="text-muted-foreground text-sm">
+                {filter.isFiltered ? (
+                  <Trans>No posts match this search.</Trans>
+                ) : (
+                  <Trans>No posts yet.</Trans>
+                )}
+              </p>
+              {filter.isFiltered ? (
+                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                  <Trans>Clear filters</Trans>
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </>
       ) : null}
 
       {reports.length > 0 ? (
-        <section className="border border-border bg-card" aria-label={t`Field reports`}>
+        <section
+          className={[
+            "border border-border bg-card",
+            feed.status === "refining" ? "opacity-60 transition-opacity" : "",
+          ].join(" ")}
+          aria-busy={feed.status === "refining"}
+          aria-label={t`Field reports`}
+        >
           {reports.map((report, index) => (
             <ReportRow key={report.id} report={report} isLast={index === reports.length - 1} />
           ))}
@@ -89,7 +114,7 @@ export function PostsPage() {
       ) : null}
 
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-      {reportsQuery.isFetchingNextPage ? (
+      {feed.isLoadingMore ? (
         <p className="text-center text-muted-foreground text-xs">
           <Trans>Loading more…</Trans>
         </p>
@@ -177,11 +202,6 @@ function ReportRow({ report, isLast }: { report: ReportSummary; isLast: boolean 
   );
 }
 
-/**
- * The report's main image, lazy and stretched to the row's compact content
- * height. Reports average ~227 KB per image and reach 3.5 MB, and the host
- * ignores resize parameters, so nothing is fetched until the row is visible.
- */
 function ReportThumbnail({ report }: { report: ReportSummary }) {
   if (!report.imageUrl) {
     return (

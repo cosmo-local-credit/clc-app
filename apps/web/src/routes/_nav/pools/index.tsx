@@ -1,10 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { PoolsPage } from "#/features/pools/ui";
+import {
+  canonicalRedirectSearch,
+  type CatalogRouteSearch,
+  pickCatalogSearch,
+} from "#/lib/navigation/catalog-search";
 
 export const Route = createFileRoute("/_nav/pools/")({
   staticData: { navOwner: "wallet" },
+  validateSearch: (search): CatalogRouteSearch => pickCatalogSearch(search),
+  beforeLoad: ({ search }) => {
+    const next = canonicalRedirectSearch(search);
+    if (!next) return;
+    throw redirect({ to: "/pools", search: next, replace: true });
+  },
   component: PoolsRoute,
 });
 

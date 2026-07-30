@@ -10,7 +10,9 @@ import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage"
 import type { MarketVoucher } from "#/features/home/api/market-client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
+import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
 import type { MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
@@ -22,24 +24,34 @@ export function MarketPage({
   locationOwner = GUEST_LOCATION_OWNER,
 }: {
   onboardingBanner?: ReactNode;
-  /**
-   * Scope for the persisted GPS fix. Defaults to guest so a caller that forgets
-   * to pass it fails closed rather than sharing a precise location.
-   */
   locationOwner?: string;
 }) {
   const { t } = useLingui();
   const { camera, realFix, userLocation, locationStatus, requestLocation } =
     useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
-  // Start with nothing selected: the newest catalog row may be anywhere in the
-  // world and must not pull the resolved camera to an arbitrary location.
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  const { vouchers, isCatalogComplete, error, retry } = useMarketMapVouchers(viewport);
+  const filter = useMarketFilter();
+  const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
+  const { vouchers, isCatalogComplete, error, retry } = catalog;
 
-  // Derived, never mirrored: a refreshed dataset that no longer contains the
-  // selection simply stops matching, so the preview closes on its own.
+  const fitBounds = useMemo(() => {
+    if (!filter.isFiltered || catalog.status !== "ready" || vouchers.length === 0) return null;
+
+    let west = vouchers[0]!.lng;
+    let east = vouchers[0]!.lng;
+    let south = vouchers[0]!.lat;
+    let north = vouchers[0]!.lat;
+    for (const voucher of vouchers) {
+      west = Math.min(west, voucher.lng);
+      east = Math.max(east, voucher.lng);
+      south = Math.min(south, voucher.lat);
+      north = Math.max(north, voucher.lat);
+    }
+    return { key: catalog.filterKey, west, south, east, north };
+  }, [filter.isFiltered, catalog.status, catalog.filterKey, vouchers]);
+
   const selectedVoucher = useMemo(
     () => vouchers.find((voucher) => voucher.id === selectedLocationId) ?? null,
     [vouchers, selectedLocationId],
@@ -62,11 +74,15 @@ export function MarketPage({
     setViewport(settled);
   }, []);
 
-  const isEmpty = isCatalogComplete && vouchers.length === 0;
+  const notice = useMarketFilterNotice(filter, error, retry);
+
+  const isEmpty =
+    vouchers.length === 0 &&
+    filter.result.ok &&
+    (filter.isFiltered ? catalog.status === "ready" : isCatalogComplete);
 
   return (
     <main className="relative h-[100svh] overflow-hidden bg-card">
-      {/* The basemap is never unmounted for loading, error, or empty states. */}
       <Suspense
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >
@@ -74,6 +90,7 @@ export function MarketPage({
           locations={vouchers}
           selectedLocationId={selectedLocationId}
           camera={camera}
+          fitBounds={fitBounds}
           cameraScope={locationOwner}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
@@ -92,73 +109,70 @@ export function MarketPage({
         />
       ) : null}
 
-      {error ? (
+      {notice ? (
         <div
-          className={[
-            "absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3",
-            onboardingBanner
-              ? "top-[calc(env(safe-area-inset-top)+3rem)]"
-              : "top-[calc(env(safe-area-inset-top)+1rem)]",
-          ].join(" ")}
+          className="absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
+          role="alert"
         >
-          <span className="min-w-0 text-sm">
-            <Trans>Could not load vouchers.</Trans>
-          </span>
-          <Button size="sm" variant="outline" className="bg-card" onClick={retry}>
-            <Trans>Retry</Trans>
+          <span className="min-w-0 text-sm">{notice.message}</span>
+          {notice.actionLabel && notice.onAction ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="shrink-0 bg-card"
+              onClick={notice.onAction}
+            >
+              {notice.actionLabel}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {isEmpty && !notice ? (
+        <div className="absolute inset-x-4 z-20 space-y-3 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm">
+          {filter.isFiltered ? (
+            <>
+              <p>
+                <Trans>No vouchers match this search.</Trans>
+              </p>
+              <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                <Trans>Clear filters</Trans>
+              </Button>
+            </>
+          ) : (
+            <Trans>No vouchers to show yet.</Trans>
+          )}
+        </div>
+      ) : null}
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
+        <MarketFilterSummary filter={filter} />
+        <div className="flex items-center gap-2">
+          <Button asChild className="pointer-events-auto h-11 flex-1">
+            <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
+              <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
+              <Trans>Browse all</Trans>
+            </Link>
+          </Button>
+          <Button
+            size="icon-lg"
+            className="pointer-events-auto h-11 w-11 shrink-0 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
+            aria-label={locationButtonLabel}
+            disabled={
+              locationStatus === "requesting" ||
+              locationStatus === "denied" ||
+              locationStatus === "unavailable"
+            }
+            onClick={requestLocation}
+          >
+            <RiFocus3Line className="size-5" aria-hidden="true" />
           </Button>
         </div>
-      ) : null}
-
-      {isEmpty && !error ? (
-        <div
-          className={[
-            "absolute inset-x-4 z-20 border border-border bg-card px-4 py-3 text-center text-muted-foreground text-sm",
-            onboardingBanner
-              ? "top-[calc(env(safe-area-inset-top)+3rem)]"
-              : "top-[calc(env(safe-area-inset-top)+1rem)]",
-          ].join(" ")}
-        >
-          <Trans>No vouchers to show yet.</Trans>
-        </div>
-      ) : null}
-
-      <div className="absolute right-4 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex">
-        <Button
-          size="icon-lg"
-          className="h-11 w-11 bg-foreground text-background hover:bg-foreground/90 disabled:bg-foreground disabled:text-background/70"
-          aria-label={locationButtonLabel}
-          disabled={
-            locationStatus === "requesting" ||
-            locationStatus === "denied" ||
-            locationStatus === "unavailable"
-          }
-          onClick={requestLocation}
-        >
-          <RiFocus3Line className="size-5" aria-hidden="true" />
-        </Button>
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex justify-center px-6">
-        <Button asChild className="pointer-events-auto h-11 px-5">
-          <Link to="/" search={{ tab: "market", view: "list" }}>
-            <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
-            <Trans>Browse all</Trans>
-          </Link>
-        </Button>
       </div>
     </main>
   );
 }
 
-/**
- * The selected voucher, and the way into its page.
- *
- * Renders immediately from the catalog row the map already holds, then fills in
- * the profile image and rate from the per-voucher detail query. That query is
- * keyed exactly as the voucher page keys it, so selecting a marker warms the
- * cache the page reads and navigation arrives with no loading state.
- */
 function MarketPreview({
   voucher,
   realFix,
@@ -200,8 +214,6 @@ function MarketPreview({
             {voucher.symbol}
           </span>
         </span>
-        {/* Only rendered once detail resolves: an empty rate line would reserve
-            space for a claim the app cannot yet make. */}
         {rate ? (
           <span className="mt-0.5 block truncate font-mono text-[0.6875rem] text-muted-foreground">
             <Trans>

@@ -4,14 +4,6 @@ import { Badge } from "#/components/ui/badge";
 import { hueDegreesFromSeed } from "#/components/wallet/wallet-data";
 import { cn } from "#/lib/utils";
 
-/**
- * A tag chip coloured from its own name, so "Education" is the same colour on
- * every offering and every report that carries it.
- *
- * Solid rather than a tinted background: these render in both themes, and a
- * fixed pale background carrying dark text is unreadable in dark mode.
- * Lightness is held at 0.45 so white text clears 4.5:1 at every hue.
- */
 export function TagBadge({
   tag,
   className,
@@ -21,10 +13,53 @@ export function TagBadge({
   return (
     <Badge
       className={cn("border-transparent text-white", className)}
-      style={{ backgroundColor: `oklch(0.45 0.15 ${hueDegreesFromSeed(tag)})` }}
+      style={{ backgroundColor: tagBackground(tag) }}
       {...props}
     >
       {labelClassName ? <span className={labelClassName}>{tag}</span> : tag}
     </Badge>
   );
+}
+
+export function SelectableTagBadge({
+  tag,
+  selected,
+  count,
+  className,
+  ...props
+}: Omit<ComponentProps<"button">, "children" | "aria-pressed"> & {
+  tag: string;
+  selected: boolean;
+  count?: number;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      className={cn(
+        "inline-flex h-8 shrink-0 items-center gap-1.5 border px-3 font-semibold text-[11px] transition-colors",
+        "disabled:cursor-not-allowed disabled:opacity-45",
+        selected ? "border-transparent text-white" : "border-border bg-card text-foreground",
+        className,
+      )}
+      style={selected ? { backgroundColor: tagBackground(tag) } : undefined}
+      {...props}
+    >
+      {tag}
+      {count === undefined ? null : (
+        <span
+          className={cn(
+            "font-normal tabular-nums",
+            selected ? "text-white/80" : "text-muted-foreground",
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function tagBackground(tag: string): string {
+  return `oklch(0.45 0.15 ${hueDegreesFromSeed(tag)})`;
 }
