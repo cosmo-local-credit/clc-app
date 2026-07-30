@@ -59,4 +59,14 @@ describe("address book local storage", () => {
 
     expect(readAddressBookRecipients()).toEqual([]);
   });
+
+  it("retains email as a recipient-search source", () => {
+    upsertAddressBookRecipient({
+      label: "Alice",
+      address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
+      source: "email",
+    });
+
+    expect(readAddressBookRecipients()[0]?.source).toBe("email");
+  });
 });

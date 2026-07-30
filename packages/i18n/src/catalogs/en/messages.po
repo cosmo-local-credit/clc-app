@@ -61,8 +61,8 @@ msgstr "{0} vouchers"
 #~ msgstr "{0}{1}"
 
 #. placeholder {0}: images.length
-#: apps/web/src/features/home/ui/report-page.tsx:173
-#: apps/web/src/features/home/ui/report-page.tsx:300
+#: apps/web/src/features/home/ui/report-page.tsx:177
+#: apps/web/src/features/home/ui/report-page.tsx:304
 msgid "{current} / {0}"
 msgstr "{current} / {0}"
 
@@ -179,12 +179,12 @@ msgid "Add your contact details"
 msgstr "Add your contact details"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:210
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:238
 msgid "Address"
 msgstr "Address"
 
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:38
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:166
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:162
 msgid "Address book"
 msgstr "Address book"
 
@@ -237,7 +237,7 @@ msgstr "Amount exceeds your balance"
 msgid "Approved field reports will appear here."
 msgstr "Approved field reports will appear here."
 
-#: apps/web/src/features/home/ui/report-page.tsx:434
+#: apps/web/src/features/home/ui/report-page.tsx:438
 msgid "Author"
 msgstr "Author"
 
@@ -362,7 +362,7 @@ msgid "Checking…"
 msgstr "Checking…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:28
+#: apps/web/src/lib/validation-i18n.ts:33
 msgid "Choose a location"
 msgstr "Choose a location"
 
@@ -383,7 +383,7 @@ msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:306
-#: apps/web/src/features/home/ui/report-page.tsx:250
+#: apps/web/src/features/home/ui/report-page.tsx:254
 msgid "Close"
 msgstr "Close"
 
@@ -491,7 +491,7 @@ msgstr "Connection failed."
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 #: apps/web/src/features/onboarding/ui/paper-wallet-create.tsx:116
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:224
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:252
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:410
 msgid "Continue"
 msgstr "Continue"
@@ -634,7 +634,7 @@ msgstr "Couldn't load Pretium history."
 msgid "Couldn't load this pool."
 msgstr "Couldn't load this pool."
 
-#: apps/web/src/features/home/ui/report-page.tsx:43
+#: apps/web/src/features/home/ui/report-page.tsx:44
 msgid "Couldn't load this post."
 msgstr "Couldn't load this post."
 
@@ -652,12 +652,16 @@ msgid "Couldn't load vouchers."
 msgstr "Couldn't load vouchers."
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:204
-msgid "Couldn't resolve that recipient."
-msgstr "Couldn't resolve that recipient."
+#~ msgid "Couldn't resolve that recipient."
+#~ msgstr "Couldn't resolve that recipient."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:100
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:101
 msgid "Couldn't save your profile."
 msgstr "Couldn't save your profile."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:200
+msgid "Couldn't search for that recipient."
+msgstr "Couldn't search for that recipient."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:292
 msgid "Couldn't start MPESA top up"
@@ -676,8 +680,8 @@ msgstr "Couldn't verify this swap. Try again."
 msgid "Couldn't verify your MPESA link."
 msgstr "Couldn't verify your MPESA link."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:207
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:229
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
 msgid "Country"
 msgstr "Country"
 
@@ -694,7 +698,7 @@ msgstr "Create an account"
 msgid "Create your account"
 msgstr "Create your account"
 
-#: apps/web/src/features/home/ui/report-page.tsx:438
+#: apps/web/src/features/home/ui/report-page.tsx:442
 msgid "Created"
 msgstr "Created"
 
@@ -772,7 +776,7 @@ msgid "Download or photograph this card. Anyone who scans the QR code will have 
 msgstr "Download or photograph this card. Anyone who scans the QR code will "
 "have full access to this wallet."
 
-#: apps/web/src/features/home/ui/report-page.tsx:378
+#: apps/web/src/features/home/ui/report-page.tsx:382
 msgid "Duration"
 msgstr "Duration"
 
@@ -785,12 +789,12 @@ msgid "Edit"
 msgstr "Edit"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:37
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:108
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:109
 msgid "Edit profile"
 msgstr "Edit profile"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:151
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:162
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
@@ -809,6 +813,16 @@ msgstr "Enabling notifications"
 msgid "Enabling notifications..."
 msgstr "Enabling notifications..."
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:23
+msgid "ENS must end in .eth or .sarafu.eth"
+msgstr "ENS must end in .eth or .sarafu.eth"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:201
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:213
+msgid "ENS name"
+msgstr "ENS name"
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:178
 msgid "Enter a valid private key or paper wallet."
 msgstr "Enter a valid private key or paper wallet."
@@ -821,9 +835,13 @@ msgstr "Enter a valid private key or paper wallet."
 msgid "Enter an amount greater than zero."
 msgstr "Enter an amount greater than zero."
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
+msgid "Enter an ENS, email, phone number or address."
+msgstr "Enter an ENS, email, phone number or address."
+
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:138
-msgid "Enter an ENS, phone number or address."
-msgstr "Enter an ENS, phone number or address."
+#~ msgid "Enter an ENS, phone number or address."
+#~ msgstr "Enter an ENS, phone number or address."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
 #~ msgid "Enter and apply a passphrase before downloading this card."
@@ -914,7 +932,7 @@ msgstr "Go back to sign in"
 msgid "Goods"
 msgstr "Goods"
 
-#: apps/web/src/features/home/ui/report-page.tsx:371
+#: apps/web/src/features/home/ui/report-page.tsx:375
 msgid "Host"
 msgstr "Host"
 
@@ -971,7 +989,7 @@ msgid "Invalid email address"
 msgstr "Invalid email address"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:33
+#: apps/web/src/lib/validation-i18n.ts:38
 msgid "Invalid location"
 msgstr "Invalid location"
 
@@ -1055,7 +1073,7 @@ msgstr "Loading pool…"
 msgid "Loading pools…"
 msgstr "Loading pools…"
 
-#: apps/web/src/features/home/ui/report-page.tsx:494
+#: apps/web/src/features/home/ui/report-page.tsx:495
 msgid "Loading post…"
 msgstr "Loading post…"
 
@@ -1088,7 +1106,7 @@ msgstr "Loading your profile…"
 msgid "Loading…"
 msgstr "Loading…"
 
-#: apps/web/src/features/home/ui/report-page.tsx:458
+#: apps/web/src/features/home/ui/report-page.tsx:461
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:174
 msgid "Location"
 msgstr "Location"
@@ -1193,8 +1211,8 @@ msgstr "MPESA via Pretium"
 msgid "My wallet address"
 msgstr "My wallet address"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:124
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
 msgid "Name"
@@ -1232,8 +1250,8 @@ msgstr "Network"
 msgid "New to CLC?"
 msgstr "New to CLC?"
 
-#: apps/web/src/features/home/ui/report-page.tsx:166
-#: apps/web/src/features/home/ui/report-page.tsx:293
+#: apps/web/src/features/home/ui/report-page.tsx:170
+#: apps/web/src/features/home/ui/report-page.tsx:297
 msgid "Next image"
 msgstr "Next image"
 
@@ -1253,6 +1271,10 @@ msgstr "No camera found on this device."
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:460
 msgid "No cash activity yet."
 msgstr "No cash activity yet."
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:232
+msgid "No matching users found."
+msgstr "No matching users found."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:154
 msgid "No offerings yet"
@@ -1401,7 +1423,7 @@ msgstr "Onramp"
 msgid "Onramp details"
 msgstr "Onramp details"
 
-#: apps/web/src/features/home/ui/report-page.tsx:479
+#: apps/web/src/features/home/ui/report-page.tsx:480
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:607
 msgid "Open in Maps"
 msgstr "Open in Maps"
@@ -1435,7 +1457,7 @@ msgstr "Paper Wallet"
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Paper wallet is protected. Keep the password separate from the card."
 
-#: apps/web/src/features/home/ui/report-page.tsx:376
+#: apps/web/src/features/home/ui/report-page.tsx:380
 msgid "Participants"
 msgstr "Participants"
 
@@ -1502,13 +1524,13 @@ msgstr "Pending"
 #~ msgid "Pending endpoint integration"
 #~ msgstr "Pending endpoint integration"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:178
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:582
 msgid "Phone"
 msgstr "Phone"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:185
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
 msgid "Phone number"
 msgstr "Phone number"
@@ -1556,15 +1578,15 @@ msgstr "Pools"
 msgid "Pools list"
 msgstr "Pools list"
 
-#: apps/web/src/features/home/ui/report-page.tsx:55
+#: apps/web/src/features/home/ui/report-page.tsx:56
 msgid "Post not found."
 msgstr "Post not found."
 
 #: apps/web/src/features/home/ui/bottom-navigation.tsx:45
 #: apps/web/src/features/home/ui/posts-page.tsx:43
-#: apps/web/src/features/home/ui/report-page.tsx:61
-#: apps/web/src/features/home/ui/report-page.tsx:493
-#: apps/web/src/features/home/ui/report-page.tsx:512
+#: apps/web/src/features/home/ui/report-page.tsx:65
+#: apps/web/src/features/home/ui/report-page.tsx:494
+#: apps/web/src/features/home/ui/report-page.tsx:513
 msgid "Posts"
 msgstr "Posts"
 
@@ -1606,8 +1628,8 @@ msgstr "Pretium ID copied"
 #~ msgid "Pretium rate"
 #~ msgstr "Pretium rate"
 
-#: apps/web/src/features/home/ui/report-page.tsx:162
-#: apps/web/src/features/home/ui/report-page.tsx:289
+#: apps/web/src/features/home/ui/report-page.tsx:166
+#: apps/web/src/features/home/ui/report-page.tsx:293
 msgid "Previous image"
 msgstr "Previous image"
 
@@ -1626,7 +1648,7 @@ msgstr "Primary navigation"
 msgid "Private key"
 msgstr "Private key"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:88
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:89
 msgid "Profile updated"
 msgstr "Profile updated"
 
@@ -1660,7 +1682,7 @@ msgstr "Protecting paper wallet..."
 #~ msgstr "Protecting QR..."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:23
+#: apps/web/src/lib/validation-i18n.ts:28
 msgid "Provide an email or phone number"
 msgstr "Provide an email or phone number"
 
@@ -1751,9 +1773,13 @@ msgstr "Recipient"
 #~ msgid "Recipient address, ENS or phone"
 #~ msgstr "Recipient address, ENS or phone"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:141
+msgid "Recipient ENS, email, phone or address"
+msgstr "Recipient ENS, email, phone or address"
+
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:145
-msgid "Recipient ENS, phone or address"
-msgstr "Recipient ENS, phone or address"
+#~ msgid "Recipient ENS, phone or address"
+#~ msgstr "Recipient ENS, phone or address"
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:173
 msgid "Redeem"
@@ -1763,25 +1789,25 @@ msgstr "Redeem"
 msgid "Registration failed. Check your connection and try again."
 msgstr "Registration failed. Check your connection and try again."
 
-#: apps/web/src/features/home/ui/report-page.tsx:393
+#: apps/web/src/features/home/ui/report-page.tsx:397
 msgid "Related vouchers"
 msgstr "Related vouchers"
 
-#: apps/web/src/features/home/ui/report-page.tsx:366
+#: apps/web/src/features/home/ui/report-page.tsx:370
 msgid "Report details"
 msgstr "Report details"
 
-#: apps/web/src/features/home/ui/report-page.tsx:147
-#: apps/web/src/features/home/ui/report-page.tsx:240
-#: apps/web/src/features/home/ui/report-page.tsx:278
+#: apps/web/src/features/home/ui/report-page.tsx:151
+#: apps/web/src/features/home/ui/report-page.tsx:244
+#: apps/web/src/features/home/ui/report-page.tsx:282
 msgid "Report images"
 msgstr "Report images"
 
-#: apps/web/src/features/home/ui/report-page.tsx:369
+#: apps/web/src/features/home/ui/report-page.tsx:373
 msgid "Report period"
 msgstr "Report period"
 
-#: apps/web/src/features/home/ui/report-page.tsx:431
+#: apps/web/src/features/home/ui/report-page.tsx:435
 msgid "Report provenance"
 msgstr "Report provenance"
 
@@ -1794,13 +1820,13 @@ msgstr "Reset logo"
 #~ msgstr "Resolved"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:198
-msgid "Resolving recipient…"
-msgstr "Resolving recipient…"
+#~ msgid "Resolving recipient…"
+#~ msgstr "Resolving recipient…"
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/market-map.tsx:694
 #: apps/web/src/features/home/ui/market-page.tsx:108
-#: apps/web/src/features/home/ui/report-page.tsx:50
+#: apps/web/src/features/home/ui/report-page.tsx:51
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
 msgid "Retry"
 msgstr "Retry"
@@ -1832,16 +1858,16 @@ msgstr "Reviews for this voucher will appear here."
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 msgid "Save changes"
 msgstr "Save changes"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
 msgid "Saving…"
 msgstr "Saving…"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:152
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:148
 msgid "Scan QR"
 msgstr "Scan QR"
 
@@ -1849,7 +1875,7 @@ msgstr "Scan QR"
 msgid "Scan QR Code"
 msgstr "Scan QR Code"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:189
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:185
 msgid "Scan recipient address"
 msgstr "Scan recipient address"
 
@@ -1861,7 +1887,7 @@ msgstr "Scroll for more"
 msgid "Search for a town or place"
 msgstr "Search for a town or place"
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:147
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:143
 msgid "Search or enter"
 msgstr "Search or enter"
 
@@ -1869,6 +1895,10 @@ msgstr "Search or enter"
 #: apps/web/src/features/pools/ui/pools-page.tsx:56
 msgid "Search pools"
 msgstr "Search pools"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:194
+msgid "Searching for recipients…"
+msgstr "Searching for recipients…"
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:234
 msgid "Searching places…"
@@ -1893,7 +1923,7 @@ msgstr "Sell stables to local money."
 #: apps/web/src/features/home/ui/wallet-page.tsx:14
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:111
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:239
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:132
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:128
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:224
 msgid "Send"
 msgstr "Send"
@@ -1902,7 +1932,7 @@ msgstr "Send"
 #~ msgid "Send failed."
 #~ msgstr "Send failed."
 
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:135
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:131
 msgid "Send to"
 msgstr "Send to"
 
@@ -2302,10 +2332,14 @@ msgstr "Update protected paper wallet"
 #~ msgstr "Update protected QR"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
-msgid "Update your contact details and country."
-msgstr "Update your contact details and country."
+#~ msgid "Update your contact details and country."
+#~ msgstr "Update your contact details and country."
 
-#: apps/web/src/features/home/ui/report-page.tsx:73
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
+msgid "Update your contact details, ENS name and country."
+msgstr "Update your contact details, ENS name and country."
+
+#: apps/web/src/features/home/ui/report-page.tsx:77
 msgid "Updated"
 msgstr "Updated"
 
@@ -2353,7 +2387,7 @@ msgstr "Use my location"
 msgid "View all"
 msgstr "View all"
 
-#: apps/web/src/features/home/ui/report-page.tsx:199
+#: apps/web/src/features/home/ui/report-page.tsx:203
 msgid "View image full screen"
 msgstr "View image full screen"
 
@@ -2508,7 +2542,7 @@ msgstr "Your account is awaiting approval. You will be able to continue once it 
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Your MPESA payout will arrive shortly."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:130
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
 msgid "Your name"
 msgstr "Your name"

@@ -7,6 +7,7 @@ const knownErrors = [
   "Name must be 80 characters or fewer",
   "Invalid email address",
   "Invalid phone number",
+  "ENS must end in .eth or .sarafu.eth",
   "Provide an email or phone number",
   "Choose a location",
   "Invalid location",

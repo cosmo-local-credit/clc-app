@@ -180,6 +180,7 @@ describe("profileEditSchema", () => {
     name: "Alice",
     email: "alice@example.com",
     phone: "+254712345678",
+    ens: "alice.sarafu.eth",
     country: "KE",
   };
 
@@ -189,6 +190,23 @@ describe("profileEditSchema", () => {
 
   it("accepts name + phone + country (no email)", () => {
     expect(profileEditSchema.safeParse({ ...VALID_EDIT, email: "" }).success).toBe(true);
+  });
+
+  it("accepts an empty ENS name", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, ens: "" }).success).toBe(true);
+  });
+
+  it("accepts .eth and .sarafu.eth ENS names", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, ens: "alice.eth" }).success).toBe(true);
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, ens: "alice.sarafu.eth" }).success).toBe(
+      true,
+    );
+  });
+
+  it("rejects an unsupported ENS name", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, ens: "alice.example" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects when both email and phone are empty", () => {

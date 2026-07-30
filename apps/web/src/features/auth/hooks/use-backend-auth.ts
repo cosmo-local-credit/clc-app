@@ -41,9 +41,10 @@ export function useBackendSignup() {
       });
 
       // signupWithSiwe only persists name + email (and sets the session
-      // cookie). The remaining profile fields (phone, country) must be written
-      // through the authenticated profile endpoint, otherwise they are silently
-      // dropped and downstream flows (MPESA/Pretium) see no linked phone.
+      // cookie). The remaining profile fields (phone, ENS, country) must be
+      // written through the authenticated profile endpoint, otherwise they are
+      // silently dropped and downstream flows (MPESA/Pretium) see no linked
+      // phone.
       // Skipped for an already-registered address: no session cookie was
       // issued in that case, so the profile write would 401.
       if (!result.alreadyRegistered) {
@@ -51,6 +52,7 @@ export function useBackendSignup() {
           name: profile.name,
           email,
           phone: profile.phone,
+          ens: "",
           country: profile.location.country,
         });
       }

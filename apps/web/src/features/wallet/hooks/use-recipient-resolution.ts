@@ -1,44 +1,56 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 import {
-  resolveEnsRecipient,
-  resolvePhoneRecipient,
-  reverseResolveAddress,
+  type RecipientSearchInput,
+  searchRecipientUsers,
 } from "#/features/wallet/api/recipient-resolution-client";
+
+const RECIPIENT_SEARCH_DEBOUNCE_MS = 250;
 
 export const recipientResolutionQueryKeys = {
   all: ["recipient-resolution"] as const,
-  phone: (phone: string) => [...recipientResolutionQueryKeys.all, "phone", phone] as const,
-  ens: (ensName: string) => [...recipientResolutionQueryKeys.all, "ens", ensName] as const,
-  reverseEns: (address: string) =>
-    [...recipientResolutionQueryKeys.all, "reverse-ens", address.toLowerCase()] as const,
+  search: (input: RecipientSearchInput | null) =>
+    [
+      ...recipientResolutionQueryKeys.all,
+      "search",
+      input?.kind ?? "none",
+      input?.query ?? "",
+    ] as const,
 };
 
-export function usePhoneRecipientResolution(phone: string | null) {
-  return useQuery({
-    queryKey: recipientResolutionQueryKeys.phone(phone ?? "none"),
-    queryFn: () => resolvePhoneRecipient(requireQueryValue(phone, "phone")),
-    enabled: Boolean(phone),
+export function useRecipientSearch(input: RecipientSearchInput | null) {
+  const [debouncedInput, setDebouncedInput] = useState<RecipientSearchInput | null>(null);
+
+  useEffect(() => {
+    if (!input) {
+      setDebouncedInput(null);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setDebouncedInput(input), RECIPIENT_SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timeout);
+  }, [input?.kind, input?.query]);
+
+  const activeInput =
+    input && debouncedInput?.kind === input.kind && debouncedInput.query === input.query
+      ? debouncedInput
+      : null;
+  const query = useQuery({
+    queryKey: recipientResolutionQueryKeys.search(debouncedInput),
+    queryFn: () => searchRecipientUsers(requireSearchInput(activeInput)),
+    enabled: Boolean(activeInput),
   });
+
+  return {
+    data: activeInput ? query.data : undefined,
+    error: activeInput ? query.error : null,
+    isPending: Boolean(activeInput) && query.isPending,
+    isDebouncing: Boolean(input) && !activeInput,
+  };
 }
 
-export function useEnsRecipientResolution(ensName: string | null) {
-  return useQuery({
-    queryKey: recipientResolutionQueryKeys.ens(ensName?.toLowerCase() ?? "none"),
-    queryFn: () => resolveEnsRecipient(requireQueryValue(ensName, "ENS name")),
-    enabled: Boolean(ensName),
-  });
-}
-
-export function useReverseEnsResolution(address: string | null) {
-  return useQuery({
-    queryKey: recipientResolutionQueryKeys.reverseEns(address ?? "none"),
-    queryFn: () => reverseResolveAddress(requireQueryValue(address, "address")),
-    enabled: Boolean(address),
-  });
-}
-
-function requireQueryValue(value: string | null, label: string): string {
-  if (!value) throw new Error(`Recipient ${label} is required.`);
-  return value;
+function requireSearchInput(input: RecipientSearchInput | null): RecipientSearchInput {
+  if (!input) throw new Error("Recipient search input is required.");
+  return input;
 }

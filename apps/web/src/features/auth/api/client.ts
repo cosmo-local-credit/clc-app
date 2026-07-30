@@ -172,6 +172,7 @@ export type ProfilePayload = {
   name: string;
   email: string;
   phone: string;
+  ens: string;
   country: string;
 };
 
@@ -182,6 +183,7 @@ export async function submitProfile(payload: ProfilePayload): Promise<void> {
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
+      ens: payload.ens,
       country: payload.country,
     }),
   });
@@ -192,6 +194,7 @@ export type ProfileResult = {
   name: string;
   email: string;
   phone: string;
+  ens: string;
   country: string;
   createdAt: string;
 };

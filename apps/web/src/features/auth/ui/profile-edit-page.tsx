@@ -37,7 +37,7 @@ export function ProfileEditPage() {
           <Trans>Edit profile</Trans>
         </h1>
         <p className="text-muted-foreground text-sm">
-          <Trans>Update your contact details and country.</Trans>
+          <Trans>Update your contact details, ENS name and country.</Trans>
         </p>
       </div>
 
@@ -77,6 +77,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
       name: profile.name ?? "",
       email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
       phone: profile.phone ?? "",
+      ens: profile.ens ?? "",
       country: profile.country ?? "",
     },
     validators: { onChange: profileEditSchema },
@@ -191,6 +192,34 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           }}
         </form.Field>
 
+        <form.Field name="ens">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="profile-ens" className="font-medium text-sm">
+                  <Trans>ENS name</Trans>
+                </label>
+                <Input
+                  id="profile-ens"
+                  type="text"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  placeholder="alice.sarafu.eth"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  aria-invalid={!!err}
+                  aria-label={t`ENS name`}
+                />
+                {err ? (
+                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
+                ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
         <form.Field name="country">
           {(field) => {
             const err = getFieldError(field.state.meta.errors);
@@ -232,7 +261,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
 function ProfileEditSkeleton() {
   return (
     <div className="space-y-4 border border-border bg-card p-4">
-      {["name", "email", "phone", "country"].map((key) => (
+      {["name", "email", "phone", "ens", "country"].map((key) => (
         <div key={key} className="flex flex-col gap-1.5">
           <div className="h-4 w-16 bg-muted" />
           <div className="h-9 w-full bg-muted" />

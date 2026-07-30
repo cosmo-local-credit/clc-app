@@ -264,6 +264,11 @@ function AppInner() {
           </DialogPortal>
         </DialogRoot>
       ) : null}
+      {AppDevtools ? (
+        <Suspense fallback={null}>
+          <AppDevtools />
+        </Suspense>
+      ) : null}
     </>
   );
 }
@@ -349,11 +354,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <AppToaster />
-        {AppDevtools ? (
-          <Suspense fallback={null}>
-            <AppDevtools />
-          </Suspense>
-        ) : null}
         <Scripts />
       </body>
     </html>

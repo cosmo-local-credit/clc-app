@@ -1,6 +1,12 @@
 import type { Recipient } from "#/components/wallet/wallet-data";
 
-export type AddressBookRecipientSource = "manual" | "phone" | "ens" | "reverse-ens" | "qr";
+export type AddressBookRecipientSource =
+  | "manual"
+  | "phone"
+  | "email"
+  | "ens"
+  | "reverse-ens"
+  | "qr";
 
 export type AddressBookRecipient = Recipient & {
   address: `0x${string}`;
@@ -80,6 +86,7 @@ function isAddressBookRecipientSource(value: unknown): value is AddressBookRecip
   return (
     value === "manual" ||
     value === "phone" ||
+    value === "email" ||
     value === "ens" ||
     value === "reverse-ens" ||
     value === "qr"

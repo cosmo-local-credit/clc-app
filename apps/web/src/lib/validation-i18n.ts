@@ -19,6 +19,11 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Invalid phone number",
         message: "Invalid phone number",
       });
+    case "ENS must end in .eth or .sarafu.eth":
+      return i18n._({
+        id: "ENS must end in .eth or .sarafu.eth",
+        message: "ENS must end in .eth or .sarafu.eth",
+      });
     case "Provide an email or phone number":
       return i18n._({
         id: "Provide an email or phone number",

@@ -5,6 +5,8 @@ const emailValidator = (val: string) => val === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+
 
 const phoneValidator = (val: string) => val === "" || /^\+[1-9]\d{1,14}$/.test(val);
 
+const ensValidator = (val: string) => val === "" || /^[a-z0-9-]+\.(eth|sarafu\.eth)$/i.test(val);
+
 const nameSchema = z
   .string()
   .min(1, { message: "Name is required" })
@@ -13,6 +15,10 @@ const nameSchema = z
 const emailSchema = z.string().refine(emailValidator, { message: "Invalid email address" });
 
 const phoneSchema = z.string().refine(phoneValidator, { message: "Invalid phone number" });
+
+const ensSchema = z.string().refine(ensValidator, {
+  message: "ENS must end in .eth or .sarafu.eth",
+});
 
 function requireEmailOrPhone(data: { email: string; phone: string }, ctx: z.RefinementCtx) {
   if (!data.email && !data.phone) {
@@ -43,6 +49,7 @@ export const profileEditSchema = z
     name: nameSchema,
     email: emailSchema,
     phone: phoneSchema,
+    ens: ensSchema,
     country: z.string().regex(/^[A-Z]{2}$/, { message: "Select your country" }),
   })
   .superRefine(requireEmailOrPhone);

@@ -32,17 +32,21 @@ function renderWithQueryClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-function mockFetch(body: unknown, status = 200) {
-  const fetcher = vi.fn().mockResolvedValue(createJsonResponse(body, status));
+function mockSearch(users: Array<{ name: string; address: string }>) {
+  const fetcher = vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        ok: true,
+        result: { users },
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    ),
+  );
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
-}
-
-function createJsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
 }
 
 afterEach(() => {
@@ -52,23 +56,30 @@ afterEach(() => {
 });
 
 describe("SendRecipientPage", () => {
-  it("resolves a phone number before continuing to the amount step", async () => {
-    const fetcher = mockFetch({
-      ok: true,
-      description: "Address resolved",
-      result: { address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4" },
-    });
+  it("normalizes a phone prefix, lets the user select a Core user, then continues", async () => {
+    const fetcher = mockSearch([
+      {
+        name: "Alice",
+        address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
+      },
+    ]);
     renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
-      target: { value: "0711 777 734" },
-    });
-
-    expect(await screen.findByText("+254711777734")).toBeTruthy();
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/+254711777734",
-      expect.objectContaining({ method: "GET" }),
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /recipient ens, email, phone or address/i }),
+      {
+        target: { value: "255 711 777" },
+      },
     );
+
+    fireEvent.click(await screen.findByRole("button", { name: /alice/i }));
+
+    const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("/api/v2/users/search");
+    expect(JSON.parse(init.body as string)).toEqual({
+      kind: "phone",
+      query: "+255711777",
+    });
 
     fireEvent.click(screen.getByRole("button", { name: /continue/i }));
 
@@ -78,85 +89,84 @@ describe("SendRecipientPage", () => {
         search: {
           token: "0xtoken",
           recipient: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-          recipientLabel: "+254711777734",
+          recipientLabel: "Alice",
         },
       });
     });
   });
 
-  it("uses reverse ENS as the recipient label after resolving a phone number", async () => {
-    const fetcher = vi.fn((url: string) => {
-      if (url.includes("/lookup/address/")) {
-        return Promise.resolve(
-          createJsonResponse({
-            ok: true,
-            description: "Address resolved",
-            result: { address: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
-          }),
-        );
-      }
-      return Promise.resolve(
-        createJsonResponse({
-          ok: true,
-          description: "Name reverse resolved",
-          result: { name: "admin.sarafu.eth" },
-        }),
-      );
-    });
-    vi.stubGlobal("fetch", fetcher);
-    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
-
-    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
-      target: { value: "0711 777 734" },
-    });
-
-    expect(await screen.findByText("admin.sarafu.eth")).toBeTruthy();
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://kvviseru.v3.grassecon.net/api/v1/lookup/address/+254711777734",
-      expect.objectContaining({ method: "GET" }),
-    );
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
-      expect.objectContaining({ method: "GET" }),
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
-
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith({
-        to: "/wallet/send/amount",
-        search: {
-          token: "0xtoken",
-          recipient: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
-          recipientLabel: "admin.sarafu.eth",
-        },
-      });
-    });
-  });
-
-  it("keeps pasted addresses visible in full and shows reverse ENS when present", async () => {
-    const fetcher = mockFetch({
-      ok: true,
-      description: "Name reverse resolved",
-      result: { name: "admin.sarafu.eth" },
-    });
+  it("classifies an email before querying Core", async () => {
+    const fetcher = mockSearch([
+      {
+        name: "Alice",
+        address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
+      },
+    ]);
     renderWithQueryClient(<SendRecipientPage />);
-    const input = screen.getByRole("textbox", { name: /recipient ens, phone or address/i });
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /recipient ens, email, phone or address/i }),
+      {
+        target: { value: "Alice@Example.COM" },
+      },
+    );
+
+    expect(await screen.findByRole("button", { name: /alice/i })).toBeTruthy();
+    const [, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({
+      kind: "email",
+      query: "alice@example.com",
+    });
+  });
+
+  it("clears a selected user when an ENS suffix suggestion changes the input", async () => {
+    mockSearch([
+      {
+        name: "Alice",
+        address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
+      },
+    ]);
+    renderWithQueryClient(<SendRecipientPage />);
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /recipient ens, email, phone or address/i }),
+      {
+        target: { value: "alice" },
+      },
+    );
+    fireEvent.click(await screen.findByRole("button", { name: /^alice 0x/i }));
+
+    const continueButton = screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement;
+    expect(continueButton.disabled).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "alice.eth" }));
+
+    expect(continueButton.disabled).toBe(true);
+  });
+
+  it("uses a complete pasted address directly without a database search", () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    renderWithQueryClient(<SendRecipientPage />);
+    const input = screen.getByRole("textbox", {
+      name: /recipient ens, email, phone or address/i,
+    });
 
     fireEvent.change(input, {
       target: { value: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
     });
 
     expect((input as HTMLInputElement).value).toBe("0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439");
-    expect(await screen.findByText("admin.sarafu.eth")).toBeTruthy();
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
-      expect.objectContaining({ method: "GET" }),
+    expect(screen.getByText("Address")).toBeTruthy();
+    expect((screen.getByRole("button", { name: /continue/i }) as HTMLButtonElement).disabled).toBe(
+      false,
     );
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it("fills the input from a scanned QR address", async () => {
-    mockFetch({ name: "alice.sarafu.eth" });
+  it("fills the input from a scanned QR address without searching", () => {
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
     renderWithQueryClient(<SendRecipientPage />);
 
     fireEvent.click(screen.getByRole("button", { name: /scan qr/i }));
@@ -165,9 +175,10 @@ describe("SendRecipientPage", () => {
     expect(
       (
         screen.getByRole("textbox", {
-          name: /recipient ens, phone or address/i,
+          name: /recipient ens, email, phone or address/i,
         }) as HTMLInputElement
       ).value,
     ).toBe("0xa316408425cF17F1827483dee621c6C3A9B5fad4");
+    expect(fetcher).not.toHaveBeenCalled();
   });
 });

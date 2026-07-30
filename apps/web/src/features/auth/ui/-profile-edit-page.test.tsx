@@ -37,6 +37,7 @@ function profilePayload(overrides: Record<string, unknown> = {}) {
     name: "Alice",
     email: "alice@example.com",
     phone: "+254712345678",
+    ens: "alice.sarafu.eth",
     country: "KE",
     createdAt: "2026-07-01T12:20:29Z",
     ...overrides,
@@ -86,6 +87,7 @@ describe("ProfileEditPage", () => {
 
     expect(await screen.findByDisplayValue("Alice")).toBeTruthy();
     expect(screen.getByDisplayValue("alice@example.com")).toBeTruthy();
+    expect(screen.getByDisplayValue("alice.sarafu.eth")).toBeTruthy();
     const phone = screen.getByLabelText(/phone number/i) as HTMLInputElement;
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
@@ -119,6 +121,7 @@ describe("ProfileEditPage", () => {
       name: "Alice Cooper",
       email: "alice@example.com",
       phone: "+254712345678",
+      ens: "alice.sarafu.eth",
       country: "KE",
     });
     expect(historyBack).toHaveBeenCalledTimes(1);

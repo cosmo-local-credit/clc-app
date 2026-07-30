@@ -127,10 +127,12 @@ describe("useBackendSignup", () => {
       name: string;
       email: string;
       phone: string;
+      ens: string;
       country: string;
     };
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
+    expect(payload.ens).toBe("");
     expect(payload.country).toBe("KE");
   });
 

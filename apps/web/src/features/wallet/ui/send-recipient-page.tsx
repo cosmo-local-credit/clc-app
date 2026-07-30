@@ -10,20 +10,15 @@ import { type Recipient } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
 import { useUpsertAddressBookRecipient } from "#/features/wallet/hooks/use-address-book";
-import {
-  useEnsRecipientResolution,
-  usePhoneRecipientResolution,
-  useReverseEnsResolution,
-} from "#/features/wallet/hooks/use-recipient-resolution";
+import { useRecipientSearch } from "#/features/wallet/hooks/use-recipient-resolution";
 import { AddressBookSheet } from "./address-book-sheet";
+import { RecentRecipientRow } from "./recent-recipient-row";
 import { RecipientAddressCard } from "./recipient-address-card";
 import {
-  isAddress,
-  isEns,
   isEnsCandidate,
-  isPhone,
-  normalizePhone,
   normalizeScannedRecipient,
+  parseRecipientInput,
+  type RecipientSearchKind,
 } from "./recipient-validation";
 
 type ResolvedRecipient = {
@@ -46,14 +41,16 @@ export function SendRecipientPage({ token }: { token?: string }) {
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipient | null>(null);
   const upsertRecipient = useUpsertAddressBookRecipient();
   const trimmedQuery = query.trim();
-  const normalizedPhone = isPhone(query) ? normalizePhone(query) : null;
-  const ensName = isEns(trimmedQuery) ? trimmedQuery : null;
-  const directAddress = isAddress(trimmedQuery) ? (trimmedQuery as `0x${string}`) : null;
-  const phoneResolution = usePhoneRecipientResolution(normalizedPhone);
-  const ensResolution = useEnsRecipientResolution(ensName);
-  const reverseEnsResolution = useReverseEnsResolution(directAddress);
-  const phoneResolvedAddress = normalizedPhone ? (phoneResolution.data?.address ?? null) : null;
-  const phoneReverseEnsResolution = useReverseEnsResolution(phoneResolvedAddress);
+  const parsedInput = useMemo(() => parseRecipientInput(query), [query]);
+  const searchInput = useMemo(
+    () =>
+      parsedInput.kind === "phone" || parsedInput.kind === "email" || parsedInput.kind === "ens"
+        ? parsedInput
+        : null,
+    [parsedInput],
+  );
+  const recipientSearch = useRecipientSearch(searchInput);
+  const directAddress = parsedInput.kind === "address" ? parsedInput.address : null;
   const ensSuggestions = useMemo(() => {
     if (!isEnsCandidate(query)) return [];
     return [`${trimmedQuery}.eth`, `${trimmedQuery}.sarafu.eth`];
@@ -62,25 +59,13 @@ export function SendRecipientPage({ token }: { token?: string }) {
     selectedRecipient ??
     (directAddress
       ? {
-          name: reverseEnsResolution.data?.name ?? null,
+          name: null,
           address: directAddress,
-          source: reverseEnsResolution.data?.name ? "reverse-ens" : "manual",
-        }
-      : null) ??
-    (ensName && ensResolution.data
-      ? { name: ensName, address: ensResolution.data.address, source: "ens" }
-      : null) ??
-    (normalizedPhone && phoneResolution.data
-      ? {
-          name: phoneReverseEnsResolution.data?.name ?? normalizedPhone,
-          address: phoneResolution.data.address,
-          source: phoneReverseEnsResolution.data?.name ? "reverse-ens" : "phone",
+          source: "manual",
         }
       : null);
-  const isResolving =
-    (Boolean(normalizedPhone) && phoneResolution.isPending) ||
-    (Boolean(ensName) && ensResolution.isPending);
-  const resolutionError = phoneResolution.error ?? ensResolution.error;
+  const isSearching = recipientSearch.isDebouncing || recipientSearch.isPending;
+  const searchResults = recipientSearch.data ?? [];
 
   function handleSelectRecipient(recipient: Recipient) {
     if (recipient.address) {
@@ -94,6 +79,17 @@ export function SendRecipientPage({ token }: { token?: string }) {
     }
     setSelectedRecipient(null);
     setQuery(recipient.label);
+  }
+
+  function handleSelectSearchResult(
+    recipient: { name: string; address: `0x${string}` },
+    source: RecipientSearchKind,
+  ) {
+    setSelectedRecipient({
+      name: recipient.name.trim() || null,
+      address: recipient.address,
+      source,
+    });
   }
 
   function handleInputChange(value: string) {
@@ -135,14 +131,14 @@ export function SendRecipientPage({ token }: { token?: string }) {
         <Trans>Send to</Trans>
       </h1>
       <p className="mt-1 mb-3.5 text-muted-foreground text-sm">
-        <Trans>Enter an ENS, phone number or address.</Trans>
+        <Trans>Enter an ENS, email, phone number or address.</Trans>
       </p>
 
       <div className="mb-2.5 flex gap-2">
         <Input
           value={query}
           onChange={(event) => handleInputChange(event.target.value)}
-          aria-label={t`Recipient ENS, phone or address`}
+          aria-label={t`Recipient ENS, email, phone or address`}
           className="font-mono text-sm"
           placeholder={t`Search or enter`}
         />
@@ -175,7 +171,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
               key={suggestion}
               type="button"
               className="border border-border bg-card px-2.5 py-1.5 font-mono text-xs"
-              onClick={() => setQuery(suggestion)}
+              onClick={() => handleInputChange(suggestion)}
             >
               {suggestion}
             </button>
@@ -193,15 +189,47 @@ export function SendRecipientPage({ token }: { token?: string }) {
         </div>
       ) : null}
 
-      {isResolving ? (
+      {isSearching ? (
         <p className="mb-3.5 text-muted-foreground text-xs">
-          <Trans>Resolving recipient…</Trans>
+          <Trans>Searching for recipients…</Trans>
         </p>
       ) : null}
 
-      {resolutionError ? (
+      {recipientSearch.error ? (
         <p className="mb-3.5 text-destructive text-xs">
-          <Trans>Couldn't resolve that recipient.</Trans>
+          <Trans>Couldn't search for that recipient.</Trans>
+        </p>
+      ) : null}
+
+      {!selectedRecipient && searchInput && searchResults.length > 0 ? (
+        <div className="mb-3.5 border border-border bg-card">
+          {searchResults.map((recipient, index) => (
+            <div
+              key={recipient.address.toLowerCase()}
+              className={index < searchResults.length - 1 ? "border-b border-border" : undefined}
+            >
+              <RecentRecipientRow
+                recipient={{
+                  id: recipient.address.toLowerCase(),
+                  label: recipient.name.trim() || recipient.address,
+                  address: recipient.address,
+                  seed: recipient.name.trim() || recipient.address,
+                }}
+                onSelect={() => handleSelectSearchResult(recipient, searchInput.kind)}
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {!selectedRecipient &&
+      searchInput &&
+      recipientSearch.data &&
+      !isSearching &&
+      !recipientSearch.error &&
+      searchResults.length === 0 ? (
+        <p className="mb-3.5 text-muted-foreground text-xs">
+          <Trans>No matching users found.</Trans>
         </p>
       ) : null}
 
