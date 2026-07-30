@@ -8,6 +8,7 @@ import { useConnection } from "wagmi";
 import { connect, disconnect } from "wagmi/actions";
 import { Button } from "#/components/ui/button";
 import { AppToaster } from "#/components/ui/toaster";
+import { RouteNotFound } from "#/components/route-not-found";
 import {
   DialogBackdrop,
   DialogContent,
@@ -70,6 +71,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   shellComponent: RootDocument,
   component: AppContent,
   errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
 });
 
 function AppContent() {
@@ -351,7 +353,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <AppToaster />
         <Scripts />

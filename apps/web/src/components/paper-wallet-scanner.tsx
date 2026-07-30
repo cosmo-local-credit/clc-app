@@ -3,6 +3,7 @@ import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui";
+import { loadHtml5Qrcode } from "#/lib/html5-qrcode-loader";
 
 type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
 type ScanMode = "choose" | "camera" | "upload";
@@ -41,14 +42,16 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
     setCameraStarting(true);
     setMode("camera");
     const epoch = ++epochRef.current;
-
-    const { Html5Qrcode } = await import("html5-qrcode");
-    if (epochRef.current !== epoch) return;
-
-    const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-    scannerRef.current = scanner;
+    let scannerModuleLoaded = false;
 
     try {
+      const { Html5Qrcode } = await loadHtml5Qrcode();
+      scannerModuleLoaded = true;
+      if (epochRef.current !== epoch) return;
+
+      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
+      scannerRef.current = scanner;
+
       const devices = await Html5Qrcode.getCameras();
       if (epochRef.current !== epoch) return;
 
@@ -84,12 +87,17 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
       if (epochRef.current !== epoch) return;
       scannerRef.current = null;
       setError(
-        err instanceof DOMException && err.name === "NotAllowedError"
-          ? { type: "camera-denied", message: t`Camera access denied.` }
-          : {
+        !scannerModuleLoaded
+          ? {
               type: "other",
-              message: err instanceof Error ? err.message : t`Failed to start camera.`,
-            },
+              message: t`QR scanner could not be loaded. Check your connection and try again.`,
+            }
+          : err instanceof DOMException && err.name === "NotAllowedError"
+            ? { type: "camera-denied", message: t`Camera access denied.` }
+            : {
+                type: "other",
+                message: err instanceof Error ? err.message : t`Failed to start camera.`,
+              },
       );
     } finally {
       if (epochRef.current === epoch) {
@@ -105,14 +113,16 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
 
       setError(null);
       const epoch = ++epochRef.current;
-
-      const { Html5Qrcode } = await import("html5-qrcode");
-      if (epochRef.current !== epoch) return;
-
-      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-      scannerRef.current = scanner;
+      let scannerModuleLoaded = false;
 
       try {
+        const { Html5Qrcode } = await loadHtml5Qrcode();
+        scannerModuleLoaded = true;
+        if (epochRef.current !== epoch) return;
+
+        const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
+        scannerRef.current = scanner;
+
         const decoded = await scanner.scanFile(file, false);
         if (epochRef.current !== epoch) return;
         onKeyDecoded(decoded);
@@ -120,7 +130,9 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
         if (epochRef.current !== epoch) return;
         setError({
           type: "other",
-          message: t`No QR code found. Try again with a clearer image.`,
+          message: scannerModuleLoaded
+            ? t`No QR code found. Try again with a clearer image.`
+            : t`QR scanner could not be loaded. Check your connection and try again.`,
         });
       } finally {
         if (epochRef.current === epoch) {

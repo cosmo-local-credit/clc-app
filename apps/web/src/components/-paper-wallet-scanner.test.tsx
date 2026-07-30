@@ -4,26 +4,42 @@ import { fileURLToPath } from "node:url";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockScanFile, mockClear, mockGetCameras, mockStart } = vi.hoisted(() => ({
-  mockScanFile: vi.fn(),
-  mockClear: vi.fn(),
-  mockGetCameras: vi.fn(),
-  mockStart: vi.fn(),
-}));
+const {
+  mockScanFile,
+  mockClear,
+  mockGetCameras,
+  mockStart,
+  mockLoadHtml5Qrcode,
+  html5QrcodeModule,
+} = vi.hoisted(() => {
+  const mockScanFile = vi.fn();
+  const mockClear = vi.fn();
+  const mockGetCameras = vi.fn();
+  const mockStart = vi.fn();
 
-vi.mock("html5-qrcode", () => {
   return {
-    Html5Qrcode: class {
-      static getCameras = mockGetCameras;
-      scanFile = mockScanFile;
-      clear = mockClear;
-      start = mockStart;
-      stop = vi.fn().mockResolvedValue(undefined);
-      isScanning = false;
-      getState = vi.fn(() => 0);
+    mockScanFile,
+    mockClear,
+    mockGetCameras,
+    mockStart,
+    mockLoadHtml5Qrcode: vi.fn(),
+    html5QrcodeModule: {
+      Html5Qrcode: class {
+        static getCameras = mockGetCameras;
+        scanFile = mockScanFile;
+        clear = mockClear;
+        start = mockStart;
+        stop = vi.fn().mockResolvedValue(undefined);
+        isScanning = false;
+        getState = vi.fn(() => 0);
+      },
     },
   };
 });
+
+vi.mock("#/lib/html5-qrcode-loader", () => ({
+  loadHtml5Qrcode: mockLoadHtml5Qrcode,
+}));
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEST_IMAGE = join(__dirname, "../connectors/0xaCB673ea3B8B868cAb37c1bEb59E66Af31dE2e87.png");
@@ -41,6 +57,8 @@ describe("PaperWalletScanner", () => {
     mockClear.mockReset();
     mockGetCameras.mockReset();
     mockStart.mockReset();
+    mockLoadHtml5Qrcode.mockReset();
+    mockLoadHtml5Qrcode.mockResolvedValue(html5QrcodeModule);
     mockGetCameras.mockResolvedValue([{ id: "camera-1", label: "Back Camera" }]);
     mockStart.mockResolvedValue(undefined);
   });
@@ -131,6 +149,28 @@ describe("PaperWalletScanner", () => {
     });
 
     expect(container.querySelector(".text-destructive")).toBeTruthy();
+    expect(onKeyDecoded).not.toHaveBeenCalled();
+  });
+
+  it("shows a recoverable error when the scanner module cannot be downloaded", async () => {
+    mockLoadHtml5Qrcode.mockRejectedValueOnce(
+      new TypeError("Failed to fetch dynamically imported module"),
+    );
+
+    render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
+
+    const file = new File(["data"], "qr.png", { type: "image/png" });
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText(/upload qr code image/i), {
+        target: { files: [file] },
+      });
+    });
+
+    expect(
+      screen.getByText(/QR scanner could not be loaded. Check your connection and try again./i),
+    ).toBeTruthy();
     expect(onKeyDecoded).not.toHaveBeenCalled();
   });
 

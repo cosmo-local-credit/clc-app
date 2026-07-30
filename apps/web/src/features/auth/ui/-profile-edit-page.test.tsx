@@ -101,6 +101,19 @@ describe("ProfileEditPage", () => {
     expect(email.value).toBe("");
   });
 
+  it("derives the phone selector country from the stored E.164 number", async () => {
+    mockBackend({ phone: "+38738766400077", country: "BA" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    expect(await screen.findByRole("button", { name: "Country: BA" })).toBeTruthy();
+    await waitFor(() => {
+      const phone = screen.getByLabelText(/phone number/i) as HTMLInputElement;
+      expect(phone.value.replace(/\s/g, "")).toContain("66400077");
+      expect(phone.value.replace(/\s/g, "")).not.toContain("38766400077");
+    });
+  });
+
   it("saves edited fields, shows a toast, and navigates back", async () => {
     const fetchMock = mockBackend();
 

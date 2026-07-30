@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Country } from "react-phone-number-input";
-import { getCountryCallingCode } from "react-phone-number-input";
+import { getCountryCallingCode, parsePhoneNumber } from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
 import { CountrySheet } from "#/components/ui/country-sheet";
 import { getFlagEmoji } from "#/components/ui/country-utils";
@@ -19,6 +19,18 @@ type PhoneInputFieldProps = {
 const DEFAULT_COUNTRY: Country = ((import.meta.env.VITE_DEFAULT_COUNTRY as string | undefined) ??
   "KE") as Country;
 
+function removeDuplicatedCallingCode(value: string, country: Country): string {
+  const callingCode = getCountryCallingCode(country);
+  const expectedPrefix = `+${callingCode}`;
+  const duplicatedPrefix = `${expectedPrefix}${callingCode}`;
+  if (!value.startsWith(duplicatedPrefix)) return value;
+
+  const withoutDuplicate = `${expectedPrefix}${value.slice(duplicatedPrefix.length)}`;
+  const currentNumber = parsePhoneNumber(value);
+  const correctedNumber = parsePhoneNumber(withoutDuplicate);
+  return !currentNumber?.isPossible() && correctedNumber?.isPossible() ? withoutDuplicate : value;
+}
+
 export function PhoneInputField({
   id,
   value,
@@ -27,10 +39,17 @@ export function PhoneInputField({
   "aria-invalid": ariaInvalid,
   "aria-label": ariaLabel,
 }: PhoneInputFieldProps) {
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const [country, setCountry] = useState<Country>(
+    () => parsePhoneNumber(value)?.country ?? DEFAULT_COUNTRY,
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const callingCode = getCountryCallingCode(country);
+  const normalizedValue = value ? removeDuplicatedCallingCode(value, country) : value;
+
+  useEffect(() => {
+    if (normalizedValue !== value) onChange(normalizedValue);
+  }, [normalizedValue, onChange, value]);
 
   return (
     <>
@@ -59,8 +78,8 @@ export function PhoneInputField({
         <PhoneInput
           id={id}
           country={country}
-          value={value}
-          onChange={(val) => onChange(val ?? "")}
+          value={normalizedValue}
+          onChange={(val) => onChange(val ? removeDuplicatedCallingCode(val, country) : "")}
           international
           className={cn(
             "h-full min-w-0 flex-1 bg-transparent px-3 py-1 text-base outline-none",
