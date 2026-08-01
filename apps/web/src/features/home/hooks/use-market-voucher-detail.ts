@@ -3,7 +3,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { getMarketVoucher } from "#/features/home/api/market-client";
 import { MARKET_QUERY_FRESHNESS } from "./use-market-vouchers";
 
-export const marketVoucherDetailQueryKeys = {
+const marketVoucherDetailQueryKeys = {
   all: ["market-voucher-detail"] as const,
   byAddress: (address: string) =>
     // Lowercased for cache identity only. A link may be pasted in any casing,

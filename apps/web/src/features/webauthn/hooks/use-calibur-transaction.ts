@@ -1,7 +1,6 @@
 import {
   base64UrlToBytes,
   buildCaliburNonce,
-  bytesToBase64Url,
   computeEIP712Digest,
   encodeWebAuthnAuth,
   normalizeS,
@@ -107,6 +106,3 @@ export async function sendCaliburTransaction(
     txHash: completed.txHash,
   };
 }
-
-// Re-export for convenience
-export { bytesToBase64Url };

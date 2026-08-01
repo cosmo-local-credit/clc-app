@@ -17,9 +17,9 @@ export type AccountTokensResult = {
   last?: number;
 };
 
-export type AccountTransferDirection = "IN" | "OUT";
+type AccountTransferDirection = "IN" | "OUT";
 
-export type AccountTransfer = {
+type AccountTransfer = {
   id: number;
   txHash: string;
   dateBlock: string;

@@ -23,6 +23,16 @@ jobs:
       - name: Lint
         run: vp check
 
+      - name: Dead-code analysis — cycles
+        run: vp run knip:cycles
+
+      - name: Dead-code analysis
+        run: vp run knip:ci
+
+      - name: Dead-code report
+        continue-on-error: true
+        run: vp run knip:report | tail -n +2 >> "$GITHUB_STEP_SUMMARY"
+
       - name: Test (with coverage)
         run: vp test --coverage --passWithNoTests
 

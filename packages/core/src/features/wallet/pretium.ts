@@ -13,7 +13,7 @@ export const PRETIUM_OFFRAMP_RECIPIENT = "0x8005ee53E57aB11E11eAA4EFe07Ee3835Dc0
  * so the address is the stable key; `symbol` is the label we show. cUSD is
  * shown as USDm. The transfer always uses the balance's real address/decimals.
  */
-export const PRETIUM_OFFRAMP_TOKENS = [
+const PRETIUM_OFFRAMP_TOKENS = [
   { address: "0x765DE816845861e75A25fCA122bb6898B8B1282a", symbol: "USDm" }, // Celo Dollar (cUSD)
   { address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e", symbol: "USDT" }, // Tether USD₮
   { address: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C", symbol: "USDC" }, // USD Coin

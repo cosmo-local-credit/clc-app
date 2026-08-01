@@ -11,7 +11,7 @@ import {
 } from "#/lib/api-normalize";
 
 /** A voucher a report is linked to, as the feed and detail cards render it. */
-export type ReportVoucher = {
+type ReportVoucher = {
   address: HexAddress;
   name: string;
   symbol: string;

@@ -59,39 +59,3 @@ export function TokenLogo({
     </span>
   );
 }
-
-export function PicsumLogo({
-  seed,
-  size = 34,
-  alt = "",
-  className,
-}: {
-  seed: string;
-  size?: number;
-  alt?: string;
-  className?: string;
-}) {
-  const displaySize = Math.round(size);
-  const encodedSeed = encodeURIComponent(`clc-${seed}`);
-  const src = `https://picsum.photos/seed/${encodedSeed}/${displaySize}/${displaySize}`;
-  const srcSet = `${src} 1x, https://picsum.photos/seed/${encodedSeed}/${displaySize * 2}/${displaySize * 2} 2x`;
-
-  return (
-    <span
-      className={cn("relative block shrink-0 overflow-hidden rounded-full bg-muted", className)}
-      style={{ width: displaySize, height: displaySize }}
-    >
-      <ProgressiveImage
-        src={src}
-        srcSet={srcSet}
-        alt={alt}
-        width={displaySize}
-        height={displaySize}
-        loading="lazy"
-        aria-hidden={alt ? undefined : true}
-        className="size-full object-cover"
-        skeletonClassName="rounded-full"
-      />
-    </span>
-  );
-}

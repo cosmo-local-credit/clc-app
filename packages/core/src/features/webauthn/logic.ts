@@ -27,7 +27,7 @@ export function eip7702AuthMessage(args: {
  * a contract, `eth_getCode` at the EOA returns this prefix followed by the
  * delegated contract's 20-byte address. See EIP-7702.
  */
-export const EIP7702_DELEGATION_PREFIX = "0xef0100" as const;
+const EIP7702_DELEGATION_PREFIX = "0xef0100" as const;
 
 /**
  * The exact bytecode `eth_getCode` returns for an EOA that has delegated its
