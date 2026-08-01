@@ -60,6 +60,8 @@ export function MarketListPage({
     ? catalog.status === "loading"
     : !isCatalogComplete && !error && (!canRenderCatalog || visibleVouchers.length === 0);
 
+  const isRefining = catalog.status === "refining" || filter.isDebouncing;
+
   const showEmpty =
     sortedVouchers.length === 0 &&
     !error &&
@@ -164,9 +166,9 @@ export function MarketListPage({
           <section
             className={[
               "mt-3 overflow-hidden border border-border bg-card",
-              catalog.status === "refining" ? "opacity-60 transition-opacity" : "",
+              isRefining ? "opacity-60 transition-opacity" : "",
             ].join(" ")}
-            aria-busy={catalog.status === "refining"}
+            aria-busy={isRefining}
             aria-label={t`Marketplace vouchers`}
           >
             {visibleVouchers.map((voucher, index) => (

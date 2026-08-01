@@ -36,6 +36,7 @@ export function PoolsPage() {
     isFetchingNextPage: poolsQuery.isFetchingNextPage,
   });
   const pools = catalog.pools;
+  const isRefining = catalog.status === "refining" || filter.isDebouncing;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
@@ -102,9 +103,9 @@ export function PoolsPage() {
         <section
           className={[
             "border border-border bg-card",
-            catalog.status === "refining" ? "opacity-60 transition-opacity" : "",
+            isRefining ? "opacity-60 transition-opacity" : "",
           ].join(" ")}
-          aria-busy={catalog.status === "refining"}
+          aria-busy={isRefining}
           aria-label={t`Pools list`}
         >
           {pools.map((pool, index) => (
