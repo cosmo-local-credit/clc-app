@@ -22,7 +22,7 @@ import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-au
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
-import { abortWalletSwitch, beginWalletSwitch } from "#/lib/wallet-session";
+import { beginWalletSwitch } from "#/lib/wallet-session";
 import { useScanUrlImport } from "#/lib/scan-url-import";
 import {
   clearWebAuthnCredential,
@@ -89,26 +89,15 @@ function AppInner() {
   const auth = useAuthStatus();
   const queryClient = useQueryClient();
   const backendSignin = useBackendPrivateKeySignin();
-  const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
-    useScanUrlImport();
   const [switching, setSwitching] = useState(false);
+  const { pendingKey, pendingEncryptedKey, queuePendingKey, clearPendingImport, clearPendingKey } =
+    useScanUrlImport({ address, isSwitching: switching });
   const [switchError, setSwitchError] = useState<string | null>(null);
 
   const pendingAddress = useMemo(
     () => (pendingKey ? privateKeyToAccount(pendingKey).address : null),
     [pendingKey],
   );
-
-  // If the session is disconnected (sign-out) while a switch dialog is queued,
-  // drop the pending import so the dialog doesn't linger or re-trigger after
-  // disconnect. Skipped while a switch is actively in flight so a legitimate
-  // account change (walletA -> walletB) isn't mistaken for a disconnect.
-  useEffect(() => {
-    if (!address && pendingKey && !switching) {
-      abortWalletSwitch();
-      clearPendingKey();
-    }
-  }, [address, pendingKey, switching, clearPendingKey]);
 
   useEffect(() => {
     if (import.meta.env.DEV) {
