@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
+import { abortWalletSwitch } from "#/lib/wallet-session";
 
 export type PendingScanUrlImport =
   | { type: "raw"; key: `0x${string}` }
@@ -11,8 +12,18 @@ export type PendingScanUrlImport =
  * connecting, even for guests.
  *
  * Always strips the `?w=` param from the URL bar.
+ *
+ * A queued import is dropped on sign-out so it can't sign the session back in
+ * behind the user. Only a connected -> disconnected transition counts — a guest
+ * opening a printed paper wallet link starts with no address.
  */
-export function useScanUrlImport(): {
+export function useScanUrlImport({
+  address,
+  isSwitching,
+}: {
+  address: `0x${string}` | undefined;
+  isSwitching: boolean;
+}): {
   pendingImport: PendingScanUrlImport | null;
   pendingKey: `0x${string}` | null;
   pendingEncryptedKey: string | null;
@@ -45,6 +56,17 @@ export function useScanUrlImport(): {
 
     setPendingImport({ type: "raw", key: result.key });
   }, []);
+
+  // Skipped mid-switch so walletA -> walletB isn't mistaken for a disconnect.
+  const wasConnected = useRef(false);
+  useEffect(() => {
+    const disconnected = wasConnected.current && !address;
+    wasConnected.current = Boolean(address);
+    if (!disconnected || isSwitching || !pendingImport) return;
+
+    abortWalletSwitch();
+    setPendingImport(null);
+  }, [address, isSwitching, pendingImport]);
 
   const clearPendingImport = useCallback(() => setPendingImport(null), []);
   const queuePendingKey = useCallback(

@@ -41,6 +41,7 @@ export function PostsPage() {
   const resultCountLabel = i18n._("{count, plural, one {# post} other {# posts}}", {
     count: reports.length,
   });
+  const isRefining = feed.status === "refining" || filter.isDebouncing;
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -102,9 +103,9 @@ export function PostsPage() {
         <section
           className={[
             "border border-border bg-card",
-            feed.status === "refining" ? "opacity-60 transition-opacity" : "",
+            isRefining ? "opacity-60 transition-opacity" : "",
           ].join(" ")}
-          aria-busy={feed.status === "refining"}
+          aria-busy={isRefining}
           aria-label={t`Field reports`}
         >
           {reports.map((report, index) => (

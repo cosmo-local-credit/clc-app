@@ -95,6 +95,11 @@ export function CatalogFilterSheet({
   // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
   // so showing them under All would imply a conjunctive count the backend did not compute.
   const showCounts = draftTagMatch === "any";
+  // Counts stay scoped to the search, so a term whose matches carry no tags zeroes every chip.
+  const searchTerm = filter.filter?.term ?? "";
+  const hasSelectableFacet = facets.some(
+    (facet) => facet.count > 0 || draftTags.includes(facet.tag),
+  );
 
   const openSheet = () => {
     setDraftTags(filter.tags);
@@ -165,7 +170,11 @@ export function CatalogFilterSheet({
                   </span>
                 </div>
 
-                {facets.length > 0 ? (
+                {facets.length === 0 ? (
+                  <p className="mt-3 text-muted-foreground text-sm">
+                    <Trans>No category filters are available.</Trans>
+                  </p>
+                ) : hasSelectableFacet ? (
                   <div
                     className="mt-3 flex flex-wrap gap-2"
                     role="group"
@@ -187,9 +196,25 @@ export function CatalogFilterSheet({
                     })}
                   </div>
                 ) : (
-                  <p className="mt-3 text-muted-foreground text-sm">
-                    <Trans>No category filters are available.</Trans>
-                  </p>
+                  <div className="mt-3 space-y-3">
+                    <p className="text-muted-foreground text-sm">
+                      {searchTerm !== "" ? (
+                        <Trans>Nothing matching “{searchTerm}” carries a category.</Trans>
+                      ) : (
+                        <Trans>No categories are available for the current results.</Trans>
+                      )}
+                    </p>
+                    {searchTerm !== "" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 bg-card"
+                        onClick={filter.clearTerm}
+                      >
+                        <Trans>Clear search</Trans>
+                      </Button>
+                    ) : null}
+                  </div>
                 )}
               </section>
 
