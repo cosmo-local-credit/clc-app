@@ -144,6 +144,26 @@ describe("useScanUrlImport", () => {
     expect(result.current.pendingKey).toBeNull();
   });
 
+  it("keeps a guest's pending encrypted import while signed out", () => {
+    setSearch(`?w=${ENCRYPTED_KEY}`);
+
+    const { result, rerender } = renderSession();
+    rerender(GUEST);
+
+    expect(result.current.pendingEncryptedKey).toBe(ENCRYPTED_KEY);
+  });
+
+  it("drops a queued encrypted import when a connected session signs out", () => {
+    setSearch(`?w=${ENCRYPTED_KEY}`);
+
+    const { result, rerender } = renderSession({ address: CONNECTED, isSwitching: false });
+    expect(result.current.pendingEncryptedKey).toBe(ENCRYPTED_KEY);
+
+    rerender({ address: undefined, isSwitching: false });
+
+    expect(result.current.pendingEncryptedKey).toBeNull();
+  });
+
   it("keeps a queued key while a wallet switch is in flight", () => {
     setSearch(`?w=${VALID_KEY}`);
 

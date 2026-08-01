@@ -13,9 +13,9 @@ export type PendingScanUrlImport =
  *
  * Always strips the `?w=` param from the URL bar.
  *
- * A queued key is dropped on sign-out so the switch dialog can't linger. Only a
- * connected -> disconnected transition counts — a guest opening a printed paper
- * wallet link starts with no address.
+ * A queued import is dropped on sign-out so it can't sign the session back in
+ * behind the user. Only a connected -> disconnected transition counts — a guest
+ * opening a printed paper wallet link starts with no address.
  */
 export function useScanUrlImport({
   address,
@@ -62,11 +62,11 @@ export function useScanUrlImport({
   useEffect(() => {
     const disconnected = wasConnected.current && !address;
     wasConnected.current = Boolean(address);
-    if (!disconnected || isSwitching || !pendingKey) return;
+    if (!disconnected || isSwitching || !pendingImport) return;
 
     abortWalletSwitch();
     setPendingImport(null);
-  }, [address, isSwitching, pendingKey]);
+  }, [address, isSwitching, pendingImport]);
 
   const clearPendingImport = useCallback(() => setPendingImport(null), []);
   const queuePendingKey = useCallback(
