@@ -12,26 +12,29 @@ const poolQueryKeys = {
     [...poolQueryKeys.all, "by-address", poolAddress?.toLowerCase() ?? "none"] as const,
 };
 
-/** Global confirmed pools catalog with cursor pagination. */
-export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE) {
+export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
     queryKey: poolQueryKeys.list(perPage),
-    queryFn: ({ pageParam }) =>
-      getPools({
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      getPools(
+        {
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
+    enabled,
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.pools.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
+      lastPage.receivedCount < perPage || lastPage.last === undefined ? undefined : lastPage.last,
   });
 }
 
 export function useUserPoolByAddress(poolAddress: string | undefined) {
   return useQuery({
     queryKey: poolQueryKeys.byAddress(poolAddress),
-    queryFn: () => getPoolByAddress(requirePoolAddress(poolAddress)),
+    queryFn: ({ signal }) => getPoolByAddress(requirePoolAddress(poolAddress), signal),
     enabled: !!poolAddress,
   });
 }

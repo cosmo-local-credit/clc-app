@@ -1,13 +1,28 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { BackendApiError } from "#/features/auth/api/client";
 import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
 
 const mocks = vi.hoisted(() => ({
+  search: {} as Record<string, unknown>,
+  navigate: vi.fn(),
+  vocabulary: undefined as { tag: string; count: number }[] | undefined,
+  filteredFilters: [] as (CatalogFilter | null)[],
+  filtered: {
+    data: undefined as { reports: ReportSummary[]; tagFacets: null } | undefined,
+    error: null as Error | null,
+    isPlaceholderData: false,
+    refetch: vi.fn(),
+  },
   feed: {
     data: undefined as { pages: { reports: ReportSummary[] }[] } | undefined,
     isPending: false,
+    error: null as Error | null,
     isError: false,
     isSuccess: true,
     hasNextPage: false,
@@ -18,10 +33,76 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
-  useReportsInfinite: () => mocks.feed,
+  useReportsInfinite: (_perPage: unknown, enabled = true) =>
+    enabled ? mocks.feed : { ...mocks.feed, data: undefined },
 }));
 
+vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("#/features/home/hooks/use-filtered-reports")>();
+  return {
+    ...actual,
+    useReportFeed: (
+      filter: CatalogFilterControls,
+      unfiltered: {
+        reports: ReportSummary[];
+        isPending: boolean;
+        error: Error | null;
+        retry: () => void;
+        hasNextPage: boolean;
+        fetchNextPage: () => void;
+        isFetchingNextPage: boolean;
+      },
+    ) => {
+      mocks.filteredFilters.push(filter.isFiltered ? filter.filter : null);
+
+      const selected = filter.result.ok ? filter.result.filter.tags : [];
+      const source = mocks.filtered.data?.tagFacets ?? mocks.vocabulary ?? [];
+      const missing = selected.filter((tag) => !source.some((facet) => facet.tag === tag));
+      const tagFacets = [...source, ...missing.map((tag) => ({ tag, count: 0 }))].sort(
+        (left, right) => left.tag.localeCompare(right.tag),
+      );
+
+      if (!filter.isFiltered) {
+        return {
+          reports: unfiltered.reports,
+          status: unfiltered.error ? "error" : unfiltered.isPending ? "loading" : "ready",
+          error: unfiltered.error,
+          retry: unfiltered.retry,
+          tagFacets,
+          hasMore: unfiltered.hasNextPage,
+          loadMore: unfiltered.fetchNextPage,
+          isLoadingMore: unfiltered.isFetchingNextPage,
+        };
+      }
+
+      const status = mocks.filtered.error
+        ? "error"
+        : !filter.result.ok
+          ? "ready"
+          : mocks.filtered.data === undefined
+            ? "loading"
+            : filter.isDebouncing || mocks.filtered.isPlaceholderData
+              ? "refining"
+              : "ready";
+
+      return {
+        reports: mocks.filtered.data?.reports ?? [],
+        status,
+        error: mocks.filtered.error,
+        retry: mocks.filtered.refetch,
+        tagFacets,
+        hasMore: false,
+        loadMore: () => {},
+        isLoadingMore: false,
+      };
+    },
+  };
+});
+
 vi.mock("@tanstack/react-router", () => ({
+  useSearch: () => mocks.search,
+  useNavigate: () => mocks.navigate,
   Link: ({
     to,
     params,
@@ -69,14 +150,26 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   mocks.feed = {
     data: { pages: [{ reports: [report()] }] },
     isPending: false,
+    error: null,
     isError: false,
     isSuccess: true,
     hasNextPage: false,
     isFetchingNextPage: false,
     fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  };
+  mocks.search = {};
+  mocks.navigate = vi.fn();
+  mocks.vocabulary = undefined;
+  mocks.filteredFilters = [];
+  mocks.filtered = {
+    data: undefined,
+    error: null,
+    isPlaceholderData: false,
     refetch: vi.fn(),
   };
 });
@@ -86,13 +179,17 @@ describe("PostsPage", () => {
     render(<PostsPage />);
 
     expect(screen.getByRole("heading", { name: "Posts" })).toBeTruthy();
+    expect(
+      screen.queryByText("Field reports from pools, service providers, and stewards."),
+    ).toBeNull();
+    expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-9");
     const row = screen.getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
     expect(within(row).getByText(/7 members from Wendo group/)).toBeTruthy();
     expect(within(row).getByText("Food production")).toBeTruthy();
     expect(within(row).getByText("KCH")).toBeTruthy();
-    // The placeholder screen is gone.
+    expect(screen.getByRole("region", { name: "Field reports" }).className).not.toMatch(/rounded-/);
     expect(screen.queryByText(/impact reports/i)).toBeNull();
   });
 
@@ -104,7 +201,6 @@ describe("PostsPage", () => {
     expect(time?.getAttribute("datetime")).toBe("2026-07-19T08:14:02.311Z");
     expect(time?.textContent).toContain("2026");
     expect(row.textContent).not.toContain("0x1111");
-    // created_at is not a feed timestamp.
     expect(screen.queryByText(/Jul 3, 2026/)).toBeNull();
   });
 
@@ -188,7 +284,14 @@ describe("PostsPage", () => {
 
   it("offers a retry when the feed fails", () => {
     const refetch = vi.fn();
-    mocks.feed = { ...mocks.feed, data: undefined, isError: true, isSuccess: false, refetch };
+    mocks.feed = {
+      ...mocks.feed,
+      data: undefined,
+      error: new Error("network down"),
+      isError: true,
+      isSuccess: false,
+      refetch,
+    };
     render(<PostsPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
@@ -199,7 +302,190 @@ describe("PostsPage", () => {
     mocks.feed.data = { pages: [{ reports: [] }] };
     render(<PostsPage />);
 
-    expect(screen.getByText("No posts yet")).toBeTruthy();
+    expect(screen.getByText("No posts yet.")).toBeTruthy();
     expect(screen.queryByRole("link")).toBeNull();
+  });
+});
+
+describe("PostsPage filtering", () => {
+  const VOCABULARY = [
+    { tag: "Harvest", count: 4 },
+    { tag: "Training", count: 1 },
+    { tag: "Water", count: 0 },
+  ];
+
+  function openFilters() {
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    return screen.getByRole("dialog", { name: "Filter posts" });
+  }
+
+  it("says what is actually searched, and no more", () => {
+    render(<PostsPage />);
+
+    expect(screen.getByLabelText("Search posts by title or description")).toBeTruthy();
+  });
+
+  it("keeps the first character and issues no request for it", () => {
+    render(<PostsPage />);
+
+    const input = screen.getByLabelText("Search posts by title or description") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "h" } });
+
+    expect(input.value).toBe("h");
+    expect(mocks.filteredFilters.every((filter) => filter === null)).toBe(true);
+  });
+
+  it("keeps the vocabulary in the filter sheet", () => {
+    mocks.vocabulary = VOCABULARY;
+    render(<PostsPage />);
+
+    expect(screen.queryByRole("group", { name: "Filter by tag" })).toBeNull();
+    const sheet = openFilters();
+    expect(sheet.className).toContain("rounded-none");
+    const row = within(sheet).getByRole("group", { name: "Filter by tag" });
+    expect(
+      within(row)
+        .getAllByRole("button")
+        .map((chip) => chip.textContent),
+    ).toEqual(["Harvest4", "Training1", "Water0"]);
+  });
+
+  it("disables an unselected zero-count chip but never a selected one", () => {
+    mocks.search = { tags: "Water" };
+    mocks.vocabulary = VOCABULARY;
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const selected = within(sheet).getByRole("button", { name: /Water/ });
+    expect(selected.getAttribute("aria-pressed")).toBe("true");
+    expect(selected.hasAttribute("disabled")).toBe(false);
+    expect(
+      within(sheet)
+        .getByRole("button", { name: /Training/ })
+        .hasAttribute("disabled"),
+    ).toBe(false);
+  });
+
+  it("stages a tag until Apply, then pushes once and remembers it", () => {
+    mocks.vocabulary = VOCABULARY;
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    fireEvent.click(within(sheet).getByRole("button", { name: /Harvest/ }));
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+    const call = mocks.navigate.mock.calls.at(-1)?.[0];
+    expect(call?.replace).toBeUndefined();
+    const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
+    expect(search({})).toMatchObject({ tags: "Harvest" });
+    expect(
+      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
+    ).toEqual({ tags: ["Harvest"], tagMatch: "any" });
+  });
+
+  it("hides counts under All tags, where they cannot mean what they look like", () => {
+    mocks.vocabulary = VOCABULARY;
+    mocks.search = { tags: "Harvest,Training", tagMatch: "all" };
+    render(<PostsPage />);
+
+    const row = within(openFilters()).getByRole("group", { name: "Filter by tag" });
+    expect(
+      within(row)
+        .getAllByRole("button")
+        .map((chip) => chip.textContent),
+    ).toEqual(["Harvest", "Training", "Water"]);
+  });
+
+  it("distinguishes filtered-empty from an empty feed", () => {
+    mocks.search = { q: "zzzz" };
+    mocks.filtered = { ...mocks.filtered, data: { reports: [], tagFacets: null } };
+    window.localStorage.setItem(
+      CATALOG_FILTER_PREFERENCE_KEYS.posts,
+      JSON.stringify({ tags: ["Harvest"], tagMatch: "any" }),
+    );
+    render(<PostsPage />);
+
+    expect(screen.getByText("No posts match this search.")).toBeTruthy();
+    expect(screen.queryByText("No posts yet.")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+    expect(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts)).toBeNull();
+  });
+
+  it("says nothing about matches while a cold filtered load is pending", () => {
+    mocks.search = { q: "harvest" };
+    mocks.filtered = { ...mocks.filtered, data: undefined };
+    render(<PostsPage />);
+
+    expect(screen.queryByText("No posts match this search.")).toBeNull();
+    expect(screen.queryByText("No posts yet.")).toBeNull();
+    expect(screen.getByText("Loading posts…")).toBeTruthy();
+  });
+
+  it("holds the previous rows while a new filter resolves", () => {
+    mocks.search = { q: "harvest" };
+    mocks.filtered = {
+      ...mocks.filtered,
+      data: { reports: [report()], tagFacets: null },
+      isPlaceholderData: true,
+    };
+    render(<PostsPage />);
+
+    const list = screen.getByRole("region", { name: "Field reports" });
+    expect(list.getAttribute("aria-busy")).toBe("true");
+    expect(within(list).getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("hides the chip row on an over-limit link and offers a way out", () => {
+    mocks.search = { tags: Array.from({ length: 13 }, (_, index) => `Tag${index}`) };
+    mocks.vocabulary = VOCABULARY;
+    render(<PostsPage />);
+
+    expect(screen.queryByRole("group", { name: "Filter by tag" })).toBeNull();
+    expect(screen.getByRole("alert").textContent).toContain("too many filters");
+    expect(mocks.filteredFilters.every((filter) => filter === null)).toBe(true);
+  });
+
+  it("does not blame the filters for an expired session", () => {
+    mocks.search = { q: "harvest" };
+    mocks.filtered = { ...mocks.filtered, error: new BackendApiError(401, "unauthorized") };
+    render(<PostsPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).not.toContain("These filters aren't valid.");
+    expect(alert.textContent).toContain("Couldn't load posts.");
+  });
+
+  it("reports an invalid filter generically, never by matching backend prose", () => {
+    mocks.search = { tags: "NotATag" };
+    mocks.filtered = {
+      ...mocks.filtered,
+      error: new BackendApiError(400, "tags contains a value outside the tag vocabulary", "E04"),
+    };
+    render(<PostsPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("These filters aren't valid.");
+    expect(alert.textContent).not.toContain("vocabulary");
+  });
+
+  it("offers no action for a rate limit", () => {
+    mocks.search = { q: "harvest" };
+    mocks.filtered = { ...mocks.filtered, error: new BackendApiError(429, "rate limited") };
+    render(<PostsPage />);
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Too many searches");
+    expect(within(alert).queryByRole("button")).toBeNull();
+  });
+
+  it("keeps a selected tag the vocabulary no longer offers", () => {
+    mocks.search = { tags: "Retired" };
+    mocks.vocabulary = VOCABULARY;
+    render(<PostsPage />);
+
+    const chip = within(openFilters()).getByRole("button", { name: /Retired/ });
+    expect(chip.getAttribute("aria-pressed")).toBe("true");
+    expect(chip.hasAttribute("disabled")).toBe(false);
   });
 });

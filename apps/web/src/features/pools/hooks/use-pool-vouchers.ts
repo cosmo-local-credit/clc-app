@@ -22,12 +22,16 @@ export function usePoolVouchersInfinite(
 ) {
   return useInfiniteQuery({
     queryKey: poolVoucherQueryKeys.list(poolAddress, perPage),
-    queryFn: ({ pageParam }) =>
-      getPoolVouchers(requirePoolAddress(poolAddress), {
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
+    queryFn: ({ pageParam, signal }) =>
+      getPoolVouchers(
+        requirePoolAddress(poolAddress),
+        {
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+        },
+        signal,
+      ),
     enabled: !!poolAddress,
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) =>
@@ -35,10 +39,6 @@ export function usePoolVouchersInfinite(
   });
 }
 
-/**
- * Compatibility facade for the existing pool views. New views that need
- * loading/error/load-more state should consume usePoolVouchersInfinite.
- */
 export function usePoolVouchers(pool: UserPool | null | undefined) {
   const query = usePoolVouchersInfinite(pool?.address);
   return query.data?.pages.flatMap((page) => page.vouchers) ?? [];

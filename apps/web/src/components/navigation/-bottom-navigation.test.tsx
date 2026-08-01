@@ -15,7 +15,7 @@ vi.mock("#/components/ui/clc-logo", () => ({
 }));
 
 import { BottomNavigation } from "./bottom-navigation";
-import { type HomeTab, parseHomeTab, parseMarketView } from "#/lib/navigation/home-tabs";
+import { type HomeTab, isAtHomeTabRoot, parseHomeTab } from "#/lib/navigation/home-tabs";
 
 const LABELS: Record<HomeTab, string> = {
   wallet: "Wallet",
@@ -40,9 +40,7 @@ async function renderNavigation({
     return (
       <BottomNavigation
         activeTab={selectedTab}
-        atActiveTabRoot={
-          atActiveTabRoot ?? (selectedTab !== "market" || parseMarketView(search.view) === "map")
-        }
+        atActiveTabRoot={atActiveTabRoot ?? isAtHomeTabRoot(search)}
       />
     );
   }

@@ -1,3 +1,5 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+
 import { apiFetch } from "#/features/auth/api/client";
 import {
   type CursorParams,
@@ -13,6 +15,20 @@ import {
 } from "#/lib/api-normalize";
 
 export type { CursorParams };
+
+export type PoolTagFacet = {
+  tag: string;
+  count: number;
+};
+
+export type FilteredPoolsParams = CursorParams & {
+  filter: CatalogFilter;
+  facets?: boolean;
+};
+
+export type FilteredPoolPage = UserPoolPage & {
+  tagFacets: PoolTagFacet[] | null;
+};
 
 export type UserPool = {
   id: string;
@@ -82,6 +98,7 @@ export type UserPoolPage = {
   pools: UserPool[];
   first?: number;
   last?: number;
+  receivedCount: number;
 };
 
 export type PoolVoucherPage = {
@@ -156,6 +173,10 @@ type BackendPoolVoucher = Partial<{
   updatedAt: string;
 }>;
 
+type BackendFilteredPoolPage = BackendPoolPage & {
+  tagFacets?: { tag?: unknown; count?: unknown }[] | null;
+};
+
 type BackendPoolPage = {
   pools?: BackendPool[] | null;
   first?: number;
@@ -170,42 +191,74 @@ type BackendPoolVoucherPage = {
 
 type BackendPoolEnvelope = { pool?: BackendPool | null } & BackendPool;
 
-const POOL_READ_REQUEST: RequestInit = {
-  method: "GET",
-  cache: "no-store",
-};
+function poolReadRequest(signal?: AbortSignal): RequestInit {
+  return { method: "GET", cache: "no-store", signal };
+}
 
-/** Global network pool catalog (not user membership). */
-export async function getPools(params: CursorParams): Promise<UserPoolPage> {
+export async function getPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
   const result = await apiFetch<BackendPoolPage>(
     `/api/v2/pools${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
+    poolReadRequest(signal),
   );
+  const received = result.pools ?? [];
   return {
     ...result,
-    pools: (result.pools ?? []).map(normalizeUserPool).filter(isPresent),
+    pools: received.map(normalizeUserPool).filter(isPresent),
+    receivedCount: received.length,
   };
 }
 
-/** Single pool with full catalog metadata. */
-export async function getPoolByAddress(address: string): Promise<UserPool> {
+export async function getFilteredPools(
+  { filter, facets, ...cursor }: FilteredPoolsParams,
+  signal?: AbortSignal,
+): Promise<FilteredPoolPage> {
+  const search = new URLSearchParams(formatCursorQuery(cursor));
+  if (filter.term !== "") search.set("q", filter.term);
+  if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
+  if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
+  if (facets) search.set("facets", "true");
+
+  const result = await apiFetch<BackendFilteredPoolPage>(
+    `/api/v2/pools?${search.toString()}`,
+    poolReadRequest(signal),
+  );
+
+  const received = result.pools ?? [];
+  return {
+    ...result,
+    pools: received.map(normalizeUserPool).filter(isPresent),
+    receivedCount: received.length,
+    tagFacets: result.tagFacets
+      ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
+      : null,
+  };
+}
+
+function normalizePoolTagFacet(facet: { tag?: unknown; count?: unknown }): PoolTagFacet | null {
+  const tag = normalizeText(facet.tag);
+  const count = normalizeNumber(facet.count);
+  if (!tag || count === null || count < 0) return null;
+  return { tag, count };
+}
+
+export async function getPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool> {
   const result = await apiFetch<BackendPoolEnvelope>(
     `/api/v2/pools/${encodeURIComponent(address)}`,
-    POOL_READ_REQUEST,
+    poolReadRequest(signal),
   );
   const pool = normalizeUserPool(result.pool ?? result);
   if (!pool) throw new Error("Pool response did not include a valid address.");
   return pool;
 }
 
-/** Allowed vouchers in a pool, newest catalog entries first. */
 export async function getPoolVouchers(
   poolAddress: string,
   params: CursorParams,
+  signal?: AbortSignal,
 ): Promise<PoolVoucherPage> {
   const result = await apiFetch<BackendPoolVoucherPage>(
     `/api/v2/pools/${encodeURIComponent(poolAddress)}/vouchers${formatCursorQuery(params)}`,
-    POOL_READ_REQUEST,
+    poolReadRequest(signal),
   );
   return {
     ...result,

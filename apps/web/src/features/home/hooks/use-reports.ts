@@ -19,20 +19,12 @@ const reportQueryKeys = {
     [...reportQueryKeys.all, "location", { lat: lat ?? "none", lng: lng ?? "none" }] as const,
 };
 
-/**
- * The Posts feed, newest update first.
- *
- * Freshness is the market policy (see `docs/TANSTACK_QUERY.md`): reports are the
- * same bulk-imported static catalog, and the feed unmounts on every home-tab
- * change, so the global one-minute stale time would re-walk every cached page.
- */
-export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE) {
+export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
     queryKey: reportQueryKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) => getReports({ perPage, cursor: pageParam }, signal),
+    enabled,
     initialPageParam: undefined as ReportCursor | undefined,
-    // The backend says when the feed ends by omitting `next`, so there is no
-    // short-page heuristic and no cursor to sanity-check for progress.
     getNextPageParam: (lastPage: ReportPage) => lastPage.next ?? undefined,
     ...MARKET_QUERY_FRESHNESS,
   });
@@ -53,7 +45,6 @@ export function useReport(id: string | undefined) {
   });
 }
 
-/** Resolve a report pin once per coordinate pair while it remains cached. */
 export function useReportLocation(lat: number | null | undefined, lng: number | null | undefined) {
   const enabled = typeof lat === "number" && typeof lng === "number";
 

@@ -12,6 +12,31 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. js-lingui-explicit-id
+#: apps/web/src/features/pools/ui/pools-page.tsx:39
+msgid "{count, plural, one {# pool} other {# pools}}"
+msgstr "{count, plural, one {# pool} other {# pools}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:149
+msgid "{requested, plural, one {# filter} other {# filters}}"
+msgstr "{requested, plural, one {# filter} other {# filters}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:156
+msgid "{count, plural, one {# tag} other {# tags}}"
+msgstr "{count, plural, one {# tag} other {# tags}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/market-list-page.tsx:89
+msgid "{count, plural, one {# voucher} other {# vouchers}}"
+msgstr "{count, plural, one {# voucher} other {# vouchers}}"
+
+#. js-lingui-explicit-id
+#: apps/web/src/features/home/ui/posts-page.tsx:41
+msgid "{count, plural, one {# post} other {# posts}}"
+msgstr "{count, plural, one {# post} other {# posts}}"
+
 #. placeholder {0}: action.label
 #: apps/web/src/features/home/ui/wallet-page.tsx:64
 #~ msgid "{0}"
@@ -39,18 +64,28 @@ msgstr "{0} km"
 msgid "{0} m"
 msgstr "{0} m"
 
+#. placeholder {0}: draftTags.length
+#: apps/web/src/components/catalog-filter-controls.tsx:162
+msgid "{0} of {CATALOG_MAX_TAGS}"
+msgstr "{0} of {CATALOG_MAX_TAGS}"
+
 #. placeholder {0}: voucher.offerCount
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:186
 msgid "{0} offers"
 msgstr "{0} offers"
 
 #. placeholder {0}: pools.length
-#: apps/web/src/features/pools/ui/pools-page.tsx:95
-msgid "{0} pools"
-msgstr "{0} pools"
+#: apps/web/src/features/pools/ui/pools-page.tsx:84
+#~ msgid "{0} pools"
+#~ msgstr "{0} pools"
 
-#. placeholder {0}: vouchers.length
-#: apps/web/src/features/pools/ui/pools-page.tsx:138
+#. placeholder {0}: reports.length
+#: apps/web/src/features/home/ui/posts-page.tsx:84
+#~ msgid "{0} posts"
+#~ msgstr "{0} posts"
+
+#. placeholder {0}: pool.voucherCount
+#: apps/web/src/features/pools/ui/pools-page.tsx:142
 msgid "{0} vouchers"
 msgstr "{0} vouchers"
 
@@ -84,7 +119,7 @@ msgstr "{current} / {0}"
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
 #. placeholder {2}: rate.unit
-#: apps/web/src/features/home/ui/market-page.tsx:207
+#: apps/web/src/features/home/ui/market-page.tsx:219
 msgid "1 {0} = {1} {2}"
 msgstr "1 {0} = {1} {2}"
 
@@ -105,7 +140,7 @@ msgstr "1 {symbol} = {0} {1}"
 msgid "1 offer"
 msgstr "1 offer"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:136
+#: apps/web/src/features/pools/ui/pools-page.tsx:140
 msgid "1 voucher"
 msgstr "1 voucher"
 
@@ -200,6 +235,15 @@ msgstr "Admin"
 msgid "Advanced options"
 msgstr "Advanced options"
 
+#: apps/web/src/components/catalog-filter-controls.tsx:213
+msgid "All selected"
+msgstr "All selected"
+
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:108
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:116
+#~ msgid "All tags"
+#~ msgstr "All tags"
+
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:92
 msgid "All Vouchers"
 msgstr "All Vouchers"
@@ -229,13 +273,26 @@ msgstr "Amount"
 msgid "Amount exceeds your balance"
 msgstr "Amount exceeds your balance"
 
+#: apps/web/src/components/catalog-filter-controls.tsx:208
+msgid "Any selected"
+msgstr "Any selected"
+
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:107
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:115
+#~ msgid "Any tag"
+#~ msgstr "Any tag"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
 #~ msgstr "Appearance"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:78
-msgid "Approved field reports will appear here."
-msgstr "Approved field reports will appear here."
+#: apps/web/src/components/catalog-filter-controls.tsx:240
+msgid "Apply filters"
+msgstr "Apply filters"
+
+#: apps/web/src/features/home/ui/posts-page.tsx:92
+#~ msgid "Approved field reports will appear here."
+#~ msgstr "Approved field reports will appear here."
 
 #: apps/web/src/features/home/ui/report-page.tsx:438
 msgid "Author"
@@ -287,7 +344,7 @@ msgstr "Balance {tokenBalance}"
 #~ msgid "Block time"
 #~ msgstr "Block time"
 
-#: apps/web/src/features/home/ui/market-page.tsx:146
+#: apps/web/src/features/home/ui/market-page.tsx:154
 msgid "Browse all"
 msgstr "Browse all"
 
@@ -339,6 +396,11 @@ msgstr "Cancel"
 msgid "Cash"
 msgstr "Cash"
 
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:22
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:22
+msgid "Categories"
+msgstr "Categories"
+
 #: apps/web/src/components/wallet/wallet-status.tsx:20
 msgid "Celo network"
 msgstr "Celo network"
@@ -380,10 +442,42 @@ msgstr "Choose Image"
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:257
+#~ msgid "Choose what vouchers should offer."
+#~ msgstr "Choose what vouchers should offer."
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:179
+msgid "Clear"
+msgstr "Clear"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:30
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:40
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:52
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:192
+#: apps/web/src/features/home/ui/market-page.tsx:139
+#: apps/web/src/features/home/ui/posts-page.tsx:93
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:43
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:52
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:62
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:43
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:52
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:63
+#: apps/web/src/features/pools/ui/pools-page.tsx:93
+msgid "Clear filters"
+msgstr "Clear filters"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:49
+msgid "Clear search"
+msgstr "Clear search"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:306
 #: apps/web/src/features/home/ui/report-page.tsx:254
 msgid "Close"
 msgstr "Close"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:143
+msgid "Close filters"
+msgstr "Close filters"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
@@ -557,8 +651,7 @@ msgstr "Copy wallet address"
 msgid "Could not import this paper wallet."
 msgstr "Could not import this paper wallet."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:130
-#: apps/web/src/features/home/ui/market-page.tsx:105
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:57
 msgid "Could not load vouchers."
 msgstr "Could not load vouchers."
 
@@ -612,11 +705,11 @@ msgstr "Couldn't load activity."
 msgid "Couldn't load offerings."
 msgstr "Couldn't load offerings."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:79
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:68
 msgid "Couldn't load pools."
 msgstr "Couldn't load pools."
 
-#: apps/web/src/features/home/ui/posts-page.tsx:59
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:66
 msgid "Couldn't load posts."
 msgstr "Couldn't load posts."
 
@@ -778,6 +871,10 @@ msgstr "Duration"
 msgid "Edit"
 msgstr "Edit"
 
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:169
+msgid "Edit filters"
+msgstr "Edit filters"
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:37
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:108
 msgid "Edit profile"
@@ -841,13 +938,13 @@ msgstr "Enter the password to unlock this paper wallet."
 #~ msgstr "Estimate uses temporary placeholder pool voucher data. No quote or "
 #~ "relay request is made."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:44
-msgid "Explore community pools and their vouchers."
-msgstr "Explore community pools and their vouchers."
+#: apps/web/src/features/pools/ui/pools-page.tsx:60
+#~ msgid "Explore community pools and their vouchers."
+#~ msgstr "Explore community pools and their vouchers."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:93
-msgid "Explore community vouchers."
-msgstr "Explore community vouchers."
+#: apps/web/src/features/home/ui/market-list-page.tsx:138
+#~ msgid "Explore community vouchers."
+#~ msgstr "Explore community vouchers."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:40
 msgid "Failed"
@@ -865,21 +962,41 @@ msgstr "Fee calculated at confirmation"
 msgid "Fees"
 msgstr "Fees"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:84
+#: apps/web/src/features/home/ui/posts-page.tsx:108
 msgid "Field reports"
 msgstr "Field reports"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:46
-msgid "Field reports from pools, service providers, and stewards."
-msgstr "Field reports from pools, service providers, and stewards."
+#: apps/web/src/features/home/ui/posts-page.tsx:60
+#~ msgid "Field reports from pools, service providers, and stewards."
+#~ msgstr "Field reports from pools, service providers, and stewards."
 
 #. placeholder {0}: (file.size / 1024).toFixed(0)
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:47
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "File too large ({0} KB). Maximum is 512 KB."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:67
-#: apps/web/src/features/home/ui/market-page.tsx:50
+#: apps/web/src/components/catalog-filter-controls.tsx:172
+msgid "Filter by tag"
+msgstr "Filter by tag"
+
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:21
+msgid "Filter pools"
+msgstr "Filter pools"
+
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:21
+msgid "Filter posts"
+msgstr "Filter posts"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:113
+msgid "Filter vouchers"
+msgstr "Filter vouchers"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:123
+msgid "Filters"
+msgstr "Filters"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:100
+#: apps/web/src/features/home/ui/market-page.tsx:62
 msgid "Finding location"
 msgstr "Finding location"
 
@@ -911,6 +1028,10 @@ msgstr "Goods"
 #: apps/web/src/features/home/ui/report-page.tsx:375
 msgid "Host"
 msgstr "Host"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:202
+msgid "How should categories match?"
+msgstr "How should categories match?"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:232
 msgid "I have saved this key"
@@ -1023,14 +1144,14 @@ msgstr "Loading cash activity…"
 msgid "Loading location map"
 msgstr "Loading location map"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:123
+#: apps/web/src/features/home/ui/market-list-page.tsx:149
 msgid "Loading marketplace…"
 msgstr "Loading marketplace…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:143
 #: apps/web/src/features/home/ui/activity-page.tsx:115
-#: apps/web/src/features/home/ui/posts-page.tsx:94
-#: apps/web/src/features/pools/ui/pools-page.tsx:109
+#: apps/web/src/features/home/ui/posts-page.tsx:119
+#: apps/web/src/features/pools/ui/pools-page.tsx:116
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:465
 msgid "Loading more…"
 msgstr "Loading more…"
@@ -1044,7 +1165,7 @@ msgstr "Loading offerings…"
 msgid "Loading pool…"
 msgstr "Loading pool…"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:72
+#: apps/web/src/features/pools/ui/pools-page.tsx:75
 msgid "Loading pools…"
 msgstr "Loading pools…"
 
@@ -1052,7 +1173,7 @@ msgstr "Loading pools…"
 msgid "Loading post…"
 msgstr "Loading post…"
 
-#: apps/web/src/features/home/ui/posts-page.tsx:52
+#: apps/web/src/features/home/ui/posts-page.tsx:75
 msgid "Loading posts…"
 msgstr "Loading posts…"
 
@@ -1081,13 +1202,14 @@ msgstr "Loading your profile…"
 msgid "Loading…"
 msgstr "Loading…"
 
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:122
 #: apps/web/src/features/home/ui/report-page.tsx:461
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:174
 msgid "Location"
 msgstr "Location"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:69
-#: apps/web/src/features/home/ui/market-page.tsx:52
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:102
+#: apps/web/src/features/home/ui/market-page.tsx:64
 msgid "Location denied"
 msgstr "Location denied"
 
@@ -1095,8 +1217,8 @@ msgstr "Location denied"
 msgid "Location map"
 msgstr "Location map"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:71
-#: apps/web/src/features/home/ui/market-page.tsx:54
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:104
+#: apps/web/src/features/home/ui/market-page.tsx:66
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:196
 msgid "Location unavailable"
 msgstr "Location unavailable"
@@ -1113,7 +1235,7 @@ msgstr "Manage vouchers, pools, and local payments."
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:100
+#: apps/web/src/features/home/ui/market-list-page.tsx:124
 msgid "Map"
 msgstr "Map"
 
@@ -1122,13 +1244,17 @@ msgstr "Map"
 msgid "Market"
 msgstr "Market"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:87
+#: apps/web/src/features/home/ui/market-list-page.tsx:105
 msgid "Marketplace"
 msgstr "Marketplace"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:147
+#: apps/web/src/features/home/ui/market-list-page.tsx:170
 msgid "Marketplace vouchers"
 msgstr "Marketplace vouchers"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:204
+msgid "Match"
+msgstr "Match"
 
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:294
 msgid "Max"
@@ -1147,8 +1273,8 @@ msgid "Monthly"
 msgstr "Monthly"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:66
-msgid "Most active"
-msgstr "Most active"
+#~ msgid "Most active"
+#~ msgstr "Most active"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:88
 msgid "MPESA cash services need a Kenyan phone number."
@@ -1212,8 +1338,12 @@ msgid "Name on wallet"
 msgstr "Name on wallet"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:63
-msgid "Near me"
-msgstr "Near me"
+#~ msgid "Near me"
+#~ msgstr "Near me"
+
+#: apps/web/src/features/home/ui/market-list-page.tsx:200
+#~ msgid "Nearest first"
+#~ msgstr "Nearest first"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:142
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:163
@@ -1247,6 +1377,10 @@ msgstr "No camera found on this device."
 msgid "No cash activity yet."
 msgstr "No cash activity yet."
 
+#: apps/web/src/components/catalog-filter-controls.tsx:191
+msgid "No category filters are available."
+msgstr "No category filters are available."
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:154
 msgid "No offerings yet"
 msgstr "No offerings yet"
@@ -1263,13 +1397,29 @@ msgstr "No offerings yet"
 #~ msgid "No phone number"
 #~ msgstr "No phone number"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:99
+#: apps/web/src/features/pools/ui/pools-page.tsx:86
+msgid "No pools match this search."
+msgstr "No pools match this search."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:88
 msgid "No pools yet."
 msgstr "No pools yet."
 
-#: apps/web/src/features/home/ui/posts-page.tsx:75
-msgid "No posts yet"
-msgstr "No posts yet"
+#: apps/web/src/features/home/ui/posts-page.tsx:83
+#~ msgid "No posts match this search"
+#~ msgstr "No posts match this search"
+
+#: apps/web/src/features/home/ui/posts-page.tsx:86
+msgid "No posts match this search."
+msgstr "No posts match this search."
+
+#: apps/web/src/features/home/ui/posts-page.tsx:85
+#~ msgid "No posts yet"
+#~ msgstr "No posts yet"
+
+#: apps/web/src/features/home/ui/posts-page.tsx:88
+msgid "No posts yet."
+msgstr "No posts yet."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:123
 msgid "No QR code found. Try again with a clearer image."
@@ -1303,8 +1453,13 @@ msgstr "No voucher in this pool is offering anything yet."
 msgid "No vouchers in this pool yet."
 msgstr "No vouchers in this pool yet."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:140
-#: apps/web/src/features/home/ui/market-page.tsx:122
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:189
+#: apps/web/src/features/home/ui/market-page.tsx:136
+msgid "No vouchers match this search."
+msgstr "No vouchers match this search."
+
+#: apps/web/src/features/home/ui/market-list-page.tsx:158
+#: apps/web/src/features/home/ui/market-page.tsx:143
 msgid "No vouchers to show yet."
 msgstr "No vouchers to show yet."
 
@@ -1542,11 +1697,11 @@ msgstr "Pool not found."
 #: apps/web/src/features/home/ui/wallet-page.tsx:23
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
-#: apps/web/src/features/pools/ui/pools-page.tsx:41
+#: apps/web/src/features/pools/ui/pools-page.tsx:64
 msgid "Pools"
 msgstr "Pools"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:102
+#: apps/web/src/features/pools/ui/pools-page.tsx:108
 msgid "Pools list"
 msgstr "Pools list"
 
@@ -1555,7 +1710,7 @@ msgid "Post not found."
 msgstr "Post not found."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:41
-#: apps/web/src/features/home/ui/posts-page.tsx:43
+#: apps/web/src/features/home/ui/posts-page.tsx:64
 #: apps/web/src/features/home/ui/report-page.tsx:65
 #: apps/web/src/features/home/ui/report-page.tsx:494
 #: apps/web/src/features/home/ui/report-page.tsx:513
@@ -1778,6 +1933,10 @@ msgstr "Report period"
 msgid "Report provenance"
 msgstr "Report provenance"
 
+#: apps/web/src/components/catalog-filter-controls.tsx:230
+msgid "Reset"
+msgstr "Reset"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:160
 msgid "Reset logo"
 msgstr "Reset logo"
@@ -1790,9 +1949,8 @@ msgstr "Reset logo"
 msgid "Resolving recipient…"
 msgstr "Resolving recipient…"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:133
-#: apps/web/src/features/home/ui/market-map.tsx:694
-#: apps/web/src/features/home/ui/market-page.tsx:108
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:57
+#: apps/web/src/features/home/ui/market-map.tsx:655
 #: apps/web/src/features/home/ui/report-page.tsx:51
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
 msgid "Retry"
@@ -1846,9 +2004,13 @@ msgstr "Scan QR Code"
 msgid "Scan recipient address"
 msgstr "Scan recipient address"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:160
+#: apps/web/src/features/home/ui/market-list-page.tsx:183
 msgid "Scroll for more"
 msgstr "Scroll for more"
+
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
+msgid "Search by name or symbol"
+msgstr "Search by name or symbol"
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:182
 msgid "Search for a town or place"
@@ -1858,10 +2020,17 @@ msgstr "Search for a town or place"
 msgid "Search or enter"
 msgstr "Search or enter"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:55
-#: apps/web/src/features/pools/ui/pools-page.tsx:56
+#: apps/web/src/features/pools/ui/pools-page.tsx:69
 msgid "Search pools"
 msgstr "Search pools"
+
+#: apps/web/src/features/home/ui/posts-page.tsx:69
+msgid "Search posts by title or description"
+msgstr "Search posts by title or description"
+
+#: apps/web/src/features/home/ui/market-list-page.tsx:159
+#~ msgid "Search vouchers and filter by what they offer."
+#~ msgstr "Search vouchers and filter by what they offer."
 
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:234
 msgid "Searching places…"
@@ -2110,11 +2279,11 @@ msgstr "Switch wallet?"
 msgid "The cart isn't ready yet."
 msgstr "The cart isn't ready yet."
 
-#: apps/web/src/features/home/ui/market-map.tsx:682
+#: apps/web/src/features/home/ui/market-map.tsx:643
 msgid "The map could not be loaded."
 msgstr "The map could not be loaded."
 
-#: apps/web/src/features/home/ui/market-map.tsx:684
+#: apps/web/src/features/home/ui/market-map.tsx:645
 msgid "The map is not supported on this device."
 msgstr "The map is not supported on this device."
 
@@ -2135,6 +2304,12 @@ msgstr "Theme"
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:30
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "There is nothing available for exchange with this voucher yet."
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:51
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:61
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
+msgid "These filters aren't valid."
+msgstr "These filters aren't valid."
 
 #: apps/web/src/components/auth/auth-states.tsx:33
 msgid "This account cannot be approved. Contact support if you think this is a "
@@ -2162,6 +2337,14 @@ msgstr "This device is subscribed to wallet notifications."
 #~ msgstr "This doesn't look like a Safaricom number. MPESA top-ups only support "
 #~ "Safaricom lines. If this is a ported Safaricom number, you can "
 #~ "continue."
+
+#. placeholder {0}: filter.result.requested
+#. placeholder {1}: filter.result.max
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:29
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:42
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:42
+msgid "This link has too many filters ({0}, maximum {1})."
+msgstr "This link has too many filters ({0}, maximum {1})."
 
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
@@ -2208,6 +2391,18 @@ msgstr "Toggle theme"
 #~ msgid "Tokens"
 #~ msgstr "Tokens"
 
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:39
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:51
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:51
+msgid "Too many matches to show. Try a more specific search."
+msgstr "Too many matches to show. Try a more specific search."
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:46
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:57
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:57
+msgid "Too many searches. Try again in a moment."
+msgstr "Too many searches. Try again in a moment."
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:29
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:41
 #~ msgid "Top up"
@@ -2249,6 +2444,10 @@ msgstr "Transaction hash copied"
 msgid "Transfer history"
 msgstr "Transfer history"
 
+#: apps/web/src/features/home/ui/posts-page.tsx:90
+#~ msgid "Try a different search, or clear the filters."
+#~ msgstr "Try a different search, or clear the filters."
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:218
 #~ msgid "try again"
 #~ msgstr "try again"
@@ -2257,9 +2456,9 @@ msgstr "Transfer history"
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 #: apps/web/src/features/home/ui/activity-page.tsx:60
-#: apps/web/src/features/home/ui/posts-page.tsx:67
+#: apps/web/src/features/home/ui/report-filter-ui.tsx:66
 #: apps/web/src/features/home/ui/wallet-page.tsx:86
-#: apps/web/src/features/pools/ui/pools-page.tsx:87
+#: apps/web/src/features/pools/ui/pool-filter-ui.tsx:68
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:115
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:411
@@ -2282,6 +2481,10 @@ msgstr "Unlock and import"
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:108
 msgid "Unlocking..."
 msgstr "Unlocking..."
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:106
+msgid "Update location"
+msgstr "Update location"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
@@ -2325,10 +2528,13 @@ msgstr "Upload QR code image"
 #~ msgid "Use another sign-in method"
 #~ msgstr "Use another sign-in method"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:72
-#: apps/web/src/features/home/ui/market-page.tsx:55
+#: apps/web/src/features/home/ui/market-page.tsx:67
 msgid "Use current location"
 msgstr "Use current location"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:107
+msgid "Use location"
+msgstr "Use location"
 
 #. placeholder {0}: selectedToken.amount
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:221
@@ -2338,6 +2544,10 @@ msgstr "Use max · {0}"
 #: apps/web/src/features/onboarding/ui/location-picker.tsx:196
 msgid "Use my location"
 msgstr "Use my location"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:281
+#~ msgid "Use your location to order vouchers by distance."
+#~ msgstr "Use your location to order vouchers by distance."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:64
 msgid "View all"
@@ -2379,13 +2589,17 @@ msgstr "Voucher details"
 msgid "Vouchers"
 msgstr "Vouchers"
 
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:279
+#~ msgid "Vouchers are ordered nearest first."
+#~ msgstr "Vouchers are ordered nearest first."
+
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:63
 #~ msgid "Vouchers in this pool"
 #~ msgstr "Vouchers in this pool"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:91
-msgid "Vouchers ordered by approximate distance."
-msgstr "Vouchers ordered by approximate distance."
+#: apps/web/src/features/home/ui/market-list-page.tsx:157
+#~ msgid "Vouchers ordered by approximate distance."
+#~ msgstr "Vouchers ordered by approximate distance."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:71
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:95
@@ -2394,7 +2608,7 @@ msgstr "Waiting for on-chain confirmation"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/features/home/ui/wallet-page.tsx:32
-#: apps/web/src/features/pools/ui/pools-page.tsx:38
+#: apps/web/src/features/pools/ui/pools-page.tsx:61
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:89
 #: apps/web/src/features/wallet/ui/receive-page.tsx:44
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:132
@@ -2439,6 +2653,10 @@ msgstr "Website"
 #: apps/web/src/components/offerings/offerings-panel.tsx:490
 msgid "Weekly"
 msgstr "Weekly"
+
+#: apps/web/src/features/home/ui/market-filter-ui.tsx:114
+msgid "What they offer"
+msgstr "What they offer"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:144
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:189

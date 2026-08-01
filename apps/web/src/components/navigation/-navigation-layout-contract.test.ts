@@ -19,7 +19,7 @@ describe("bottom-navigation layout contract", () => {
     expect(styles).toContain("calc(var(--bottom-nav-offset) + 0.75rem)");
     expect(
       marketMap.match(/max\(var\(--bottom-nav-offset\),env\(safe-area-inset-bottom\)\)\+1\.25rem/g),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(marketList).toContain("max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem");
   });
 

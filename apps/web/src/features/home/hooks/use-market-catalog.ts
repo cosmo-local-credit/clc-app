@@ -1,0 +1,106 @@
+import { useCallback, useMemo } from "react";
+
+import type { MarketTagFacet, MarketVoucher } from "#/features/home/api/market-client";
+import {
+  ensureSelectedFacets,
+  toFilteredCatalogState,
+  useFilteredMarketVouchers,
+  useMarketFacetVocabulary,
+} from "#/features/home/hooks/use-filtered-market-vouchers";
+import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
+import type { MarketViewport } from "#/features/home/ui/market-map";
+
+export type MarketCatalog = {
+  vouchers: MarketVoucher[];
+  isCatalogComplete: boolean;
+  status: "loading" | "refining" | "ready" | "error";
+  error: Error | null;
+  retry: () => void;
+  tagFacets: MarketTagFacet[];
+  filterKey: string;
+};
+
+export function useMarketCatalogVouchers(
+  filter: CatalogFilterControls,
+  viewport: MarketViewport | null = null,
+  enabled = true,
+): MarketCatalog {
+  const unfiltered = useMarketMapVouchers(viewport, undefined, enabled && !filter.isFiltered);
+  const filtered = useFilteredMarketVouchers(enabled && filter.isFiltered ? filter.filter : null);
+  const filteredState = toFilteredCatalogState(filtered, filter.isDebouncing);
+  const vocabulary = useMarketFacetVocabulary();
+
+  const retryFiltered = useCallback(() => {
+    void filtered.refetch();
+  }, [filtered]);
+
+  const chipFacets = useMemo(() => {
+    const selected = filter.result.ok ? filter.result.filter.tags : [];
+    const source =
+      (filteredState.status === "refining" || filteredState.status === "ready"
+        ? filteredState.data.tagFacets
+        : null) ?? vocabulary.data;
+    return ensureSelectedFacets(source ?? [], selected);
+  }, [filter.result, filteredState, vocabulary.data]);
+
+  return useMemo(() => {
+    if (!enabled) {
+      return {
+        vouchers: [],
+        isCatalogComplete: false,
+        status: "loading",
+        error: null,
+        retry: unfiltered.retry,
+        tagFacets: chipFacets,
+        filterKey: "restoring-preference",
+      };
+    }
+
+    if (!filter.isFiltered) {
+      return {
+        vouchers: unfiltered.vouchers,
+        isCatalogComplete: unfiltered.isCatalogComplete,
+        status: unfiltered.error ? "error" : unfiltered.isLoading ? "loading" : "ready",
+        error: unfiltered.error,
+        retry: unfiltered.retry,
+        tagFacets: chipFacets,
+        filterKey: "",
+      };
+    }
+
+    if (filteredState.status === "disabled") {
+      return {
+        vouchers: [],
+        isCatalogComplete: true,
+        status: "ready",
+        error: null,
+        retry: retryFiltered,
+        tagFacets: chipFacets,
+        filterKey: filterIdentity(filter),
+      };
+    }
+
+    const data =
+      filteredState.status === "refining" || filteredState.status === "ready"
+        ? filteredState.data
+        : null;
+
+    return {
+      vouchers: data?.vouchers ?? [],
+      isCatalogComplete: true,
+      status: filteredState.status,
+      error: filteredState.status === "error" ? filteredState.error : null,
+      retry: retryFiltered,
+      tagFacets: chipFacets,
+      filterKey: filterIdentity(filter),
+    };
+  }, [enabled, filter, unfiltered, filteredState, retryFiltered, chipFacets]);
+}
+
+function filterIdentity(filter: CatalogFilterControls): string {
+  if (!filter.result.ok) return `invalid:${filter.result.reason}`;
+  const { term, tags, tagMatch } = filter.result.filter;
+  // NUL separates the parts so no term or tag value can forge another part's boundary.
+  return `${term}\u0000${tags.join(",")}\u0000${tagMatch}`;
+}

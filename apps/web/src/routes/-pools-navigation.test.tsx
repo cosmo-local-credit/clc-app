@@ -1,9 +1,11 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   createMemoryHistory,
   createRootRoute,
   createRoute,
   createRouter,
   Outlet,
+  redirect,
   RouterProvider,
 } from "@tanstack/react-router";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -51,8 +53,18 @@ vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
   usePoolVoucherTokens: () => [],
 }));
 
+import {
+  canonicalRedirectSearch,
+  type CatalogRouteSearch,
+  pickCatalogSearch,
+} from "#/lib/navigation/catalog-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
+
+function withQueryClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>;
+}
 
 function createTestRouter(initialEntry: string) {
   const rootRoute = createRootRoute({ component: Outlet });
@@ -67,6 +79,12 @@ function createTestRouter(initialEntry: string) {
   const poolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools",
+    validateSearch: (search): CatalogRouteSearch => pickCatalogSearch(search),
+    beforeLoad: ({ search }) => {
+      const next = canonicalRedirectSearch(search);
+      if (!next) return;
+      throw redirect({ to: "/pools", search: next, replace: true });
+    },
     component: () => <PoolsPage />,
   });
   const poolDetailRoute = createRoute({
@@ -90,7 +108,7 @@ afterEach(() => {
 describe("pools navigation", () => {
   it("reaches Pools from the wallet action row and Back returns to the wallet tab", async () => {
     const router = createTestRouter("/?tab=wallet");
-    render(<RouterProvider router={router} />);
+    render(withQueryClient(<RouterProvider router={router} />));
 
     const poolsAction = await screen.findByRole("link", { name: /pools/i });
     expect(poolsAction.getAttribute("href")).toBe("/pools");
@@ -113,7 +131,7 @@ describe("pools navigation", () => {
 
   it("opens a pool from the list and Back returns to the list", async () => {
     const router = createTestRouter("/pools");
-    render(<RouterProvider router={router} />);
+    render(withQueryClient(<RouterProvider router={router} />));
 
     fireEvent.click(await screen.findByRole("link", { name: /trade pool/i }));
 
@@ -134,9 +152,48 @@ describe("pools navigation", () => {
 
   it("falls back to the wallet tab when the pools list is deep-linked", async () => {
     const router = createTestRouter("/pools");
-    render(<RouterProvider router={router} />);
+    render(withQueryClient(<RouterProvider router={router} />));
 
     const back = await screen.findByRole("link", { name: "Wallet" });
     expect(back.getAttribute("href")).toBe("/?tab=wallet");
+  });
+});
+
+describe("pools filter canonicalization through the router", () => {
+  it("rewrites a non-canonical Pools link in the address bar", async () => {
+    const router = createTestRouter("/pools?q=%20%20food%20%20");
+    render(withQueryClient(<RouterProvider router={router} />));
+    await waitFor(() => expect(router.state.status).toBe("idle"));
+
+    expect(new URLSearchParams(router.history.location.search).get("q")).toBe("food");
+    expect(router.history.length).toBe(1);
+  });
+
+  it("collapses a repeated tag key on Pools too", async () => {
+    const router = createTestRouter("/pools?tags=Growing&tags=Food");
+    render(withQueryClient(<RouterProvider router={router} />));
+    await waitFor(() => expect(router.state.status).toBe("idle"));
+
+    expect(new URLSearchParams(router.history.location.search).getAll("tags")).toEqual([
+      "Food,Growing",
+    ]);
+  });
+
+  it("settles a canonical Pools link without redirecting", async () => {
+    const router = createTestRouter("/pools?q=food");
+    render(withQueryClient(<RouterProvider router={router} />));
+    await waitFor(() => expect(router.state.status).toBe("idle"));
+
+    expect(router.history.location.search).toContain("q=food");
+    expect(router.history.length).toBe(1);
+  });
+
+  it("leaves an over-limit Pools link alone rather than truncating it", async () => {
+    const tags = Array.from({ length: 13 }, (_, index) => `Tag${index}`);
+    const router = createTestRouter(`/pools?${tags.map((tag) => `tags=${tag}`).join("&")}`);
+    render(withQueryClient(<RouterProvider router={router} />));
+    await waitFor(() => expect(router.state.status).toBe("idle"));
+
+    expect(router.state.location.search.tags).toEqual(tags);
   });
 });

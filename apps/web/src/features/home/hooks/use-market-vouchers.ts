@@ -1,3 +1,4 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -10,20 +11,10 @@ import {
 } from "#/features/home/api/market-client";
 import type { MarketViewport } from "#/features/home/ui/market-map";
 
-/** The map imports the whole catalog so its cluster counts are authoritative. */
 export const MARKET_MAP_PAGE_SIZE = 500;
 
-/**
- * Below this zoom a bbox stops being selective — most of the catalog is inside
- * it — so the complete background query is the better source.
- */
 export const MIN_VIEWPORT_BBOX_ZOOM = 11;
 
-/**
- * Local freshness overrides (see `docs/TANSTACK_QUERY.md`). This is a bulk
- * import of static catalog data, not live chain state. Shared with the
- * per-voucher detail query, which reads the same static catalog.
- */
 export const MARKET_QUERY_FRESHNESS = {
   staleTime: 10 * 60_000,
   gcTime: 30 * 60_000,
@@ -35,9 +26,12 @@ export const marketVoucherQueryKeys = {
   catalog: (perPage: number) => [...marketVoucherQueryKeys.all, "catalog", { perPage }] as const,
   viewport: (boxes: MarketBoundingBox[], perPage: number) =>
     [...marketVoucherQueryKeys.all, "viewport", { boxes, perPage }] as const,
+  filtered: (filter: CatalogFilter | null, perPage: number) =>
+    [...marketVoucherQueryKeys.all, "filtered", { filter, perPage }] as const,
+  facetVocabulary: () => [...marketVoucherQueryKeys.all, "facet-vocabulary"] as const,
 };
 
-function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE) {
+function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
     queryKey: marketVoucherQueryKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
@@ -49,22 +43,14 @@ function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE) {
         },
         signal,
       ),
+    enabled,
     initialPageParam: undefined as number | undefined,
-    getNextPageParam: nextCursor(perPage),
+    getNextPageParam: nextMarketCursor(perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
 }
 
-/**
- * The backend always emits `first`/`last` as numbers, so `undefined` is never
- * the stop signal. Stop on a short page, an empty-page zero cursor, or a
- * cursor that failed to strictly decrease — the last of which would otherwise
- * page forever against a misbehaving backend.
- *
- * "Short" is measured against the rows the backend sent, not the rows that
- * survived normalization. One malformed voucher must not truncate the catalog.
- */
-function nextCursor(perPage: number) {
+export function nextMarketCursor(perPage: number) {
   return (lastPage: MarketVoucherPage, allPages: MarketVoucherPage[]): number | undefined => {
     if (lastPage.receivedCount < perPage) return undefined;
     if (lastPage.last === 0) return undefined;
@@ -74,11 +60,6 @@ function nextCursor(perPage: number) {
   };
 }
 
-/**
- * One bounded page for the camera that actually won, so the first markers
- * appear before the whole catalog has downloaded. Its cluster counts are
- * provisional until the background catalog makes them authoritative.
- */
 function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean, perPage: number) {
   return useQuery({
     queryKey: marketVoucherQueryKeys.viewport(boxes, perPage),
@@ -104,8 +85,9 @@ export type MarketMapVouchers = {
 export function useMarketMapVouchers(
   viewport: MarketViewport | null,
   perPage = MARKET_MAP_PAGE_SIZE,
+  enabled = true,
 ): MarketMapVouchers {
-  const catalog = useMarketVouchersInfinite(perPage);
+  const catalog = useMarketVouchersInfinite(perPage, enabled);
   const {
     hasNextPage,
     isFetching,
@@ -119,13 +101,10 @@ export function useMarketMapVouchers(
 
   const isCatalogComplete = isSuccess && !hasNextPage;
 
-  // Fill the catalog in the background so cluster counts become correct.
-  // Guarding on isFetching as well as isFetchingNextPage matters: a stale
-  // infinite-query refetch already re-walks every cached page.
   useEffect(() => {
-    if (!hasNextPage || isFetching || isFetchingNextPage) return;
+    if (!enabled || !hasNextPage || isFetching || isFetchingNextPage) return;
     void fetchNextPage();
-  }, [hasNextPage, isFetching, isFetchingNextPage, fetchNextPage]);
+  }, [enabled, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage]);
 
   const boxes = useMemo(
     () =>
@@ -133,17 +112,18 @@ export function useMarketMapVouchers(
     [viewport],
   );
 
-  const bootstrap = useMarketViewportVouchers(boxes, !isCatalogComplete, perPage);
+  const bootstrap = useMarketViewportVouchers(boxes, enabled && !isCatalogComplete, perPage);
 
   const vouchers = useMemo(() => {
+    if (!enabled) return [];
+
     const byId = new Map<string, MarketVoucher>();
-    // Bootstrap rows first so full-catalog records overwrite the temporary copy.
     for (const entry of bootstrap.data ?? []) byId.set(entry.id, entry);
     for (const catalogPage of data?.pages ?? []) {
       for (const entry of catalogPage.vouchers) byId.set(entry.id, entry);
     }
     return [...byId.values()];
-  }, [bootstrap.data, data?.pages]);
+  }, [enabled, bootstrap.data, data?.pages]);
 
   const retry = useCallback(() => {
     void refetch();

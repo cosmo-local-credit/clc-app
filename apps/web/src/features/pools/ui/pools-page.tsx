@@ -1,124 +1,128 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { RiArrowRightSLine, RiSearchLine } from "react-icons/ri";
+import { RiArrowRightSLine } from "react-icons/ri";
 
+import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import { BackChevron } from "#/components/wallet";
 import type { UserPool } from "#/features/pools/api/pools-client";
-import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
+import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
+import { TagBadge } from "#/components/ui/tag-badge";
+import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
 import { PoolLogo } from "./pool-logo";
 
+const POOL_ROW_TAG_LIMIT = 3;
+
 export function PoolsPage() {
-  const { t } = useLingui();
-  const poolsQuery = useUserPoolsInfinite();
+  const { t, i18n } = useLingui();
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.pools);
+  const poolsQuery = useUserPoolsInfinite(
+    undefined,
+    !filter.isFiltered && !filter.isRestoringPreference,
+  );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const pools = poolsQuery.data?.pages.flatMap((page) => page.pools) ?? [];
+
+  const catalog = usePoolCatalog(filter, {
+    pools: poolsQuery.data?.pages.flatMap((page) => page.pools) ?? [],
+    isPending: poolsQuery.isPending,
+    error: poolsQuery.error ?? null,
+    retry: () => void poolsQuery.refetch(),
+    hasNextPage: poolsQuery.hasNextPage,
+    fetchNextPage: () => void poolsQuery.fetchNextPage(),
+    isFetchingNextPage: poolsQuery.isFetchingNextPage,
+  });
+  const pools = catalog.pools;
+  const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
+    count: pools.length,
+  });
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !poolsQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
+    if (!target || !catalog.hasMore || typeof IntersectionObserver === "undefined") {
       return;
     }
 
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0];
-      if (entry?.isIntersecting && !poolsQuery.isFetchingNextPage) {
-        void poolsQuery.fetchNextPage();
+      if (entry?.isIntersecting && !catalog.isLoadingMore) {
+        catalog.loadMore();
       }
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [poolsQuery.fetchNextPage, poolsQuery.hasNextPage, poolsQuery.isFetchingNextPage]);
+  }, [catalog.hasMore, catalog.isLoadingMore, catalog.loadMore]);
 
   return (
     <div className="space-y-4">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
-      <div className="space-y-1">
-        <h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Pools</Trans>
         </h1>
-        <p className="text-muted-foreground text-sm">
-          <Trans>Explore community pools and their vouchers.</Trans>
-        </p>
+        <PoolFilterSheet filter={filter} facets={catalog.tagFacets} />
       </div>
 
-      <div className="relative">
-        <RiSearchLine
-          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <Input
-          readOnly
-          aria-label={t`Search pools`}
-          placeholder={t`Search pools`}
-          className="h-11 rounded-none bg-card pl-9"
-        />
-      </div>
+      <CatalogSearchField filter={filter} label={t`Search pools`} />
 
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" className="h-8 rounded-none bg-card px-3">
-          <Trans>Near me</Trans>
-        </Button>
-        <Button type="button" variant="outline" size="sm" className="h-8 rounded-none bg-card px-3">
-          <Trans>Most active</Trans>
-        </Button>
-      </div>
+      <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
 
-      {poolsQuery.isPending ? (
+      {catalog.status === "loading" ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
           <Trans>Loading pools…</Trans>
         </div>
       ) : null}
 
-      {poolsQuery.isError ? (
-        <div className="space-y-2 border border-border bg-card p-3">
-          <p className="text-muted-foreground text-sm">
-            <Trans>Couldn't load pools.</Trans>
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={() => poolsQuery.refetch()}
-          >
-            <Trans>Try again</Trans>
-          </Button>
-        </div>
+      {catalog.status === "ready" && filter.result.ok ? (
+        <>
+          <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
+          {pools.length === 0 ? (
+            <div className="space-y-3 border border-border bg-card p-3">
+              <p className="text-muted-foreground text-sm">
+                {filter.isFiltered ? (
+                  <Trans>No pools match this search.</Trans>
+                ) : (
+                  <Trans>No pools yet.</Trans>
+                )}
+              </p>
+              {filter.isFiltered ? (
+                <Button variant="outline" size="sm" className="h-9 bg-card" onClick={filter.clear}>
+                  <Trans>Clear filters</Trans>
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+        </>
       ) : null}
 
-      {poolsQuery.isSuccess ? (
-        <>
-          <p className="text-muted-foreground text-xs">
-            <Trans>{pools.length} pools</Trans>
-          </p>
-          {pools.length === 0 ? (
-            <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
-              <Trans>No pools yet.</Trans>
+      {pools.length > 0 ? (
+        <section
+          className={[
+            "border border-border bg-card",
+            catalog.status === "refining" ? "opacity-60 transition-opacity" : "",
+          ].join(" ")}
+          aria-busy={catalog.status === "refining"}
+          aria-label={t`Pools list`}
+        >
+          {pools.map((pool, index) => (
+            <PoolRow key={pool.address} pool={pool} isLast={index === pools.length - 1} />
+          ))}
+          <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
+          {catalog.isLoadingMore ? (
+            <div className="p-3 text-center text-muted-foreground text-xs">
+              <Trans>Loading more…</Trans>
             </div>
-          ) : (
-            <section className="border border-border bg-card" aria-label={t`Pools list`}>
-              {pools.map((pool, index) => (
-                <PoolRow key={pool.address} pool={pool} isLast={index === pools.length - 1} />
-              ))}
-              <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-              {poolsQuery.isFetchingNextPage ? (
-                <div className="p-3 text-center text-muted-foreground text-xs">
-                  <Trans>Loading more…</Trans>
-                </div>
-              ) : null}
-            </section>
-          )}
-        </>
+          ) : null}
+        </section>
       ) : null}
     </div>
   );
 }
 
 function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
-  const vouchers = usePoolVouchers(pool);
   return (
     <Link
       to="/pools/$poolAddress"
@@ -132,12 +136,24 @@ function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
       <div className="min-w-0 flex-1 overflow-hidden">
         <p className="truncate font-bold text-sm tracking-tight">{pool.name}</p>
         <p className="mt-1 text-primary text-[0.6875rem] font-semibold">
-          {vouchers.length === 1 ? (
+          {pool.voucherCount === 1 ? (
             <Trans>1 voucher</Trans>
           ) : (
-            <Trans>{vouchers.length} vouchers</Trans>
+            <Trans>{pool.voucherCount} vouchers</Trans>
           )}
         </p>
+        {pool.tags.length > 0 ? (
+          <span className="mt-1.5 flex gap-1 overflow-hidden">
+            {pool.tags.slice(0, POOL_ROW_TAG_LIMIT).map((tag) => (
+              <TagBadge key={tag} tag={tag} className="h-5 shrink-0 px-1.5 text-[10px]" />
+            ))}
+            {pool.tags.length > POOL_ROW_TAG_LIMIT ? (
+              <span className="shrink-0 self-center text-muted-foreground text-[10px]">
+                +{pool.tags.length - POOL_ROW_TAG_LIMIT}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
       </div>
       <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
     </Link>

@@ -1,7 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import {
+  canonicalRedirectSearch,
+  type CatalogRouteSearch,
+  pickCatalogSearch,
+} from "#/lib/navigation/catalog-search";
 import {
   isPrivateHomeTab,
   type HomeTab,
@@ -18,10 +23,16 @@ const HomePage = lazy(() =>
 
 export const Route = createFileRoute("/_nav/")({
   staticData: { navOwner: "home" },
-  validateSearch: (search): { tab?: HomeTab; view?: MarketView } => ({
+  validateSearch: (search): { tab?: HomeTab; view?: MarketView } & CatalogRouteSearch => ({
     tab: parseHomeTab(search.tab),
     view: parseMarketView(search.view),
+    ...pickCatalogSearch(search),
   }),
+  beforeLoad: ({ search }) => {
+    const next = canonicalRedirectSearch(search);
+    if (!next) return;
+    throw redirect({ to: "/", search: next, replace: true });
+  },
   component: IndexPage,
 });
 
