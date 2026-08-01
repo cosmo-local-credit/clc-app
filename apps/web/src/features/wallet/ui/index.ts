@@ -4,5 +4,4 @@ export { SendAmountPage } from "./send-amount-page";
 export { SendReceiptPage } from "./send-receipt-page";
 export { SendRecipientPage } from "./send-recipient-page";
 export { VoucherDetailPage, type VoucherOrigin } from "./voucher-detail-page";
-export { TokenPickerSheet } from "./token-picker-sheet";
 export { TopUpPage } from "./top-up-page";

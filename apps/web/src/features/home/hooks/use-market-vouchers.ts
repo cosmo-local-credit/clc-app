@@ -31,7 +31,7 @@ export const marketVoucherQueryKeys = {
   facetVocabulary: () => [...marketVoucherQueryKeys.all, "facet-vocabulary"] as const,
 };
 
-export function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
+function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
     queryKey: marketVoucherQueryKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>

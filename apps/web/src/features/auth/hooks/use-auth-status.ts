@@ -4,7 +4,7 @@ import { useConnection } from "wagmi";
 import { BackendApiError, getSession, type SessionResult } from "#/features/auth/api/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
 
-export type AuthStatusState =
+type AuthStatusState =
   | "loading"
   | "guest"
   | "connectedNoSession"
@@ -26,7 +26,7 @@ export type AuthStatus = {
 
 export const authSessionQueryKey = ["auth", "session"] as const;
 
-export function authSessionQueryKeyForAddress(address: `0x${string}` | undefined) {
+function authSessionQueryKeyForAddress(address: `0x${string}` | undefined) {
   return [...authSessionQueryKey, address?.toLowerCase() ?? "none"] as const;
 }
 

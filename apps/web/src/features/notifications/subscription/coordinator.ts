@@ -25,7 +25,7 @@ import {
 
 const DEFAULT_SERVICE_WORKER_READY_TIMEOUT_MS = 20_000;
 
-export type NotificationSubscriptionEnableStatus =
+type NotificationSubscriptionEnableStatus =
   | "enabled"
   | "failed"
   | "install-required"

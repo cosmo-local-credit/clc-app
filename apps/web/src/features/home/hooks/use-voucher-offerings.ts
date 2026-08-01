@@ -8,9 +8,9 @@ import {
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 
 /** The imported catalog's largest single-voucher offering count is 19. */
-export const VOUCHER_OFFERINGS_PAGE_SIZE = 20;
+const VOUCHER_OFFERINGS_PAGE_SIZE = 20;
 
-export const voucherOfferingQueryKeys = {
+const voucherOfferingQueryKeys = {
   all: ["voucher-offerings"] as const,
   byVoucher: (voucherAddress: string | undefined) =>
     [...voucherOfferingQueryKeys.all, voucherAddress?.toLowerCase() ?? "none"] as const,

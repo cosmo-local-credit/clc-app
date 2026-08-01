@@ -6,7 +6,7 @@ import {
   reverseResolveAddress,
 } from "#/features/wallet/api/recipient-resolution-client";
 
-export const recipientResolutionQueryKeys = {
+const recipientResolutionQueryKeys = {
   all: ["recipient-resolution"] as const,
   phone: (phone: string) => [...recipientResolutionQueryKeys.all, "phone", phone] as const,
   ens: (ensName: string) => [...recipientResolutionQueryKeys.all, "ens", ensName] as const,

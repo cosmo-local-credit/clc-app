@@ -16,14 +16,14 @@ type QuoteAtBlock = {
   blockNumber?: bigint;
 };
 
-export type PoolAmountOutQuoteInput = QuoteAtBlock & {
+type PoolAmountOutQuoteInput = QuoteAtBlock & {
   poolAddress: Address;
   tokenOut: Address;
   tokenIn: Address;
   amountInRaw: string;
 };
 
-export type PoolAmountInQuoteInput = QuoteAtBlock & {
+type PoolAmountInQuoteInput = QuoteAtBlock & {
   poolAddress: Address;
   tokenOut: Address;
   tokenIn: Address;
@@ -59,7 +59,7 @@ export type DeriveExactOutputHopAmountInsInput = {
   amountOutRaw: string;
 };
 
-export async function quotePoolAmountOut(
+async function quotePoolAmountOut(
   client: PoolQuoteClient,
   input: PoolAmountOutQuoteInput,
 ): Promise<string> {
@@ -81,7 +81,7 @@ export async function quotePoolAmountOut(
   return amountOut.toString();
 }
 
-export async function quotePoolAmountIn(
+async function quotePoolAmountIn(
   client: PoolQuoteClient,
   input: PoolAmountInQuoteInput,
 ): Promise<string> {

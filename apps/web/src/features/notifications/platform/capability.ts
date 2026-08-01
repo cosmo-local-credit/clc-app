@@ -1,4 +1,4 @@
-export type NotificationCapabilityStatus = "install-required" | "supported" | "unsupported";
+type NotificationCapabilityStatus = "install-required" | "supported" | "unsupported";
 
 export type NotificationCapabilityPlatform =
   | "chrome-android"
@@ -6,7 +6,7 @@ export type NotificationCapabilityPlatform =
   | "ios-safari-tab"
   | "unsupported";
 
-export type NotificationCapabilityReason =
+type NotificationCapabilityReason =
   | "insecure-context"
   | "ios-safari-tab"
   | "missing-notification-api"
@@ -100,7 +100,7 @@ export function detectNotificationCapability(
   };
 }
 
-export function readNotificationCapabilityEnvironment(): NotificationCapabilityEnvironment {
+function readNotificationCapabilityEnvironment(): NotificationCapabilityEnvironment {
   const browserWindow = typeof window === "undefined" ? undefined : window;
   const browserNavigator =
     typeof navigator === "undefined"

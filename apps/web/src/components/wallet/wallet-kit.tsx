@@ -1,11 +1,5 @@
-export {
-  HighlightAddress,
-  EllipsizedAddress,
-  shortenAddress,
-  CopyableAddress,
-} from "./wallet-address";
-export { HueAvatar } from "./wallet-avatar";
-export { TokenLogo, PicsumLogo } from "./wallet-logos";
+export { HighlightAddress, EllipsizedAddress } from "./wallet-address";
+export { TokenLogo } from "./wallet-logos";
 export { VoucherAvatar } from "./voucher-avatar";
 export { TransferDetailsSheet, type TransferDetails } from "./transfer-details-sheet";
 export { NetworkBadge, SignedAmount, SignHint, SuccessCheck } from "./wallet-status";

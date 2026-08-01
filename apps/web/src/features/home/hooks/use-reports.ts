@@ -9,9 +9,9 @@ import {
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 import { reverseLocation } from "#/features/onboarding/api/geo-client";
 
-export const REPORTS_PAGE_SIZE = 20;
+const REPORTS_PAGE_SIZE = 20;
 
-export const reportQueryKeys = {
+const reportQueryKeys = {
   all: ["reports"] as const,
   feed: (perPage: number) => [...reportQueryKeys.all, "feed", { perPage }] as const,
   byId: (id: string | undefined) => [...reportQueryKeys.all, "detail", id ?? "none"] as const,
@@ -30,7 +30,7 @@ export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) 
   });
 }
 
-export function reportQuery(id: string) {
+function reportQuery(id: string) {
   return queryOptions({
     queryKey: reportQueryKeys.byId(id),
     queryFn: ({ signal }) => getReport(id, signal),

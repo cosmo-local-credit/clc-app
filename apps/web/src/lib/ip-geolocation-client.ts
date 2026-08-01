@@ -9,7 +9,7 @@
  * default, never a rank-3 city fix, and neither is ever persisted — only real
  * `getCurrentPosition` successes are.
  */
-export type IPCameraSource = "ip-city" | "country-default";
+type IPCameraSource = "ip-city" | "country-default";
 
 export type IPCamera = {
   lat: number;

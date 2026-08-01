@@ -1,5 +1,3 @@
-import { RiFileCopyLine } from "react-icons/ri";
-
 import { cn } from "#/lib/utils";
 
 /**
@@ -36,22 +34,5 @@ export function EllipsizedAddress({ address, className }: { address: string; cla
       <span className="font-semibold text-primary">{address.slice(2, 6)}</span>…
       <span className="font-semibold text-primary">{address.slice(-5)}</span>
     </span>
-  );
-}
-
-/** Shortened address label, e.g. `0x91Ab3f…d2E7`. */
-export function shortenAddress(address: string): string {
-  if (address.length < 10) return address;
-  return `${address.slice(0, 8)}…${address.slice(-4)}`;
-}
-
-export function CopyableAddress({ address, className }: { address: string; className?: string }) {
-  return (
-    <div className={cn("flex items-center gap-2 border border-border bg-card p-3", className)}>
-      <span className="min-w-0 flex-1 break-all font-mono text-xs leading-relaxed">{address}</span>
-      <span className="flex size-8 shrink-0 items-center justify-center bg-muted text-muted-foreground">
-        <RiFileCopyLine className="size-3.5" aria-hidden="true" />
-      </span>
-    </div>
   );
 }

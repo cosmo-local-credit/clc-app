@@ -5,23 +5,12 @@ export {
   type CaliburCall,
   computeEIP712Digest,
   eip7702AuthMessage,
-  eip7702DelegationCode,
-  EIP7702_DELEGATION_PREFIX,
   encodeRegisterCalldata,
   encodeWebAuthnAuth,
   isEip7702Delegated,
   normalizeS,
   parseDERSignature,
   type SignedBatch,
-  secp256k1KeyHash,
-  type WebAuthnAuth,
   webAuthnKeyHash,
 } from "./logic";
-export {
-  type EIP7702Auth,
-  eip7702AuthSchema,
-  type SignedBatchInput,
-  signedBatchSchema,
-  type WebAuthnCredential,
-  webAuthnCredentialSchema,
-} from "./types";
+export { type EIP7702Auth, type WebAuthnCredential } from "./types";

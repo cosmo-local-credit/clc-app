@@ -1,3 +1,4 @@
+import { hueFromSeed } from "#/components/wallet/wallet-data";
 import { cn } from "#/lib/utils";
 
 export type PoolLogoProps = {
@@ -38,7 +39,7 @@ export function PoolLogo({ imageUrl, name, seed, size = 44, className }: PoolLog
   );
 }
 
-export function initialsFromName(name: string): string {
+function initialsFromName(name: string): string {
   const initials = name
     .trim()
     .split(/\s+/)
@@ -47,12 +48,4 @@ export function initialsFromName(name: string): string {
     .map((part) => part.at(0)?.toUpperCase() ?? "")
     .join("");
   return initials || "P";
-}
-
-export function hueFromSeed(seed: string): string {
-  let hue = 0;
-  for (let index = 0; index < seed.length; index++) {
-    hue = (hue * 31 + seed.charCodeAt(index)) % 360;
-  }
-  return `oklch(0.58 0.16 ${hue})`;
 }

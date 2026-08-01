@@ -5,7 +5,6 @@ import type * as React from "react";
 import { cn } from "#/lib/utils.ts";
 
 const SelectRoot = Select.Root;
-const SelectGroup = Select.Group;
 
 function SelectValue({
   placeholder,
@@ -75,16 +74,6 @@ function SelectContent({
   );
 }
 
-function SelectLabel({ className, ...props }: React.ComponentProps<typeof Select.GroupLabel>) {
-  return (
-    <Select.GroupLabel
-      data-slot="select-label"
-      className={cn("px-2 py-1.5 text-muted-foreground text-xs", className)}
-      {...props}
-    />
-  );
-}
-
 function SelectItem({ className, children, ...props }: React.ComponentProps<typeof Select.Item>) {
   return (
     <Select.Item
@@ -107,16 +96,6 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
       </span>
       <Select.ItemText>{children}</Select.ItemText>
     </Select.Item>
-  );
-}
-
-function SelectSeparator({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="select-separator"
-      className={cn("pointer-events-none -mx-1 my-1 h-px bg-border", className)}
-      {...props}
-    />
   );
 }
 
@@ -150,15 +129,4 @@ function SelectScrollDownButton({
   );
 }
 
-export {
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectRoot,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-};
+export { SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValue };

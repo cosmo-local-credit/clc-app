@@ -46,5 +46,3 @@ export const profileEditSchema = z
     country: z.string().regex(/^[A-Z]{2}$/, { message: "Select your country" }),
   })
   .superRefine(requireEmailOrPhone);
-
-export type ProfileEditInput = z.infer<typeof profileEditSchema>;

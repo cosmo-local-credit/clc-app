@@ -13,12 +13,7 @@ export function markReconnectAttempted(): void {
   emit();
 }
 
-export function resetReconnectAttemptedForTest(): void {
-  reconnectAttempted = false;
-  emit();
-}
-
-export function getReconnectAttemptedSnapshot(): boolean {
+function getReconnectAttemptedSnapshot(): boolean {
   return reconnectAttempted;
 }
 

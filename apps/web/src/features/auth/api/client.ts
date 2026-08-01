@@ -215,7 +215,7 @@ export type OtxTrackResult = {
   otx: OtxRecord[];
 };
 
-export const TRACKING_TIMEOUT_MS = 120_000;
+const TRACKING_TIMEOUT_MS = 120_000;
 export const TRACKING_POLL_MS = 2_000;
 
 const NON_TERMINAL_OTX_STATUSES = new Set(["PENDING", "IN_NETWORK", ""]);

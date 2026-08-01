@@ -55,7 +55,7 @@ type NotificationDatabase = DBSchema & {
   };
 };
 
-export type NotificationDeviceRecord = {
+type NotificationDeviceRecord = {
   createdAt: string;
   deviceId: string;
   key: typeof SINGLETON_KEY;
@@ -93,7 +93,7 @@ export type NotificationPendingClickEvent = {
   targetUrl: string;
 };
 
-export type NotificationAckKind = "action" | "click" | "delivery";
+type NotificationAckKind = "action" | "click" | "delivery";
 
 export type NotificationAckQueueEntry = {
   ackId: string;
@@ -116,7 +116,7 @@ export type EnqueueNotificationAckInput = Omit<
 > &
   Pick<NotificationAckQueueEntry, "deviceId" | "kind" | "notificationId">;
 
-export type NotificationSubscriptionDiagnosticStatus =
+type NotificationSubscriptionDiagnosticStatus =
   | "active"
   | "failed"
   | "missing"

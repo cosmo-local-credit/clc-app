@@ -55,7 +55,7 @@ export async function subscribeWithVapidPublicKey(
   return serializePushSubscription(subscription);
 }
 
-export function urlBase64ToUint8Array(value: string): Uint8Array<ArrayBuffer> {
+function urlBase64ToUint8Array(value: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = `${value}${padding}`.replace(/-/g, "+").replace(/_/g, "/");
   const rawData = atob(base64);

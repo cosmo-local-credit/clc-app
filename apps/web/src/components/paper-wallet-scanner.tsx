@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import type { ChangeEvent, ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
-import { Button } from "#/components/ui";
+import { Button } from "#/components/ui/button";
 
 type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
 type ScanMode = "choose" | "camera" | "upload";

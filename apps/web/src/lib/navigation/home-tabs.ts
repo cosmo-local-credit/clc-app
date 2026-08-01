@@ -2,9 +2,8 @@ import { isFilterSearchActive } from "@clc/core/features/catalog/logic";
 
 import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
 
-export const publicHomeTabs = ["market"] as const;
-export const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
-export const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
+const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
+const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 
 export type HomeTab = (typeof homeTabs)[number];
 export type MarketView = "map" | "list";

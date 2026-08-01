@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "treatConfigHintsAsErrors": true,
+  "includeEntryExports": true,
+  "ignoreFiles": ["lingui.config.ts"],
+  "ignoreDependencies": ["@tanstack/cli", "@ticktockbent/charlotte"],
+  "rules": {
+    "catalog": "warn"
+  },
+  "tags": ["-devtool"],
+  "workspaces": {
+    "apps/web": {
+      "entry": ["src/sw.ts!"]
+    },
+    "packages/core": {
+      "ignoreIssues": {
+        "src/features/pool-swaps/logic.ts": ["exports"],
+        "src/features/webauthn/types.ts": ["exports", "types"],
+        "src/lib/api/**": ["exports"],
+        "src/lib/query/**": ["exports"]
+      }
+    }
+  }
+}
