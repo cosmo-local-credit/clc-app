@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NavRouteImport } from './routes/_nav'
+import { Route as WalletIndexRouteImport } from './routes/wallet/index'
+import { Route as VouchersIndexRouteImport } from './routes/vouchers/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
@@ -33,6 +37,26 @@ const OnboardingRoute = OnboardingRouteImport.update({
 } as any)
 const NavRoute = NavRouteImport.update({
   id: '/_nav',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletIndexRoute = WalletIndexRouteImport.update({
+  id: '/wallet/',
+  path: '/wallet/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VouchersIndexRoute = VouchersIndexRouteImport.update({
+  id: '/vouchers/',
+  path: '/vouchers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostsIndexRoute = PostsIndexRouteImport.update({
+  id: '/posts/',
+  path: '/posts/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavIndexRoute = NavIndexRouteImport.update({
@@ -116,6 +140,10 @@ export interface FileRoutesByFullPath {
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
+  '/posts/': typeof PostsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/vouchers/': typeof VouchersIndexRoute
+  '/wallet/': typeof WalletIndexRoute
   '/posts/$reportId': typeof NavPostsReportIdRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/wallet/vouchers': typeof NavWalletVouchersRoute
@@ -133,6 +161,10 @@ export interface FileRoutesByTo {
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/': typeof NavIndexRoute
+  '/posts': typeof PostsIndexRoute
+  '/settings': typeof SettingsIndexRoute
+  '/vouchers': typeof VouchersIndexRoute
+  '/wallet': typeof WalletIndexRoute
   '/posts/$reportId': typeof NavPostsReportIdRoute
   '/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/wallet/vouchers': typeof NavWalletVouchersRoute
@@ -152,6 +184,10 @@ export interface FileRoutesById {
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/_nav/': typeof NavIndexRoute
+  '/posts/': typeof PostsIndexRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/vouchers/': typeof VouchersIndexRoute
+  '/wallet/': typeof WalletIndexRoute
   '/_nav/posts/$reportId': typeof NavPostsReportIdRoute
   '/_nav/vouchers/$voucherAddress': typeof NavVouchersVoucherAddressRoute
   '/_nav/wallet/vouchers': typeof NavWalletVouchersRoute
@@ -171,6 +207,10 @@ export interface FileRouteTypes {
     | '/settings/profile'
     | '/wallet/receive'
     | '/wallet/top-up'
+    | '/posts/'
+    | '/settings/'
+    | '/vouchers/'
+    | '/wallet/'
     | '/posts/$reportId'
     | '/vouchers/$voucherAddress'
     | '/wallet/vouchers'
@@ -188,6 +228,10 @@ export interface FileRouteTypes {
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/'
+    | '/posts'
+    | '/settings'
+    | '/vouchers'
+    | '/wallet'
     | '/posts/$reportId'
     | '/vouchers/$voucherAddress'
     | '/wallet/vouchers'
@@ -206,6 +250,10 @@ export interface FileRouteTypes {
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/_nav/'
+    | '/posts/'
+    | '/settings/'
+    | '/vouchers/'
+    | '/wallet/'
     | '/_nav/posts/$reportId'
     | '/_nav/vouchers/$voucherAddress'
     | '/_nav/wallet/vouchers'
@@ -224,6 +272,10 @@ export interface RootRouteChildren {
   SettingsProfileRoute: typeof SettingsProfileRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
+  PostsIndexRoute: typeof PostsIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+  VouchersIndexRoute: typeof VouchersIndexRoute
+  WalletIndexRoute: typeof WalletIndexRoute
   WalletSendAmountRoute: typeof WalletSendAmountRoute
   WalletSendReceiptRoute: typeof WalletSendReceiptRoute
   WalletSendIndexRoute: typeof WalletSendIndexRoute
@@ -245,6 +297,34 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof NavRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet/': {
+      id: '/wallet/'
+      path: '/wallet'
+      fullPath: '/wallet/'
+      preLoaderRoute: typeof WalletIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vouchers/': {
+      id: '/vouchers/'
+      path: '/vouchers'
+      fullPath: '/vouchers/'
+      preLoaderRoute: typeof VouchersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/posts/': {
+      id: '/posts/'
+      path: '/posts'
+      fullPath: '/posts/'
+      preLoaderRoute: typeof PostsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_nav/': {
@@ -374,6 +454,10 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsProfileRoute: SettingsProfileRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletTopUpRoute: WalletTopUpRoute,
+  PostsIndexRoute: PostsIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+  VouchersIndexRoute: VouchersIndexRoute,
+  WalletIndexRoute: WalletIndexRoute,
   WalletSendAmountRoute: WalletSendAmountRoute,
   WalletSendReceiptRoute: WalletSendReceiptRoute,
   WalletSendIndexRoute: WalletSendIndexRoute,
