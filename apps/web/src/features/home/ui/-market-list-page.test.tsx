@@ -600,7 +600,7 @@ describe("MarketListPage filter sheet", () => {
     expect(search({})).toMatchObject({ tags: "Art" });
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art"], tagMatch: "any" });
+    ).toEqual({ tags: ["Art"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
   });
 
   it("removes a category only after Apply and clears an empty saved preference", () => {

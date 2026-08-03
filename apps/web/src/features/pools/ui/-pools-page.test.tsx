@@ -164,7 +164,7 @@ describe("pools list", () => {
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(
       JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.pools) ?? "null"),
-    ).toEqual({ tags: ["Food"], tagMatch: "any" });
+    ).toEqual({ tags: ["Food"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
   });
 
   it("offers no filter controls it cannot honour", async () => {

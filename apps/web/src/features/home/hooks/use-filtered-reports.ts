@@ -1,4 +1,9 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  formatVoucherAddress,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -8,6 +13,7 @@ import {
   type ReportCursor,
   type ReportSummary,
   type ReportTagFacet,
+  type ReportVoucherFacet,
   getFilteredReports,
 } from "#/features/home/api/reports-client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
@@ -19,7 +25,13 @@ const MAX_FILTERED_REPORT_PAGES = 30;
 const FILTERED_REPORTS_GC_TIME = 5 * 60_000;
 const REPORTS_STALE_TIME = 10 * 60_000;
 
-const EMPTY_CATALOG_FILTER: CatalogFilter = { term: "", tags: [], tagMatch: "any" };
+const EMPTY_CATALOG_FILTER: CatalogFilter = {
+  term: "",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
 
 const filteredReportQueryKeys = {
   all: ["reports"] as const,
@@ -38,6 +50,7 @@ export class FilteredReportsTooLargeError extends Error {
 type FilteredReportFeed = {
   reports: ReportSummary[];
   tagFacets: ReportTagFacet[] | null;
+  voucherFacets: ReportVoucherFacet[] | null;
 };
 
 type FilteredReportsState =
@@ -81,7 +94,11 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
         for (const report of page.reports) byId.set(report.id, report);
       }
 
-      return { reports: [...byId.values()], tagFacets: pages[0]?.tagFacets ?? null };
+      return {
+        reports: [...byId.values()],
+        tagFacets: pages[0]?.tagFacets ?? null,
+        voucherFacets: pages[0]?.voucherFacets ?? null,
+      };
     },
     enabled: filter !== null,
     placeholderData: keepPreviousData,
@@ -106,7 +123,10 @@ function useReportFacetVocabulary() {
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );
-      return page.tagFacets ?? [];
+      return {
+        tagFacets: page.tagFacets ?? [],
+        voucherFacets: page.voucherFacets ?? [],
+      };
     },
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
@@ -116,6 +136,25 @@ function useReportFacetVocabulary() {
         ? false
         : failureCount < 1,
   });
+}
+
+function ensureSelectedReportVoucherFacets(
+  facets: ReportVoucherFacet[],
+  selected: readonly VoucherRef[],
+): ReportVoucherFacet[] {
+  const keys = new Set(facets.map(serializeVoucherRef));
+  const missing = selected.filter((voucher) => !keys.has(serializeVoucherRef(voucher)));
+  if (missing.length === 0) return facets;
+  return [
+    ...facets,
+    ...missing.map((voucher) => ({
+      ...voucher,
+      name: formatVoucherAddress(voucher.address),
+      symbol: "",
+      count: 0,
+      placeholder: true,
+    })),
+  ];
 }
 
 function ensureSelectedReportFacets(
@@ -135,6 +174,7 @@ export type ReportFeed = {
   error: Error | null;
   retry: () => void;
   tagFacets: ReportTagFacet[];
+  voucherFacets: ReportVoucherFacet[];
   hasMore: boolean;
   loadMore: () => void;
   isLoadingMore: boolean;
@@ -175,8 +215,16 @@ export function useReportFeed(
     const selected = filter.result.ok ? filter.result.filter.tags : [];
     const source =
       (state.status === "refining" || state.status === "ready" ? state.data.tagFacets : null) ??
-      vocabulary.data;
+      vocabulary.data?.tagFacets;
     return ensureSelectedReportFacets(source ?? [], selected);
+  }, [filter.result, state, vocabulary.data]);
+
+  const voucherFacets = useMemo(() => {
+    const selected = filter.result.ok ? filter.result.filter.vouchers : [];
+    const source =
+      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
+      vocabulary.data?.voucherFacets;
+    return ensureSelectedReportVoucherFacets(source ?? [], selected);
   }, [filter.result, state, vocabulary.data]);
 
   return useMemo(() => {
@@ -187,6 +235,7 @@ export function useReportFeed(
         error: unfiltered.error,
         retry: unfiltered.retry,
         tagFacets: chipFacets,
+        voucherFacets,
         hasMore: unfiltered.hasNextPage,
         loadMore: unfiltered.fetchNextPage,
         isLoadingMore: unfiltered.isFetchingNextPage,
@@ -201,9 +250,10 @@ export function useReportFeed(
       error: state.status === "error" ? state.error : null,
       retry: () => void filtered.refetch(),
       tagFacets: chipFacets,
+      voucherFacets,
       hasMore: false,
       loadMore: () => {},
       isLoadingMore: false,
     };
-  }, [filter.isFiltered, unfiltered, state, chipFacets, filtered]);
+  }, [filter.isFiltered, unfiltered, state, chipFacets, voucherFacets, filtered]);
 }

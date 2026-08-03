@@ -1,4 +1,9 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  formatVoucherAddress,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
@@ -6,6 +11,7 @@ import { BackendApiError } from "#/features/auth/api/client";
 import {
   type FilteredPoolPage,
   type PoolTagFacet,
+  type PoolVoucherFacet,
   type UserPool,
   getFilteredPools,
 } from "#/features/pools/api/pools-client";
@@ -18,7 +24,13 @@ const MAX_FILTERED_POOL_PAGES = 10;
 const FILTERED_POOLS_GC_TIME = 5 * 60_000;
 const POOLS_STALE_TIME = 10 * 60_000;
 
-const EMPTY_CATALOG_FILTER: CatalogFilter = { term: "", tags: [], tagMatch: "any" };
+const EMPTY_CATALOG_FILTER: CatalogFilter = {
+  term: "",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
 
 const filteredPoolQueryKeys = {
   all: ["pools"] as const,
@@ -37,6 +49,7 @@ export class FilteredPoolsTooLargeError extends Error {
 type FilteredPoolCatalog = {
   pools: UserPool[];
   tagFacets: PoolTagFacet[] | null;
+  voucherFacets: PoolVoucherFacet[] | null;
 };
 
 type FilteredPoolsState =
@@ -88,7 +101,11 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
         for (const pool of page.pools) byAddress.set(pool.address, pool);
       }
 
-      return { pools: [...byAddress.values()], tagFacets: pages[0]?.tagFacets ?? null };
+      return {
+        pools: [...byAddress.values()],
+        tagFacets: pages[0]?.tagFacets ?? null,
+        voucherFacets: pages[0]?.voucherFacets ?? null,
+      };
     },
     enabled: filter !== null,
     placeholderData: keepPreviousData,
@@ -113,7 +130,10 @@ function usePoolFacetVocabulary() {
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );
-      return page.tagFacets ?? [];
+      return {
+        tagFacets: page.tagFacets ?? [],
+        voucherFacets: page.voucherFacets ?? [],
+      };
     },
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
@@ -123,6 +143,25 @@ function usePoolFacetVocabulary() {
         ? false
         : failureCount < 1,
   });
+}
+
+function ensureSelectedPoolVoucherFacets(
+  facets: PoolVoucherFacet[],
+  selected: readonly VoucherRef[],
+): PoolVoucherFacet[] {
+  const keys = new Set(facets.map(serializeVoucherRef));
+  const missing = selected.filter((voucher) => !keys.has(serializeVoucherRef(voucher)));
+  if (missing.length === 0) return facets;
+  return [
+    ...facets,
+    ...missing.map((voucher) => ({
+      ...voucher,
+      name: formatVoucherAddress(voucher.address),
+      symbol: "",
+      count: 0,
+      placeholder: true,
+    })),
+  ];
 }
 
 function ensureSelectedPoolFacets(
@@ -142,6 +181,7 @@ export type PoolCatalog = {
   error: Error | null;
   retry: () => void;
   tagFacets: PoolTagFacet[];
+  voucherFacets: PoolVoucherFacet[];
   hasMore: boolean;
   loadMore: () => void;
   isLoadingMore: boolean;
@@ -182,8 +222,16 @@ export function usePoolCatalog(
     const selected = filter.result.ok ? filter.result.filter.tags : [];
     const source =
       (state.status === "refining" || state.status === "ready" ? state.data.tagFacets : null) ??
-      vocabulary.data;
+      vocabulary.data?.tagFacets;
     return ensureSelectedPoolFacets(source ?? [], selected);
+  }, [filter.result, state, vocabulary.data]);
+
+  const voucherFacets = useMemo(() => {
+    const selected = filter.result.ok ? filter.result.filter.vouchers : [];
+    const source =
+      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
+      vocabulary.data?.voucherFacets;
+    return ensureSelectedPoolVoucherFacets(source ?? [], selected);
   }, [filter.result, state, vocabulary.data]);
 
   return useMemo(() => {
@@ -194,6 +242,7 @@ export function usePoolCatalog(
         error: unfiltered.error,
         retry: unfiltered.retry,
         tagFacets: chipFacets,
+        voucherFacets,
         hasMore: unfiltered.hasNextPage,
         loadMore: unfiltered.fetchNextPage,
         isLoadingMore: unfiltered.isFetchingNextPage,
@@ -208,9 +257,10 @@ export function usePoolCatalog(
       error: state.status === "error" ? state.error : null,
       retry: () => void filtered.refetch(),
       tagFacets: chipFacets,
+      voucherFacets,
       hasMore: false,
       loadMore: () => {},
       isLoadingMore: false,
     };
-  }, [filter.isFiltered, unfiltered, state, chipFacets, filtered]);
+  }, [filter.isFiltered, unfiltered, state, chipFacets, voucherFacets, filtered]);
 }

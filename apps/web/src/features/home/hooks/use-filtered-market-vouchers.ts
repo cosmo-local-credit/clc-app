@@ -112,7 +112,13 @@ export function useMarketFacetVocabulary() {
   });
 }
 
-const EMPTY_CATALOG_FILTER: CatalogFilter = { term: "", tags: [], tagMatch: "any" };
+const EMPTY_CATALOG_FILTER: CatalogFilter = {
+  term: "",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
 
 export function ensureSelectedFacets(
   facets: MarketTagFacet[],

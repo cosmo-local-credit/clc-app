@@ -21,7 +21,9 @@ const VISIBLE_VOUCHERS = 1;
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.posts);
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.posts, {
+    voucherRelationships: true,
+  });
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
@@ -64,7 +66,11 @@ export function PostsPage() {
         <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Posts</Trans>
         </h1>
-        <ReportFilterSheet filter={filter} facets={feed.tagFacets} />
+        <ReportFilterSheet
+          filter={filter}
+          facets={feed.tagFacets}
+          voucherFacets={feed.voucherFacets}
+        />
       </div>
 
       <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />

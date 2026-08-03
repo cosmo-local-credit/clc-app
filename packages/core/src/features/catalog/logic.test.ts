@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   CATALOG_MAX_TAGS,
+  CATALOG_MAX_VOUCHERS,
   CATALOG_TERM_MAX,
   type CatalogFilter,
   isFilterActive,
@@ -18,6 +19,15 @@ function mustParse(state: Parameters<typeof parseCatalogFilter>[0]): CatalogFilt
 }
 
 const ASTRAL = "😀";
+const FIRST_VOUCHER = "42220:0x1111111111111111111111111111111111111111";
+const SECOND_VOUCHER = "42220:0x2222222222222222222222222222222222222222";
+
+function catalogFilter(
+  value: Omit<CatalogFilter, "vouchers" | "voucherMatch"> &
+    Partial<Pick<CatalogFilter, "vouchers" | "voucherMatch">>,
+): CatalogFilter {
+  return { vouchers: [], voucherMatch: "any", ...value };
+}
 
 describe("term normalization", () => {
   it("collapses every kind of internal whitespace", () => {
@@ -118,6 +128,54 @@ describe("tagMatch canonicalization", () => {
   });
 });
 
+describe("voucher relationship normalization", () => {
+  it("deduplicates, sorts, and case-folds stable chain/address references", () => {
+    expect(
+      mustParse({
+        vouchers: [
+          `${SECOND_VOUCHER.toUpperCase().replace("0X", "0x")}`,
+          FIRST_VOUCHER,
+          FIRST_VOUCHER,
+        ],
+      }).vouchers,
+    ).toEqual([
+      { chainId: 42220, address: "0x1111111111111111111111111111111111111111" },
+      { chainId: 42220, address: "0x2222222222222222222222222222222222222222" },
+    ]);
+  });
+
+  it("rejects malformed references instead of silently broadening the filter", () => {
+    expect(parseCatalogFilter({ vouchers: "42220:not-an-address" })).toEqual({
+      ok: false,
+      reason: "invalid-vouchers",
+    });
+    expect(
+      parseCatalogFilter({ vouchers: "0:0x1111111111111111111111111111111111111111" }).ok,
+    ).toBe(false);
+  });
+
+  it("reports more than the maximum after deduplication", () => {
+    const vouchers = Array.from(
+      { length: CATALOG_MAX_VOUCHERS + 1 },
+      (_, index) => `42220:0x${String(index + 1).padStart(40, "0")}`,
+    );
+    expect(parseCatalogFilter({ vouchers })).toEqual({
+      ok: false,
+      reason: "too-many-vouchers",
+      requested: CATALOG_MAX_VOUCHERS + 1,
+      max: CATALOG_MAX_VOUCHERS,
+    });
+  });
+
+  it("canonicalizes any/all independently from tag matching", () => {
+    expect(mustParse({ vouchers: FIRST_VOUCHER, voucherMatch: "all" }).voucherMatch).toBe("any");
+    expect(
+      mustParse({ vouchers: `${FIRST_VOUCHER},${SECOND_VOUCHER}`, voucherMatch: "all" })
+        .voucherMatch,
+    ).toBe("all");
+  });
+});
+
 describe("search-state parsing", () => {
   it("accepts the repeated-key array the router produces", () => {
     expect(parseCatalogSearchState({ tags: ["Art", "Mobility"] })).toEqual({
@@ -167,12 +225,16 @@ describe("search-state parsing", () => {
 
 describe("serialization", () => {
   it("omits keys rather than writing empty ones", () => {
-    expect(toCatalogSearchState({ term: "", tags: [], tagMatch: "any" })).toEqual({});
+    expect(toCatalogSearchState(catalogFilter({ term: "", tags: [], tagMatch: "any" }))).toEqual(
+      {},
+    );
   });
 
   it("comma-joins tags rather than repeating the key", () => {
     expect(
-      toCatalogSearchState({ term: "art", tags: ["Art", "Mobility"], tagMatch: "all" }),
+      toCatalogSearchState(
+        catalogFilter({ term: "art", tags: ["Art", "Mobility"], tagMatch: "all" }),
+      ),
     ).toEqual({ q: "art", tags: "Art,Mobility", tagMatch: "all" });
   });
 
@@ -187,6 +249,9 @@ describe("serialization", () => {
       { q: "a" },
       { tags: "Art", tagMatch: "all" },
       { q: ASTRAL.repeat(100) },
+      { vouchers: FIRST_VOUCHER },
+      { vouchers: `${SECOND_VOUCHER},${FIRST_VOUCHER}`, voucherMatch: "all" },
+      { q: "art", tags: "Art", vouchers: FIRST_VOUCHER },
     ];
 
     for (const input of cases) {
@@ -198,10 +263,22 @@ describe("serialization", () => {
 
 describe("activity predicates", () => {
   it("distinguishes empty, term-only, tags-only, and both", () => {
-    expect(isFilterActive({ term: "", tags: [], tagMatch: "any" })).toBe(false);
-    expect(isFilterActive({ term: "art", tags: [], tagMatch: "any" })).toBe(true);
-    expect(isFilterActive({ term: "", tags: ["Art"], tagMatch: "any" })).toBe(true);
-    expect(isFilterActive({ term: "art", tags: ["Art"], tagMatch: "any" })).toBe(true);
+    expect(isFilterActive(catalogFilter({ term: "", tags: [], tagMatch: "any" }))).toBe(false);
+    expect(isFilterActive(catalogFilter({ term: "art", tags: [], tagMatch: "any" }))).toBe(true);
+    expect(isFilterActive(catalogFilter({ term: "", tags: ["Art"], tagMatch: "any" }))).toBe(true);
+    expect(isFilterActive(catalogFilter({ term: "art", tags: ["Art"], tagMatch: "any" }))).toBe(
+      true,
+    );
+    expect(
+      isFilterActive(
+        catalogFilter({
+          term: "",
+          tags: [],
+          tagMatch: "any",
+          vouchers: [{ chainId: 42220, address: "0x1111111111111111111111111111111111111111" }],
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("reports an over-limit state as filtered, where parseCatalogFilter reports failure", () => {

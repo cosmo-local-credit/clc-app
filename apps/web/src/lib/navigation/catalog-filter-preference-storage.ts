@@ -1,5 +1,5 @@
-import type { TagMatch } from "@clc/core/features/catalog/logic";
-import { parseCatalogFilter } from "@clc/core/features/catalog/logic";
+import type { TagMatch, VoucherRef } from "@clc/core/features/catalog/logic";
+import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/catalog/logic";
 
 /**
  * Read-once bootstrap persistence for a catalog's remembered facet selection.
@@ -28,6 +28,8 @@ export const CATALOG_FILTER_PREFERENCE_KEYS = {
 export type CatalogFilterPreference = {
   tags: readonly string[];
   tagMatch: TagMatch;
+  vouchers: readonly VoucherRef[];
+  voucherMatch: TagMatch;
 };
 
 export function readCatalogFilterPreference(storageKey: string): CatalogFilterPreference | null {
@@ -53,10 +55,15 @@ export function readCatalogFilterPreference(storageKey: string): CatalogFilterPr
   }
 
   const candidate = value as Record<string, unknown>;
+  const storedVouchers = candidate.vouchers ?? [];
+  const storedVoucherMatch = candidate.voucherMatch ?? "any";
   if (
     !Array.isArray(candidate.tags) ||
     !candidate.tags.every((tag) => typeof tag === "string") ||
-    (candidate.tagMatch !== "any" && candidate.tagMatch !== "all")
+    (candidate.tagMatch !== "any" && candidate.tagMatch !== "all") ||
+    !Array.isArray(storedVouchers) ||
+    !storedVouchers.every((voucher) => typeof voucher === "string") ||
+    (storedVoucherMatch !== "any" && storedVoucherMatch !== "all")
   ) {
     clearCatalogFilterPreference(storageKey);
     return null;
@@ -65,22 +72,36 @@ export function readCatalogFilterPreference(storageKey: string): CatalogFilterPr
   const result = parseCatalogFilter({
     tags: candidate.tags as string[],
     tagMatch: candidate.tagMatch,
+    vouchers: storedVouchers as string[],
+    voucherMatch: storedVoucherMatch,
   });
-  if (!result.ok || result.filter.tags.length === 0) {
+  if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
     clearCatalogFilterPreference(storageKey);
     return null;
   }
 
-  return { tags: result.filter.tags, tagMatch: result.filter.tagMatch };
+  return {
+    tags: result.filter.tags,
+    tagMatch: result.filter.tagMatch,
+    vouchers: result.filter.vouchers,
+    voucherMatch: result.filter.voucherMatch,
+  };
 }
 
 export function writeCatalogFilterPreference(
   storageKey: string,
   tags: readonly string[],
   tagMatch: TagMatch,
+  vouchers: readonly VoucherRef[],
+  voucherMatch: TagMatch,
 ): void {
-  const result = parseCatalogFilter({ tags, tagMatch });
-  if (!result.ok || result.filter.tags.length === 0) {
+  const result = parseCatalogFilter({
+    tags,
+    tagMatch,
+    vouchers: vouchers.map(serializeVoucherRef),
+    voucherMatch,
+  });
+  if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
     clearCatalogFilterPreference(storageKey);
     return;
   }
@@ -88,7 +109,12 @@ export function writeCatalogFilterPreference(
   try {
     getStorage()?.setItem(
       storageKey,
-      JSON.stringify({ tags: result.filter.tags, tagMatch: result.filter.tagMatch }),
+      JSON.stringify({
+        tags: result.filter.tags,
+        tagMatch: result.filter.tagMatch,
+        vouchers: result.filter.vouchers.map(serializeVoucherRef),
+        voucherMatch: result.filter.voucherMatch,
+      }),
     );
   } catch {
     // A blocked or full store must not stop filters from applying to the URL.

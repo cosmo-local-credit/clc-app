@@ -1,6 +1,12 @@
-import { CATALOG_MAX_TAGS, type TagMatch } from "@clc/core/features/catalog/logic";
+import {
+  CATALOG_MAX_TAGS,
+  CATALOG_MAX_VOUCHERS,
+  type TagMatch,
+  type VoucherRef,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useId, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { RiCheckLine, RiCloseLine, RiFilter3Line, RiSearchLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
@@ -61,6 +67,15 @@ type CatalogFacet = {
   count: number;
 };
 
+export type CatalogVoucherFacet = VoucherRef & {
+  name: string;
+  symbol: string;
+  count: number;
+  placeholder?: boolean;
+};
+
+const MAX_VISIBLE_VOUCHER_FACETS = 50;
+
 /**
  * Shared shadcn/Base UI filter sheet for exhaustive catalogs.
  *
@@ -73,6 +88,7 @@ export function CatalogFilterSheet({
   facets,
   title,
   facetTitle,
+  voucherFacets,
   onApply,
   children,
 }: {
@@ -80,18 +96,34 @@ export function CatalogFilterSheet({
   facets: readonly CatalogFacet[];
   title: ReactNode;
   facetTitle: ReactNode;
-  onApply: (tags: readonly string[], tagMatch: TagMatch) => void;
+  voucherFacets?: readonly CatalogVoucherFacet[];
+  onApply: (
+    tags: readonly string[],
+    tagMatch: TagMatch,
+    vouchers: readonly VoucherRef[],
+    voucherMatch: TagMatch,
+  ) => void;
   children?: ReactNode;
 }) {
   const { t } = useLingui();
   const categoryHeadingId = useId();
   const matchHeadingId = useId();
+  const voucherHeadingId = useId();
+  const voucherMatchHeadingId = useId();
   const [open, setOpen] = useState(false);
   const [draftTags, setDraftTags] = useState<readonly string[]>([]);
   const [draftTagMatch, setDraftTagMatch] = useState<TagMatch>("any");
+  const [draftVouchers, setDraftVouchers] = useState<readonly VoucherRef[]>([]);
+  const [draftVoucherMatch, setDraftVoucherMatch] = useState<TagMatch>("any");
+  const [voucherQuery, setVoucherQuery] = useState("");
 
-  const appliedCount = filter.result.ok ? filter.tags.length : filter.result.requested;
+  const appliedCount = filter.result.ok
+    ? filter.tags.length + filter.vouchers.length
+    : "requested" in filter.result
+      ? filter.result.requested
+      : 0;
   const atTagLimit = draftTags.length >= CATALOG_MAX_TAGS;
+  const atVoucherLimit = draftVouchers.length >= CATALOG_MAX_VOUCHERS;
   // Disjunctive counts describe what a chip adds under Any. They ignore the selected tags,
   // so showing them under All would imply a conjunctive count the backend did not compute.
   const showCounts = draftTagMatch === "any";
@@ -100,11 +132,54 @@ export function CatalogFilterSheet({
   const hasSelectableFacet = facets.some(
     (facet) => facet.count > 0 || draftTags.includes(facet.tag),
   );
+  const selectedVoucherKeys = useMemo(
+    () => new Set(draftVouchers.map(serializeVoucherRef)),
+    [draftVouchers],
+  );
+  const voucherFilterEnabled = voucherFacets !== undefined;
+  const voucherFacetView = useMemo(() => {
+    if (!voucherFacets) return { visible: [], truncated: false };
+    const normalizedQuery = voucherQuery.trim().toLowerCase();
+    const matching = voucherFacets.filter((facet) => {
+      if (selectedVoucherKeys.has(serializeVoucherRef(facet))) return true;
+      if (normalizedQuery === "") return true;
+      return [facet.name, facet.symbol, facet.address]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+    const placeholders = matching
+      .filter((facet) => facet.placeholder)
+      .sort((left, right) => left.name.localeCompare(right.name));
+    const named = matching
+      .filter((facet) => !facet.placeholder)
+      .sort((left, right) => {
+        const leftSelected = selectedVoucherKeys.has(serializeVoucherRef(left));
+        const rightSelected = selectedVoucherKeys.has(serializeVoucherRef(right));
+        if (leftSelected !== rightSelected) return leftSelected ? -1 : 1;
+        return left.name.localeCompare(right.name);
+      });
+    const namedLimit = Math.max(0, MAX_VISIBLE_VOUCHER_FACETS - placeholders.length);
+    const visible = [...named.slice(0, namedLimit), ...placeholders];
+    return { visible, truncated: visible.length < matching.length };
+  }, [selectedVoucherKeys, voucherFacets, voucherQuery]);
 
   const openSheet = () => {
     setDraftTags(filter.tags);
     setDraftTagMatch(filter.tagMatch);
+    setDraftVouchers(filter.vouchers);
+    setDraftVoucherMatch(filter.voucherMatch);
+    setVoucherQuery("");
     setOpen(true);
+  };
+
+  const toggleDraftVoucher = (voucher: VoucherRef) => {
+    const key = serializeVoucherRef(voucher);
+    const next = selectedVoucherKeys.has(key)
+      ? draftVouchers.filter((entry) => serializeVoucherRef(entry) !== key)
+      : [...draftVouchers, voucher];
+    setDraftVouchers(next);
+    if (next.length < 2) setDraftVoucherMatch("any");
   };
 
   const toggleDraftTag = (tag: string) => {
@@ -155,8 +230,130 @@ export function CatalogFilterSheet({
             <div className="min-h-0 flex-1 overflow-y-auto border-y border-border px-4 py-4">
               {children}
 
+              {voucherFilterEnabled ? (
+                <section
+                  className={children ? "mt-4 border-t border-border pt-4" : undefined}
+                  aria-labelledby={voucherHeadingId}
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 id={voucherHeadingId} className="font-heading text-sm font-semibold">
+                      <Trans>Vouchers</Trans>
+                    </h3>
+                    <span className="text-muted-foreground text-xs tabular-nums">
+                      <Trans>
+                        {draftVouchers.length} of {CATALOG_MAX_VOUCHERS}
+                      </Trans>
+                    </span>
+                  </div>
+
+                  {voucherFacets?.length === 0 ? (
+                    <p className="mt-3 text-muted-foreground text-sm">
+                      <Trans>No voucher filters are available.</Trans>
+                    </p>
+                  ) : (
+                    <>
+                      <div className="relative mt-3">
+                        <RiSearchLine
+                          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        <Input
+                          type="search"
+                          value={voucherQuery}
+                          onChange={(event) => setVoucherQuery(event.target.value)}
+                          placeholder={t`Search vouchers`}
+                          aria-label={t`Search voucher filters`}
+                          className="rounded-none bg-card pl-9"
+                        />
+                      </div>
+
+                      {voucherFacetView.visible.length > 0 ? (
+                        <div
+                          className="mt-3 border border-border bg-card"
+                          role="group"
+                          aria-label={t`Filter by voucher`}
+                        >
+                          {voucherFacetView.visible.map((facet) => {
+                            const key = serializeVoucherRef(facet);
+                            const selected = selectedVoucherKeys.has(key);
+                            return (
+                              <button
+                                type="button"
+                                key={key}
+                                aria-pressed={selected}
+                                disabled={!selected && (facet.count === 0 || atVoucherLimit)}
+                                onClick={() => toggleDraftVoucher(facet)}
+                                className="flex min-h-11 w-full items-center gap-3 border-b border-border px-3 py-2 text-left last:border-b-0 disabled:opacity-40"
+                              >
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-medium">
+                                    {facet.name}
+                                  </span>
+                                  {facet.symbol ? (
+                                    <span className="block truncate font-mono text-muted-foreground text-xs">
+                                      {facet.symbol}
+                                    </span>
+                                  ) : null}
+                                </span>
+                                {draftVoucherMatch === "any" ? (
+                                  <span className="text-muted-foreground text-xs tabular-nums">
+                                    {facet.count}
+                                  </span>
+                                ) : null}
+                                {selected ? (
+                                  <RiCheckLine className="size-4 shrink-0" aria-hidden="true" />
+                                ) : null}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-muted-foreground text-sm">
+                          <Trans>No vouchers match this search.</Trans>
+                        </p>
+                      )}
+
+                      {voucherFacetView.truncated ? (
+                        <p className="mt-2 text-muted-foreground text-xs">
+                          <Trans>Some vouchers are hidden. Refine your search to see more.</Trans>
+                        </p>
+                      ) : null}
+                    </>
+                  )}
+
+                  {draftVouchers.length > 1 ? (
+                    <section
+                      className="mt-6 border-t border-border pt-4"
+                      aria-labelledby={voucherMatchHeadingId}
+                    >
+                      <h3 id={voucherMatchHeadingId} className="font-heading text-sm font-semibold">
+                        <Trans>How should vouchers match?</Trans>
+                      </h3>
+                      <div
+                        className="mt-3 grid grid-cols-2 gap-2"
+                        role="group"
+                        aria-label={t`Voucher match`}
+                      >
+                        <TagMatchToggle
+                          pressed={draftVoucherMatch === "any"}
+                          onPressed={() => setDraftVoucherMatch("any")}
+                          label={t`Any selected`}
+                        />
+                        <TagMatchToggle
+                          pressed={draftVoucherMatch === "all"}
+                          onPressed={() => setDraftVoucherMatch("all")}
+                          label={t`All selected`}
+                        />
+                      </div>
+                    </section>
+                  ) : null}
+                </section>
+              ) : null}
+
               <section
-                className={children ? "mt-4 border-t border-border pt-4" : undefined}
+                className={
+                  children || voucherFilterEnabled ? "mt-4 border-t border-border pt-4" : undefined
+                }
                 aria-labelledby={categoryHeadingId}
               >
                 <div className="flex items-baseline justify-between gap-3">
@@ -246,10 +443,12 @@ export function CatalogFilterSheet({
               <Button
                 variant="outline"
                 className="h-11 bg-card px-4"
-                disabled={draftTags.length === 0}
+                disabled={draftTags.length === 0 && draftVouchers.length === 0}
                 onClick={() => {
                   setDraftTags([]);
                   setDraftTagMatch("any");
+                  setDraftVouchers([]);
+                  setDraftVoucherMatch("any");
                 }}
               >
                 <Trans>Reset</Trans>
@@ -257,7 +456,7 @@ export function CatalogFilterSheet({
               <Button
                 className="h-11"
                 onClick={() => {
-                  onApply(draftTags, draftTagMatch);
+                  onApply(draftTags, draftTagMatch, draftVouchers, draftVoucherMatch);
                   setOpen(false);
                 }}
               >

@@ -1,4 +1,8 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 
 import { apiFetch } from "#/features/auth/api/client";
 import {
@@ -11,7 +15,7 @@ import {
 } from "#/lib/api-normalize";
 
 /** A voucher a report is linked to, as the feed and detail cards render it. */
-type ReportVoucher = {
+export type ReportVoucher = {
   address: HexAddress;
   name: string;
   symbol: string;
@@ -62,6 +66,13 @@ export type ReportTagFacet = {
   count: number;
 };
 
+export type ReportVoucherFacet = VoucherRef & {
+  name: string;
+  symbol: string;
+  count: number;
+  placeholder?: boolean;
+};
+
 export type FilteredReportsParams = {
   perPage: number;
   cursor?: ReportCursor;
@@ -71,16 +82,26 @@ export type FilteredReportsParams = {
 
 export type FilteredReportPage = ReportPage & {
   tagFacets: ReportTagFacet[] | null;
+  voucherFacets: ReportVoucherFacet[] | null;
 };
 
 type BackendFilteredReportPage = BackendReportPage & {
   tagFacets?: { tag?: unknown; count?: unknown }[] | null;
+  voucherFacets?: BackendVoucherFacet[] | null;
 };
 
 type BackendReportVoucher = Partial<{
   address: string | null;
   name: string | null;
   symbol: string | null;
+}>;
+
+type BackendVoucherFacet = Partial<{
+  chainId: string | number;
+  address: string;
+  name: string;
+  symbol: string;
+  count: string | number;
 }>;
 
 type BackendReportImage = Partial<{
@@ -149,6 +170,12 @@ export async function getFilteredReports(
   if (filter.term !== "") query.set("q", filter.term);
   if (filter.tags.length > 0) query.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") query.set("tagMatch", "all");
+  if (filter.vouchers.length > 0) {
+    query.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
+  }
+  if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
+    query.set("voucherMatch", "all");
+  }
   if (facets) query.set("facets", "true");
 
   const result = await apiFetch<BackendFilteredReportPage>(`/api/v2/reports?${query.toString()}`, {
@@ -163,7 +190,30 @@ export async function getFilteredReports(
     tagFacets: result.tagFacets
       ? result.tagFacets.map(normalizeReportTagFacet).filter(isPresent)
       : null,
+    voucherFacets: result.voucherFacets
+      ? result.voucherFacets.map(normalizeReportVoucherFacet).filter(isPresent)
+      : null,
   };
+}
+
+function normalizeReportVoucherFacet(facet: BackendVoucherFacet): ReportVoucherFacet | null {
+  const chainId = normalizeNumber(facet.chainId);
+  const address = normalizeHex(facet.address);
+  const name = normalizeText(facet.name);
+  const symbol = normalizeText(facet.symbol);
+  const count = normalizeNumber(facet.count);
+  if (
+    chainId === null ||
+    chainId <= 0 ||
+    !address ||
+    !name ||
+    !symbol ||
+    count === null ||
+    count < 0
+  ) {
+    return null;
+  }
+  return { chainId, address, name, symbol, count };
 }
 
 function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): ReportTagFacet | null {

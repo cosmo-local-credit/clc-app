@@ -7,7 +7,9 @@
  * identical across features.
  */
 
-export type HexAddress = `0x${string}`;
+import type { HexAddress } from "@clc/core/features/catalog/logic";
+
+export type { HexAddress };
 
 export type CursorParams = {
   perPage: number;

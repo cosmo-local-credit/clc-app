@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_nav/pools/")({
   staticData: { navOwner: "wallet" },
   validateSearch: (search): CatalogRouteSearch => pickCatalogSearch(search),
   beforeLoad: ({ search }) => {
-    const next = canonicalRedirectSearch(search);
+    const next = canonicalRedirectSearch(search, { voucherRelationships: true });
     if (!next) return;
     throw redirect({ to: "/pools", search: next, replace: true });
   },

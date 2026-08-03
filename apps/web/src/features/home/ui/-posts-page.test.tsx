@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "#/features/auth/api/client";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { ReportSummary, ReportVoucherFacet } from "#/features/home/api/reports-client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
 
@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
   navigate: vi.fn(),
   vocabulary: undefined as { tag: string; count: number }[] | undefined,
+  voucherVocabulary: undefined as ReportVoucherFacet[] | undefined,
   filteredFilters: [] as (CatalogFilter | null)[],
   filtered: {
     data: undefined as { reports: ReportSummary[]; tagFacets: null } | undefined,
@@ -62,6 +63,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
       const tagFacets = [...source, ...missing.map((tag) => ({ tag, count: 0 }))].sort(
         (left, right) => left.tag.localeCompare(right.tag),
       );
+      const voucherFacets = mocks.voucherVocabulary ?? [];
 
       if (!filter.isFiltered) {
         return {
@@ -70,6 +72,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
           error: unfiltered.error,
           retry: unfiltered.retry,
           tagFacets,
+          voucherFacets,
           hasMore: unfiltered.hasNextPage,
           loadMore: unfiltered.fetchNextPage,
           isLoadingMore: unfiltered.isFetchingNextPage,
@@ -92,6 +95,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
         error: mocks.filtered.error,
         retry: mocks.filtered.refetch,
         tagFacets,
+        voucherFacets,
         hasMore: false,
         loadMore: () => {},
         isLoadingMore: false,
@@ -143,7 +147,11 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
     vouchers: [
-      { address: "0x2222222222222222222222222222222222222222", name: "Kiriba", symbol: "KCH" },
+      {
+        address: "0x2222222222222222222222222222222222222222",
+        name: "Kiriba",
+        symbol: "KCH",
+      },
     ],
     ...overrides,
   };
@@ -165,6 +173,7 @@ beforeEach(() => {
   mocks.search = {};
   mocks.navigate = vi.fn();
   mocks.vocabulary = undefined;
+  mocks.voucherVocabulary = undefined;
   mocks.filteredFilters = [];
   mocks.filtered = {
     data: undefined,
@@ -313,6 +322,22 @@ describe("PostsPage filtering", () => {
     { tag: "Training", count: 1 },
     { tag: "Water", count: 0 },
   ];
+  const VOUCHER_VOCABULARY: ReportVoucherFacet[] = [
+    {
+      chainId: 1,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      name: "Alpha Credit",
+      symbol: "ALPHA",
+      count: 4,
+    },
+    {
+      chainId: 42220,
+      address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      name: "Beta Credit",
+      symbol: "BETA",
+      count: 2,
+    },
+  ];
 
   function openFilters() {
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
@@ -381,7 +406,71 @@ describe("PostsPage filtering", () => {
     expect(search({})).toMatchObject({ tags: "Harvest" });
     expect(
       JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({ tags: ["Harvest"], tagMatch: "any" });
+    ).toEqual({ tags: ["Harvest"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+  });
+
+  it("applies voucher relationships with all-match in one canonical navigation", () => {
+    mocks.voucherVocabulary = VOUCHER_VOCABULARY;
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const vouchers = within(sheet).getByRole("group", { name: "Filter by voucher" });
+    fireEvent.click(within(vouchers).getByRole("button", { name: /Alpha Credit/ }));
+    fireEvent.click(within(vouchers).getByRole("button", { name: /Beta Credit/ }));
+    const matchHeading = within(sheet).getByRole("heading", {
+      name: "How should vouchers match?",
+    });
+    expect(matchHeading.parentElement?.tagName).toBe("SECTION");
+    fireEvent.click(within(sheet).getByRole("button", { name: "All selected" }));
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    const call = mocks.navigate.mock.calls[0]?.[0];
+    const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
+    expect(search({})).toMatchObject({
+      vouchers:
+        "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      voucherMatch: "all",
+    });
+    expect(
+      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
+    ).toEqual({
+      tags: [],
+      tagMatch: "any",
+      vouchers: [
+        "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      ],
+      voucherMatch: "all",
+    });
+  });
+
+  it("shows an unavailable state without a search box for an empty voucher vocabulary", () => {
+    mocks.voucherVocabulary = [];
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).queryByRole("searchbox", { name: "Search voucher filters" })).toBeNull();
+    expect(within(sheet).getByText("No voucher filters are available.")).toBeTruthy();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+  });
+
+  it("announces when a large voucher vocabulary is clipped", () => {
+    mocks.voucherVocabulary = Array.from({ length: 51 }, (_, index) => ({
+      chainId: 42220,
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
+      name: `Voucher ${String(index + 1).padStart(2, "0")}`,
+      symbol: `V${index + 1}`,
+      count: 1,
+    }));
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(
+      within(sheet).getByText("Some vouchers are hidden. Refine your search to see more."),
+    ).toBeTruthy();
   });
 
   it("hides counts under All tags, where they cannot mean what they look like", () => {

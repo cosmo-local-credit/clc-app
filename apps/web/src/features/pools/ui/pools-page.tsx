@@ -19,7 +19,9 @@ const POOL_ROW_TAG_LIMIT = 3;
 
 export function PoolsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.pools);
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.pools, {
+    voucherRelationships: true,
+  });
   const poolsQuery = useUserPoolsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
@@ -64,7 +66,11 @@ export function PoolsPage() {
         <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Pools</Trans>
         </h1>
-        <PoolFilterSheet filter={filter} facets={catalog.tagFacets} />
+        <PoolFilterSheet
+          filter={filter}
+          facets={catalog.tagFacets}
+          voucherFacets={catalog.voucherFacets}
+        />
       </div>
 
       <CatalogSearchField filter={filter} label={t`Search pools`} />

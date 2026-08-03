@@ -25,6 +25,7 @@ export function useMarketFilterNotice(
   const { t } = useLingui();
 
   if (!filter.result.ok) {
+    if (!("requested" in filter.result)) return null;
     return {
       message: t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
       actionLabel: t`Clear filters`,
@@ -145,6 +146,7 @@ export function MarketFilterSummary({ filter }: { filter: CatalogFilterControls 
 
   const summary = (() => {
     if (!filter.result.ok) {
+      if (!("requested" in filter.result)) return "";
       const { requested } = filter.result;
       return i18n._("{requested, plural, one {# filter} other {# filters}}", { requested });
     }

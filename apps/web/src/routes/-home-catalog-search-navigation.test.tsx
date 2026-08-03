@@ -1,4 +1,4 @@
-import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
+import { CATALOG_MAX_TAGS, CATALOG_MAX_VOUCHERS } from "@clc/core/features/catalog/logic";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -33,7 +33,9 @@ function createTestRouter(initialEntry: string) {
       ...pickCatalogSearch(search),
     }),
     beforeLoad: ({ search }) => {
-      const next = canonicalRedirectSearch(search);
+      const next = canonicalRedirectSearch(search, {
+        voucherRelationships: search.tab === "posts",
+      });
       if (!next) return;
       throw redirect({ to: "/", search: next, replace: true });
     },
@@ -101,6 +103,30 @@ describe("home catalog search canonicalization through the router", () => {
     expect(params.get("tags")).toBe("Art");
   });
 
+  it("drops voucher filters on Market, which cannot honor them", async () => {
+    const voucher = "42220:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const { history } = await settle(`/?vouchers=${encodeURIComponent(voucher)}`);
+
+    const params = new URLSearchParams(history.location.search);
+    expect(params.has("vouchers")).toBe(false);
+    expect(params.has("voucherMatch")).toBe(false);
+  });
+
+  it("canonicalizes repeated voucher references on Posts and preserves all-match", async () => {
+    const first = "42220:0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
+    const second = "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const { history } = await settle(
+      `/?tab=posts&vouchers=${encodeURIComponent(first)}&vouchers=${encodeURIComponent(second)}&voucherMatch=all`,
+    );
+
+    const params = new URLSearchParams(history.location.search);
+    expect(params.getAll("vouchers")).toEqual([
+      "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    ]);
+    expect(params.get("voucherMatch")).toBe("all");
+    expect(params.get("tab")).toBe("posts");
+  });
+
   it("replaces rather than stacks, so Back does not step through corrections", async () => {
     const { history } = await settle("/?q=%20%20art");
 
@@ -141,5 +167,17 @@ describe("home catalog search canonicalization through the router", () => {
 
     expect(router.state.status).toBe("idle");
     expect(router.state.location.search.tags).toEqual(tags);
+  });
+
+  it("keeps every voucher of an over-limit URL rather than broadening the filter", async () => {
+    const vouchers = Array.from(
+      { length: CATALOG_MAX_VOUCHERS + 1 },
+      (_, index) => `42220:0x${index.toString(16).padStart(40, "0")}`,
+    );
+    const query = vouchers.map((voucher) => `vouchers=${encodeURIComponent(voucher)}`).join("&");
+    const { router } = await settle(`/?tab=posts&${query}`);
+
+    expect(router.state.status).toBe("idle");
+    expect(router.state.location.search.vouchers).toEqual(vouchers);
   });
 });

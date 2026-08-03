@@ -59,6 +59,7 @@ function page(ids: number[], overrides: Partial<FilteredPoolPage> = {}): Filtere
     last: ids.at(-1) ?? 0,
     receivedCount: ids.length,
     tagFacets: null,
+    voucherFacets: null,
     ...overrides,
   };
 }
@@ -84,7 +85,13 @@ function unfilteredStub(overrides: Partial<Parameters<typeof usePoolCatalog>[1]>
 }
 
 function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilterControls {
-  const filter: CatalogFilter = { term: "food", tags: [], tagMatch: "any" };
+  const filter: CatalogFilter = {
+    term: "food",
+    tags: [],
+    tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
+  };
   return {
     term: "food",
     setTerm: vi.fn(),
@@ -94,9 +101,12 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     isFiltered: true,
     tags: [],
     tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
     toggleTag: vi.fn(),
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
+    setFacets: vi.fn(),
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: vi.fn(),
@@ -156,7 +166,21 @@ describe("filtered pool walk", () => {
   });
 
   it("asks for facets on the first request only", async () => {
-    mockWalk(fullPage(1000, { tagFacets: [{ tag: "Food", count: 4 }] }), page([899]));
+    mockWalk(
+      fullPage(1000, {
+        tagFacets: [{ tag: "Food", count: 4 }],
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            name: "Sarafu",
+            symbol: "SRF",
+            count: 3,
+          },
+        ],
+      }),
+      page([899]),
+    );
 
     const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
       wrapper: wrapper(newClient()),
@@ -165,12 +189,24 @@ describe("filtered pool walk", () => {
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(walkCalls().map(([params]) => params.facets)).toEqual([true, false]);
     expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 4 }]);
+    expect(result.current.voucherFacets).toEqual([
+      expect.objectContaining({ name: "Sarafu", count: 3 }),
+    ]);
   });
 
   it("sends the filter and a paired cursor on later pages", async () => {
     mockWalk(fullPage(1000), page([899]));
 
-    const filter: CatalogFilter = { term: "food", tags: ["Food", "Growing"], tagMatch: "all" };
+    const filter: CatalogFilter = {
+      term: "food",
+      tags: ["Food", "Growing"],
+      tagMatch: "all",
+      vouchers: [
+        { chainId: 1, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+        { chainId: 42220, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+      ],
+      voucherMatch: "all",
+    };
     const { result } = renderHook(
       () => usePoolCatalog(controls({ filter, result: { ok: true, filter } }), unfilteredStub()),
       { wrapper: wrapper(newClient()) },
@@ -303,7 +339,13 @@ describe("pool catalog source selection", () => {
   it("keeps a selected tag the vocabulary no longer offers", async () => {
     mockWalk(page([1000], { tagFacets: [{ tag: "Food", count: 2 }] }));
 
-    const filter: CatalogFilter = { term: "", tags: ["Retired"], tagMatch: "any" };
+    const filter: CatalogFilter = {
+      term: "",
+      tags: ["Retired"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    };
     const { result } = renderHook(
       () =>
         usePoolCatalog(
@@ -317,6 +359,52 @@ describe("pool catalog source selection", () => {
     expect(result.current.tagFacets).toEqual([
       { tag: "Food", count: 2 },
       { tag: "Retired", count: 0 },
+    ]);
+  });
+
+  it("puts a compact selected-voucher placeholder after named facets", async () => {
+    mockWalk(
+      page([1000], {
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            name: "Zulu Credit",
+            symbol: "ZULU",
+            count: 2,
+          },
+        ],
+      }),
+    );
+    const selected = {
+      chainId: 42220,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    } as const;
+    const filter: CatalogFilter = {
+      term: "",
+      tags: [],
+      tagMatch: "any",
+      vouchers: [selected],
+      voucherMatch: "any",
+    };
+
+    const { result } = renderHook(
+      () =>
+        usePoolCatalog(
+          controls({
+            filter,
+            result: { ok: true, filter },
+            vouchers: [selected],
+          }),
+          unfilteredStub(),
+        ),
+      { wrapper: wrapper(newClient()) },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.voucherFacets.map(({ name, symbol }) => ({ name, symbol }))).toEqual([
+      { name: "Zulu Credit", symbol: "ZULU" },
+      { name: "0xaaaaaa…aaaaaa", symbol: "" },
     ]);
   });
 

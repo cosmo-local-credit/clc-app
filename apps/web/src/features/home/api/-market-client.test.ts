@@ -469,7 +469,13 @@ describe("getMarketVoucher", () => {
 });
 
 describe("getFilteredMarketVouchers request", () => {
-  const FILTER = { term: "", tags: [] as readonly string[], tagMatch: "any" as const };
+  const FILTER = {
+    term: "",
+    tags: [] as readonly string[],
+    tagMatch: "any" as const,
+    vouchers: [] as const,
+    voucherMatch: "any" as const,
+  };
 
   it("encodes a term and comma-joins tags in one key", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
@@ -561,7 +567,13 @@ describe("getFilteredMarketVouchers request", () => {
 });
 
 describe("getFilteredMarketVouchers response", () => {
-  const FILTER = { term: "art", tags: [] as readonly string[], tagMatch: "any" as const };
+  const FILTER = {
+    term: "art",
+    tags: [] as readonly string[],
+    tagMatch: "any" as const,
+    vouchers: [] as const,
+    voucherMatch: "any" as const,
+  };
 
   it("normalizes the tag facet", async () => {
     fetchMock.mockResolvedValue(
