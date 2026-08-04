@@ -157,6 +157,15 @@ describe("pools list", () => {
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
     expect(sheet.className).toContain("rounded-none");
+    expect(within(sheet).getByRole("heading", { name: "Filter pools" }).className).toContain(
+      "sr-only",
+    );
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+      "sr-only",
+    );
+    const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
+    expect(filterContent?.className).toContain("border-b");
+    expect(filterContent?.className).not.toContain("border-y");
     fireEvent.click(within(sheet).getByRole("button", { name: /Food/ }));
     expect(navigate).not.toHaveBeenCalled();
 

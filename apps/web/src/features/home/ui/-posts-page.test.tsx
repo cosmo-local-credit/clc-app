@@ -367,6 +367,15 @@ describe("PostsPage filtering", () => {
     expect(screen.queryByRole("group", { name: "Filter by tag" })).toBeNull();
     const sheet = openFilters();
     expect(sheet.className).toContain("rounded-none");
+    expect(within(sheet).getByRole("heading", { name: "Filter posts" }).className).toContain(
+      "sr-only",
+    );
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+      "sr-only",
+    );
+    const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
+    expect(filterContent?.className).toContain("border-b");
+    expect(filterContent?.className).not.toContain("border-y");
     const row = within(sheet).getByRole("group", { name: "Filter by tag" });
     expect(
       within(row)

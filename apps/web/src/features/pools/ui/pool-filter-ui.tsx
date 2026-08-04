@@ -23,6 +23,7 @@ export function PoolFilterSheet({
       title={<Trans>Filter pools</Trans>}
       facetTitle={<Trans>Categories</Trans>}
       voucherFacets={voucherFacets}
+      showHeader={false}
       onApply={filter.applyFacetFilters}
     />
   );

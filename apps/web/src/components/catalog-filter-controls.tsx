@@ -13,6 +13,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
+  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -89,6 +90,7 @@ export function CatalogFilterSheet({
   title,
   facetTitle,
   voucherFacets,
+  showHeader = true,
   onApply,
   children,
 }: {
@@ -97,6 +99,7 @@ export function CatalogFilterSheet({
   title: ReactNode;
   facetTitle: ReactNode;
   voucherFacets?: readonly CatalogVoucherFacet[];
+  showHeader?: boolean;
   onApply: (
     tags: readonly string[],
     tagMatch: TagMatch,
@@ -212,22 +215,28 @@ export function CatalogFilterSheet({
         <SheetPortal>
           <SheetBackdrop />
           <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
-            <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
-              <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
-                {title}
-              </SheetTitle>
-              <Button
-                variant="outline"
-                size="icon-lg"
-                className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
-                aria-label={t`Close filters`}
-                onClick={() => setOpen(false)}
-              >
-                <RiCloseLine className="size-5" aria-hidden="true" />
-              </Button>
-            </SheetHeader>
+            {showHeader ? (
+              <SheetHeader className="flex-row items-center justify-between gap-3 px-4 pt-4 pb-3">
+                <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
+                  {title}
+                </SheetTitle>
+                <Button
+                  variant="outline"
+                  size="icon-lg"
+                  className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
+                  aria-label={t`Close filters`}
+                  onClick={() => setOpen(false)}
+                >
+                  <RiCloseLine className="size-5" aria-hidden="true" />
+                </Button>
+              </SheetHeader>
+            ) : (
+              <SheetTitle className="sr-only">{title}</SheetTitle>
+            )}
 
-            <div className="min-h-0 flex-1 overflow-y-auto border-y border-border px-4 py-4">
+            <div
+              className={`min-h-0 flex-1 overflow-y-auto border-border px-4 py-4 ${showHeader ? "border-y" : "border-b"}`}
+            >
               {children}
 
               {voucherFilterEnabled ? (
@@ -464,6 +473,11 @@ export function CatalogFilterSheet({
                 <Trans>Apply filters</Trans>
               </Button>
             </SheetFooter>
+            {!showHeader ? (
+              <SheetClose className="sr-only">
+                <Trans>Close filters</Trans>
+              </SheetClose>
+            ) : null}
           </SheetContent>
         </SheetPortal>
       </SheetRoot>

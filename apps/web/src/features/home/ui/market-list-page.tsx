@@ -25,7 +25,7 @@ export function MarketListPage({
   locationOwner?: string;
 }) {
   const { t, i18n } = useLingui();
-  const { realFix, locationStatus, requestLocation } = useMarketCamera(locationOwner);
+  const { realFix } = useMarketCamera(locationOwner);
   const filter = useMarketFilter();
   const catalog = useMarketCatalogVouchers(filter, null, !filter.isRestoringPreference);
   const { vouchers, isCatalogComplete, error, retry } = catalog;
@@ -107,13 +107,7 @@ export function MarketListPage({
             <Trans>Marketplace</Trans>
           </h1>
           <div className="flex shrink-0 items-center gap-2">
-            <MarketFilterSheet
-              filter={filter}
-              facets={catalog.tagFacets}
-              hasLocation={realFix !== null}
-              locationStatus={locationStatus}
-              onRequestLocation={requestLocation}
-            />
+            <MarketFilterSheet filter={filter} facets={catalog.tagFacets} />
             <Button
               asChild
               variant="outline"

@@ -23,6 +23,7 @@ export function ReportFilterSheet({
       title={<Trans>Filter posts</Trans>}
       facetTitle={<Trans>Categories</Trans>}
       voucherFacets={voucherFacets}
+      showHeader={false}
       onApply={filter.applyFacetFilters}
     />
   );
