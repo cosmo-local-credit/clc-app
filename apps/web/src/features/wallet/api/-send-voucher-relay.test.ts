@@ -65,6 +65,7 @@ describe("relayVoucherTransfer", () => {
           recipientAddress: RECIPIENT,
           amountRaw: "2130000",
           includeAuthorization: true,
+          share: { permission: 5, note: "Thanks" },
         },
         client,
       ),
@@ -87,6 +88,7 @@ describe("relayVoucherTransfer", () => {
         signature: expect.stringMatching(/^0x/),
         signatureType: "secp256k1",
         authorization: expect.objectContaining({ nonce: "5" }),
+        share: { permission: 5, note: "Thanks" },
       }),
     );
   });

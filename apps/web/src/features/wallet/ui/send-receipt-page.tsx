@@ -56,11 +56,13 @@ export function SendReceiptPage({
   recipient,
   amount,
   symbol,
+  shared,
 }: {
   trackingId?: string;
   recipient?: string;
   amount?: string;
   symbol?: string;
+  shared?: boolean;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -151,6 +153,13 @@ export function SendReceiptPage({
             <time className="font-mono text-xs font-semibold" dateTime={outcome.otx.createdAt}>
               {submittedAt}
             </time>
+          </ReceiptRow>
+        ) : null}
+        {shared ? (
+          <ReceiptRow label={t`Sharing`}>
+            <span className="text-xs font-semibold">
+              <Trans>Message shared</Trans>
+            </span>
           </ReceiptRow>
         ) : null}
         <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">

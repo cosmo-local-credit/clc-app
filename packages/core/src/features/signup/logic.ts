@@ -27,3 +27,25 @@ export const profileSchema = z
   .superRefine(requireEmailOrPhone);
 
 export type ProfileInput = z.infer<typeof profileSchema>;
+
+export const profileEditSchema = z
+  .object({
+    name: nameSchema,
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    country: z.string().regex(/^[A-Z]{2}$/, { message: "Select your country" }),
+    saveLocation: z.boolean(),
+    location: locationSchema.optional(),
+  })
+  .superRefine((data, ctx) => {
+    requireEmailOrPhone(data, ctx);
+    if (data.saveLocation && !data.location) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose a location",
+        path: ["location"],
+      });
+    }
+  });
+
+export type ProfileEditInput = z.input<typeof profileEditSchema>;

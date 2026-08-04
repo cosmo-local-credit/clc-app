@@ -1,4 +1,10 @@
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import {
+  buildSendSharePermission,
+  formatTokenAmountFixed,
+  hasSendSharePermission,
+  parseTokenAmount,
+  SEND_SHARE_PERMISSION,
+} from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -17,7 +23,9 @@ import {
 } from "#/components/ui/sheet";
 import { EllipsizedAddress, SignHint, TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
+import { useSendShareEligibility } from "#/features/wallet/hooks/use-send-share";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
@@ -51,6 +59,7 @@ export function SendAmountPage({
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
   const tokensQuery = useAccountTokensInfinite(address);
+  const profileQuery = useAuthProfile();
   const sendVoucher = useSendVoucherTransfer();
   const tokens =
     tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
@@ -68,6 +77,10 @@ export function SendAmountPage({
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [shareEmail, setShareEmail] = useState(false);
+  const [sharePhone, setSharePhone] = useState(false);
+  const [shareLocation, setShareLocation] = useState(false);
 
   const tokenDecimals = selectedToken?.tokenDecimals ?? 2;
   const parsedAmountRaw = useMemo(() => {
@@ -94,6 +107,27 @@ export function SendAmountPage({
         : false;
   const recipientAddress =
     recipient && recipient.startsWith("0x") ? (recipient as `0x${string}`) : null;
+  const shareEligibility = useSendShareEligibility(recipientAddress);
+  const shareAvailable = shareEligibility.data === true;
+  const profileEmail = profileQuery.data?.email.endsWith("@clc.local")
+    ? ""
+    : (profileQuery.data?.email ?? "");
+  const hasEmail = profileEmail !== "";
+  const hasPhone = (profileQuery.data?.phone ?? "") !== "";
+  const hasLocation = profileQuery.data?.location != null;
+  const sharePermission = buildSendSharePermission({
+    email: shareEmail,
+    phone: sharePhone,
+    location: shareLocation,
+  });
+  const trimmedNote = note.trim();
+  const sharePayload =
+    shareAvailable && (sharePermission !== 0 || trimmedNote !== "")
+      ? {
+          permission: sharePermission,
+          ...(trimmedNote ? { note: trimmedNote } : {}),
+        }
+      : undefined;
   const tokenAddress = selectedToken?.contractAddress
     ? (selectedToken.contractAddress as `0x${string}`)
     : null;
@@ -228,6 +262,94 @@ export function SendAmountPage({
         ) : null}
       </div>
 
+      <section className="mb-2.5 space-y-3 border border-border bg-card p-3">
+        <div>
+          <h2 className="font-semibold text-sm">
+            <Trans>Message and contact sharing</Trans>
+          </h2>
+          <p className="text-muted-foreground text-xs">
+            <Trans>Selected details stay in Cosmo and are not written to the blockchain.</Trans>
+          </p>
+        </div>
+
+        {shareEligibility.isPending ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Checking whether this recipient can receive private details…</Trans>
+          </p>
+        ) : null}
+        {shareEligibility.isSuccess && !shareAvailable ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>
+              This wallet is not a registered Cosmo recipient. You can still send without an
+              attachment.
+            </Trans>
+          </p>
+        ) : null}
+        {shareEligibility.isError ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Private sharing is unavailable right now. You can still send normally.</Trans>
+          </p>
+        ) : null}
+
+        <div className="space-y-1">
+          <label htmlFor="send-note" className="font-medium text-xs">
+            <Trans>Message</Trans>
+          </label>
+          <textarea
+            id="send-note"
+            value={note}
+            maxLength={1000}
+            disabled={!shareAvailable}
+            onChange={(event) => setNote(Array.from(event.target.value).slice(0, 500).join(""))}
+            placeholder={t`Add an optional note`}
+            className="min-h-20 w-full resize-y border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+          />
+          <p className="text-right text-muted-foreground text-[0.6875rem]">
+            {Array.from(note).length}/500
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <ShareCheckbox
+            label={t`Location pin`}
+            description={
+              hasLocation ? t`Share your saved pin for this send.` : t`Add a pin in Edit profile.`
+            }
+            checked={shareLocation}
+            disabled={!shareAvailable || !hasLocation}
+            onChange={setShareLocation}
+          />
+          <ShareCheckbox
+            label={t`Email`}
+            description={
+              hasEmail ? t`Share your email for this send.` : t`Add an email in Edit profile.`
+            }
+            checked={shareEmail}
+            disabled={!shareAvailable || !hasEmail}
+            onChange={setShareEmail}
+          />
+          <ShareCheckbox
+            label={t`Phone`}
+            description={
+              hasPhone ? t`Share your phone for this send.` : t`Add a phone in Edit profile.`
+            }
+            checked={sharePhone}
+            disabled={!shareAvailable || !hasPhone}
+            onChange={setSharePhone}
+          />
+        </div>
+
+        {profileQuery.isSuccess && (!hasEmail || !hasPhone || !hasLocation) ? (
+          <button
+            type="button"
+            className="font-semibold text-primary text-xs hover:underline"
+            onClick={() => void navigate({ to: "/settings/profile" })}
+          >
+            <Trans>Edit profile</Trans>
+          </button>
+        ) : null}
+      </section>
+
       <div className="flex-1" />
 
       <SignHint className="mb-2.5 bg-card" />
@@ -256,6 +378,8 @@ export function SendAmountPage({
         amount={amount}
         symbol={selectedToken?.symbol ?? ""}
         recipient={recipientAddress}
+        note={sharePayload?.note ?? ""}
+        sharePermission={sharePayload?.permission ?? 0}
         error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
         isPending={sendVoucher.isPending}
         onConfirm={async () => {
@@ -268,6 +392,7 @@ export function SendAmountPage({
               recipientAddress,
               amountRaw: parsedAmountRaw,
               includeAuthorization: delegationStatus === "not-delegated",
+              ...(sharePayload ? { share: sharePayload } : {}),
             })
             .catch(() => null);
           if (!result) return;
@@ -278,11 +403,42 @@ export function SendAmountPage({
               recipient: recipientAddress,
               amount,
               symbol: selectedToken.symbol,
+              ...(sharePayload ? { shared: true } : {}),
             },
           });
         }}
       />
     </div>
+  );
+}
+
+function ShareCheckbox({
+  label,
+  description,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  checked: boolean;
+  disabled: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-start gap-3 border border-border p-2.5">
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+        className="mt-0.5 size-4 accent-primary"
+      />
+      <span>
+        <span className="block font-medium text-xs">{label}</span>
+        <span className="block text-muted-foreground text-[0.6875rem]">{description}</span>
+      </span>
+    </label>
   );
 }
 
@@ -292,6 +448,8 @@ function SendConfirmationSheet({
   amount,
   symbol,
   recipient,
+  note,
+  sharePermission,
   error,
   isPending,
   onConfirm,
@@ -301,6 +459,8 @@ function SendConfirmationSheet({
   amount: string;
   symbol: string;
   recipient: `0x${string}` | null;
+  note: string;
+  sharePermission: number;
   error: string | null;
   isPending: boolean;
   onConfirm: () => Promise<void>;
@@ -326,12 +486,63 @@ function SendConfirmationSheet({
                   {amount} {symbol}
                 </span>
               </div>
-              <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+              <div
+                className={cn(
+                  "flex min-h-11 items-center justify-between gap-3 px-3 py-2.5",
+                  (note || sharePermission !== 0) && "border-b border-border",
+                )}
+              >
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>
                 </span>
                 {recipient ? <EllipsizedAddress address={recipient} /> : null}
               </div>
+              {note ? (
+                <div
+                  className={cn(
+                    "flex min-h-11 items-start justify-between gap-3 px-3 py-2.5",
+                    sharePermission !== 0 && "border-b border-border",
+                  )}
+                >
+                  <span className="shrink-0 text-muted-foreground text-xs">
+                    <Trans>Message</Trans>
+                  </span>
+                  <span className="max-w-[70%] whitespace-pre-wrap text-right text-xs">{note}</span>
+                </div>
+              ) : null}
+              {sharePermission !== 0 ? (
+                <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Sharing</Trans>
+                  </span>
+                  <span className="text-right text-xs font-semibold">
+                    {hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.location) ? (
+                      <Trans>Location</Trans>
+                    ) : null}
+                    {hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.email) ? (
+                      <>
+                        {hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.location)
+                          ? ", "
+                          : null}
+                        <Trans>Email</Trans>
+                      </>
+                    ) : null}
+                    {hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.phone) ? (
+                      <>
+                        {hasSendSharePermission(
+                          sharePermission,
+                          SEND_SHARE_PERMISSION.location | SEND_SHARE_PERMISSION.email,
+                        ) ||
+                        hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.location) ||
+                        hasSendSharePermission(sharePermission, SEND_SHARE_PERMISSION.email)
+                          ? ", "
+                          : null}
+                        <Trans>Phone</Trans>
+                      </>
+                    ) : null}
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
 

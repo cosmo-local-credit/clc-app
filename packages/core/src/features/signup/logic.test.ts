@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { profileSchema } from "./logic";
+import { profileEditSchema, profileSchema } from "./logic";
 
 const VALID_LOCATION = {
   lat: -1.2921,
@@ -172,5 +172,59 @@ describe("profileSchema", () => {
         location: VALID_LOCATION,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("profileEditSchema", () => {
+  const VALID_EDIT = {
+    name: "Alice",
+    email: "alice@example.com",
+    phone: "+254712345678",
+    country: "KE",
+    saveLocation: false,
+  };
+
+  it("accepts a fully populated object", () => {
+    expect(profileEditSchema.safeParse(VALID_EDIT).success).toBe(true);
+  });
+
+  it("accepts name + phone + country (no email)", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, email: "" }).success).toBe(true);
+  });
+
+  it("rejects when both email and phone are empty", () => {
+    const result = profileEditSchema.safeParse({ ...VALID_EDIT, email: "", phone: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const msgs = result.error.issues.map((i) => i.message);
+      expect(msgs.some((m) => /email|phone/i.test(m))).toBe(true);
+    }
+  });
+
+  it("rejects a missing country", () => {
+    const result = profileEditSchema.safeParse({ ...VALID_EDIT, country: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => /country/i.test(i.message))).toBe(true);
+    }
+  });
+
+  it("rejects a malformed country code", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, country: "KEN" }).success).toBe(false);
+  });
+
+  it("rejects an empty name", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, name: "" }).success).toBe(false);
+  });
+
+  it("requires a valid pin when saving location is enabled", () => {
+    expect(profileEditSchema.safeParse({ ...VALID_EDIT, saveLocation: true }).success).toBe(false);
+    expect(
+      profileEditSchema.safeParse({
+        ...VALID_EDIT,
+        saveLocation: true,
+        location: VALID_LOCATION,
+      }).success,
+    ).toBe(true);
   });
 });

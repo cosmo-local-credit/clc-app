@@ -1,6 +1,4 @@
-import type { LocationInput } from "@clc/core/features/location/logic";
-import { locationSchema } from "@clc/core/features/location/logic";
-import { profileSchema } from "@clc/core/features/signup/logic";
+import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
@@ -9,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { CountrySelect } from "#/components/ui/country-select";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -39,7 +38,7 @@ export function ProfileEditPage() {
           <Trans>Edit profile</Trans>
         </h1>
         <p className="text-muted-foreground text-sm">
-          <Trans>Update your contact details and location.</Trans>
+          <Trans>Update your contact details and saved location pin.</Trans>
         </p>
       </div>
 
@@ -66,13 +65,6 @@ export function ProfileEditPage() {
   );
 }
 
-type ProfileEditFormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  location: LocationInput | undefined;
-};
-
 function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const { i18n, t } = useLingui();
   const router = useRouter();
@@ -80,37 +72,41 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const navigate = useNavigate();
   const updateProfile = useUpdateProfile();
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const seededLocation = locationSchema.safeParse({
-    lat: profile.geoLat,
-    lng: profile.geoLng,
-    locationName: profile.locationName,
-    country: profile.country,
-  });
-  const initialLocation: LocationInput | undefined = seededLocation.success
-    ? seededLocation.data
+  const savedLocation = profile.location
+    ? { ...profile.location, country: profile.country }
     : undefined;
 
+  const defaultValues: ProfileEditInput = {
+    name: profile.name ?? "",
+    email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
+    phone: profile.phone ?? "",
+    country: profile.country ?? "",
+    saveLocation: !!savedLocation,
+    location: savedLocation,
+  };
+
   const form = useForm({
-    defaultValues: {
-      name: profile.name ?? "",
-      email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
-      phone: profile.phone ?? "",
-      location: initialLocation,
-    } satisfies ProfileEditFormValues,
-    validators: { onChange: profileSchema },
+    defaultValues,
+    validators: { onChange: profileEditSchema },
     onSubmit: async ({ value }) => {
       setSubmitError(null);
       try {
-        const parsed = profileSchema.parse(value);
+        const parsed = profileEditSchema.parse(value);
         await updateProfile.mutateAsync({
           name: parsed.name,
           email: parsed.email,
           phone: parsed.phone,
-          country: parsed.location.country,
-          locationName: parsed.location.locationName,
-          geoLat: parsed.location.lat,
-          geoLng: parsed.location.lng,
+          country: parsed.location?.country ?? parsed.country,
+          ...(parsed.saveLocation && parsed.location
+            ? {
+                location: {
+                  locationName: parsed.location.locationName,
+                  lat: parsed.location.lat,
+                  lng: parsed.location.lng,
+                },
+              }
+            : {}),
+          ...(!parsed.saveLocation && profile.location ? { clearLocation: true } : {}),
         });
         toast.success(t`Profile updated`);
         if (canGoBack) {
@@ -217,30 +213,71 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
             );
           }}
         </form.Field>
-      </div>
-
-      <form.Field name="location">
-        {(field) => {
-          const err = getFieldError(field.state.meta.errors);
-          return (
-            <form.Subscribe selector={(s) => s.submissionAttempts}>
-              {(submissionAttempts) => (
-                <LocationPicker
+        <form.Field name="country">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="profile-country" className="font-medium text-sm">
+                  <Trans>Country</Trans>
+                </label>
+                <CountrySelect
+                  id="profile-country"
                   value={field.state.value}
-                  onChange={(next) => field.handleChange(next)}
-                  error={
-                    field.state.meta.isTouched || submissionAttempts > 0
-                      ? err
-                        ? translateValidationError(err, i18n)
-                        : undefined
-                      : undefined
-                  }
+                  onChange={(val) => field.handleChange(val)}
+                  aria-invalid={!!err}
+                  aria-label={t`Country`}
                 />
-              )}
-            </form.Subscribe>
-          );
-        }}
-      </form.Field>
+                {err ? (
+                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
+                ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="saveLocation">
+          {(saveLocationField) => (
+            <div className="space-y-3 border-t border-border pt-4">
+              <label className="flex items-start gap-3" htmlFor="profile-save-location">
+                <input
+                  id="profile-save-location"
+                  type="checkbox"
+                  checked={saveLocationField.state.value}
+                  onChange={(event) => saveLocationField.handleChange(event.target.checked)}
+                  className="mt-0.5 size-4 accent-primary"
+                />
+                <span>
+                  <span className="block font-medium text-sm">
+                    <Trans>Save a location pin</Trans>
+                  </span>
+                  <span className="block text-muted-foreground text-xs">
+                    <Trans>You can choose to share this pin with a recipient when sending.</Trans>
+                  </span>
+                </span>
+              </label>
+
+              {saveLocationField.state.value ? (
+                <form.Field name="location">
+                  {(locationField) => {
+                    const err = getFieldError(locationField.state.meta.errors);
+                    return (
+                      <LocationPicker
+                        value={locationField.state.value}
+                        onChange={(next) => {
+                          locationField.handleChange(next);
+                          if (next) form.setFieldValue("country", next.country);
+                        }}
+                        error={err ? translateValidationError(err, i18n) : undefined}
+                      />
+                    );
+                  }}
+                </form.Field>
+              ) : null}
+            </div>
+          )}
+        </form.Field>
+      </div>
 
       {submitError ? <p className="text-destructive text-xs">{submitError}</p> : null}
 
@@ -258,16 +295,13 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
 
 function ProfileEditSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="space-y-4 border border-border bg-card p-4">
-        {["name", "email", "phone"].map((key) => (
-          <div key={key} className="flex flex-col gap-1.5">
-            <div className="h-4 w-16 bg-muted" />
-            <div className="h-9 w-full bg-muted" />
-          </div>
-        ))}
-      </div>
-      <div className="h-52 w-full rounded-xl border border-border bg-card" />
+    <div className="space-y-4 border border-border bg-card p-4">
+      {["name", "email", "phone", "country", "location"].map((key) => (
+        <div key={key} className="flex flex-col gap-1.5">
+          <div className="h-4 w-16 bg-muted" />
+          <div className="h-9 w-full bg-muted" />
+        </div>
+      ))}
     </div>
   );
 }

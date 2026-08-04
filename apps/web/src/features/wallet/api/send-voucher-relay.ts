@@ -2,7 +2,7 @@ import { type CaliburCall } from "@clc/core/features/webauthn/index";
 import { encodeFunctionData, erc20Abi } from "viem";
 
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient, RelaySharePayload } from "#/features/webauthn/api/relayer-client";
 
 export type BuildVoucherTransferCallInput = {
   tokenAddress: `0x${string}`;
@@ -13,6 +13,7 @@ export type BuildVoucherTransferCallInput = {
 export type RelayVoucherTransferInput = BuildVoucherTransferCallInput & {
   senderAddress: `0x${string}`;
   includeAuthorization?: boolean;
+  share?: RelaySharePayload;
 };
 
 export type RelayVoucherTransferResult = {
@@ -43,6 +44,7 @@ export async function relayVoucherTransfer(
       senderAddress: input.senderAddress,
       calls: [call],
       includeAuthorization: input.includeAuthorization,
+      share: input.share,
     },
     client,
   );

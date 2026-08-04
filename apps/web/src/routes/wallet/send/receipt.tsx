@@ -9,6 +9,7 @@ const searchSchema = z.object({
   recipient: z.string().optional().catch(undefined),
   amount: z.string().optional().catch(undefined),
   symbol: z.string().optional().catch(undefined),
+  shared: z.boolean().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/wallet/send/receipt")({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/wallet/send/receipt")({
 });
 
 function SendReceiptRoute() {
-  const { trackingId, recipient, amount, symbol } = Route.useSearch();
+  const { trackingId, recipient, amount, symbol, shared } = Route.useSearch();
   return (
     <AuthenticatedRoute>
       <SendReceiptPage
@@ -25,6 +26,7 @@ function SendReceiptRoute() {
         recipient={recipient}
         amount={amount}
         symbol={symbol}
+        shared={shared}
       />
     </AuthenticatedRoute>
   );

@@ -31,7 +31,7 @@ export async function gotoHydrated(page: Page, path: string): Promise<void> {
 /**
  * Fills the onboarding profile form and advances to the paper wallet step.
  *
- * The location field is geocoder-backed (ArcGIS World Geocoder), so the
+ * The location field is geocoder-backed (MapTiler Geocoding API), so the
  * helper types a query, waits for the suggestion listbox, picks the first
  * result, then waits for the reverse-geocode to resolve before submitting.
  */

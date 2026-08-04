@@ -128,16 +128,16 @@ describe("useBackendSignup", () => {
       email: string;
       phone: string;
       country: string;
-      locationName: string;
-      geoLat: number;
-      geoLng: number;
+      location: typeof LOCATION;
     };
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
     expect(payload.country).toBe("KE");
-    expect(payload.locationName).toBe("Nairobi");
-    expect(payload.geoLat).toBe(-1.286);
-    expect(payload.geoLng).toBe(36.817);
+    expect(payload.location).toEqual({
+      locationName: LOCATION.locationName,
+      lat: LOCATION.lat,
+      lng: LOCATION.lng,
+    });
   });
 
   it("on already-registered 409: signs in then submits the full (edited) profile", async () => {
@@ -167,16 +167,16 @@ describe("useBackendSignup", () => {
       name: string;
       phone: string;
       country: string;
-      locationName: string;
-      geoLat: number;
-      geoLng: number;
+      location: typeof LOCATION;
     };
     expect(payload.name).toBe("Alice Edited");
     expect(payload.phone).toBe("+254711111111");
     expect(payload.country).toBe("KE");
-    expect(payload.locationName).toBe("Nairobi");
-    expect(payload.geoLat).toBe(-1.286);
-    expect(payload.geoLng).toBe(36.817);
+    expect(payload.location).toEqual({
+      locationName: LOCATION.locationName,
+      lat: LOCATION.lat,
+      lng: LOCATION.lng,
+    });
   });
 });
 

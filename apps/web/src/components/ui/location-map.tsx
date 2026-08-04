@@ -95,7 +95,6 @@ export function LocationMap({
         center,
         zoom: hasLocation ? PIN_ZOOM : EMPTY_ZOOM,
         interactive: isInteractive,
-        attributionControl: false,
       });
     } catch {
       setFailed(true);

@@ -48,9 +48,11 @@ async function ensureSessionAndSubmitProfile(
     email,
     phone: profile.phone,
     country: profile.location.country,
-    locationName: profile.location.locationName,
-    geoLat: profile.location.lat,
-    geoLng: profile.location.lng,
+    location: {
+      locationName: profile.location.locationName,
+      lat: profile.location.lat,
+      lng: profile.location.lng,
+    },
   });
 }
 
@@ -71,7 +73,7 @@ export function useBackendSignup() {
       });
 
       // signupWithSiwe only persists name + email (and sets the session
-      // cookie). The remaining profile fields (phone, country) must be written
+      // cookie). The remaining profile fields (phone, country, location) must be written
       // through the authenticated profile endpoint.
       //
       // On 409/alreadyRegistered the signup call does not issue a session, so
@@ -84,9 +86,11 @@ export function useBackendSignup() {
           email,
           phone: profile.phone,
           country: profile.location.country,
-          locationName: profile.location.locationName,
-          geoLat: profile.location.lat,
-          geoLng: profile.location.lng,
+          location: {
+            locationName: profile.location.locationName,
+            lat: profile.location.lat,
+            lng: profile.location.lng,
+          },
         });
       }
 
