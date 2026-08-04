@@ -25,11 +25,13 @@ export function useMarketCatalogVouchers(
   filter: CatalogFilterControls,
   viewport: MarketViewport | null = null,
   enabled = true,
+  /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
+  vocabularyEnabled = false,
 ): MarketCatalog {
   const unfiltered = useMarketMapVouchers(viewport, undefined, enabled && !filter.isFiltered);
   const filtered = useFilteredMarketVouchers(enabled && filter.isFiltered ? filter.filter : null);
   const filteredState = toFilteredCatalogState(filtered, filter.isDebouncing);
-  const vocabulary = useMarketFacetVocabulary();
+  const vocabulary = useMarketFacetVocabulary(vocabularyEnabled);
 
   const retryFiltered = useCallback(() => {
     void filtered.refetch();

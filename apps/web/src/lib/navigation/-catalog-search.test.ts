@@ -1,4 +1,4 @@
-import { CATALOG_MAX_TAGS } from "@clc/core/features/catalog/logic";
+import { CATALOG_MAX_TAGS, CATALOG_MAX_VOUCHERS } from "@clc/core/features/catalog/logic";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
@@ -13,6 +13,8 @@ type HomeSearch = {
   q?: string;
   tags?: string | readonly string[];
   tagMatch?: "any" | "all";
+  vouchers?: string | readonly string[];
+  voucherMatch?: "any" | "all";
 };
 
 function validated(raw: Partial<HomeSearch>): HomeSearch {
@@ -60,6 +62,40 @@ describe("canonical filter detection", () => {
 
   it("drops a tagMatch that cannot mean anything", () => {
     expect(canonicalCatalogSearch({ tags: "Art", tagMatch: "all" })).toEqual({ tags: "Art" });
+  });
+
+  it("normalizes and sorts stable voucher references", () => {
+    expect(
+      canonicalCatalogSearch({
+        vouchers: [
+          "42220:0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+          "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        ],
+        voucherMatch: "all",
+      }),
+    ).toEqual({
+      vouchers:
+        "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      voucherMatch: "all",
+    });
+  });
+
+  it("drops voucherMatch when fewer than two vouchers are selected", () => {
+    expect(
+      canonicalCatalogSearch({
+        vouchers: "42220:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        voucherMatch: "all",
+      }),
+    ).toEqual({ vouchers: "42220:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" });
+  });
+
+  it("leaves an invalid or over-limit voucher filter untouched", () => {
+    expect(canonicalCatalogSearch({ vouchers: "42220:not-an-address" })).toBeNull();
+    const vouchers = Array.from(
+      { length: CATALOG_MAX_VOUCHERS + 1 },
+      (_, index) => `42220:0x${index.toString(16).padStart(40, "0")}`,
+    );
+    expect(canonicalCatalogSearch({ vouchers })).toBeNull();
   });
 
   it("drops a term below the minimum", () => {

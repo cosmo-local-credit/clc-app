@@ -59,6 +59,7 @@ function page(ids: number[], overrides: Partial<FilteredPoolPage> = {}): Filtere
     last: ids.at(-1) ?? 0,
     receivedCount: ids.length,
     tagFacets: null,
+    voucherFacets: null,
     ...overrides,
   };
 }
@@ -84,7 +85,13 @@ function unfilteredStub(overrides: Partial<Parameters<typeof usePoolCatalog>[1]>
 }
 
 function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilterControls {
-  const filter: CatalogFilter = { term: "food", tags: [], tagMatch: "any" };
+  const filter: CatalogFilter = {
+    term: "food",
+    tags: [],
+    tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
+  };
   return {
     term: "food",
     setTerm: vi.fn(),
@@ -94,9 +101,12 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     isFiltered: true,
     tags: [],
     tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
     toggleTag: vi.fn(),
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
+    setFacets: vi.fn(),
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: vi.fn(),
@@ -146,7 +156,7 @@ describe("filtered pool walk", () => {
   it("resolves the whole set in one shot, deduplicated by address", async () => {
     mockWalk(fullPage(1000), fullPage(900), page([799, 798]));
 
-    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -156,23 +166,50 @@ describe("filtered pool walk", () => {
   });
 
   it("asks for facets on the first request only", async () => {
-    mockWalk(fullPage(1000, { tagFacets: [{ tag: "Food", count: 4 }] }), page([899]));
+    mockWalk(
+      fullPage(1000, {
+        tagFacets: [{ tag: "Food", count: 4 }],
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            name: "Sarafu",
+            symbol: "SRF",
+            count: 3,
+          },
+        ],
+      }),
+      page([899]),
+    );
 
-    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(walkCalls().map(([params]) => params.facets)).toEqual([true, false]);
     expect(result.current.tagFacets).toEqual([{ tag: "Food", count: 4 }]);
+    expect(result.current.voucherFacets).toEqual([
+      expect.objectContaining({ name: "Sarafu", count: 3 }),
+    ]);
   });
 
   it("sends the filter and a paired cursor on later pages", async () => {
     mockWalk(fullPage(1000), page([899]));
 
-    const filter: CatalogFilter = { term: "food", tags: ["Food", "Growing"], tagMatch: "all" };
+    const filter: CatalogFilter = {
+      term: "food",
+      tags: ["Food", "Growing"],
+      tagMatch: "all",
+      vouchers: [
+        { chainId: 1, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+        { chainId: 42220, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+      ],
+      voucherMatch: "all",
+    };
     const { result } = renderHook(
-      () => usePoolCatalog(controls({ filter, result: { ok: true, filter } }), unfilteredStub()),
+      () =>
+        usePoolCatalog(controls({ filter, result: { ok: true, filter } }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -184,7 +221,7 @@ describe("filtered pool walk", () => {
 
   it("terminates on a short page, a zero cursor, and a stalled cursor", async () => {
     mockWalk(page([1000, 999]));
-    const short = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const short = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
     await waitFor(() => expect(short.result.current.status).toBe("ready"));
@@ -192,7 +229,7 @@ describe("filtered pool walk", () => {
 
     getFilteredPools.mockReset();
     mockWalk(fullPage(1000, { last: 0 }));
-    const zero = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const zero = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
     await waitFor(() => expect(zero.result.current.status).toBe("ready"));
@@ -200,7 +237,7 @@ describe("filtered pool walk", () => {
 
     getFilteredPools.mockReset();
     mockWalk(fullPage(1000), fullPage(1000));
-    const stalled = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const stalled = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
     await waitFor(() => expect(stalled.result.current.status).toBe("ready"));
@@ -215,7 +252,7 @@ describe("filtered pool walk", () => {
           : Promise.resolve(fullPage(cursor === undefined ? 1_000_000 : cursor - 1)),
     );
 
-    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -228,7 +265,7 @@ describe("filtered pool walk", () => {
   it("passes one abort signal through the whole walk", async () => {
     mockWalk(fullPage(1000), page([899]));
 
-    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -245,7 +282,7 @@ describe("filtered pool walk", () => {
         : Promise.reject(new BackendApiError(400, "invalid filters", "E04")),
     );
 
-    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => usePoolCatalog(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -258,7 +295,8 @@ describe("pool catalog source selection", () => {
   it("reads the unfiltered list and issues no filtered request when unfiltered", async () => {
     const unfiltered = unfilteredStub({ pools: [pool(1)], hasNextPage: true });
     const { result } = renderHook(
-      () => usePoolCatalog(controls({ isFiltered: false, filter: null, term: "" }), unfiltered),
+      () =>
+        usePoolCatalog(controls({ isFiltered: false, filter: null, term: "" }), unfiltered, true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -273,7 +311,7 @@ describe("pool catalog source selection", () => {
     mockWalk(page([1000]));
 
     const { result } = renderHook(
-      () => usePoolCatalog(controls(), unfilteredStub({ hasNextPage: true })),
+      () => usePoolCatalog(controls(), unfilteredStub({ hasNextPage: true }), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -290,6 +328,7 @@ describe("pool catalog source selection", () => {
             result: { ok: false, reason: "too-many-tags", requested: 13, max: 12 },
           }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -303,12 +342,19 @@ describe("pool catalog source selection", () => {
   it("keeps a selected tag the vocabulary no longer offers", async () => {
     mockWalk(page([1000], { tagFacets: [{ tag: "Food", count: 2 }] }));
 
-    const filter: CatalogFilter = { term: "", tags: ["Retired"], tagMatch: "any" };
+    const filter: CatalogFilter = {
+      term: "",
+      tags: ["Retired"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    };
     const { result } = renderHook(
       () =>
         usePoolCatalog(
           controls({ filter, result: { ok: true, filter }, tags: ["Retired"] }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -320,15 +366,87 @@ describe("pool catalog source selection", () => {
     ]);
   });
 
+  it("puts a compact selected-voucher placeholder after named facets", async () => {
+    mockWalk(
+      page([1000], {
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            name: "Zulu Credit",
+            symbol: "ZULU",
+            count: 2,
+          },
+        ],
+      }),
+    );
+    const selected = {
+      chainId: 42220,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    } as const;
+    const filter: CatalogFilter = {
+      term: "",
+      tags: [],
+      tagMatch: "any",
+      vouchers: [selected],
+      voucherMatch: "any",
+    };
+
+    const { result } = renderHook(
+      () =>
+        usePoolCatalog(
+          controls({
+            filter,
+            result: { ok: true, filter },
+            vouchers: [selected],
+          }),
+          unfilteredStub(),
+          true,
+        ),
+      { wrapper: wrapper(newClient()) },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.voucherFacets.map(({ name, symbol }) => ({ name, symbol }))).toEqual([
+      { name: "Zulu Credit", symbol: "ZULU" },
+      { name: "0xaaaaaa…aaaaaa", symbol: "" },
+    ]);
+  });
+
   it("reports refining while a keystroke is pending, holding the previous pools", async () => {
     mockWalk(page([1000]));
 
     const { result } = renderHook(
-      () => usePoolCatalog(controls({ isDebouncing: true }), unfilteredStub()),
+      () => usePoolCatalog(controls({ isDebouncing: true }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
     await waitFor(() => expect(result.current.pools).toHaveLength(1));
     expect(result.current.status).toBe("refining");
+  });
+
+  it("does not request the facet vocabulary until the filter sheet has been opened", async () => {
+    getFilteredPools.mockImplementation(({ perPage }: { perPage: number }) =>
+      perPage === 1
+        ? Promise.resolve(page([], { tagFacets: BOOTSTRAP_FACETS }))
+        : Promise.reject(new Error("no walk expected")),
+    );
+
+    const { rerender, result } = renderHook(
+      ({ vocabularyEnabled }: { vocabularyEnabled: boolean }) =>
+        usePoolCatalog(
+          controls({ isFiltered: false, filter: null, term: "" }),
+          unfilteredStub(),
+          vocabularyEnabled,
+        ),
+      { wrapper: wrapper(newClient()), initialProps: { vocabularyEnabled: false } },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(getFilteredPools).not.toHaveBeenCalled();
+
+    rerender({ vocabularyEnabled: true });
+
+    await waitFor(() => expect(result.current.tagFacets).toEqual(BOOTSTRAP_FACETS));
   });
 });

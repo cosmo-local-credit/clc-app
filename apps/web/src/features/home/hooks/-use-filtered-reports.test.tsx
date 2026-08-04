@@ -40,7 +40,7 @@ function report(id: number): ReportSummary {
 }
 
 function page(ids: number[], next: ReportCursor | null): FilteredReportPage {
-  return { reports: ids.map(report), next, tagFacets: null };
+  return { reports: ids.map(report), next, tagFacets: null, voucherFacets: null };
 }
 
 function cursor(id: number): ReportCursor {
@@ -61,7 +61,13 @@ function unfilteredStub(overrides: Partial<Parameters<typeof useReportFeed>[1]> 
 }
 
 function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilterControls {
-  const filter: CatalogFilter = { term: "harvest", tags: [], tagMatch: "any" };
+  const filter: CatalogFilter = {
+    term: "harvest",
+    tags: [],
+    tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
+  };
   return {
     term: "harvest",
     setTerm: vi.fn(),
@@ -71,9 +77,12 @@ function controls(overrides: Partial<CatalogFilterControls> = {}): CatalogFilter
     isFiltered: true,
     tags: [],
     tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
     toggleTag: vi.fn(),
     setTags: vi.fn(),
     setTagMatch: vi.fn(),
+    setFacets: vi.fn(),
     isAtTagLimit: false,
     clearTerm: vi.fn(),
     clear: vi.fn(),
@@ -123,7 +132,7 @@ describe("filtered report walk", () => {
   it("resolves the whole set in one shot, deduplicated by id", async () => {
     mockWalk(page([5, 4], cursor(4)), page([4, 3], cursor(3)), page([2], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -135,7 +144,7 @@ describe("filtered report walk", () => {
   it("asks for facets on the first request only", async () => {
     mockWalk(page([5], cursor(5)), page([4], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -145,24 +154,61 @@ describe("filtered report walk", () => {
 
   it("takes the facets from the first page, not the last", async () => {
     mockWalk(
-      { ...page([5], cursor(5)), tagFacets: [{ tag: "Harvest", count: 2 }] },
-      { ...page([4], null), tagFacets: [{ tag: "Ignored", count: 99 }] },
+      {
+        ...page([5], cursor(5)),
+        tagFacets: [{ tag: "Harvest", count: 2 }],
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            name: "Sarafu",
+            symbol: "SRF",
+            count: 3,
+          },
+        ],
+      },
+      {
+        ...page([4], null),
+        tagFacets: [{ tag: "Ignored", count: 99 }],
+        voucherFacets: [
+          {
+            chainId: 42220,
+            address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            name: "Ignored",
+            symbol: "NO",
+            count: 99,
+          },
+        ],
+      },
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current.tagFacets).toEqual([{ tag: "Harvest", count: 2 }]);
+    expect(result.current.voucherFacets).toEqual([
+      expect.objectContaining({ name: "Sarafu", count: 3 }),
+    ]);
   });
 
   it("sends the filter and the paired cursor on later pages", async () => {
     mockWalk(page([5], cursor(5)), page([4], null));
 
-    const filter: CatalogFilter = { term: "harvest", tags: ["Harvest", "Water"], tagMatch: "all" };
+    const filter: CatalogFilter = {
+      term: "harvest",
+      tags: ["Harvest", "Water"],
+      tagMatch: "all",
+      vouchers: [
+        { chainId: 1, address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+        { chainId: 42220, address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" },
+      ],
+      voucherMatch: "all",
+    };
     const { result } = renderHook(
-      () => useReportFeed(controls({ filter, result: { ok: true, filter } }), unfilteredStub()),
+      () =>
+        useReportFeed(controls({ filter, result: { ok: true, filter } }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -175,7 +221,7 @@ describe("filtered report walk", () => {
   it("asks for the endpoint maximum, not the feed's screenful", async () => {
     mockWalk(page([5], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -191,7 +237,7 @@ describe("filtered report walk", () => {
       ),
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -218,12 +264,15 @@ describe("filtered report walk", () => {
       term: "",
       tags: ["Regenerative Agriculture"],
       tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
     };
     const { result } = renderHook(
       () =>
         useReportFeed(
           controls({ term: "", filter, result: { ok: true, filter } }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -237,7 +286,7 @@ describe("filtered report walk", () => {
   it("terminates on a repeated cursor pair", async () => {
     mockWalk(page([5], cursor(5)), page([4], cursor(5)));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -254,7 +303,7 @@ describe("filtered report walk", () => {
       return Promise.resolve(page([issued], cursor(issued)));
     });
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -267,7 +316,7 @@ describe("filtered report walk", () => {
   it("passes one abort signal through the whole walk", async () => {
     mockWalk(page([5], cursor(5)), page([4], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -284,7 +333,7 @@ describe("filtered report walk", () => {
         : Promise.reject(new BackendApiError(400, "invalid filters", "E04")),
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -301,7 +350,7 @@ describe("filtered report walk", () => {
       return Promise.resolve(page([5], null));
     });
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -314,7 +363,8 @@ describe("report feed source selection", () => {
   it("reads the unfiltered feed and issues no filtered request when unfiltered", async () => {
     const unfiltered = unfilteredStub({ reports: [report(1)], hasNextPage: true });
     const { result } = renderHook(
-      () => useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered),
+      () =>
+        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered, true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -328,7 +378,8 @@ describe("report feed source selection", () => {
   it("keeps the unfiltered feed's own load-more wiring", async () => {
     const unfiltered = unfilteredStub({ hasNextPage: true, isFetchingNextPage: true });
     const { result } = renderHook(
-      () => useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered),
+      () =>
+        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered, true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -341,7 +392,7 @@ describe("report feed source selection", () => {
     mockWalk(page([5], null));
 
     const { result } = renderHook(
-      () => useReportFeed(controls(), unfilteredStub({ hasNextPage: true })),
+      () => useReportFeed(controls(), unfilteredStub({ hasNextPage: true }), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -358,6 +409,7 @@ describe("report feed source selection", () => {
             result: { ok: false, reason: "too-many-tags", requested: 13, max: 12 },
           }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -373,12 +425,19 @@ describe("report feed source selection", () => {
   it("keeps a selected tag the vocabulary no longer offers", async () => {
     mockWalk({ ...page([5], null), tagFacets: [{ tag: "Harvest", count: 2 }] });
 
-    const filter: CatalogFilter = { term: "", tags: ["Retired"], tagMatch: "any" };
+    const filter: CatalogFilter = {
+      term: "",
+      tags: ["Retired"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    };
     const { result } = renderHook(
       () =>
         useReportFeed(
           controls({ filter, result: { ok: true, filter }, tags: ["Retired"] }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -390,11 +449,57 @@ describe("report feed source selection", () => {
     ]);
   });
 
+  it("puts a compact selected-voucher placeholder after named facets", async () => {
+    mockWalk({
+      ...page([5], null),
+      voucherFacets: [
+        {
+          chainId: 42220,
+          address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          name: "Zulu Credit",
+          symbol: "ZULU",
+          count: 2,
+        },
+      ],
+    });
+    const selected = {
+      chainId: 42220,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    } as const;
+    const filter: CatalogFilter = {
+      term: "",
+      tags: [],
+      tagMatch: "any",
+      vouchers: [selected],
+      voucherMatch: "any",
+    };
+
+    const { result } = renderHook(
+      () =>
+        useReportFeed(
+          controls({
+            filter,
+            result: { ok: true, filter },
+            vouchers: [selected],
+          }),
+          unfilteredStub(),
+          true,
+        ),
+      { wrapper: wrapper(newClient()) },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(result.current.voucherFacets.map(({ name, symbol }) => ({ name, symbol }))).toEqual([
+      { name: "Zulu Credit", symbol: "ZULU" },
+      { name: "0xaaaaaa…aaaaaa", symbol: "" },
+    ]);
+  });
+
   it("reports refining while a keystroke is pending, holding the previous reports", async () => {
     mockWalk(page([5], null));
 
     const { result } = renderHook(
-      () => useReportFeed(controls({ isDebouncing: true }), unfilteredStub()),
+      () => useReportFeed(controls({ isDebouncing: true }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -411,9 +516,38 @@ describe("report feed source selection", () => {
 
     const { result } = renderHook(
       () =>
-        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfilteredStub()),
+        useReportFeed(
+          controls({ isFiltered: false, filter: null, term: "" }),
+          unfilteredStub(),
+          true,
+        ),
       { wrapper: wrapper(newClient()) },
     );
+
+    await waitFor(() => expect(result.current.tagFacets).toEqual(BOOTSTRAP_FACETS));
+  });
+
+  it("does not request the facet vocabulary until the filter sheet has been opened", async () => {
+    getFilteredReports.mockImplementation(({ perPage }: { perPage: number }) =>
+      perPage === 1
+        ? Promise.resolve({ ...page([], null), tagFacets: BOOTSTRAP_FACETS })
+        : Promise.reject(new Error("no walk expected")),
+    );
+
+    const { rerender, result } = renderHook(
+      ({ vocabularyEnabled }: { vocabularyEnabled: boolean }) =>
+        useReportFeed(
+          controls({ isFiltered: false, filter: null, term: "" }),
+          unfilteredStub(),
+          vocabularyEnabled,
+        ),
+      { wrapper: wrapper(newClient()), initialProps: { vocabularyEnabled: false } },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(getFilteredReports).not.toHaveBeenCalled();
+
+    rerender({ vocabularyEnabled: true });
 
     await waitFor(() => expect(result.current.tagFacets).toEqual(BOOTSTRAP_FACETS));
   });

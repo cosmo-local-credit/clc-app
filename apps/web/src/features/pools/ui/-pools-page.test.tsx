@@ -157,14 +157,24 @@ describe("pools list", () => {
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
     expect(sheet.className).toContain("rounded-none");
-    fireEvent.click(within(sheet).getByRole("button", { name: /Food/ }));
+    expect(within(sheet).getByRole("heading", { name: "Filter pools" }).className).toContain(
+      "sr-only",
+    );
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+      "sr-only",
+    );
+    const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
+    expect(filterContent?.className).toContain("border-b");
+    expect(filterContent?.className).not.toContain("border-y");
+    // The facet vocabulary is only requested once the sheet opens, so the chips arrive async.
+    fireEvent.click(await within(sheet).findByRole("button", { name: /Food/ }));
     expect(navigate).not.toHaveBeenCalled();
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
     expect(navigate).toHaveBeenCalledTimes(1);
     expect(
       JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.pools) ?? "null"),
-    ).toEqual({ tags: ["Food"], tagMatch: "any" });
+    ).toEqual({ tags: ["Food"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
   });
 
   it("offers no filter controls it cannot honour", async () => {

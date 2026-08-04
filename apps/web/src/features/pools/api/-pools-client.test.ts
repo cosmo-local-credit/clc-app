@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+import type { VoucherRef } from "@clc/core/features/catalog/logic";
+
 import {
   getFilteredPools,
   getPoolByAddress,
@@ -206,7 +208,13 @@ describe("getPools pagination and cancellation", () => {
 });
 
 describe("getFilteredPools request", () => {
-  const FILTER = { term: "", tags: [] as readonly string[], tagMatch: "any" as const };
+  const FILTER = {
+    term: "",
+    tags: [] as readonly string[],
+    tagMatch: "any" as const,
+    vouchers: [] as const,
+    voucherMatch: "any" as const,
+  };
 
   it("encodes a term and comma-joins tags in one key", async () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [] } });
@@ -231,7 +239,7 @@ describe("getFilteredPools request", () => {
     await getFilteredPools({ perPage: 100, filter: FILTER });
 
     const url = new URL(String(fetcher.mock.calls[0]?.[0]));
-    for (const key of ["q", "tags", "tagMatch", "facets"]) {
+    for (const key of ["q", "tags", "tagMatch", "vouchers", "voucherMatch", "facets"]) {
       expect(url.searchParams.has(key)).toBe(false);
     }
   });
@@ -251,6 +259,37 @@ describe("getFilteredPools request", () => {
       filter: { ...FILTER, tags: ["Food", "Growing"], tagMatch: "all" },
     });
     expect(new URL(String(fetcher.mock.calls[1]?.[0])).searchParams.get("tagMatch")).toBe("all");
+  });
+
+  it("encodes stable voucher identities and sends all-match only when it changes semantics", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pools: [] } });
+    vi.stubGlobal("fetch", fetcher);
+    const first: VoucherRef = {
+      chainId: 1,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    };
+    const second: VoucherRef = {
+      chainId: 42220,
+      address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    };
+
+    await getFilteredPools({
+      perPage: 100,
+      filter: { ...FILTER, vouchers: [first], voucherMatch: "all" },
+    });
+    const one = new URL(String(fetcher.mock.calls[0]?.[0])).searchParams;
+    expect(one.get("vouchers")).toBe("1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    expect(one.has("voucherMatch")).toBe(false);
+
+    await getFilteredPools({
+      perPage: 100,
+      filter: { ...FILTER, vouchers: [first, second], voucherMatch: "all" },
+    });
+    const two = new URL(String(fetcher.mock.calls[1]?.[0])).searchParams;
+    expect(two.get("vouchers")).toBe(
+      "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    );
+    expect(two.get("voucherMatch")).toBe("all");
   });
 
   it("keeps the authenticated pool read policy, unlike the public catalog", async () => {
@@ -296,6 +335,46 @@ describe("getFilteredPools request", () => {
 
     vi.stubGlobal("fetch", mockFetch({ ok: true, result: { pools: [] } }));
     expect((await getFilteredPools({ perPage: 100, filter: FILTER })).tagFacets).toBeNull();
+  });
+
+  it("normalizes voucher facets and drops malformed rows", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        ok: true,
+        result: {
+          pools: [],
+          voucherFacets: [
+            {
+              chainId: 42220,
+              address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              name: "Sarafu",
+              symbol: "SRF",
+              count: 3,
+            },
+            { id: 18, chainId: 42220, address: "bad", name: "Bad", symbol: "BAD", count: 1 },
+            {
+              chainId: Number.MAX_SAFE_INTEGER + 1,
+              address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              name: "Unsafe",
+              symbol: "BAD",
+              count: 1,
+            },
+          ],
+        },
+      }),
+    );
+
+    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+    expect(page.voucherFacets).toEqual([
+      {
+        chainId: 42220,
+        address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        name: "Sarafu",
+        symbol: "SRF",
+        count: 3,
+      },
+    ]);
   });
 
   it("reports the sent row count so a filtered walk cannot truncate", async () => {

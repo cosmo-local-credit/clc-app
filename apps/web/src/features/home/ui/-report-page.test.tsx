@@ -131,7 +131,11 @@ function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
     vouchers: [
-      { address: "0x2222222222222222222222222222222222222222", name: "Kiriba", symbol: "KCH" },
+      {
+        address: "0x2222222222222222222222222222222222222222",
+        name: "Kiriba",
+        symbol: "KCH",
+      },
     ],
     images: [
       { url: "https://content.example/one.jpg", width: 800, height: 600 },

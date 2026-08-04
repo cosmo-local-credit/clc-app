@@ -252,7 +252,7 @@ describe("MarketListPage", () => {
     expect(within(list).getAllByRole("link")).toHaveLength(25);
   });
 
-  it("keeps location controls inside the filter sheet and links to the map subview", () => {
+  it("keeps location controls out of the list view and links to the map subview", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByRole("button", { name: "Use location" })).toBeNull();
@@ -261,11 +261,12 @@ describe("MarketListPage", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
-    fireEvent.click(within(sheet).getByRole("button", { name: "Use location" }));
-    expect(mocks.camera.requestLocation).toHaveBeenCalledTimes(1);
+    expect(within(sheet).queryByRole("button", { name: "Use location" })).toBeNull();
+    expect(within(sheet).queryByRole("button", { name: "Update location" })).toBeNull();
+    expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("offers location refresh in the sheet without helper copy", () => {
+  it("removes the visible sheet header while preserving accessible controls", () => {
     mocks.camera = {
       ...mocks.camera,
       realFix: { lat: -1.29, lng: 36.82 },
@@ -274,10 +275,30 @@ describe("MarketListPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
-    expect(within(sheet).queryByText("Vouchers are ordered nearest first.")).toBeNull();
-    expect(within(sheet).queryByText("Choose what vouchers should offer.")).toBeNull();
-    fireEvent.click(within(sheet).getByRole("button", { name: "Update location" }));
-    expect(mocks.camera.requestLocation).toHaveBeenCalledTimes(1);
+    expect(within(sheet).getByRole("heading", { name: "Filter vouchers" }).className).toContain(
+      "sr-only",
+    );
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+      "sr-only",
+    );
+    const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
+    expect(filterContent?.className).toContain("border-b");
+    expect(filterContent?.className).not.toContain("border-y");
+  });
+
+  it("dismisses the filter sheet when the backdrop is pressed", () => {
+    render(<MarketListPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
+    expect(screen.getByRole("dialog", { name: "Filter vouchers" })).toBeTruthy();
+
+    const backdrop = document.querySelector<HTMLElement>(".fixed.inset-0.z-40");
+    expect(backdrop).toBeTruthy();
+    fireEvent.pointerDown(backdrop as HTMLElement);
+    fireEvent.pointerUp(backdrop as HTMLElement);
+    fireEvent.click(backdrop as HTMLElement);
+
+    expect(screen.queryByRole("dialog", { name: "Filter vouchers" })).toBeNull();
   });
 
   it("keeps the shared sheet and voucher list surfaces sharp-edged", () => {
@@ -600,7 +621,7 @@ describe("MarketListPage filter sheet", () => {
     expect(search({})).toMatchObject({ tags: "Art" });
     expect(
       JSON.parse(window.localStorage.getItem(MARKET_FILTER_PREFERENCES_KEY) ?? "null"),
-    ).toEqual({ tags: ["Art"], tagMatch: "any" });
+    ).toEqual({ tags: ["Art"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
   });
 
   it("removes a category only after Apply and clears an empty saved preference", () => {
@@ -645,7 +666,7 @@ describe("MarketListPage filter sheet", () => {
 
     let sheet = openFilters();
     expect(within(sheet).queryByRole("button", { name: "All selected" })).toBeNull();
-    fireEvent.click(within(sheet).getByRole("button", { name: "Close filters" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
 
     mocks.search = { tags: "Art,Culture" };
     rerender(<MarketListPage />);

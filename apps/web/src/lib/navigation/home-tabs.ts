@@ -1,6 +1,6 @@
 import { isFilterSearchActive } from "@clc/core/features/catalog/logic";
 
-import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
+import { catalogSearchForScope } from "#/lib/navigation/catalog-search";
 
 const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
 const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
@@ -24,5 +24,5 @@ export function isAtHomeTabRoot(search: unknown): boolean {
   const tab = parseHomeTab((search as { tab?: unknown } | null)?.tab);
   if (tab !== "market") return true;
   if (parseMarketView((search as { view?: unknown } | null)?.view) !== "map") return false;
-  return !isFilterSearchActive(pickCatalogSearch(search));
+  return !isFilterSearchActive(catalogSearchForScope(search, false));
 }

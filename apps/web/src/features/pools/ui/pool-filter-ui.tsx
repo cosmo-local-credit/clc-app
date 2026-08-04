@@ -1,25 +1,41 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { BackendApiError } from "#/features/auth/api/client";
-import type { PoolTagFacet } from "#/features/pools/api/pools-client";
+import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
+import type { PoolTagFacet, PoolVoucherFacet } from "#/features/pools/api/pools-client";
 import { FilteredPoolsTooLargeError } from "#/features/pools/hooks/use-filtered-pools";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 
 export function PoolFilterSheet({
   filter,
   facets,
+  voucherFacets,
+  open,
+  onOpenChange,
 }: {
   filter: PersistedCatalogFilterControls;
   facets: PoolTagFacet[];
+  voucherFacets: PoolVoucherFacet[];
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
+  const [voucherQuery, setVoucherQuery] = useState("");
+  const voucherSearch = useVoucherSearch(voucherQuery, setVoucherQuery, open);
+
   return (
     <CatalogFilterSheet
       filter={filter}
       facets={facets}
       title={<Trans>Filter pools</Trans>}
       facetTitle={<Trans>Categories</Trans>}
+      voucherFacets={voucherFacets}
+      voucherSearch={voucherSearch}
+      showHeader={false}
+      open={open}
+      onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
     />
   );
@@ -39,7 +55,10 @@ export function PoolFilterFeedback({
   const notice = (() => {
     if (!filter.result.ok) {
       return {
-        message: t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
+        message:
+          filter.result.reason === "invalid-vouchers"
+            ? t`This link contains an invalid voucher filter.`
+            : t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
         actionLabel: t`Clear filters`,
         onAction: filter.clear,
       };

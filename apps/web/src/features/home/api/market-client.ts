@@ -6,6 +6,7 @@ import {
   type HexAddress,
   formatCursorQuery,
   isPresent,
+  normalizeChainId,
   normalizeHex,
   normalizeNumber,
   normalizeNumericText,
@@ -202,7 +203,7 @@ function normalizeTagFacet(facet: { tag?: unknown; count?: unknown }): MarketTag
 
 function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | null {
   const address = normalizeHex(voucher.address);
-  const chainId = normalizeNumber(voucher.chainId);
+  const chainId = normalizeChainId(voucher.chainId);
   const lat = normalizeCoordinate(voucher.geoLat, 90);
   const lng = normalizeCoordinate(voucher.geoLng, 180);
   const kind = voucher.kind;
@@ -249,7 +250,7 @@ function normalizeMarketVoucherDetail(
 
   return {
     id: String(voucher.id),
-    chainId: normalizeNumber(voucher.chainId),
+    chainId: normalizeChainId(voucher.chainId),
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
     symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
