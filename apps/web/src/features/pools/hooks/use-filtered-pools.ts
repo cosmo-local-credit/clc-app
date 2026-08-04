@@ -122,7 +122,7 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
   });
 }
 
-function usePoolFacetVocabulary() {
+function usePoolFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredPoolQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
@@ -135,6 +135,7 @@ function usePoolFacetVocabulary() {
         voucherFacets: page.voucherFacets ?? [],
       };
     },
+    enabled,
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
@@ -198,9 +199,11 @@ export function usePoolCatalog(
     fetchNextPage: () => void;
     isFetchingNextPage: boolean;
   },
+  /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
+  vocabularyEnabled: boolean,
 ): PoolCatalog {
   const filtered = useFilteredPools(filter.isFiltered ? filter.filter : null);
-  const vocabulary = usePoolFacetVocabulary();
+  const vocabulary = usePoolFacetVocabulary(vocabularyEnabled);
 
   const state: FilteredPoolsState = useMemo(() => {
     if (!filtered.isEnabled) return { status: "disabled" };
@@ -226,13 +229,18 @@ export function usePoolCatalog(
     return ensureSelectedPoolFacets(source ?? [], selected);
   }, [filter.result, state, vocabulary.data]);
 
+  const voucherSource = useMemo(
+    () =>
+      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
+      vocabulary.data?.voucherFacets ??
+      null,
+    [state, vocabulary.data],
+  );
+
   const voucherFacets = useMemo(() => {
     const selected = filter.result.ok ? filter.result.filter.vouchers : [];
-    const source =
-      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
-      vocabulary.data?.voucherFacets;
-    return ensureSelectedPoolVoucherFacets(source ?? [], selected);
-  }, [filter.result, state, vocabulary.data]);
+    return ensureSelectedPoolVoucherFacets(voucherSource ?? [], selected);
+  }, [filter.result, voucherSource]);
 
   return useMemo(() => {
     if (!filter.isFiltered) {

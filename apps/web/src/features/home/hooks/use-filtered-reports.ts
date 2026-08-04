@@ -115,7 +115,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
   });
 }
 
-function useReportFacetVocabulary() {
+function useReportFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredReportQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
@@ -128,6 +128,7 @@ function useReportFacetVocabulary() {
         voucherFacets: page.voucherFacets ?? [],
       };
     },
+    enabled,
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
     refetchOnReconnect: false,
@@ -191,9 +192,11 @@ export function useReportFeed(
     fetchNextPage: () => void;
     isFetchingNextPage: boolean;
   },
+  /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
+  vocabularyEnabled: boolean,
 ): ReportFeed {
   const filtered = useFilteredReportsQuery(filter.isFiltered ? filter.filter : null);
-  const vocabulary = useReportFacetVocabulary();
+  const vocabulary = useReportFacetVocabulary(vocabularyEnabled);
 
   const state: FilteredReportsState = useMemo(() => {
     if (!filtered.isEnabled) return { status: "disabled" };
@@ -219,13 +222,18 @@ export function useReportFeed(
     return ensureSelectedReportFacets(source ?? [], selected);
   }, [filter.result, state, vocabulary.data]);
 
+  const voucherSource = useMemo(
+    () =>
+      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
+      vocabulary.data?.voucherFacets ??
+      null,
+    [state, vocabulary.data],
+  );
+
   const voucherFacets = useMemo(() => {
     const selected = filter.result.ok ? filter.result.filter.vouchers : [];
-    const source =
-      (state.status === "refining" || state.status === "ready" ? state.data.voucherFacets : null) ??
-      vocabulary.data?.voucherFacets;
-    return ensureSelectedReportVoucherFacets(source ?? [], selected);
-  }, [filter.result, state, vocabulary.data]);
+    return ensureSelectedReportVoucherFacets(voucherSource ?? [], selected);
+  }, [filter.result, voucherSource]);
 
   return useMemo(() => {
     if (!filter.isFiltered) {

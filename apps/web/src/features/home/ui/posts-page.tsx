@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Badge } from "#/components/ui/badge";
@@ -29,16 +29,24 @@ export function PostsPage() {
     !filter.isFiltered && !filter.isRestoringPreference,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
+  // instead of flashing an empty facet list on every open.
+  const [filtersEverOpened, setFiltersEverOpened] = useState(false);
 
-  const feed = useReportFeed(filter, {
-    reports: reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [],
-    isPending: reportsQuery.isPending,
-    error: reportsQuery.error ?? null,
-    retry: () => void reportsQuery.refetch(),
-    hasNextPage: reportsQuery.hasNextPage,
-    fetchNextPage: () => void reportsQuery.fetchNextPage(),
-    isFetchingNextPage: reportsQuery.isFetchingNextPage,
-  });
+  const feed = useReportFeed(
+    filter,
+    {
+      reports: reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [],
+      isPending: reportsQuery.isPending,
+      error: reportsQuery.error ?? null,
+      retry: () => void reportsQuery.refetch(),
+      hasNextPage: reportsQuery.hasNextPage,
+      fetchNextPage: () => void reportsQuery.fetchNextPage(),
+      isFetchingNextPage: reportsQuery.isFetchingNextPage,
+    },
+    filtersEverOpened,
+  );
   const reports = feed.reports;
   const resultCountLabel = i18n._("{count, plural, one {# post} other {# posts}}", {
     count: reports.length,
@@ -70,6 +78,11 @@ export function PostsPage() {
           filter={filter}
           facets={feed.tagFacets}
           voucherFacets={feed.voucherFacets}
+          open={filtersOpen}
+          onOpenChange={(next) => {
+            if (next) setFiltersEverOpened(true);
+            setFiltersOpen(next);
+          }}
         />
       </div>
 

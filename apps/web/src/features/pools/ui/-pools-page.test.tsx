@@ -166,7 +166,8 @@ describe("pools list", () => {
     const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
     expect(filterContent?.className).toContain("border-b");
     expect(filterContent?.className).not.toContain("border-y");
-    fireEvent.click(within(sheet).getByRole("button", { name: /Food/ }));
+    // The facet vocabulary is only requested once the sheet opens, so the chips arrive async.
+    fireEvent.click(await within(sheet).findByRole("button", { name: /Food/ }));
     expect(navigate).not.toHaveBeenCalled();
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));

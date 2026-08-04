@@ -132,7 +132,7 @@ describe("filtered report walk", () => {
   it("resolves the whole set in one shot, deduplicated by id", async () => {
     mockWalk(page([5, 4], cursor(4)), page([4, 3], cursor(3)), page([2], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -144,7 +144,7 @@ describe("filtered report walk", () => {
   it("asks for facets on the first request only", async () => {
     mockWalk(page([5], cursor(5)), page([4], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -182,7 +182,7 @@ describe("filtered report walk", () => {
       },
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -207,7 +207,8 @@ describe("filtered report walk", () => {
       voucherMatch: "all",
     };
     const { result } = renderHook(
-      () => useReportFeed(controls({ filter, result: { ok: true, filter } }), unfilteredStub()),
+      () =>
+        useReportFeed(controls({ filter, result: { ok: true, filter } }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -220,7 +221,7 @@ describe("filtered report walk", () => {
   it("asks for the endpoint maximum, not the feed's screenful", async () => {
     mockWalk(page([5], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -236,7 +237,7 @@ describe("filtered report walk", () => {
       ),
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -271,6 +272,7 @@ describe("filtered report walk", () => {
         useReportFeed(
           controls({ term: "", filter, result: { ok: true, filter } }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -284,7 +286,7 @@ describe("filtered report walk", () => {
   it("terminates on a repeated cursor pair", async () => {
     mockWalk(page([5], cursor(5)), page([4], cursor(5)));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -301,7 +303,7 @@ describe("filtered report walk", () => {
       return Promise.resolve(page([issued], cursor(issued)));
     });
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -314,7 +316,7 @@ describe("filtered report walk", () => {
   it("passes one abort signal through the whole walk", async () => {
     mockWalk(page([5], cursor(5)), page([4], null));
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -331,7 +333,7 @@ describe("filtered report walk", () => {
         : Promise.reject(new BackendApiError(400, "invalid filters", "E04")),
     );
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -348,7 +350,7 @@ describe("filtered report walk", () => {
       return Promise.resolve(page([5], null));
     });
 
-    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub()), {
+    const { result } = renderHook(() => useReportFeed(controls(), unfilteredStub(), true), {
       wrapper: wrapper(newClient()),
     });
 
@@ -361,7 +363,8 @@ describe("report feed source selection", () => {
   it("reads the unfiltered feed and issues no filtered request when unfiltered", async () => {
     const unfiltered = unfilteredStub({ reports: [report(1)], hasNextPage: true });
     const { result } = renderHook(
-      () => useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered),
+      () =>
+        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered, true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -375,7 +378,8 @@ describe("report feed source selection", () => {
   it("keeps the unfiltered feed's own load-more wiring", async () => {
     const unfiltered = unfilteredStub({ hasNextPage: true, isFetchingNextPage: true });
     const { result } = renderHook(
-      () => useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered),
+      () =>
+        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfiltered, true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -388,7 +392,7 @@ describe("report feed source selection", () => {
     mockWalk(page([5], null));
 
     const { result } = renderHook(
-      () => useReportFeed(controls(), unfilteredStub({ hasNextPage: true })),
+      () => useReportFeed(controls(), unfilteredStub({ hasNextPage: true }), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -405,6 +409,7 @@ describe("report feed source selection", () => {
             result: { ok: false, reason: "too-many-tags", requested: 13, max: 12 },
           }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -432,6 +437,7 @@ describe("report feed source selection", () => {
         useReportFeed(
           controls({ filter, result: { ok: true, filter }, tags: ["Retired"] }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -477,6 +483,7 @@ describe("report feed source selection", () => {
             vouchers: [selected],
           }),
           unfilteredStub(),
+          true,
         ),
       { wrapper: wrapper(newClient()) },
     );
@@ -492,7 +499,7 @@ describe("report feed source selection", () => {
     mockWalk(page([5], null));
 
     const { result } = renderHook(
-      () => useReportFeed(controls({ isDebouncing: true }), unfilteredStub()),
+      () => useReportFeed(controls({ isDebouncing: true }), unfilteredStub(), true),
       { wrapper: wrapper(newClient()) },
     );
 
@@ -509,9 +516,38 @@ describe("report feed source selection", () => {
 
     const { result } = renderHook(
       () =>
-        useReportFeed(controls({ isFiltered: false, filter: null, term: "" }), unfilteredStub()),
+        useReportFeed(
+          controls({ isFiltered: false, filter: null, term: "" }),
+          unfilteredStub(),
+          true,
+        ),
       { wrapper: wrapper(newClient()) },
     );
+
+    await waitFor(() => expect(result.current.tagFacets).toEqual(BOOTSTRAP_FACETS));
+  });
+
+  it("does not request the facet vocabulary until the filter sheet has been opened", async () => {
+    getFilteredReports.mockImplementation(({ perPage }: { perPage: number }) =>
+      perPage === 1
+        ? Promise.resolve({ ...page([], null), tagFacets: BOOTSTRAP_FACETS })
+        : Promise.reject(new Error("no walk expected")),
+    );
+
+    const { rerender, result } = renderHook(
+      ({ vocabularyEnabled }: { vocabularyEnabled: boolean }) =>
+        useReportFeed(
+          controls({ isFiltered: false, filter: null, term: "" }),
+          unfilteredStub(),
+          vocabularyEnabled,
+        ),
+      { wrapper: wrapper(newClient()), initialProps: { vocabularyEnabled: false } },
+    );
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(getFilteredReports).not.toHaveBeenCalled();
+
+    rerender({ vocabularyEnabled: true });
 
     await waitFor(() => expect(result.current.tagFacets).toEqual(BOOTSTRAP_FACETS));
   });

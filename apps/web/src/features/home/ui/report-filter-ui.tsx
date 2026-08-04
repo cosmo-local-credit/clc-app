@@ -1,8 +1,10 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { BackendApiError } from "#/features/auth/api/client";
+import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
 import type { ReportTagFacet, ReportVoucherFacet } from "#/features/home/api/reports-client";
 import { FilteredReportsTooLargeError } from "#/features/home/hooks/use-filtered-reports";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
@@ -11,11 +13,18 @@ export function ReportFilterSheet({
   filter,
   facets,
   voucherFacets,
+  open,
+  onOpenChange,
 }: {
   filter: PersistedCatalogFilterControls;
   facets: ReportTagFacet[];
   voucherFacets: ReportVoucherFacet[];
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
+  const [voucherQuery, setVoucherQuery] = useState("");
+  const voucherSearch = useVoucherSearch(voucherQuery, setVoucherQuery);
+
   return (
     <CatalogFilterSheet
       filter={filter}
@@ -23,7 +32,10 @@ export function ReportFilterSheet({
       title={<Trans>Filter posts</Trans>}
       facetTitle={<Trans>Categories</Trans>}
       voucherFacets={voucherFacets}
+      voucherSearch={voucherSearch}
       showHeader={false}
+      open={open}
+      onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
     />
   );

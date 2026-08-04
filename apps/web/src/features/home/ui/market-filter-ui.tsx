@@ -83,9 +83,13 @@ export function MarketFilterFeedback({
 export function MarketFilterSheet({
   filter,
   facets,
+  open,
+  onOpenChange,
 }: {
   filter: MarketFilterControls;
   facets: MarketTagFacet[];
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
   return (
     <CatalogFilterSheet
@@ -94,6 +98,8 @@ export function MarketFilterSheet({
       title={<Trans>Filter vouchers</Trans>}
       facetTitle={<Trans>What they offer</Trans>}
       showHeader={false}
+      open={open}
+      onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
     />
   );

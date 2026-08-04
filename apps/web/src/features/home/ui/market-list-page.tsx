@@ -27,7 +27,16 @@ export function MarketListPage({
   const { t, i18n } = useLingui();
   const { realFix } = useMarketCamera(locationOwner);
   const filter = useMarketFilter();
-  const catalog = useMarketCatalogVouchers(filter, null, !filter.isRestoringPreference);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
+  // instead of flashing an empty facet list on every open.
+  const [filtersEverOpened, setFiltersEverOpened] = useState(false);
+  const catalog = useMarketCatalogVouchers(
+    filter,
+    null,
+    !filter.isRestoringPreference,
+    filtersEverOpened,
+  );
   const { vouchers, isCatalogComplete, error, retry } = catalog;
   const [visibleCount, setVisibleCount] = useState(MARKET_LIST_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -107,7 +116,15 @@ export function MarketListPage({
             <Trans>Marketplace</Trans>
           </h1>
           <div className="flex shrink-0 items-center gap-2">
-            <MarketFilterSheet filter={filter} facets={catalog.tagFacets} />
+            <MarketFilterSheet
+              filter={filter}
+              facets={catalog.tagFacets}
+              open={filtersOpen}
+              onOpenChange={(next) => {
+                if (next) setFiltersEverOpened(true);
+                setFiltersOpen(next);
+              }}
+            />
             <Button
               asChild
               variant="outline"

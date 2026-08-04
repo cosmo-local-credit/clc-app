@@ -13,6 +13,11 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   vocabulary: undefined as { tag: string; count: number }[] | undefined,
   voucherVocabulary: undefined as ReportVoucherFacet[] | undefined,
+  voucherResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
+  voucherSearchStatus: "idle" as "idle" | "searching" | "ready" | "error",
+  voucherSearchQuery: "",
+  setVoucherQuery: vi.fn(),
+  retryVoucherSearch: vi.fn(),
   filteredFilters: [] as (CatalogFilter | null)[],
   filtered: {
     data: undefined as { reports: ReportSummary[]; tagFacets: null } | undefined,
@@ -104,6 +109,26 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
   };
 });
 
+vi.mock("#/features/home/hooks/use-voucher-search", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/features/home/hooks/use-voucher-search")>();
+  return {
+    ...actual,
+    useVoucherSearch: (query: string, setQuery: (next: string) => void) => {
+      mocks.voucherSearchQuery = query;
+      return {
+        query,
+        setQuery: (next: string) => {
+          mocks.setVoucherQuery(next);
+          setQuery(next);
+        },
+        results: mocks.voucherResults,
+        status: mocks.voucherSearchStatus,
+        retry: mocks.retryVoucherSearch,
+      };
+    },
+  };
+});
+
 vi.mock("@tanstack/react-router", () => ({
   useSearch: () => mocks.search,
   useNavigate: () => mocks.navigate,
@@ -174,6 +199,11 @@ beforeEach(() => {
   mocks.navigate = vi.fn();
   mocks.vocabulary = undefined;
   mocks.voucherVocabulary = undefined;
+  mocks.voucherResults = [];
+  mocks.voucherSearchStatus = "idle";
+  mocks.voucherSearchQuery = "";
+  mocks.setVoucherQuery = vi.fn();
+  mocks.retryVoucherSearch = vi.fn();
   mocks.filteredFilters = [];
   mocks.filtered = {
     data: undefined,
@@ -322,20 +352,19 @@ describe("PostsPage filtering", () => {
     { tag: "Training", count: 1 },
     { tag: "Water", count: 0 },
   ];
-  const VOUCHER_VOCABULARY: ReportVoucherFacet[] = [
+  // Search results, not facets: /api/v2/vouchers carries no per-voucher match count.
+  const VOUCHER_RESULTS = [
     {
       chainId: 1,
       address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       name: "Alpha Credit",
       symbol: "ALPHA",
-      count: 4,
     },
     {
       chainId: 42220,
       address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       name: "Beta Credit",
       symbol: "BETA",
-      count: 2,
     },
   ];
 
@@ -419,13 +448,14 @@ describe("PostsPage filtering", () => {
   });
 
   it("applies voucher relationships with all-match in one canonical navigation", () => {
-    mocks.voucherVocabulary = VOUCHER_VOCABULARY;
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
     render(<PostsPage />);
 
     const sheet = openFilters();
-    const vouchers = within(sheet).getByRole("group", { name: "Filter by voucher" });
-    fireEvent.click(within(vouchers).getByRole("button", { name: /Alpha Credit/ }));
-    fireEvent.click(within(vouchers).getByRole("button", { name: /Beta Credit/ }));
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Beta Credit/ }));
     const matchHeading = within(sheet).getByRole("heading", {
       name: "How should vouchers match?",
     });
@@ -456,30 +486,85 @@ describe("PostsPage filtering", () => {
     });
   });
 
-  it("shows an unavailable state without a search box for an empty voucher vocabulary", () => {
-    mocks.voucherVocabulary = [];
+  it("keeps the selected chips keyboard-operable from the voucher input", () => {
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
     render(<PostsPage />);
 
     const sheet = openFilters();
-    expect(within(sheet).queryByRole("searchbox", { name: "Search voucher filters" })).toBeNull();
-    expect(within(sheet).getByText("No voucher filters are available.")).toBeTruthy();
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+
+    // Base UI wires arrow/Backspace chip navigation through the chips context, which the input
+    // only sees when it is rendered inside Combobox.Chips.
+    const chips = within(sheet).getByRole("toolbar", { name: "Selected vouchers" });
+    expect(within(chips).getByRole("combobox", { name: "Search voucher filters" })).toBeTruthy();
+
+    const input = within(chips).getByRole("combobox", { name: "Search voucher filters" });
+    input.focus();
+    fireEvent.keyDown(input, { key: "ArrowLeft" });
+
+    // Arrow-left off an empty input moves focus onto the last chip, which is what makes the
+    // selection removable without a pointer.
+    const chip = within(chips).getByRole("button", { name: "Remove Alpha Credit" }).parentElement;
+    expect(document.activeElement).toBe(chip);
+  });
+
+  it("lists nothing until the query is worth a request", () => {
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).getByRole("combobox", { name: "Search voucher filters" })).toBeTruthy();
+    expect(within(sheet).getByText("Type at least 2 characters to search vouchers.")).toBeTruthy();
+    // Nothing preloaded means no listbox competing for sheet height.
+    expect(within(sheet).queryByRole("listbox", { name: "Voucher search results" })).toBeNull();
     expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
   });
 
-  it("announces when a large voucher vocabulary is clipped", () => {
-    mocks.voucherVocabulary = Array.from({ length: 51 }, (_, index) => ({
-      chainId: 42220,
-      address: `0x${(index + 1).toString(16).padStart(40, "0")}`,
-      name: `Voucher ${String(index + 1).padStart(2, "0")}`,
-      symbol: `V${index + 1}`,
-      count: 1,
-    }));
+  it("stays quiet about empty results while the search is still running", () => {
+    mocks.voucherSearchStatus = "searching";
     render(<PostsPage />);
 
     const sheet = openFilters();
-    expect(
-      within(sheet).getByText("Some vouchers are hidden. Refine your search to see more."),
-    ).toBeTruthy();
+    expect(within(sheet).getByText("Searching vouchers…")).toBeTruthy();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+  });
+
+  it("says so when a finished search matched nothing", () => {
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    // Matched loosely: Base UI appends a word joiner to the live region so screen readers
+    // re-announce an unchanged message.
+    expect(within(sheet).getByText(/No vouchers match this search\./)).toBeTruthy();
+  });
+
+  it("offers a retry when the voucher search fails", () => {
+    mocks.voucherSearchStatus = "error";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).getByText("Couldn't search vouchers.")).toBeTruthy();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Try again" }));
+    expect(mocks.retryVoucherSearch).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the query after a pick so the list collapses for the next search", () => {
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+
+    expect(mocks.setVoucherQuery).toHaveBeenCalledWith("");
+    // The chip keeps the name the search supplied, so it survives the results disappearing.
+    const chips = within(sheet).getByRole("toolbar", { name: "Selected vouchers" });
+    expect(within(chips).getByText("Alpha Credit")).toBeTruthy();
   });
 
   it("hides counts under All tags, where they cannot mean what they look like", () => {

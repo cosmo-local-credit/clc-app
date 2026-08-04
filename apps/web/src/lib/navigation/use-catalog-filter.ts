@@ -15,19 +15,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { catalogSearchForScope, CLEARED_CATALOG_SEARCH } from "#/lib/navigation/catalog-search";
-
-const CATALOG_FILTER_DEBOUNCE_MS = 250;
-
-function useDebouncedValue<T>(value: T, delayMs = CATALOG_FILTER_DEBOUNCE_MS) {
-  const [settled, setSettled] = useState(value);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setSettled(value), delayMs);
-    return () => window.clearTimeout(timeout);
-  }, [value, delayMs]);
-
-  return { settled, isPending: settled !== value };
-}
+import { useDebouncedValue } from "#/lib/use-debounced-value";
 
 export type CatalogFilterControls = {
   term: string;

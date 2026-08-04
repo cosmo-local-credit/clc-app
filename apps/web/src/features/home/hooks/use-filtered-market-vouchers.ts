@@ -92,7 +92,7 @@ export function useFilteredMarketVouchers(
   return query;
 }
 
-export function useMarketFacetVocabulary() {
+export function useMarketFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: marketVoucherQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
@@ -102,6 +102,7 @@ export function useMarketFacetVocabulary() {
       );
       return page.tagFacets ?? [];
     },
+    enabled,
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,

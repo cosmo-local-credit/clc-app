@@ -35,7 +35,11 @@ export const CATALOG_TERM_MAX = 64;
 
 export const CATALOG_MAX_TAGS = 12;
 
-export const CATALOG_MAX_VOUCHERS = 12;
+/**
+ * Frontend-only gate. The backend paginates and imposes no such cap; this keeps a single filter
+ * request from fanning out across too many voucher relationships while load is still being tuned.
+ */
+export const CATALOG_MAX_VOUCHERS = 10;
 
 export function parseCatalogSearchState(search: unknown): CatalogSearchState {
   if (typeof search !== "object" || search === null) return {};

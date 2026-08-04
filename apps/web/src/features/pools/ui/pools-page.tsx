@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
@@ -27,16 +27,24 @@ export function PoolsPage() {
     !filter.isFiltered && !filter.isRestoringPreference,
   );
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
+  // instead of flashing an empty facet list on every open.
+  const [filtersEverOpened, setFiltersEverOpened] = useState(false);
 
-  const catalog = usePoolCatalog(filter, {
-    pools: poolsQuery.data?.pages.flatMap((page) => page.pools) ?? [],
-    isPending: poolsQuery.isPending,
-    error: poolsQuery.error ?? null,
-    retry: () => void poolsQuery.refetch(),
-    hasNextPage: poolsQuery.hasNextPage,
-    fetchNextPage: () => void poolsQuery.fetchNextPage(),
-    isFetchingNextPage: poolsQuery.isFetchingNextPage,
-  });
+  const catalog = usePoolCatalog(
+    filter,
+    {
+      pools: poolsQuery.data?.pages.flatMap((page) => page.pools) ?? [],
+      isPending: poolsQuery.isPending,
+      error: poolsQuery.error ?? null,
+      retry: () => void poolsQuery.refetch(),
+      hasNextPage: poolsQuery.hasNextPage,
+      fetchNextPage: () => void poolsQuery.fetchNextPage(),
+      isFetchingNextPage: poolsQuery.isFetchingNextPage,
+    },
+    filtersEverOpened,
+  );
   const pools = catalog.pools;
   const isRefining = catalog.status === "refining" || filter.isDebouncing;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
@@ -70,6 +78,11 @@ export function PoolsPage() {
           filter={filter}
           facets={catalog.tagFacets}
           voucherFacets={catalog.voucherFacets}
+          open={filtersOpen}
+          onOpenChange={(next) => {
+            if (next) setFiltersEverOpened(true);
+            setFiltersOpen(next);
+          }}
         />
       </div>
 
