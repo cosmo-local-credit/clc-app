@@ -10,6 +10,7 @@ import {
   type HexAddress,
   formatCursorQuery,
   isPresent,
+  normalizeChainId,
   normalizeHex,
   normalizeID,
   normalizeNumber,
@@ -265,20 +266,12 @@ export async function getFilteredPools(
 }
 
 function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet | null {
-  const chainId = normalizeNumber(facet.chainId);
+  const chainId = normalizeChainId(facet.chainId);
   const address = normalizeHex(facet.address);
   const name = normalizeText(facet.name);
   const symbol = normalizeText(facet.symbol);
   const count = normalizeNumber(facet.count);
-  if (
-    chainId === null ||
-    chainId <= 0 ||
-    !address ||
-    !name ||
-    !symbol ||
-    count === null ||
-    count < 0
-  ) {
+  if (chainId === null || !address || !name || !symbol || count === null || count < 0) {
     return null;
   }
   return { chainId, address, name, symbol, count };

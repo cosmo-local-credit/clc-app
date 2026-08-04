@@ -510,6 +510,35 @@ describe("PostsPage filtering", () => {
     expect(document.activeElement).toBe(chip);
   });
 
+  it("keeps the voucher input keyboard-operable at the selection limit", () => {
+    const selected: ReportVoucherFacet[] = Array.from({ length: 10 }, (_, index) => ({
+      chainId: 42220,
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}` as `0x${string}`,
+      name: `Voucher ${index + 1}`,
+      symbol: `V${index + 1}`,
+      count: 1,
+    }));
+    mocks.search = {
+      vouchers: selected.map(({ chainId, address }) => `${chainId}:${address}`).join(","),
+    };
+    mocks.voucherVocabulary = selected;
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const input = within(sheet).getByRole("combobox", {
+      name: "Search voucher filters",
+    }) as HTMLInputElement;
+
+    expect(input.disabled).toBe(false);
+    expect(
+      within(sheet).getByText("Limit of 10 vouchers reached. Remove one to add another."),
+    ).toBeTruthy();
+
+    input.focus();
+    fireEvent.keyDown(input, { key: "ArrowLeft" });
+    expect(document.activeElement).not.toBe(input);
+  });
+
   it("lists nothing until the query is worth a request", () => {
     render(<PostsPage />);
 

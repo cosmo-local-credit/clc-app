@@ -8,6 +8,7 @@ import { apiFetch } from "#/features/auth/api/client";
 import {
   type HexAddress,
   isPresent,
+  normalizeChainId,
   normalizeHex,
   normalizeNumber,
   normalizeStringArray,
@@ -197,20 +198,12 @@ export async function getFilteredReports(
 }
 
 function normalizeReportVoucherFacet(facet: BackendVoucherFacet): ReportVoucherFacet | null {
-  const chainId = normalizeNumber(facet.chainId);
+  const chainId = normalizeChainId(facet.chainId);
   const address = normalizeHex(facet.address);
   const name = normalizeText(facet.name);
   const symbol = normalizeText(facet.symbol);
   const count = normalizeNumber(facet.count);
-  if (
-    chainId === null ||
-    chainId <= 0 ||
-    !address ||
-    !name ||
-    !symbol ||
-    count === null ||
-    count < 0
-  ) {
+  if (chainId === null || !address || !name || !symbol || count === null || count < 0) {
     return null;
   }
   return { chainId, address, name, symbol, count };

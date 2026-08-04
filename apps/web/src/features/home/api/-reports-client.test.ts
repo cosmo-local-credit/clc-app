@@ -87,6 +87,13 @@ describe("getFilteredReports", () => {
             symbol: "BAD",
             count: 1,
           },
+          {
+            chainId: 42220.5,
+            address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            name: "Fractional",
+            symbol: "BAD",
+            count: 1,
+          },
         ],
       }),
     );

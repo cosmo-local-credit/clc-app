@@ -226,6 +226,11 @@ export function CatalogFilterSheet({
     if (next.length < 2) setDraftTagMatch("any");
   };
 
+  const changeOpen = (next: boolean) => {
+    if (!next) voucherSearch?.setQuery("");
+    onOpenChange(next);
+  };
+
   return (
     <>
       <Button
@@ -244,7 +249,7 @@ export function CatalogFilterSheet({
         ) : null}
       </Button>
 
-      <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetRoot open={open} onOpenChange={changeOpen}>
         <SheetPortal>
           <SheetBackdrop />
           <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
@@ -258,7 +263,7 @@ export function CatalogFilterSheet({
                   size="icon-lg"
                   className="relative h-9 w-9 bg-card before:absolute before:-inset-1 before:content-['']"
                   aria-label={t`Close filters`}
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => changeOpen(false)}
                 >
                   <RiCloseLine className="size-5" aria-hidden="true" />
                 </Button>
@@ -336,7 +341,6 @@ export function CatalogFilterSheet({
                           placeholder={t`Search vouchers`}
                           aria-label={t`Search voucher filters`}
                           className="pl-9"
-                          disabled={atVoucherLimit}
                         />
                       </div>
                     </ComboboxChips>

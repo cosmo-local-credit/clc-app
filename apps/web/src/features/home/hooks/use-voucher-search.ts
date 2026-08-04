@@ -1,6 +1,6 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 
 import { BackendApiError } from "#/features/auth/api/client";
 import { type MarketVoucher, getFilteredMarketVouchers } from "#/features/home/api/market-client";
@@ -36,10 +36,19 @@ export type VoucherSearchControls = {
  * holds a catalog in memory. Two consequences the caller must design around: results carry no
  * per-voucher match count, and the endpoint only sees active, geolocated vouchers.
  */
-export function useVoucherSearch(query: string, setQuery: (next: string) => void) {
+export function useVoucherSearch(query: string, setQuery: (next: string) => void, active: boolean) {
+  const queryClient = useQueryClient();
   const { settled } = useDebouncedValue(query);
   const term = settled.trim();
-  const enabled = term.length >= VOUCHER_SEARCH_MIN_CHARS;
+  const currentTerm = query.trim();
+  const isEligible = active && currentTerm.length >= VOUCHER_SEARCH_MIN_CHARS;
+  const isCurrent = term === currentTerm;
+  const enabled = isEligible && isCurrent;
+
+  useEffect(() => {
+    if (enabled || term.length < VOUCHER_SEARCH_MIN_CHARS) return;
+    void queryClient.cancelQueries({ queryKey: voucherSearchQueryKeys.term(term), exact: true });
+  }, [enabled, queryClient, term]);
 
   const search = useQuery({
     queryKey: voucherSearchQueryKeys.term(term),
@@ -58,7 +67,6 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
       return page.vouchers;
     },
     enabled,
-    placeholderData: keepPreviousData,
     staleTime: VOUCHER_SEARCH_STALE_TIME,
     refetchOnReconnect: false,
     retry: (failureCount, error) =>
@@ -68,22 +76,23 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
   });
 
   return useMemo((): VoucherSearchControls => {
-    // The trimmed term drives the request, but the raw query drives the affordance: a user who has
-    // typed two characters should not see "type to search" while the debounce settles.
-    const status: VoucherSearchStatus = !enabled
+    // The raw input drives the affordance while the settled term drives the request. Results are
+    // only exposed when both refer to the same term, so a clear or edit cannot leave an old list
+    // visible during the debounce window.
+    const status: VoucherSearchStatus = !isEligible
       ? "idle"
-      : search.isError
-        ? "error"
-        : search.data === undefined || search.isPlaceholderData || settled !== query
-          ? "searching"
+      : !isCurrent || search.isPending
+        ? "searching"
+        : search.isError
+          ? "error"
           : "ready";
 
     return {
       query,
       setQuery,
-      results: search.data ?? [],
+      results: status === "ready" ? (search.data ?? []) : [],
       status,
       retry: () => void search.refetch(),
     };
-  }, [enabled, query, search, setQuery, settled]);
+  }, [isCurrent, isEligible, query, search, setQuery]);
 }

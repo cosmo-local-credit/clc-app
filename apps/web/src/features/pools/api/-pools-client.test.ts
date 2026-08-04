@@ -353,6 +353,13 @@ describe("getFilteredPools request", () => {
               count: 3,
             },
             { id: 18, chainId: 42220, address: "bad", name: "Bad", symbol: "BAD", count: 1 },
+            {
+              chainId: Number.MAX_SAFE_INTEGER + 1,
+              address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              name: "Unsafe",
+              symbol: "BAD",
+              count: 1,
+            },
           ],
         },
       }),

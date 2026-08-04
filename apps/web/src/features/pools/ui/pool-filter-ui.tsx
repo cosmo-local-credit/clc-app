@@ -23,7 +23,7 @@ export function PoolFilterSheet({
   onOpenChange: (next: boolean) => void;
 }) {
   const [voucherQuery, setVoucherQuery] = useState("");
-  const voucherSearch = useVoucherSearch(voucherQuery, setVoucherQuery);
+  const voucherSearch = useVoucherSearch(voucherQuery, setVoucherQuery, open);
 
   return (
     <CatalogFilterSheet

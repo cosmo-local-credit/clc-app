@@ -39,6 +39,11 @@ export function normalizeNumber(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export function normalizeChainId(value: unknown): number | null {
+  const chainId = normalizeNumber(value);
+  return chainId !== null && Number.isSafeInteger(chainId) && chainId > 0 ? chainId : null;
+}
+
 export function normalizeID(value: unknown): string | null {
   return typeof value === "number" || (typeof value === "string" && value.length > 0)
     ? String(value)
