@@ -80,6 +80,22 @@ Current local overrides:
     one-minute `staleTime` would re-walk every cached page each time Posts is
     reopened.
 
+- `apps/web/src/features/home/hooks/use-filtered-reports.ts` and
+  `apps/web/src/features/pools/hooks/use-filtered-pools.ts`
+  - filtered Posts and Pools catalogs (one atomic cursor walk per filter)
+  - `staleTime: 10 * 60_000`, `gcTime: 5 * 60_000`,
+    `placeholderData: keepPreviousData`, and `refetchOnReconnect: false`
+  - query keys contain the complete canonical filter: term, tags, tag match,
+    stable voucher references, and voucher match. Changing only a voucher
+    relationship therefore cannot reuse rows cached for another selection.
+  - a separate `facet-vocabulary` query fetches both tag and voucher facets;
+    the first filtered page may replace those counts without changing the
+    selected vocabulary.
+  - Reason: these endpoints assemble the complete filtered set before exposing
+    it. Keeping the previous atomic result avoids partial-list churn, while the
+    shorter GC window bounds the number of full result sets accumulated as a
+    user tries different tag and voucher combinations.
+
 - `apps/web/src/features/home/hooks/use-ip-camera.ts`
   - IP/country camera bootstrap for the Market map
   - `staleTime: Infinity`

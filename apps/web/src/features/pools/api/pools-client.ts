@@ -1,4 +1,8 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 
 import { apiFetch } from "#/features/auth/api/client";
 import {
@@ -6,6 +10,7 @@ import {
   type HexAddress,
   formatCursorQuery,
   isPresent,
+  normalizeChainId,
   normalizeHex,
   normalizeID,
   normalizeNumber,
@@ -21,6 +26,13 @@ export type PoolTagFacet = {
   count: number;
 };
 
+export type PoolVoucherFacet = VoucherRef & {
+  name: string;
+  symbol: string;
+  count: number;
+  placeholder?: boolean;
+};
+
 export type FilteredPoolsParams = CursorParams & {
   filter: CatalogFilter;
   facets?: boolean;
@@ -28,6 +40,7 @@ export type FilteredPoolsParams = CursorParams & {
 
 export type FilteredPoolPage = UserPoolPage & {
   tagFacets: PoolTagFacet[] | null;
+  voucherFacets: PoolVoucherFacet[] | null;
 };
 
 export type UserPool = {
@@ -175,7 +188,16 @@ type BackendPoolVoucher = Partial<{
 
 type BackendFilteredPoolPage = BackendPoolPage & {
   tagFacets?: { tag?: unknown; count?: unknown }[] | null;
+  voucherFacets?: BackendVoucherFacet[] | null;
 };
+
+type BackendVoucherFacet = Partial<{
+  chainId: string | number;
+  address: string;
+  name: string;
+  symbol: string;
+  count: string | number;
+}>;
 
 type BackendPoolPage = {
   pools?: BackendPool[] | null;
@@ -216,6 +238,12 @@ export async function getFilteredPools(
   if (filter.term !== "") search.set("q", filter.term);
   if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
+  if (filter.vouchers.length > 0) {
+    search.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
+  }
+  if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
+    search.set("voucherMatch", "all");
+  }
   if (facets) search.set("facets", "true");
 
   const result = await apiFetch<BackendFilteredPoolPage>(
@@ -231,7 +259,22 @@ export async function getFilteredPools(
     tagFacets: result.tagFacets
       ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
       : null,
+    voucherFacets: result.voucherFacets
+      ? result.voucherFacets.map(normalizePoolVoucherFacet).filter(isPresent)
+      : null,
   };
+}
+
+function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet | null {
+  const chainId = normalizeChainId(facet.chainId);
+  const address = normalizeHex(facet.address);
+  const name = normalizeText(facet.name);
+  const symbol = normalizeText(facet.symbol);
+  const count = normalizeNumber(facet.count);
+  if (chainId === null || !address || !name || !symbol || count === null || count < 0) {
+    return null;
+  }
+  return { chainId, address, name, symbol, count };
 }
 
 function normalizePoolTagFacet(facet: { tag?: unknown; count?: unknown }): PoolTagFacet | null {

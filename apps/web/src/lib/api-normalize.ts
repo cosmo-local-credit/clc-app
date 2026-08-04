@@ -7,7 +7,9 @@
  * identical across features.
  */
 
-export type HexAddress = `0x${string}`;
+import type { HexAddress } from "@clc/core/features/catalog/logic";
+
+export type { HexAddress };
 
 export type CursorParams = {
   perPage: number;
@@ -35,6 +37,11 @@ export function normalizeNumber(value: unknown): number | null {
   if (typeof value !== "number" && typeof value !== "string") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function normalizeChainId(value: unknown): number | null {
+  const chainId = normalizeNumber(value);
+  return chainId !== null && Number.isSafeInteger(chainId) && chainId > 0 ? chainId : null;
 }
 
 export function normalizeID(value: unknown): string | null {

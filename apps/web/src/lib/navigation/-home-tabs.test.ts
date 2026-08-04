@@ -66,4 +66,14 @@ describe("isAtHomeTabRoot", () => {
     expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "a" })).toBe(true);
     expect(isAtHomeTabRoot({ tab: "market", view: "map", q: "   " })).toBe(true);
   });
+
+  it("ignores voucher filters that Market cannot honor", () => {
+    expect(
+      isAtHomeTabRoot({
+        tab: "market",
+        view: "map",
+        vouchers: "42220:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      }),
+    ).toBe(true);
+  });
 });

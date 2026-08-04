@@ -22,7 +22,14 @@ vi.mock("#/features/home/api/market-client", async (importOriginal) => {
 });
 
 function filter(overrides: Partial<CatalogFilter> = {}): CatalogFilter {
-  return { term: "art", tags: [], tagMatch: "any", ...overrides };
+  return {
+    term: "art",
+    tags: [],
+    tagMatch: "any",
+    vouchers: [],
+    voucherMatch: "any",
+    ...overrides,
+  };
 }
 
 function voucher(id: number): MarketVoucher {

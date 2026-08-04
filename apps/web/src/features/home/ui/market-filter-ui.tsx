@@ -1,13 +1,11 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { RiFocus3Line } from "react-icons/ri";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { BackendApiError } from "#/features/auth/api/client";
 import type { MarketTagFacet } from "#/features/home/api/market-client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
-import type { MarketCameraResult } from "#/features/home/hooks/use-market-camera";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 
@@ -25,6 +23,7 @@ export function useMarketFilterNotice(
   const { t } = useLingui();
 
   if (!filter.result.ok) {
+    if (!("requested" in filter.result)) return null;
     return {
       message: t`This link has too many filters (${filter.result.requested}, maximum ${filter.result.max}).`,
       actionLabel: t`Clear filters`,
@@ -84,59 +83,25 @@ export function MarketFilterFeedback({
 export function MarketFilterSheet({
   filter,
   facets,
-  hasLocation,
-  locationStatus,
-  onRequestLocation,
+  open,
+  onOpenChange,
 }: {
   filter: MarketFilterControls;
   facets: MarketTagFacet[];
-  hasLocation: boolean;
-  locationStatus: MarketCameraResult["locationStatus"];
-  onRequestLocation: () => void;
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
 }) {
-  const { t } = useLingui();
-  const locationButtonLabel =
-    locationStatus === "requesting"
-      ? t`Finding location`
-      : locationStatus === "denied"
-        ? t`Location denied`
-        : locationStatus === "unavailable"
-          ? t`Location unavailable`
-          : hasLocation
-            ? t`Update location`
-            : t`Use location`;
-
   return (
     <CatalogFilterSheet
       filter={filter}
       facets={facets}
       title={<Trans>Filter vouchers</Trans>}
       facetTitle={<Trans>What they offer</Trans>}
+      showHeader={false}
+      open={open}
+      onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
-    >
-      <section
-        className="flex items-center justify-between gap-3"
-        aria-labelledby="market-filter-location"
-      >
-        <h3 id="market-filter-location" className="font-heading text-sm font-semibold">
-          <Trans>Location</Trans>
-        </h3>
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-9 shrink-0 bg-card"
-          disabled={
-            locationStatus === "requesting" ||
-            locationStatus === "denied" ||
-            locationStatus === "unavailable"
-          }
-          onClick={onRequestLocation}
-        >
-          <RiFocus3Line className="size-4" aria-hidden="true" />
-          {locationButtonLabel}
-        </Button>
-      </section>
-    </CatalogFilterSheet>
+    />
   );
 }
 
@@ -145,6 +110,7 @@ export function MarketFilterSummary({ filter }: { filter: CatalogFilterControls 
 
   const summary = (() => {
     if (!filter.result.ok) {
+      if (!("requested" in filter.result)) return "";
       const { requested } = filter.result;
       return i18n._("{requested, plural, one {# filter} other {# filters}}", { requested });
     }

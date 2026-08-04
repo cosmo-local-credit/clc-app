@@ -191,6 +191,9 @@ describe("getMarketVouchers normalization", () => {
     ["a missing id", { ...VALID_ROW, id: undefined }],
     ["a malformed address", { ...VALID_ROW, address: "0xnope" }],
     ["a missing address", { ...VALID_ROW, address: null }],
+    ["a zero chain id", { ...VALID_ROW, chainId: 0 }],
+    ["a fractional chain id", { ...VALID_ROW, chainId: 42220.5 }],
+    ["an unsafe chain id", { ...VALID_ROW, chainId: Number.MAX_SAFE_INTEGER + 1 }],
     ["an unknown kind", { ...VALID_ROW, kind: "eatery" }],
     ["a missing kind", { ...VALID_ROW, kind: undefined }],
     ["a non-numeric latitude", { ...VALID_ROW, geoLat: "south" }],
@@ -469,7 +472,13 @@ describe("getMarketVoucher", () => {
 });
 
 describe("getFilteredMarketVouchers request", () => {
-  const FILTER = { term: "", tags: [] as readonly string[], tagMatch: "any" as const };
+  const FILTER = {
+    term: "",
+    tags: [] as readonly string[],
+    tagMatch: "any" as const,
+    vouchers: [] as const,
+    voucherMatch: "any" as const,
+  };
 
   it("encodes a term and comma-joins tags in one key", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
@@ -561,7 +570,13 @@ describe("getFilteredMarketVouchers request", () => {
 });
 
 describe("getFilteredMarketVouchers response", () => {
-  const FILTER = { term: "art", tags: [] as readonly string[], tagMatch: "any" as const };
+  const FILTER = {
+    term: "art",
+    tags: [] as readonly string[],
+    tagMatch: "any" as const,
+    vouchers: [] as const,
+    voucherMatch: "any" as const,
+  };
 
   it("normalizes the tag facet", async () => {
     fetchMock.mockResolvedValue(

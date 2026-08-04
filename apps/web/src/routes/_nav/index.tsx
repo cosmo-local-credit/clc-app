@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_nav/")({
     ...pickCatalogSearch(search),
   }),
   beforeLoad: ({ search }) => {
-    const next = canonicalRedirectSearch(search);
+    const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
     if (!next) return;
     throw redirect({ to: "/", search: next, replace: true });
   },

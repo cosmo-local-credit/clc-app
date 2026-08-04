@@ -2,30 +2,20 @@ import type {
   CatalogFilter,
   CatalogFilterResult,
   TagMatch,
+  VoucherRef,
 } from "@clc/core/features/catalog/logic";
 import {
   CATALOG_MAX_TAGS,
   isFilterActive,
   parseCatalogFilter,
+  serializeVoucherRef,
   toCatalogSearchState,
 } from "@clc/core/features/catalog/logic";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { CLEARED_CATALOG_SEARCH, pickCatalogSearch } from "#/lib/navigation/catalog-search";
-
-const CATALOG_FILTER_DEBOUNCE_MS = 250;
-
-function useDebouncedValue<T>(value: T, delayMs = CATALOG_FILTER_DEBOUNCE_MS) {
-  const [settled, setSettled] = useState(value);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setSettled(value), delayMs);
-    return () => window.clearTimeout(timeout);
-  }, [value, delayMs]);
-
-  return { settled, isPending: settled !== value };
-}
+import { catalogSearchForScope, CLEARED_CATALOG_SEARCH } from "#/lib/navigation/catalog-search";
+import { useDebouncedValue } from "#/lib/use-debounced-value";
 
 export type CatalogFilterControls = {
   term: string;
@@ -43,16 +33,27 @@ export type CatalogFilterControls = {
     options?: { replace?: boolean },
   ) => void;
   setTagMatch: (next: TagMatch) => void;
+  vouchers: readonly VoucherRef[];
+  voucherMatch: TagMatch;
+  setFacets: (
+    tags: readonly string[],
+    tagMatch: TagMatch,
+    vouchers: readonly VoucherRef[],
+    voucherMatch: TagMatch,
+    options?: { replace?: boolean },
+  ) => void;
   isAtTagLimit: boolean;
   clearTerm: () => void;
   clear: () => void;
 };
 
-export function useCatalogFilter(): CatalogFilterControls {
+export function useCatalogFilter(options?: {
+  voucherRelationships?: boolean;
+}): CatalogFilterControls {
   const search = useSearch({ strict: false });
   const navigate = useNavigate();
 
-  const searchState = pickCatalogSearch(search);
+  const searchState = catalogSearchForScope(search, options?.voucherRelationships === true);
   const urlTerm = typeof searchState.q === "string" ? searchState.q : "";
 
   const [term, setTerm] = useState(urlTerm);
@@ -107,6 +108,8 @@ export function useCatalogFilter(): CatalogFilterControls {
 
   const tags = result.ok ? result.filter.tags : [];
   const tagMatch = result.ok ? result.filter.tagMatch : "any";
+  const vouchers = result.ok ? result.filter.vouchers : [];
+  const voucherMatch = result.ok ? result.filter.voucherMatch : "any";
 
   const setTags = useCallback(
     (nextTags: readonly string[], nextTagMatch: TagMatch, options?: { replace?: boolean }) => {
@@ -120,6 +123,36 @@ export function useCatalogFilter(): CatalogFilterControls {
       void navigate({
         to: ".",
         replace: options?.replace,
+        search: (previous) => ({
+          ...previous,
+          ...CLEARED_CATALOG_SEARCH,
+          ...toCatalogSearchState(canonical.filter),
+        }),
+      });
+    },
+    [navigate, searchState],
+  );
+
+  const setFacets = useCallback(
+    (
+      nextTags: readonly string[],
+      nextTagMatch: TagMatch,
+      nextVouchers: readonly VoucherRef[],
+      nextVoucherMatch: TagMatch,
+      navigationOptions?: { replace?: boolean },
+    ) => {
+      const canonical = parseCatalogFilter({
+        ...searchState,
+        tags: nextTags,
+        tagMatch: nextTagMatch,
+        vouchers: nextVouchers.map(serializeVoucherRef),
+        voucherMatch: nextVoucherMatch,
+      });
+      if (!canonical.ok) return;
+
+      void navigate({
+        to: ".",
+        replace: navigationOptions?.replace,
         search: (previous) => ({
           ...previous,
           ...CLEARED_CATALOG_SEARCH,
@@ -159,6 +192,9 @@ export function useCatalogFilter(): CatalogFilterControls {
     toggleTag,
     setTags,
     setTagMatch,
+    vouchers,
+    voucherMatch,
+    setFacets,
     isAtTagLimit: tags.length >= CATALOG_MAX_TAGS,
     clearTerm,
     clear,

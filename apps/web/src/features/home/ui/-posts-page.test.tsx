@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "#/features/auth/api/client";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { ReportSummary, ReportVoucherFacet } from "#/features/home/api/reports-client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
 
@@ -12,6 +12,12 @@ const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
   navigate: vi.fn(),
   vocabulary: undefined as { tag: string; count: number }[] | undefined,
+  voucherVocabulary: undefined as ReportVoucherFacet[] | undefined,
+  voucherResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
+  voucherSearchStatus: "idle" as "idle" | "searching" | "ready" | "error",
+  voucherSearchQuery: "",
+  setVoucherQuery: vi.fn(),
+  retryVoucherSearch: vi.fn(),
   filteredFilters: [] as (CatalogFilter | null)[],
   filtered: {
     data: undefined as { reports: ReportSummary[]; tagFacets: null } | undefined,
@@ -62,6 +68,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
       const tagFacets = [...source, ...missing.map((tag) => ({ tag, count: 0 }))].sort(
         (left, right) => left.tag.localeCompare(right.tag),
       );
+      const voucherFacets = mocks.voucherVocabulary ?? [];
 
       if (!filter.isFiltered) {
         return {
@@ -70,6 +77,7 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
           error: unfiltered.error,
           retry: unfiltered.retry,
           tagFacets,
+          voucherFacets,
           hasMore: unfiltered.hasNextPage,
           loadMore: unfiltered.fetchNextPage,
           isLoadingMore: unfiltered.isFetchingNextPage,
@@ -92,9 +100,30 @@ vi.mock("#/features/home/hooks/use-filtered-reports", async (importOriginal) => 
         error: mocks.filtered.error,
         retry: mocks.filtered.refetch,
         tagFacets,
+        voucherFacets,
         hasMore: false,
         loadMore: () => {},
         isLoadingMore: false,
+      };
+    },
+  };
+});
+
+vi.mock("#/features/home/hooks/use-voucher-search", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/features/home/hooks/use-voucher-search")>();
+  return {
+    ...actual,
+    useVoucherSearch: (query: string, setQuery: (next: string) => void) => {
+      mocks.voucherSearchQuery = query;
+      return {
+        query,
+        setQuery: (next: string) => {
+          mocks.setVoucherQuery(next);
+          setQuery(next);
+        },
+        results: mocks.voucherResults,
+        status: mocks.voucherSearchStatus,
+        retry: mocks.retryVoucherSearch,
       };
     },
   };
@@ -143,7 +172,11 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
     vouchers: [
-      { address: "0x2222222222222222222222222222222222222222", name: "Kiriba", symbol: "KCH" },
+      {
+        address: "0x2222222222222222222222222222222222222222",
+        name: "Kiriba",
+        symbol: "KCH",
+      },
     ],
     ...overrides,
   };
@@ -165,6 +198,12 @@ beforeEach(() => {
   mocks.search = {};
   mocks.navigate = vi.fn();
   mocks.vocabulary = undefined;
+  mocks.voucherVocabulary = undefined;
+  mocks.voucherResults = [];
+  mocks.voucherSearchStatus = "idle";
+  mocks.voucherSearchQuery = "";
+  mocks.setVoucherQuery = vi.fn();
+  mocks.retryVoucherSearch = vi.fn();
   mocks.filteredFilters = [];
   mocks.filtered = {
     data: undefined,
@@ -313,6 +352,21 @@ describe("PostsPage filtering", () => {
     { tag: "Training", count: 1 },
     { tag: "Water", count: 0 },
   ];
+  // Search results, not facets: /api/v2/vouchers carries no per-voucher match count.
+  const VOUCHER_RESULTS = [
+    {
+      chainId: 1,
+      address: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      name: "Alpha Credit",
+      symbol: "ALPHA",
+    },
+    {
+      chainId: 42220,
+      address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      name: "Beta Credit",
+      symbol: "BETA",
+    },
+  ];
 
   function openFilters() {
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
@@ -342,6 +396,15 @@ describe("PostsPage filtering", () => {
     expect(screen.queryByRole("group", { name: "Filter by tag" })).toBeNull();
     const sheet = openFilters();
     expect(sheet.className).toContain("rounded-none");
+    expect(within(sheet).getByRole("heading", { name: "Filter posts" }).className).toContain(
+      "sr-only",
+    );
+    expect(within(sheet).getByRole("button", { name: "Close filters" }).className).toContain(
+      "sr-only",
+    );
+    const filterContent = sheet.querySelector<HTMLElement>(".overflow-y-auto");
+    expect(filterContent?.className).toContain("border-b");
+    expect(filterContent?.className).not.toContain("border-y");
     const row = within(sheet).getByRole("group", { name: "Filter by tag" });
     expect(
       within(row)
@@ -381,7 +444,156 @@ describe("PostsPage filtering", () => {
     expect(search({})).toMatchObject({ tags: "Harvest" });
     expect(
       JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({ tags: ["Harvest"], tagMatch: "any" });
+    ).toEqual({ tags: ["Harvest"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+  });
+
+  it("applies voucher relationships with all-match in one canonical navigation", () => {
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Beta Credit/ }));
+    const matchHeading = within(sheet).getByRole("heading", {
+      name: "How should vouchers match?",
+    });
+    expect(matchHeading.parentElement?.tagName).toBe("SECTION");
+    fireEvent.click(within(sheet).getByRole("button", { name: "All selected" }));
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
+
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    const call = mocks.navigate.mock.calls[0]?.[0];
+    const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
+    expect(search({})).toMatchObject({
+      vouchers:
+        "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      voucherMatch: "all",
+    });
+    expect(
+      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
+    ).toEqual({
+      tags: [],
+      tagMatch: "any",
+      vouchers: [
+        "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      ],
+      voucherMatch: "all",
+    });
+  });
+
+  it("keeps the selected chips keyboard-operable from the voucher input", () => {
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+
+    // Base UI wires arrow/Backspace chip navigation through the chips context, which the input
+    // only sees when it is rendered inside Combobox.Chips.
+    const chips = within(sheet).getByRole("toolbar", { name: "Selected vouchers" });
+    expect(within(chips).getByRole("combobox", { name: "Search voucher filters" })).toBeTruthy();
+
+    const input = within(chips).getByRole("combobox", { name: "Search voucher filters" });
+    input.focus();
+    fireEvent.keyDown(input, { key: "ArrowLeft" });
+
+    // Arrow-left off an empty input moves focus onto the last chip, which is what makes the
+    // selection removable without a pointer.
+    const chip = within(chips).getByRole("button", { name: "Remove Alpha Credit" }).parentElement;
+    expect(document.activeElement).toBe(chip);
+  });
+
+  it("keeps the voucher input keyboard-operable at the selection limit", () => {
+    const selected: ReportVoucherFacet[] = Array.from({ length: 10 }, (_, index) => ({
+      chainId: 42220,
+      address: `0x${(index + 1).toString(16).padStart(40, "0")}` as `0x${string}`,
+      name: `Voucher ${index + 1}`,
+      symbol: `V${index + 1}`,
+      count: 1,
+    }));
+    mocks.search = {
+      vouchers: selected.map(({ chainId, address }) => `${chainId}:${address}`).join(","),
+    };
+    mocks.voucherVocabulary = selected;
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const input = within(sheet).getByRole("combobox", {
+      name: "Search voucher filters",
+    }) as HTMLInputElement;
+
+    expect(input.disabled).toBe(false);
+    expect(
+      within(sheet).getByText("Limit of 10 vouchers reached. Remove one to add another."),
+    ).toBeTruthy();
+
+    input.focus();
+    fireEvent.keyDown(input, { key: "ArrowLeft" });
+    expect(document.activeElement).not.toBe(input);
+  });
+
+  it("lists nothing until the query is worth a request", () => {
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).getByRole("combobox", { name: "Search voucher filters" })).toBeTruthy();
+    expect(within(sheet).getByText("Type at least 2 characters to search vouchers.")).toBeTruthy();
+    // Nothing preloaded means no listbox competing for sheet height.
+    expect(within(sheet).queryByRole("listbox", { name: "Voucher search results" })).toBeNull();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+  });
+
+  it("stays quiet about empty results while the search is still running", () => {
+    mocks.voucherSearchStatus = "searching";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).getByText("Searching vouchers…")).toBeTruthy();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+  });
+
+  it("says so when a finished search matched nothing", () => {
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    // Matched loosely: Base UI appends a word joiner to the live region so screen readers
+    // re-announce an unchanged message.
+    expect(within(sheet).getByText(/No vouchers match this search\./)).toBeTruthy();
+  });
+
+  it("offers a retry when the voucher search fails", () => {
+    mocks.voucherSearchStatus = "error";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    expect(within(sheet).getByText("Couldn't search vouchers.")).toBeTruthy();
+    expect(within(sheet).queryByText("No vouchers match this search.")).toBeNull();
+
+    fireEvent.click(within(sheet).getByRole("button", { name: "Try again" }));
+    expect(mocks.retryVoucherSearch).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the query after a pick so the list collapses for the next search", () => {
+    mocks.voucherResults = VOUCHER_RESULTS;
+    mocks.voucherSearchStatus = "ready";
+    render(<PostsPage />);
+
+    const sheet = openFilters();
+    const vouchers = within(sheet).getByRole("listbox", { name: "Voucher search results" });
+    fireEvent.click(within(vouchers).getByRole("option", { name: /Alpha Credit/ }));
+
+    expect(mocks.setVoucherQuery).toHaveBeenCalledWith("");
+    // The chip keeps the name the search supplied, so it survives the results disappearing.
+    const chips = within(sheet).getByRole("toolbar", { name: "Selected vouchers" });
+    expect(within(chips).getByText("Alpha Credit")).toBeTruthy();
   });
 
   it("hides counts under All tags, where they cannot mean what they look like", () => {
