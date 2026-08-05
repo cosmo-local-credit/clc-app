@@ -98,7 +98,11 @@ export async function signupWithSiwe(payload: SignupSiwePayload): Promise<Signup
       body: JSON.stringify(payload),
     });
   } catch (err) {
-    if (err instanceof BackendApiError && err.status === 409) {
+    // 409 means the *address* is already registered only when the backend
+    // says so explicitly (code E17 = email conflict, a different identity
+    // entirely). Swallowing an email conflict here would make the caller
+    // sign in as this (never-persisted) address, which 404s.
+    if (err instanceof BackendApiError && err.status === 409 && err.code !== "E17") {
       return { userId: null, status: "REGISTERED", role: "USER", alreadyRegistered: true };
     }
     throw err;

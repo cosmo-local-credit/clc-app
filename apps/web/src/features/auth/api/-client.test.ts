@@ -374,6 +374,27 @@ describe("signupWithSiwe — 409 swallow", () => {
     expect(result.status).toBe("REGISTERED");
   });
 
+  it("re-throws a 409 with code E17 (email conflict) instead of swallowing it", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 409,
+        statusText: "Conflict",
+        body: { ok: false, description: "email already linked to another account", code: "E17" },
+        ok: false,
+      }),
+    );
+
+    await expect(
+      signupWithSiwe({
+        message: "msg",
+        signature: "0xsig",
+        name: "Alice",
+        email: "alice@example.com",
+      }),
+    ).rejects.toMatchObject({ status: 409, code: "E17" });
+  });
+
   it("re-throws non-409 errors from signupWithSiwe", async () => {
     vi.stubGlobal(
       "fetch",
