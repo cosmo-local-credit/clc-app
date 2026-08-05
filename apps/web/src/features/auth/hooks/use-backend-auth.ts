@@ -1,7 +1,7 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useMutation } from "@tanstack/react-query";
-import { createSiweMessage } from "viem/siwe";
 import { privateKeyToAccount } from "viem/accounts";
+import { createSiweMessage } from "viem/siwe";
 import { signMessage } from "wagmi/actions";
 
 import { wagmiConfig } from "#/providers/web3-config";
@@ -14,21 +14,48 @@ export type BackendSignupInput = {
   privateKey: `0x${string}`;
 };
 
+async function signSiweMessage(
+  account: ReturnType<typeof privateKeyToAccount>,
+  statement: string,
+): Promise<{ message: string; signature: `0x${string}` }> {
+  const nonce = await getSiweNonce();
+  const message = createSiweMessage({
+    domain: window.location.host,
+    address: account.address,
+    statement,
+    uri: window.location.origin,
+    version: "1",
+    chainId: CHAIN_ID,
+    nonce,
+  });
+  const signature = await account.signMessage({ message });
+  return { message, signature };
+}
+
+/**
+ * After a 409 (address already registered), establish a session via SIWE
+ * sign-in then write the full profile — otherwise phone/country stay stale.
+ */
+async function ensureSessionAndSubmitProfile(
+  account: ReturnType<typeof privateKeyToAccount>,
+  profile: ProfileInput,
+  email: string,
+): Promise<void> {
+  const { message, signature } = await signSiweMessage(account, "Sign in to CLC App");
+  await signinWithSiwe({ message, signature });
+  await submitProfile({
+    name: profile.name,
+    email,
+    phone: profile.phone,
+    country: profile.location.country,
+  });
+}
+
 export function useBackendSignup() {
   return useMutation({
     mutationFn: async ({ profile, privateKey }: BackendSignupInput) => {
       const account = privateKeyToAccount(privateKey);
-      const nonce = await getSiweNonce();
-      const message = createSiweMessage({
-        domain: window.location.host,
-        address: account.address,
-        statement: "Sign up for CLC App",
-        uri: window.location.origin,
-        version: "1",
-        chainId: CHAIN_ID,
-        nonce,
-      });
-      const signature = await account.signMessage({ message });
+      const { message, signature } = await signSiweMessage(account, "Sign up for CLC App");
 
       const email =
         profile.email.trim() || `pending+${account.address.slice(2).toLowerCase()}@clc.local`;
@@ -42,11 +69,13 @@ export function useBackendSignup() {
 
       // signupWithSiwe only persists name + email (and sets the session
       // cookie). The remaining profile fields (phone, country) must be written
-      // through the authenticated profile endpoint, otherwise they are silently
-      // dropped and downstream flows (MPESA/Pretium) see no linked phone.
-      // Skipped for an already-registered address: no session cookie was
-      // issued in that case, so the profile write would 401.
-      if (!result.alreadyRegistered) {
+      // through the authenticated profile endpoint.
+      //
+      // On 409/alreadyRegistered the signup call does not issue a session, so
+      // we SIWE-sign-in first, then submit the (possibly edited) profile.
+      if (result.alreadyRegistered) {
+        await ensureSessionAndSubmitProfile(account, profile, email);
+      } else {
         await submitProfile({
           name: profile.name,
           email,
@@ -68,17 +97,7 @@ export function useBackendPrivateKeySignin() {
   return useMutation({
     mutationFn: async ({ privateKey }: BackendPrivateKeySigninInput) => {
       const account = privateKeyToAccount(privateKey);
-      const nonce = await getSiweNonce();
-      const message = createSiweMessage({
-        domain: window.location.host,
-        address: account.address,
-        statement: "Sign in to CLC App",
-        uri: window.location.origin,
-        version: "1",
-        chainId: CHAIN_ID,
-        nonce,
-      });
-      const signature = await account.signMessage({ message });
+      const { message, signature } = await signSiweMessage(account, "Sign in to CLC App");
       return signinWithSiwe({ message, signature });
     },
   });

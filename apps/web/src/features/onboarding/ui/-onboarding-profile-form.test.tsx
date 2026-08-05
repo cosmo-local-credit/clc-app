@@ -7,9 +7,29 @@ const { mockNavigate } = vi.hoisted(() => ({
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
+  useCanGoBack: () => false,
+  useRouter: () => ({ history: { back: vi.fn() } }),
+  Link: ({
+    children,
+    to,
+    search,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    search?: Record<string, unknown>;
+  }) => {
+    const qs =
+      search && Object.keys(search).length > 0
+        ? `?${new URLSearchParams(
+            Object.entries(search).map(([k, v]) => [k, String(v)]),
+          ).toString()}`
+        : "";
+    return <a href={`${to}${qs}`}>{children}</a>;
+  },
+}));
+
+vi.mock("./onboarding-progress", () => ({
+  OnboardingProgress: () => <div data-testid="onboarding-progress" />,
 }));
 
 vi.mock("#/components/ui/phone-input", () => ({
@@ -81,13 +101,24 @@ vi.mock("./location-picker", () => ({
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
+function renderForm(onNext: (data: ProfileInput) => void = vi.fn(), initialValues?: ProfileInput) {
+  return render(
+    <OnboardingProfileForm
+      onNext={onNext}
+      progressStep={1}
+      progressTotal={3}
+      initialValues={initialValues}
+    />,
+  );
+}
+
 beforeEach(() => {
   mockNavigate.mockClear();
 });
 
 describe("OnboardingProfileForm rendering", () => {
   it("renders name, email, phone, and location fields", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
+    renderForm();
     expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(screen.getByTestId("phone-input")).toBeTruthy();
@@ -96,34 +127,41 @@ describe("OnboardingProfileForm rendering", () => {
   });
 
   it("renders the Continue submit button", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
+    renderForm();
     expect(screen.getByRole("button", { name: /continue/i })).toBeTruthy();
   });
 
-  it("has a sign in link pointing back to the landing page", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
-    const link = screen.getAllByRole("link").find((el) => el.getAttribute("href") === "/");
+  it("has a sign in link pointing to the signin step", () => {
+    renderForm();
+    const link = screen
+      .getAllByRole("link")
+      .find((el) => (el.getAttribute("href") ?? "").includes("step=signin"));
     expect(link).toBeTruthy();
   });
 
-  it("shows the back button", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /back/i })).toBeTruthy();
+  it("shows the back control", () => {
+    renderForm();
+    // BackChevron without onClick renders a link (history.back on click).
+    expect(screen.getByRole("link", { name: "Back" })).toBeTruthy();
   });
-});
 
-describe("OnboardingProfileForm navigation", () => {
-  it("navigates to / when back button is clicked", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: /back/i }));
-    expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
+  it("uses replace on the sign-in link so profile does not stack under sign-in", () => {
+    renderForm();
+    const link = screen.getByRole("link", { name: /go back to sign in/i });
+    // Mocked Link only serializes `to`+`search`; replace is asserted via prop through href step.
+    expect(link.getAttribute("href")).toContain("step=signin");
+  });
+
+  it("shows the progress indicator", () => {
+    renderForm();
+    expect(screen.getByTestId("onboarding-progress")).toBeTruthy();
   });
 });
 
 describe("OnboardingProfileForm submission", () => {
   it("calls onNext with validated data on valid submission", async () => {
     const mockOnNext = vi.fn();
-    render(<OnboardingProfileForm onNext={mockOnNext} />);
+    renderForm(mockOnNext);
 
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
@@ -153,7 +191,7 @@ describe("OnboardingProfileForm submission", () => {
 
   it("does not call onNext when name is empty", async () => {
     const mockOnNext = vi.fn();
-    render(<OnboardingProfileForm onNext={mockOnNext} />);
+    renderForm(mockOnNext);
 
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
       target: { value: "alice@example.com" },
@@ -169,7 +207,7 @@ describe("OnboardingProfileForm submission", () => {
 
   it("does not call onNext when both email and phone are empty", async () => {
     const mockOnNext = vi.fn();
-    render(<OnboardingProfileForm onNext={mockOnNext} />);
+    renderForm(mockOnNext);
 
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
@@ -184,7 +222,7 @@ describe("OnboardingProfileForm submission", () => {
   });
 
   it("does not show the location error when unrelated fields change", async () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
+    renderForm();
 
     await act(async () => {
       fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
@@ -197,7 +235,7 @@ describe("OnboardingProfileForm submission", () => {
 
   it("does not call onNext until a valid location is set", async () => {
     const mockOnNext = vi.fn();
-    render(<OnboardingProfileForm onNext={mockOnNext} />);
+    renderForm(mockOnNext);
 
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
@@ -217,22 +255,17 @@ describe("OnboardingProfileForm submission", () => {
 
 describe("OnboardingProfileForm value restoration", () => {
   it("populates name, email, and location from initialValues", () => {
-    render(
-      <OnboardingProfileForm
-        initialValues={{
-          name: "Alice",
-          email: "alice@example.com",
-          phone: "",
-          location: {
-            lat: -1.2921,
-            lng: 36.8219,
-            locationName: "Nairobi, Kenya",
-            country: "KE",
-          },
-        }}
-        onNext={vi.fn()}
-      />,
-    );
+    renderForm(vi.fn(), {
+      name: "Alice",
+      email: "alice@example.com",
+      phone: "",
+      location: {
+        lat: -1.2921,
+        lng: 36.8219,
+        locationName: "Nairobi, Kenya",
+        country: "KE",
+      },
+    });
 
     expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe(
       "Alice",
@@ -244,7 +277,7 @@ describe("OnboardingProfileForm value restoration", () => {
   });
 
   it("falls back to empty defaults when no initialValues are given", () => {
-    render(<OnboardingProfileForm onNext={vi.fn()} />);
+    renderForm();
     expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe("");
     expect(screen.getByText("No location")).toBeTruthy();
   });

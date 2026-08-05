@@ -3,20 +3,48 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const {
   mockOnboardingProfileFormOnNext,
-  mockOnboardingWalletStepOnBack,
   mockOnboardingWalletStepOnDone,
   mockNavigate,
+  mockIsPasskeyPlatformAvailable,
+  mockHistoryGo,
+  mockHistoryFlush,
+  mockHistorySubscribe,
 } = vi.hoisted(() => ({
   mockOnboardingProfileFormOnNext: vi.fn(),
-  mockOnboardingWalletStepOnBack: vi.fn(),
   mockOnboardingWalletStepOnDone: vi.fn(),
   mockNavigate: vi.fn(),
+  mockIsPasskeyPlatformAvailable: vi.fn(() => false),
+  mockHistoryGo: vi.fn(),
+  mockHistoryFlush: vi.fn(),
+  mockHistorySubscribe: vi.fn(() => () => {}),
 }));
 
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
+  useRouter: () => ({
+    history: {
+      location: { state: { __TSR_index: 0 }, pathname: "/onboarding", href: "/onboarding" },
+      go: mockHistoryGo,
+      flush: mockHistoryFlush,
+      subscribe: mockHistorySubscribe,
+    },
+  }),
+}));
+
+vi.mock("#/lib/onboarding-exit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/lib/onboarding-exit")>();
+  return {
+    ...actual,
+    // Keep real exit for unit coverage of go/replace wiring via spy on history.
+  };
+});
+
+vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
+  isPasskeyPlatformAvailable: () => mockIsPasskeyPlatformAvailable(),
+  pickPasskeyProvider: () => "google",
+  usePlatformPasskeyLabel: () => ({ available: false, provider: "google", label: "Google" }),
 }));
 
 vi.mock("./onboarding-profile-form", () => ({
@@ -47,28 +75,30 @@ vi.mock("./onboarding-profile-form", () => ({
   },
 }));
 
+vi.mock("./onboarding-method-step", () => ({
+  OnboardingMethodStep: ({ onContinue }: { onContinue: (choice: "link" | "paper") => void }) => (
+    <div data-testid="method-step">
+      <button type="button" onClick={() => onContinue("link")}>
+        method-continue
+      </button>
+    </div>
+  ),
+}));
+
 vi.mock("./onboarding-wallet-step", () => ({
   OnboardingWalletStep: ({
     profileData,
-    onBack,
     onDone,
+    linkPasskey,
   }: {
     profileData: ProfileInput;
-    onBack: () => void;
     onDone: () => void;
+    linkPasskey: boolean;
   }) => {
     return (
       <div data-testid="wallet-step">
         <span data-testid="profile-name">{profileData.name}</span>
-        <button
-          type="button"
-          onClick={() => {
-            mockOnboardingWalletStepOnBack();
-            onBack();
-          }}
-        >
-          wallet-back
-        </button>
+        <span data-testid="link-passkey">{linkPasskey ? "yes" : "no"}</span>
         <button
           type="button"
           onClick={() => {
@@ -87,44 +117,65 @@ import { OnboardingFlow } from "./onboarding-flow";
 
 beforeEach(() => {
   mockOnboardingProfileFormOnNext.mockClear();
-  mockOnboardingWalletStepOnBack.mockClear();
   mockOnboardingWalletStepOnDone.mockClear();
   mockNavigate.mockClear();
+  mockIsPasskeyPlatformAvailable.mockReturnValue(false);
 });
 
 describe("OnboardingFlow step transitions", () => {
-  it("starts on the profile step", () => {
-    render(<OnboardingFlow />);
+  it("renders the profile form on the profile step", () => {
+    render(<OnboardingFlow step="profile" />);
     expect(screen.getByTestId("profile-form")).toBeTruthy();
     expect(screen.queryByTestId("wallet-step")).toBeNull();
   });
 
-  it("moves to the wallet step after profile form submits", async () => {
-    render(<OnboardingFlow />);
+  it("navigates to card after profile when passkeys are unavailable", () => {
+    render(<OnboardingFlow step="profile" />);
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    expect(screen.queryByTestId("profile-form")).toBeNull();
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "card" },
+    });
+  });
+
+  it("navigates to method after profile when passkeys are available", () => {
+    mockIsPasskeyPlatformAvailable.mockReturnValue(true);
+    render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "method" },
+    });
+  });
+
+  it("shows the wallet step with profile data on card after profile is set", async () => {
+    const { rerender } = render(<OnboardingFlow step="profile" />);
+    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
+    rerender(<OnboardingFlow step="card" />);
     expect(await screen.findByTestId("wallet-step")).toBeTruthy();
-  });
-
-  it("passes profile data to the wallet step", () => {
-    render(<OnboardingFlow />);
-    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
     expect(screen.getByTestId("profile-name").textContent).toBe("Alice");
+    expect(screen.getByTestId("link-passkey").textContent).toBe("no");
   });
 
-  it("returns to profile step when wallet step calls onBack", () => {
-    render(<OnboardingFlow />);
+  it("invokes onDone without navigating — route owns the authenticated exit", async () => {
+    const { rerender } = render(<OnboardingFlow step="profile" />);
     fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    fireEvent.click(screen.getByRole("button", { name: "wallet-back" }));
-    expect(screen.getByTestId("profile-form")).toBeTruthy();
-    expect(screen.queryByTestId("wallet-step")).toBeNull();
-  });
-
-  it("navigates home when wallet step calls onDone", () => {
-    render(<OnboardingFlow />);
-    fireEvent.click(screen.getByRole("button", { name: "profile-next" }));
-    fireEvent.click(screen.getByRole("button", { name: "wallet-done" }));
+    rerender(<OnboardingFlow step="card" />);
+    mockNavigate.mockClear();
+    fireEvent.click(await screen.findByRole("button", { name: "wallet-done" }));
     expect(mockOnboardingWalletStepOnDone).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+    // finish() is intentionally a no-op for history; the onboarding route exits.
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ to: "/", replace: true }),
+    );
+  });
+
+  it("redirects card without profile data back to profile with replace", () => {
+    render(<OnboardingFlow step="card" />);
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "profile" },
+      replace: true,
+    });
   });
 });

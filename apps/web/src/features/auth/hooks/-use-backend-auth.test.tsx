@@ -134,7 +134,7 @@ describe("useBackendSignup", () => {
     expect(payload.country).toBe("KE");
   });
 
-  it("skips submitProfile when the address is already registered", async () => {
+  it("on already-registered 409: signs in then submits the full (edited) profile", async () => {
     mockSignupWithSiwe.mockResolvedValue({
       userId: null,
       status: "REGISTERED",
@@ -146,14 +146,25 @@ describe("useBackendSignup", () => {
     });
     await result.current.mutateAsync({
       profile: {
-        name: "Alice",
+        name: "Alice Edited",
         email: "alice@example.com",
-        phone: "+254700000000",
+        phone: "+254711111111",
         location: LOCATION,
       },
       privateKey: FAKE_PK,
     });
-    expect(mockSubmitProfile).not.toHaveBeenCalled();
+    // Fresh SIWE nonce for sign-in after the signup 409.
+    expect(mockGetSiweNonce).toHaveBeenCalledTimes(2);
+    expect(mockSigninWithSiwe).toHaveBeenCalledOnce();
+    expect(mockSubmitProfile).toHaveBeenCalledOnce();
+    const payload = mockSubmitProfile.mock.calls[0]?.[0] as {
+      name: string;
+      phone: string;
+      country: string;
+    };
+    expect(payload.name).toBe("Alice Edited");
+    expect(payload.phone).toBe("+254711111111");
+    expect(payload.country).toBe("KE");
   });
 });
 
