@@ -1,6 +1,6 @@
 import { sanitizeInternalRedirect } from "#/components/auth/redirect";
 
-export const ONBOARDING_STEPS = ["welcome", "signin", "profile", "method", "card"] as const;
+const ONBOARDING_STEPS = ["welcome", "signin", "profile", "method", "card"] as const;
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
@@ -11,7 +11,7 @@ export type OnboardingSearch = {
 
 export type WalletMethodChoice = "link" | "paper";
 
-export function parseOnboardingStep(value: unknown): OnboardingStep {
+function parseOnboardingStep(value: unknown): OnboardingStep {
   if (typeof value === "string" && (ONBOARDING_STEPS as readonly string[]).includes(value)) {
     return value as OnboardingStep;
   }

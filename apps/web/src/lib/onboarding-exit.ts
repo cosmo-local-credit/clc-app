@@ -34,7 +34,7 @@ export function noteOnboardingHistoryRoot(history: OnboardingRouterHistory): voi
   onboardingRootIndex = readHistoryIndex(history);
 }
 
-export function clearOnboardingHistoryRoot(): void {
+function clearOnboardingHistoryRoot(): void {
   onboardingRootIndex = null;
 }
 
