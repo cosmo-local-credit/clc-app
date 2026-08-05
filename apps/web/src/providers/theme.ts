@@ -5,12 +5,13 @@ export type Theme = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "clc.theme";
 
-// Mirrors the --background token in styles.css for each scheme. Used for the
+// Mirrors the --primary token in styles.css for each scheme. Used for the
 // PWA <meta name="theme-color">, which needs a concrete sRGB value (oklch is
-// not reliably honored there across browsers).
+// not reliably honored there across browsers). Keeps the Android status bar
+// in the brand green in both schemes.
 const THEME_COLOR: Record<Theme, string> = {
-  light: "#f2f2f2",
-  dark: "#141414",
+  light: "#007a55",
+  dark: "#009268",
 };
 
 // Inline <head> script (as a string) injected in __root.tsx. Runs synchronously

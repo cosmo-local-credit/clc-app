@@ -57,7 +57,7 @@ describe("useThemeStore", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     expect(document.querySelector('meta[name="theme-color"]')?.getAttribute("content")).toBe(
-      "#141414",
+      "#009268",
     );
   });
 
@@ -72,7 +72,7 @@ describe("useThemeStore", () => {
 describe("themeBootstrapScript", () => {
   it("embeds the shared storage key and theme-color values so they cannot drift", () => {
     expect(themeBootstrapScript).toContain(JSON.stringify(THEME_STORAGE_KEY));
-    expect(themeBootstrapScript).toContain("#141414");
-    expect(themeBootstrapScript).toContain("#f2f2f2");
+    expect(themeBootstrapScript).toContain("#009268");
+    expect(themeBootstrapScript).toContain("#007a55");
   });
 });

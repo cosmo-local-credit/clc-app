@@ -1,7 +1,15 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { generatePrivateKey } from "viem/accounts";
 
+import { isPasskeyPlatformAvailable } from "#/features/webauthn/hooks/use-platform-passkey-label";
+import {
+  onboardingSearch,
+  type OnboardingStep,
+  type WalletMethodChoice,
+} from "#/lib/onboarding-search";
+import { OnboardingMethodStep } from "./onboarding-method-step";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
 const OnboardingWalletStep = lazy(() =>
@@ -10,33 +18,124 @@ const OnboardingWalletStep = lazy(() =>
   })),
 );
 
-type Step = "profile" | "wallet";
+type Props = {
+  step: Extract<OnboardingStep, "profile" | "method" | "card">;
+  redirectTo?: string;
+};
+
+function profileFingerprint(profile: ProfileInput): string {
+  return JSON.stringify({
+    name: profile.name,
+    email: profile.email,
+    phone: profile.phone,
+    location: profile.location,
+  });
+}
 
 /**
- * Two-step onboarding flow:
- *   1. Profile form  — collects name, location, email/phone
- *   2. Wallet step   — generates paper wallet, optional Calibur+WebAuthn link
+ * Signup half of onboarding (screens C → D → E).
  *
- * The flow is disconnected-only; IndexPage handles already-connected users.
+ * Steps are **pushed** into history so screen Back and native/browser Back
+ * both use `history.back()`. Successful exit drains intermediate onboarding
+ * entries via {@link exitOnboarding}.
+ *
+ * The paper-wallet private key is owned here so remounting the card step
+ * cannot mint a second key after backend signup already bound the first one.
  */
-export function OnboardingFlow({ redirectTo }: { redirectTo?: string } = {}) {
+export function OnboardingFlow({ step, redirectTo }: Props) {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("profile");
   const [profileData, setProfileData] = useState<ProfileInput | null>(null);
+  const [walletMethod, setWalletMethod] = useState<WalletMethodChoice | null>(null);
+  /** Fingerprint of the profile last successfully registered for this key. */
+  const [registeredProfileFp, setRegisteredProfileFp] = useState<string | null>(null);
+  const [passkeyAvailable] = useState(() => isPasskeyPlatformAvailable());
+  const privateKeyRef = useRef<`0x${string}` | null>(null);
 
-  if (step === "wallet" && profileData) {
+  function ensurePrivateKey(): `0x${string}` {
+    if (!privateKeyRef.current) privateKeyRef.current = generatePrivateKey();
+    return privateKeyRef.current;
+  }
+
+  /** Push the next step so Back walks the real history stack. */
+  const go = useCallback(
+    (next: OnboardingStep) => {
+      void navigate({
+        to: "/onboarding",
+        search: onboardingSearch(next, redirectTo),
+      });
+    },
+    [navigate, redirectTo],
+  );
+
+  /** Guards use replace so deep links / capability skips do not inflate the stack. */
+  const goReplace = useCallback(
+    (next: OnboardingStep) => {
+      void navigate({
+        to: "/onboarding",
+        search: onboardingSearch(next, redirectTo),
+        replace: true,
+      });
+    },
+    [navigate, redirectTo],
+  );
+
+  /**
+   * Wallet step has invalidated the session query. Navigation is owned by the
+   * onboarding route's authenticated effect so we never double-exit history.
+   */
+  function finish() {
+    // no-op: route exitOnboarding runs when isAuthenticated flips
+  }
+
+  // Method / card require a completed profile. Deep links land on profile.
+  useEffect(() => {
+    if ((step === "method" || step === "card") && !profileData) {
+      goReplace("profile");
+    }
+  }, [step, profileData, goReplace]);
+
+  // Skip method when the platform cannot store passkeys.
+  useEffect(() => {
+    if (step === "method" && profileData && !passkeyAvailable) {
+      setWalletMethod("paper");
+      goReplace("card");
+    }
+  }, [step, profileData, passkeyAvailable, goReplace]);
+
+  if (step === "method" && profileData && passkeyAvailable) {
+    return (
+      <OnboardingMethodStep
+        redirectTo={redirectTo}
+        initialChoice={walletMethod ?? "link"}
+        onContinue={(choice) => {
+          setWalletMethod(choice);
+          ensurePrivateKey();
+          go("card");
+        }}
+      />
+    );
+  }
+
+  if (step === "card" && profileData) {
+    const totalSteps = passkeyAvailable ? 3 : 2;
+    const progressStep = passkeyAvailable ? 3 : 2;
+    const linkPasskey = passkeyAvailable && walletMethod !== "paper";
+    const privateKey = ensurePrivateKey();
+    const currentFp = profileFingerprint(profileData);
+    const backendRegistered = registeredProfileFp === currentFp;
+
     return (
       <Suspense fallback={<OnboardingStepFallback />}>
         <OnboardingWalletStep
           profileData={profileData}
-          onBack={() => setStep("profile")}
-          onDone={() => {
-            if (redirectTo) {
-              void navigate({ to: redirectTo as "/", replace: true });
-            } else {
-              void navigate({ to: "/", replace: true });
-            }
-          }}
+          privateKey={privateKey}
+          backendRegistered={backendRegistered}
+          onBackendRegistered={() => setRegisteredProfileFp(currentFp)}
+          redirectTo={redirectTo}
+          progressStep={progressStep}
+          progressTotal={totalSteps}
+          linkPasskey={linkPasskey}
+          onDone={finish}
         />
       </Suspense>
     );
@@ -44,10 +143,23 @@ export function OnboardingFlow({ redirectTo }: { redirectTo?: string } = {}) {
 
   return (
     <OnboardingProfileForm
+      redirectTo={redirectTo}
+      progressStep={1}
+      progressTotal={passkeyAvailable ? 3 : 2}
       initialValues={profileData ?? undefined}
       onNext={(data) => {
+        // Edited profile after a prior signup must be re-persisted.
+        if (registeredProfileFp && registeredProfileFp !== profileFingerprint(data)) {
+          setRegisteredProfileFp(null);
+        }
         setProfileData(data);
-        setStep("wallet");
+        if (passkeyAvailable) {
+          go("method");
+        } else {
+          setWalletMethod("paper");
+          ensurePrivateKey();
+          go("card");
+        }
       }}
     />
   );

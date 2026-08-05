@@ -61,12 +61,12 @@ msgid "{0} m"
 msgstr "{0} m"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:463
+#: apps/web/src/components/catalog-filter-controls.tsx:467
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} од {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:285
+#: apps/web/src/components/catalog-filter-controls.tsx:290
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} од {CATALOG_MAX_VOUCHERS}"
 
@@ -95,6 +95,10 @@ msgstr "{0} ваучера"
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:165
 #~ msgid "{0}{1}"
 #~ msgstr "{0}{1}"
+
+#: apps/web/src/features/onboarding/ui/onboarding-progress.tsx:21
+msgid "{clampedStep} of {clampedTotal}"
+msgstr "{clampedStep} od {clampedTotal}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:177
@@ -165,15 +169,19 @@ msgstr "Налог чека одобрење"
 msgid "Account not approved"
 msgstr "Налог није одобрен"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:272
+#: apps/web/src/components/auth/sign-in-panel.tsx:394
+msgid "Account not found"
+msgstr "Nalog nije pronađen"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:336
 msgid "Account registration failed."
 msgstr "Регистрација налога није успјела."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:100
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:125
 msgid "Activating on chain..."
 msgstr "Активирање на ланцу..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:102
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:127
 msgid "Activating smart wallet..."
 msgstr "Активирање паметног новчаника..."
 
@@ -228,12 +236,12 @@ msgstr "Адреса је копирана"
 msgid "Admin"
 msgstr "Администратор"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:287
+#: apps/web/src/components/auth/sign-in-panel.tsx:315
 msgid "Advanced options"
 msgstr "Напредне опције"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:444
-#: apps/web/src/components/catalog-filter-controls.tsx:534
+#: apps/web/src/components/catalog-filter-controls.tsx:448
+#: apps/web/src/components/catalog-filter-controls.tsx:538
 msgid "All selected"
 msgstr "Све изабране"
 
@@ -246,7 +254,7 @@ msgstr "Све изабране"
 msgid "All Vouchers"
 msgstr "Сви ваучери"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:200
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:209
 msgid "Already have an account?"
 msgstr "Већ имате налог?"
 
@@ -267,8 +275,8 @@ msgstr "Износ"
 msgid "Amount exceeds your balance"
 msgstr "Износ премашује ваше стање"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:439
-#: apps/web/src/components/catalog-filter-controls.tsx:529
+#: apps/web/src/components/catalog-filter-controls.tsx:443
+#: apps/web/src/components/catalog-filter-controls.tsx:533
 msgid "Any selected"
 msgstr "Било која изабрана"
 
@@ -277,7 +285,7 @@ msgstr "Било која изабрана"
 #~ msgid "Any tag"
 #~ msgstr "Било која ознака"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:563
+#: apps/web/src/components/catalog-filter-controls.tsx:567
 msgid "Apply filters"
 msgstr "Примени филтере"
 
@@ -291,14 +299,14 @@ msgstr "Аутор"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:59
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:206
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:287
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 msgid "Back"
 msgstr "Назад"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/components/auth/authenticated-route.tsx:85
 msgid "Back to market"
 msgstr "Назад на тржиште"
 
@@ -335,7 +343,7 @@ msgstr "Купите USD₮ за KES."
 msgid "Camera access denied."
 msgstr "Приступ камери је одбијен."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:344
+#: apps/web/src/components/auth/sign-in-panel.tsx:372
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
@@ -380,8 +388,8 @@ msgid "Choose a location"
 msgstr "Изаберите локацију"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:105
-msgid "Choose a wallet to continue."
-msgstr "Изаберите новчаник да бисте наставили."
+#~ msgid "Choose a wallet to continue."
+#~ msgstr "Изаберите новчаник да бисте наставили."
 
 #: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
@@ -420,7 +428,7 @@ msgid "Clear filters"
 msgstr "Обриши филтере"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:72
-#: apps/web/src/components/catalog-filter-controls.tsx:510
+#: apps/web/src/components/catalog-filter-controls.tsx:514
 msgid "Clear search"
 msgstr "Обриши претрагу"
 
@@ -429,8 +437,8 @@ msgstr "Обриши претрагу"
 msgid "Close"
 msgstr "Затвори"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:260
-#: apps/web/src/components/catalog-filter-controls.tsx:568
+#: apps/web/src/components/catalog-filter-controls.tsx:265
+#: apps/web/src/components/catalog-filter-controls.tsx:572
 msgid "Close filters"
 msgstr "Затвори филтере"
 
@@ -442,7 +450,7 @@ msgstr "Затвори скенер папирног новчаника"
 msgid "Close password-protected wallet import"
 msgstr "Затвори увоз новчаника заштићеног лозинком"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:343
 msgid "Close private key form"
 msgstr "Затвори образац за приватни кључ"
 
@@ -501,8 +509,12 @@ msgstr "Повежите новчаник да бисте користили MPE
 msgid "Connected address"
 msgstr "Повезана адреса"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:215
-#: apps/web/src/components/auth/sign-in-panel.tsx:263
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:121
+msgid "Connecting wallet..."
+msgstr "Povezivanje novčanika..."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:243
+#: apps/web/src/components/auth/sign-in-panel.tsx:291
 msgid "Connecting..."
 msgstr "Повезивање..."
 
@@ -510,33 +522,34 @@ msgstr "Повезивање..."
 msgid "Connecting…"
 msgstr "Повезивање…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:96
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:146
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:178
+#: apps/web/src/components/auth/sign-in-panel.tsx:124
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:256
 #: apps/web/src/routes/__root.tsx:158
 #: apps/web/src/routes/__root.tsx:184
 msgid "Connection failed."
 msgstr "Повезивање није успјело."
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:224
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:410
 msgid "Continue"
 msgstr "Настави"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:387
 msgid "Continue to wallet"
 msgstr "Настави до новчаника"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:263
+#: apps/web/src/components/auth/sign-in-panel.tsx:291
 msgid "Continue with {providerLabel}"
 msgstr "Настави помоћу {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:375
 msgid "Continue with paper wallet"
 msgstr "Настави са папирним новчаником"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:275
+#: apps/web/src/components/auth/sign-in-panel.tsx:303
 msgid "Continue with Paper Wallet"
 msgstr "Настави са папирним новчаником"
 
@@ -569,6 +582,10 @@ msgstr "Копирај хеш трансакције"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "Copy wallet address"
 msgstr "Копирај адресу новчаника"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:32
+msgid "Cosmo-Local Credit"
+msgstr "Cosmo-Local Credit"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
@@ -671,7 +688,7 @@ msgstr "Тог примаоца није могуће пронаћи."
 msgid "Couldn't save your profile."
 msgstr "Профил није могуће сачувати."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:364
+#: apps/web/src/components/catalog-filter-controls.tsx:368
 msgid "Couldn't search vouchers."
 msgstr "Претрага ваучера није успела."
 
@@ -697,16 +714,18 @@ msgstr "Вашу MPESA везу није могуће потврдити."
 msgid "Country"
 msgstr "Земља"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
+#: apps/web/src/components/auth/authenticated-route.tsx:70
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:42
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:82
 msgid "Create account"
 msgstr "Направите налог"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:355
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:41
+#: apps/web/src/components/auth/sign-in-panel.tsx:384
+#: apps/web/src/components/auth/sign-in-panel.tsx:402
 msgid "Create an account"
 msgstr "Направите налог"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
 msgid "Create your account"
 msgstr "Направите свој налог"
 
@@ -714,7 +733,7 @@ msgstr "Направите свој налог"
 msgid "Created"
 msgstr "Направљено"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:92
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:115
 msgid "Creating account..."
 msgstr "Прављење налога..."
 
@@ -769,7 +788,7 @@ msgstr "Преузми картицу"
 msgid "Download failed. Try a screenshot instead."
 msgstr "Преузимање није успјело. Покушајте да направите снимак екрана."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:214
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:300
 msgid "Download or photograph this card. Anyone who scans the QR code will have "
 "full access to this wallet."
 msgstr "Преузмите или фотографишите ову картицу. Свако ко скенира QR код имаће "
@@ -798,8 +817,8 @@ msgstr "Измијени профил"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Email"
 msgstr "Имејл"
@@ -816,7 +835,7 @@ msgstr "Омогућавање обавјештења"
 msgid "Enabling notifications..."
 msgstr "Омогућавање обавјештења..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:178
+#: apps/web/src/components/auth/sign-in-panel.tsx:206
 msgid "Enter a valid private key or paper wallet."
 msgstr "Унесите важећи приватни кључ или папирни новчаник."
 
@@ -841,6 +860,12 @@ msgstr "Унесите лозинку да бисте откључали ова�
 #~ "request is made."
 #~ msgstr "Процјена користи привремене податке ваучера за пул. Не шаље се захтјев "
 #~ "за понуду или relay."
+
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+"way to sign in."
+msgstr "Svaki nalog dobija papirni novčanik. Povezivanje {providerLabel} dodaje "
+"još jedan način prijave."
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:60
 #~ msgid "Explore community pools and their vouchers."
@@ -879,7 +904,7 @@ msgstr "Извештаји са терена"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "Датотека је превелика ({0} KB). Максимална величина је 512 KB."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:477
+#: apps/web/src/components/catalog-filter-controls.tsx:481
 msgid "Filter by tag"
 msgstr "Филтрирај по ознаци"
 
@@ -899,7 +924,7 @@ msgstr "Филтрирај објаве"
 msgid "Filter vouchers"
 msgstr "Филтрирај ваучере"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:239
+#: apps/web/src/components/catalog-filter-controls.tsx:244
 msgid "Filters"
 msgstr "Филтери"
 
@@ -920,7 +945,7 @@ msgstr "Од"
 #~ msgid "Go back"
 #~ msgstr "Назад"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:216
 msgid "Go back to sign in"
 msgstr "Вратите се на пријаву"
 
@@ -932,19 +957,24 @@ msgstr "Роба"
 msgid "Host"
 msgstr "Домаћин"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/catalog-filter-controls.tsx:527
 msgid "How should categories match?"
 msgstr "Како категорије треба да се подударају?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:429
+#: apps/web/src/components/catalog-filter-controls.tsx:433
 msgid "How should vouchers match?"
 msgstr "Како ваучери треба да се подударају?"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:232
+#: apps/web/src/components/auth/authenticated-route.tsx:75
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+msgid "I already have an account"
+msgstr "Već imam nalog"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:318
 msgid "I have saved this key"
 msgstr "Сачувао/ла сам овај кључ"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:239
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:325
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Сачувао/ла сам овај кључ. Ако се изгуби, мој новчаник се не може "
 "опоравити."
@@ -1014,17 +1044,29 @@ msgstr "Језик"
 msgid "Light"
 msgstr "Свијетли"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:346
+#: apps/web/src/components/catalog-filter-controls.tsx:350
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "Достигнут је лимит од {CATALOG_MAX_VOUCHERS} ваучера. Уклоните један да "
 "бисте додали други."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:262
-msgid "Link wallet to {providerLabel} passkey"
-msgstr "Повежите новчаник са приступним кључем {providerLabel}"
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
+msgid "Link {providerLabel}"
+msgstr "Poveži {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:96
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+msgid "Link {providerLabel}?"
+msgstr "Povezati {providerLabel}?"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:364
+msgid "Link wallet to {providerLabel}"
+msgstr "Poveži novčanik sa {providerLabel}"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:262
+#~ msgid "Link wallet to {providerLabel} passkey"
+#~ msgstr "Повежите новчаник са приступним кључем {providerLabel}"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:119
 msgid "Linking passkey..."
 msgstr "Повезивање приступног кључа..."
 
@@ -1155,7 +1197,7 @@ msgstr "Тржиште"
 msgid "Marketplace vouchers"
 msgstr "Ваучери на тржишту"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:525
+#: apps/web/src/components/catalog-filter-controls.tsx:529
 msgid "Match"
 msgstr "Подударање"
 
@@ -1205,12 +1247,12 @@ msgstr "Адреса мог новчаника"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
 msgid "Name"
 msgstr "Име"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:67
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:77
 msgid "Name and location are required. Provide an email or phone number."
 msgstr "Име и локација су обавезни. Унесите имејл или број телефона."
 
@@ -1242,7 +1284,7 @@ msgstr "Име на новчанику"
 msgid "Network"
 msgstr "Мрежа"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:349
+#: apps/web/src/components/auth/sign-in-panel.tsx:377
 msgid "New to CLC?"
 msgstr "Нови сте у CLC-у?"
 
@@ -1268,13 +1310,17 @@ msgstr "На овом уређају није пронађена камера."
 msgid "No cash activity yet."
 msgstr "Још нема готовинских активности."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:500
+#: apps/web/src/components/catalog-filter-controls.tsx:504
 msgid "No categories are available for the current results."
 msgstr "Нема доступних категорија за тренутне резултате."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:471
+#: apps/web/src/components/catalog-filter-controls.tsx:475
 msgid "No category filters are available."
 msgstr "Нема доступних филтера категорија."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:397
+msgid "No CLC account was found for this sign-in."
+msgstr "Nije pronađen CLC nalog za ovu prijavu."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:154
 msgid "No offerings yet"
@@ -1340,7 +1386,7 @@ msgstr "Ниједан ваучер у овом фонду још ништа н�
 msgid "No vouchers in this pool yet."
 msgstr "Још нема ваучера у овом пулу."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:385
+#: apps/web/src/components/catalog-filter-controls.tsx:389
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
 #: apps/web/src/features/home/ui/market-page.tsx:136
 msgid "No vouchers match this search."
@@ -1365,7 +1411,7 @@ msgid "Not a standard Safaricom number. Continue only if it's ported."
 msgstr "Ово није стандардни Safaricom број. Наставите само ако је број "
 "пренесен."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:498
+#: apps/web/src/components/catalog-filter-controls.tsx:502
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Ништа што одговара упиту „{searchTerm}“ нема категорију."
 
@@ -1451,13 +1497,13 @@ msgstr "Отвори у мапама"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Отворите Тржиште да прегледате појединачне понуде сваког ваучера."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
 msgid "Opening paper wallet..."
 msgstr "Отварање папирног новчаника..."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
-msgid "or"
-msgstr "или"
+#~ msgid "or"
+#~ msgstr "или"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:58
 msgid "Paper wallet"
@@ -1471,19 +1517,23 @@ msgstr "Папирни новчаник"
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Папирни новчаник је заштићен. Чувајте лозинку одвојено од картице."
 
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:99
+msgid "Paper wallet only"
+msgstr "Samo papirni novčanik"
+
 #: apps/web/src/features/home/ui/report-page.tsx:380
 msgid "Participants"
 msgstr "Учесници"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:98
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:123
 msgid "Passkey linked"
 msgstr "Приступни кључ је повезан"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:94
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:117
 msgid "Passkey linked ... confirming on-chain..."
 msgstr "Приступни кључ је повезан... потврда на ланцу..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:128
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Приступни кључ је повезан, али повезивање новчаника није успјело."
 
@@ -1518,13 +1568,13 @@ msgstr "На чекању"
 #~ msgstr "Интеграција endpoint-а је на чекању"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:155
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:582
 msgid "Phone"
 msgstr "Телефон"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:162
 msgid "Phone number"
 msgstr "Број телефона"
 
@@ -1631,9 +1681,9 @@ msgstr "Цена на упит"
 msgid "Primary navigation"
 msgstr "Главна навигација"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:300
-#: apps/web/src/components/auth/sign-in-panel.tsx:310
-#: apps/web/src/components/auth/sign-in-panel.tsx:333
+#: apps/web/src/components/auth/sign-in-panel.tsx:328
+#: apps/web/src/components/auth/sign-in-panel.tsx:338
+#: apps/web/src/components/auth/sign-in-panel.tsx:361
 msgid "Private key"
 msgstr "Приватни кључ"
 
@@ -1717,6 +1767,10 @@ msgstr "Прималац"
 msgid "Recipient ENS, phone or address"
 msgstr "ENS, телефон или адреса примаоца"
 
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
+msgid "Recommended"
+msgstr "Preporučeno"
+
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:173
 msgid "Redeem"
 msgstr "Искористи"
@@ -1730,7 +1784,7 @@ msgid "Related vouchers"
 msgstr "Повезани ваучери"
 
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:325
+#: apps/web/src/components/catalog-filter-controls.tsx:330
 msgid "Remove {0}"
 msgstr "Уклони {0}"
 
@@ -1752,7 +1806,7 @@ msgstr "Период извештаја"
 msgid "Report provenance"
 msgstr "Порекло извештаја"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:553
+#: apps/web/src/components/catalog-filter-controls.tsx:557
 msgid "Reset"
 msgstr "Ресетуј"
 
@@ -1770,6 +1824,10 @@ msgstr "Проналажење примаоца…"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
 msgid "Retry"
 msgstr "Покушај поново"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:363
+msgid "Retry {providerLabel} connection"
+msgstr "Pokušaj ponovo povezivanje sa {providerLabel}"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:155
 msgid "Reverse swap direction"
@@ -1794,7 +1852,7 @@ msgstr "Рецензије"
 msgid "Reviews for this voucher will appear here."
 msgstr "Рецензије за овај ваучер ће се појавити овдје."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:30
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Усмјерите откупљива потраживања кроз одабрана тржишта уз заједничке "
 "стандарде."
@@ -1804,7 +1862,7 @@ msgid "Save changes"
 msgstr "Сачувај измјене"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 msgid "Saving…"
 msgstr "Чување…"
 
@@ -1844,11 +1902,11 @@ msgstr "Претражи пулове"
 msgid "Search posts by title or description"
 msgstr "Претражи објаве по наслову или опису"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:337
+#: apps/web/src/components/catalog-filter-controls.tsx:342
 msgid "Search voucher filters"
 msgstr "Претражи филтере ваучера"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:336
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Search vouchers"
 msgstr "Претражи ваучере"
 
@@ -1860,7 +1918,7 @@ msgstr "Претражи ваучере"
 msgid "Searching places…"
 msgstr "Претрага мјеста…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/components/catalog-filter-controls.tsx:363
 msgid "Searching vouchers…"
 msgstr "Претрага ваучера…"
 
@@ -1872,7 +1930,7 @@ msgstr "Изаберите токен"
 #~ msgid "Selected pool"
 #~ msgstr "Изабрани пул"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:321
+#: apps/web/src/components/catalog-filter-controls.tsx:326
 msgid "Selected vouchers"
 msgstr "Изабрани ваучери"
 
@@ -1921,9 +1979,13 @@ msgstr "Послат ваучер"
 msgid "Services"
 msgstr "Услуге"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:36
+#: apps/web/src/components/auth/authenticated-route.tsx:28
 msgid "Session check failed"
 msgstr "Провјера сесије није успјела"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:148
+msgid "Session could not be verified. Try again."
+msgstr "Sesija nije mogla biti verifikovana. Pokušajte ponovo."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
@@ -1945,10 +2007,10 @@ msgstr "Подијели"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:71
 #: apps/web/src/components/auth/authenticated-route.tsx:102
-msgid "Sign in"
-msgstr "Пријави се"
+#~ msgid "Sign in"
+#~ msgstr "Пријави се"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:62
+#: apps/web/src/components/auth/authenticated-route.tsx:56
 msgid "Sign in to continue"
 msgstr "Пријавите се да бисте наставили"
 
@@ -1956,7 +2018,7 @@ msgstr "Пријавите се да бисте наставили"
 msgid "Sign in to view activity."
 msgstr "Пријавите се да бисте видјели активност."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:337
+#: apps/web/src/components/auth/sign-in-panel.tsx:365
 msgid "Sign in with private key"
 msgstr "Пријави се приватним кључем"
 
@@ -1965,13 +2027,17 @@ msgid "Sign out"
 msgstr "Одјави се"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:83
-msgid "Sign up"
-msgstr "Региструј се"
+#~ msgid "Sign up"
+#~ msgstr "Региструј се"
 
-#: apps/web/src/features/home/ui/onboarding-banner.tsx:16
+#: apps/web/src/features/home/ui/onboarding-banner.tsx:18
 msgid "Sign up or sign in to send, swap, and redeem vouchers"
 msgstr "Региструјте се или се пријавите да бисте слали, размјењивали и "
 "користили ваучере"
+
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
+msgid "Sign-in method"
+msgstr "Način prijave"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Signing out..."
@@ -1997,6 +2063,10 @@ msgstr "Покретање…"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:673
 msgid "Status"
 msgstr "Статус"
+
+#: apps/web/src/features/onboarding/ui/onboarding-progress.tsx:28
+msgid "Step {clampedStep} of {clampedTotal}"
+msgstr "Korak {clampedStep} od {clampedTotal}"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:146
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -2161,7 +2231,7 @@ msgstr "Ова тржница нема доступних {0} за размје�
 msgid "This pool only has {0} {1} available to swap."
 msgstr "На овој тржници је за размјену доступно само {0} {1}."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:193
+#: apps/web/src/components/auth/sign-in-panel.tsx:221
 msgid "This QR code does not contain a valid private key."
 msgstr "Овај QR код не садржи важећи приватни кључ."
 
@@ -2225,8 +2295,8 @@ msgstr "Историја преноса"
 #~ msgid "Try a different search, or clear the filters."
 #~ msgstr "Пробајте другу претрагу или обришите филтере."
 
-#: apps/web/src/components/auth/authenticated-route.tsx:42
-#: apps/web/src/components/catalog-filter-controls.tsx:372
+#: apps/web/src/components/auth/authenticated-route.tsx:34
+#: apps/web/src/components/catalog-filter-controls.tsx:376
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 #: apps/web/src/features/home/ui/activity-page.tsx:60
@@ -2240,7 +2310,7 @@ msgstr "Историја преноса"
 msgid "Try again"
 msgstr "Покушај поново"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:353
+#: apps/web/src/components/catalog-filter-controls.tsx:357
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Унесите најмање {VOUCHER_SEARCH_MIN_CHARS} знака за претрагу ваучера."
 
@@ -2348,15 +2418,15 @@ msgstr "Радње са ваучером"
 msgid "Voucher details"
 msgstr "Детаљи ваучера"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:434
+#: apps/web/src/components/catalog-filter-controls.tsx:438
 msgid "Voucher match"
 msgstr "Подударање ваучера"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:396
+#: apps/web/src/components/catalog-filter-controls.tsx:400
 msgid "Voucher search results"
 msgstr "Резултати претраге ваучера"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:282
+#: apps/web/src/components/catalog-filter-controls.tsx:287
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:78
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:85
 msgid "Vouchers"
@@ -2394,7 +2464,7 @@ msgstr "Новчаник"
 msgid "Wallet actions"
 msgstr "Радње новчаника"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:65
+#: apps/web/src/components/auth/authenticated-route.tsx:59
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Радње новчаника су доступне након регистрације или пријаве."
 
@@ -2402,7 +2472,7 @@ msgstr "Радње новчаника су доступне након реги�
 msgid "Wallet session"
 msgstr "Сесија новчаника"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:39
+#: apps/web/src/components/auth/authenticated-route.tsx:31
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "Нисмо могли да потврдимо вашу сесију. Провјерите везу и покушајте "
 "поново."
@@ -2423,6 +2493,10 @@ msgstr "Веб-сајт"
 #: apps/web/src/components/offerings/offerings-panel.tsx:490
 msgid "Weekly"
 msgstr "Недељно"
+
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
+msgid "Welcome back"
+msgstr "Dobrodošli nazad"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:99
 msgid "What they offer"
@@ -2485,11 +2559,11 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Ваша MPESA исплата ће ускоро стићи."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:103
 msgid "Your name"
 msgstr "Ваше име"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
 msgid "Your paper wallet"
 msgstr "Ваш папирни новчаник"
 
