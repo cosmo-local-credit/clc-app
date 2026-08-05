@@ -34,8 +34,3 @@ export const profileSchema = z
   .superRefine(requireEmailOrPhone);
 
 export type ProfileInput = z.infer<typeof profileSchema>;
-
-// Editing an existing profile now captures the same fields signup does
-// (including precise location), so it reuses profileSchema rather than a
-// country-only variant.
-export const profileEditSchema = profileSchema;

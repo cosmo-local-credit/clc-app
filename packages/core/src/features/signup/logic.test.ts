@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { profileEditSchema, profileSchema } from "./logic";
+import { profileSchema } from "./logic";
 
 const VALID_LOCATION = {
   lat: -1.2921,
@@ -172,11 +172,5 @@ describe("profileSchema", () => {
         location: VALID_LOCATION,
       }).success,
     ).toBe(false);
-  });
-});
-
-describe("profileEditSchema", () => {
-  it("reuses profileSchema: editing a profile now also requires a location", () => {
-    expect(profileEditSchema).toBe(profileSchema);
   });
 });

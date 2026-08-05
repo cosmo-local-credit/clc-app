@@ -1,6 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
-import { profileEditSchema } from "@clc/core/features/signup/logic";
+import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
@@ -98,11 +98,11 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
       phone: profile.phone ?? "",
       location: initialLocation,
     } satisfies ProfileEditFormValues,
-    validators: { onChange: profileEditSchema },
+    validators: { onChange: profileSchema },
     onSubmit: async ({ value }) => {
       setSubmitError(null);
       try {
-        const parsed = profileEditSchema.parse(value);
+        const parsed = profileSchema.parse(value);
         await updateProfile.mutateAsync({
           name: parsed.name,
           email: parsed.email,
