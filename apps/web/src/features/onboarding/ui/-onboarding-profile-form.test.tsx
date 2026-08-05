@@ -52,7 +52,7 @@ vi.mock("#/components/ui/phone-input", () => ({
   ),
 }));
 
-vi.mock("./location-picker", () => ({
+vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
     value,
     onChange,

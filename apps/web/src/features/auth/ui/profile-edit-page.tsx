@@ -1,3 +1,5 @@
+import type { LocationInput } from "@clc/core/features/location/logic";
+import { locationSchema } from "@clc/core/features/location/logic";
 import { profileEditSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -7,8 +9,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { CountrySelect } from "#/components/ui/country-select";
 import { Input } from "#/components/ui/input";
+import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import {
@@ -37,7 +39,7 @@ export function ProfileEditPage() {
           <Trans>Edit profile</Trans>
         </h1>
         <p className="text-muted-foreground text-sm">
-          <Trans>Update your contact details and country.</Trans>
+          <Trans>Update your contact details and location.</Trans>
         </p>
       </div>
 
@@ -64,6 +66,13 @@ export function ProfileEditPage() {
   );
 }
 
+type ProfileEditFormValues = {
+  name: string;
+  email: string;
+  phone: string;
+  location: LocationInput | undefined;
+};
+
 function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const { i18n, t } = useLingui();
   const router = useRouter();
@@ -72,19 +81,37 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const updateProfile = useUpdateProfile();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const seededLocation = locationSchema.safeParse({
+    lat: profile.geoLat,
+    lng: profile.geoLng,
+    locationName: profile.locationName,
+    country: profile.country,
+  });
+  const initialLocation: LocationInput | undefined = seededLocation.success
+    ? seededLocation.data
+    : undefined;
+
   const form = useForm({
     defaultValues: {
       name: profile.name ?? "",
       email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
       phone: profile.phone ?? "",
-      country: profile.country ?? "",
-    },
+      location: initialLocation,
+    } satisfies ProfileEditFormValues,
     validators: { onChange: profileEditSchema },
     onSubmit: async ({ value }) => {
       setSubmitError(null);
       try {
         const parsed = profileEditSchema.parse(value);
-        await updateProfile.mutateAsync(parsed);
+        await updateProfile.mutateAsync({
+          name: parsed.name,
+          email: parsed.email,
+          phone: parsed.phone,
+          country: parsed.location.country,
+          locationName: parsed.location.locationName,
+          geoLat: parsed.location.lat,
+          geoLng: parsed.location.lng,
+        });
         toast.success(t`Profile updated`);
         if (canGoBack) {
           router.history.back();
@@ -190,30 +217,30 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
             );
           }}
         </form.Field>
-
-        <form.Field name="country">
-          {(field) => {
-            const err = getFieldError(field.state.meta.errors);
-            return (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="profile-country" className="font-medium text-sm">
-                  <Trans>Country</Trans>
-                </label>
-                <CountrySelect
-                  id="profile-country"
-                  value={field.state.value}
-                  onChange={(val) => field.handleChange(val)}
-                  aria-invalid={!!err}
-                  aria-label={t`Country`}
-                />
-                {err ? (
-                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
-                ) : null}
-              </div>
-            );
-          }}
-        </form.Field>
       </div>
+
+      <form.Field name="location">
+        {(field) => {
+          const err = getFieldError(field.state.meta.errors);
+          return (
+            <form.Subscribe selector={(s) => s.submissionAttempts}>
+              {(submissionAttempts) => (
+                <LocationPicker
+                  value={field.state.value}
+                  onChange={(next) => field.handleChange(next)}
+                  error={
+                    field.state.meta.isTouched || submissionAttempts > 0
+                      ? err
+                        ? translateValidationError(err, i18n)
+                        : undefined
+                      : undefined
+                  }
+                />
+              )}
+            </form.Subscribe>
+          );
+        }}
+      </form.Field>
 
       {submitError ? <p className="text-destructive text-xs">{submitError}</p> : null}
 
@@ -231,13 +258,16 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
 
 function ProfileEditSkeleton() {
   return (
-    <div className="space-y-4 border border-border bg-card p-4">
-      {["name", "email", "phone", "country"].map((key) => (
-        <div key={key} className="flex flex-col gap-1.5">
-          <div className="h-4 w-16 bg-muted" />
-          <div className="h-9 w-full bg-muted" />
-        </div>
-      ))}
+    <div className="space-y-4">
+      <div className="space-y-4 border border-border bg-card p-4">
+        {["name", "email", "phone"].map((key) => (
+          <div key={key} className="flex flex-col gap-1.5">
+            <div className="h-4 w-16 bg-muted" />
+            <div className="h-9 w-full bg-muted" />
+          </div>
+        ))}
+      </div>
+      <div className="h-52 w-full rounded-xl border border-border bg-card" />
     </div>
   );
 }

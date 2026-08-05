@@ -6,11 +6,11 @@ import { ImSpinner2 } from "react-icons/im";
 import { TbCurrentLocation } from "react-icons/tb";
 
 import { Input } from "#/components/ui/input";
-import type { GeocodeSuggestion } from "#/features/onboarding/api/geo-client";
-import { reverseLocation, searchLocations } from "#/features/onboarding/api/geo-client";
+import type { GeocodeSuggestion } from "#/lib/geo-client";
+import { reverseLocation, searchLocations } from "#/lib/geo-client";
+import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
 
 import { LocationMap } from "./location-map.lazy";
-import { useBrowserGeolocation } from "./use-browser-geolocation";
 
 type LocationPickerProps = {
   value: LocationInput | undefined;
@@ -26,7 +26,7 @@ type PlacePinOptions = {
 
 export function LocationPicker({ value, onChange, error }: LocationPickerProps) {
   const { t } = useLingui();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(value?.locationName ?? "");
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [searching, setSearching] = useState(false);
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(

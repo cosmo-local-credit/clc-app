@@ -173,15 +173,15 @@ msgstr "Налог није одобрен"
 msgid "Account not found"
 msgstr "Nalog nije pronađen"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:336
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:380
 msgid "Account registration failed."
 msgstr "Регистрација налога није успјела."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:125
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:131
 msgid "Activating on chain..."
 msgstr "Активирање на ланцу..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:127
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:133
 msgid "Activating smart wallet..."
 msgstr "Активирање паметног новчаника..."
 
@@ -301,7 +301,7 @@ msgstr "Аутор"
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:287
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:331
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 msgid "Back"
 msgstr "Назад"
@@ -509,7 +509,7 @@ msgstr "Повежите новчаник да бисте користили MPE
 msgid "Connected address"
 msgstr "Повезана адреса"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:121
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:127
 msgid "Connecting wallet..."
 msgstr "Povezivanje novčanika..."
 
@@ -523,8 +523,8 @@ msgid "Connecting…"
 msgstr "Повезивање…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:124
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:256
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:255
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:300
 #: apps/web/src/routes/__root.tsx:158
 #: apps/web/src/routes/__root.tsx:184
 msgid "Connection failed."
@@ -537,7 +537,7 @@ msgstr "Повезивање није успјело."
 msgid "Continue"
 msgstr "Настави"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:387
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:431
 msgid "Continue to wallet"
 msgstr "Настави до новчаника"
 
@@ -545,7 +545,7 @@ msgstr "Настави до новчаника"
 msgid "Continue with {providerLabel}"
 msgstr "Настави помоћу {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:375
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:419
 msgid "Continue with paper wallet"
 msgstr "Настави са папирним новчаником"
 
@@ -628,7 +628,7 @@ msgstr "Хеш трансакције није могуће копирати"
 msgid "Couldn't estimate this swap."
 msgstr "Није могуће проценити ову размену."
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:90
+#: apps/web/src/components/ui/location-picker.tsx:90
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "На овој локацији није могуће одредити земљу. Покушајте са оближњом "
 "тачком."
@@ -684,7 +684,7 @@ msgstr "Ваучере није могуће учитати."
 msgid "Couldn't resolve that recipient."
 msgstr "Тог примаоца није могуће пронаћи."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:100
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:126
 msgid "Couldn't save your profile."
 msgstr "Профил није могуће сачувати."
 
@@ -711,8 +711,8 @@ msgstr "Вашу MPESA везу није могуће потврдити."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:207
-msgid "Country"
-msgstr "Земља"
+#~ msgid "Country"
+#~ msgstr "Земља"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:42
@@ -733,7 +733,7 @@ msgstr "Направите свој налог"
 msgid "Created"
 msgstr "Направљено"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:115
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:121
 msgid "Creating account..."
 msgstr "Прављење налога..."
 
@@ -788,7 +788,7 @@ msgstr "Преузми картицу"
 msgid "Download failed. Try a screenshot instead."
 msgstr "Преузимање није успјело. Покушајте да направите снимак екрана."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:300
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:344
 msgid "Download or photograph this card. Anyone who scans the QR code will have "
 "full access to this wallet."
 msgstr "Преузмите или фотографишите ову картицу. Свако ко скенира QR код имаће "
@@ -810,13 +810,13 @@ msgstr "Измијени"
 msgid "Edit filters"
 msgstr "Измени филтере"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:37
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:108
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
 msgid "Edit profile"
 msgstr "Измијени профил"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:187
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
@@ -970,16 +970,16 @@ msgstr "Како ваучери треба да се подударају?"
 msgid "I already have an account"
 msgstr "Već imam nalog"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:318
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:362
 msgid "I have saved this key"
 msgstr "Сачувао/ла сам овај кључ"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:325
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:369
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "Сачувао/ла сам овај кључ. Ако се изгуби, мој новчаник се не може "
 "опоравити."
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:265
+#: apps/web/src/components/ui/location-picker.tsx:265
 msgid "Identifying location…"
 msgstr "Одређивање локације…"
 
@@ -1058,7 +1058,7 @@ msgstr "Poveži {providerLabel}"
 msgid "Link {providerLabel}?"
 msgstr "Povezati {providerLabel}?"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:364
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:408
 msgid "Link wallet to {providerLabel}"
 msgstr "Poveži novčanik sa {providerLabel}"
 
@@ -1066,7 +1066,7 @@ msgstr "Poveži novčanik sa {providerLabel}"
 #~ msgid "Link wallet to {providerLabel} passkey"
 #~ msgstr "Повежите новчаник са приступним кључем {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:119
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:125
 msgid "Linking passkey..."
 msgstr "Повезивање приступног кључа..."
 
@@ -1091,8 +1091,8 @@ msgstr "Учитавање стања…"
 msgid "Loading cash activity…"
 msgstr "Учитавање готовинских активности…"
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:243
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:258
+#: apps/web/src/components/ui/location-picker.tsx:243
+#: apps/web/src/components/ui/location-picker.tsx:258
 msgid "Loading location map"
 msgstr "Учитавање мапе локације"
 
@@ -1150,8 +1150,8 @@ msgstr "Учитавање вашег профила…"
 msgid "Loading…"
 msgstr "Учитавање…"
 
+#: apps/web/src/components/ui/location-picker.tsx:174
 #: apps/web/src/features/home/ui/report-page.tsx:461
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:174
 msgid "Location"
 msgstr "Локација"
 
@@ -1163,8 +1163,8 @@ msgstr "Приступ локацији је одбијен"
 msgid "Location map"
 msgstr "Мапа локације"
 
+#: apps/web/src/components/ui/location-picker.tsx:196
 #: apps/web/src/features/home/ui/market-page.tsx:66
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:196
 msgid "Location unavailable"
 msgstr "Локација није доступна"
 
@@ -1245,8 +1245,8 @@ msgstr "MPESA преко Pretium-а"
 msgid "My wallet address"
 msgstr "Адреса мог новчаника"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:149
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:160
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
 msgid "Name"
@@ -1497,7 +1497,7 @@ msgstr "Отвори у мапама"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Отворите Тржиште да прегледате појединачне понуде сваког ваучера."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:135
 msgid "Opening paper wallet..."
 msgstr "Отварање папирног новчаника..."
 
@@ -1525,15 +1525,15 @@ msgstr "Samo papirni novčanik"
 msgid "Participants"
 msgstr "Учесници"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:123
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
 msgid "Passkey linked"
 msgstr "Приступни кључ је повезан"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:117
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:123
 msgid "Passkey linked ... confirming on-chain..."
 msgstr "Приступни кључ је повезан... потврда на ланцу..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:213
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Приступни кључ је повезан, али повезивање новчаника није успјело."
 
@@ -1567,13 +1567,13 @@ msgstr "На чекању"
 #~ msgid "Pending endpoint integration"
 #~ msgstr "Интеграција endpoint-а је на чекању"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:203
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:155
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:582
 msgid "Phone"
 msgstr "Телефон"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:210
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:162
 msgid "Phone number"
 msgstr "Број телефона"
@@ -1687,7 +1687,7 @@ msgstr "Главна навигација"
 msgid "Private key"
 msgstr "Приватни кључ"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:88
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:114
 msgid "Profile updated"
 msgstr "Профил је ажуриран"
 
@@ -1825,7 +1825,7 @@ msgstr "Проналажење примаоца…"
 msgid "Retry"
 msgstr "Покушај поново"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:363
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:407
 msgid "Retry {providerLabel} connection"
 msgstr "Pokušaj ponovo povezivanje sa {providerLabel}"
 
@@ -1857,11 +1857,11 @@ msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Усмјерите откупљива потраживања кроз одабрана тржишта уз заједничке "
 "стандарде."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:250
 msgid "Save changes"
 msgstr "Сачувај измјене"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:250
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 msgid "Saving…"
 msgstr "Чување…"
@@ -1886,7 +1886,7 @@ msgstr "Померите за још"
 msgid "Search by name or symbol"
 msgstr "Претражи по имену или симболу"
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:182
+#: apps/web/src/components/ui/location-picker.tsx:182
 msgid "Search for a town or place"
 msgstr "Потражите град или мјесто"
 
@@ -1914,7 +1914,7 @@ msgstr "Претражи ваучере"
 #~ msgid "Search vouchers and filter by what they offer."
 #~ msgstr "Претражите ваучере и филтрирајте их по ономе што нуде."
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:234
+#: apps/web/src/components/ui/location-picker.tsx:234
 msgid "Searching places…"
 msgstr "Претрага мјеста…"
 
@@ -1983,12 +1983,12 @@ msgstr "Услуге"
 msgid "Session check failed"
 msgstr "Провјера сесије није успјела"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:148
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:154
 msgid "Session could not be verified. Try again."
 msgstr "Sesija nije mogla biti verifikovana. Pokušajte ponovo."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:34
 #: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Подешавања"
@@ -2298,7 +2298,7 @@ msgstr "Историја преноса"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:376
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:58
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:86
@@ -2339,8 +2339,12 @@ msgid "Update protected paper wallet"
 msgstr "Ажурирај заштићени папирни новчаник"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
-msgid "Update your contact details and country."
-msgstr "Ажурирајте контакт податке и земљу."
+#~ msgid "Update your contact details and country."
+#~ msgstr "Ажурирајте контакт податке и земљу."
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
+msgid "Update your contact details and location."
+msgstr "Ажурирајте контакт податке и локацију."
 
 #: apps/web/src/features/home/ui/report-page.tsx:77
 msgid "Updated"
@@ -2375,7 +2379,7 @@ msgstr "Користи тренутну локацију"
 msgid "Use max · {0}"
 msgstr "Користи максимум · {0}"
 
-#: apps/web/src/features/onboarding/ui/location-picker.tsx:196
+#: apps/web/src/components/ui/location-picker.tsx:196
 msgid "Use my location"
 msgstr "Користи моју локацију"
 
@@ -2481,7 +2485,7 @@ msgstr "Нисмо могли да потврдимо вашу сесију. П�
 msgid "We couldn't load your profile phone number."
 msgstr "Нисмо могли да учитамо број телефона са вашег профила."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:49
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:50
 msgid "We couldn't load your profile."
 msgstr "Нисмо могли да учитамо ваш профил."
 
@@ -2558,12 +2562,12 @@ msgstr "Ваш налог чека одобрење. Моћи ћете да на
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Ваша MPESA исплата ће ускоро стићи."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:155
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:103
 msgid "Your name"
 msgstr "Ваше име"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:341
 msgid "Your paper wallet"
 msgstr "Ваш папирни новчаник"
 

@@ -9,12 +9,12 @@ import { LoaderCircle } from "lucide-react";
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { BackChevron } from "#/components/wallet/wallet-layout";
-import { translateValidationError } from "#/lib/validation-i18n";
-import { LocationPicker } from "./location-picker";
-import { OnboardingProgress } from "./onboarding-progress";
 import { onboardingSearch } from "#/lib/onboarding-search";
+import { translateValidationError } from "#/lib/validation-i18n";
+import { OnboardingProgress } from "./onboarding-progress";
 
 type Props = {
   initialValues?: ProfileInput;

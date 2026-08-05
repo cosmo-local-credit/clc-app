@@ -176,43 +176,7 @@ describe("profileSchema", () => {
 });
 
 describe("profileEditSchema", () => {
-  const VALID_EDIT = {
-    name: "Alice",
-    email: "alice@example.com",
-    phone: "+254712345678",
-    country: "KE",
-  };
-
-  it("accepts a fully populated object", () => {
-    expect(profileEditSchema.safeParse(VALID_EDIT).success).toBe(true);
-  });
-
-  it("accepts name + phone + country (no email)", () => {
-    expect(profileEditSchema.safeParse({ ...VALID_EDIT, email: "" }).success).toBe(true);
-  });
-
-  it("rejects when both email and phone are empty", () => {
-    const result = profileEditSchema.safeParse({ ...VALID_EDIT, email: "", phone: "" });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const msgs = result.error.issues.map((i) => i.message);
-      expect(msgs.some((m) => /email|phone/i.test(m))).toBe(true);
-    }
-  });
-
-  it("rejects a missing country", () => {
-    const result = profileEditSchema.safeParse({ ...VALID_EDIT, country: "" });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.some((i) => /country/i.test(i.message))).toBe(true);
-    }
-  });
-
-  it("rejects a malformed country code", () => {
-    expect(profileEditSchema.safeParse({ ...VALID_EDIT, country: "KEN" }).success).toBe(false);
-  });
-
-  it("rejects an empty name", () => {
-    expect(profileEditSchema.safeParse({ ...VALID_EDIT, name: "" }).success).toBe(false);
+  it("reuses profileSchema: editing a profile now also requires a location", () => {
+    expect(profileEditSchema).toBe(profileSchema);
   });
 });
