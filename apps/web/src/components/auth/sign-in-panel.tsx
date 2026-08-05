@@ -12,10 +12,20 @@ import { connect as connectAction } from "wagmi/actions";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import {
+  SheetBackdrop,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetPortal,
+  SheetRoot,
+  SheetTitle,
+} from "#/components/ui/sheet";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
+import { onboardingSearch } from "#/lib/onboarding-search";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
@@ -39,9 +49,23 @@ export type SignInPanelProps = {
   onAuthenticated: () => void;
   onCancel?: () => void;
   redirectTo?: string;
+  /**
+   * Onboarding step used by the "Create an account" affordances (footer link
+   * and account-not-found sheet). Defaults to `profile` so the user lands on
+   * the form rather than the welcome fork.
+   */
+  createAccountStep?: "welcome" | "profile";
+  /** When true, create-account navigation replaces the current history entry. */
+  createAccountReplace?: boolean;
 };
 
-export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPanelProps) {
+export function SignInPanel({
+  onAuthenticated,
+  onCancel,
+  redirectTo,
+  createAccountStep = "profile",
+  createAccountReplace = false,
+}: SignInPanelProps) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +82,7 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const [pkConnecting, setPkConnecting] = useState(false);
   const [encryptedPaperWallet, setEncryptedPaperWallet] = useState<string | null>(null);
   const [retryAction, setRetryAction] = useState<(() => void) | null>(null);
+  const [accountNotFoundOpen, setAccountNotFoundOpen] = useState(false);
   const { available, provider, label: providerLabel } = usePlatformPasskeyLabel();
   const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
   const { step: signinStep, signin } = useCaliburSignin(relayerClient);
@@ -67,18 +92,21 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
   const currentRedirect =
     sanitizeInternalRedirect(redirectTo) ??
     sanitizeInternalRedirect(`${location.pathname}${location.searchStr}${location.hash}`);
+  const createAccountSearch = onboardingSearch(createAccountStep, currentRedirect);
 
   function routeToSignup() {
+    setAccountNotFoundOpen(false);
     void navigate({
       to: "/onboarding",
-      search: currentRedirect ? { redirect: currentRedirect } : {},
+      search: createAccountSearch,
+      replace: createAccountReplace,
     });
   }
 
   function handleBackendError(err: unknown, retry?: () => void) {
     if (err instanceof BackendApiError) {
       if (err.status === 404) {
-        routeToSignup();
+        setAccountNotFoundOpen(true);
         return;
       }
       if (err.status === 403) {
@@ -349,12 +377,34 @@ export function SignInPanel({ onAuthenticated, onCancel, redirectTo }: SignInPan
         <Trans>New to CLC?</Trans>{" "}
         <Link
           to="/onboarding"
-          search={currentRedirect ? { redirect: currentRedirect } : {}}
+          search={createAccountSearch}
+          replace={createAccountReplace}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           <Trans>Create an account</Trans>
         </Link>
       </p>
+
+      <SheetRoot open={accountNotFoundOpen} onOpenChange={setAccountNotFoundOpen}>
+        <SheetPortal>
+          <SheetBackdrop />
+          <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+            <SheetHeader className="px-6 pt-6">
+              <SheetTitle className="font-heading text-[1.375rem] font-semibold leading-tight">
+                <Trans>Account not found</Trans>
+              </SheetTitle>
+              <p className="text-muted-foreground text-sm">
+                <Trans>No CLC account was found for this sign-in.</Trans>
+              </p>
+            </SheetHeader>
+            <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+              <Button className="h-11 w-full" onClick={routeToSignup}>
+                <Trans>Create an account</Trans>
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </SheetPortal>
+      </SheetRoot>
     </div>
   );
 }

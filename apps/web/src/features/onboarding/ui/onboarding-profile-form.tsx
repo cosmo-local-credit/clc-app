@@ -3,17 +3,24 @@ import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { profileSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, LoaderCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { LoaderCircle } from "lucide-react";
+
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { BackChevron } from "#/components/wallet/wallet-layout";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { LocationPicker } from "./location-picker";
+import { OnboardingProgress } from "./onboarding-progress";
+import { onboardingSearch } from "#/lib/onboarding-search";
 
 type Props = {
   initialValues?: ProfileInput;
+  redirectTo?: string;
+  progressStep: number;
+  progressTotal: number;
   onNext: (data: ProfileInput) => void;
 };
 
@@ -31,9 +38,14 @@ const DEFAULT_VALUES: ProfileFormValues = {
   location: undefined,
 };
 
-export function OnboardingProfileForm({ initialValues, onNext }: Props) {
+export function OnboardingProfileForm({
+  initialValues,
+  redirectTo,
+  progressStep,
+  progressTotal,
+  onNext,
+}: Props) {
   const { i18n, t } = useLingui();
-  const navigate = useNavigate();
 
   const form = useForm({
     defaultValues: initialValues ?? DEFAULT_VALUES,
@@ -48,25 +60,22 @@ export function OnboardingProfileForm({ initialValues, onNext }: Props) {
     <div className="relative flex min-h-[100svh] flex-col bg-background">
       <OnboardingMenu />
       <div className="flex flex-col px-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <div className="mb-6 space-y-3">
-          <button
-            type="button"
-            onClick={() => void navigate({ to: "/" })}
-            className="-ml-2 flex h-11 items-center gap-1.5 self-start px-2 text-muted-foreground text-sm hover:text-foreground"
-            aria-label={t`Back`}
-          >
-            <ArrowLeft className="size-4" />
-            <Trans>Back</Trans>
-          </button>
+        <BackChevron
+          label={t`Back`}
+          to="/onboarding"
+          search={onboardingSearch("welcome", redirectTo)}
+          className="mb-4 self-start"
+        />
 
-          <div className="space-y-1">
-            <h1 className="font-bold font-heading text-[1.75rem] leading-tight">
-              <Trans>Create your account</Trans>
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              <Trans>Name and location are required. Provide an email or phone number.</Trans>
-            </p>
-          </div>
+        <OnboardingProgress step={progressStep} total={progressTotal} />
+
+        <div className="mb-4 space-y-1">
+          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+            <Trans>Create your account</Trans>
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            <Trans>Name and location are required. Provide an email or phone number.</Trans>
+          </p>
         </div>
 
         <form
@@ -198,7 +207,12 @@ export function OnboardingProfileForm({ initialValues, onNext }: Props) {
 
         <p className="mt-8 text-center text-muted-foreground text-sm">
           <Trans>Already have an account?</Trans>{" "}
-          <Link to="/" className="font-medium text-foreground underline-offset-4 hover:underline">
+          <Link
+            to="/onboarding"
+            search={onboardingSearch("signin", redirectTo)}
+            replace
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
             <Trans>Go back to sign in</Trans>
           </Link>
         </p>

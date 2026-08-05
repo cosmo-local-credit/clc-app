@@ -1,18 +1,10 @@
 import { Trans } from "@lingui/react/macro";
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useState } from "react";
 
 import { Button } from "#/components/ui/button";
-import {
-  DialogBackdrop,
-  DialogContent,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from "#/components/ui/dialog";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
-import { SignInPanel } from "./sign-in-panel";
+import { onboardingSearch } from "#/lib/onboarding-search";
 import { sanitizeInternalRedirect } from "./redirect";
 
 export function AuthenticatedRoute({ children }: { children: ReactNode }) {
@@ -46,10 +38,12 @@ function SessionCheckError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/**
+ * Gated deep-link gate. Same two-button fork as the onboarding welcome screen
+ * so every entry point uses the same labels and destinations.
+ */
 function AuthRequiredScreen() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const [signInOpen, setSignInOpen] = useState(false);
   const redirectTo = sanitizeInternalRedirect(
     `${location.pathname}${location.searchStr}${location.hash}`,
   );
@@ -67,20 +61,19 @@ function AuthRequiredScreen() {
         </div>
 
         <div className="space-y-2">
-          <Button className="h-11 w-full" onClick={() => setSignInOpen(true)}>
-            <Trans>Sign in</Trans>
+          {/*
+            Replace the protected URL so onboarding does not stack above it.
+            Finish then replaces the single onboarding slot with the destination.
+          */}
+          <Button asChild className="h-11 w-full">
+            <Link to="/onboarding" search={onboardingSearch("profile", redirectTo)} replace>
+              <Trans>Create account</Trans>
+            </Link>
           </Button>
-          <Button
-            variant="outline"
-            className="h-11 w-full"
-            onClick={() => {
-              void navigate({
-                to: "/onboarding",
-                search: redirectTo ? { redirect: redirectTo } : {},
-              });
-            }}
-          >
-            <Trans>Sign up</Trans>
+          <Button asChild variant="outline" className="h-11 w-full">
+            <Link to="/onboarding" search={onboardingSearch("signin", redirectTo)} replace>
+              <Trans>I already have an account</Trans>
+            </Link>
           </Button>
         </div>
 
@@ -92,27 +85,6 @@ function AuthRequiredScreen() {
           <Trans>Back to market</Trans>
         </Link>
       </div>
-
-      <DialogRoot open={signInOpen} onOpenChange={setSignInOpen}>
-        <DialogPortal>
-          <DialogBackdrop />
-          <DialogContent className="p-0">
-            <div className="p-6">
-              <DialogTitle className="font-heading text-[1.375rem] font-semibold tracking-tight">
-                <Trans>Sign in</Trans>
-              </DialogTitle>
-              <p className="mb-4 mt-1 text-muted-foreground text-sm">
-                <Trans>Choose a wallet to continue.</Trans>
-              </p>
-              <SignInPanel
-                redirectTo={redirectTo}
-                onAuthenticated={() => setSignInOpen(false)}
-                onCancel={() => setSignInOpen(false)}
-              />
-            </div>
-          </DialogContent>
-        </DialogPortal>
-      </DialogRoot>
     </div>
   );
 }

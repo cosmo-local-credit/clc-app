@@ -1,56 +1,49 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { FiUserPlus } from "react-icons/fi";
 
-import { SignInPanel } from "#/components/auth/sign-in-panel";
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
+import { onboardingSearch } from "#/lib/onboarding-search";
 
-// Auth entry screen reached from the market's onboarding banner. Handles both
-// sign-in (SignInPanel) and the start of sign-up (onCreateAccount advances to
-// the profile/wallet flow). Validated redirect intent is preserved throughout.
-export function LandingPage({
-  onCreateAccount,
-  redirectTo,
-}: {
-  onCreateAccount: () => void;
-  redirectTo?: string;
-}) {
+/**
+ * Screen A — Welcome fork. Identity only: create an account, or sign in.
+ * Sign-in methods live on the signin step so this screen never mixes
+ * "who are you" with wallet primitives.
+ */
+export function LandingPage({ redirectTo }: { redirectTo?: string }) {
   const navigate = useNavigate();
+
+  function go(step: "profile" | "signin") {
+    // Push so screen Back and browser Back both return to welcome.
+    void navigate({
+      to: "/onboarding",
+      search: onboardingSearch(step, redirectTo),
+    });
+  }
 
   return (
     <div className="relative flex min-h-[100svh] flex-col bg-background px-6 pt-12 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <OnboardingMenu />
-      <div className="flex flex-col items-center gap-5 text-center">
-        <CLCLogo className="size-20" />
-        <div className="space-y-1">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">CLC</h1>
-          <p className="text-muted-foreground text-sm">
+      <div className="mt-8 flex flex-col gap-6">
+        <CLCLogo className="size-14" sharp />
+        <div className="space-y-2">
+          <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+            <Trans>Cosmo-Local Credit</Trans>
+          </h1>
+          <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
             <Trans>Route redeemable claims across curated markets with shared standards.</Trans>
           </p>
         </div>
       </div>
 
       <div className="mt-auto space-y-3 pt-8 pb-2">
-        <Button
-          className="h-11 w-full bg-foreground text-background hover:bg-foreground/90"
-          onClick={onCreateAccount}
-        >
-          <FiUserPlus className="mr-2 size-4" aria-hidden="true" />
-          <Trans>Create an account</Trans>
+        <Button className="h-11 w-full" onClick={() => go("profile")}>
+          <Trans>Create account</Trans>
         </Button>
-        <div className="flex items-center gap-3 text-muted-foreground text-[11px] tracking-[0.24em] uppercase">
-          <div className="h-px flex-1 bg-border" />
-          <span>
-            <Trans>or</Trans>
-          </span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-        <SignInPanel
-          redirectTo={redirectTo}
-          onAuthenticated={() => void navigate({ to: (redirectTo ?? "/") as "/", replace: true })}
-        />
+        <Button variant="outline" className="h-11 w-full" onClick={() => go("signin")}>
+          <Trans>I already have an account</Trans>
+        </Button>
       </div>
     </div>
   );

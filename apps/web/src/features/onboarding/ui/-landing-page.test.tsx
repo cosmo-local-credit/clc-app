@@ -9,22 +9,14 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("#/components/auth/sign-in-panel", () => ({
-  SignInPanel: ({ onAuthenticated }: { onAuthenticated: () => void }) => (
-    <div data-testid="sign-in-panel">
-      <button type="button" onClick={onAuthenticated}>
-        Simulate authenticated
-      </button>
-    </div>
-  ),
-}));
-
 vi.mock("#/components/language-selector", () => ({
   OnboardingMenu: () => <div data-testid="onboarding-menu" />,
 }));
 
 vi.mock("#/components/ui/clc-logo", () => ({
-  CLCLogo: () => <svg data-testid="clc-logo" />,
+  CLCLogo: ({ sharp }: { sharp?: boolean }) => (
+    <svg data-testid="clc-logo" data-sharp={sharp ? "true" : "false"} />
+  ),
 }));
 
 import { LandingPage } from "./landing-page";
@@ -34,29 +26,31 @@ beforeEach(() => {
 });
 
 describe("LandingPage", () => {
-  it("shows branding, onboarding menu, and shared sign-in panel", () => {
-    render(<LandingPage onCreateAccount={() => {}} />);
-    expect(screen.getByRole("heading", { name: "CLC" })).toBeTruthy();
+  it("shows branding, onboarding menu, and the two identity buttons", () => {
+    render(<LandingPage />);
+    expect(screen.getByRole("heading", { name: /cosmo-local credit/i })).toBeTruthy();
     expect(screen.getByTestId("onboarding-menu")).toBeTruthy();
-    expect(screen.getByTestId("sign-in-panel")).toBeTruthy();
+    expect(screen.getByTestId("clc-logo").getAttribute("data-sharp")).toBe("true");
+    expect(screen.getByRole("button", { name: /create account/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /i already have an account/i })).toBeTruthy();
+    expect(screen.queryByTestId("sign-in-panel")).toBeNull();
   });
 
-  it("invokes onCreateAccount when Create an account is clicked", () => {
-    const onCreateAccount = vi.fn();
-    render(<LandingPage onCreateAccount={onCreateAccount} />);
-    fireEvent.click(screen.getByRole("button", { name: /create an account/i }));
-    expect(onCreateAccount).toHaveBeenCalledTimes(1);
+  it("navigates to the profile step when Create account is clicked", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "profile" },
+    });
   });
 
-  it("navigates to the redirect target after authentication", () => {
-    render(<LandingPage onCreateAccount={() => {}} redirectTo="/wallet/send" />);
-    fireEvent.click(screen.getByRole("button", { name: /simulate authenticated/i }));
-    expect(mockNavigate).toHaveBeenCalledWith({ to: "/wallet/send", replace: true });
-  });
-
-  it("falls back to home after authentication when no redirect", () => {
-    render(<LandingPage onCreateAccount={() => {}} />);
-    fireEvent.click(screen.getByRole("button", { name: /simulate authenticated/i }));
-    expect(mockNavigate).toHaveBeenCalledWith({ to: "/", replace: true });
+  it("navigates to the signin step when I already have an account is clicked", () => {
+    render(<LandingPage redirectTo="/wallet/send" />);
+    fireEvent.click(screen.getByRole("button", { name: /i already have an account/i }));
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/onboarding",
+      search: { step: "signin", redirect: "/wallet/send" },
+    });
   });
 });

@@ -65,12 +65,12 @@ msgid "{0} m"
 msgstr "{0} m"
 
 #. placeholder {0}: draftTags.length
-#: apps/web/src/components/catalog-filter-controls.tsx:463
+#: apps/web/src/components/catalog-filter-controls.tsx:467
 msgid "{0} of {CATALOG_MAX_TAGS}"
 msgstr "{0} of {CATALOG_MAX_TAGS}"
 
 #. placeholder {0}: draftVouchers.length
-#: apps/web/src/components/catalog-filter-controls.tsx:285
+#: apps/web/src/components/catalog-filter-controls.tsx:290
 msgid "{0} of {CATALOG_MAX_VOUCHERS}"
 msgstr "{0} of {CATALOG_MAX_VOUCHERS}"
 
@@ -99,6 +99,10 @@ msgstr "{0} vouchers"
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:165
 #~ msgid "{0}{1}"
 #~ msgstr "{0}{1}"
+
+#: apps/web/src/features/onboarding/ui/onboarding-progress.tsx:21
+msgid "{clampedStep} of {clampedTotal}"
+msgstr "{clampedStep} of {clampedTotal}"
 
 #. placeholder {0}: images.length
 #: apps/web/src/features/home/ui/report-page.tsx:177
@@ -169,15 +173,19 @@ msgstr "Account awaiting approval"
 msgid "Account not approved"
 msgstr "Account not approved"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:272
+#: apps/web/src/components/auth/sign-in-panel.tsx:394
+msgid "Account not found"
+msgstr "Account not found"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:336
 msgid "Account registration failed."
 msgstr "Account registration failed."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:100
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:125
 msgid "Activating on chain..."
 msgstr "Activating on chain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:102
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:127
 msgid "Activating smart wallet..."
 msgstr "Activating smart wallet..."
 
@@ -236,12 +244,12 @@ msgstr "Address copied"
 msgid "Admin"
 msgstr "Admin"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:287
+#: apps/web/src/components/auth/sign-in-panel.tsx:315
 msgid "Advanced options"
 msgstr "Advanced options"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:444
-#: apps/web/src/components/catalog-filter-controls.tsx:534
+#: apps/web/src/components/catalog-filter-controls.tsx:448
+#: apps/web/src/components/catalog-filter-controls.tsx:538
 msgid "All selected"
 msgstr "All selected"
 
@@ -254,7 +262,7 @@ msgstr "All selected"
 msgid "All Vouchers"
 msgstr "All Vouchers"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:200
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:209
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
@@ -279,8 +287,8 @@ msgstr "Amount"
 msgid "Amount exceeds your balance"
 msgstr "Amount exceeds your balance"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:439
-#: apps/web/src/components/catalog-filter-controls.tsx:529
+#: apps/web/src/components/catalog-filter-controls.tsx:443
+#: apps/web/src/components/catalog-filter-controls.tsx:533
 msgid "Any selected"
 msgstr "Any selected"
 
@@ -293,7 +301,7 @@ msgstr "Any selected"
 #~ msgid "Appearance"
 #~ msgstr "Appearance"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:563
+#: apps/web/src/components/catalog-filter-controls.tsx:567
 msgid "Apply filters"
 msgstr "Apply filters"
 
@@ -307,14 +315,14 @@ msgstr "Author"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:56
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:59
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:203
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:206
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:287
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 msgid "Back"
 msgstr "Back"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:92
+#: apps/web/src/components/auth/authenticated-route.tsx:85
 msgid "Back to market"
 msgstr "Back to market"
 
@@ -389,7 +397,7 @@ msgstr "Buy USD₮ with KES."
 msgid "Camera access denied."
 msgstr "Camera access denied."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:344
+#: apps/web/src/components/auth/sign-in-panel.tsx:372
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
@@ -434,8 +442,8 @@ msgid "Choose a location"
 msgstr "Choose a location"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:105
-msgid "Choose a wallet to continue."
-msgstr "Choose a wallet to continue."
+#~ msgid "Choose a wallet to continue."
+#~ msgstr "Choose a wallet to continue."
 
 #: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
@@ -474,7 +482,7 @@ msgid "Clear filters"
 msgstr "Clear filters"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:72
-#: apps/web/src/components/catalog-filter-controls.tsx:510
+#: apps/web/src/components/catalog-filter-controls.tsx:514
 msgid "Clear search"
 msgstr "Clear search"
 
@@ -483,8 +491,8 @@ msgstr "Clear search"
 msgid "Close"
 msgstr "Close"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:260
-#: apps/web/src/components/catalog-filter-controls.tsx:568
+#: apps/web/src/components/catalog-filter-controls.tsx:265
+#: apps/web/src/components/catalog-filter-controls.tsx:572
 msgid "Close filters"
 msgstr "Close filters"
 
@@ -496,7 +504,7 @@ msgstr "Close paper wallet scanner"
 msgid "Close password-protected wallet import"
 msgstr "Close password-protected wallet import"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:343
 msgid "Close private key form"
 msgstr "Close private key form"
 
@@ -571,8 +579,12 @@ msgstr "Connect your wallet to use MPESA."
 msgid "Connected address"
 msgstr "Connected address"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:215
-#: apps/web/src/components/auth/sign-in-panel.tsx:263
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:121
+msgid "Connecting wallet..."
+msgstr "Connecting wallet..."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:243
+#: apps/web/src/components/auth/sign-in-panel.tsx:291
 msgid "Connecting..."
 msgstr "Connecting..."
 
@@ -580,33 +592,34 @@ msgstr "Connecting..."
 msgid "Connecting…"
 msgstr "Connecting…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:96
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:146
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:178
+#: apps/web/src/components/auth/sign-in-panel.tsx:124
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:256
 #: apps/web/src/routes/__root.tsx:158
 #: apps/web/src/routes/__root.tsx:184
 msgid "Connection failed."
 msgstr "Connection failed."
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:224
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:410
 msgid "Continue"
 msgstr "Continue"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:387
 msgid "Continue to wallet"
 msgstr "Continue to wallet"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:263
+#: apps/web/src/components/auth/sign-in-panel.tsx:291
 msgid "Continue with {providerLabel}"
 msgstr "Continue with {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:375
 msgid "Continue with paper wallet"
 msgstr "Continue with paper wallet"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:275
+#: apps/web/src/components/auth/sign-in-panel.tsx:303
 msgid "Continue with Paper Wallet"
 msgstr "Continue with Paper Wallet"
 
@@ -655,6 +668,10 @@ msgstr "Copy wallet address"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:58
 #~ msgid "Copy wallet name"
 #~ msgstr "Copy wallet name"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:32
+msgid "Cosmo-Local Credit"
+msgstr "Cosmo-Local Credit"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
@@ -760,7 +777,7 @@ msgstr "Couldn't resolve that recipient."
 msgid "Couldn't save your profile."
 msgstr "Couldn't save your profile."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:364
+#: apps/web/src/components/catalog-filter-controls.tsx:368
 msgid "Couldn't search vouchers."
 msgstr "Couldn't search vouchers."
 
@@ -786,16 +803,18 @@ msgstr "Couldn't verify your MPESA link."
 msgid "Country"
 msgstr "Country"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:73
+#: apps/web/src/components/auth/authenticated-route.tsx:70
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:42
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:82
 msgid "Create account"
 msgstr "Create account"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:355
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:41
+#: apps/web/src/components/auth/sign-in-panel.tsx:384
+#: apps/web/src/components/auth/sign-in-panel.tsx:402
 msgid "Create an account"
 msgstr "Create an account"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
 msgid "Create your account"
 msgstr "Create your account"
 
@@ -803,7 +822,7 @@ msgstr "Create your account"
 msgid "Created"
 msgstr "Created"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:92
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:115
 msgid "Creating account..."
 msgstr "Creating account..."
 
@@ -870,7 +889,7 @@ msgstr "Download card"
 msgid "Download failed. Try a screenshot instead."
 msgstr "Download failed. Try a screenshot instead."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:214
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:300
 msgid "Download or photograph this card. Anyone who scans the QR code will have "
 "full access to this wallet."
 msgstr "Download or photograph this card. Anyone who scans the QR code will "
@@ -899,8 +918,8 @@ msgstr "Edit profile"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:117
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:128
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Email"
 msgstr "Email"
@@ -917,7 +936,7 @@ msgstr "Enabling notifications"
 msgid "Enabling notifications..."
 msgstr "Enabling notifications..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:178
+#: apps/web/src/components/auth/sign-in-panel.tsx:206
 msgid "Enter a valid private key or paper wallet."
 msgstr "Enter a valid private key or paper wallet."
 
@@ -954,6 +973,12 @@ msgstr "Enter the password to unlock this paper wallet."
 #~ "request is made."
 #~ msgstr "Estimate uses temporary placeholder pool voucher data. No quote or "
 #~ "relay request is made."
+
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:59
+msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
+"way to sign in."
+msgstr "Every account gets a paper wallet. Linking {providerLabel} adds another "
+"way to sign in."
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:60
 #~ msgid "Explore community pools and their vouchers."
@@ -992,7 +1017,7 @@ msgstr "Field reports"
 msgid "File too large ({0} KB). Maximum is 512 KB."
 msgstr "File too large ({0} KB). Maximum is 512 KB."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:477
+#: apps/web/src/components/catalog-filter-controls.tsx:481
 msgid "Filter by tag"
 msgstr "Filter by tag"
 
@@ -1012,7 +1037,7 @@ msgstr "Filter posts"
 msgid "Filter vouchers"
 msgstr "Filter vouchers"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:239
+#: apps/web/src/components/catalog-filter-controls.tsx:244
 msgid "Filters"
 msgstr "Filters"
 
@@ -1037,7 +1062,7 @@ msgstr "From"
 #~ msgid "Go back"
 #~ msgstr "Go back"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:216
 msgid "Go back to sign in"
 msgstr "Go back to sign in"
 
@@ -1049,19 +1074,24 @@ msgstr "Goods"
 msgid "Host"
 msgstr "Host"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:523
+#: apps/web/src/components/catalog-filter-controls.tsx:527
 msgid "How should categories match?"
 msgstr "How should categories match?"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:429
+#: apps/web/src/components/catalog-filter-controls.tsx:433
 msgid "How should vouchers match?"
 msgstr "How should vouchers match?"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:232
+#: apps/web/src/components/auth/authenticated-route.tsx:75
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+msgid "I already have an account"
+msgstr "I already have an account"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:318
 msgid "I have saved this key"
 msgstr "I have saved this key"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:239
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:325
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "I have saved this key. If lost, my wallet cannot be recovered."
 
@@ -1138,17 +1168,29 @@ msgstr "Language"
 msgid "Light"
 msgstr "Light"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:346
+#: apps/web/src/components/catalog-filter-controls.tsx:350
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 msgstr "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
 "another."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:262
-msgid "Link wallet to {providerLabel} passkey"
-msgstr "Link wallet to {providerLabel} passkey"
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:86
+msgid "Link {providerLabel}"
+msgstr "Link {providerLabel}"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:96
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
+msgid "Link {providerLabel}?"
+msgstr "Link {providerLabel}?"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:364
+msgid "Link wallet to {providerLabel}"
+msgstr "Link wallet to {providerLabel}"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:262
+#~ msgid "Link wallet to {providerLabel} passkey"
+#~ msgstr "Link wallet to {providerLabel} passkey"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:119
 msgid "Linking passkey..."
 msgstr "Linking passkey..."
 
@@ -1283,7 +1325,7 @@ msgstr "Marketplace"
 msgid "Marketplace vouchers"
 msgstr "Marketplace vouchers"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:525
+#: apps/web/src/components/catalog-filter-controls.tsx:529
 msgid "Match"
 msgstr "Match"
 
@@ -1345,12 +1387,12 @@ msgstr "My wallet address"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:88
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:99
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
 msgid "Name"
 msgstr "Name"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:67
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:77
 msgid "Name and location are required. Provide an email or phone number."
 msgstr "Name and location are required. Provide an email or phone number."
 
@@ -1382,7 +1424,7 @@ msgstr "Name on wallet"
 msgid "Network"
 msgstr "Network"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:349
+#: apps/web/src/components/auth/sign-in-panel.tsx:377
 msgid "New to CLC?"
 msgstr "New to CLC?"
 
@@ -1408,13 +1450,17 @@ msgstr "No camera found on this device."
 msgid "No cash activity yet."
 msgstr "No cash activity yet."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:500
+#: apps/web/src/components/catalog-filter-controls.tsx:504
 msgid "No categories are available for the current results."
 msgstr "No categories are available for the current results."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:471
+#: apps/web/src/components/catalog-filter-controls.tsx:475
 msgid "No category filters are available."
 msgstr "No category filters are available."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:397
+msgid "No CLC account was found for this sign-in."
+msgstr "No CLC account was found for this sign-in."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:154
 msgid "No offerings yet"
@@ -1492,7 +1538,7 @@ msgstr "No voucher in this pool is offering anything yet."
 msgid "No vouchers in this pool yet."
 msgstr "No vouchers in this pool yet."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:385
+#: apps/web/src/components/catalog-filter-controls.tsx:389
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
 #: apps/web/src/features/home/ui/market-page.tsx:136
 msgid "No vouchers match this search."
@@ -1516,7 +1562,7 @@ msgstr "No wallet address available."
 msgid "Not a standard Safaricom number. Continue only if it's ported."
 msgstr "Not a standard Safaricom number. Continue only if it's ported."
 
-#: apps/web/src/components/catalog-filter-controls.tsx:498
+#: apps/web/src/components/catalog-filter-controls.tsx:502
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Nothing matching “{searchTerm}” carries a category."
 
@@ -1602,13 +1648,13 @@ msgstr "Open in Maps"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Open Market to browse each voucher's individual offers."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:104
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
 msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
-msgid "or"
-msgstr "or"
+#~ msgid "or"
+#~ msgstr "or"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:427
 #~ msgid "Out"
@@ -1626,6 +1672,10 @@ msgstr "Paper Wallet"
 msgid "Paper wallet is protected. Keep the password separate from the card."
 msgstr "Paper wallet is protected. Keep the password separate from the card."
 
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:99
+msgid "Paper wallet only"
+msgstr "Paper wallet only"
+
 #: apps/web/src/features/home/ui/report-page.tsx:380
 msgid "Participants"
 msgstr "Participants"
@@ -1634,15 +1684,15 @@ msgstr "Participants"
 #~ msgid "Passkey connected"
 #~ msgstr "Passkey connected"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:98
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:123
 msgid "Passkey linked"
 msgstr "Passkey linked"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:94
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:117
 msgid "Passkey linked ... confirming on-chain..."
 msgstr "Passkey linked ... confirming on-chain..."
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:128
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:169
 msgid "Passkey linked, but wallet connection failed."
 msgstr "Passkey linked, but wallet connection failed."
 
@@ -1694,13 +1744,13 @@ msgstr "Pending"
 #~ msgstr "Pending endpoint integration"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:146
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:155
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:582
 msgid "Phone"
 msgstr "Phone"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:184
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:162
 msgid "Phone number"
 msgstr "Phone number"
 
@@ -1813,9 +1863,9 @@ msgstr "Price on request"
 msgid "Primary navigation"
 msgstr "Primary navigation"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:300
-#: apps/web/src/components/auth/sign-in-panel.tsx:310
-#: apps/web/src/components/auth/sign-in-panel.tsx:333
+#: apps/web/src/components/auth/sign-in-panel.tsx:328
+#: apps/web/src/components/auth/sign-in-panel.tsx:338
+#: apps/web/src/components/auth/sign-in-panel.tsx:361
 msgid "Private key"
 msgstr "Private key"
 
@@ -1947,6 +1997,10 @@ msgstr "Recipient"
 msgid "Recipient ENS, phone or address"
 msgstr "Recipient ENS, phone or address"
 
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
+msgid "Recommended"
+msgstr "Recommended"
+
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:173
 msgid "Redeem"
 msgstr "Redeem"
@@ -1960,7 +2014,7 @@ msgid "Related vouchers"
 msgstr "Related vouchers"
 
 #. placeholder {0}: voucherLabel(voucher)
-#: apps/web/src/components/catalog-filter-controls.tsx:325
+#: apps/web/src/components/catalog-filter-controls.tsx:330
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
@@ -1982,7 +2036,7 @@ msgstr "Report period"
 msgid "Report provenance"
 msgstr "Report provenance"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:553
+#: apps/web/src/components/catalog-filter-controls.tsx:557
 msgid "Reset"
 msgstr "Reset"
 
@@ -2004,6 +2058,10 @@ msgstr "Resolving recipient…"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
 msgid "Retry"
 msgstr "Retry"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:363
+msgid "Retry {providerLabel} connection"
+msgstr "Retry {providerLabel} connection"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:155
 msgid "Reverse swap direction"
@@ -2028,7 +2086,7 @@ msgstr "Reviews"
 msgid "Reviews for this voucher will appear here."
 msgstr "Reviews for this voucher will appear here."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:30
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
@@ -2037,7 +2095,7 @@ msgid "Save changes"
 msgstr "Save changes"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:193
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 msgid "Saving…"
 msgstr "Saving…"
 
@@ -2077,11 +2135,11 @@ msgstr "Search pools"
 msgid "Search posts by title or description"
 msgstr "Search posts by title or description"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:337
+#: apps/web/src/components/catalog-filter-controls.tsx:342
 msgid "Search voucher filters"
 msgstr "Search voucher filters"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:336
+#: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Search vouchers"
 msgstr "Search vouchers"
 
@@ -2093,7 +2151,7 @@ msgstr "Search vouchers"
 msgid "Searching places…"
 msgstr "Searching places…"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:359
+#: apps/web/src/components/catalog-filter-controls.tsx:363
 msgid "Searching vouchers…"
 msgstr "Searching vouchers…"
 
@@ -2105,7 +2163,7 @@ msgstr "Select a token"
 #~ msgid "Selected pool"
 #~ msgstr "Selected pool"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:321
+#: apps/web/src/components/catalog-filter-controls.tsx:326
 msgid "Selected vouchers"
 msgstr "Selected vouchers"
 
@@ -2163,9 +2221,13 @@ msgstr "Sent voucher"
 msgid "Services"
 msgstr "Services"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:36
+#: apps/web/src/components/auth/authenticated-route.tsx:28
 msgid "Session check failed"
 msgstr "Session check failed"
+
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:148
+msgid "Session could not be verified. Try again."
+msgstr "Session could not be verified. Try again."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:33
@@ -2191,10 +2253,10 @@ msgstr "Share"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:71
 #: apps/web/src/components/auth/authenticated-route.tsx:102
-msgid "Sign in"
-msgstr "Sign in"
+#~ msgid "Sign in"
+#~ msgstr "Sign in"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:62
+#: apps/web/src/components/auth/authenticated-route.tsx:56
 msgid "Sign in to continue"
 msgstr "Sign in to continue"
 
@@ -2202,7 +2264,7 @@ msgstr "Sign in to continue"
 msgid "Sign in to view activity."
 msgstr "Sign in to view activity."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:337
+#: apps/web/src/components/auth/sign-in-panel.tsx:365
 msgid "Sign in with private key"
 msgstr "Sign in with private key"
 
@@ -2215,16 +2277,20 @@ msgid "Sign out"
 msgstr "Sign out"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:83
-msgid "Sign up"
-msgstr "Sign up"
+#~ msgid "Sign up"
+#~ msgstr "Sign up"
 
-#: apps/web/src/features/home/ui/onboarding-banner.tsx:16
+#: apps/web/src/features/home/ui/onboarding-banner.tsx:18
 msgid "Sign up or sign in to send, swap, and redeem vouchers"
 msgstr "Sign up or sign in to send, swap, and redeem vouchers"
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:30
 #~ msgid "Sign up to send, swap, redeem, and manage vouchers."
 #~ msgstr "Sign up to send, swap, redeem, and manage vouchers."
+
+#: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:78
+msgid "Sign-in method"
+msgstr "Sign-in method"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Signing out..."
@@ -2262,6 +2328,10 @@ msgstr "Starting…"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:673
 msgid "Status"
 msgstr "Status"
+
+#: apps/web/src/features/onboarding/ui/onboarding-progress.tsx:28
+msgid "Step {clampedStep} of {clampedTotal}"
+msgstr "Step {clampedStep} of {clampedTotal}"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:146
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -2436,7 +2506,7 @@ msgstr "This pool has no {0} available to swap."
 msgid "This pool only has {0} {1} available to swap."
 msgstr "This pool only has {0} {1} available to swap."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:193
+#: apps/web/src/components/auth/sign-in-panel.tsx:221
 msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
 
@@ -2526,8 +2596,8 @@ msgstr "Transfer history"
 #~ msgid "try again"
 #~ msgstr "try again"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:42
-#: apps/web/src/components/catalog-filter-controls.tsx:372
+#: apps/web/src/components/auth/authenticated-route.tsx:34
+#: apps/web/src/components/catalog-filter-controls.tsx:376
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 #: apps/web/src/features/home/ui/activity-page.tsx:60
@@ -2541,7 +2611,7 @@ msgstr "Transfer history"
 msgid "Try again"
 msgstr "Try again"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:353
+#: apps/web/src/components/catalog-filter-controls.tsx:357
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 
@@ -2663,15 +2733,15 @@ msgstr "Voucher actions"
 msgid "Voucher details"
 msgstr "Voucher details"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:434
+#: apps/web/src/components/catalog-filter-controls.tsx:438
 msgid "Voucher match"
 msgstr "Voucher match"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:396
+#: apps/web/src/components/catalog-filter-controls.tsx:400
 msgid "Voucher search results"
 msgstr "Voucher search results"
 
-#: apps/web/src/components/catalog-filter-controls.tsx:282
+#: apps/web/src/components/catalog-filter-controls.tsx:287
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:78
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:85
 msgid "Vouchers"
@@ -2709,7 +2779,7 @@ msgstr "Wallet"
 msgid "Wallet actions"
 msgstr "Wallet actions"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:65
+#: apps/web/src/components/auth/authenticated-route.tsx:59
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Wallet actions are available after you sign up or sign in."
 
@@ -2721,7 +2791,7 @@ msgstr "Wallet actions are available after you sign up or sign in."
 msgid "Wallet session"
 msgstr "Wallet session"
 
-#: apps/web/src/components/auth/authenticated-route.tsx:39
+#: apps/web/src/components/auth/authenticated-route.tsx:31
 msgid "We could not verify your session. Check your connection and try again."
 msgstr "We could not verify your session. Check your connection and try again."
 
@@ -2741,6 +2811,10 @@ msgstr "Website"
 #: apps/web/src/components/offerings/offerings-panel.tsx:490
 msgid "Weekly"
 msgstr "Weekly"
+
+#: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
+msgid "Welcome back"
+msgstr "Welcome back"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:99
 msgid "What they offer"
@@ -2808,11 +2882,11 @@ msgid "Your MPESA payout will arrive shortly."
 msgstr "Your MPESA payout will arrive shortly."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:129
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:94
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:103
 msgid "Your name"
 msgstr "Your name"
 
-#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:211
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:297
 msgid "Your paper wallet"
 msgstr "Your paper wallet"
 
