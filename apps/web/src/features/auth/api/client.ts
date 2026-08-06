@@ -183,7 +183,7 @@ export type ProfilePayload = {
   clearLocation?: boolean;
 };
 
-export type ProfileLocation = {
+type ProfileLocation = {
   locationName: string;
   lat: number;
   lng: number;

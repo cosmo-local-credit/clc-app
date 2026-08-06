@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getSendShare, getSendShareEligibility } from "#/features/wallet/api/send-share-client";
 
-export const sendShareQueryKeys = {
+const sendShareQueryKeys = {
   all: ["wallet", "send-share"] as const,
   eligibility: (address: string | null) =>
     [...sendShareQueryKeys.all, "eligibility", address?.toLowerCase() ?? "none"] as const,

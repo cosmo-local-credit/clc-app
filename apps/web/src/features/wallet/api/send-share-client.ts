@@ -1,6 +1,6 @@
 import { apiFetch, BackendApiError } from "#/features/auth/api/client";
 
-export type SendShareLocation = {
+type SendShareLocation = {
   locationName: string;
   lat: number;
   lng: number;
