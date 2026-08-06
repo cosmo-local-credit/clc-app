@@ -34,15 +34,3 @@ export const profileSchema = z
   .superRefine(requireEmailOrPhone);
 
 export type ProfileInput = z.infer<typeof profileSchema>;
-
-// Editing an existing profile only touches the stored fields: the backend
-// persists a `country` code, not the full geo location captured at signup, so
-// the edit form uses a country selector rather than the map-based picker.
-export const profileEditSchema = z
-  .object({
-    name: nameSchema,
-    email: emailSchema,
-    phone: phoneSchema,
-    country: z.string().regex(/^[A-Z]{2}$/, { message: "Select your country" }),
-  })
-  .superRefine(requireEmailOrPhone);

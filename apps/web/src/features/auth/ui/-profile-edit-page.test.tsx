@@ -1,3 +1,4 @@
+import type { LocationInput } from "@clc/core/features/location/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
@@ -8,6 +9,13 @@ const { account, historyBack, navigate, toastSuccess } = vi.hoisted(() => ({
   navigate: vi.fn(),
   toastSuccess: vi.fn(),
 }));
+
+const PICKED_LOCATION: LocationInput = {
+  lat: -1.2921,
+  lng: 36.8219,
+  locationName: "Nairobi CBD, Kenya",
+  country: "KE",
+};
 
 vi.mock("@tanstack/react-router", () => ({
   useRouter: () => ({ history: { back: historyBack } }),
@@ -24,6 +32,26 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: toastSuccess },
 }));
 
+// The picker's own map/geolocation/ArcGIS behavior is covered by
+// -location-picker.test.tsx; here it's stubbed to a plain value/onChange
+// control so this file can focus on prefill + submit-mapping behavior.
+vi.mock("#/components/ui/location-picker", () => ({
+  LocationPicker: ({
+    value,
+    onChange,
+  }: {
+    value: LocationInput | undefined;
+    onChange: (next: LocationInput | undefined) => void;
+  }) => (
+    <div>
+      <span data-testid="location-value">{value?.locationName ?? ""}</span>
+      <button type="button" onClick={() => onChange(PICKED_LOCATION)}>
+        set location
+      </button>
+    </div>
+  ),
+}));
+
 import { ProfileEditPage } from "./profile-edit-page";
 
 function renderWithQueryClient(ui: React.ReactElement) {
@@ -38,6 +66,9 @@ function profilePayload(overrides: Record<string, unknown> = {}) {
     email: "alice@example.com",
     phone: "+254712345678",
     country: "KE",
+    locationName: null,
+    geoLat: null,
+    geoLng: null,
     createdAt: "2026-07-01T12:20:29Z",
     ...overrides,
   };
@@ -90,6 +121,35 @@ describe("ProfileEditPage", () => {
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
 
+  it("leaves the location picker empty for an existing user with no captured geo", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    await screen.findByDisplayValue("Alice");
+    expect(screen.getByTestId("location-value").textContent).toBe("");
+  });
+
+  it("seeds the location picker from a previously captured location", async () => {
+    mockBackend({ locationName: "Mombasa, Kenya", geoLat: -4.0435, geoLng: 39.6682 });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    expect(await screen.findByTestId("location-value")).toHaveProperty(
+      "textContent",
+      "Mombasa, Kenya",
+    );
+  });
+
+  it("does not seed the location picker from an incomplete geo tuple", async () => {
+    mockBackend({ locationName: "", geoLat: -4.0435, geoLng: 39.6682 });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    await screen.findByDisplayValue("Alice");
+    expect(screen.getByTestId("location-value").textContent).toBe("");
+  });
+
   it("starts the email field blank when the profile has a placeholder email", async () => {
     mockBackend({ email: "pending+abc@clc.local" });
 
@@ -99,13 +159,14 @@ describe("ProfileEditPage", () => {
     expect(email.value).toBe("");
   });
 
-  it("saves edited fields, shows a toast, and navigates back", async () => {
+  it("saves edited fields plus the picked location, shows a toast, and navigates back", async () => {
     const fetchMock = mockBackend();
 
     renderWithQueryClient(<ProfileEditPage />);
 
     const name = (await screen.findByLabelText(/^name$/i)) as HTMLInputElement;
     fireEvent.change(name, { target: { value: "Alice Cooper" } });
+    fireEvent.click(screen.getByRole("button", { name: /set location/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
@@ -119,7 +180,10 @@ describe("ProfileEditPage", () => {
       name: "Alice Cooper",
       email: "alice@example.com",
       phone: "+254712345678",
-      country: "KE",
+      country: PICKED_LOCATION.country,
+      locationName: PICKED_LOCATION.locationName,
+      geoLat: PICKED_LOCATION.lat,
+      geoLng: PICKED_LOCATION.lng,
     });
     expect(historyBack).toHaveBeenCalledTimes(1);
   });

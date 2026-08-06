@@ -48,6 +48,9 @@ async function ensureSessionAndSubmitProfile(
     email,
     phone: profile.phone,
     country: profile.location.country,
+    locationName: profile.location.locationName,
+    geoLat: profile.location.lat,
+    geoLng: profile.location.lng,
   });
 }
 
@@ -81,6 +84,9 @@ export function useBackendSignup() {
           email,
           phone: profile.phone,
           country: profile.location.country,
+          locationName: profile.location.locationName,
+          geoLat: profile.location.lat,
+          geoLng: profile.location.lng,
         });
       }
 
