@@ -7,7 +7,7 @@ import {
   getReports,
 } from "#/features/home/api/reports-client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
-import { reverseLocation } from "#/features/onboarding/api/geo-client";
+import { reverseLocation } from "#/lib/geo-client";
 
 const REPORTS_PAGE_SIZE = 20;
 

@@ -24,12 +24,12 @@ const {
   mockMapVisible: { current: true },
 }));
 
-vi.mock("#/features/onboarding/api/geo-client", () => ({
+vi.mock("#/lib/geo-client", () => ({
   searchLocations: mockSearchLocations,
   reverseLocation: mockReverseLocation,
 }));
 
-vi.mock("./use-browser-geolocation", () => ({
+vi.mock("#/lib/use-browser-geolocation", () => ({
   useBrowserGeolocation: () => ({
     state: mockGeoState.current,
     request: mockRequestGeolocation,
@@ -438,5 +438,24 @@ describe("LocationPicker", () => {
     );
 
     expect(screen.getByTestId("map-pin").textContent).toBe("-1.2921,36.8219");
+  });
+
+  it("initialises the search text from a pre-populated value prop", () => {
+    render(
+      <LocationPicker
+        onChange={vi.fn()}
+        value={{
+          lat: -1.2921,
+          lng: 36.8219,
+          locationName: "Nairobi, Kenya",
+          country: "KE",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+      "value",
+      "Nairobi, Kenya",
+    );
   });
 });
