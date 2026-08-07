@@ -146,6 +146,42 @@ describe("SendAmountPage", () => {
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("keeps private attachment controls collapsed until requested", async () => {
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    const attachmentTrigger = screen.getByRole("button", {
+      name: /message and contact sharing/i,
+    });
+
+    expect(attachmentTrigger.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByRole("textbox", { name: /^message$/i })).toBeNull();
+
+    fireEvent.click(attachmentTrigger);
+
+    expect(attachmentTrigger.getAttribute("aria-expanded")).toBe("true");
+    const messageInput = screen.getByRole("textbox", { name: /^message$/i });
+    fireEvent.change(messageInput, { target: { value: "Keep this message" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /email/i }));
+
+    expect(screen.getByRole("checkbox", { name: /location pin/i })).toBeTruthy();
+    expect(screen.getByRole("checkbox", { name: /phone/i })).toBeTruthy();
+
+    fireEvent.click(attachmentTrigger);
+    expect(screen.queryByRole("textbox", { name: /^message$/i })).toBeNull();
+    fireEvent.click(attachmentTrigger);
+
+    expect((screen.getByRole("textbox", { name: /^message$/i }) as HTMLTextAreaElement).value).toBe(
+      "Keep this message",
+    );
+    expect((screen.getByRole("checkbox", { name: /email/i }) as HTMLInputElement).checked).toBe(
+      true,
+    );
+  });
+
   it("preselects the token passed via the search param", async () => {
     mockTokens();
     renderWithQueryClient(<SendAmountPage token={BABAS} />);
@@ -291,6 +327,7 @@ describe("SendAmountPage", () => {
     );
 
     await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.click(screen.getByRole("button", { name: /message and contact sharing/i }));
     fireEvent.change(screen.getByRole("textbox", { name: /^message$/i }), {
       target: { value: "Thanks for the delivery" },
     });
@@ -330,6 +367,7 @@ describe("SendAmountPage", () => {
     );
 
     await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.click(screen.getByRole("button", { name: /message and contact sharing/i }));
     expect(screen.getByRole("textbox", { name: /^message$/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByRole("checkbox", { name: /email/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.getByText(/still send without an attachment/i)).toBeTruthy();

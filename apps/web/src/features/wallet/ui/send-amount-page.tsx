@@ -5,6 +5,7 @@ import {
   parseTokenAmount,
   SEND_SHARE_PERMISSION,
 } from "@clc/core/features/wallet/logic";
+import { Accordion } from "@base-ui/react/accordion";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -262,93 +263,111 @@ export function SendAmountPage({
         ) : null}
       </div>
 
-      <section className="mb-2.5 space-y-3 border border-border bg-card p-3">
-        <div>
-          <h2 className="font-semibold text-sm">
-            <Trans>Message and contact sharing</Trans>
-          </h2>
-          <p className="text-muted-foreground text-xs">
-            <Trans>Selected details stay in Cosmo and are not written to the blockchain.</Trans>
-          </p>
-        </div>
+      <Accordion.Root className="mb-2.5">
+        <Accordion.Item value="private-attachment" className="border border-border bg-card">
+          <Accordion.Header render={<h2 />}>
+            <Accordion.Trigger className="group flex min-h-11 w-full items-center justify-between gap-3 px-3 py-2.5 text-left outline-none focus-visible:ring-1 focus-visible:ring-ring">
+              <span className="min-w-0">
+                <span className="block font-semibold text-sm">
+                  <Trans>Message and contact sharing</Trans>
+                </span>
+                <span className="block text-muted-foreground text-xs">
+                  <Trans>
+                    Selected details stay in Cosmo and are not written to the blockchain.
+                  </Trans>
+                </span>
+              </span>
+              <RiArrowDownSLine
+                className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180"
+                aria-hidden="true"
+              />
+            </Accordion.Trigger>
+          </Accordion.Header>
 
-        {shareEligibility.isPending ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Checking whether this recipient can receive private details…</Trans>
-          </p>
-        ) : null}
-        {shareEligibility.isSuccess && !shareAvailable ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>
-              This wallet is not a registered Cosmo recipient. You can still send without an
-              attachment.
-            </Trans>
-          </p>
-        ) : null}
-        {shareEligibility.isError ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Private sharing is unavailable right now. You can still send normally.</Trans>
-          </p>
-        ) : null}
+          <Accordion.Panel className="space-y-3 border-t border-border p-3">
+            {shareEligibility.isPending ? (
+              <p className="text-muted-foreground text-xs">
+                <Trans>Checking whether this recipient can receive private details…</Trans>
+              </p>
+            ) : null}
+            {shareEligibility.isSuccess && !shareAvailable ? (
+              <p className="text-muted-foreground text-xs">
+                <Trans>
+                  This wallet is not a registered Cosmo recipient. You can still send without an
+                  attachment.
+                </Trans>
+              </p>
+            ) : null}
+            {shareEligibility.isError ? (
+              <p className="text-muted-foreground text-xs">
+                <Trans>
+                  Private sharing is unavailable right now. You can still send normally.
+                </Trans>
+              </p>
+            ) : null}
 
-        <div className="space-y-1">
-          <label htmlFor="send-note" className="font-medium text-xs">
-            <Trans>Message</Trans>
-          </label>
-          <textarea
-            id="send-note"
-            value={note}
-            maxLength={1000}
-            disabled={!shareAvailable}
-            onChange={(event) => setNote(Array.from(event.target.value).slice(0, 500).join(""))}
-            placeholder={t`Add an optional note`}
-            className="min-h-20 w-full resize-y border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
-          />
-          <p className="text-right text-muted-foreground text-[0.6875rem]">
-            {Array.from(note).length}/500
-          </p>
-        </div>
+            <div className="space-y-1">
+              <label htmlFor="send-note" className="font-medium text-xs">
+                <Trans>Message</Trans>
+              </label>
+              <textarea
+                id="send-note"
+                value={note}
+                maxLength={1000}
+                disabled={!shareAvailable}
+                onChange={(event) => setNote(Array.from(event.target.value).slice(0, 500).join(""))}
+                placeholder={t`Add an optional note`}
+                className="min-h-20 w-full resize-y border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              <p className="text-right text-muted-foreground text-[0.6875rem]">
+                {Array.from(note).length}/500
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <ShareCheckbox
-            label={t`Location pin`}
-            description={
-              hasLocation ? t`Share your saved pin for this send.` : t`Add a pin in Edit profile.`
-            }
-            checked={shareLocation}
-            disabled={!shareAvailable || !hasLocation}
-            onChange={setShareLocation}
-          />
-          <ShareCheckbox
-            label={t`Email`}
-            description={
-              hasEmail ? t`Share your email for this send.` : t`Add an email in Edit profile.`
-            }
-            checked={shareEmail}
-            disabled={!shareAvailable || !hasEmail}
-            onChange={setShareEmail}
-          />
-          <ShareCheckbox
-            label={t`Phone`}
-            description={
-              hasPhone ? t`Share your phone for this send.` : t`Add a phone in Edit profile.`
-            }
-            checked={sharePhone}
-            disabled={!shareAvailable || !hasPhone}
-            onChange={setSharePhone}
-          />
-        </div>
+            <div className="space-y-2">
+              <ShareCheckbox
+                label={t`Location pin`}
+                description={
+                  hasLocation
+                    ? t`Share your saved pin for this send.`
+                    : t`Add a pin in Edit profile.`
+                }
+                checked={shareLocation}
+                disabled={!shareAvailable || !hasLocation}
+                onChange={setShareLocation}
+              />
+              <ShareCheckbox
+                label={t`Email`}
+                description={
+                  hasEmail ? t`Share your email for this send.` : t`Add an email in Edit profile.`
+                }
+                checked={shareEmail}
+                disabled={!shareAvailable || !hasEmail}
+                onChange={setShareEmail}
+              />
+              <ShareCheckbox
+                label={t`Phone`}
+                description={
+                  hasPhone ? t`Share your phone for this send.` : t`Add a phone in Edit profile.`
+                }
+                checked={sharePhone}
+                disabled={!shareAvailable || !hasPhone}
+                onChange={setSharePhone}
+              />
+            </div>
 
-        {profileQuery.isSuccess && (!hasEmail || !hasPhone || !hasLocation) ? (
-          <button
-            type="button"
-            className="font-semibold text-primary text-xs hover:underline"
-            onClick={() => void navigate({ to: "/settings/profile" })}
-          >
-            <Trans>Edit profile</Trans>
-          </button>
-        ) : null}
-      </section>
+            {profileQuery.isSuccess && (!hasEmail || !hasPhone || !hasLocation) ? (
+              <button
+                type="button"
+                className="font-semibold text-primary text-xs hover:underline"
+                onClick={() => void navigate({ to: "/settings/profile" })}
+              >
+                <Trans>Edit profile</Trans>
+              </button>
+            ) : null}
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion.Root>
 
       <div className="flex-1" />
 
