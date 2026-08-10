@@ -29,8 +29,8 @@ vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({
   useOtxTracking: () => ({ outcome: state.trackingOutcome }),
 }));
 
-vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
-  useVoucherDeploymentContract: () => ({
+vi.mock("#/hooks/use-deployment", () => ({
+  useDeploymentContract: () => ({
     data: state.contract,
     error: state.contractError,
     isError: state.contractError !== null,

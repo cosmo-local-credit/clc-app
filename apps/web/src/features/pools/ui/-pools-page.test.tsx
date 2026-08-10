@@ -143,7 +143,7 @@ describe("pools list", () => {
     expect(urls.filter((url) => !url.includes("facets=true"))).toHaveLength(1);
   });
 
-  it("uses the compact sharp-edged filter sheet and remembers applied facets", async () => {
+  it("keeps the labeled filter trigger and remembers applied facets", async () => {
     mockPoolsList();
     renderWithQueryClient(<PoolsPage />);
 
@@ -154,6 +154,7 @@ describe("pools list", () => {
 
     const trigger = screen.getByRole("button", { name: "Filters" });
     expect(trigger.className).toContain("h-9");
+    expect(trigger.textContent).toContain("Filters");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });
     expect(sheet.className).toContain("rounded-none");
@@ -185,6 +186,16 @@ describe("pools list", () => {
 
     expect(screen.queryByRole("button", { name: "Near me" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Most active" })).toBeNull();
+  });
+
+  it("shows one standard Create action in the title row", async () => {
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    await screen.findByText("Trade Pool");
+    const createLabels = screen.getAllByText("Create");
+    expect(createLabels).toHaveLength(1);
+    expect(createLabels[0]?.closest("a")?.className).toContain("h-8");
   });
 
   it("sizes the search field with the default input height", async () => {

@@ -1,9 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import {
-  deployVoucher,
-  getVoucherDeploymentContract,
-  getVoucherTags,
-} from "./voucher-deploy-client";
+import { deployVoucher } from "./voucher-deploy-client";
 
 function response(status: number, result?: unknown) {
   return {
@@ -44,37 +40,5 @@ describe("voucher deploy client", () => {
       expect.stringContaining("/api/v2/contracts/token"),
       expect.objectContaining({ method: "POST", body: JSON.stringify(payload) }),
     );
-  });
-
-  it("loads the select-only token tag vocabulary", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(response(200, { tags: [" Market ", "Food"] })),
-    );
-    await expect(getVoucherTags()).resolves.toEqual(["Market", "Food"]);
-  });
-
-  it("treats a 204 contract lookup as deployment still pending", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response(204)));
-    await expect(getVoucherDeploymentContract("tracking-1")).resolves.toBeNull();
-  });
-
-  it("keeps a deployment pending until the contract has a valid address", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        response(200, {
-          type: "TOKEN",
-          contract: { address: null, name: "Kilifi Harvest", symbol: "KHV", status: "PENDING" },
-        }),
-      ),
-    );
-
-    await expect(getVoucherDeploymentContract("tracking-1")).resolves.toEqual({
-      address: null,
-      name: "Kilifi Harvest",
-      symbol: "KHV",
-      status: "PENDING",
-    });
   });
 });

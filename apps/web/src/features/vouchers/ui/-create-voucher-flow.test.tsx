@@ -66,7 +66,10 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
     isPending: false,
     mutateAsync: deployMutateAsync,
   }),
-  useVoucherTags: () => ({
+}));
+
+vi.mock("#/hooks/use-deployment", () => ({
+  useTokenTags: () => ({
     data: ["Agriculture", "Food production"],
     isError: false,
     isPending: false,

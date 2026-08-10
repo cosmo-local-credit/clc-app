@@ -51,7 +51,10 @@ vi.mock("#/components/ui/location-picker", () => ({
 
 vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
   useDeployVoucher: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
-  useVoucherTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
+}));
+
+vi.mock("#/hooks/use-deployment", () => ({
+  useTokenTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
 }));
 
 import { CreateVoucherFlow, type VoucherCreateStep } from "#/features/vouchers/ui";

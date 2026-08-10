@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
+import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 
 export const voucherNameSchema = z
@@ -27,13 +28,6 @@ export const voucherDescriptionSchema = z
   .trim()
   .min(1, { message: "Voucher description is required" })
   .max(500, { message: "Voucher description must be 500 characters or fewer" });
-
-export const voucherDecimalsSchema = z
-  .string()
-  .trim()
-  .refine((value) => /^\d+$/.test(value) && Number(value) >= 0 && Number(value) <= 18, {
-    message: "Decimals must be a whole number from 0 to 18",
-  });
 
 export const voucherTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your voucher",
@@ -74,7 +68,7 @@ const voucherDetailsSchema = z.object({
   description: voucherDescriptionSchema,
   voucherType: voucherTypeSchema,
   expiryDate: z.string(),
-  decimals: voucherDecimalsSchema,
+  decimals: tokenDecimalsSchema,
 });
 
 const voucherPlaceSchema = z.object({

@@ -15,8 +15,8 @@ import {
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
-import { useVoucherDeploymentContract } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
+import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 
 export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: string }) {
@@ -24,8 +24,9 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
   const router = useRouter();
   const queryClient = useQueryClient();
   const tracking = useOtxTracking(trackingId ?? null, { queryKey: "voucher-deploy-track" });
-  const contractQuery = useVoucherDeploymentContract(
+  const contractQuery = useDeploymentContract(
     trackingId ?? null,
+    "TOKEN",
     tracking.outcome.kind === "success",
   );
   const contract = contractQuery.data;

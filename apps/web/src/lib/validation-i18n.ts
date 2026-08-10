@@ -94,6 +94,61 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Accept the terms to publish your voucher",
         message: "Accept the terms to publish your voucher",
       });
+    case "Pool name is required":
+      return i18n._({
+        id: "Pool name is required",
+        message: "Pool name is required",
+      });
+    case "Pool name must be 80 characters or fewer":
+      return i18n._({
+        id: "Pool name must be 80 characters or fewer",
+        message: "Pool name must be 80 characters or fewer",
+      });
+    case "Pool shortcode is required":
+      return i18n._({
+        id: "Pool shortcode is required",
+        message: "Pool shortcode is required",
+      });
+    case "Pool shortcode must be 6 characters or fewer":
+      return i18n._({
+        id: "Pool shortcode must be 6 characters or fewer",
+        message: "Pool shortcode must be 6 characters or fewer",
+      });
+    case "Use only letters and numbers for the pool shortcode":
+      return i18n._({
+        id: "Use only letters and numbers for the pool shortcode",
+        message: "Use only letters and numbers for the pool shortcode",
+      });
+    case "Pool description is required":
+      return i18n._({
+        id: "Pool description is required",
+        message: "Pool description is required",
+      });
+    case "Pool description must be 500 characters or fewer":
+      return i18n._({
+        id: "Pool description must be 500 characters or fewer",
+        message: "Pool description must be 500 characters or fewer",
+      });
+    case "Swap fee must be a number from 0 to 100":
+      return i18n._({
+        id: "Swap fee must be a number from 0 to 100",
+        message: "Swap fee must be a number from 0 to 100",
+      });
+    case "Accept the terms to publish your pool":
+      return i18n._({
+        id: "Accept the terms to publish your pool",
+        message: "Accept the terms to publish your pool",
+      });
+    case "Accept the SPROUT License to publish your pool":
+      return i18n._({
+        id: "Accept the SPROUT License to publish your pool",
+        message: "Accept the SPROUT License to publish your pool",
+      });
+    case "Choose rates you set or equal value when the unit has no price feed":
+      return i18n._({
+        id: "Choose rates you set or equal value when the unit has no price feed",
+        message: "Choose rates you set or equal value when the unit has no price feed",
+      });
     default:
       return error;
   }

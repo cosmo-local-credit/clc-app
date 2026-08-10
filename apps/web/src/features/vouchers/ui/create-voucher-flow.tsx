@@ -4,7 +4,6 @@ import {
   type VoucherType,
   type VoucherUnit,
   voucherCreateSchema,
-  voucherDecimalsSchema,
   voucherDescriptionSchema,
   voucherExpiryDateSchema,
   voucherNameSchema,
@@ -14,6 +13,7 @@ import {
 } from "@clc/core/features/vouchers/logic";
 import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -22,9 +22,10 @@ import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
+import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
-import { Checkbox } from "#/components/ui/checkbox";
-import { Field, FieldError } from "#/components/ui/field";
+import { Field } from "#/components/ui/field";
+import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -41,7 +42,8 @@ import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
-import { useDeployVoucher, useVoucherTags } from "#/features/vouchers/hooks/use-voucher-deployment";
+import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
+import { useTokenTags } from "#/hooks/use-deployment";
 import {
   beginVoucherCreateHistory,
   exitVoucherCreateHistory,
@@ -98,7 +100,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const router = useRouter();
   const { address } = useConnection();
   const deployVoucher = useDeployVoucher();
-  const tagsQuery = useVoucherTags();
+  const tagsQuery = useTokenTags();
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const form = useForm({
@@ -418,7 +420,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
                   <form.Field
                     name="decimals"
-                    validators={{ onBlur: voucherDecimalsSchema, onSubmit: voucherDecimalsSchema }}
+                    validators={{ onBlur: tokenDecimalsSchema, onSubmit: tokenDecimalsSchema }}
                   >
                     {(field) => (
                       <Field
@@ -591,21 +593,20 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
-                <div className="mt-3.5 rounded-xl border border-border bg-card px-4 py-1.5">
-                  <ReviewRow label={t`Name`} value={values.name} />
-                  <ReviewRow label={t`Symbol`} value={values.symbol} />
-                  <ReviewRow
-                    label={t`Value`}
-                    value={`${values.voucherValue} ${values.voucherUoa}`}
-                  />
-                  <ReviewRow
-                    label={t`Type`}
-                    value={values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
-                    muted
-                  />
-                  <ReviewRow label={t`Location`} value={values.location?.locationName ?? "—"} />
-                  <ReviewRow label={t`Tags`} value={values.tags.join(", ") || "—"} muted last />
-                </div>
+                <dl className="mt-3.5 rounded-xl border border-border bg-card">
+                  <InfoRow label={t`Name`}>{values.name}</InfoRow>
+                  <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
+                  <InfoRow label={t`Value`}>
+                    {values.voucherValue} {values.voucherUoa}
+                  </InfoRow>
+                  <InfoRow label={t`Type`} muted>
+                    {values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
+                  </InfoRow>
+                  <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
+                  <InfoRow label={t`Tags`} muted>
+                    {values.tags.join(", ") || "—"}
+                  </InfoRow>
+                </dl>
               )}
             </form.Subscribe>
 
@@ -613,29 +614,15 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               {(field) => {
                 const error = getFieldError(field.state.meta.errors);
                 return (
-                  <div className="mt-3.5">
-                    <label
-                      htmlFor="voucher-terms"
-                      className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] items-start gap-2.5 text-xs leading-relaxed"
-                    >
-                      <Checkbox
-                        id="voucher-terms"
-                        checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
-                        aria-invalid={!!error}
-                        className="mt-0.5"
-                      />
-                      <span>
-                        <strong className="block font-medium text-foreground">
-                          <Trans>Accept Terms and Conditions</Trans>
-                        </strong>
-                        <span className="text-muted-foreground">
-                          <Trans>You agree to our Terms of Service and Privacy Policy</Trans>
-                        </span>
-                      </span>
-                    </label>
-                    {error ? <FieldError error={error} /> : null}
-                  </div>
+                  <AgreementField
+                    id="voucher-terms"
+                    checked={field.state.value}
+                    onCheckedChange={field.handleChange}
+                    error={error}
+                    title={t`Accept Terms and Conditions`}
+                    description={t`You agree to our Terms of Service and Privacy Policy`}
+                    className="mt-3.5"
+                  />
                 );
               }}
             </form.Field>
@@ -684,30 +671,5 @@ function VoucherTypeOption({
         <span className="mt-0.5 block text-muted-foreground text-xs">{description}</span>
       </span>
     </label>
-  );
-}
-
-function ReviewRow({
-  label,
-  value,
-  muted = false,
-  last = false,
-}: {
-  label: string;
-  value: string;
-  muted?: boolean;
-  last?: boolean;
-}) {
-  return (
-    <div
-      className={`grid min-h-10 grid-cols-[minmax(0,6rem)_minmax(0,1fr)] items-center gap-3 py-2 text-sm ${last ? "" : "border-b border-border"}`}
-    >
-      <span className="text-muted-foreground text-xs">{label}</span>
-      <span
-        className={`break-words text-right font-medium ${muted ? "text-muted-foreground" : ""}`}
-      >
-        {value}
-      </span>
-    </div>
   );
 }
