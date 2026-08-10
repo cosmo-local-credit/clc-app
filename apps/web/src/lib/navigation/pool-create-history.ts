@@ -1,6 +1,4 @@
-import { createFlowExit, type FlowHistory } from "#/lib/navigation/flow-exit";
-
-export type PoolCreateHistory = FlowHistory;
+import { createFlowExit } from "#/lib/navigation/flow-exit";
 
 const poolCreateExit = createFlowExit({ reentrant: true });
 

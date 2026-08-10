@@ -59,7 +59,7 @@ function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | un
   return CELO_MAINNET_ORACLE_BASE_CURRENCY[unit as keyof typeof CELO_MAINNET_ORACLE_BASE_CURRENCY];
 }
 
-export function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
+function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
   return getPoolOracleBaseCurrency(unit, chainId) !== undefined;
 }
 
@@ -155,7 +155,7 @@ export function toPoolDeployPayload(
   };
 }
 
-export const POOL_DEPLOYMENT_STAGES = [
+const POOL_DEPLOYMENT_STAGES = [
   { types: ["POOL_TOKEN_INDEX_DEPLOY"], key: "registry" },
   { types: ["POOL_LIMITER_DEPLOY"], key: "limits" },
   { types: ["POOL_FEE_POLICY_DEPLOY"], key: "feePolicy" },

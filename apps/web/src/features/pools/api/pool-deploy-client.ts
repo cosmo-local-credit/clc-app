@@ -8,7 +8,7 @@ import {
   type OtxTrackResult,
 } from "#/features/auth/api/client";
 
-export const POOL_TERMINAL_OTX_TYPE = "POOL_PROXY_DEPLOY";
+const POOL_TERMINAL_OTX_TYPE = "POOL_PROXY_DEPLOY";
 
 export async function deployPool(payload: PoolDeployPayload): Promise<{ trackingId: string }> {
   const result = await apiFetch<{ trackingId?: unknown }>("/api/v2/contracts/pool", {

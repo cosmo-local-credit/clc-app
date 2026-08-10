@@ -1,6 +1,4 @@
-import { createFlowExit, type FlowHistory } from "#/lib/navigation/flow-exit";
-
-export type VoucherCreateHistory = FlowHistory;
+import { createFlowExit } from "#/lib/navigation/flow-exit";
 
 /**
  * Voucher creation exits twice: the form lands on the receipt, then the receipt

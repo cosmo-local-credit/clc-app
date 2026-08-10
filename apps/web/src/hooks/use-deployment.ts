@@ -8,7 +8,7 @@ import {
 
 const DEPLOYMENT_POLL_MS = 2_000;
 
-export const deploymentQueryKeys = {
+const deploymentQueryKeys = {
   all: ["deployments"] as const,
   tags: () => [...deploymentQueryKeys.all, "token-tags"] as const,
   contract: (type: DeploymentContractType, trackingId: string | null) =>
