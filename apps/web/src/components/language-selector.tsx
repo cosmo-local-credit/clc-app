@@ -25,7 +25,7 @@ export function LanguageSelector() {
       >
         <SelectTrigger
           aria-label={t`Language`}
-          className="h-9 w-auto rounded-none border-border bg-card font-medium text-foreground text-xs focus-visible:border-foreground focus-visible:ring-0"
+          className="h-9 w-auto border-border font-medium text-foreground text-xs"
         >
           <SelectValue />
         </SelectTrigger>

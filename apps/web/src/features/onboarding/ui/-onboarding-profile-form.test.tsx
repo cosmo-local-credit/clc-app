@@ -28,8 +28,8 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 
-vi.mock("./onboarding-progress", () => ({
-  OnboardingProgress: () => <div data-testid="onboarding-progress" />,
+vi.mock("#/components/ui/step-progress", () => ({
+  StepProgress: () => <div data-testid="step-progress" />,
 }));
 
 vi.mock("#/components/ui/phone-input", () => ({
@@ -154,7 +154,7 @@ describe("OnboardingProfileForm rendering", () => {
 
   it("shows the progress indicator", () => {
     renderForm();
-    expect(screen.getByTestId("onboarding-progress")).toBeTruthy();
+    expect(screen.getByTestId("step-progress")).toBeTruthy();
   });
 });
 

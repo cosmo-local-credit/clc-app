@@ -9,6 +9,7 @@ import { connect } from "wagmi/actions";
 
 import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
+import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError, getSession } from "#/features/auth/api/client";
@@ -21,7 +22,6 @@ import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-pass
 import { RELAYER_URL } from "#/lib/backend-config";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
-import { OnboardingProgress } from "./onboarding-progress";
 import { usePaperWalletProtection } from "./paper-wallet-protection";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
 
@@ -334,7 +334,7 @@ export function OnboardingWalletStep({
           className="mb-4 self-start"
         />
 
-        <OnboardingProgress step={progressStep} total={progressTotal} />
+        <StepProgress step={progressStep} total={progressTotal} />
 
         <div className="mb-5 space-y-1">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">

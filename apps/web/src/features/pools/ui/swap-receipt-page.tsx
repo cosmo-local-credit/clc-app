@@ -1,10 +1,17 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { RiCloseLine, RiFileCopyLine, RiTimeLine } from "react-icons/ri";
+import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, SignedAmount, SuccessCheck } from "#/components/wallet";
+import {
+  EllipsizedAddress,
+  FailureCross,
+  PendingClock,
+  SignedAmount,
+  StatusPill,
+  SuccessCheck,
+} from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RELAYER_URL } from "#/lib/backend-config";
@@ -50,12 +57,12 @@ export function SwapReceiptPage({
   if (!details.trackingId) {
     return (
       <ReceiptShell
-        icon={<ErrorIcon />}
+        icon={<FailureCross />}
         title={t`Swap unavailable`}
         amount={amountLabel}
         message={t`Swap tracking details are missing.`}
         poolName={details.poolName}
-        status={<Status tone="error" label={t`Unavailable`} />}
+        status={<StatusPill tone="error" label={t`Unavailable`} />}
         onDone={exitReceipt}
       />
     );
@@ -65,12 +72,12 @@ export function SwapReceiptPage({
   if (outcome.kind === "pending") {
     return (
       <ReceiptShell
-        icon={<PendingIcon />}
+        icon={<PendingClock />}
         title={t`Swapping`}
         amount={amountLabel}
         message={t`Waiting for on-chain confirmation`}
         poolName={details.poolName}
-        status={<Status tone="pending" label={t`Pending`} />}
+        status={<StatusPill tone="pending" label={t`Pending`} />}
         onDone={exitReceipt}
       />
     );
@@ -78,12 +85,12 @@ export function SwapReceiptPage({
   if (outcome.kind === "error") {
     return (
       <ReceiptShell
-        icon={<ErrorIcon />}
+        icon={<FailureCross />}
         title={t`Swap reverted`}
         amount={amountLabel}
         message={outcome.error}
         poolName={details.poolName}
-        status={<Status tone="error" label={t`Reverted`} />}
+        status={<StatusPill tone="error" label={t`Reverted`} />}
         onDone={exitReceipt}
       />
     );
@@ -149,7 +156,7 @@ export function SwapReceiptPage({
             </time>
           </ReceiptRow>
         ) : null}
-        <StatusRow status={<Status tone="success" label={t`Confirmed`} />} />
+        <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
       </div>
       <div className="flex-1" />
       <div className="flex gap-3">
@@ -247,49 +254,6 @@ function StatusRow({ status }: { status: React.ReactNode }) {
       </span>
       {status}
     </div>
-  );
-}
-
-function Status({ tone, label }: { tone: "success" | "pending" | "error"; label: string }) {
-  const color =
-    tone === "error"
-      ? "text-destructive"
-      : tone === "pending"
-        ? "text-[oklch(0.58_0.14_70)]"
-        : "text-primary";
-  const dot =
-    tone === "error"
-      ? "bg-destructive"
-      : tone === "pending"
-        ? "bg-[oklch(0.74_0.16_80)]"
-        : "bg-primary";
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${color}`}>
-      <span className={`size-2 rounded-full ${dot}`} />
-      {label}
-    </span>
-  );
-}
-
-function PendingIcon() {
-  return (
-    <span
-      className="flex items-center justify-center rounded-full border border-[oklch(0.74_0.16_80)]/40 bg-[oklch(0.74_0.16_80)]/10 text-[oklch(0.58_0.14_70)]"
-      style={{ width: 56, height: 56 }}
-    >
-      <RiTimeLine className="size-7" aria-hidden="true" />
-    </span>
-  );
-}
-
-function ErrorIcon() {
-  return (
-    <span
-      className="flex items-center justify-center rounded-full border border-destructive/40 bg-destructive/10 text-destructive"
-      style={{ width: 56, height: 56 }}
-    >
-      <RiCloseLine className="size-7" aria-hidden="true" />
-    </span>
   );
 }
 

@@ -1,18 +1,18 @@
-import type { LocationInput } from "@clc/core/features/location/logic";
+import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
   toVoucherDeployPayload,
+  type VoucherType,
+  type VoucherUnit,
   voucherCreateSchema,
   voucherDecimalsSchema,
   voucherDescriptionSchema,
-  voucherEmailSchema,
   voucherExpiryDateSchema,
-  voucherLocationSchema,
   voucherNameSchema,
-  voucherPhoneSchema,
   voucherSymbolSchema,
   voucherTermsSchema,
   voucherValueSchema,
 } from "@clc/core/features/vouchers/logic";
+import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -24,10 +24,10 @@ import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
+import { Field, FieldError } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
-import { Progress } from "#/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
 import {
   SelectContent,
@@ -36,6 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "#/components/ui/select";
+import { StepProgress } from "#/components/ui/step-progress";
+import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
@@ -52,9 +54,9 @@ type VoucherFormValues = {
   name: string;
   symbol: string;
   voucherValue: string;
-  voucherUoa: "KES" | "USD" | "HOUR";
+  voucherUoa: VoucherUnit;
   description: string;
-  voucherType: "standard" | "expiring";
+  voucherType: VoucherType;
   expiryDate: string;
   decimals: string;
   location: LocationInput | undefined;
@@ -96,7 +98,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const router = useRouter();
   const { address } = useConnection();
   const deployVoucher = useDeployVoucher();
-  const tagsQuery = useVoucherTags(step !== "voucher");
+  const tagsQuery = useVoucherTags();
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const form = useForm({
@@ -175,12 +177,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         className="self-start"
       />
 
-      <div className="mb-[1.125rem] grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <Progress value={(progressStep / 3) * 100} aria-label={t`Step ${progressStep} of 3`} />
-        <span className="text-muted-foreground text-xs tabular-nums">
-          {progressStep} <Trans>of 3</Trans>
-        </span>
-      </div>
+      <StepProgress step={progressStep} total={3} />
 
       <form
         className="flex flex-1 flex-col"
@@ -291,13 +288,10 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                           }
                         }}
                       >
-                        <SelectTrigger
-                          id="voucher-unit"
-                          className="w-full rounded-none bg-card shadow-none focus-visible:ring-0"
-                        >
+                        <SelectTrigger id="voucher-unit" className="w-full">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-none shadow-none">
+                        <SelectContent>
                           <SelectItem value="KES">KES</SelectItem>
                           <SelectItem value="USD">USD</SelectItem>
                           <SelectItem value="HOUR">HOUR</SelectItem>
@@ -307,9 +301,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   )}
                 </form.Field>
               </div>
-              <p className="-mt-2 text-muted-foreground text-xs">
-                <Trans>KES worth of goods &amp; services</Trans>
-              </p>
+              <form.Subscribe selector={(state) => state.values.voucherUoa}>
+                {(unit) => (
+                  <p className="-mt-2 text-muted-foreground text-xs">
+                    <Trans>{unit} worth of goods &amp; services</Trans>
+                  </p>
+                )}
+              </form.Subscribe>
 
               <form.Field
                 name="description"
@@ -385,32 +383,38 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     )}
                   </form.Field>
 
-                  <form.Field
-                    name="expiryDate"
-                    validators={{
-                      onBlur: voucherExpiryDateSchema(form.getFieldValue("voucherType")),
-                      onSubmit: voucherExpiryDateSchema(form.getFieldValue("voucherType")),
-                    }}
-                  >
-                    {(field) => (
-                      <Field
-                        label={t`Expiration Date`}
-                        htmlFor="voucher-expiry"
-                        hint={t`When does this voucher expire?`}
-                        error={getFieldError(field.state.meta.errors)}
+                  {/* Subscribed, not read via getFieldValue: the validator and the disabled
+                      state both have to follow the live voucher type. */}
+                  <form.Subscribe selector={(state) => state.values.voucherType}>
+                    {(voucherType) => (
+                      <form.Field
+                        name="expiryDate"
+                        validators={{
+                          onBlur: voucherExpiryDateSchema(voucherType),
+                          onSubmit: voucherExpiryDateSchema(voucherType),
+                        }}
                       >
-                        <Input
-                          id="voucher-expiry"
-                          type="date"
-                          disabled={form.getFieldValue("voucherType") !== "expiring"}
-                          value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          onBlur={field.handleBlur}
-                          aria-invalid={field.state.meta.errors.length > 0}
-                        />
-                      </Field>
+                        {(field) => (
+                          <Field
+                            label={t`Expiration Date`}
+                            htmlFor="voucher-expiry"
+                            hint={t`When does this voucher expire?`}
+                            error={getFieldError(field.state.meta.errors)}
+                          >
+                            <Input
+                              id="voucher-expiry"
+                              type="date"
+                              disabled={voucherType !== "expiring"}
+                              value={field.state.value}
+                              onChange={(event) => field.handleChange(event.target.value)}
+                              onBlur={field.handleBlur}
+                              aria-invalid={field.state.meta.errors.length > 0}
+                            />
+                          </Field>
+                        )}
+                      </form.Field>
                     )}
-                  </form.Field>
+                  </form.Subscribe>
 
                   <form.Field
                     name="decimals"
@@ -452,21 +456,17 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </h1>
 
             <div className="mt-3.5 space-y-3.5">
-              <form.Field name="location" validators={{ onSubmit: voucherLocationSchema }}>
-                {(field) => (
-                  <LocationPicker
-                    value={field.state.value}
-                    onChange={(value) => field.handleChange(value)}
-                    error={
-                      getFieldError(field.state.meta.errors)
-                        ? translateValidationError(
-                            getFieldError(field.state.meta.errors) ?? "",
-                            i18n,
-                          )
-                        : undefined
-                    }
-                  />
-                )}
+              <form.Field name="location" validators={{ onSubmit: locationSchema }}>
+                {(field) => {
+                  const error = getFieldError(field.state.meta.errors);
+                  return (
+                    <LocationPicker
+                      value={field.state.value}
+                      onChange={(value) => field.handleChange(value)}
+                      error={error ? translateValidationError(error, i18n) : undefined}
+                    />
+                  );
+                }}
               </form.Field>
 
               <form.Field name="tags">
@@ -497,21 +497,19 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       </div>
                     ) : null}
                     {tagsQuery.data?.length ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
+                      <div
+                        className="mt-2 flex flex-wrap gap-2"
+                        role="group"
+                        aria-label={t`Voucher tags`}
+                      >
                         {tagsQuery.data.map((tag) => {
                           const selected = field.state.value.includes(tag);
                           return (
-                            <Button
+                            <SelectableTagBadge
                               key={tag}
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              aria-pressed={selected}
-                              className={
-                                selected
-                                  ? "border-primary bg-primary/10 text-primary hover:bg-primary/15"
-                                  : "bg-card text-muted-foreground"
-                              }
+                              tag={tag}
+                              selected={selected}
+                              className="h-9"
                               onClick={() =>
                                 field.handleChange(
                                   selected
@@ -519,9 +517,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                                     : [...field.state.value, tag],
                                 )
                               }
-                            >
-                              {tag}
-                            </Button>
+                            />
                           );
                         })}
                       </div>
@@ -535,7 +531,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
               <form.Field
                 name="email"
-                validators={{ onBlur: voucherEmailSchema, onSubmit: voucherEmailSchema }}
+                validators={{ onBlur: optionalEmailSchema, onSubmit: optionalEmailSchema }}
               >
                 {(field) => (
                   <Field
@@ -559,7 +555,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
               <form.Field
                 name="phone"
-                validators={{ onBlur: voucherPhoneSchema, onSubmit: voucherPhoneSchema }}
+                validators={{ onBlur: optionalPhoneSchema, onSubmit: optionalPhoneSchema }}
               >
                 {(field) => (
                   <Field
@@ -593,36 +589,35 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               <Trans>Confirm &amp; publish</Trans>
             </h1>
 
-            <div className="mt-3.5 rounded-xl border border-border bg-card px-4 py-1.5">
-              <ReviewRow label={t`Name`} value={form.getFieldValue("name")} />
-              <ReviewRow label={t`Symbol`} value={form.getFieldValue("symbol")} />
-              <ReviewRow
-                label={t`Value`}
-                value={`${form.getFieldValue("voucherValue")} ${form.getFieldValue("voucherUoa")}`}
-              />
-              <ReviewRow
-                label={t`Type`}
-                value={form.getFieldValue("voucherType") === "expiring" ? t`Expiring` : t`Standard`}
-                muted
-              />
-              <ReviewRow
-                label={t`Location`}
-                value={form.getFieldValue("location")?.locationName ?? "—"}
-              />
-              <ReviewRow
-                label={t`Tags`}
-                value={form.getFieldValue("tags").join(", ") || "—"}
-                muted
-                last
-              />
-            </div>
+            <form.Subscribe selector={(state) => state.values}>
+              {(values) => (
+                <div className="mt-3.5 rounded-xl border border-border bg-card px-4 py-1.5">
+                  <ReviewRow label={t`Name`} value={values.name} />
+                  <ReviewRow label={t`Symbol`} value={values.symbol} />
+                  <ReviewRow
+                    label={t`Value`}
+                    value={`${values.voucherValue} ${values.voucherUoa}`}
+                  />
+                  <ReviewRow
+                    label={t`Type`}
+                    value={values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
+                    muted
+                  />
+                  <ReviewRow label={t`Location`} value={values.location?.locationName ?? "—"} />
+                  <ReviewRow label={t`Tags`} value={values.tags.join(", ") || "—"} muted last />
+                </div>
+              )}
+            </form.Subscribe>
 
             <form.Field name="acceptedTerms" validators={{ onSubmit: voucherTermsSchema }}>
               {(field) => {
                 const error = getFieldError(field.state.meta.errors);
                 return (
                   <div className="mt-3.5">
-                    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] items-start gap-2.5 text-xs leading-relaxed">
+                    <label
+                      htmlFor="voucher-terms"
+                      className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] items-start gap-2.5 text-xs leading-relaxed"
+                    >
                       <Checkbox
                         id="voucher-terms"
                         checked={field.state.value}
@@ -672,49 +667,12 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   );
 }
 
-function Field({
-  label,
-  htmlFor,
-  hint,
-  error,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  hint?: string;
-  error?: string | null;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={htmlFor} className="mb-1.5 block font-medium text-sm">
-        {label}
-      </label>
-      {children}
-      {error ? (
-        <FieldError error={error} />
-      ) : hint ? (
-        <p className="mt-1 text-muted-foreground text-xs">{hint}</p>
-      ) : null}
-    </div>
-  );
-}
-
-function FieldError({ error }: { error: string }) {
-  const { i18n } = useLingui();
-  return (
-    <p className="mt-1 text-destructive text-xs" role="alert">
-      {translateValidationError(error, i18n)}
-    </p>
-  );
-}
-
 function VoucherTypeOption({
   value,
   title,
   description,
 }: {
-  value: "standard" | "expiring";
+  value: VoucherType;
   title: string;
   description: string;
 }) {

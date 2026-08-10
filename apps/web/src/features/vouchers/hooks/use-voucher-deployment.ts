@@ -15,11 +15,10 @@ export const voucherDeploymentQueryKeys = {
     [...voucherDeploymentQueryKeys.all, "contract", trackingId ?? "none"] as const,
 };
 
-export function useVoucherTags(enabled = true) {
+export function useVoucherTags() {
   return useQuery({
     queryKey: voucherDeploymentQueryKeys.tags(),
     queryFn: ({ signal }) => getVoucherTags(signal),
-    enabled,
     staleTime: 30 * 60_000,
   });
 }

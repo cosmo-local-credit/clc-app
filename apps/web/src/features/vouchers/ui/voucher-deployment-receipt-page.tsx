@@ -2,11 +2,17 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { RiCloseLine, RiFileCopyLine, RiTimeLine } from "react-icons/ri";
+import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, SuccessCheck } from "#/components/wallet";
+import {
+  EllipsizedAddress,
+  FailureCross,
+  PendingClock,
+  StatusPill,
+  SuccessCheck,
+} from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
 import { useVoucherDeploymentContract } from "#/features/vouchers/hooks/use-voucher-deployment";
@@ -38,10 +44,10 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
   if (!trackingId) {
     return (
       <DeploymentStateShell
-        icon={<ErrorIcon />}
+        icon={<FailureCross />}
         title={t`Publishing unavailable`}
         message={t`Voucher tracking details are missing.`}
-        status={<Status tone="error" label={t`Unavailable`} />}
+        status={<StatusPill tone="error" label={t`Unavailable`} />}
         onDone={() => exit("/wallet/vouchers")}
       />
     );
@@ -56,10 +62,10 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
           : t`The voucher could not be published.`;
     return (
       <DeploymentStateShell
-        icon={<ErrorIcon />}
+        icon={<FailureCross />}
         title={t`Publishing failed`}
         message={message}
-        status={<Status tone="error" label={t`Failed`} />}
+        status={<StatusPill tone="error" label={t`Failed`} />}
         onDone={() => exit("/wallet/vouchers")}
       />
     );
@@ -68,10 +74,11 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
   if (!confirmed || !contract.address) {
     return (
       <DeploymentStateShell
-        icon={<PendingIcon />}
+        icon={<PendingClock />}
         title={t`Publishing your voucher...`}
         message={t`Waiting for blockchain confirmation...`}
-        status={<Status tone="pending" label={t`Pending`} />}
+        status={<StatusPill tone="pending" label={t`Pending`} />}
+        showContractRow
         onDone={() => exit("/wallet/vouchers")}
       />
     );
@@ -100,7 +107,7 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
           <Trans>{contract.name} can be held, sent and redeemed.</Trans>
         </p>
         <div className="mt-3">
-          <Status tone="success" label={t`Confirmed`} />
+          <StatusPill tone="success" label={t`Confirmed`} />
         </div>
       </div>
 
@@ -139,12 +146,15 @@ function DeploymentStateShell({
   title,
   message,
   status,
+  showContractRow = false,
   onDone,
 }: {
   icon: React.ReactNode;
   title: string;
   message: React.ReactNode;
   status: React.ReactNode;
+  /** Only meaningful while the deployment is in flight — a failed publish has no contract. */
+  showContractRow?: boolean;
   onDone: () => void;
 }) {
   return (
@@ -156,16 +166,18 @@ function DeploymentStateShell({
         <div className="mt-3">{status}</div>
       </div>
 
-      <div className="mt-6 rounded-xl border border-border bg-card px-4 py-1.5">
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <span className="text-sm font-medium">
-            <Trans>Voucher contract</Trans>
-          </span>
-          <span className="text-muted-foreground text-xs">
-            <Trans>In network</Trans>
-          </span>
+      {showContractRow ? (
+        <div className="mt-6 rounded-xl border border-border bg-card px-4 py-1.5">
+          <div className="flex min-h-11 items-center justify-between gap-3">
+            <span className="text-sm font-medium">
+              <Trans>Voucher contract</Trans>
+            </span>
+            <span className="text-muted-foreground text-xs">
+              <Trans>In network</Trans>
+            </span>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div className="mt-auto pt-6">
         <Button variant="outline" className="h-11 w-full bg-card" onClick={onDone}>
@@ -173,42 +185,5 @@ function DeploymentStateShell({
         </Button>
       </div>
     </div>
-  );
-}
-
-function Status({ tone, label }: { tone: "success" | "pending" | "error"; label: string }) {
-  const color =
-    tone === "error"
-      ? "text-destructive"
-      : tone === "pending"
-        ? "text-[oklch(0.58_0.14_70)]"
-        : "text-primary";
-  const dot =
-    tone === "error"
-      ? "bg-destructive"
-      : tone === "pending"
-        ? "bg-[oklch(0.74_0.16_80)]"
-        : "bg-primary";
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${color}`}>
-      <span className={`size-2 rounded-full ${dot}`} />
-      {label}
-    </span>
-  );
-}
-
-function PendingIcon() {
-  return (
-    <span className="flex size-14 items-center justify-center rounded-full border border-[oklch(0.74_0.16_80)]/40 bg-[oklch(0.74_0.16_80)]/10 text-[oklch(0.58_0.14_70)]">
-      <RiTimeLine className="size-7" aria-hidden="true" />
-    </span>
-  );
-}
-
-function ErrorIcon() {
-  return (
-    <span className="flex size-14 items-center justify-center rounded-full border border-destructive/40 bg-destructive/10 text-destructive">
-      <RiCloseLine className="size-7" aria-hidden="true" />
-    </span>
   );
 }

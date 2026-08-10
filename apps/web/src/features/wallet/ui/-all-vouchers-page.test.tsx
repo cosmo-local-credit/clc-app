@@ -6,24 +6,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const { useConnectionMock } = vi.hoisted(() => ({ useConnectionMock: vi.fn() }));
 
 vi.mock("@tanstack/react-router", () => ({
+  // Forwards the rest of the props so `<Button asChild>` data attributes
+  // (data-slot / data-variant / data-size) reach the rendered anchor.
   Link: ({
     children,
-    className,
     params,
     to,
+    ...rest
   }: {
     children: ReactNode;
-    className?: string;
     params?: { step?: string; voucherAddress?: string };
     to: string;
-  }) => {
+  } & Record<string, unknown>) => {
     const href = params?.voucherAddress
       ? to.replace("$voucherAddress", params.voucherAddress)
       : params?.step
         ? to.replace("$step", params.step)
         : to;
     return (
-      <a href={href} className={className}>
+      <a href={href} {...rest}>
         {children}
       </a>
     );
@@ -94,10 +95,11 @@ describe("AllVouchersPage", () => {
     renderWithQueryClient(<AllVouchersPage />);
 
     await screen.findByText("Voucher 1");
-    expect(screen.getByRole("link", { name: /create/i }).getAttribute("href")).toBe(
-      "/vouchers/create/voucher",
-    );
-    expect(screen.getByRole("link", { name: /create/i }).className).toContain("h-8");
+    const create = screen.getByRole("link", { name: /create/i });
+    expect(create.getAttribute("href")).toBe("/vouchers/create/voucher");
+    // Title-row action keeps the default 32px button size, not a CTA height.
+    expect(create.getAttribute("data-size")).toBe("default");
+    expect(create.getAttribute("data-variant")).toBe("outline");
   });
 
   it("shows account vouchers and expands a voucher link", async () => {

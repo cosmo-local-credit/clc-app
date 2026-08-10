@@ -3,17 +3,17 @@ import { useLingui } from "@lingui/react/macro";
 import { Progress } from "#/components/ui/progress";
 
 type Props = {
-  /** 1-based current step index within the signup flow. */
+  /** 1-based current step index within the flow. */
   step: number;
-  /** Total steps (3 when passkey linking is offered, 2 otherwise). */
+  /** Total steps in the flow. */
   total: number;
 };
 
 /**
- * Continuous progress bar + "N of M" label for the multi-step signup path
- * (profile → optional method → paper wallet). Matches the Lyra progress row.
+ * Continuous progress bar + "N of M" label for multi-step flows (signup,
+ * voucher creation). Matches the Lyra progress row.
  */
-export function OnboardingProgress({ step, total }: Props) {
+export function StepProgress({ step, total }: Props) {
   const { t } = useLingui();
   const clampedTotal = Math.max(total, 1);
   const clampedStep = Math.min(Math.max(step, 1), clampedTotal);

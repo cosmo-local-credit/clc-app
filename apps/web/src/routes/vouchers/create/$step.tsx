@@ -1,17 +1,27 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
-import { CreateVoucherFlow } from "#/features/vouchers/ui";
+import { type VoucherCreateStep, CreateVoucherFlow } from "#/features/vouchers/ui";
+
+const STEPS: readonly string[] = ["voucher", "place", "review"];
+
+function isVoucherCreateStep(step: string): step is VoucherCreateStep {
+  return STEPS.includes(step);
+}
 
 export const Route = createFileRoute("/vouchers/create/$step")({
+  beforeLoad: ({ params }) => {
+    if (!isVoucherCreateStep(params.step)) {
+      throw redirect({ to: "/vouchers/create/$step", params: { step: "voucher" }, replace: true });
+    }
+  },
   component: CreateVoucherRoute,
 });
 
 function CreateVoucherRoute() {
   const { step } = Route.useParams();
-  if (step !== "voucher" && step !== "place" && step !== "review") {
-    return <Navigate to="/vouchers/create/$step" params={{ step: "voucher" }} replace />;
-  }
+  // beforeLoad redirects anything else, so this only narrows the param type.
+  if (!isVoucherCreateStep(step)) return null;
   return (
     <AuthenticatedRoute>
       <CreateVoucherFlow step={step} />

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
 import { locationSchema } from "../location/logic";
 
 export const voucherNameSchema = z
@@ -34,43 +35,38 @@ export const voucherDecimalsSchema = z
     message: "Decimals must be a whole number from 0 to 18",
   });
 
-export const voucherEmailSchema = z
-  .string()
-  .trim()
-  .refine((value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
-    message: "Invalid email address",
-  });
-
-export const voucherPhoneSchema = z
-  .string()
-  .trim()
-  .refine((value) => value === "" || /^\+[1-9]\d{7,14}$/.test(value), {
-    message: "Invalid phone number",
-  });
-
-export const voucherUnitSchema = z.enum(["KES", "USD", "HOUR"]);
-export const voucherTypeSchema = z.enum(["standard", "expiring"]);
-export const voucherTagsSchema = z.array(z.string());
 export const voucherTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your voucher",
 });
-export const voucherLocationSchema = locationSchema;
 
-export function voucherExpiryDateSchema(type: "standard" | "expiring") {
+const voucherUnitSchema = z.enum(["KES", "USD", "HOUR"]);
+const voucherTypeSchema = z.enum(["standard", "expiring"]);
+
+export type VoucherUnit = z.infer<typeof voucherUnitSchema>;
+export type VoucherType = z.infer<typeof voucherTypeSchema>;
+
+/** An expiring voucher needs a future date; a standard one ignores the field. */
+function checkExpiryDate(
+  type: VoucherType,
+  expiryDate: string,
+  addIssue: (message: string) => void,
+): void {
+  if (type !== "expiring") return;
+  const expiry = Date.parse(`${expiryDate}T00:00:00Z`);
+  if (!expiryDate || !Number.isFinite(expiry)) {
+    addIssue("Choose an expiration date");
+    return;
+  }
+  if (expiry <= Date.now()) addIssue("Expiration date must be in the future");
+}
+
+export function voucherExpiryDateSchema(type: VoucherType) {
   return z.string().superRefine((value, ctx) => {
-    if (type !== "expiring") return;
-    const expiry = Date.parse(`${value}T00:00:00Z`);
-    if (!value || !Number.isFinite(expiry)) {
-      ctx.addIssue({ code: "custom", message: "Choose an expiration date" });
-      return;
-    }
-    if (expiry <= Date.now()) {
-      ctx.addIssue({ code: "custom", message: "Expiration date must be in the future" });
-    }
+    checkExpiryDate(type, value, (message) => ctx.addIssue({ code: "custom", message }));
   });
 }
 
-export const voucherDetailsSchema = z.object({
+const voucherDetailsSchema = z.object({
   name: voucherNameSchema,
   symbol: voucherSymbolSchema,
   voucherValue: voucherValueSchema,
@@ -81,34 +77,20 @@ export const voucherDetailsSchema = z.object({
   decimals: voucherDecimalsSchema,
 });
 
-export const voucherPlaceSchema = z.object({
-  location: voucherLocationSchema,
-  tags: voucherTagsSchema,
-  email: voucherEmailSchema,
-  phone: voucherPhoneSchema,
+const voucherPlaceSchema = z.object({
+  location: locationSchema,
+  tags: z.array(z.string()),
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
   .extend(voucherPlaceSchema.shape)
   .extend({ acceptedTerms: voucherTermsSchema })
   .superRefine((value, ctx) => {
-    if (value.voucherType !== "expiring") return;
-    const expiry = Date.parse(`${value.expiryDate}T00:00:00Z`);
-    if (!value.expiryDate || !Number.isFinite(expiry)) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["expiryDate"],
-        message: "Choose an expiration date",
-      });
-      return;
-    }
-    if (expiry <= Date.now()) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["expiryDate"],
-        message: "Expiration date must be in the future",
-      });
-    }
+    checkExpiryDate(value.voucherType, value.expiryDate, (message) =>
+      ctx.addIssue({ code: "custom", path: ["expiryDate"], message }),
+    );
   });
 
 export type VoucherCreateInput = z.infer<typeof voucherCreateSchema>;

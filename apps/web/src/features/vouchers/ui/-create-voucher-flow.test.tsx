@@ -142,6 +142,38 @@ describe("CreateVoucherFlow", () => {
     });
   });
 
+  it("enables and requires the expiry date as soon as the voucher is marked expiring", async () => {
+    render(<CreateVoucherFlow step="voucher" />);
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Advanced" }));
+
+    const expiry = () => screen.getByLabelText("Expiration Date") as HTMLInputElement;
+    expect(expiry().disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
+    expect(expiry().disabled).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(await screen.findByText("Choose an expiration date")).toBeTruthy();
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ params: { step: "place" } }),
+    );
+
+    fireEvent.change(expiry(), { target: { value: "2099-12-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/vouchers/create/$step",
+        params: { step: "place" },
+      }),
+    );
+  });
+
   it("does not advance while required voucher fields are empty", async () => {
     render(<CreateVoucherFlow step="voucher" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
