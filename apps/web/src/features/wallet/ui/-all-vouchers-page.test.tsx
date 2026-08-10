@@ -14,16 +14,20 @@ vi.mock("@tanstack/react-router", () => ({
   }: {
     children: ReactNode;
     className?: string;
-    params?: { voucherAddress?: string };
+    params?: { step?: string; voucherAddress?: string };
     to: string;
-  }) => (
-    <a
-      href={params?.voucherAddress ? to.replace("$voucherAddress", params.voucherAddress) : to}
-      className={className}
-    >
-      {children}
-    </a>
-  ),
+  }) => {
+    const href = params?.voucherAddress
+      ? to.replace("$voucherAddress", params.voucherAddress)
+      : params?.step
+        ? to.replace("$step", params.step)
+        : to;
+    return (
+      <a href={href} className={className}>
+        {children}
+      </a>
+    );
+  },
   useCanGoBack: () => false,
   useRouter: () => ({ history: { back: vi.fn() } }),
 }));
@@ -82,6 +86,20 @@ afterEach(() => {
 });
 
 describe("AllVouchersPage", () => {
+  it("opens voucher creation from the standard title-row button", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(successResponse({ tokens: [accountToken(1)] })),
+    );
+    renderWithQueryClient(<AllVouchersPage />);
+
+    await screen.findByText("Voucher 1");
+    expect(screen.getByRole("link", { name: /create/i }).getAttribute("href")).toBe(
+      "/vouchers/create/voucher",
+    );
+    expect(screen.getByRole("link", { name: /create/i }).className).toContain("h-8");
+  });
+
   it("shows account vouchers and expands a voucher link", async () => {
     const token = accountToken(1);
     const fetcher = vi.fn().mockResolvedValue(successResponse({ tokens: [token], last: 1 }));
@@ -116,6 +134,7 @@ describe("AllVouchersPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
     expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /create/i })).toHaveLength(2);
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
