@@ -16,11 +16,11 @@ export const voucherSymbolSchema = z
   .max(6, { message: "Voucher symbol must be 6 characters or fewer" })
   .regex(/^[A-Z0-9]+$/, { message: "Use only letters and numbers for the voucher symbol" });
 
-export const voucherValueSchema = z
+export const voucherPriceSchema = z
   .string()
   .trim()
   .refine((value) => Number.isFinite(Number(value)) && Number(value) > 0, {
-    message: "Voucher value must be greater than zero",
+    message: "Price must be greater than zero",
   });
 
 export const voucherDescriptionSchema = z
@@ -31,6 +31,10 @@ export const voucherDescriptionSchema = z
 
 export const voucherTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your voucher",
+});
+
+export const voucherPathLicenseSchema = z.literal(true, {
+  error: "Accept the PATH License to publish your voucher",
 });
 
 const voucherUnitSchema = z.enum(["KES", "USD", "HOUR"]);
@@ -63,8 +67,8 @@ export function voucherExpiryDateSchema(type: VoucherType) {
 const voucherDetailsSchema = z.object({
   name: voucherNameSchema,
   symbol: voucherSymbolSchema,
-  voucherValue: voucherValueSchema,
-  voucherUoa: voucherUnitSchema,
+  price: voucherPriceSchema,
+  unitOfAccount: voucherUnitSchema,
   description: voucherDescriptionSchema,
   voucherType: voucherTypeSchema,
   expiryDate: z.string(),
@@ -80,7 +84,10 @@ const voucherPlaceSchema = z.object({
 
 export const voucherCreateSchema = voucherDetailsSchema
   .extend(voucherPlaceSchema.shape)
-  .extend({ acceptedTerms: voucherTermsSchema })
+  .extend({
+    acceptedTerms: voucherTermsSchema,
+    acceptedPathLicense: voucherPathLicenseSchema,
+  })
   .superRefine((value, ctx) => {
     checkExpiryDate(value.voucherType, value.expiryDate, (message) =>
       ctx.addIssue({ code: "custom", path: ["expiryDate"], message }),
@@ -124,8 +131,8 @@ export function toVoucherDeployPayload(
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
-    voucherUoa: input.voucherUoa,
-    voucherValue: Number(input.voucherValue),
+    voucherUoa: input.unitOfAccount,
+    voucherValue: Number(input.price),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,

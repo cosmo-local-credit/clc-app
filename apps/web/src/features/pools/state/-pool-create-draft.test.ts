@@ -12,6 +12,7 @@ const submittedPool = {
   decimals: "6",
   location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
   tags: ["Agriculture"],
+  email: "",
   phone: "",
   acceptedTerms: true as const,
   acceptedSproutLicense: true as const,

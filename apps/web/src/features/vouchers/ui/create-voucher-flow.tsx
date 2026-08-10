@@ -7,17 +7,18 @@ import {
   voucherDescriptionSchema,
   voucherExpiryDateSchema,
   voucherNameSchema,
+  voucherPathLicenseSchema,
+  voucherPriceSchema,
   voucherSymbolSchema,
   voucherTermsSchema,
-  voucherValueSchema,
 } from "@clc/core/features/vouchers/logic";
 import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { RiArrowRightSLine, RiCoupon2Line, RiLoader4Line } from "react-icons/ri";
+import { useEffect, useRef } from "react";
+import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -38,10 +39,11 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
-import { SelectableTagBadge } from "#/components/ui/tag-badge";
+import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useTokenTags } from "#/hooks/use-deployment";
 import {
@@ -55,8 +57,8 @@ export type VoucherCreateStep = "voucher" | "place" | "review";
 type VoucherFormValues = {
   name: string;
   symbol: string;
-  voucherValue: string;
-  voucherUoa: VoucherUnit;
+  price: string;
+  unitOfAccount: VoucherUnit;
   description: string;
   voucherType: VoucherType;
   expiryDate: string;
@@ -66,13 +68,14 @@ type VoucherFormValues = {
   email: string;
   phone: string;
   acceptedTerms: boolean;
+  acceptedPathLicense: boolean;
 };
 
 const DEFAULT_VALUES: VoucherFormValues = {
   name: "",
   symbol: "",
-  voucherValue: "1",
-  voucherUoa: "KES",
+  price: "1",
+  unitOfAccount: "KES",
   description: "",
   voucherType: "standard",
   expiryDate: "",
@@ -82,16 +85,10 @@ const DEFAULT_VALUES: VoucherFormValues = {
   email: "",
   phone: "",
   acceptedTerms: false,
+  acceptedPathLicense: false,
 };
 
-const DETAIL_FIELDS = [
-  "name",
-  "symbol",
-  "voucherValue",
-  "description",
-  "expiryDate",
-  "decimals",
-] as const;
+const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
 const PLACE_FIELDS = ["location", "email", "phone"] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
@@ -101,7 +98,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { address } = useConnection();
   const deployVoucher = useDeployVoucher();
   const tagsQuery = useTokenTags();
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const profileQuery = useAuthProfile();
+  const hasPrefilledProfile = useRef(false);
 
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
@@ -131,6 +129,26 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
       }
     },
   });
+
+  useEffect(() => {
+    const profile = profileQuery.data;
+    if (hasPrefilledProfile.current || !profile) return;
+    hasPrefilledProfile.current = true;
+
+    const email = profile.email.trim();
+    if (
+      !form.getFieldMeta("email")?.isTouched &&
+      form.getFieldValue("email") === "" &&
+      !email.endsWith("@clc.local")
+    ) {
+      form.setFieldValue("email", email, { dontUpdateMeta: true });
+    }
+
+    const phone = profile.phone.trim();
+    if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
+      form.setFieldValue("phone", phone, { dontUpdateMeta: true });
+    }
+  }, [form, profileQuery.data]);
 
   useEffect(() => {
     if (step === "voucher") beginVoucherCreateHistory(router.history);
@@ -192,23 +210,23 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         {step === "voucher" ? (
           <>
             <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-              <Trans>Your voucher</Trans>
+              <Trans>Create voucher</Trans>
             </h1>
 
-            <div className="mt-3.5 grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 border border-border bg-card px-4 py-3 text-sm">
-              <RiCoupon2Line className="mt-0.5 size-4" aria-hidden="true" />
-              <p>
-                <strong className="block font-semibold">
-                  <Trans>What's a voucher?</Trans>
-                </strong>
-                <span className="text-muted-foreground text-xs leading-relaxed">
-                  <Trans>
-                    A voucher acts like a gift card for your offers. When someone redeems your
-                    voucher, you are committing to provide them with your offers.
-                  </Trans>
-                </span>
+            <aside
+              className="mt-3.5 border border-border bg-card p-4"
+              aria-labelledby="voucher-guidance-title"
+            >
+              <p id="voucher-guidance-title" className="font-semibold text-sm leading-tight">
+                <Trans>What's a voucher?</Trans>
               </p>
-            </div>
+              <p className="mt-1 text-muted-foreground text-sm leading-snug">
+                <Trans>
+                  A voucher acts like a gift card for your offers. When someone redeems your
+                  voucher, you are committing to provide them with your offers.
+                </Trans>
+              </p>
+            </aside>
 
             <div className="mt-3.5 space-y-3.5">
               <form.Field
@@ -226,7 +244,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder={t`e.g. Amina's Voucher`}
+                      placeholder={t`e.g. Community Market`}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
@@ -249,7 +267,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
                       onBlur={field.handleBlur}
-                      placeholder={t`e.g. AMINA`}
+                      placeholder={t`e.g. MARKET`}
                       maxLength={6}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
@@ -257,56 +275,85 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <div className="grid grid-cols-[minmax(0,1fr)_6.5rem] gap-2.5">
-                <form.Field
-                  name="voucherValue"
-                  validators={{ onBlur: voucherValueSchema, onSubmit: voucherValueSchema }}
-                >
-                  {(field) => (
-                    <Field
-                      label={t`Voucher Value`}
-                      htmlFor="voucher-value"
-                      error={getFieldError(field.state.meta.errors)}
-                    >
-                      <Input
-                        id="voucher-value"
-                        inputMode="decimal"
-                        value={field.state.value}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                        onBlur={field.handleBlur}
-                        aria-invalid={field.state.meta.errors.length > 0}
-                      />
-                    </Field>
-                  )}
-                </form.Field>
-                <form.Field name="voucherUoa">
-                  {(field) => (
-                    <Field label={t`Unit of Account`} htmlFor="voucher-unit">
-                      <SelectRoot
-                        value={field.state.value}
-                        onValueChange={(value) => {
-                          if (value === "KES" || value === "USD" || value === "HOUR") {
-                            field.handleChange(value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger id="voucher-unit" className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="KES">KES</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="HOUR">HOUR</SelectItem>
-                        </SelectContent>
-                      </SelectRoot>
-                    </Field>
-                  )}
-                </form.Field>
-              </div>
-              <form.Subscribe selector={(state) => state.values.voucherUoa}>
+              <form.Subscribe selector={(state) => state.values.unitOfAccount}>
                 {(unit) => (
-                  <p className="-mt-2 text-muted-foreground text-xs">
-                    <Trans>{unit} worth of goods &amp; services</Trans>
+                  <div
+                    data-slot="voucher-pricing-row"
+                    className="grid grid-cols-[minmax(0,1fr)_7rem] items-start gap-2.5"
+                  >
+                    <form.Field
+                      name="price"
+                      validators={{ onBlur: voucherPriceSchema, onSubmit: voucherPriceSchema }}
+                    >
+                      {(field) => (
+                        <Field
+                          label={t`Price`}
+                          htmlFor="voucher-price"
+                          error={getFieldError(field.state.meta.errors)}
+                        >
+                          <div className="relative">
+                            <Input
+                              id="voucher-price"
+                              inputMode="decimal"
+                              className="pr-16"
+                              value={field.state.value}
+                              onChange={(event) => field.handleChange(event.target.value)}
+                              onBlur={field.handleBlur}
+                              aria-invalid={field.state.meta.errors.length > 0}
+                            />
+                            <span
+                              data-slot="voucher-price-unit"
+                              className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground text-sm"
+                              aria-hidden="true"
+                            >
+                              {unit}
+                            </span>
+                          </div>
+                        </Field>
+                      )}
+                    </form.Field>
+
+                    <form.Field name="unitOfAccount">
+                      {(field) => (
+                        <Field label={t`Priced in`} htmlFor="voucher-currency">
+                          <SelectRoot
+                            value={field.state.value}
+                            onValueChange={(value) => {
+                              if (value === "KES" || value === "USD" || value === "HOUR") {
+                                field.handleChange(value);
+                              }
+                            }}
+                          >
+                            <SelectTrigger id="voucher-currency" className="w-full">
+                              <SelectValue>{() => field.state.value}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="KES">
+                                <Trans>KES — Kenyan shilling</Trans>
+                              </SelectItem>
+                              <SelectItem value="USD">
+                                <Trans>USD — US dollar</Trans>
+                              </SelectItem>
+                              <SelectItem value="HOUR">
+                                <Trans>HOUR — Hour</Trans>
+                              </SelectItem>
+                            </SelectContent>
+                          </SelectRoot>
+                        </Field>
+                      )}
+                    </form.Field>
+                  </div>
+                )}
+              </form.Subscribe>
+
+              <form.Subscribe
+                selector={(state) =>
+                  [state.values.symbol, state.values.price, state.values.unitOfAccount] as const
+                }
+              >
+                {([symbol, price, unit]) => (
+                  <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                    {`1 ${symbol.trim() || "XYZ"} = ${price || "—"} ${unit}`}
                   </p>
                 )}
               </form.Subscribe>
@@ -338,22 +385,15 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <button
-                type="button"
-                className="flex min-h-11 w-full items-center gap-1 bg-card px-2 text-left font-medium text-muted-foreground text-sm"
-                aria-expanded={advancedOpen}
-                aria-controls="voucher-advanced"
-                onClick={() => setAdvancedOpen((open) => !open)}
-              >
-                <RiArrowRightSLine
-                  className={`size-4 transition-transform ${advancedOpen ? "rotate-90" : ""}`}
-                  aria-hidden="true"
-                />
-                <Trans>Advanced</Trans>
-              </button>
+              <details>
+                <summary className="cursor-pointer font-medium text-foreground text-sm">
+                  <Trans>Advanced</Trans>
+                </summary>
 
-              {advancedOpen ? (
-                <div id="voucher-advanced" className="space-y-3.5 border-t border-border pt-3.5">
+                <div
+                  id="voucher-advanced"
+                  className="mt-4 space-y-3.5 border border-border bg-card p-4"
+                >
                   <form.Field name="voucherType">
                     {(field) => (
                       <div>
@@ -385,37 +425,38 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     )}
                   </form.Field>
 
-                  {/* Subscribed, not read via getFieldValue: the validator and the disabled
-                      state both have to follow the live voucher type. */}
+                  {/* Subscribed, not read via getFieldValue: the validator and conditional
+                      field both have to follow the live voucher type. */}
                   <form.Subscribe selector={(state) => state.values.voucherType}>
-                    {(voucherType) => (
-                      <form.Field
-                        name="expiryDate"
-                        validators={{
-                          onBlur: voucherExpiryDateSchema(voucherType),
-                          onSubmit: voucherExpiryDateSchema(voucherType),
-                        }}
-                      >
-                        {(field) => (
-                          <Field
-                            label={t`Expiration Date`}
-                            htmlFor="voucher-expiry"
-                            hint={t`When does this voucher expire?`}
-                            error={getFieldError(field.state.meta.errors)}
-                          >
-                            <Input
-                              id="voucher-expiry"
-                              type="date"
-                              disabled={voucherType !== "expiring"}
-                              value={field.state.value}
-                              onChange={(event) => field.handleChange(event.target.value)}
-                              onBlur={field.handleBlur}
-                              aria-invalid={field.state.meta.errors.length > 0}
-                            />
-                          </Field>
-                        )}
-                      </form.Field>
-                    )}
+                    {(voucherType) =>
+                      voucherType === "expiring" ? (
+                        <form.Field
+                          name="expiryDate"
+                          validators={{
+                            onBlur: voucherExpiryDateSchema(voucherType),
+                            onSubmit: voucherExpiryDateSchema(voucherType),
+                          }}
+                        >
+                          {(field) => (
+                            <Field
+                              label={t`Expiration Date`}
+                              htmlFor="voucher-expiry"
+                              hint={t`When does this voucher expire?`}
+                              error={getFieldError(field.state.meta.errors)}
+                            >
+                              <Input
+                                id="voucher-expiry"
+                                type="date"
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                            </Field>
+                          )}
+                        </form.Field>
+                      ) : null
+                    }
                   </form.Subscribe>
 
                   <form.Field
@@ -440,7 +481,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     )}
                   </form.Field>
                 </div>
-              ) : null}
+              </details>
             </div>
 
             <div className="mt-auto pt-6">
@@ -499,30 +540,16 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       </div>
                     ) : null}
                     {tagsQuery.data?.length ? (
-                      <div
-                        className="mt-2 flex flex-wrap gap-2"
-                        role="group"
-                        aria-label={t`Voucher tags`}
-                      >
-                        {tagsQuery.data.map((tag) => {
-                          const selected = field.state.value.includes(tag);
-                          return (
-                            <SelectableTagBadge
-                              key={tag}
-                              tag={tag}
-                              selected={selected}
-                              className="h-9"
-                              onClick={() =>
-                                field.handleChange(
-                                  selected
-                                    ? field.state.value.filter((value) => value !== tag)
-                                    : [...field.state.value, tag],
-                                )
-                              }
-                            />
-                          );
-                        })}
-                      </div>
+                      <TagCombobox
+                        items={tagsQuery.data}
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        searchLabel={t`Search voucher tags`}
+                        selectedLabel={t`Selected voucher tags`}
+                        listLabel={t`Voucher tags`}
+                        placeholder={t`Search tags`}
+                        removeLabel={(tag) => t`Remove ${tag}`}
+                      />
                     ) : null}
                     <p className="mt-1.5 text-muted-foreground text-xs">
                       <Trans>Helps buyers find and trust your offer</Trans>
@@ -563,7 +590,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   <Field
                     label={t`Contact Phone`}
                     htmlFor="voucher-phone"
-                    hint={t`Public — voucher holders will see this so they can reach you.`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <PhoneInputField
@@ -596,8 +622,8 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 <dl className="mt-3.5 border border-border bg-card">
                   <InfoRow label={t`Name`}>{values.name}</InfoRow>
                   <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
-                  <InfoRow label={t`Value`}>
-                    {values.voucherValue} {values.voucherUoa}
+                  <InfoRow label={t`Price`}>
+                    {values.price} {values.unitOfAccount}
                   </InfoRow>
                   <InfoRow label={t`Type`} muted>
                     {values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
@@ -610,30 +636,75 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               )}
             </form.Subscribe>
 
-            <form.Field name="acceptedTerms" validators={{ onSubmit: voucherTermsSchema }}>
-              {(field) => {
-                const error = getFieldError(field.state.meta.errors);
-                return (
+            <div className="mt-3.5 space-y-3">
+              <form.Field name="acceptedTerms" validators={{ onSubmit: voucherTermsSchema }}>
+                {(field) => (
                   <AgreementField
                     id="voucher-terms"
                     checked={field.state.value}
                     onCheckedChange={field.handleChange}
-                    error={error}
-                    title={t`Accept Terms and Conditions`}
-                    description={t`You agree to our Terms of Service and Privacy Policy`}
-                    className="mt-3.5"
-                  />
-                );
-              }}
-            </form.Field>
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Trans>Accept</Trans>{" "}
+                    <a
+                      href="https://grassecon.org/pages/terms-and-conditions"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-foreground underline underline-offset-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Trans>Terms and Conditions</Trans>
+                    </a>
+                  </AgreementField>
+                )}
+              </form.Field>
+
+              <form.Field
+                name="acceptedPathLicense"
+                validators={{ onSubmit: voucherPathLicenseSchema }}
+              >
+                {(field) => (
+                  <AgreementField
+                    id="voucher-path-license"
+                    checked={field.state.value}
+                    onCheckedChange={field.handleChange}
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Trans>Accept</Trans>{" "}
+                    <a
+                      href="https://docs.grassecon.org/commons/path/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-foreground underline underline-offset-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Trans>PATH License</Trans>
+                    </a>
+                  </AgreementField>
+                )}
+              </form.Field>
+            </div>
 
             <div className="mt-auto pt-6">
-              <form.Subscribe selector={(state) => state.isSubmitting}>
-                {(isSubmitting) => (
+              <form.Subscribe
+                selector={(state) =>
+                  [
+                    state.isSubmitting,
+                    state.values.acceptedTerms,
+                    state.values.acceptedPathLicense,
+                  ] as const
+                }
+              >
+                {([isSubmitting, acceptedTerms, acceptedPathLicense]) => (
                   <Button
                     type="submit"
                     className="h-11 w-full"
-                    disabled={isSubmitting || deployVoucher.isPending}
+                    disabled={
+                      !acceptedTerms ||
+                      !acceptedPathLicense ||
+                      isSubmitting ||
+                      deployVoucher.isPending
+                    }
                   >
                     {isSubmitting || deployVoucher.isPending ? (
                       <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalPhoneSchema } from "../../lib/contact";
+import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
@@ -82,6 +82,7 @@ export const poolCreateSchema = z
     decimals: tokenDecimalsSchema,
     location: locationSchema,
     tags: z.array(z.string()),
+    email: optionalEmailSchema,
     phone: optionalPhoneSchema,
     acceptedTerms: poolTermsSchema,
     acceptedSproutLicense: poolSproutLicenseSchema,
@@ -112,6 +113,7 @@ export type PoolDeployPayload = {
   feePolicyDefault: string;
   baseCurrency?: string;
   description: string;
+  email?: string;
   phone?: string;
   locationName: string;
   geoLat: number;
@@ -147,6 +149,7 @@ export function toPoolDeployPayload(
     feePolicyDefault: input.feePolicyDefault,
     ...(baseCurrency ? { baseCurrency } : {}),
     description: input.description.trim(),
+    ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,

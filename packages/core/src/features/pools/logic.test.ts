@@ -26,6 +26,7 @@ const validPool: PoolCreateInput = {
     lng: 39.9093,
   },
   tags: ["Agriculture"],
+  email: "steward@example.org",
   phone: "+254712345678",
   acceptedTerms: true,
   acceptedSproutLicense: true,
@@ -80,11 +81,23 @@ describe("toPoolDeployPayload", () => {
       feePolicyDefault: "1",
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
       description: "A pool for growers in Kilifi.",
+      email: "steward@example.org",
       locationName: "Kilifi, Kenya",
       geoLat: -3.5107,
       geoLng: 39.9093,
       tags: ["Agriculture"],
     });
+  });
+
+  it("omits blank optional contact fields", () => {
+    const payload = toPoolDeployPayload(
+      { ...validPool, email: "", phone: "" },
+      OWNER,
+      CELO_MAINNET_CHAIN_ID,
+    );
+
+    expect(payload).not.toHaveProperty("email");
+    expect(payload).not.toHaveProperty("phone");
   });
 
   it("does not send baseCurrency when the pricing strategy does not use it", () => {

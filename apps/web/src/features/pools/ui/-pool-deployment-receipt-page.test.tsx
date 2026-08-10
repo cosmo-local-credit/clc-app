@@ -127,6 +127,7 @@ describe("PoolDeploymentReceiptPage", () => {
       decimals: "6",
       location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
       tags: [],
+      email: "",
       phone: "",
       acceptedTerms: true,
       acceptedSproutLicense: true,

@@ -59,10 +59,10 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Use only letters and numbers for the voucher symbol",
         message: "Use only letters and numbers for the voucher symbol",
       });
-    case "Voucher value must be greater than zero":
+    case "Price must be greater than zero":
       return i18n._({
-        id: "Voucher value must be greater than zero",
-        message: "Voucher value must be greater than zero",
+        id: "Price must be greater than zero",
+        message: "Price must be greater than zero",
       });
     case "Voucher description is required":
       return i18n._({
@@ -93,6 +93,11 @@ export function translateValidationError(error: string, i18n: I18n) {
       return i18n._({
         id: "Accept the terms to publish your voucher",
         message: "Accept the terms to publish your voucher",
+      });
+    case "Accept the PATH License to publish your voucher":
+      return i18n._({
+        id: "Accept the PATH License to publish your voucher",
+        message: "Accept the PATH License to publish your voucher",
       });
     case "Pool name is required":
       return i18n._({

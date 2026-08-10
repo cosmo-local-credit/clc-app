@@ -53,6 +53,10 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
   useDeployVoucher: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
 }));
 
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({ data: { email: "", phone: "" } }),
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
 }));
@@ -125,7 +129,7 @@ describe("voucher create navigation", () => {
     expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
 
     history.back();
-    await screen.findByRole("heading", { name: "Your voucher" });
+    await screen.findByRole("heading", { name: "Create voucher" });
     expect((screen.getByLabelText("Voucher Name") as HTMLInputElement).value).toBe(
       "Kilifi Harvest",
     );

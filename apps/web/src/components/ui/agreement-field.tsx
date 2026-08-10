@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Checkbox } from "#/components/ui/checkbox";
 import { FieldError } from "#/components/ui/field";
 
@@ -6,24 +8,19 @@ export function AgreementField({
   checked,
   onCheckedChange,
   error,
-  title,
-  description,
+  children,
   className,
 }: {
   id: string;
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   error?: string | null;
-  title: string;
-  description: string;
+  children: ReactNode;
   className?: string;
 }) {
   return (
     <div className={className}>
-      <label
-        htmlFor={id}
-        className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] items-start gap-2.5 text-xs leading-relaxed"
-      >
+      <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
         <Checkbox
           id={id}
           checked={checked}
@@ -31,10 +28,7 @@ export function AgreementField({
           aria-invalid={!!error}
           className="mt-0.5"
         />
-        <span>
-          <strong className="block font-medium text-foreground">{title}</strong>
-          <span className="text-muted-foreground">{description}</span>
-        </span>
+        <span className="text-muted-foreground text-sm">{children}</span>
       </label>
       {error ? <FieldError error={error} /> : null}
     </div>

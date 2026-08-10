@@ -68,6 +68,15 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
   }),
 }));
 
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({
+    data: {
+      email: "issuer@example.org",
+      phone: "+254712345678",
+    },
+  }),
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture", "Food production"],
@@ -84,6 +93,90 @@ afterEach(() => {
 });
 
 describe("CreateVoucherFlow", () => {
+  it("uses compact guidance, issuer-facing pricing fields, and the standard disclosure pattern", () => {
+    render(<CreateVoucherFlow step="voucher" />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Create voucher" })).toBeTruthy();
+
+    const guidance = screen.getByText(/A voucher acts like a gift card/);
+    expect(guidance.tagName).toBe("P");
+    expect(guidance.classList).toContain("leading-snug");
+
+    const currency = screen.getByLabelText("Priced in");
+    const price = screen.getByLabelText("Price");
+    const pricingRow = document.querySelector('[data-slot="voucher-pricing-row"]');
+    expect(pricingRow?.contains(price)).toBe(true);
+    expect(pricingRow?.contains(currency)).toBe(true);
+    expect(screen.queryByLabelText("Voucher Value")).toBeNull();
+    expect(screen.queryByLabelText("Currency")).toBeNull();
+    expect(screen.queryByLabelText("Unit of Account")).toBeNull();
+    expect(document.querySelector('[data-slot="voucher-price-unit"]')?.textContent).toBe("KES");
+
+    const advancedSummary = screen.getByText("Advanced");
+    expect(advancedSummary.tagName).toBe("SUMMARY");
+    const advancedDetails = advancedSummary.closest("details") as HTMLDetailsElement;
+    expect(advancedDetails.open).toBe(false);
+
+    fireEvent.click(advancedSummary);
+    expect(advancedDetails.open).toBe(true);
+  });
+
+  it("previews the voucher price in its selected currency or measure", () => {
+    render(<CreateVoucherFlow step="voucher" />);
+
+    expect(screen.getByText("1 XYZ = 1 KES")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "khv" } });
+    fireEvent.change(screen.getByLabelText("Price"), { target: { value: "10" } });
+
+    expect(screen.getByText("1 KHV = 10 KES")).toBeTruthy();
+  });
+
+  it("keeps tags compact and prefills contact details from the profile", async () => {
+    render(<CreateVoucherFlow step="place" />);
+
+    await waitFor(() => {
+      expect((screen.getByLabelText("Contact Email") as HTMLInputElement).value).toBe(
+        "issuer@example.org",
+      );
+      expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
+    });
+    expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
+
+    const tagSearch = screen.getByRole("combobox", { name: "Search voucher tags" });
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+
+    fireEvent.click(tagSearch);
+    fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
+
+    expect(screen.getByRole("button", { name: "Remove Agriculture" })).toBeTruthy();
+
+    fireEvent.pointerDown(screen.getByLabelText("Contact Email"));
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+  });
+
+  it("requires both linked legal agreements before publishing", () => {
+    render(<CreateVoucherFlow step="review" />);
+
+    const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
+    const pathLicense = screen.getByRole("checkbox", { name: "Accept PATH License" });
+    const publish = screen.getByRole("button", { name: "Confirm & Publish" });
+
+    expect(screen.getByRole("link", { name: "Terms and Conditions" }).getAttribute("href")).toBe(
+      "https://grassecon.org/pages/terms-and-conditions",
+    );
+    expect(screen.getByRole("link", { name: "PATH License" }).getAttribute("href")).toBe(
+      "https://docs.grassecon.org/commons/path/",
+    );
+    expect((publish as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(terms);
+    expect((publish as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(pathLicense);
+    expect((publish as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it("keeps form state across all three routes and deploys only after confirmation", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
     const view = render(<CreateVoucherFlow step="voucher" />);
@@ -106,7 +199,8 @@ describe("CreateVoucherFlow", () => {
 
     view.rerender(<CreateVoucherFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
-    fireEvent.click(screen.getByRole("button", { name: "Agriculture" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
+    fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await waitFor(() =>
@@ -121,8 +215,12 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByText("KHV")).toBeTruthy();
     expect(screen.getByText("Agriculture")).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    const publish = screen.getByRole("button", { name: "Confirm & Publish" });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+    expect((publish as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+    expect((publish as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(publish);
 
     await waitFor(() =>
       expect(deployMutateAsync).toHaveBeenCalledWith({
@@ -137,6 +235,8 @@ describe("CreateVoucherFlow", () => {
         geoLat: -3.5107,
         geoLng: 39.9093,
         tags: ["Agriculture"],
+        email: "issuer@example.org",
+        phone: "+254712345678",
       }),
     );
     expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
@@ -152,13 +252,17 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food." },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Advanced" }));
+    fireEvent.click(screen.getByText("Advanced"));
 
-    const expiry = () => screen.getByLabelText("Expiration Date") as HTMLInputElement;
-    expect(expiry().disabled).toBe(true);
+    expect(screen.queryByLabelText("Expiration Date")).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
+    const expiry = () => screen.getByLabelText("Expiration Date") as HTMLInputElement;
     expect(expiry().disabled).toBe(false);
+
+    fireEvent.click(screen.getByRole("radio", { name: /Standard/ }));
+    expect(screen.queryByLabelText("Expiration Date")).toBeNull();
+    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Choose an expiration date")).toBeTruthy();

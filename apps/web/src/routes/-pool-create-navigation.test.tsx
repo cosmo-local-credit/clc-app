@@ -49,6 +49,10 @@ vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
   useDeployPool: () => ({ error: null, isPending: false, mutateAsync: vi.fn() }),
 }));
 
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({ data: undefined }),
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
 }));
@@ -123,7 +127,7 @@ describe("pool create navigation", () => {
     expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
 
     history.back();
-    await screen.findByRole("heading", { name: "Your pool" });
+    await screen.findByRole("heading", { name: "Create pool" });
     expect((screen.getByLabelText("Pool Name") as HTMLInputElement).value).toBe("Kilifi Growers");
   });
 

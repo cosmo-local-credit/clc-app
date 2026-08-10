@@ -44,6 +44,11 @@ msgstr "{count, plural, one {# објава} few {# објаве} other {# об�
 #~ msgstr "Изаберите стопе које сами постављате или једнаку вредност када "
 #~ "користите HOUR"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:63
+#~ msgid "Voucher value must be greater than zero"
+#~ msgstr "Вредност ваучера мора бити већа од нуле"
+
 #. placeholder {0}: price.value
 #. placeholder {0}: total.value
 #: apps/web/src/components/offerings/offerings-panel.tsx:231
@@ -153,8 +158,8 @@ msgstr "{current} / {0}"
 #~ msgstr "{quantityValue}{0}"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:309
-msgid "{unit} worth of goods & services"
-msgstr "Вредност робе и услуга у {unit}"
+#~ msgid "{unit} worth of goods & services"
+#~ msgstr "Вредност робе и услуга у {unit}"
 
 #. placeholder {0}: token.symbol
 #. placeholder {1}: rate.value
@@ -198,34 +203,45 @@ msgstr "Отворена је веза папирног новчаника. Пр
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Скениран је QR код папирног новчаника. Увести ову адресу?"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:204
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:227
 msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
 msgstr "Пул окупља ваучере како би чланови могли да их размењују по објављеној "
 "вредности."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:205
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:223
 msgid "A voucher acts like a gift card for your offers. When someone redeems "
 "your voucher, you are committing to provide them with your offers."
 msgstr "Ваучер служи као поклон-картица за вашу понуду. Када неко искористи ваш "
 "ваучер, обавезујете се да му пружите понуђену робу или услуге."
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:630
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:658
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:649
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:677
+msgid "Accept"
+msgstr "Прихватите"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:616
-msgid "Accept SPROUT License"
-msgstr "Прихвати SPROUT лиценцу"
+#~ msgid "Accept SPROUT License"
+#~ msgstr "Прихвати SPROUT лиценцу"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:600
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:622
-msgid "Accept Terms and Conditions"
-msgstr "Прихвати услове коришћења"
+#~ msgid "Accept Terms and Conditions"
+#~ msgstr "Прихвати услове коришћења"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:143
+#: apps/web/src/lib/validation-i18n.ts:98
+msgid "Accept the PATH License to publish your voucher"
+msgstr "Прихватите PATH лиценцу да бисте објавили ваучер"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:148
 msgid "Accept the SPROUT License to publish your pool"
 msgstr "Прихватите SPROUT лиценцу да бисте објавили пул"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:138
+#: apps/web/src/lib/validation-i18n.ts:143
 msgid "Accept the terms to publish your pool"
 msgstr "Прихватите услове да бисте објавили пул"
 
@@ -317,8 +333,8 @@ msgstr "Адреса је копирана"
 msgid "Admin"
 msgstr "Администратор"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:334
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:352
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:347
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:389
 msgid "Advanced"
 msgstr "Напредно"
 
@@ -389,8 +405,8 @@ msgstr "Аутор"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:64
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:331
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:176
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:177
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:194
 msgid "Back"
 msgstr "Назад"
 
@@ -499,7 +515,7 @@ msgid "Choose Image"
 msgstr "Изаберите слику"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
+#: apps/web/src/lib/validation-i18n.ts:153
 msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Изаберите стопе које сами постављате или једнаку вредност када јединица "
 "нема извор цене"
@@ -512,7 +528,7 @@ msgstr "Изаберите језик приказа апликације."
 #~ msgid "Choose what vouchers should offer."
 #~ msgstr "Изаберите шта ваучери треба да нуде."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:376
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:415
 msgid "Circulates forever"
 msgstr "Нема датум истека"
 
@@ -583,13 +599,13 @@ msgstr "Одговорите на захтјев прегледача за до�
 msgid "Complete the prompt on your phone."
 msgstr "Довршите захтјев на телефону."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:568
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:591
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:592
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:616
 msgid "Confirm & publish"
 msgstr "Потврди и објави"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:640
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:644
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:703
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:720
 msgid "Confirm & Publish"
 msgstr "Потврди и објави"
 
@@ -623,8 +639,8 @@ msgstr "Потврђено"
 #~ msgid "Confirming…"
 #~ msgstr "Потврђивање…"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:115
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:111
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:117
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:108
 msgid "Connect your wallet before publishing."
 msgstr "Повежите новчаник пре објављивања."
 
@@ -657,17 +673,19 @@ msgstr "Повезивање…"
 msgid "Connection failed."
 msgstr "Повезивање није успјело."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:540
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:542
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:566
 msgid "Contact Email"
 msgstr "Имејл за контакт"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:564
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:566
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:590
 msgid "Contact Phone"
 msgstr "Телефон за контакт"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:541
-msgid "Contact Phone (optional)"
-msgstr "Телефон за контакт (опционално)"
+#~ msgid "Contact Phone (optional)"
+#~ msgstr "Телефон за контакт (опционално)"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
@@ -789,7 +807,7 @@ msgstr "Активност није могуће учитати."
 msgid "Couldn't load offerings."
 msgstr "Учитавање понуда није успело."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:489
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:504
 msgid "Couldn't load pool tags."
 msgstr "Није могуће учитати ознаке пула."
 
@@ -826,7 +844,7 @@ msgstr "Токене није могуће учитати"
 #~ msgid "Couldn't load voucher filters."
 #~ msgstr "Филтере ваучера није могуће учитати."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:488
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:528
 msgid "Couldn't load voucher tags."
 msgstr "Није могуће учитати ознаке ваучера."
 
@@ -835,11 +853,11 @@ msgstr "Није могуће учитати ознаке ваучера."
 msgid "Couldn't load vouchers."
 msgstr "Ваучере није могуће учитати."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:136
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:138
 msgid "Couldn't publish your pool."
 msgstr "Није могуће објавити ваш пул."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:129
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:126
 msgid "Couldn't publish your voucher."
 msgstr "Није могуће објавити ваучер."
 
@@ -893,6 +911,14 @@ msgstr "Направите налог"
 msgid "Create an account"
 msgstr "Направите налог"
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:216
+msgid "Create pool"
+msgstr "Креирај пул"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:212
+msgid "Create voucher"
+msgstr "Креирај ваучер"
+
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
 msgid "Create your account"
 msgstr "Направите свој налог"
@@ -923,8 +949,8 @@ msgstr "Тамни"
 msgid "Date"
 msgstr "Датум"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:427
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:427
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:442
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:467
 msgid "Decimals"
 msgstr "Децимале"
 
@@ -937,7 +963,7 @@ msgstr "Број децимала мора бити цео број од 0 до 
 msgid "Decrease quantity"
 msgstr "Смањи количину"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:676
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:739
 msgid "Default"
 msgstr "Подразумевано"
 
@@ -945,7 +971,7 @@ msgstr "Подразумевано"
 msgid "Delegated to Calibur"
 msgstr "Делегирано Calibur-у"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:315
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:337
 msgid "Describe your pool"
 msgstr "Опишите свој пул"
 
@@ -987,12 +1013,20 @@ msgid "Duration"
 msgstr "Трајање"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:252
-msgid "e.g. AMINA"
-msgstr "нпр. AMINA"
+#~ msgid "e.g. AMINA"
+#~ msgstr "нпр. AMINA"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:229
-msgid "e.g. Amina's Voucher"
-msgstr "нпр. Аминин ваучер"
+#~ msgid "e.g. Amina's Voucher"
+#~ msgstr "нпр. Аминин ваучер"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:246
+msgid "e.g. Community Market"
+msgstr "нпр. Пијаца заједнице"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:269
+msgid "e.g. MARKET"
+msgstr "нпр. MARKET"
 
 #: apps/web/src/features/home/ui/market-page.tsx:91
 #~ msgid "Eatery"
@@ -1047,11 +1081,11 @@ msgstr "Унесите ENS, број телефона или адресу."
 msgid "Enter and apply a password before downloading this card."
 msgstr "Унесите и примијените лозинку прије преузимања ове картице."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:228
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:250
 msgid "Enter pool name"
 msgstr "Унесите назив пула"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:250
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:272
 msgid "Enter pool shortcode, eg. ABC1"
 msgstr "Унесите кратку ознаку пула, нпр. ABC1"
 
@@ -1059,8 +1093,8 @@ msgstr "Унесите кратку ознаку пула, нпр. ABC1"
 msgid "Enter the password to unlock this paper wallet."
 msgstr "Унесите лозинку да бисте откључали овај папирни новчаник."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:368
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:582
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:383
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:606
 msgid "Equal value"
 msgstr "Једнака вредност"
 
@@ -1076,7 +1110,7 @@ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 msgstr "Svaki nalog dobija papirni novčanik. Povezivanje {providerLabel} dodaje "
 "još jedan način prijave."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:401
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:441
 msgid "Expiration Date"
 msgstr "Датум истека"
 
@@ -1085,8 +1119,8 @@ msgstr "Датум истека"
 msgid "Expiration date must be in the future"
 msgstr "Датум истека мора бити у будућности"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:380
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:603
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:419
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:628
 msgid "Expiring"
 msgstr "Са роком трајања"
 
@@ -1121,7 +1155,7 @@ msgstr "Политика накнада"
 msgid "Fees"
 msgstr "Накнаде"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:409
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:424
 msgid "Fees are held apart from pool liquidity"
 msgstr "Накнаде се чувају одвојено од ликвидности пула"
 
@@ -1166,7 +1200,7 @@ msgstr "Филтери"
 msgid "Finding location"
 msgstr "Проналажење локације"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:358
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:373
 msgid "Follows the selected unit's feed"
 msgstr "Прати извор цена за изабрану јединицу"
 
@@ -1191,21 +1225,25 @@ msgstr "Вратите се на пријаву"
 msgid "Goods"
 msgstr "Роба"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:381
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:420
 msgid "Has an expiration date"
 msgstr "Има датум истека"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:528
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:554
 msgid "Helps buyers find and trust your offer"
 msgstr "Помаже купцима да пронађу вашу понуду и верују јој"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:529
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:530
 msgid "Helps members find and understand your pool"
 msgstr "Помаже члановима да пронађу и разумеју ваш пул"
 
 #: apps/web/src/features/home/ui/report-page.tsx:375
 msgid "Host"
 msgstr "Домаћин"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:337
+msgid "HOUR — Hour"
+msgstr "HOUR — Сат"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:527
 msgid "How should categories match?"
@@ -1292,10 +1330,14 @@ msgid "Issuer"
 msgstr "Издавалац"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:617
-msgid "It circulates symbolic commitments, not enforceable payments or "
-"contractual wages."
-msgstr "Омогућава кружење симболичних обавеза, а не извршивих плаћања или "
-"уговорених зарада."
+#~ msgid "It circulates symbolic commitments, not enforceable payments or "
+#~ "contractual wages."
+#~ msgstr "Омогућава кружење симболичних обавеза, а не извршивих плаћања или "
+#~ "уговорених зарада."
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:331
+msgid "KES — Kenyan shilling"
+msgstr "KES — Кенијски шилинг"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:311
 #~ msgid "KES worth of goods & services"
@@ -1398,8 +1440,8 @@ msgstr "Учитавање објаве…"
 msgid "Loading posts…"
 msgstr "Учитавање објава…"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:483
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:482
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:498
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:522
 msgid "Loading tags…"
 msgstr "Учитавање ознака…"
 
@@ -1426,8 +1468,8 @@ msgstr "Учитавање…"
 
 #: apps/web/src/components/ui/location-picker.tsx:175
 #: apps/web/src/features/home/ui/report-page.tsx:461
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:587
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:605
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:611
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:630
 msgid "Location"
 msgstr "Локација"
 
@@ -1525,7 +1567,7 @@ msgstr "Адреса мог новчаника"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:597
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:622
 msgid "Name"
 msgstr "Име"
 
@@ -1565,10 +1607,10 @@ msgstr "Мрежа"
 msgid "New to CLC?"
 msgstr "Нови сте у CLC-у?"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:448
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:559
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:448
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:582
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:463
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:583
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:488
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:607
 msgid "Next"
 msgstr "Даље"
 
@@ -1847,6 +1889,10 @@ msgstr "Папирни новчаник заштићен лозинком"
 msgid "Passwords do not match."
 msgstr "Лозинке се не подударају."
 
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:685
+msgid "PATH License"
+msgstr "PATH лиценца"
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:145
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:80
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:81
@@ -1880,7 +1926,7 @@ msgstr "Број телефона"
 #~ msgid "Placeholder screen"
 #~ msgstr "Привремени екран"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:574
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:598
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:116
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:379
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:572
@@ -1894,17 +1940,17 @@ msgstr "Тржница"
 msgid "Pool contents"
 msgstr "Садржај фонда"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:306
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:328
 msgid "Pool Description"
 msgstr "Опис пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:123
+#: apps/web/src/lib/validation-i18n.ts:128
 msgid "Pool description is required"
 msgstr "Опис пула је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:128
+#: apps/web/src/lib/validation-i18n.ts:133
 msgid "Pool description must be 500 characters or fewer"
 msgstr "Опис пула мора имати највише 500 знакова"
 
@@ -1913,7 +1959,7 @@ msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "Ликвидност тржнице се промијенила. Прегледајте ажурирану процјену и "
 "покушајте поново."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:466
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
 msgid "Pool Location"
 msgstr "Локација пула"
 
@@ -1922,17 +1968,17 @@ msgstr "Локација пула"
 #~ msgstr "Овдје ће се појавити чланство на тржници, ограничења и алати за "
 #~ "управљање."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:219
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:241
 msgid "Pool Name"
 msgstr "Назив пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:98
+#: apps/web/src/lib/validation-i18n.ts:103
 msgid "Pool name is required"
 msgstr "Назив пула је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:103
+#: apps/web/src/lib/validation-i18n.ts:108
 msgid "Pool name must be 80 characters or fewer"
 msgstr "Назив пула мора имати највише 80 знакова"
 
@@ -1941,25 +1987,25 @@ msgstr "Назив пула мора имати највише 80 знакова
 msgid "Pool not found."
 msgstr "Пул није пронађен."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:241
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:263
 msgid "Pool Shortcode"
 msgstr "Кратка ознака пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:108
+#: apps/web/src/lib/validation-i18n.ts:113
 msgid "Pool shortcode is required"
 msgstr "Кратка ознака пула је обавезна"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:113
+#: apps/web/src/lib/validation-i18n.ts:118
 msgid "Pool shortcode must be 6 characters or fewer"
 msgstr "Кратка ознака пула мора имати највише 6 знакова"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:506
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:524
 msgid "Pool tags"
 msgstr "Ознаке пула"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:479
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:494
 msgid "Pool Tags"
 msgstr "Ознаке пула"
 
@@ -1968,7 +2014,7 @@ msgid "Pool tracking details are missing."
 msgstr "Недостају подаци за праћење пула."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:23
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:176
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
 #: apps/web/src/features/pools/ui/pools-page.tsx:83
@@ -2026,19 +2072,33 @@ msgstr "Pretium ID је копиран"
 msgid "Previous image"
 msgstr "Претходна слика"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:357
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:579
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:289
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:624
+msgid "Price"
+msgstr "Цена"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:372
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:603
 msgid "Price feed"
 msgstr "Извор цена"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:63
+msgid "Price must be greater than zero"
+msgstr "Цена мора бити већа од нуле"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:235
 #: apps/web/src/components/offerings/offerings-panel.tsx:335
 msgid "Price on request"
 msgstr "Цена на упит"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:343
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:352
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:577
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:317
+msgid "Priced in"
+msgstr "Изражено у"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:358
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:367
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:601
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:55
 msgid "Pricing"
 msgstr "Одређивање цена"
@@ -2075,16 +2135,16 @@ msgid "Provide an email or phone number"
 msgstr "Унесите имејл или број телефона"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:543
-msgid "Public — pool members will see this so they can reach you."
-msgstr "Јавно — чланови пула ће ово видети како би могли да вас контактирају."
+#~ msgid "Public — pool members will see this so they can reach you."
+#~ msgstr "Јавно — чланови пула ће ово видети како би могли да вас контактирају."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:566
-msgid "Public — voucher holders will see this so they can reach you."
-msgstr "Јавно — власници ваучера ће ово видети како би могли да вас "
-"контактирају."
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:588
+#~ msgid "Public — voucher holders will see this so they can reach you."
+#~ msgstr "Јавно — власници ваучера ће ово видети како би могли да вас "
+#~ "контактирају."
 
 #. placeholder {0}: poolDeploymentContractCount(pricing)
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:644
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:707
 msgid "Publishes {0} contracts"
 msgstr "Објављује {0} уговора"
 
@@ -2106,8 +2166,8 @@ msgstr "Објављивање вашег пула..."
 msgid "Publishing your voucher..."
 msgstr "Објављивање вашег ваучера..."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:638
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:642
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:701
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:718
 msgid "Publishing…"
 msgstr "Објављивање…"
 
@@ -2127,8 +2187,8 @@ msgstr "На чекању"
 msgid "Rate"
 msgstr "Курс"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:363
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:581
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:378
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:605
 msgid "Rates you set"
 msgstr "Курсеви које постављате"
 
@@ -2200,6 +2260,11 @@ msgstr "Повезани ваучери"
 msgid "Remove {0}"
 msgstr "Уклони {0}"
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:526
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:550
+msgid "Remove {tag}"
+msgstr "Уклони {tag}"
+
 #: apps/web/src/features/home/ui/report-page.tsx:370
 msgid "Report details"
 msgstr "Детаљи извештаја"
@@ -2233,8 +2298,8 @@ msgstr "Проналажење примаоца…"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:655
 #: apps/web/src/features/home/ui/report-page.tsx:51
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:498
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:497
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:513
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:537
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:128
 msgid "Retry"
 msgstr "Покушај поново"
@@ -2309,6 +2374,10 @@ msgstr "Потражите град или мјесто"
 msgid "Search or enter"
 msgstr "Претражите или унесите"
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:522
+msgid "Search pool tags"
+msgstr "Претражи ознаке пула"
+
 #: apps/web/src/features/pools/ui/pools-page.tsx:105
 msgid "Search pools"
 msgstr "Претражи пулове"
@@ -2317,9 +2386,18 @@ msgstr "Претражи пулове"
 msgid "Search posts by title or description"
 msgstr "Претражи објаве по наслову или опису"
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:525
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:549
+msgid "Search tags"
+msgstr "Претражи ознаке"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:342
 msgid "Search voucher filters"
 msgstr "Претражи филтере ваучера"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:546
+msgid "Search voucher tags"
+msgstr "Претражи ознаке ваучера"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:341
 msgid "Search vouchers"
@@ -2344,6 +2422,14 @@ msgstr "Изаберите токен"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:40
 #~ msgid "Selected pool"
 #~ msgstr "Изабрани пул"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:523
+msgid "Selected pool tags"
+msgstr "Изабране ознаке пула"
+
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:547
+msgid "Selected voucher tags"
+msgstr "Изабране ознаке ваучера"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:326
 msgid "Selected vouchers"
@@ -2416,11 +2502,11 @@ msgstr "Подијели"
 #~ msgid "Shop"
 #~ msgstr "Продавница"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:244
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:261
 msgid "Short ticker, max 6 characters"
 msgstr "Кратка ознака, највише 6 знакова"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:575
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:599
 msgid "Shortcode"
 msgstr "Кратка ознака"
 
@@ -2428,7 +2514,7 @@ msgstr "Кратка ознака"
 #~ msgid "Show offerings"
 #~ msgstr "Прикажи понуде"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:325
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:371
 msgid "Shown on your voucher page"
 msgstr "Приказује се на страници вашег ваучера"
 
@@ -2474,12 +2560,16 @@ msgstr "Одјављивање..."
 #~ msgid "Some vouchers are hidden. Refine your search to see more."
 #~ msgstr "Неки ваучери су скривени. Прецизирајте претрагу да бисте видели више."
 
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:666
+msgid "SPROUT License"
+msgstr "SPROUT лиценцу"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:692
 msgid "Stable sent"
 msgstr "Стабилни токен је послат"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:375
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:603
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:414
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:628
 msgid "Standard"
 msgstr "Стандардни"
 
@@ -2533,16 +2623,16 @@ msgstr "Размјена"
 #~ msgstr "Недостају детаљи размјене. Почните поново да прегледате привремену "
 #~ "размјену."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:584
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:608
 msgid "Swap fee"
 msgstr "Накнада за размену"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:382
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:397
 msgid "Swap Fee (%)"
 msgstr "Накнада за размену (%)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:133
+#: apps/web/src/lib/validation-i18n.ts:138
 msgid "Swap fee must be a number from 0 to 100"
 msgstr "Накнада за размену мора бити број од 0 до 100"
 
@@ -2591,22 +2681,28 @@ msgstr "Промијени новчаник"
 msgid "Switch wallet?"
 msgstr "Промијенити новчаник?"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:598
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:623
 msgid "Symbol"
 msgstr "Ознака"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:478
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:606
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:612
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:518
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:631
 msgid "Tags"
 msgstr "Ознаке"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:406
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:421
 msgid "Take fees separately"
 msgstr "Одвајај накнаде"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:333
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:379
 msgid "Tell people about your business..."
 msgstr "Опишите људима своје пословање..."
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:638
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:657
+msgid "Terms and Conditions"
+msgstr "Услови и одредбе"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:414
 msgid "The cart isn't ready yet."
@@ -2638,11 +2734,11 @@ msgstr "Пул није могао бити објављен."
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Процјена се промијенила. Прегледајте ажуриране износе прије потврде."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:133
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:135
 msgid "The selected unit does not have a configured price feed."
 msgstr "Изабрана јединица нема подешен извор цене."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:271
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:293
 msgid "The unit used for pricing in this pool (e.g., USD, KES, HOUR)"
 msgstr "Јединица која се користи за цене у овом пулу (нпр. USD, KES, HOUR)"
 
@@ -2793,7 +2889,7 @@ msgstr "Историја преноса"
 msgid "Try again"
 msgstr "Покушај поново"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:602
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:627
 msgid "Type"
 msgstr "Врста"
 
@@ -2811,12 +2907,11 @@ msgstr "Језик није могуће учитати. Враћено је н�
 msgid "Unavailable"
 msgstr "Недоступно"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:576
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:600
 msgid "Unit"
 msgstr "Јединица"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:269
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:284
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:291
 msgid "Unit of Account"
 msgstr "Обрачунска јединица"
 
@@ -2864,6 +2959,10 @@ msgstr "Отпреми лого"
 msgid "Upload QR code image"
 msgstr "Отпреми слику QR кода"
 
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:334
+msgid "USD — US dollar"
+msgstr "USD — Амерички долар"
+
 #: apps/web/src/features/home/ui/market-page.tsx:67
 msgid "Use current location"
 msgstr "Користи тренутну локацију"
@@ -2882,7 +2981,7 @@ msgid "Use my location"
 msgstr "Користи моју локацију"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:118
+#: apps/web/src/lib/validation-i18n.ts:123
 msgid "Use only letters and numbers for the pool shortcode"
 msgstr "За кратку ознаку пула користите само слова и бројеве"
 
@@ -2896,8 +2995,8 @@ msgstr "За ознаку ваучера користите само слова 
 #~ msgstr "Користите своју локацију да поређате ваучере по удаљености."
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:599
-msgid "Value"
-msgstr "Вредност"
+#~ msgid "Value"
+#~ msgstr "Вредност"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:64
 msgid "View all"
@@ -2939,7 +3038,7 @@ msgstr "Радње са ваучером"
 msgid "Voucher contract"
 msgstr "Уговор ваучера"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:323
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:369
 msgid "Voucher Description"
 msgstr "Опис ваучера"
 
@@ -2961,7 +3060,7 @@ msgstr "Детаљи ваучера"
 msgid "Voucher match"
 msgstr "Подударање ваучера"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:237
 msgid "Voucher Name"
 msgstr "Назив ваучера"
 
@@ -2983,7 +3082,7 @@ msgstr "Регистар ваучера"
 msgid "Voucher search results"
 msgstr "Резултати претраге ваучера"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:242
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:259
 msgid "Voucher Symbol"
 msgstr "Ознака ваучера"
 
@@ -2997,7 +3096,7 @@ msgstr "Ознака ваучера је обавезна"
 msgid "Voucher symbol must be 6 characters or fewer"
 msgstr "Ознака ваучера мора имати највише 6 знакова"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:505
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:548
 msgid "Voucher tags"
 msgstr "Ознаке ваучера"
 
@@ -3005,23 +3104,18 @@ msgstr "Ознаке ваучера"
 msgid "Voucher tracking details are missing."
 msgstr "Недостају подаци за праћење ваучера."
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:361
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:370
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:400
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:409
 msgid "Voucher Type"
 msgstr "Врста ваучера"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:267
-msgid "Voucher Value"
-msgstr "Вредност ваучера"
-
-#. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:63
-msgid "Voucher value must be greater than zero"
-msgstr "Вредност ваучера мора бити већа од нуле"
+#~ msgid "Voucher Value"
+#~ msgstr "Вредност ваучера"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:287
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:78
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:177
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:194
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:85
 msgid "Vouchers"
 msgstr "Ваучери"
@@ -3038,7 +3132,7 @@ msgstr "Ваучери"
 #~ msgid "Vouchers ordered by approximate distance."
 #~ msgstr "Ваучери су поређани по приближној удаљености."
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:369
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:384
 msgid "Vouchers swap one for one"
 msgstr "Ваучери се размењују један за један"
 
@@ -3105,20 +3199,20 @@ msgstr "Dobrodošli nazad"
 msgid "What they offer"
 msgstr "Шта нуде"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:201
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:224
 msgid "What's a pool?"
 msgstr "Шта је пул?"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:202
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "What's a voucher?"
 msgstr "Шта је ваучер?"
 
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:403
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:443
 msgid "When does this voucher expire?"
 msgstr "Када овај ваучер истиче?"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:457
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:457
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:472
+#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:497
 msgid "Where and what for"
 msgstr "Где и за коју намену"
 
@@ -3137,9 +3231,8 @@ msgid "Yearly"
 msgstr "Годишње"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:601
-#: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:623
-msgid "You agree to our Terms of Service and Privacy Policy"
-msgstr "Прихватате наше услове коришћења и политику приватности"
+#~ msgid "You agree to our Terms of Service and Privacy Policy"
+#~ msgstr "Прихватате наше услове коришћења и политику приватности"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:47
 #: apps/web/src/features/pools/ui/review-swap-page.tsx:47
@@ -3162,7 +3255,7 @@ msgstr "Прихватате наше услове коришћења и пол�
 #~ msgid "You receive amount"
 #~ msgstr "Износ који примате"
 
-#: apps/web/src/features/pools/ui/create-pool-flow.tsx:364
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:379
 msgid "You set a rate per voucher"
 msgstr "Постављате курс за сваки ваучер"
 
@@ -3197,8 +3290,8 @@ msgid "Your paper wallet"
 msgstr "Ваш папирни новчаник"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:194
-msgid "Your pool"
-msgstr "Ваш пул"
+#~ msgid "Your pool"
+#~ msgstr "Ваш пул"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:129
 #~ msgid "Your Pools"
@@ -3209,8 +3302,8 @@ msgid "Your profile"
 msgstr "Ваш профил"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:195
-msgid "Your voucher"
-msgstr "Ваш ваучер"
+#~ msgid "Your voucher"
+#~ msgstr "Ваш ваучер"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:63
 msgid "Your Vouchers"

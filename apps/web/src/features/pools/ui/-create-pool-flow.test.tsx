@@ -66,6 +66,15 @@ vi.mock("#/features/pools/hooks/use-pool-deployment", () => ({
   }),
 }));
 
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({
+    data: {
+      email: "steward@example.org",
+      phone: "+254712345678",
+    },
+  }),
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture", "Market"],
@@ -84,6 +93,69 @@ afterEach(() => {
 });
 
 describe("CreatePoolFlow", () => {
+  it("uses compact guidance and the standard advanced disclosure", () => {
+    render(<CreatePoolFlow step="pool" />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Create pool" })).toBeTruthy();
+
+    const guidance = screen.getByText(/A pool holds vouchers together/);
+    expect(guidance.tagName).toBe("P");
+    expect(guidance.classList).toContain("leading-snug");
+
+    const advancedSummary = screen.getByText("Advanced");
+    expect(advancedSummary.tagName).toBe("SUMMARY");
+    const advancedDetails = advancedSummary.closest("details") as HTMLDetailsElement;
+    expect(advancedDetails.open).toBe(false);
+
+    fireEvent.click(advancedSummary);
+    expect(advancedDetails.open).toBe(true);
+  });
+
+  it("keeps tags compact and prefills contact details from the profile", async () => {
+    render(<CreatePoolFlow step="place" />);
+
+    await waitFor(() => {
+      expect((screen.getByLabelText("Contact Email") as HTMLInputElement).value).toBe(
+        "steward@example.org",
+      );
+      expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
+    });
+    expect(screen.queryByText(/Public — pool members/)).toBeNull();
+
+    const tagSearch = screen.getByRole("combobox", { name: "Search pool tags" });
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+
+    fireEvent.click(tagSearch);
+    fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
+
+    expect(screen.getByRole("button", { name: "Remove Agriculture" })).toBeTruthy();
+
+    fireEvent.pointerDown(screen.getByLabelText("Contact Email"));
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+  });
+
+  it("requires both linked legal agreements before publishing", () => {
+    render(<CreatePoolFlow step="review" />);
+
+    const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
+    const sproutLicense = screen.getByRole("checkbox", { name: "Accept SPROUT License" });
+    const publish = screen.getByRole("button", { name: "Confirm & Publish" });
+
+    expect(screen.getByRole("link", { name: "Terms and Conditions" }).getAttribute("href")).toBe(
+      "https://grassecon.org/pages/terms-and-conditions",
+    );
+    expect(screen.getByRole("link", { name: "SPROUT License" }).getAttribute("href")).toBe(
+      "https://docs.grassecon.org/commons/sprout/",
+    );
+    expect((publish as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(terms);
+    expect((publish as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(sproutLicense);
+    expect((publish as HTMLButtonElement).disabled).toBe(false);
+  });
+
   it("keeps form state across all three routes and deploys only supported API fields", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
     const view = render(<CreatePoolFlow step="pool" />);
@@ -106,7 +178,8 @@ describe("CreatePoolFlow", () => {
 
     view.rerender(<CreatePoolFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
-    fireEvent.click(screen.getByRole("button", { name: "Agriculture" }));
+    fireEvent.click(screen.getByRole("combobox", { name: "Search pool tags" }));
+    fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await waitFor(() =>
@@ -135,6 +208,8 @@ describe("CreatePoolFlow", () => {
         feePolicyDefault: "1",
         baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
         description: "A pool for Kilifi growers.",
+        email: "steward@example.org",
+        phone: "+254712345678",
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
         geoLng: 39.9093,
@@ -157,15 +232,5 @@ describe("CreatePoolFlow", () => {
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );
-  });
-
-  it("requires both agreements before publishing", async () => {
-    render(<CreatePoolFlow step="review" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
-
-    expect(await screen.findByText("Accept the terms to publish your pool")).toBeTruthy();
-    expect(screen.getByText("Accept the SPROUT License to publish your pool")).toBeTruthy();
-    expect(deployMutateAsync).not.toHaveBeenCalled();
   });
 });

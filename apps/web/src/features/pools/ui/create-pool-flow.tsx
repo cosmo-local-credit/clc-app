@@ -14,14 +14,14 @@ import {
   poolUnitSchemaForPricing,
   toPoolDeployPayload,
 } from "@clc/core/features/pools/logic";
-import { optionalPhoneSchema } from "@clc/core/lib/contact";
+import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
 import { CELO_MAINNET_CHAIN_ID } from "@clc/core/lib/constants/celo";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { RiArrowRightSLine, RiExchangeFundsLine, RiLoader4Line } from "react-icons/ri";
+import { useEffect, useRef } from "react";
+import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -44,10 +44,11 @@ import {
 } from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
 import { Switch } from "#/components/ui/switch";
-import { SelectableTagBadge } from "#/components/ui/tag-badge";
+import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
@@ -79,6 +80,7 @@ const DEFAULT_VALUES: PoolFormValues = {
   decimals: "6",
   location: undefined,
   tags: [],
+  email: "",
   phone: "",
   acceptedTerms: false,
   acceptedSproutLicense: false,
@@ -92,7 +94,7 @@ const DETAIL_FIELDS = [
   "feePolicyDefault",
   "decimals",
 ] as const;
-const PLACE_FIELDS = ["location", "phone"] as const;
+const PLACE_FIELDS = ["location", "email", "phone"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
@@ -101,9 +103,10 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { address, chainId } = useConnection();
   const deployPool = useDeployPool();
   const tagsQuery = useTokenTags();
+  const profileQuery = useAuthProfile();
   const draft = usePoolCreateDraft((state) => state.draft);
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const hasPrefilledProfile = useRef(false);
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
@@ -138,6 +141,26 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       }
     },
   });
+
+  useEffect(() => {
+    const profile = profileQuery.data;
+    if (hasPrefilledProfile.current || !profile || draft) return;
+    hasPrefilledProfile.current = true;
+
+    const email = profile.email.trim();
+    if (
+      !form.getFieldMeta("email")?.isTouched &&
+      form.getFieldValue("email") === "" &&
+      !email.endsWith("@clc.local")
+    ) {
+      form.setFieldValue("email", email, { dontUpdateMeta: true });
+    }
+
+    const phone = profile.phone.trim();
+    if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
+      form.setFieldValue("phone", phone, { dontUpdateMeta: true });
+    }
+  }, [draft, form, profileQuery.data]);
 
   useEffect(() => {
     if (step === "pool") beginPoolCreateHistory(router.history);
@@ -191,23 +214,23 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
         {step === "pool" ? (
           <>
             <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-              <Trans>Your pool</Trans>
+              <Trans>Create pool</Trans>
             </h1>
 
-            <div className="mt-3.5 grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 border border-border bg-card px-4 py-3 text-sm">
-              <RiExchangeFundsLine className="mt-0.5 size-4" aria-hidden="true" />
-              <p>
-                <strong className="block font-semibold">
-                  <Trans>What's a pool?</Trans>
-                </strong>
-                <span className="text-muted-foreground text-xs leading-relaxed">
-                  <Trans>
-                    A pool holds vouchers together so members can swap between them at a published
-                    value.
-                  </Trans>
-                </span>
+            <aside
+              className="mt-3.5 border border-border bg-card p-4"
+              aria-labelledby="pool-guidance-title"
+            >
+              <p id="pool-guidance-title" className="font-semibold text-sm leading-tight">
+                <Trans>What's a pool?</Trans>
               </p>
-            </div>
+              <p className="mt-1 text-muted-foreground text-sm leading-snug">
+                <Trans>
+                  A pool holds vouchers together so members can swap between them at a published
+                  value.
+                </Trans>
+              </p>
+            </aside>
 
             <div className="mt-3.5 space-y-3.5">
               <form.Field
@@ -320,22 +343,15 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <button
-                type="button"
-                className="flex min-h-11 w-full items-center gap-1 bg-card px-2 text-left font-medium text-muted-foreground text-sm"
-                aria-expanded={advancedOpen}
-                aria-controls="pool-advanced"
-                onClick={() => setAdvancedOpen((open) => !open)}
-              >
-                <RiArrowRightSLine
-                  className={`size-4 transition-transform ${advancedOpen ? "rotate-90" : ""}`}
-                  aria-hidden="true"
-                />
-                <Trans>Advanced</Trans>
-              </button>
+              <details>
+                <summary className="cursor-pointer font-medium text-foreground text-sm">
+                  <Trans>Advanced</Trans>
+                </summary>
 
-              {advancedOpen ? (
-                <div id="pool-advanced" className="space-y-3.5 border-t border-border pt-3.5">
+                <div
+                  id="pool-advanced"
+                  className="mt-4 space-y-3.5 border border-border bg-card p-4"
+                >
                   <form.Field name="pricing">
                     {(field) => (
                       <div>
@@ -440,7 +456,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     )}
                   </form.Field>
                 </div>
-              ) : null}
+              </details>
             </div>
 
             <div className="mt-auto pt-6">
@@ -500,30 +516,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       </div>
                     ) : null}
                     {tagsQuery.data?.length ? (
-                      <div
-                        className="mt-2 flex flex-wrap gap-2"
-                        role="group"
-                        aria-label={t`Pool tags`}
-                      >
-                        {tagsQuery.data.map((tag) => {
-                          const selected = field.state.value.includes(tag);
-                          return (
-                            <SelectableTagBadge
-                              key={tag}
-                              tag={tag}
-                              selected={selected}
-                              className="h-9"
-                              onClick={() =>
-                                field.handleChange(
-                                  selected
-                                    ? field.state.value.filter((value) => value !== tag)
-                                    : [...field.state.value, tag],
-                                )
-                              }
-                            />
-                          );
-                        })}
-                      </div>
+                      <TagCombobox
+                        items={tagsQuery.data}
+                        value={field.state.value}
+                        onValueChange={field.handleChange}
+                        searchLabel={t`Search pool tags`}
+                        selectedLabel={t`Selected pool tags`}
+                        listLabel={t`Pool tags`}
+                        placeholder={t`Search tags`}
+                        removeLabel={(tag) => t`Remove ${tag}`}
+                      />
                     ) : null}
                     <p className="mt-1.5 text-muted-foreground text-xs">
                       <Trans>Helps members find and understand your pool</Trans>
@@ -533,14 +535,37 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
               </form.Field>
 
               <form.Field
+                name="email"
+                validators={{ onBlur: optionalEmailSchema, onSubmit: optionalEmailSchema }}
+              >
+                {(field) => (
+                  <Field
+                    label={t`Contact Email`}
+                    htmlFor="pool-email"
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="pool-email"
+                      type="email"
+                      autoComplete="email"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="you@example.com"
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field
                 name="phone"
                 validators={{ onBlur: optionalPhoneSchema, onSubmit: optionalPhoneSchema }}
               >
                 {(field) => (
                   <Field
-                    label={t`Contact Phone (optional)`}
+                    label={t`Contact Phone`}
                     htmlFor="pool-phone"
-                    hint={t`Public — pool members will see this so they can reach you.`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <PhoneInputField
@@ -585,11 +610,14 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     {values.feePolicyDefault}%
                   </InfoRow>
                   <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
+                  <InfoRow label={t`Tags`} muted>
+                    {values.tags.join(", ") || "—"}
+                  </InfoRow>
                 </dl>
               )}
             </form.Subscribe>
 
-            <div className="mt-3.5 space-y-2.5">
+            <div className="mt-3.5 space-y-3">
               <form.Field name="acceptedTerms" validators={{ onSubmit: poolTermsSchema }}>
                 {(field) => (
                   <AgreementField
@@ -597,9 +625,18 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     checked={field.state.value}
                     onCheckedChange={field.handleChange}
                     error={getFieldError(field.state.meta.errors)}
-                    title={t`Accept Terms and Conditions`}
-                    description={t`You agree to our Terms of Service and Privacy Policy`}
-                  />
+                  >
+                    <Trans>Accept</Trans>{" "}
+                    <a
+                      href="https://grassecon.org/pages/terms-and-conditions"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-foreground underline underline-offset-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Trans>Terms and Conditions</Trans>
+                    </a>
+                  </AgreementField>
                 )}
               </form.Field>
 
@@ -613,23 +650,44 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     checked={field.state.value}
                     onCheckedChange={field.handleChange}
                     error={getFieldError(field.state.meta.errors)}
-                    title={t`Accept SPROUT License`}
-                    description={t`It circulates symbolic commitments, not enforceable payments or contractual wages.`}
-                  />
+                  >
+                    <Trans>Accept</Trans>{" "}
+                    <a
+                      href="https://docs.grassecon.org/commons/sprout/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-foreground underline underline-offset-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Trans>SPROUT License</Trans>
+                    </a>
+                  </AgreementField>
                 )}
               </form.Field>
             </div>
 
             <div className="mt-auto pt-6">
               <form.Subscribe
-                selector={(state) => [state.isSubmitting, state.values.pricing] as const}
+                selector={(state) =>
+                  [
+                    state.isSubmitting,
+                    state.values.pricing,
+                    state.values.acceptedTerms,
+                    state.values.acceptedSproutLicense,
+                  ] as const
+                }
               >
-                {([isSubmitting, pricing]) => (
+                {([isSubmitting, pricing, acceptedTerms, acceptedSproutLicense]) => (
                   <>
                     <Button
                       type="submit"
                       className="h-11 w-full"
-                      disabled={isSubmitting || deployPool.isPending}
+                      disabled={
+                        !acceptedTerms ||
+                        !acceptedSproutLicense ||
+                        isSubmitting ||
+                        deployPool.isPending
+                      }
                     >
                       {isSubmitting || deployPool.isPending ? (
                         <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />

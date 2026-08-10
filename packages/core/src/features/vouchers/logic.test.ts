@@ -4,8 +4,8 @@ import { toVoucherDeployPayload, voucherCreateSchema, type VoucherCreateInput } 
 const validVoucher: VoucherCreateInput = {
   name: "Kilifi Harvest",
   symbol: "KHV",
-  voucherValue: "1",
-  voucherUoa: "KES",
+  price: "1",
+  unitOfAccount: "KES",
   description: "Fresh food from Kilifi producers.",
   voucherType: "standard",
   expiryDate: "",
@@ -20,6 +20,7 @@ const validVoucher: VoucherCreateInput = {
   email: "issuer@example.org",
   phone: "+254712345678",
   acceptedTerms: true,
+  acceptedPathLicense: true,
 };
 
 describe("voucherCreateSchema", () => {
@@ -45,6 +46,17 @@ describe("voucherCreateSchema", () => {
   it("rejects symbols that cannot fit the six-character ticker", () => {
     const result = voucherCreateSchema.safeParse({ ...validVoucher, symbol: "TOO-LONG" });
     expect(result.success).toBe(false);
+  });
+
+  it("requires both legal agreements", () => {
+    const withoutTerms = voucherCreateSchema.safeParse({ ...validVoucher, acceptedTerms: false });
+    const withoutPathLicense = voucherCreateSchema.safeParse({
+      ...validVoucher,
+      acceptedPathLicense: false,
+    });
+
+    expect(withoutTerms.success).toBe(false);
+    expect(withoutPathLicense.success).toBe(false);
   });
 });
 
