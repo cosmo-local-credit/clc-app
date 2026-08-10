@@ -186,7 +186,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         </div>
       </div>
 
-      <div className="mt-6 flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+      <div className="mt-6 flex min-h-11 items-center gap-2 border border-border bg-card px-3 py-2">
         <EllipsizedAddress address={address} className="min-w-0 flex-1" />
         <Button
           type="button"
@@ -265,7 +265,7 @@ function DeploymentChecklist({
   className: string;
 }) {
   return (
-    <ul className={`rounded-xl border border-border bg-card px-4 py-1.5 ${className}`}>
+    <ul className={`border border-border bg-card px-4 py-1.5 ${className}`}>
       {stages.map((stage, index) => (
         <li
           key={stage.label}
@@ -298,7 +298,7 @@ function StageMark({ state }: { state: PoolDeploymentStageState }) {
           ? "border-primary border-dashed text-primary"
           : "border-border bg-card text-muted-foreground";
   return (
-    <span className={`grid size-[1.125rem] place-items-center rounded-full border ${className}`}>
+    <span className={`grid size-[1.125rem] place-items-center rounded-none border ${className}`}>
       {state === "done" ? <RiCheckLine className="size-3" aria-hidden="true" /> : null}
       {state === "failed" ? <RiCloseLine className="size-3" aria-hidden="true" /> : null}
       {state === "active" ? <RiTimeLine className="size-3" aria-hidden="true" /> : null}

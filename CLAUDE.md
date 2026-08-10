@@ -171,13 +171,14 @@ as if there is no desktop, ever.
 
 **Banned layout patterns:**
 
-| Pattern                                                                           | Why it is banned                                                             |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `<Card>` as a page-level wrapper                                                  | "Floating modal on a phone" — cards are list items / info tiles, not screens |
-| `min-h-screen items-center justify-center`                                        | Vertically centers a box — native screens flow top-to-bottom                 |
-| `max-w-sm mx-auto` on a page root                                                 | Horizontal boxing replicates desktop column; use `px-4`/`px-6` inset         |
-| `<Card>` nested in `<CardContent>`, or `rounded-xl border p-4` inside a card body | Card-within-card is desktop chrome — use spacing + typography hierarchy      |
-| `shadow-xl`, `shadow-lg`, `backdrop-blur` on primary screen surfaces              | Skeuomorphic desktop layering; mobile surfaces are flat                      |
+| Pattern                                                                | Why it is banned                                                             |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `<Card>` as a page-level wrapper                                       | "Floating modal on a phone" — cards are list items / info tiles, not screens |
+| `min-h-screen items-center justify-center`                             | Vertically centers a box — native screens flow top-to-bottom                 |
+| `max-w-sm mx-auto` on a page root                                      | Horizontal boxing replicates desktop column; use `px-4`/`px-6` inset         |
+| `<Card>` nested in `<CardContent>`, or `border p-4` inside a card body | Card-within-card is desktop chrome — use spacing + typography hierarchy      |
+| `rounded-xl` / `rounded-lg` / `rounded-md` on any surface or control   | Lyra corners are square — see "Corners are square" below                     |
+| `shadow-xl`, `shadow-lg`, `backdrop-blur` on primary screen surfaces   | Skeuomorphic desktop layering; mobile surfaces are flat                      |
 
 **Canonical page scaffold:**
 
@@ -194,9 +195,17 @@ as if there is no desktop, ever.
 </div>
 ```
 
-**Info panels / detail tiles:** `rounded-xl border border-border bg-card p-4`
-— flat, white, outlined. No shadow, no nested card chrome. White (`bg-card`)
-required so the panel is distinguishable from the gray page background.
+**Info panels / detail tiles:** `border border-border bg-card p-4`
+— flat, white, outlined, **sharp-cornered**. No shadow, no nested card chrome.
+White (`bg-card`) required so the panel is distinguishable from the gray page
+background.
+
+**Corners are square.** The Lyra theme carries no surface radius: primitives set
+`rounded-none` (`input`, `textarea`, `select`, `checkbox`, `switch`, `button`,
+`toggle`) and panels simply omit any radius class. Do not add `rounded-xl` /
+`rounded-lg` / `rounded-md` to a card, tile, panel, or form control. `rounded-full`
+stays only for genuinely circular shapes — status dots, radio marks, avatars,
+the 56 px receipt status badges, and the progress bar.
 
 **Touch targets:** Primary CTA buttons `h-11` (44 px — iOS HIG minimum).
 Inputs use default `h-9`; don't override with `h-11`.

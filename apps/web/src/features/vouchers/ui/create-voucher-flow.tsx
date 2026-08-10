@@ -195,7 +195,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               <Trans>Your voucher</Trans>
             </h1>
 
-            <div className="mt-3.5 grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-xl border border-border bg-card px-4 py-3 text-sm">
+            <div className="mt-3.5 grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 border border-border bg-card px-4 py-3 text-sm">
               <RiCoupon2Line className="mt-0.5 size-4" aria-hidden="true" />
               <p>
                 <strong className="block font-semibold">
@@ -593,7 +593,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
-                <dl className="mt-3.5 rounded-xl border border-border bg-card">
+                <dl className="mt-3.5 border border-border bg-card">
                   <InfoRow label={t`Name`}>{values.name}</InfoRow>
                   <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
                   <InfoRow label={t`Value`}>
@@ -664,7 +664,7 @@ function VoucherTypeOption({
   description: string;
 }) {
   return (
-    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 rounded-xl border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
+    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
       <RadioGroupItem value={value} className="mt-0.5" />
       <span>
         <strong className="block text-sm font-semibold">{title}</strong>

@@ -112,7 +112,7 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
         </div>
       </div>
 
-      <div className="mt-6 flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+      <div className="mt-6 flex min-h-11 items-center gap-2 border border-border bg-card px-3 py-2">
         <EllipsizedAddress address={address} className="min-w-0 flex-1" />
         <Button
           type="button"
@@ -168,7 +168,7 @@ function DeploymentStateShell({
       </div>
 
       {showContractRow ? (
-        <div className="mt-6 rounded-xl border border-border bg-card px-4 py-1.5">
+        <div className="mt-6 border border-border bg-card px-4 py-1.5">
           <div className="flex min-h-11 items-center justify-between gap-3">
             <span className="text-sm font-medium">
               <Trans>Voucher contract</Trans>
