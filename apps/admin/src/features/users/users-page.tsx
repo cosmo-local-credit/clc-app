@@ -51,15 +51,16 @@ export function UsersPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Users"
-        description="Accounts known to the backend, plus direct lookup by address."
+        title="Pool owners"
+        description="Addresses that own a pool in the current page, plus direct lookup by address. This is not a user or operator directory."
       />
 
       <Alert>
-        <AlertTitle>Derived directory</AlertTitle>
+        <AlertTitle>Pool owners in this page — not a directory</AlertTitle>
         <AlertDescription>
           clc-core exposes no user-directory endpoint — accounts are only addressable one at a time.
-          The table below is derived from pool ownership. Use the lookup to inspect any address
+          The table lists only addresses that own a pool in the page fetched below, so it is neither
+          a complete user list nor a complete operator list. Use the lookup to inspect any address
           directly.
         </AlertDescription>
       </Alert>
@@ -91,7 +92,7 @@ export function UsersPage() {
         <LoadingBlock rows={6} />
       ) : isError ? (
         <PageState
-          title="Could not load the directory"
+          title="Could not load pool owners"
           message={error instanceof Error ? error.message : "Request failed."}
         />
       ) : (
@@ -103,8 +104,8 @@ export function UsersPage() {
           }
           emptyState={
             <EmptyState
-              title="No known operators"
-              description="No indexed pool has an owner address yet."
+              title="No pool owners in this page"
+              description="No pool in this page has an owner address."
             />
           }
         />

@@ -30,6 +30,7 @@ export function MetricCard({
   link,
   icon,
   detail,
+  unavailable = false,
   className,
 }: {
   label: string;
@@ -37,11 +38,19 @@ export function MetricCard({
   tone?: MetricTone;
   link?: MetricLink;
   icon?: ReactNode;
-  /** Optional secondary line under the value (e.g. share of total). */
+  /** Optional secondary line under the value (e.g. that it is a page sample). */
   detail?: string;
+  /**
+   * The figure could not be obtained. Renders an em-dash and "unavailable"
+   * instead of `value`, because a failed request must never be shown as a real
+   * number — least of all as zero, which reads as a healthy empty backend.
+   */
+  unavailable?: boolean;
   className?: string;
 }) {
-  const display = typeof value === "number" ? formatCount(value) : value;
+  const effectiveTone = unavailable ? "muted" : tone;
+  const display = unavailable ? "—" : typeof value === "number" ? formatCount(value) : value;
+  const effectiveDetail = unavailable ? "unavailable" : detail;
 
   const body = (
     <div
@@ -59,27 +68,27 @@ export function MetricCard({
           <div
             className={cn(
               "font-mono text-2xl font-semibold tracking-tight tabular-nums",
-              valueClass[tone],
+              valueClass[effectiveTone],
             )}
           >
             {display}
           </div>
-          {detail ? (
+          {effectiveDetail ? (
             <div
               className={cn(
                 "font-mono text-xs tabular-nums",
-                tone === "danger" || tone === "warning"
-                  ? valueClass[tone]
+                effectiveTone === "danger" || effectiveTone === "warning"
+                  ? valueClass[effectiveTone]
                   : "text-muted-foreground",
               )}
             >
-              {detail}
+              {effectiveDetail}
             </div>
           ) : null}
         </div>
       </div>
       {icon ? (
-        <div className={cn("shrink-0 border p-2.5 [&_svg]:size-5", iconShellClass[tone])}>
+        <div className={cn("shrink-0 border p-2.5 [&_svg]:size-5", iconShellClass[effectiveTone])}>
           {icon}
         </div>
       ) : null}

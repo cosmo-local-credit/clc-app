@@ -1,11 +1,6 @@
-import { configureApi } from "@clc/core/lib/api";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-
-if (import.meta.env.VITE_API_URL) {
-  configureApi(import.meta.env.VITE_API_URL);
-}
 
 export function getRouter() {
   const queryClient = new QueryClient({

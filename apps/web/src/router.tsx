@@ -1,13 +1,8 @@
-import { configureApi } from "@clc/core/lib/api";
 import { QueryCache, QueryClient, MutationCache } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { BackendApiError } from "@clc/api/features/auth/client";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { routeTree } from "./routeTree.gen";
-
-if (import.meta.env.VITE_API_URL) {
-  configureApi(import.meta.env.VITE_API_URL);
-}
 
 function isAuthExpiredError(error: unknown): boolean {
   return error instanceof BackendApiError && (error.status === 401 || error.code === "E06");

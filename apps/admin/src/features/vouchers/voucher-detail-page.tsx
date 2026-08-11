@@ -5,10 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
-import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -19,23 +19,21 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table";
+import { errorMessage } from "#/lib/data-state";
+import { useDataState } from "#/lib/use-data-state";
 
 const OFFERING_PAGE_SIZE = 100;
 
 export function VoucherDetailPage({ address }: { address: string }) {
   const voucherQuery = useQuery(clcQueries.voucher(address));
   const offeringsQuery = useQuery(clcQueries.voucherOfferings(address, OFFERING_PAGE_SIZE));
+  // Every hook must run before the early returns below, or hook order changes
+  // between the loading and loaded renders.
+  const offeringsState = useDataState(offeringsQuery, (page) => page.offerings.length === 0);
 
   if (voucherQuery.isPending) return <LoadingBlock rows={8} />;
   if (voucherQuery.isError) {
-    return (
-      <PageState
-        title="Could not load voucher"
-        message={
-          voucherQuery.error instanceof Error ? voucherQuery.error.message : "Request failed."
-        }
-      />
-    );
+    return <PageState title="Could not load voucher" message={errorMessage(voucherQuery.error)} />;
   }
 
   const voucher = voucherQuery.data;
@@ -112,11 +110,12 @@ export function VoucherDetailPage({ address }: { address: string }) {
         <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Offerings ({offerings.length})
         </h2>
-        {offeringsQuery.isPending ? (
-          <LoadingBlock rows={4} />
-        ) : offerings.length === 0 ? (
-          <EmptyState title="No offerings" description="Nothing is listed against this voucher." />
-        ) : (
+        <SectionState
+          state={offeringsState}
+          errorTitle="Could not load this voucher's offerings"
+          emptyTitle="No offerings"
+          emptyDescription="Nothing is listed against this voucher."
+        >
           <div className="overflow-x-auto border border-border bg-card">
             <Table>
               <TableHeader>
@@ -159,7 +158,7 @@ export function VoucherDetailPage({ address }: { address: string }) {
               </TableBody>
             </Table>
           </div>
-        )}
+        </SectionState>
       </section>
     </div>
   );

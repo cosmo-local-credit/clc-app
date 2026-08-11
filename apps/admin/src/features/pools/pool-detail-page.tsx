@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
-import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -18,22 +18,22 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table";
+import { errorMessage } from "#/lib/data-state";
 import { formatDateTime, formatFeePpm } from "#/lib/format";
+import { useDataState } from "#/lib/use-data-state";
 
 const VOUCHER_PAGE_SIZE = 100;
 
 export function PoolDetailPage({ address }: { address: string }) {
   const poolQuery = useQuery(clcQueries.pool(address));
   const vouchersQuery = useQuery(clcQueries.poolVouchers(address, VOUCHER_PAGE_SIZE));
+  // Every hook must run before the early returns below, or hook order changes
+  // between the loading and loaded renders.
+  const vouchersState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);
 
   if (poolQuery.isPending) return <LoadingBlock rows={8} />;
   if (poolQuery.isError) {
-    return (
-      <PageState
-        title="Could not load pool"
-        message={poolQuery.error instanceof Error ? poolQuery.error.message : "Request failed."}
-      />
-    );
+    return <PageState title="Could not load pool" message={errorMessage(poolQuery.error)} />;
   }
 
   const pool = poolQuery.data;
@@ -139,11 +139,12 @@ export function PoolDetailPage({ address }: { address: string }) {
         <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
           Vouchers ({pool.voucherCount})
         </h2>
-        {vouchersQuery.isPending ? (
-          <LoadingBlock rows={4} />
-        ) : vouchers.length === 0 ? (
-          <EmptyState title="No vouchers" description="This pool allows no vouchers yet." />
-        ) : (
+        <SectionState
+          state={vouchersState}
+          errorTitle="Could not load this pool's vouchers"
+          emptyTitle="No vouchers"
+          emptyDescription="This pool allows no vouchers yet."
+        >
           <div className="overflow-x-auto border border-border bg-card">
             <Table>
               <TableHeader>
@@ -182,7 +183,7 @@ export function PoolDetailPage({ address }: { address: string }) {
               </TableBody>
             </Table>
           </div>
-        )}
+        </SectionState>
       </section>
     </div>
   );
