@@ -1,4 +1,4 @@
-import { apiFetch } from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 import {
   type HexAddress,
   normalizeHex,
@@ -39,7 +39,7 @@ const DEPLOYMENT_LABELS: Record<DeploymentContractType, { noun: string; sentence
 };
 
 export async function getTokenTags(signal?: AbortSignal): Promise<string[]> {
-  const result = await apiFetch<{ tags?: unknown }>("/api/v2/token-tags", {
+  const result = await clcApi.http.request<{ tags?: unknown }>("/api/v2/token-tags", {
     method: "GET",
     cache: "no-store",
     signal,
@@ -52,7 +52,7 @@ export async function getDeploymentContract(
   expectedType: DeploymentContractType,
   signal?: AbortSignal,
 ): Promise<DeploymentContract | null> {
-  const result = await apiFetch<BackendDeploymentResult | null>(
+  const result = await clcApi.http.request<BackendDeploymentResult | null>(
     `/api/v2/otx/track/${encodeURIComponent(trackingId)}/contract`,
     { method: "GET", cache: "no-store", signal },
   );

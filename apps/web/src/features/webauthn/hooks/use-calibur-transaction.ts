@@ -7,10 +7,11 @@ import {
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
 import { encodeAbiParameters } from "viem";
-import { waitForTrackingCompletion } from "@clc/api/features/auth/client";
+
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
+import { clcApi } from "#/lib/api";
 
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
   "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
@@ -100,7 +101,7 @@ export async function sendCaliburTransaction(
     signatureType: "webauthn",
   });
 
-  const completed = await waitForTrackingCompletion(result.trackingId);
+  const completed = await clcApi.auth.waitForTrackingCompletion(result.trackingId);
   return {
     trackingId: result.trackingId,
     txHash: completed.txHash,

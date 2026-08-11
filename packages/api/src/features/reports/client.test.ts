@@ -1,7 +1,11 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createReportsClient } from "./client";
 
-import { getFilteredReports } from "./client";
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createReportsClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 const EMPTY_FILTER: CatalogFilter = {
   term: "",
@@ -29,7 +33,7 @@ describe("getFilteredReports", () => {
     const fetcher = mockFetch({ reports: [] });
     vi.stubGlobal("fetch", fetcher);
 
-    await getFilteredReports({
+    await api.getFilteredReports({
       perPage: 100,
       cursor: { updatedAt: "2026-08-03T12:00:00Z", id: "90" },
       facets: true,
@@ -98,7 +102,7 @@ describe("getFilteredReports", () => {
       }),
     );
 
-    const page = await getFilteredReports({ perPage: 100, filter: EMPTY_FILTER });
+    const page = await api.getFilteredReports({ perPage: 100, filter: EMPTY_FILTER });
 
     expect(page.reports[0]?.vouchers).toEqual([
       {

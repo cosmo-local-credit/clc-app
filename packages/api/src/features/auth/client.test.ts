@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createAuthClient } from "./client";
 
 import { BackendApiError } from "../../client/errors";
-import {
-  getSession,
-  getSiweNonce,
-  signinWithWebAuthn,
-  signupWithSiwe,
-  waitForTrackingCompletion,
-} from "./client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createAuthClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 function mockFetch(options: {
   status?: number;
@@ -42,7 +41,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("apiFetch — error handling", () => {
+describe("http transport — error handling", () => {
   it("throws BackendApiError with status and description from error body on !res.ok", async () => {
     vi.stubGlobal(
       "fetch",
@@ -54,7 +53,7 @@ describe("apiFetch — error handling", () => {
       }),
     );
 
-    await expect(getSiweNonce()).rejects.toMatchObject({
+    await expect(api.getSiweNonce()).rejects.toMatchObject({
       name: "BackendApiError",
       status: 401,
       description: "Invalid credentials",
@@ -73,7 +72,7 @@ describe("apiFetch — error handling", () => {
       }),
     );
 
-    const err = await getSiweNonce().catch((e: unknown) => e);
+    const err = await api.getSiweNonce().catch((e: unknown) => e);
     expect(err).toBeInstanceOf(BackendApiError);
     expect((err as BackendApiError).status).toBe(502);
     // Non-JSON body: description comes from statusText fallback
@@ -91,7 +90,7 @@ describe("apiFetch — error handling", () => {
       }),
     );
 
-    const err = await getSiweNonce().catch((e: unknown) => e);
+    const err = await api.getSiweNonce().catch((e: unknown) => e);
     expect(err).toBeInstanceOf(BackendApiError);
     expect((err as BackendApiError).description).toBe("Internal Server Error");
   });
@@ -105,7 +104,7 @@ describe("apiFetch — error handling", () => {
       }),
     );
 
-    const err = await getSiweNonce().catch((e: unknown) => e);
+    const err = await api.getSiweNonce().catch((e: unknown) => e);
     expect(err).toBeInstanceOf(BackendApiError);
     expect((err as BackendApiError).status).toBe(200);
     expect((err as BackendApiError).description).toBe("nonce exhausted");
@@ -121,7 +120,7 @@ describe("apiFetch — error handling", () => {
       }),
     );
 
-    const nonce = await getSiweNonce();
+    const nonce = await api.getSiweNonce();
     expect(nonce).toBe("abc123");
   });
 });
@@ -136,7 +135,7 @@ describe("getSession", () => {
       }),
     );
 
-    await expect(getSession()).resolves.toBeNull();
+    await expect(api.getSession()).resolves.toBeNull();
   });
 
   it("returns the bare session body", async () => {
@@ -148,7 +147,7 @@ describe("getSession", () => {
       }),
     );
 
-    await expect(getSession()).resolves.toEqual({
+    await expect(api.getSession()).resolves.toEqual({
       address: "0x1234567890123456789012345678901234567890",
       chainId: 42220,
     });
@@ -180,7 +179,7 @@ describe("signinWithWebAuthn", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(signinWithWebAuthn(assertion)).resolves.toMatchObject({
+    await expect(api.signinWithWebAuthn(assertion)).resolves.toMatchObject({
       userId: 7,
       address: "0xabc",
     });
@@ -202,7 +201,7 @@ describe("signinWithWebAuthn", () => {
       }),
     );
 
-    await expect(signinWithWebAuthn(assertion)).rejects.toMatchObject({
+    await expect(api.signinWithWebAuthn(assertion)).rejects.toMatchObject({
       name: "BackendApiError",
       status: 404,
     });
@@ -218,7 +217,7 @@ describe("signinWithWebAuthn", () => {
       }),
     );
 
-    await expect(signinWithWebAuthn(assertion)).rejects.toMatchObject({
+    await expect(api.signinWithWebAuthn(assertion)).rejects.toMatchObject({
       name: "BackendApiError",
       status: 403,
     });
@@ -291,7 +290,7 @@ describe("waitForTrackingCompletion", () => {
         }),
     );
 
-    const promise = waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 });
+    const promise = api.waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 });
     await vi.runAllTimersAsync();
     await expect(promise).resolves.toMatchObject({
       trackingId: "uuid-1",
@@ -335,7 +334,7 @@ describe("waitForTrackingCompletion", () => {
     );
 
     await expect(
-      waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 }),
+      api.waitForTrackingCompletion("uuid-1", { timeoutMs: 5_000, pollMs: 500 }),
     ).rejects.toThrow("Transaction failed on-chain (NO_GAS).");
   });
 });
@@ -352,7 +351,7 @@ describe("signupWithSiwe — 409 swallow", () => {
       }),
     );
 
-    const result = await signupWithSiwe({
+    const result = await api.signupWithSiwe({
       message: "msg",
       signature: "0xsig",
       name: "Alice",
@@ -375,7 +374,7 @@ describe("signupWithSiwe — 409 swallow", () => {
     );
 
     await expect(
-      signupWithSiwe({
+      api.signupWithSiwe({
         message: "msg",
         signature: "0xsig",
         name: "Alice",
@@ -396,7 +395,7 @@ describe("signupWithSiwe — 409 swallow", () => {
     );
 
     await expect(
-      signupWithSiwe({
+      api.signupWithSiwe({
         message: "msg",
         signature: "0xsig",
         name: "Alice",

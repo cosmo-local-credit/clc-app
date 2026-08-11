@@ -22,6 +22,14 @@ vi.mock("#/providers/web3-config", () => ({
   wagmiConfig: {},
 }));
 
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api", async () => ({
+  clcApi: {
+    auth: await import("@clc/api/features/auth/client"),
+  },
+}));
+
 // QueryClient wrapper for useMutation
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";

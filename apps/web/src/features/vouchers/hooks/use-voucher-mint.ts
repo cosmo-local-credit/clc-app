@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
-import { RELAYER_URL } from "@clc/api/lib/backend-config";
+import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 

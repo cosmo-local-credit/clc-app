@@ -6,7 +6,6 @@ import {
   type FilteredMarketVoucherPage,
   type MarketTagFacet,
   type MarketVoucher,
-  getFilteredMarketVouchers,
 } from "@clc/api/features/market/client";
 import {
   MARKET_MAP_PAGE_SIZE,
@@ -14,6 +13,7 @@ import {
   marketVoucherQueryKeys,
   nextMarketCursor,
 } from "#/features/home/hooks/use-market-vouchers";
+import { clcApi } from "#/lib/api";
 
 export const MAX_FILTERED_PAGES = 6;
 
@@ -51,7 +51,7 @@ export function useFilteredMarketVouchers(
       let cursor: number | undefined;
 
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
-        const page = await getFilteredMarketVouchers(
+        const page = await clcApi.market.getFilteredMarketVouchers(
           {
             perPage,
             cursor,
@@ -96,7 +96,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: marketVoucherQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredMarketVouchers(
+      const page = await clcApi.market.getFilteredMarketVouchers(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );

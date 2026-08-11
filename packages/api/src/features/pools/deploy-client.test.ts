@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createPoolDeployClient } from "./deploy-client";
 import type { OtxRecord } from "../auth/client";
-import { deployPool, getPoolTrackingOutcome } from "./deploy-client";
+import { getPoolTrackingOutcome } from "./deploy-client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createPoolDeployClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 function response(status: number, result?: unknown) {
   return {
@@ -51,7 +57,7 @@ describe("pool deploy client", () => {
       tags: ["Agriculture"],
     };
 
-    await expect(deployPool(payload)).resolves.toEqual({ trackingId: "tracking-1" });
+    await expect(api.deployPool(payload)).resolves.toEqual({ trackingId: "tracking-1" });
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("/api/v2/contracts/pool"),
       expect.objectContaining({ method: "POST", body: JSON.stringify(payload) }),

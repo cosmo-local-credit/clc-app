@@ -29,7 +29,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
-import { RELAYER_URL } from "@clc/api/lib/backend-config";
+import { RELAYER_URL } from "#/lib/relayer-config";
 import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { ApprovalPending, ApprovalRejected } from "./auth-states";

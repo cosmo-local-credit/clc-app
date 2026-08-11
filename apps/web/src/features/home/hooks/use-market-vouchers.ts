@@ -6,10 +6,10 @@ import {
   type MarketBoundingBox,
   type MarketVoucher,
   type MarketVoucherPage,
-  getMarketVouchers,
   viewportToBoundingBoxes,
 } from "@clc/api/features/market/client";
 import type { MarketViewport } from "#/features/home/ui/market-map";
+import { clcApi } from "#/lib/api";
 
 export const MARKET_MAP_PAGE_SIZE = 500;
 
@@ -35,7 +35,7 @@ function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = tru
   return useInfiniteQuery({
     queryKey: marketVoucherQueryKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
-      getMarketVouchers(
+      clcApi.market.getMarketVouchers(
         {
           perPage,
           cursor: pageParam,
@@ -65,7 +65,7 @@ function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean,
     queryKey: marketVoucherQueryKeys.viewport(boxes, perPage),
     queryFn: async ({ signal }) => {
       const pages = await Promise.all(
-        boxes.map((bbox) => getMarketVouchers({ perPage, bbox }, signal)),
+        boxes.map((bbox) => clcApi.market.getMarketVouchers({ perPage, bbox }, signal)),
       );
       return pages.flatMap((entry) => entry.vouchers);
     },

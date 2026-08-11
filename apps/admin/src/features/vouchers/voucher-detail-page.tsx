@@ -1,4 +1,3 @@
-import { clcQueries } from "@clc/api/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -21,12 +20,17 @@ import {
 } from "#/components/ui/table";
 import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
+import { voucherOfferingsQueryOptions } from "@clc/api/features/offerings/queries";
+import { voucherQueryOptions } from "@clc/api/features/market/queries";
+import { clcApi } from "#/lib/api";
 
 const OFFERING_PAGE_SIZE = 100;
 
 export function VoucherDetailPage({ address }: { address: string }) {
-  const voucherQuery = useQuery(clcQueries.voucher(address));
-  const offeringsQuery = useQuery(clcQueries.voucherOfferings(address, OFFERING_PAGE_SIZE));
+  const voucherQuery = useQuery(voucherQueryOptions(clcApi.market, address));
+  const offeringsQuery = useQuery(
+    voucherOfferingsQueryOptions(clcApi.offerings, address, OFFERING_PAGE_SIZE),
+  );
   // Every hook must run before the early returns below, or hook order changes
   // between the loading and loaded renders.
   const offeringsState = useDataState(offeringsQuery, (page) => page.offerings.length === 0);

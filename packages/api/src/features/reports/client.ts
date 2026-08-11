@@ -4,7 +4,7 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 
-import { apiFetch } from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
 import {
   type HexAddress,
   isPresent,
@@ -137,63 +137,83 @@ type BackendReportPage = {
   next?: Partial<{ updatedAt: string | null; id: string | number }> | null;
 };
 
-export async function getReports(
-  params: { perPage: number; cursor?: ReportCursor },
-  signal?: AbortSignal,
-): Promise<ReportPage> {
-  const query = new URLSearchParams({ perPage: String(params.perPage) });
-  if (params.cursor) {
-    query.set("cursorUpdatedAt", params.cursor.updatedAt);
-    query.set("cursorId", params.cursor.id);
-  }
+export type ReportsClient = ReturnType<typeof createReportsClient>;
 
-  const result = await apiFetch<BackendReportPage>(`/api/v2/reports?${query.toString()}`, {
-    method: "GET",
-    cache: "no-store",
-    signal,
-  });
-
+export function createReportsClient(http: HttpClient) {
   return {
-    reports: (result.reports ?? []).map(normalizeReportSummary).filter(isPresent),
-    next: normalizeCursor(result.next),
-  };
-}
+    async getReports(
+      params: { perPage: number; cursor?: ReportCursor },
+      signal?: AbortSignal,
+    ): Promise<ReportPage> {
+      const query = new URLSearchParams({ perPage: String(params.perPage) });
+      if (params.cursor) {
+        query.set("cursorUpdatedAt", params.cursor.updatedAt);
+        query.set("cursorId", params.cursor.id);
+      }
 
-export async function getFilteredReports(
-  { filter, facets, perPage, cursor }: FilteredReportsParams,
-  signal?: AbortSignal,
-): Promise<FilteredReportPage> {
-  const query = new URLSearchParams({ perPage: String(perPage) });
-  if (cursor) {
-    query.set("cursorUpdatedAt", cursor.updatedAt);
-    query.set("cursorId", cursor.id);
-  }
-  if (filter.term !== "") query.set("q", filter.term);
-  if (filter.tags.length > 0) query.set("tags", filter.tags.join(","));
-  if (filter.tags.length > 1 && filter.tagMatch === "all") query.set("tagMatch", "all");
-  if (filter.vouchers.length > 0) {
-    query.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
-  }
-  if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
-    query.set("voucherMatch", "all");
-  }
-  if (facets) query.set("facets", "true");
+      const result = await http.request<BackendReportPage>(`/api/v2/reports?${query.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+        signal,
+      });
 
-  const result = await apiFetch<BackendFilteredReportPage>(`/api/v2/reports?${query.toString()}`, {
-    method: "GET",
-    cache: "no-store",
-    signal,
-  });
+      return {
+        reports: (result.reports ?? []).map(normalizeReportSummary).filter(isPresent),
+        next: normalizeCursor(result.next),
+      };
+    },
 
-  return {
-    reports: (result.reports ?? []).map(normalizeReportSummary).filter(isPresent),
-    next: normalizeCursor(result.next),
-    tagFacets: result.tagFacets
-      ? result.tagFacets.map(normalizeReportTagFacet).filter(isPresent)
-      : null,
-    voucherFacets: result.voucherFacets
-      ? result.voucherFacets.map(normalizeReportVoucherFacet).filter(isPresent)
-      : null,
+    async getFilteredReports(
+      { filter, facets, perPage, cursor }: FilteredReportsParams,
+      signal?: AbortSignal,
+    ): Promise<FilteredReportPage> {
+      const query = new URLSearchParams({ perPage: String(perPage) });
+      if (cursor) {
+        query.set("cursorUpdatedAt", cursor.updatedAt);
+        query.set("cursorId", cursor.id);
+      }
+      if (filter.term !== "") query.set("q", filter.term);
+      if (filter.tags.length > 0) query.set("tags", filter.tags.join(","));
+      if (filter.tags.length > 1 && filter.tagMatch === "all") query.set("tagMatch", "all");
+      if (filter.vouchers.length > 0) {
+        query.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
+      }
+      if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
+        query.set("voucherMatch", "all");
+      }
+      if (facets) query.set("facets", "true");
+
+      const result = await http.request<BackendFilteredReportPage>(
+        `/api/v2/reports?${query.toString()}`,
+        {
+          method: "GET",
+          cache: "no-store",
+          signal,
+        },
+      );
+
+      return {
+        reports: (result.reports ?? []).map(normalizeReportSummary).filter(isPresent),
+        next: normalizeCursor(result.next),
+        tagFacets: result.tagFacets
+          ? result.tagFacets.map(normalizeReportTagFacet).filter(isPresent)
+          : null,
+        voucherFacets: result.voucherFacets
+          ? result.voucherFacets.map(normalizeReportVoucherFacet).filter(isPresent)
+          : null,
+      };
+    },
+
+    async getReport(id: string, signal?: AbortSignal): Promise<ReportDetail> {
+      const result = await http.request<{ report?: BackendReport | null }>(
+        `/api/v2/reports/${encodeURIComponent(id)}`,
+        { method: "GET", cache: "no-store", signal },
+      );
+
+      const report = normalizeReportDetail(result.report);
+      if (!report) throw new Error("Report response did not include a valid report.");
+      return report;
+    },
   };
 }
 
@@ -214,17 +234,6 @@ function normalizeReportTagFacet(facet: { tag?: unknown; count?: unknown }): Rep
   const count = normalizeNumber(facet.count);
   if (!tag || count === null || count < 0) return null;
   return { tag, count };
-}
-
-export async function getReport(id: string, signal?: AbortSignal): Promise<ReportDetail> {
-  const result = await apiFetch<{ report?: BackendReport | null }>(
-    `/api/v2/reports/${encodeURIComponent(id)}`,
-    { method: "GET", cache: "no-store", signal },
-  );
-
-  const report = normalizeReportDetail(result.report);
-  if (!report) throw new Error("Report response did not include a valid report.");
-  return report;
 }
 
 function normalizeCursor(next: BackendReportPage["next"] | undefined): ReportCursor | null {

@@ -1,69 +1,7 @@
 import { isTerminalOtxFailure } from "@clc/core/lib/otx";
 
 import { BackendApiError } from "../../client/errors";
-import { API_URL } from "../../lib/backend-config";
-
-type ApiOk<T> = {
-  ok: true;
-  description?: string;
-  result: T;
-};
-
-type ApiErr = {
-  ok: false;
-  description?: string;
-  code?: string;
-};
-
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const headers: Record<string, string> = {
-    ...(init?.body ? { "Content-Type": "application/json" } : {}),
-    ...(init?.headers as Record<string, string> | undefined),
-  };
-
-  const res = await fetch(`${API_URL}${path}`, {
-    credentials: "include",
-    ...init,
-    headers,
-  });
-
-  const text = await res.text();
-  let body: ApiOk<T> | ApiErr | T | null = null;
-  if (text) {
-    try {
-      body = JSON.parse(text) as ApiOk<T> | ApiErr | T;
-    } catch {
-      throw new BackendApiError(res.status, res.statusText || "Non-JSON response from server");
-    }
-  }
-
-  if (!res.ok) {
-    const errBody = body as ApiErr | null;
-    throw new BackendApiError(
-      res.status,
-      errBody?.description ?? (res.statusText || "Request failed"),
-      errBody?.code,
-    );
-  }
-
-  if (body && typeof body === "object" && "ok" in body) {
-    const envelope = body as ApiOk<T> | ApiErr;
-    if (!envelope.ok) {
-      throw new BackendApiError(200, envelope.description ?? "Request failed", envelope.code);
-    }
-    return envelope.result;
-  }
-
-  return body as T;
-}
-
-export async function getSiweNonce(): Promise<string> {
-  const data = await apiFetch<{ nonce: string }>("/auth/nonce", {
-    method: "POST",
-    body: JSON.stringify({}),
-  });
-  return data.nonce;
-}
+import type { HttpClient } from "../../client/http-client";
 
 export type SignupSiwePayload = {
   message: string;
@@ -79,24 +17,6 @@ export type SignupResult = {
   alreadyRegistered?: boolean;
 };
 
-export async function signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult> {
-  try {
-    return await apiFetch<SignupResult>("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    // 409 means the *address* is already registered only when the backend
-    // says so explicitly (code E17 = email conflict, a different identity
-    // entirely). Swallowing an email conflict here would make the caller
-    // sign in as this (never-persisted) address, which 404s.
-    if (err instanceof BackendApiError && err.status === 409 && err.code !== "E17") {
-      return { userId: null, status: "REGISTERED", role: "USER", alreadyRegistered: true };
-    }
-    throw err;
-  }
-}
-
 export type SigninSiwePayload = {
   message: string;
   signature: string;
@@ -106,13 +26,6 @@ export type SigninResult = {
   userId: number;
   role: string;
 };
-
-export async function signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult> {
-  return apiFetch<SigninResult>("/auth/signin", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
 
 export type WebAuthnAssertionPayload = {
   credentialId: string;
@@ -130,35 +43,10 @@ export type WebAuthnSigninResult = {
   publicKeyY: string;
 };
 
-// Passkey sign-in. The WebAuthn assertion is itself the authentication, so no
-// SIWE signature is involved — the backend verifies the assertion against the
-// stored credential and issues the session cookie. Mirrors signinWithSiwe's
-// error contract: 404 (not registered), 403 (pending/rejected), 401 (assertion
-// failed).
-export async function signinWithWebAuthn(
-  payload: WebAuthnAssertionPayload,
-): Promise<WebAuthnSigninResult> {
-  return apiFetch<WebAuthnSigninResult>("/auth/webauthn/verify", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function logout(): Promise<void> {
-  await apiFetch<Record<string, never>>("/auth/logout", {
-    method: "POST",
-    body: JSON.stringify({}),
-  });
-}
-
 export type SessionResult = {
   address: string;
   chainId: number;
 };
-
-export async function getSession(): Promise<SessionResult | null> {
-  return apiFetch<SessionResult | null>("/auth/session", { method: "GET" });
-}
 
 export type ProfilePayload = {
   name: string;
@@ -171,22 +59,6 @@ export type ProfilePayload = {
   clearLocation?: boolean;
 };
 
-export async function submitProfile(payload: ProfilePayload): Promise<void> {
-  await apiFetch("/auth/profile", {
-    method: "POST",
-    body: JSON.stringify({
-      name: payload.name,
-      email: payload.email,
-      phone: payload.phone,
-      country: payload.country,
-      locationName: payload.locationName,
-      geoLat: payload.geoLat,
-      geoLng: payload.geoLng,
-      ...(payload.clearLocation ? { clearLocation: true } : {}),
-    }),
-  });
-}
-
 export type ProfileResult = {
   address: string;
   name: string;
@@ -198,10 +70,6 @@ export type ProfileResult = {
   geoLng?: number | null;
   createdAt: string;
 };
-
-export async function getProfile(): Promise<ProfileResult> {
-  return apiFetch<ProfileResult>("/auth/profile", { method: "GET" });
-}
 
 export type OtxRecord = {
   id: number;
@@ -218,18 +86,149 @@ export type OtxTrackResult = {
   otx: OtxRecord[];
 };
 
-const TRACKING_TIMEOUT_MS = 120_000;
-export const TRACKING_POLL_MS = 2_000;
-
 export type OtxTrackingOutcome =
   | { kind: "pending" }
   | { kind: "success"; otx: OtxRecord }
   | { kind: "error"; error: string };
 
-export async function trackOtx(trackingId: string): Promise<OtxTrackResult> {
-  return apiFetch<OtxTrackResult>(`/api/v2/otx/track/${trackingId}`, { method: "GET" });
+const TRACKING_TIMEOUT_MS = 120_000;
+export const TRACKING_POLL_MS = 2_000;
+
+export type AuthClient = {
+  getSiweNonce(): Promise<string>;
+  signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult>;
+  signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult>;
+  signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult>;
+  logout(): Promise<void>;
+  getSession(): Promise<SessionResult | null>;
+  submitProfile(payload: ProfilePayload): Promise<void>;
+  getProfile(): Promise<ProfileResult>;
+  trackOtx(trackingId: string): Promise<OtxTrackResult>;
+  waitForTrackingCompletion(
+    trackingId: string,
+    options?: {
+      timeoutMs?: number;
+      pollMs?: number;
+      sleep?: (ms: number) => Promise<void>;
+    },
+  ): Promise<OtxRecord>;
+};
+
+export function createAuthClient(http: HttpClient): AuthClient {
+  async function trackOtx(trackingId: string): Promise<OtxTrackResult> {
+    return http.request<OtxTrackResult>(`/api/v2/otx/track/${trackingId}`, { method: "GET" });
+  }
+
+  return {
+    trackOtx,
+
+    async getSiweNonce(): Promise<string> {
+      const data = await http.request<{ nonce: string }>("/auth/nonce", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      return data.nonce;
+    },
+
+    async signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult> {
+      try {
+        return await http.request<SignupResult>("/auth/signup", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        // 409 means the *address* is already registered only when the backend
+        // says so explicitly (code E17 = email conflict, a different identity
+        // entirely). Swallowing an email conflict here would make the caller
+        // sign in as this (never-persisted) address, which 404s.
+        if (err instanceof BackendApiError && err.status === 409 && err.code !== "E17") {
+          return { userId: null, status: "REGISTERED", role: "USER", alreadyRegistered: true };
+        }
+        throw err;
+      }
+    },
+
+    async signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult> {
+      return http.request<SigninResult>("/auth/signin", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+
+    // Passkey sign-in. The WebAuthn assertion is itself the authentication, so no
+    // SIWE signature is involved — the backend verifies the assertion against the
+    // stored credential and issues the session cookie. Mirrors signinWithSiwe's
+    // error contract: 404 (not registered), 403 (pending/rejected), 401 (assertion
+    // failed).
+    async signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult> {
+      return http.request<WebAuthnSigninResult>("/auth/webauthn/verify", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+
+    async logout(): Promise<void> {
+      await http.request<Record<string, never>>("/auth/logout", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+    },
+
+    async getSession(): Promise<SessionResult | null> {
+      return http.request<SessionResult | null>("/auth/session", { method: "GET" });
+    },
+
+    async submitProfile(payload: ProfilePayload): Promise<void> {
+      await http.request("/auth/profile", {
+        method: "POST",
+        body: JSON.stringify({
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          country: payload.country,
+          locationName: payload.locationName,
+          geoLat: payload.geoLat,
+          geoLng: payload.geoLng,
+          ...(payload.clearLocation ? { clearLocation: true } : {}),
+        }),
+      });
+    },
+
+    async getProfile(): Promise<ProfileResult> {
+      return http.request<ProfileResult>("/auth/profile", { method: "GET" });
+    },
+
+    async waitForTrackingCompletion(
+      trackingId: string,
+      options: {
+        timeoutMs?: number;
+        pollMs?: number;
+        sleep?: (ms: number) => Promise<void>;
+      } = {},
+    ): Promise<OtxRecord> {
+      const timeoutMs = options.timeoutMs ?? TRACKING_TIMEOUT_MS;
+      const pollMs = options.pollMs ?? TRACKING_POLL_MS;
+      const sleep =
+        options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+      const deadline = Date.now() + timeoutMs;
+
+      while (Date.now() < deadline) {
+        const result = await trackOtx(trackingId);
+        const outcome = getTrackingOutcome(result);
+        if (outcome.kind === "success") return outcome.otx;
+        if (outcome.kind === "error") {
+          throw new Error(outcome.error);
+        }
+
+        await sleep(pollMs);
+      }
+
+      throw new Error("Transaction was accepted but not confirmed on-chain.");
+    },
+  };
 }
 
+/** Pure: derives the caller-facing outcome from a tracking response. */
 export function getTrackingOutcome(result: OtxTrackResult | undefined): OtxTrackingOutcome {
   const otx = result?.otx ?? [];
   const currentChain = otx.filter((entry) => !entry.replaced);
@@ -246,32 +245,4 @@ export function getTrackingOutcome(result: OtxTrackResult | undefined): OtxTrack
   }
 
   return { kind: "pending" };
-}
-
-export async function waitForTrackingCompletion(
-  trackingId: string,
-  options: {
-    timeoutMs?: number;
-    pollMs?: number;
-    sleep?: (ms: number) => Promise<void>;
-  } = {},
-): Promise<OtxRecord> {
-  const timeoutMs = options.timeoutMs ?? TRACKING_TIMEOUT_MS;
-  const pollMs = options.pollMs ?? TRACKING_POLL_MS;
-  const sleep =
-    options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
-  const deadline = Date.now() + timeoutMs;
-
-  while (Date.now() < deadline) {
-    const result = await trackOtx(trackingId);
-    const outcome = getTrackingOutcome(result);
-    if (outcome.kind === "success") return outcome.otx;
-    if (outcome.kind === "error") {
-      throw new Error(outcome.error);
-    }
-
-    await sleep(pollMs);
-  }
-
-  throw new Error("Transaction was accepted but not confirmed on-chain.");
 }

@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import type { UserPool } from "@clc/api/features/pools/client";
-import { getPoolVouchers } from "@clc/api/features/pools/client";
+import { clcApi } from "#/lib/api";
 
 const DEFAULT_POOL_VOUCHERS_PAGE_SIZE = 20;
 
@@ -23,7 +23,7 @@ export function usePoolVouchersInfinite(
   return useInfiniteQuery({
     queryKey: poolVoucherQueryKeys.list(poolAddress, perPage),
     queryFn: ({ pageParam, signal }) =>
-      getPoolVouchers(
+      clcApi.pools.getPoolVouchers(
         requirePoolAddress(poolAddress),
         {
           perPage,

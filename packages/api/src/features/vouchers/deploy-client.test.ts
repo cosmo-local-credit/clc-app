@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { deployVoucher } from "./deploy-client";
+import { createHttpClient } from "../../client/http-client";
+import { createVoucherDeployClient } from "./deploy-client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createVoucherDeployClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 function response(status: number, result?: unknown) {
   return {
@@ -35,7 +40,7 @@ describe("voucher deploy client", () => {
       tags: ["Agriculture"],
     };
 
-    await expect(deployVoucher(payload)).resolves.toEqual({ trackingId: "tracking-1" });
+    await expect(api.deployVoucher(payload)).resolves.toEqual({ trackingId: "tracking-1" });
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("/api/v2/contracts/token"),
       expect.objectContaining({ method: "POST", body: JSON.stringify(payload) }),

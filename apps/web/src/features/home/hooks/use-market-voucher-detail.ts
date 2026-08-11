@@ -1,7 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import { getMarketVoucher } from "@clc/api/features/market/client";
 import { MARKET_QUERY_FRESHNESS } from "./use-market-vouchers";
+import { clcApi } from "#/lib/api";
 
 const marketVoucherDetailQueryKeys = {
   all: ["market-voucher-detail"] as const,
@@ -15,7 +15,7 @@ const marketVoucherDetailQueryKeys = {
 export function marketVoucherDetailQuery(address: string) {
   return queryOptions({
     queryKey: marketVoucherDetailQueryKeys.byAddress(address),
-    queryFn: ({ signal }) => getMarketVoucher(address, signal),
+    queryFn: ({ signal }) => clcApi.market.getMarketVoucher(address, signal),
     ...MARKET_QUERY_FRESHNESS,
   });
 }

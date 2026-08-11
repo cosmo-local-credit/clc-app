@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
-
-import { getProfile } from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 
 export const authProfileQueryKeys = {
   all: ["auth", "profile"] as const,
@@ -14,7 +13,7 @@ export function useAuthProfile() {
 
   return useQuery({
     queryKey: authProfileQueryKeys.current(address),
-    queryFn: getProfile,
+    queryFn: () => clcApi.auth.getProfile(),
     enabled: !!address,
     staleTime: 60_000,
     retry: false,

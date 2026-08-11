@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
 import { BackendApiError } from "@clc/api/client/errors";
-import { getSession, type SessionResult } from "@clc/api/features/auth/client";
+import { type SessionResult } from "@clc/api/features/auth/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
+import { clcApi } from "#/lib/api";
 
 type AuthStatusState =
   | "loading"
@@ -36,7 +37,7 @@ export function useAuthStatus(): AuthStatus {
   const { address, chainId, connector, status } = useConnection();
   const sessionQuery = useQuery({
     queryKey: authSessionQueryKeyForAddress(address),
-    queryFn: getSession,
+    queryFn: () => clcApi.auth.getSession(),
     enabled: reconnectAttempted && !!address,
     retry: false,
   });

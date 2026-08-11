@@ -1,4 +1,3 @@
-import { clcQueries } from "@clc/api/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -17,12 +16,17 @@ import {
 } from "#/components/ui/table";
 import { formatDateTime } from "#/lib/format";
 import { useDataState } from "#/lib/use-data-state";
+import { accountTransfersQueryOptions } from "@clc/api/features/accounts/queries";
+import { latestAccountTokensQueryOptions } from "@clc/api/features/accounts/queries";
+import { clcApi } from "#/lib/api";
 
 const TRANSFER_PAGE_SIZE = 50;
 
 export function UserDetailPage({ address }: { address: string }) {
-  const tokensQuery = useQuery(clcQueries.latestAccountTokens(address));
-  const transfersQuery = useQuery(clcQueries.accountTransfers(address, TRANSFER_PAGE_SIZE));
+  const tokensQuery = useQuery(latestAccountTokensQueryOptions(clcApi.accounts, address));
+  const transfersQuery = useQuery(
+    accountTransfersQueryOptions(clcApi.accounts, address, TRANSFER_PAGE_SIZE),
+  );
 
   const tokensState = useDataState(tokensQuery, (result) => result.tokens.length === 0);
   const transfersState = useDataState(transfersQuery, (result) => result.transfers.length === 0);

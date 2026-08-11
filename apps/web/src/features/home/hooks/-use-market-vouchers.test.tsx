@@ -18,6 +18,14 @@ vi.mock("@clc/api/features/market/client", async (importOriginal) => {
   return { ...actual, getMarketVouchers };
 });
 
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api", async () => ({
+  clcApi: {
+    market: await import("@clc/api/features/market/client"),
+  },
+}));
+
 function voucher(id: number, overrides: Partial<MarketVoucher> = {}): MarketVoucher {
   return {
     id: String(id),

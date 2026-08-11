@@ -14,9 +14,9 @@ import {
   type ReportSummary,
   type ReportTagFacet,
   type ReportVoucherFacet,
-  getFilteredReports,
 } from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { clcApi } from "#/lib/api";
 
 const REPORTS_FILTER_PAGE_SIZE = 100;
 
@@ -70,7 +70,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
       let cursor: ReportCursor | undefined;
 
       for (let index = 0; index < MAX_FILTERED_REPORT_PAGES; index++) {
-        const page = await getFilteredReports(
+        const page = await clcApi.reports.getFilteredReports(
           { perPage, cursor, filter, facets: index === 0 },
           signal,
         );
@@ -119,7 +119,7 @@ function useReportFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredReportQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredReports(
+      const page = await clcApi.reports.getFilteredReports(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );

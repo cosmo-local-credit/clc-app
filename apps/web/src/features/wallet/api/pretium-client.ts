@@ -1,4 +1,4 @@
-import { apiFetch } from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 
 type PretiumAsset = "USDT" | "USDC" | "cUSD";
 
@@ -65,10 +65,13 @@ const PRETIUM_GET_REQUEST: RequestInit = {
 export async function triggerPretiumOnramp(
   input: TriggerPretiumOnrampInput,
 ): Promise<PretiumOnrampResult> {
-  const result = await apiFetch<Partial<PretiumOnrampResult>>("/api/v2/pretium/trigger-onramp", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+  const result = await clcApi.http.request<Partial<PretiumOnrampResult>>(
+    "/api/v2/pretium/trigger-onramp",
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
 
   return {
     transactionCode: readString(result, "transactionCode") || readString(result, "pretium_id"),
@@ -93,7 +96,7 @@ type PretiumLinkStatusResponse = {
 };
 
 export async function getPretiumLinkByAddress(address: `0x${string}`): Promise<PretiumLinkStatus> {
-  const result = await apiFetch<PretiumLinkStatusResponse>(
+  const result = await clcApi.http.request<PretiumLinkStatusResponse>(
     `/api/v2/pretium/link-by-address/${address}`,
     PRETIUM_GET_REQUEST,
   );
@@ -104,14 +107,17 @@ export async function getPretiumLinkByAddress(address: `0x${string}`): Promise<P
 }
 
 export async function createPretiumLink(input: CreatePretiumLinkInput): Promise<void> {
-  await apiFetch("/api/v2/pretium/link", {
+  await clcApi.http.request("/api/v2/pretium/link", {
     method: "POST",
     body: JSON.stringify(input),
   });
 }
 
 export async function getPretiumRates(): Promise<PretiumRatesResult> {
-  const result = await apiFetch<PretiumRatesResponse>("/api/v2/pretium/rates", PRETIUM_GET_REQUEST);
+  const result = await clcApi.http.request<PretiumRatesResponse>(
+    "/api/v2/pretium/rates",
+    PRETIUM_GET_REQUEST,
+  );
   return {
     buy: formatValue(result.buy),
     sell: formatValue(result.sell),
@@ -121,7 +127,7 @@ export async function getPretiumRates(): Promise<PretiumRatesResult> {
 export async function getPretiumTransactionsByAddress(
   address: `0x${string}`,
 ): Promise<PretiumTransactionsByAddressResult> {
-  const result = await apiFetch<PretiumTransactionsByAddressResponse>(
+  const result = await clcApi.http.request<PretiumTransactionsByAddressResponse>(
     `/api/v2/pretium/transactions-by-address/${address}`,
     PRETIUM_GET_REQUEST,
   );

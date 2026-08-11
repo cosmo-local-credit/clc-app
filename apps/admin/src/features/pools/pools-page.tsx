@@ -1,4 +1,3 @@
-import { clcQueries } from "@clc/api/queries";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +10,8 @@ import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { Badge } from "#/components/ui/badge";
 import { formatFeePpm } from "#/lib/format";
+import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { clcApi } from "#/lib/api";
 
 const PAGE_SIZE = 100;
 
@@ -79,7 +80,7 @@ const columns: Array<ColumnDef<UserPool>> = [
 
 export function PoolsPage() {
   const navigate = useNavigate();
-  const poolsQuery = useQuery(clcQueries.poolList(PAGE_SIZE));
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, PAGE_SIZE));
 
   const pools = poolsQuery.data?.pools ?? [];
   const dropped = (poolsQuery.data?.receivedCount ?? 0) - pools.length;

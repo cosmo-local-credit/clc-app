@@ -11,6 +11,14 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@clc/api/features/accounts/client", () => mocks);
 
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api", async () => ({
+  clcApi: {
+    accounts: await import("@clc/api/features/accounts/client"),
+  },
+}));
+
 import { useAccountTokensInfinite, useAccountTransfersInfinite } from "./use-account-balances";
 
 const ADDRESS = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createMarketClient } from "./client";
 
-import {
-  getFilteredMarketVouchers,
-  getMarketVoucher,
-  getMarketVouchers,
-  type MarketVoucher,
-  viewportToBoundingBoxes,
-} from "./client";
+import { type MarketVoucher, viewportToBoundingBoxes } from "./client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createMarketClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 const fetchMock = vi.fn();
 
@@ -55,7 +55,7 @@ describe("getMarketVouchers request", () => {
   it("builds the first-page URL", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getMarketVouchers({ perPage: 500 });
+    await api.getMarketVouchers({ perPage: 500 });
 
     expect(requestedUrl()).toContain("/api/v2/vouchers?");
     expect(requestedUrl()).toContain("perPage=500");
@@ -65,7 +65,7 @@ describe("getMarketVouchers request", () => {
   it("builds the next-page URL from a cursor", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getMarketVouchers({ perPage: 500, cursor: 2212, next: true });
+    await api.getMarketVouchers({ perPage: 500, cursor: 2212, next: true });
 
     expect(requestedUrl()).toContain("perPage=500");
     expect(requestedUrl()).toContain("cursor=2212");
@@ -75,7 +75,7 @@ describe("getMarketVouchers request", () => {
   it("sends no credentials and does not disable the browser cache", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getMarketVouchers({ perPage: 500 });
+    await api.getMarketVouchers({ perPage: 500 });
 
     const init = requestedInit();
     expect(init.credentials).toBe("omit");
@@ -87,7 +87,7 @@ describe("getMarketVouchers request", () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
     const controller = new AbortController();
 
-    await getMarketVouchers({ perPage: 500 }, controller.signal);
+    await api.getMarketVouchers({ perPage: 500 }, controller.signal);
 
     expect(requestedInit().signal).toBe(controller.signal);
   });
@@ -95,7 +95,7 @@ describe("getMarketVouchers request", () => {
   it("serializes a bounding box as minLng,minLat,maxLng,maxLat", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getMarketVouchers({
+    await api.getMarketVouchers({
       perPage: 500,
       bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
     });
@@ -108,7 +108,7 @@ describe("getMarketVouchers normalization", () => {
   it("normalizes a valid page and preserves the cursors", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [VALID_ROW], first: 2710, last: 2212 }));
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.first).toBe(2710);
     expect(page.last).toBe(2212);
@@ -131,7 +131,7 @@ describe("getMarketVouchers normalization", () => {
   it("preserves checksummed address casing", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [VALID_ROW], first: 1, last: 1 }));
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers[0]?.address).toBe("0xAbC0000000000000000000000000000000000123");
   });
@@ -148,7 +148,7 @@ describe("getMarketVouchers normalization", () => {
       }),
     );
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers[0]).toMatchObject({
       name: "Spaced",
@@ -171,7 +171,7 @@ describe("getMarketVouchers normalization", () => {
       }),
     );
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers).toHaveLength(1);
     expect(page.vouchers[0]?.iconUrl).toBeNull();
@@ -180,7 +180,7 @@ describe("getMarketVouchers normalization", () => {
   it("treats an absent voucher list as an empty page", async () => {
     fetchMock.mockResolvedValue(pageResponse({ first: 0, last: 0 }));
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers).toEqual([]);
     expect(page.first).toBe(0);
@@ -203,7 +203,7 @@ describe("getMarketVouchers normalization", () => {
   ])("drops a row with %s rather than rendering a bad marker", async (_label, row) => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [row], first: 1, last: 1 }));
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers).toEqual([]);
   });
@@ -217,7 +217,7 @@ describe("getMarketVouchers normalization", () => {
       }),
     );
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers).toHaveLength(1);
     expect(page.vouchers[0]?.id).toBe("2710");
@@ -226,7 +226,7 @@ describe("getMarketVouchers normalization", () => {
   it("coerces missing cursors to zero so callers never see undefined", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [] }));
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.first).toBe(0);
     expect(page.last).toBe(0);
@@ -289,7 +289,7 @@ describe("getMarketVouchers page size reporting", () => {
       }),
     );
 
-    const page = await getMarketVouchers({ perPage: 500 });
+    const page = await api.getMarketVouchers({ perPage: 500 });
 
     expect(page.vouchers).toHaveLength(1);
     expect(page.receivedCount).toBe(2);
@@ -298,7 +298,7 @@ describe("getMarketVouchers page size reporting", () => {
   it("reports zero for an empty page", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    expect((await getMarketVouchers({ perPage: 500 })).receivedCount).toBe(0);
+    expect((await api.getMarketVouchers({ perPage: 500 })).receivedCount).toBe(0);
   });
 });
 
@@ -340,7 +340,7 @@ describe("getMarketVoucher", () => {
   it("reads the voucher the card and the page render", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
-    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(requestedUrl()).toContain(`/api/v2/vouchers/${DETAIL_ROW.address}`);
     expect(voucher).toMatchObject({
@@ -370,7 +370,7 @@ describe("getMarketVoucher", () => {
       }),
     );
 
-    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(voucher).toMatchObject({
       iconUrl: null,
@@ -399,7 +399,7 @@ describe("getMarketVoucher", () => {
   ])("rejects a %s image URL", async (_label, iconUrl) => {
     fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, iconUrl, bannerUrl: iconUrl }));
 
-    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(voucher.iconUrl).toBeNull();
     expect(voucher.bannerUrl).toBeNull();
@@ -414,7 +414,7 @@ describe("getMarketVoucher", () => {
       }),
     );
 
-    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(voucher.iconUrl).toBe("http://content.example/icon.jpg");
     expect(voucher.bannerUrl).toBe("https://content.example/banner.jpg");
@@ -428,7 +428,7 @@ describe("getMarketVoucher", () => {
   ])("drops both coordinates given %s", async (_label, coords) => {
     fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, ...coords }));
 
-    const voucher = await getMarketVoucher(DETAIL_ROW.address);
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(voucher.lat).toBeNull();
     expect(voucher.lng).toBeNull();
@@ -442,19 +442,19 @@ describe("getMarketVoucher", () => {
   ])("throws on %s so the page shows its error state", async (_label, voucher) => {
     fetchMock.mockResolvedValue(detailResponse(voucher));
 
-    await expect(getMarketVoucher(DETAIL_ROW.address)).rejects.toThrow();
+    await expect(api.getMarketVoucher(DETAIL_ROW.address)).rejects.toThrow();
   });
 
   it("falls back to the voucher kind rather than failing", async () => {
     fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, kind: "eatery" }));
 
-    expect((await getMarketVoucher(DETAIL_ROW.address)).kind).toBe("voucher");
+    expect((await api.getMarketVoucher(DETAIL_ROW.address)).kind).toBe("voucher");
   });
 
   it("keeps the address inside one path segment", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
-    await getMarketVoucher("../vouchers?perPage=1");
+    await api.getMarketVoucher("../vouchers?perPage=1");
 
     const url = new URL(requestedUrl());
     expect(url.pathname).toBe("/api/v2/vouchers/..%2Fvouchers%3FperPage%3D1");
@@ -464,7 +464,7 @@ describe("getMarketVoucher", () => {
   it("sends no credentials, so a shared cache stays usable", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
-    await getMarketVoucher(DETAIL_ROW.address);
+    await api.getMarketVoucher(DETAIL_ROW.address);
 
     expect(requestedInit().credentials).toBe("omit");
     expect(requestedInit().cache).toBeUndefined();
@@ -483,7 +483,7 @@ describe("getFilteredMarketVouchers request", () => {
   it("encodes a term and comma-joins tags in one key", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({
+    await api.getFilteredMarketVouchers({
       perPage: 500,
       filter: { ...FILTER, term: "sarafu network", tags: ["Art", "Food production"] },
     });
@@ -498,7 +498,7 @@ describe("getFilteredMarketVouchers request", () => {
   it("omits a filter key it has nothing to say about", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+    await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
 
     const url = new URL(requestedUrl());
     expect(url.searchParams.has("q")).toBe(false);
@@ -510,13 +510,13 @@ describe("getFilteredMarketVouchers request", () => {
   it("sends tagMatch only when two or more tags make the modes differ", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({
+    await api.getFilteredMarketVouchers({
       perPage: 500,
       filter: { ...FILTER, tags: ["Art"], tagMatch: "all" },
     });
     expect(new URL(requestedUrl(0)).searchParams.has("tagMatch")).toBe(false);
 
-    await getFilteredMarketVouchers({
+    await api.getFilteredMarketVouchers({
       perPage: 500,
       filter: { ...FILTER, tags: ["Art", "Culture"], tagMatch: "all" },
     });
@@ -526,17 +526,17 @@ describe("getFilteredMarketVouchers request", () => {
   it("sends facets only as the literal true the backend accepts", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: true });
+    await api.getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: true });
     expect(new URL(requestedUrl(0)).searchParams.get("facets")).toBe("true");
 
-    await getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: false });
+    await api.getFilteredMarketVouchers({ perPage: 1, filter: FILTER, facets: false });
     expect(new URL(requestedUrl(1)).searchParams.has("facets")).toBe(false);
   });
 
   it("carries the cursor and next flag for a later page of the walk", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({ perPage: 500, cursor: 2501, next: true, filter: FILTER });
+    await api.getFilteredMarketVouchers({ perPage: 500, cursor: 2501, next: true, filter: FILTER });
 
     const url = new URL(requestedUrl());
     expect(url.searchParams.get("cursor")).toBe("2501");
@@ -546,7 +546,7 @@ describe("getFilteredMarketVouchers request", () => {
   it("encodes a bounding box alongside the filter", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 
-    await getFilteredMarketVouchers({
+    await api.getFilteredMarketVouchers({
       perPage: 500,
       bbox: { minLng: 36.6, minLat: -1.5, maxLng: 37.1, maxLat: -1.1 },
       filter: { ...FILTER, term: "art" },
@@ -561,7 +561,7 @@ describe("getFilteredMarketVouchers request", () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
     const controller = new AbortController();
 
-    await getFilteredMarketVouchers({ perPage: 500, filter: FILTER }, controller.signal);
+    await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER }, controller.signal);
 
     expect(requestedInit().credentials).toBe("omit");
     expect(requestedInit().cache).toBeUndefined();
@@ -591,7 +591,7 @@ describe("getFilteredMarketVouchers response", () => {
       }),
     );
 
-    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+    const page = await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
 
     expect(page.tagFacets).toEqual([
       { tag: "Art", count: 3 },
@@ -602,13 +602,13 @@ describe("getFilteredMarketVouchers response", () => {
   it("distinguishes an absent facet from an empty one", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
     expect(
-      (await getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets,
+      (await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets,
     ).toBeNull();
 
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0, tagFacets: [] }));
-    expect((await getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets).toEqual(
-      [],
-    );
+    expect(
+      (await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER })).tagFacets,
+    ).toEqual([]);
   });
 
   it("drops malformed facet rows rather than rendering them", async () => {
@@ -627,7 +627,7 @@ describe("getFilteredMarketVouchers response", () => {
       }),
     );
 
-    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+    const page = await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
 
     expect(page.tagFacets).toEqual([{ tag: "Art", count: 3 }]);
   });
@@ -637,7 +637,7 @@ describe("getFilteredMarketVouchers response", () => {
       pageResponse({ vouchers: [VALID_ROW, { id: 1 }], first: 2710, last: 1 }),
     );
 
-    const page = await getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
+    const page = await api.getFilteredMarketVouchers({ perPage: 500, filter: FILTER });
 
     expect(page.vouchers).toHaveLength(1);
     expect(page.receivedCount).toBe(2);

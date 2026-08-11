@@ -1,7 +1,9 @@
+import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 import { useMutation } from "@tanstack/react-query";
-
-import { deployVoucher } from "@clc/api/features/vouchers/deploy-client";
+import { clcApi } from "#/lib/api";
 
 export function useDeployVoucher() {
-  return useMutation({ mutationFn: deployVoucher });
+  return useMutation({
+    mutationFn: (payload: VoucherDeployPayload) => clcApi.voucherDeploy.deployVoucher(payload),
+  });
 }

@@ -1,6 +1,7 @@
 import type { UserPool } from "@clc/api/features/pools/client";
-import { clcQueries } from "@clc/api/queries";
 import { useQuery } from "@tanstack/react-query";
+import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { clcApi } from "#/lib/api";
 
 const DIRECTORY_PAGE_SIZE = 100;
 
@@ -54,7 +55,7 @@ export function deriveOperators(pools: ReadonlyArray<OwnedPool>): Array<KnownOpe
  * directory endpoint lands, replace the body and keep the return shape.
  */
 export function useKnownOperators() {
-  const poolsQuery = useQuery(clcQueries.poolList(DIRECTORY_PAGE_SIZE));
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, DIRECTORY_PAGE_SIZE));
 
   return {
     operators: deriveOperators(poolsQuery.data?.pools ?? []),

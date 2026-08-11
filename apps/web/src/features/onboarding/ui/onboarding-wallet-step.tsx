@@ -13,18 +13,19 @@ import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
-import { getSession } from "@clc/api/features/auth/client";
+
 import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
 import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
 import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
-import { RELAYER_URL } from "@clc/api/lib/backend-config";
+import { RELAYER_URL } from "#/lib/relayer-config";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { usePaperWalletProtection } from "./paper-wallet-protection";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
+import { clcApi } from "#/lib/api";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -149,7 +150,7 @@ export function OnboardingWalletStep({
   async function verifySession(): Promise<void> {
     const session = await queryClient.fetchQuery({
       queryKey: [...authSessionQueryKey, address.toLowerCase()],
-      queryFn: getSession,
+      queryFn: () => clcApi.auth.getSession(),
     });
     if (!session || session.address.toLowerCase() !== address.toLowerCase()) {
       throw new Error(t`Session could not be verified. Try again.`);
