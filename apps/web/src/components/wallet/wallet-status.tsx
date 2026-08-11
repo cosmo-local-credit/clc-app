@@ -3,7 +3,9 @@ import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
   RiCheckLine,
+  RiCloseLine,
   RiFingerprintLine,
+  RiTimeLine,
 } from "react-icons/ri";
 
 import { Trans } from "@lingui/react/macro";
@@ -72,6 +74,65 @@ export function SuccessCheck({ className }: { className?: string }) {
       style={{ width: 56, height: 56 }}
     >
       <RiCheckLine className="size-7" aria-hidden="true" />
+    </span>
+  );
+}
+
+export function PendingClock({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "flex size-14 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning-foreground",
+        className,
+      )}
+    >
+      <RiTimeLine className="size-7" aria-hidden="true" />
+    </span>
+  );
+}
+
+export function FailureCross({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "flex size-14 items-center justify-center rounded-full border border-destructive/40 bg-destructive/10 text-destructive",
+        className,
+      )}
+    >
+      <RiCloseLine className="size-7" aria-hidden="true" />
+    </span>
+  );
+}
+
+/** Dot + label used by every tracked-transaction receipt to name the on-chain outcome. */
+export function StatusPill({
+  tone,
+  label,
+  className,
+}: {
+  tone: "success" | "pending" | "error";
+  label: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-xs font-semibold",
+        tone === "error"
+          ? "text-destructive"
+          : tone === "pending"
+            ? "text-warning-foreground"
+            : "text-primary",
+        className,
+      )}
+    >
+      <span
+        className={cn(
+          "size-2 rounded-full",
+          tone === "error" ? "bg-destructive" : tone === "pending" ? "bg-warning" : "bg-primary",
+        )}
+      />
+      {label}
     </span>
   );
 }

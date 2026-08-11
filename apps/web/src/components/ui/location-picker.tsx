@@ -16,6 +16,7 @@ type LocationPickerProps = {
   value: LocationInput | undefined;
   onChange: (value: LocationInput | undefined) => void;
   error?: string;
+  label?: string;
 };
 
 type PlacePinOptions = {
@@ -24,7 +25,7 @@ type PlacePinOptions = {
   updateSearchInput?: boolean;
 };
 
-export function LocationPicker({ value, onChange, error }: LocationPickerProps) {
+export function LocationPicker({ value, onChange, error, label }: LocationPickerProps) {
   const { t } = useLingui();
   const [query, setQuery] = useState(value?.locationName ?? "");
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
@@ -171,7 +172,7 @@ export function LocationPicker({ value, onChange, error }: LocationPickerProps) 
     <div className="space-y-3">
       <div className="relative">
         <label htmlFor="location-search" className="font-medium text-sm">
-          <Trans>Location</Trans>
+          {label ?? <Trans>Location</Trans>}
         </label>
         <div className="relative mt-1.5">
           <Input

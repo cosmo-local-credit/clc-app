@@ -1,3 +1,5 @@
+import { isTerminalOtxFailure } from "@clc/core/lib/otx";
+
 import { API_URL } from "#/lib/backend-config";
 
 type ApiOk<T> = {
@@ -231,8 +233,6 @@ export type OtxTrackResult = {
 const TRACKING_TIMEOUT_MS = 120_000;
 export const TRACKING_POLL_MS = 2_000;
 
-const NON_TERMINAL_OTX_STATUSES = new Set(["PENDING", "IN_NETWORK", ""]);
-
 export type OtxTrackingOutcome =
   | { kind: "pending" }
   | { kind: "success"; otx: OtxRecord }
@@ -253,7 +253,7 @@ export function getTrackingOutcome(result: OtxTrackResult | undefined): OtxTrack
   }
 
   const status = active?.status ?? "";
-  if (active && !NON_TERMINAL_OTX_STATUSES.has(status)) {
+  if (active && isTerminalOtxFailure(status)) {
     return { kind: "error", error: `Transaction failed on-chain (${status}).` };
   }
 

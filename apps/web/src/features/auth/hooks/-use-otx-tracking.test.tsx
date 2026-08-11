@@ -3,6 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import type { OtxTrackingOutcome, OtxTrackResult } from "#/features/auth/api/client";
 import { RelayerError } from "#/features/webauthn/api/relayer-client";
 import { useOtxTracking } from "./use-otx-tracking";
 
@@ -42,6 +43,37 @@ describe("useOtxTracking", () => {
     expect(result.current.outcome.kind).toBe("pending");
 
     await waitFor(() => expect(result.current.outcome.kind).toBe("success"));
+  });
+
+  it("uses a flow-specific outcome selector for multi-transaction tracking", async () => {
+    const earlySuccess = {
+      id: 1,
+      trackingId: "tracking-1",
+      otxType: "POOL_TOKEN_INDEX_DEPLOY",
+      txHash: "0xearly",
+      nonce: 0,
+      replaced: false,
+      createdAt: "2026-06-18T00:00:00Z",
+      status: "SUCCESS",
+    };
+    const poolSuccess = { ...earlySuccess, id: 2, otxType: "POOL_PROXY_DEPLOY", txHash: "0xpool" };
+    const queryFn = vi
+      .fn()
+      .mockResolvedValueOnce({ otx: [earlySuccess] })
+      .mockResolvedValue({ otx: [earlySuccess, poolSuccess] });
+    const getOutcome = vi.fn((result: OtxTrackResult | undefined): OtxTrackingOutcome => {
+      const terminal = result?.otx.find((record) => record.otxType === "POOL_PROXY_DEPLOY");
+      return terminal ? { kind: "success", otx: terminal } : { kind: "pending" };
+    });
+
+    const { result } = renderHook(
+      () => useOtxTracking("tracking-1", { pollMs: 10, queryFn, getOutcome }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalledTimes(2));
+    expect(result.current.outcome).toEqual({ kind: "success", otx: poolSuccess });
+    expect(getOutcome).toHaveBeenCalled();
   });
 
   it("surfaces a non-404 failure as a terminal error", async () => {

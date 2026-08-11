@@ -11,10 +11,10 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { translateValidationError } from "#/lib/validation-i18n";
-import { OnboardingProgress } from "./onboarding-progress";
 
 type Props = {
   initialValues?: ProfileInput;
@@ -67,7 +67,7 @@ export function OnboardingProfileForm({
           className="mb-4 self-start"
         />
 
-        <OnboardingProgress step={progressStep} total={progressTotal} />
+        <StepProgress step={progressStep} total={progressTotal} />
 
         <div className="mb-4 space-y-1">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">

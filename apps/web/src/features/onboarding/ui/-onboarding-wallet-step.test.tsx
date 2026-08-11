@@ -136,8 +136,8 @@ vi.mock("#/components/wallet/wallet-layout", () => ({
   ),
 }));
 
-vi.mock("./onboarding-progress", () => ({
-  OnboardingProgress: () => <div data-testid="onboarding-progress" />,
+vi.mock("#/components/ui/step-progress", () => ({
+  StepProgress: () => <div data-testid="step-progress" />,
 }));
 
 import type { ProfileInput } from "@clc/core/features/signup/logic";

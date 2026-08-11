@@ -26,11 +26,11 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none",
-        "transition-[color,box-shadow]",
-        "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        "flex w-fit items-center justify-between gap-2 whitespace-nowrap rounded-none border border-input bg-card px-3 py-2 text-sm outline-none",
+        "transition-[color,border-color]",
+        "focus-visible:border-foreground",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
+        "aria-invalid:border-destructive",
         "data-[placeholder]:text-muted-foreground",
         "data-[size=default]:h-9 data-[size=sm]:h-8",
         className,
@@ -58,7 +58,7 @@ function SelectContent({
         <Select.Popup
           data-slot="select-content"
           className={cn(
-            "relative z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md",
+            "relative z-50 min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-none border border-border bg-popover text-popover-foreground",
             "data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-95 data-[starting-style]:animate-in",
             "data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-95 data-[ending-style]:animate-out",
             className,
