@@ -1,6 +1,6 @@
 import { QueryCache, QueryClient, MutationCache } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { routeTree } from "./routeTree.gen";
 

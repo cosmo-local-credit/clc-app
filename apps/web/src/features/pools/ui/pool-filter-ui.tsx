@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
 import type { PoolTagFacet, PoolVoucherFacet } from "@clc/api/features/pools/client";
 import { FilteredPoolsTooLargeError } from "#/features/pools/hooks/use-filtered-pools";

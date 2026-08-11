@@ -22,7 +22,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
-import { BackendApiError, formatBackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";

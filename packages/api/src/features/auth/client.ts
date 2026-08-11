@@ -1,5 +1,6 @@
 import { isTerminalOtxFailure } from "@clc/core/lib/otx";
 
+import { BackendApiError } from "../../client/errors";
 import { API_URL } from "../../lib/backend-config";
 
 type ApiOk<T> = {
@@ -13,21 +14,6 @@ type ApiErr = {
   description?: string;
   code?: string;
 };
-
-export class BackendApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly description: string,
-    public readonly code?: string,
-  ) {
-    super(description);
-    this.name = "BackendApiError";
-  }
-}
-
-export function formatBackendApiError(err: BackendApiError): string {
-  return err.code ? `${err.code}: ${err.description}` : err.description;
-}
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
