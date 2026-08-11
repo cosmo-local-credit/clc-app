@@ -3,8 +3,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import { BackendApiError } from "@clc/api/features/auth/client";
+import type { MarketVoucher } from "@clc/api/features/market/client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
 import { MARKET_FILTER_PREFERENCES_KEY } from "#/features/home/hooks/use-market-filter";
 

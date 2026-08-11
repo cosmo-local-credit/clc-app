@@ -27,15 +27,23 @@ pnpm workspace monorepo separating logic (platform-agnostic, testable) from UI.
 
 ```
 apps/
-  web/      TanStack Start PWA — @clc/web
+  web/      TanStack Start PWA, mobile only — @clc/web
+  admin/    TanStack Start console, desktop only — @clc/admin
 packages/
-  core/     Platform-agnostic logic — @clc/core
+  core/     Platform-agnostic domain logic — @clc/core
+  api/      Shared HTTP clients + query factories — @clc/api
+  i18n/     lingui catalogs (apps/web only) — @clc/i18n
 ```
 
-## Platform boundary (enforced by biome.json)
+**`apps/web` is mobile only. `apps/admin` is desktop only.** The two never share
+a stylesheet, a route tree, or a service worker; they share logic through
+`@clc/core` and `@clc/api`. A UI rule in this file applies to `apps/web` unless
+it says otherwise.
+
+## Platform boundary (enforced by lint overrides in `vite.config.ts`)
 
 `packages/core/src/**` is **platform-agnostic** — these imports are blocked by
-biome `noRestrictedImports`:
+`no-restricted-imports`:
 
 - `react-dom`, `react-dom/client`, `react-dom/server`
 - `lucide-react`, `react-icons`, `sonner`
@@ -45,17 +53,29 @@ biome `noRestrictedImports`:
 - `#/components`, `@/components` (web-only UI alias)
 
 Allowed in core: `zod`, `zustand`, `@tanstack/react-form`, `@tanstack/react-query`.
+**`react` itself is blocked** in core — it must stay React Native compatible, so
+core holds schemas and pure functions, never hooks.
+
+`packages/api/src/**` is the **shared server-state layer**: the HTTP clients for
+`clc-core` plus the `queryOptions` factories over them. Unlike core it _may_
+import `react` (hooks belong here, not in core), but routing, DOM, UI libraries,
+Serwist, and app-private aliases (`#/`, `@/`) are all blocked. Anything an app
+needs from the backend goes here so both apps get it.
 
 Sibling features cannot import each other's `ui/` — cross-feature reuse goes via
-`@clc/core` or `apps/web/src/components/ui/`.
+`@clc/core`, `@clc/api`, or the app's own `components/ui/`.
 
-| From             | Import syntax                                            |
-| ---------------- | -------------------------------------------------------- |
-| Web → core logic | `@clc/core/lib/...` or `@clc/core/features/<name>/logic` |
-| Web → web files  | `#/components/...` or `#/features/<name>/ui`             |
+| From                | Import syntax                                            |
+| ------------------- | -------------------------------------------------------- |
+| App → domain logic  | `@clc/core/lib/...` or `@clc/core/features/<name>/logic` |
+| App → backend       | `@clc/api/queries` or `@clc/api/features/<name>/client`  |
+| App → its own files | `#/components/...` or `#/features/<name>/ui`             |
 
-If biome blocks an import inside `packages/core/`, push the web concern into
-`apps/web/`. Don't disable the rule.
+Apps must not import each other. `#/` is private to whichever app owns it.
+
+If a lint rule blocks an import inside `packages/core/`, decide whether it is a
+server-state concern (move to `packages/api/`) or a UI concern (move to the app).
+Don't disable the rule.
 
 ## Backend & third-party SDK boundary
 
@@ -68,14 +88,18 @@ client only. **No serverless**: no TanStack Start server functions
   client-side consumption (publicly usable API keys, no server-side secrets
   required — e.g. ArcGIS World Geocoder, MapTiler tile styles) may be called
   directly from `apps/web/`. When in doubt, prefer routing through the backend.
-- Vendor SDKs (analytics, mapping, geolocation, push) live in `apps/web/`,
-  never `packages/core/`.
-- `packages/core` stays narrow — domain types, zod schemas, business rules,
-  framework-agnostic hooks. No network clients, no vendor SDKs.
+- Vendor SDKs (analytics, mapping, geolocation, push) live in an app, never
+  `packages/core/` or `packages/api/`.
+- `packages/core` stays narrow — domain types, zod schemas, business rules, pure
+  functions. No network clients, no vendor SDKs, no hooks.
+- `packages/api` owns the network layer — one client per backend resource plus
+  the `queryOptions` factories in `@clc/api/queries`. New backend calls go here,
+  not into an app, so both apps can use them.
 
 ## Commands
 
 - `vp dev apps/web` — dev server for `@clc/web` (run from repo root)
+- `vp dev apps/admin` — dev server for `@clc/admin` (port 3001)
 - `vp install` — install deps after pulling remote changes
 - `vp check` — biome (lint + format + imports). Always run after edits.
 - `vp test` — vitest across all packages
@@ -161,12 +185,22 @@ another.
 No desktop heading sizes (`text-4xl`, `text-5xl`, `text-6xl`). On 360–430px
 the largest heading is the base `h1` (1.75rem).
 
+The type sizes above are **`apps/web` only**. `apps/admin` uses the same font
+trio but an ops-console scale (`h1` 1.5rem / `h2` 1.25rem / `h3` 1.125rem,
+weight 600) defined in `apps/admin/src/styles.css`. Do not copy sizes between
+the two stylesheets.
+
 Do not import `@fontsource-variable/noto-sans` or `@fontsource-variable/roboto`
 — removed. Do not add new font packages outside fonttrio.
 
-### Mobile UI rules (hard constraints — enforced at review)
+### Mobile UI rules — `apps/web` only (hard constraints, enforced at review)
 
-This app is **mobile only (360–430px)**. Every layout decision must be made
+**Scope: everything in this section applies to `apps/web/` and nowhere else.**
+`apps/admin/` is desktop-first and is governed by the Admin console UI rules
+below instead. Do not apply these constraints to admin code, and do not relax
+them in web code because admin does something differently.
+
+`apps/web` is **mobile only (360–430px)**. Every layout decision must be made
 as if there is no desktop, ever.
 
 **Banned layout patterns:**
@@ -230,6 +264,66 @@ buttons) placed on the gray page background — they become invisible.
 > "Does this interactive element blend into the gray background?"
 > If yes — use `bg-card` instead of `bg-background` or `bg-transparent`.
 
+### Admin console UI rules — `apps/admin` only
+
+Desktop-first back office for stewards and operators. Look and feel is drawn
+from `~/wafer-labs/wafer-ui` (unrelated project, same stack): **Lyra** — square
+corners, dense zinc surfaces, mono numerals, restrained status colour. The brand
+green `--primary` carries over from `apps/web` so both read as one product.
+
+What differs from `apps/web`:
+
+|                        | `apps/web`          | `apps/admin`                                              |
+| ---------------------- | ------------------- | --------------------------------------------------------- |
+| Viewport               | 360–430px only      | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
+| Breakpoint overrides   | Banned              | Required — tables and metric grids reflow                 |
+| `<Card>` as page shell | Banned              | Still banned; screens are shell + sections                |
+| Navigation             | Bottom nav          | Collapsible sidebar + `⌘K` palette                        |
+| Dark mode              | Zustand theme store | Same pattern, key `clc.admin.theme`                       |
+| i18n                   | lingui, en + sw     | None — English only, no `<Trans>`                         |
+| Service worker         | Serwist             | Never. Not a PWA                                          |
+
+Shared with `apps/web`: square corners, flat surfaces (no
+`shadow-lg`/`backdrop-blur`), `bg-card` for anything sitting on `bg-background`,
+and the font trio.
+
+**The two apps reach square corners differently — don't cross-copy the
+mechanism.** `apps/web` keeps `--radius: 0.625rem` and derives `--radius-sm/md/
+lg/xl` from it, squaring corners per primitive with `rounded-none`; a new web
+component is rounded until you say otherwise. `apps/admin` zeroes the
+`--radius-*` tokens outright, so a new admin component is square by default and
+needs no `rounded-none`. Adding `rounded-none` in admin is redundant; omitting
+it in web is a bug.
+
+Admin conventions:
+
+- Panels and tiles: `border border-border bg-card p-4`. Section headings are
+  `font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground`.
+- Any figure in a column uses `font-data` (mono + tabular numerals) so it does
+  not jitter as it updates.
+- Tables go through `#/components/admin/data-table`. Sorting is client-side over
+  one fetched page; when a surface outgrows a page, move sorting into search
+  params rather than paging that component.
+- Never write a new amount or address formatter. Use `formatTokenAmount` /
+  `formatTokenAmountFixed` and `formatVoucherAddress` from `@clc/core`.
+- When the API boundary drops rows (the catalog endpoint omits vouchers with no
+  coordinates), surface the gap with the `receivedCount` delta. An admin total
+  that silently under-reports is worse than no total.
+- Auth is stubbed at `#/features/auth/admin-session.ts` and gated by
+  `#/components/layout/auth-boundary.tsx`. That is the only seam to change when a
+  real admin session exists — surfaces read through it.
+
+**Two backend blockers you will hit on first run** (both live in the `clc-core`
+repo, not here):
+
+1. **CORS.** Staging allows `http://localhost:3000` (web's dev port) but not
+   `http://localhost:3001` (admin's). Until `3001` is added to the allowlist
+   every read fails as "Failed to fetch". Verify with:
+   `curl -sD- -o/dev/null "https://staging.cosmolocal.credit/api/v2/vouchers?perPage=1" -H "Origin: http://localhost:3001" | grep -i access-control`
+2. **Auth.** `/api/v2/pools` returns **401** without a session, so pools, the
+   derived user directory, and the overview pool metrics stay empty until admin
+   auth exists. `/api/v2/vouchers` is public and works today.
+
 ### Forms & validation
 
 TanStack Form 1.32+ accepts zod 4 Standard Schema directly — no adapter. For
@@ -239,8 +333,11 @@ objects, not strings.
 
 ### Internationalization (lingui)
 
-User-facing copy is translated with lingui (`<Trans>` / the `t` macro from
-`@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
+**`apps/web` only — `apps/admin` is English-only and has no lingui wiring.** Do
+not add `<Trans>` or the `t` macro to admin code.
+
+User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
+macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
 `packages/i18n/src/catalogs/{en,sw}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
@@ -307,8 +404,10 @@ for wagmi: read from hooks at point of use, don't mirror chain/account.
 
 ### Serwist (PWA)
 
-Custom Vite plugin at `apps/web/plugins/serwist.ts`, worker source at
-`apps/web/src/sw.ts`. Don't import serwist anywhere under `packages/core/`.
+`apps/web` only. Custom Vite plugin at `apps/web/plugins/serwist.ts`, worker
+source at `apps/web/src/sw.ts`. Don't import serwist under `packages/core/`,
+`packages/api/`, or `apps/admin/` — the admin console must never register a
+service worker.
 
 ### TanStack CLI (TanStack docs only)
 
@@ -358,25 +457,34 @@ pattern first.
 ## What NOT to do
 
 - TanStack Router route files stay thin. Export `Route` from files under
-  `apps/web/src/routes/`; move page components, loaders, reusable UI into
+  `<app>/src/routes/`; move page components, loaders, reusable UI into
   non-route modules. Avoid extra named exports — TanStack will warn they
   can't be code-split.
 - Don't configure a route-level `notFoundComponent` or router-level
   `defaultNotFoundComponent`. Don't rely on TanStack Router's default
   `<p>Not Found</p>`.
-- Tests colocated under `apps/web/src/routes/` must be prefixed with `-`
+- Tests colocated under any `src/routes/` must be prefixed with `-`
   (e.g. `-signup.test.tsx`) so TanStack Router doesn't treat them as routes.
-- Don't edit `apps/web/src/routeTree.gen.ts` — auto-generated. Edit route
+- Don't edit `routeTree.gen.ts` in either app — auto-generated. Edit route
   files under `src/routes/` and let the generator regenerate it.
 - Don't introduce new state libs (Redux, Jotai). Zustand is the answer.
 - Don't introduce new form libs (RHF). TanStack Form is the answer.
 - Don't roll your own wallet connect button — use ConnectKit.
 - Don't import `radix-ui` or `@radix-ui/*` — port shadcn to Base UI.
-- Don't build desktop layouts or add `md:` / `lg:` / `xl:` overrides.
-- Don't violate the Mobile UI rules section — re-read it before writing layout.
+- **In `apps/web`:** don't build desktop layouts or add `md:`/`lg:`/`xl:`
+  overrides, and don't violate the Mobile UI rules — re-read them before writing
+  layout. **In `apps/admin`:** breakpoints are expected; follow the Admin console
+  UI rules instead.
+- Don't add `next-themes` to `apps/admin` — it uses the same Zustand theme store
+  pattern as `apps/web`, with a pre-paint bootstrap script in `__root.tsx`.
 - Don't put icons outside `lucide-react` (shadcn internals) or `react-icons`.
-- Don't import web-only deps or third-party SDKs from `packages/core/` —
-  biome catches named ones; assume any new vendor SDK is web-only by default.
+- Don't import app-only deps or third-party SDKs from `packages/core/` or
+  `packages/api/` — lint catches the named ones; assume any new vendor SDK is
+  app-only by default.
+- Don't import one app from another, and don't reach into another app's `#/`.
+  Shared code goes to `@clc/core` (pure) or `@clc/api` (network).
+- Don't duplicate a client or formatter that already exists in `@clc/core` or
+  `@clc/api`. Check both before writing one.
 - Don't bundle large refactors with unrelated bug fixes.
 - Don't run `pnpm build` proactively.
 - Don't create documentation files (`*.md`, `README.md`) unless asked.

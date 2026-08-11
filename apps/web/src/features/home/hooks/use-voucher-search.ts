@@ -2,8 +2,8 @@ import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import { type MarketVoucher, getFilteredMarketVouchers } from "#/features/home/api/market-client";
+import { BackendApiError } from "@clc/api/features/auth/client";
+import { type MarketVoucher, getFilteredMarketVouchers } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 
 /** Below this the list stays closed — a one-character query matches most of the catalog. */

@@ -1,0 +1,21 @@
+{
+  "name": "@clc/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@clc/core": "workspace:*",
+    "@tanstack/react-query": "^5.101.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.10",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

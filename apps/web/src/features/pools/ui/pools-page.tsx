@@ -6,7 +6,7 @@ import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { BackChevron } from "#/components/wallet";
-import type { UserPool } from "#/features/pools/api/pools-client";
+import type { UserPool } from "@clc/api/features/pools/client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";

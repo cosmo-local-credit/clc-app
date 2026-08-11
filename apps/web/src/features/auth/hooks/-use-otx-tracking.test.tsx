@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import type { OtxTrackingOutcome, OtxTrackResult } from "#/features/auth/api/client";
+import type { OtxTrackingOutcome, OtxTrackResult } from "@clc/api/features/auth/client";
 import { RelayerError } from "#/features/webauthn/api/relayer-client";
 import { useOtxTracking } from "./use-otx-tracking";
 

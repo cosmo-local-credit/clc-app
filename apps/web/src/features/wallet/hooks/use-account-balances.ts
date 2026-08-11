@@ -4,7 +4,7 @@ import {
   getAccountTokens,
   getAccountTransfers,
   getLatestAccountTokens,
-} from "#/features/wallet/api/account-client";
+} from "@clc/api/features/accounts/client";
 
 const DEFAULT_PAGE_SIZE = 20;
 const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;

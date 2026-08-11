@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { ReportDetail } from "#/features/home/api/reports-client";
+import type { ReportDetail } from "@clc/api/features/reports/client";
 
 /**
  * Embla reads breakpoints and observes slide visibility and size on mount, and

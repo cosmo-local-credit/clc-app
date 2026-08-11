@@ -27,7 +27,7 @@ import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { BackChevron, EllipsizedAddress } from "#/components/wallet";
-import type { ReportDetail, ReportImage } from "#/features/home/api/reports-client";
+import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";

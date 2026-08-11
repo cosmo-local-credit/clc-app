@@ -8,7 +8,7 @@ import {
   getReport,
   getFilteredReports,
   getReports,
-} from "#/features/home/api/reports-client";
+} from "@clc/api/features/reports/client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 import { reverseLocation } from "#/lib/geo-client";
 

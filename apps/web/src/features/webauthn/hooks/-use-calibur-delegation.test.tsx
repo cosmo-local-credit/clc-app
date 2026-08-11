@@ -22,7 +22,7 @@ vi.mock("wagmi", () => ({
   useBytecode: (args: unknown) => mockUseBytecode(args),
 }));
 
-vi.mock("#/lib/backend-config", () => ({
+vi.mock("@clc/api/lib/backend-config", () => ({
   CALIBUR_ADDRESS: CALIBUR,
 }));
 

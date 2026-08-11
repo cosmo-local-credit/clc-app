@@ -14,8 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/market-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
+vi.mock("@clc/api/features/market/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getMarketVoucher };
 });
 

@@ -1,6 +1,6 @@
 import { base64UrlToBytes, bytesToBase64Url } from "@clc/core/features/webauthn/index";
 
-import type { WebAuthnAssertionPayload } from "#/features/auth/api/client";
+import type { WebAuthnAssertionPayload } from "@clc/api/features/auth/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";

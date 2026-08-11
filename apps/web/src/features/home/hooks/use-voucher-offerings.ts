@@ -4,7 +4,7 @@ import {
   type OfferingPage,
   getPoolOfferings,
   getVoucherOfferings,
-} from "#/features/home/api/offerings-client";
+} from "@clc/api/features/offerings/client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 
 /** The imported catalog's largest single-voucher offering count is 19. */

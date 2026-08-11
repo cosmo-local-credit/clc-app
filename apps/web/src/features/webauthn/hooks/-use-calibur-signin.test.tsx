@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/features/auth/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 
 const { collectWebAuthnAssertion, signinWithWebAuthn, storeWebAuthnCredential } = vi.hoisted(
@@ -16,8 +16,8 @@ const { collectWebAuthnAssertion, signinWithWebAuthn, storeWebAuthnCredential } 
 
 vi.mock("#/features/webauthn/hooks/assertion", () => ({ collectWebAuthnAssertion }));
 vi.mock("#/lib/webauthn-storage", () => ({ storeWebAuthnCredential }));
-vi.mock("#/features/auth/api/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/auth/api/client")>();
+vi.mock("@clc/api/features/auth/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/auth/client")>();
   return { ...actual, signinWithWebAuthn };
 });
 

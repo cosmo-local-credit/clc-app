@@ -4,7 +4,7 @@ import {
   trackOtx,
   TRACKING_POLL_MS,
   type OtxTrackingOutcome,
-} from "#/features/auth/api/client";
+} from "@clc/api/features/auth/client";
 
 /**
  * A trackingId is issued as soon as a job is enqueued, before the async

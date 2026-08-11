@@ -22,9 +22,9 @@ vi.mock("#/providers/auth-bootstrap", () => ({
   useReconnectAttempted: () => mockReconnectAttempted.value,
 }));
 
-vi.mock("#/features/auth/api/client", async () => {
-  const actual = await vi.importActual<typeof import("#/features/auth/api/client")>(
-    "#/features/auth/api/client",
+vi.mock("@clc/api/features/auth/client", async () => {
+  const actual = await vi.importActual<typeof import("@clc/api/features/auth/client")>(
+    "@clc/api/features/auth/client",
   );
   return {
     ...actual,
@@ -32,7 +32,7 @@ vi.mock("#/features/auth/api/client", async () => {
   };
 });
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/features/auth/client";
 import { useAuthStatus } from "./use-auth-status";
 
 function createWrapper() {

@@ -46,7 +46,7 @@ import { StepProgress } from "#/components/ui/step-progress";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";

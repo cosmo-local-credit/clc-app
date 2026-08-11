@@ -7,14 +7,14 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/features/auth/client";
 import {
   type FilteredPoolPage,
   type PoolTagFacet,
   type PoolVoucherFacet,
   type UserPool,
   getFilteredPools,
-} from "#/features/pools/api/pools-client";
+} from "@clc/api/features/pools/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 
 const POOLS_FILTER_PAGE_SIZE = 100;

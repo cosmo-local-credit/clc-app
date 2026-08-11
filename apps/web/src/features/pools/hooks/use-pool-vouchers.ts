@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import type { UserPool } from "#/features/pools/api/pools-client";
-import { getPoolVouchers } from "#/features/pools/api/pools-client";
+import type { UserPool } from "@clc/api/features/pools/client";
+import { getPoolVouchers } from "@clc/api/features/pools/client";
 
 const DEFAULT_POOL_VOUCHERS_PAGE_SIZE = 20;
 

@@ -8,7 +8,7 @@ import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";

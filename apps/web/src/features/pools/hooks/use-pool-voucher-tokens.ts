@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useConnection } from "wagmi";
 
-import type { PoolVoucher } from "#/features/pools/api/pools-client";
+import type { PoolVoucher } from "@clc/api/features/pools/client";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 

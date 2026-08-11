@@ -3,7 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketVoucher, MarketVoucherPage } from "#/features/home/api/market-client";
+import type { MarketVoucher, MarketVoucherPage } from "@clc/api/features/market/client";
 import {
   MARKET_MAP_PAGE_SIZE,
   MIN_VIEWPORT_BBOX_ZOOM,
@@ -13,8 +13,8 @@ import {
 
 const getMarketVouchers = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/market-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
+vi.mock("@clc/api/features/market/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getMarketVouchers };
 });
 

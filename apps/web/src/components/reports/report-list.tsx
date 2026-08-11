@@ -5,7 +5,7 @@ import { Badge } from "#/components/ui/badge";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { ReportSummary } from "@clc/api/features/reports/client";
 import { formatReportDate } from "#/lib/report-display";
 
 const VISIBLE_TAGS = 2;

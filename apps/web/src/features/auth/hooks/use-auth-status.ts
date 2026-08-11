@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
-import { BackendApiError, getSession, type SessionResult } from "#/features/auth/api/client";
+import { BackendApiError, getSession, type SessionResult } from "@clc/api/features/auth/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
 
 type AuthStatusState =

@@ -7,7 +7,7 @@ import {
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
 import { encodeAbiParameters } from "viem";
-import { waitForTrackingCompletion } from "#/features/auth/api/client";
+import { waitForTrackingCompletion } from "@clc/api/features/auth/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";

@@ -22,7 +22,7 @@ import {
 } from "#/components/ui/sheet";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { Offering, OfferingFrequency } from "#/features/home/api/offerings-client";
+import type { Offering, OfferingFrequency } from "@clc/api/features/offerings/client";
 import { cn } from "#/lib/utils";
 
 /**
