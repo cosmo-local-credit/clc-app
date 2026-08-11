@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
-import { getProfile } from "#/features/auth/api/client";
+import { getProfile } from "@clc/api/features/auth/client";
 
 export const authProfileQueryKeys = {
   all: ["auth", "profile"] as const,

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { signinWithWebAuthn } from "#/features/auth/api/client";
+import { signinWithWebAuthn } from "@clc/api/features/auth/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { collectWebAuthnAssertion } from "#/features/webauthn/hooks/assertion";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";

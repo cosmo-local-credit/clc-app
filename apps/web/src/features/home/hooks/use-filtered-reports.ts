@@ -7,7 +7,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/features/auth/client";
 import {
   type FilteredReportPage,
   type ReportCursor,
@@ -15,7 +15,7 @@ import {
   type ReportTagFacet,
   type ReportVoucherFacet,
   getFilteredReports,
-} from "#/features/home/api/reports-client";
+} from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 
 const REPORTS_FILTER_PAGE_SIZE = 100;

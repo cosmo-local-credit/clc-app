@@ -8,7 +8,7 @@ import {
   type MarketVoucherPage,
   getMarketVouchers,
   viewportToBoundingBoxes,
-} from "#/features/home/api/market-client";
+} from "@clc/api/features/market/client";
 import type { MarketViewport } from "#/features/home/ui/market-map";
 
 export const MARKET_MAP_PAGE_SIZE = 500;

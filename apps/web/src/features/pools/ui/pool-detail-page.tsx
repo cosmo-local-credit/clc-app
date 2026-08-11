@@ -2,7 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { Button } from "#/components/ui/button";
 import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
-import type { PoolVoucher } from "#/features/pools/api/pools-client";
+import type { PoolVoucher } from "@clc/api/features/pools/client";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";

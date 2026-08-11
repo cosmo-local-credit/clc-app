@@ -19,7 +19,7 @@ import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import {
   getPoolDeploymentRecords,
   getPoolTrackingOutcome,
-} from "#/features/pools/api/pool-deploy-client";
+} from "@clc/api/features/pools/deploy-client";
 import { poolQueryKeys } from "#/features/pools/hooks/use-user-pools";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useDeploymentContract } from "#/hooks/use-deployment";

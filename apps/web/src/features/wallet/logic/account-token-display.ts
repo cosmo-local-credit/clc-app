@@ -1,6 +1,6 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 
-import type { AccountToken } from "#/features/wallet/api/account-client";
+import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { WalletToken } from "#/components/wallet/wallet-data";
 
 export function accountTokenToWalletToken(token: AccountToken): WalletToken {

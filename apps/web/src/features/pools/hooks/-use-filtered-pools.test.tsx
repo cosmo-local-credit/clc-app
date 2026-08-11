@@ -4,15 +4,15 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { FilteredPoolPage, UserPool } from "#/features/pools/api/pools-client";
+import { BackendApiError } from "@clc/api/features/auth/client";
+import type { FilteredPoolPage, UserPool } from "@clc/api/features/pools/client";
 import { FilteredPoolsTooLargeError, usePoolCatalog } from "./use-filtered-pools";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 
 const getFilteredPools = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/pools/api/pools-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/pools/api/pools-client")>();
+vi.mock("@clc/api/features/pools/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/pools/client")>();
   return { ...actual, getFilteredPools };
 });
 

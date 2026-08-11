@@ -48,8 +48,8 @@ vi.mock("@tanstack/react-query", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("#/features/auth/api/client", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("#/features/auth/api/client")>()),
+vi.mock("@clc/api/features/auth/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@clc/api/features/auth/client")>()),
   getSession: () => mockGetSession(),
 }));
 

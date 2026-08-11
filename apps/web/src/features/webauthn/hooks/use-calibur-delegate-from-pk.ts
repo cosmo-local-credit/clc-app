@@ -6,7 +6,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
-import { CALIBUR_ADDRESS } from "#/lib/backend-config";
+import { CALIBUR_ADDRESS } from "@clc/api/lib/backend-config";
 
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 export const DELEGATION_POLL_MS = 2_000;

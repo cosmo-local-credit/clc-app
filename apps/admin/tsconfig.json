@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["**/*.ts", "**/*.tsx"],
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "#/*": ["./src/*"],
+      "@/*": ["./src/*"],
+      "@clc/api/*": ["../../packages/api/src/*"],
+      "@clc/core/*": ["../../packages/core/src/*"]
+    }
+  }
+}

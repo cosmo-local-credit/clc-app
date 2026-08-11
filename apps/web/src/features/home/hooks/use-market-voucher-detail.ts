@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import { getMarketVoucher } from "#/features/home/api/market-client";
+import { getMarketVoucher } from "@clc/api/features/market/client";
 import { MARKET_QUERY_FRESHNESS } from "./use-market-vouchers";
 
 const marketVoucherDetailQueryKeys = {

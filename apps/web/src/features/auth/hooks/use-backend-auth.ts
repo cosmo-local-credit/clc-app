@@ -5,7 +5,12 @@ import { createSiweMessage } from "viem/siwe";
 import { signMessage } from "wagmi/actions";
 
 import { wagmiConfig } from "#/providers/web3-config";
-import { getSiweNonce, signinWithSiwe, signupWithSiwe, submitProfile } from "../api/client";
+import {
+  getSiweNonce,
+  signinWithSiwe,
+  signupWithSiwe,
+  submitProfile,
+} from "@clc/api/features/auth/client";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 

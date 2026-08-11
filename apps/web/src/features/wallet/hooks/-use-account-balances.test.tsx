@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   getLatestAccountTokens: vi.fn(),
 }));
 
-vi.mock("#/features/wallet/api/account-client", () => mocks);
+vi.mock("@clc/api/features/accounts/client", () => mocks);
 
 import { useAccountTokensInfinite, useAccountTransfersInfinite } from "./use-account-balances";
 

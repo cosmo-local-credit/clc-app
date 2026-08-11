@@ -4,19 +4,19 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/features/auth/client";
 import type {
   FilteredReportPage,
   ReportCursor,
   ReportSummary,
-} from "#/features/home/api/reports-client";
+} from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { FilteredReportsTooLargeError, useReportFeed } from "./use-filtered-reports";
 
 const getFilteredReports = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/reports-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/reports-client")>();
+vi.mock("@clc/api/features/reports/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/reports/client")>();
   return { ...actual, getFilteredReports };
 });
 

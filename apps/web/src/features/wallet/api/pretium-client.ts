@@ -1,4 +1,4 @@
-import { apiFetch } from "#/features/auth/api/client";
+import { apiFetch } from "@clc/api/features/auth/client";
 
 type PretiumAsset = "USDT" | "USDC" | "cUSD";
 

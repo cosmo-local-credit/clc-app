@@ -17,7 +17,7 @@ import {
   BackendApiError,
   formatBackendApiError,
   type ProfileResult,
-} from "#/features/auth/api/client";
+} from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
 import { translateValidationError } from "#/lib/validation-i18n";

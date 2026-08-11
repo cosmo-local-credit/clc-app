@@ -1,7 +1,7 @@
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useLingui } from "@lingui/react/macro";
 
-import type { MarketVoucherKind } from "#/features/home/api/market-client";
+import type { MarketVoucherKind } from "@clc/api/features/market/client";
 
 type Coordinates = { lat: number; lng: number };
 

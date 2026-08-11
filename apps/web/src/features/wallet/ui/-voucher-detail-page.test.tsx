@@ -2,8 +2,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketVoucherDetail } from "#/features/home/api/market-client";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import type { ReportSummary } from "@clc/api/features/reports/client";
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,

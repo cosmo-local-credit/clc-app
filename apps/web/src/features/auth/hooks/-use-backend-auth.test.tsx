@@ -7,7 +7,7 @@ const mockSigninWithSiwe = vi.fn();
 const mockSubmitProfile = vi.fn();
 const mockSignMessage = vi.fn<() => Promise<`0x${string}`>>();
 
-vi.mock("../api/client", () => ({
+vi.mock("@clc/api/features/auth/client", () => ({
   getSiweNonce: () => mockGetSiweNonce(),
   signupWithSiwe: (payload: unknown) => mockSignupWithSiwe(payload),
   signinWithSiwe: (payload: unknown) => mockSigninWithSiwe(payload),

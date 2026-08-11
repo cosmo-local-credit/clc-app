@@ -24,7 +24,7 @@ import {
   useSendShareEligibility,
 } from "#/features/wallet/hooks/use-send-share";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
-import { RELAYER_URL } from "#/lib/backend-config";
+import { RELAYER_URL } from "@clc/api/lib/backend-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 

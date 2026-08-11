@@ -1,11 +1,11 @@
-import { apiFetch } from "#/features/auth/api/client";
+import { apiFetch } from "@clc/api/features/auth/client";
 import {
   type HexAddress,
   normalizeHex,
   normalizeNumber,
   normalizeStringArray,
   normalizeText,
-} from "#/lib/api-normalize";
+} from "@clc/api/lib/api-normalize";
 
 export type DeploymentContractType = "POOL" | "TOKEN";
 
