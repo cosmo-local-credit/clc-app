@@ -18,7 +18,6 @@ const validPool: PoolCreateInput = {
   pricing: "oracle",
   feePolicyDefault: "1",
   feesDecoupled: false,
-  decimals: "6",
   location: {
     locationName: "Kilifi, Kenya",
     country: "KE",
@@ -29,6 +28,7 @@ const validPool: PoolCreateInput = {
   email: "steward@example.org",
   website: "https://kilifi.example",
   phone: "+254712345678",
+  terms: "https://kilifi.example/terms",
   acceptedTerms: true,
   acceptedSproutLicense: true,
 };
@@ -94,9 +94,40 @@ describe("poolCreateSchema", () => {
       false,
     );
   });
+
+  it("accepts only blank or valid HTTP terms URLs", () => {
+    expect(poolCreateSchema.safeParse({ ...validPool, terms: "" }).success).toBe(true);
+    expect(
+      poolCreateSchema.safeParse({ ...validPool, terms: "https://kilifi.example/terms" }).success,
+    ).toBe(true);
+    expect(
+      poolCreateSchema.safeParse({ ...validPool, terms: "kilifi.example/terms" }).success,
+    ).toBe(false);
+  });
 });
 
 describe("toPoolDeployPayload", () => {
+  it("always deploys pools with six decimals", () => {
+    expect(toPoolDeployPayload(validPool, OWNER, CELO_MAINNET_CHAIN_ID).decimals).toBe("6");
+  });
+
+  it("only decouples fees when the configured fee is above zero", () => {
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, feePolicyDefault: "0", feesDecoupled: true },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).feesDecoupled,
+    ).toBe(false);
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, feePolicyDefault: "0.5", feesDecoupled: true },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).feesDecoupled,
+    ).toBe(true);
+  });
+
   it("maps the complete live pool request and omits blank optional fields", () => {
     expect(toPoolDeployPayload({ ...validPool, phone: "" }, OWNER, CELO_MAINNET_CHAIN_ID)).toEqual({
       name: "Kilifi Growers",
@@ -110,6 +141,7 @@ describe("toPoolDeployPayload", () => {
       description: "A pool for growers in Kilifi.",
       email: "steward@example.org",
       website: "https://kilifi.example",
+      terms: "https://kilifi.example/terms",
       locationName: "Kilifi, Kenya",
       geoLat: -3.5107,
       geoLng: 39.9093,
@@ -119,7 +151,7 @@ describe("toPoolDeployPayload", () => {
 
   it("omits blank optional contact fields", () => {
     const payload = toPoolDeployPayload(
-      { ...validPool, email: "", website: "", phone: "" },
+      { ...validPool, email: "", website: "", phone: "", terms: "" },
       OWNER,
       CELO_MAINNET_CHAIN_ID,
     );
@@ -127,6 +159,7 @@ describe("toPoolDeployPayload", () => {
     expect(payload).not.toHaveProperty("email");
     expect(payload).not.toHaveProperty("website");
     expect(payload).not.toHaveProperty("phone");
+    expect(payload).not.toHaveProperty("terms");
   });
 
   it("does not send baseCurrency when the pricing strategy does not use it", () => {

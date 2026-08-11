@@ -15,6 +15,7 @@ const submittedVoucher = {
   email: "issuer@example.org",
   website: "https://kilifi.example",
   phone: "+254712345678",
+  terms: "https://kilifi.example/terms",
   acceptedTerms: true as const,
   acceptedPathLicense: true as const,
 };

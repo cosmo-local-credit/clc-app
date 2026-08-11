@@ -234,11 +234,10 @@ export function CatalogFilterSheet({
   return (
     <>
       <Button
-        size="lg"
         onClick={openSheet}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="relative h-9 px-2.5 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']"
+        className="relative h-8 px-2.5 before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']"
       >
         <RiFilter3Line className="size-4" aria-hidden="true" />
         <Trans>Filters</Trans>

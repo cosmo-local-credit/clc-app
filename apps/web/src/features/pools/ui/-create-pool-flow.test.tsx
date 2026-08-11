@@ -115,6 +115,38 @@ describe("CreatePoolFlow", () => {
     expect(advancedDetails.open).toBe(true);
   });
 
+  it("does not expose pool decimals for editing", () => {
+    render(<CreatePoolFlow step="pool" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+
+    expect(screen.queryByLabelText("Decimals")).toBeNull();
+  });
+
+  it("defaults the pool swap fee to zero percent", () => {
+    render(<CreatePoolFlow step="pool" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+
+    expect((screen.getByLabelText("Swap Fee (%)") as HTMLInputElement).value).toBe("0");
+  });
+
+  it("shows a checkbox for separate fees only when the swap fee is above zero", () => {
+    render(<CreatePoolFlow step="pool" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+    const fee = screen.getByLabelText("Swap Fee (%)");
+    expect(screen.queryByRole("checkbox", { name: /Take fees separately/ })).toBeNull();
+
+    fireEvent.change(fee, { target: { value: "0.5" } });
+
+    const separateFees = screen.getByRole("checkbox", { name: /Take fees separately/ });
+    expect(separateFees.getAttribute("data-slot")).toBe("checkbox");
+
+    fireEvent.change(fee, { target: { value: "0" } });
+    expect(screen.queryByRole("checkbox", { name: /Take fees separately/ })).toBeNull();
+  });
+
   it("keeps tags compact and prefills contact details from the profile", async () => {
     render(<CreatePoolFlow step="place" />);
 
@@ -137,6 +169,14 @@ describe("CreatePoolFlow", () => {
 
     fireEvent.pointerDown(screen.getByLabelText("Contact Email"));
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+  });
+
+  it("collects an optional pool terms URL", () => {
+    render(<CreatePoolFlow step="place" />);
+
+    const terms = screen.getByLabelText("Terms URL");
+    expect(terms.getAttribute("type")).toBe("url");
+    expect(screen.getByText("Link to the terms that apply to this pool")).toBeTruthy();
   });
 
   it("requires both linked legal agreements before publishing", () => {
@@ -186,6 +226,9 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Contact Website"), {
       target: { value: "https://kilifi.example" },
     });
+    fireEvent.change(screen.getByLabelText("Terms URL"), {
+      target: { value: "https://kilifi.example/terms" },
+    });
     fireEvent.click(screen.getByRole("combobox", { name: "Search pool tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -201,6 +244,7 @@ describe("CreatePoolFlow", () => {
     expect(screen.getByText("Kilifi Growers")).toBeTruthy();
     expect(screen.getByText("KGP1")).toBeTruthy();
     expect(screen.getByText("Kilifi, Kenya")).toBeTruthy();
+    expect(screen.getByText("https://kilifi.example/terms")).toBeTruthy();
 
     for (const checkbox of screen.getAllByRole("checkbox")) fireEvent.click(checkbox);
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
@@ -213,11 +257,12 @@ describe("CreatePoolFlow", () => {
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
         quoterType: "oracle",
         feesDecoupled: false,
-        feePolicyDefault: "1",
+        feePolicyDefault: "0",
         baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
         description: "A pool for Kilifi growers.",
         email: "steward@example.org",
         website: "https://kilifi.example",
+        terms: "https://kilifi.example/terms",
         phone: "+254712345678",
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,

@@ -20,15 +20,22 @@ export const optionalPhoneSchema = z
     message: "Invalid phone number",
   });
 
+function isOptionalHttpUrl(value: string): boolean {
+  if (value === "") return true;
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 export const optionalWebsiteSchema = z
   .string()
   .trim()
-  .refine((value) => {
-    if (value === "") return true;
-    try {
-      const url = new URL(value);
-      return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
-    } catch {
-      return false;
-    }
-  }, "Enter a valid website URL including https://");
+  .refine(isOptionalHttpUrl, "Enter a valid website URL including https://");
+
+export const optionalTermsUrlSchema = z
+  .string()
+  .trim()
+  .refine(isOptionalHttpUrl, "Enter a valid terms URL including https://");

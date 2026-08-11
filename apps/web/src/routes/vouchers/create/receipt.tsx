@@ -6,6 +6,12 @@ import { VoucherDeploymentReceiptPage } from "#/features/vouchers/ui";
 
 const searchSchema = z.object({
   trackingId: z.string().min(1).optional().catch(undefined),
+  mintTrackingId: z.string().min(1).optional().catch(undefined),
+  mintAmount: z
+    .string()
+    .regex(/^\d+(?:\.\d+)?$/)
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/vouchers/create/receipt")({
@@ -14,10 +20,14 @@ export const Route = createFileRoute("/vouchers/create/receipt")({
 });
 
 function VoucherDeploymentReceiptRoute() {
-  const { trackingId } = Route.useSearch();
+  const { trackingId, mintTrackingId, mintAmount } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <VoucherDeploymentReceiptPage trackingId={trackingId} />
+      <VoucherDeploymentReceiptPage
+        trackingId={trackingId}
+        mintTrackingId={mintTrackingId}
+        mintAmount={mintAmount}
+      />
     </AuthenticatedRoute>
   );
 }

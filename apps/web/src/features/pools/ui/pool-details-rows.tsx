@@ -30,7 +30,7 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
         {values.feesDecoupled ? t`Yes` : t`No`}
       </InfoRow>
       <InfoRow label={t`Decimals`} muted>
-        {values.decimals}
+        6
       </InfoRow>
       <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
       <InfoRow label={t`Tags`} muted>
@@ -44,6 +44,9 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
       </InfoRow>
       <InfoRow label={t`Phone`} muted>
         {values.phone || "—"}
+      </InfoRow>
+      <InfoRow label={t`Terms`} muted>
+        {values.terms || "—"}
       </InfoRow>
     </>
   );

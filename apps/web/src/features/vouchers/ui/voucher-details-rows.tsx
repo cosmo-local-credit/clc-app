@@ -43,6 +43,9 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
       <InfoRow label={t`Phone`} muted>
         {values.phone || "—"}
       </InfoRow>
+      <InfoRow label={t`Terms`} muted>
+        {values.terms || "—"}
+      </InfoRow>
     </>
   );
 }

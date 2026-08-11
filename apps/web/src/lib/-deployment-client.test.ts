@@ -44,9 +44,11 @@ describe("deployment client", () => {
           type,
           contract: {
             address: "0x1111111111111111111111111111111111111111",
+            admin: "0x2222222222222222222222222222222222222222",
             name,
             symbol,
             status: "CONFIRMED",
+            decimals: 6,
           },
         }),
       ),
@@ -54,9 +56,33 @@ describe("deployment client", () => {
 
     await expect(getDeploymentContract("tracking-1", type)).resolves.toEqual({
       address: "0x1111111111111111111111111111111111111111",
+      admin: "0x2222222222222222222222222222222222222222",
       name,
       symbol,
       status: "CONFIRMED",
+      decimals: 6,
+    });
+  });
+
+  it("keeps decimals null when the backend omits them", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        response(200, {
+          type: "TOKEN",
+          contract: {
+            address: "0x1111111111111111111111111111111111111111",
+            name: "Kilifi Harvest",
+            symbol: "KHV",
+            status: "CONFIRMED",
+          },
+        }),
+      ),
+    );
+
+    await expect(getDeploymentContract("tracking-1", "TOKEN")).resolves.toMatchObject({
+      decimals: null,
+      admin: null,
     });
   });
 

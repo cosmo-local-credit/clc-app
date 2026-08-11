@@ -154,6 +154,16 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Choose rates you set or equal value when the unit has no price feed",
         message: "Choose rates you set or equal value when the unit has no price feed",
       });
+    case "Supply must be greater than zero":
+      return i18n._({
+        id: "Supply must be greater than zero",
+        message: "Supply must be greater than zero",
+      });
+    case "Supply has more decimal places than this voucher supports":
+      return i18n._({
+        id: "Supply has more decimal places than this voucher supports",
+        message: "Supply has more decimal places than this voucher supports",
+      });
     default:
       return error;
   }

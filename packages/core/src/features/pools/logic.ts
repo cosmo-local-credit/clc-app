@@ -1,12 +1,16 @@
 import { z } from "zod";
-import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalTermsUrlSchema,
+  optionalWebsiteSchema,
+} from "../../lib/contact";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
   CELO_MAINNET_CUSD_ADDRESS,
 } from "../../lib/constants/celo";
 import { isTerminalOtxFailure } from "../../lib/otx";
-import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 
 export const poolNameSchema = z
@@ -79,12 +83,12 @@ export const poolCreateSchema = z
     pricing: poolPricingSchema,
     feePolicyDefault: poolSwapFeeSchema,
     feesDecoupled: z.boolean(),
-    decimals: tokenDecimalsSchema,
     location: locationSchema,
     tags: z.array(z.string()),
     email: optionalEmailSchema,
     website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
+    terms: optionalTermsUrlSchema,
     acceptedTerms: poolTermsSchema,
     acceptedSproutLicense: poolSproutLicenseSchema,
   })
@@ -117,6 +121,7 @@ export type PoolDeployPayload = {
   email?: string;
   website?: string;
   phone?: string;
+  terms?: string;
   locationName: string;
   geoLat: number;
   geoLng: number;
@@ -144,16 +149,17 @@ export function toPoolDeployPayload(
   return {
     name: input.name.trim(),
     symbol: input.symbol.trim(),
-    decimals: input.decimals,
+    decimals: "6",
     owner,
     quoterType: input.pricing,
-    feesDecoupled: input.feesDecoupled,
+    feesDecoupled: Number(input.feePolicyDefault) > 0 && input.feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
     ...(baseCurrency ? { baseCurrency } : {}),
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
+    ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,

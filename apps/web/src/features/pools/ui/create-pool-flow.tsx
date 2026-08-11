@@ -17,10 +17,10 @@ import {
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
+  optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { CELO_MAINNET_CHAIN_ID } from "@clc/core/lib/constants/celo";
-import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -33,6 +33,7 @@ import { useConnection } from "wagmi";
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
@@ -46,7 +47,6 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
-import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
@@ -79,27 +79,20 @@ const DEFAULT_VALUES: PoolFormValues = {
   unit: "KES",
   description: "",
   pricing: "oracle",
-  feePolicyDefault: "1",
+  feePolicyDefault: "0",
   feesDecoupled: false,
-  decimals: "6",
   location: undefined,
   tags: [],
   email: "",
   website: "",
   phone: "",
+  terms: "",
   acceptedTerms: false,
   acceptedSproutLicense: false,
 };
 
-const DETAIL_FIELDS = [
-  "name",
-  "symbol",
-  "unit",
-  "description",
-  "feePolicyDefault",
-  "decimals",
-] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone"] as const;
+const DETAIL_FIELDS = ["name", "symbol", "unit", "description", "feePolicyDefault"] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone", "terms"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
@@ -419,50 +412,34 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     )}
                   </form.Field>
 
-                  <form.Field name="feesDecoupled">
-                    {(field) => (
-                      <label
-                        htmlFor="pool-fees-decoupled"
-                        className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
-                      >
-                        <span>
-                          <strong className="block font-medium text-sm">
-                            <Trans>Take fees separately</Trans>
-                          </strong>
-                          <span className="mt-0.5 block text-muted-foreground text-xs">
-                            <Trans>Fees are held apart from pool liquidity</Trans>
-                          </span>
-                        </span>
-                        <Switch
-                          id="pool-fees-decoupled"
-                          checked={field.state.value}
-                          onCheckedChange={(checked) => field.handleChange(checked)}
-                        />
-                      </label>
-                    )}
-                  </form.Field>
-
-                  <form.Field
-                    name="decimals"
-                    validators={{ onBlur: tokenDecimalsSchema, onSubmit: tokenDecimalsSchema }}
-                  >
-                    {(field) => (
-                      <Field
-                        label={t`Decimals`}
-                        htmlFor="pool-decimals"
-                        error={getFieldError(field.state.meta.errors)}
-                      >
-                        <Input
-                          id="pool-decimals"
-                          inputMode="numeric"
-                          value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
-                          onBlur={field.handleBlur}
-                          aria-invalid={field.state.meta.errors.length > 0}
-                        />
-                      </Field>
-                    )}
-                  </form.Field>
+                  <form.Subscribe selector={(state) => state.values.feePolicyDefault}>
+                    {(feePolicyDefault) =>
+                      Number(feePolicyDefault) > 0 ? (
+                        <form.Field name="feesDecoupled">
+                          {(field) => (
+                            <label
+                              htmlFor="pool-fees-decoupled"
+                              className="grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+                            >
+                              <span>
+                                <strong className="block font-medium text-sm">
+                                  <Trans>Take fees separately</Trans>
+                                </strong>
+                                <span className="mt-0.5 block text-muted-foreground text-xs">
+                                  <Trans>Fees are held apart from pool liquidity</Trans>
+                                </span>
+                              </span>
+                              <Checkbox
+                                id="pool-fees-decoupled"
+                                checked={field.state.value}
+                                onCheckedChange={(checked) => field.handleChange(checked)}
+                              />
+                            </label>
+                          )}
+                        </form.Field>
+                      ) : null
+                    }
+                  </form.Subscribe>
                 </div>
               </details>
             </div>
@@ -605,6 +582,32 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       id="pool-phone"
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field
+                name="terms"
+                validators={{ onBlur: optionalTermsUrlSchema, onSubmit: optionalTermsUrlSchema }}
+              >
+                {(field) => (
+                  <Field
+                    label={t`Terms URL`}
+                    htmlFor="pool-terms-url"
+                    hint={t`Link to the terms that apply to this pool`}
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="pool-terms-url"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="https://example.com/terms"
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>

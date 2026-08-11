@@ -1,7 +1,14 @@
+import { encodeFunctionData, parseAbi } from "viem";
 import { z } from "zod";
-import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalTermsUrlSchema,
+  optionalWebsiteSchema,
+} from "../../lib/contact";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
+import type { CaliburCall } from "../webauthn/index";
 
 export const voucherNameSchema = z
   .string()
@@ -81,6 +88,7 @@ const voucherPlaceSchema = z.object({
   email: optionalEmailSchema,
   website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
+  terms: optionalTermsUrlSchema,
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
@@ -107,6 +115,7 @@ export type VoucherDeployPayload = {
   email?: string;
   website?: string;
   phone?: string;
+  terms?: string;
   voucherUoa: string;
   voucherValue: number;
   locationName: string;
@@ -134,11 +143,61 @@ export function toVoucherDeployPayload(
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
+    ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
     voucherUoa: input.unitOfAccount,
     voucherValue: Number(input.price),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,
     tags: input.tags,
+  };
+}
+
+/**
+ * A voucher deploys with zero supply: `initialize()` only assigns ownership, so
+ * the platform signer has no minting authority afterwards (`mintTo` is
+ * `onlyWriter` = owner or writers). The issuer owns the token from the deploy
+ * tx onward, so they mint their own opening supply through the relayer.
+ */
+export const giftableTokenMintToAbi = parseAbi(["function mintTo(address to, uint256 amount)"]);
+export const giftableTokenTotalSupplyAbi = parseAbi([
+  "function totalSupply() view returns (uint256)",
+]);
+
+/** Decimals come from the deployed contract, so the schema is built per voucher. */
+export function voucherMintAmountSchema(decimals: number) {
+  return z
+    .string()
+    .trim()
+    .refine((value) => /^\d+(\.\d+)?$/.test(value) && Number(value) > 0, {
+      message: "Supply must be greater than zero",
+    })
+    .refine((value) => (value.split(".")[1]?.length ?? 0) <= decimals, {
+      message: "Supply has more decimal places than this voucher supports",
+    });
+}
+
+export type BuildVoucherMintCallInput = {
+  tokenAddress: `0x${string}`;
+  /** Always the issuer's own wallet — the voucher owner mints to themselves. */
+  ownerAddress: `0x${string}`;
+  amountRaw: string;
+};
+
+export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburCall {
+  if (!/^\d+$/.test(input.amountRaw)) {
+    throw new Error("Voucher supply must be a positive integer string.");
+  }
+  const amount = BigInt(input.amountRaw);
+  if (amount <= 0n) throw new Error("Voucher supply must be positive.");
+
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenMintToAbi,
+      functionName: "mintTo",
+      args: [input.ownerAddress, amount],
+    }),
   };
 }

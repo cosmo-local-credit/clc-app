@@ -2,6 +2,7 @@ import { apiFetch } from "#/features/auth/api/client";
 import {
   type HexAddress,
   normalizeHex,
+  normalizeNumber,
   normalizeStringArray,
   normalizeText,
 } from "#/lib/api-normalize";
@@ -10,16 +11,21 @@ export type DeploymentContractType = "POOL" | "TOKEN";
 
 export type DeploymentContract = {
   address: HexAddress | null;
+  admin: HexAddress | null;
   name: string;
   symbol: string;
   status: string;
+  /** Needed to scale an issuer's opening supply into raw token units. */
+  decimals: number | null;
 };
 
 type BackendDeploymentContract = Partial<{
   address: string | null;
+  admin: string;
   name: string;
   symbol: string;
   status: string;
+  decimals: number;
 }>;
 
 type BackendDeploymentResult = {
@@ -67,8 +73,10 @@ export async function getDeploymentContract(
 
   return {
     address: normalizeHex(contract.address),
+    admin: normalizeHex(contract.admin),
     name,
     symbol,
     status,
+    decimals: normalizeNumber(contract.decimals),
   };
 }

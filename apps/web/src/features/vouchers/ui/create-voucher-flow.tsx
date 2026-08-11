@@ -15,6 +15,7 @@ import {
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
+  optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -73,6 +74,7 @@ type VoucherFormValues = {
   email: string;
   website: string;
   phone: string;
+  terms: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
 };
@@ -91,12 +93,13 @@ const DEFAULT_VALUES: VoucherFormValues = {
   email: "",
   website: "",
   phone: "",
+  terms: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
 };
 
 const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone"] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone", "terms"] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
@@ -634,6 +637,32 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       id="voucher-phone"
                       value={field.state.value}
                       onChange={(value) => field.handleChange(value)}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field
+                name="terms"
+                validators={{ onBlur: optionalTermsUrlSchema, onSubmit: optionalTermsUrlSchema }}
+              >
+                {(field) => (
+                  <Field
+                    label={t`Terms URL`}
+                    htmlFor="voucher-terms-url"
+                    hint={t`Link to the terms that apply to this voucher`}
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="voucher-terms-url"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="https://example.com/terms"
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>

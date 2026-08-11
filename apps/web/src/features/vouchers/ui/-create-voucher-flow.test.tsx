@@ -162,6 +162,14 @@ describe("CreateVoucherFlow", () => {
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
   });
 
+  it("collects an optional voucher terms URL", () => {
+    render(<CreateVoucherFlow step="place" />);
+
+    const terms = screen.getByLabelText("Terms URL");
+    expect(terms.getAttribute("type")).toBe("url");
+    expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
+  });
+
   it("requires both linked legal agreements before publishing", () => {
     render(<CreateVoucherFlow step="review" />);
 
@@ -209,6 +217,9 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Contact Website"), {
       target: { value: "https://kilifi.example" },
     });
+    fireEvent.change(screen.getByLabelText("Terms URL"), {
+      target: { value: "https://kilifi.example/terms" },
+    });
     fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -224,6 +235,7 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByText("Kilifi Harvest")).toBeTruthy();
     expect(screen.getByText("KHV")).toBeTruthy();
     expect(screen.getByText("Agriculture")).toBeTruthy();
+    expect(screen.getByText("https://kilifi.example/terms")).toBeTruthy();
 
     const publish = screen.getByRole("button", { name: "Confirm & Publish" });
     fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
@@ -247,6 +259,7 @@ describe("CreateVoucherFlow", () => {
         tags: ["Agriculture"],
         email: "issuer@example.org",
         website: "https://kilifi.example",
+        terms: "https://kilifi.example/terms",
         phone: "+254712345678",
       }),
     );
