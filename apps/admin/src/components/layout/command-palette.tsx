@@ -19,7 +19,7 @@ const pages = [
   { to: "/", label: "Overview", icon: HiOutlineHome },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
-  { to: "/users", label: "Users", icon: HiOutlineUsers },
+  { to: "/users", label: "Pool owners", icon: HiOutlineUsers },
 ] as const;
 
 type PagePath = (typeof pages)[number]["to"];

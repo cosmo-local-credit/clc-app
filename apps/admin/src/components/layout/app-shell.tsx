@@ -37,7 +37,7 @@ const navItems: Array<{
   { to: "/", label: "Overview", icon: HiOutlineHome, exact: true },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
-  { to: "/users", label: "Users", icon: HiOutlineUsers },
+  { to: "/users", label: "Pool owners", icon: HiOutlineUsers },
 ];
 
 export function AppShell() {
