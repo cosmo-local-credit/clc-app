@@ -19,3 +19,16 @@ export const optionalPhoneSchema = z
   .refine((value) => value === "" || /^\+[1-9]\d{7,14}$/.test(value), {
     message: "Invalid phone number",
   });
+
+export const optionalWebsiteSchema = z
+  .string()
+  .trim()
+  .refine((value) => {
+    if (value === "") return true;
+    try {
+      const url = new URL(value);
+      return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
+    } catch {
+      return false;
+    }
+  }, "Enter a valid website URL including https://");

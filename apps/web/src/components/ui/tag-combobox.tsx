@@ -30,6 +30,7 @@ export function TagCombobox({
   removeLabel: (tag: string) => string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -53,7 +54,16 @@ export function TagCombobox({
         onOpenChange={setOpen}
         items={items}
         value={value}
-        onValueChange={onValueChange}
+        onValueChange={(nextValue, eventDetails) => {
+          onValueChange(nextValue);
+          if (
+            eventDetails.reason === "item-press" &&
+            typeof MouseEvent !== "undefined" &&
+            eventDetails.event instanceof MouseEvent
+          ) {
+            inputRef.current?.blur();
+          }
+        }}
       >
         <ComboboxChips className="mt-2" aria-label={selectedLabel}>
           {value.map((tag) => (
@@ -63,6 +73,7 @@ export function TagCombobox({
           ))}
           <div className="w-full">
             <ComboboxInput
+              ref={inputRef}
               placeholder={placeholder}
               aria-label={searchLabel}
               onFocus={() => setOpen(true)}

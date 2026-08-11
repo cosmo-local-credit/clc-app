@@ -7,24 +7,14 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import {
-  RiCheckLine,
-  RiCloseLine,
-  RiFileCopyLine,
-  RiRefreshLine,
-  RiTimeLine,
-} from "react-icons/ri";
+import { RiCheckLine, RiCloseLine, RiRefreshLine, RiTimeLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
+import { InfoRow } from "#/components/ui/info-row";
 import { StepProgress } from "#/components/ui/step-progress";
-import {
-  EllipsizedAddress,
-  FailureCross,
-  PendingClock,
-  StatusPill,
-  SuccessCheck,
-} from "#/components/wallet";
+import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import {
   getPoolDeploymentRecords,
@@ -34,13 +24,15 @@ import { poolQueryKeys } from "#/features/pools/hooks/use-user-pools";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitPoolCreateHistory } from "#/lib/navigation/pool-create-history";
+import { PoolDetailsRows } from "./pool-details-rows";
 
 export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string }) {
   const { t } = useLingui();
   const router = useRouter();
   const queryClient = useQueryClient();
   const clearDraft = usePoolCreateDraft((state) => state.clearDraft);
-  const draftPricing = usePoolCreateDraft((state) => state.draft?.pricing);
+  const draft = usePoolCreateDraft((state) => state.draft);
+  const draftPricing = draft?.pricing;
   const tracking = useOtxTracking(trackingId ?? null, {
     queryKey: "pool-deploy-track",
     getOutcome: getPoolTrackingOutcome,
@@ -77,9 +69,8 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
 
   useEffect(() => {
     if (!confirmed) return;
-    clearDraft();
     void queryClient.invalidateQueries({ queryKey: poolQueryKeys.all });
-  }, [clearDraft, confirmed, queryClient]);
+  }, [confirmed, queryClient]);
 
   const exit = (destination: string, preserveDraft = false) => {
     if (!preserveDraft) clearDraft();
@@ -150,25 +141,21 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
           label: t`${completedCount} of ${stages.length}`,
           ariaLabel: t`${completedCount} of ${stages.length} confirmed`,
         }}
-        actions={
-          <Button variant="outline" className="h-11 w-full bg-card" onClick={() => exit("/pools/")}>
-            <Trans>Done</Trans>
-          </Button>
-        }
       />
     );
   }
 
   const address = contract.address;
-  const copyAddress = () => {
+  const txHash = tracking.outcome.kind === "success" ? tracking.outcome.otx.txHash : "";
+  const copyValue = (value: string, successMessage: string, errorMessage: string) => {
     if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy contract address`);
+      toast.error(errorMessage);
       return;
     }
     void navigator.clipboard
-      .writeText(address)
-      .then(() => toast.success(t`Contract address copied`))
-      .catch(() => toast.error(t`Couldn't copy contract address`));
+      .writeText(value)
+      .then(() => toast.success(successMessage))
+      .catch(() => toast.error(errorMessage));
   };
 
   return (
@@ -182,30 +169,44 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
           <Trans>{contract.name} is ready for vouchers and swaps.</Trans>
         </p>
         <div className="mt-3">
-          <StatusPill tone="success" label={t`Confirmed`} />
+          <StatusPill tone="success" label={t`Published`} />
         </div>
       </div>
 
-      <div className="mt-6 flex min-h-11 items-center gap-2 border border-border bg-card px-3 py-2">
-        <EllipsizedAddress address={address} className="min-w-0 flex-1" />
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="bg-card"
-          aria-label={t`Copy contract address`}
-          onClick={copyAddress}
-        >
-          <RiFileCopyLine className="size-4" aria-hidden="true" />
-        </Button>
-      </div>
+      <dl className="mt-6 border border-border bg-card">
+        {draft ? (
+          <PoolDetailsRows values={draft} />
+        ) : (
+          <>
+            <InfoRow label={t`Pool`}>{contract.name}</InfoRow>
+            <InfoRow label={t`Shortcode`}>{contract.symbol}</InfoRow>
+          </>
+        )}
+        <InfoRow label={t`Contract address`}>
+          <CopyableInfoValue
+            value={address}
+            label={t`Copy contract address`}
+            onCopy={(value) =>
+              copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+            }
+          />
+        </InfoRow>
+        {txHash ? (
+          <InfoRow label={t`Transaction hash`}>
+            <CopyableInfoValue
+              value={txHash}
+              label={t`Copy transaction hash`}
+              onCopy={(value) =>
+                copyValue(value, t`Transaction hash copied`, t`Couldn't copy transaction hash`)
+              }
+            />
+          </InfoRow>
+        ) : null}
+      </dl>
 
-      <div className="mt-auto space-y-3 pt-6">
+      <div className="mt-auto pt-6">
         <Button className="h-11 w-full" onClick={() => exit(`/pools/${address}`)}>
           <Trans>View pool</Trans>
-        </Button>
-        <Button variant="outline" className="h-11 w-full bg-card" onClick={() => exit("/pools/")}>
-          <Trans>Back to pools</Trans>
         </Button>
       </div>
     </div>
@@ -227,7 +228,7 @@ function DeploymentStateShell({
   status: React.ReactNode;
   stages?: PoolDeploymentStage[];
   progress?: { completed: number; total: number; label: string; ariaLabel: string };
-  actions: React.ReactNode;
+  actions?: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -252,7 +253,7 @@ function DeploymentStateShell({
         <DeploymentChecklist stages={stages} className={progress ? "mt-3" : "mt-5"} />
       ) : null}
 
-      <div className="mt-auto space-y-3 pt-6">{actions}</div>
+      {actions ? <div className="mt-auto space-y-3 pt-6">{actions}</div> : null}
     </div>
   );
 }

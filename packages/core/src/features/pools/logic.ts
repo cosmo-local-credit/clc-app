@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
+import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
@@ -12,20 +12,20 @@ import { locationSchema } from "../location/logic";
 export const poolNameSchema = z
   .string()
   .trim()
-  .min(1, { message: "Pool name is required" })
+  .min(3, { message: "Pool name must be at least 3 characters" })
   .max(80, { message: "Pool name must be 80 characters or fewer" });
 
 export const poolSymbolSchema = z
   .string()
   .trim()
-  .min(1, { message: "Pool shortcode is required" })
+  .min(3, { message: "Pool shortcode must be at least 3 characters" })
   .max(6, { message: "Pool shortcode must be 6 characters or fewer" })
   .regex(/^[A-Z0-9]+$/, { message: "Use only letters and numbers for the pool shortcode" });
 
 export const poolDescriptionSchema = z
   .string()
   .trim()
-  .min(1, { message: "Pool description is required" })
+  .min(3, { message: "Pool description must be at least 3 characters" })
   .max(500, { message: "Pool description must be 500 characters or fewer" });
 
 export const poolSwapFeeSchema = z
@@ -83,6 +83,7 @@ export const poolCreateSchema = z
     location: locationSchema,
     tags: z.array(z.string()),
     email: optionalEmailSchema,
+    website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
     acceptedTerms: poolTermsSchema,
     acceptedSproutLicense: poolSproutLicenseSchema,
@@ -114,6 +115,7 @@ export type PoolDeployPayload = {
   baseCurrency?: string;
   description: string;
   email?: string;
+  website?: string;
   phone?: string;
   locationName: string;
   geoLat: number;
@@ -150,6 +152,7 @@ export function toPoolDeployPayload(
     ...(baseCurrency ? { baseCurrency } : {}),
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
+    ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,

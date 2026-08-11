@@ -87,9 +87,11 @@ vi.mock("#/hooks/use-deployment", () => ({
 }));
 
 import { CreateVoucherFlow } from "./create-voucher-flow";
+import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 
 afterEach(() => {
   vi.clearAllMocks();
+  useVoucherCreateDraft.getState().clearDraft();
 });
 
 describe("CreateVoucherFlow", () => {
@@ -101,6 +103,10 @@ describe("CreateVoucherFlow", () => {
     const guidance = screen.getByText(/A voucher acts like a gift card/);
     expect(guidance.tagName).toBe("P");
     expect(guidance.classList).toContain("leading-snug");
+    const guidanceTitle = screen.getByText("What's a voucher?");
+    expect(guidanceTitle.classList).toContain("bg-primary/[0.08]");
+    expect(guidanceTitle.classList).toContain("text-primary");
+    expect(guidanceTitle.closest("aside")?.classList).toContain("bg-card");
 
     const currency = screen.getByLabelText("Priced in");
     const price = screen.getByLabelText("Price");
@@ -141,6 +147,7 @@ describe("CreateVoucherFlow", () => {
       );
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
+    expect(screen.getByLabelText("Contact Website")).toBeTruthy();
     expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search voucher tags" });
@@ -199,6 +206,9 @@ describe("CreateVoucherFlow", () => {
 
     view.rerender(<CreateVoucherFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+    fireEvent.change(screen.getByLabelText("Contact Website"), {
+      target: { value: "https://kilifi.example" },
+    });
     fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -236,6 +246,7 @@ describe("CreateVoucherFlow", () => {
         geoLng: 39.9093,
         tags: ["Agriculture"],
         email: "issuer@example.org",
+        website: "https://kilifi.example",
         phone: "+254712345678",
       }),
     );
@@ -285,7 +296,7 @@ describe("CreateVoucherFlow", () => {
     render(<CreateVoucherFlow step="voucher" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
-    expect(await screen.findByText("Voucher name is required")).toBeTruthy();
+    expect(await screen.findByText("Voucher name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );

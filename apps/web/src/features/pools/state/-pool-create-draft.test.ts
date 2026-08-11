@@ -13,6 +13,7 @@ const submittedPool = {
   location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
   tags: ["Agriculture"],
   email: "",
+  website: "",
   phone: "",
   acceptedTerms: true as const,
   acceptedSproutLicense: true as const,

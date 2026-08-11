@@ -42,6 +42,7 @@ vi.mock("#/lib/navigation/voucher-create-history", () => ({
 }));
 
 import { VoucherDeploymentReceiptPage } from "./voucher-deployment-receipt-page";
+import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 
 function renderReceipt() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -53,6 +54,7 @@ function renderReceipt() {
 }
 
 beforeEach(() => {
+  useVoucherCreateDraft.getState().clearDraft();
   state.contract = null;
   state.contractError = null;
   state.trackingOutcome = { kind: "pending" };
@@ -61,6 +63,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+  useVoucherCreateDraft.getState().clearDraft();
 });
 
 describe("VoucherDeploymentReceiptPage", () => {
@@ -70,12 +73,7 @@ describe("VoucherDeploymentReceiptPage", () => {
     expect(screen.getByRole("heading", { name: "Publishing your voucher..." })).toBeTruthy();
     expect(screen.getByText("Voucher contract")).toBeTruthy();
     expect(screen.getByText("In network")).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("button", { name: "Done" }));
-    expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
-      history: {},
-      destination: "/wallet/vouchers",
-    });
+    expect(screen.queryByRole("button", { name: "Done" })).toBeNull();
   });
 
   it("waits for the confirmed contract row after the OTX succeeds", () => {
@@ -92,6 +90,23 @@ describe("VoucherDeploymentReceiptPage", () => {
   });
 
   it("shows the live voucher address and exits forward to its detail page", async () => {
+    useVoucherCreateDraft.getState().setDraft({
+      name: "Kilifi Harvest",
+      symbol: "KHV",
+      price: "1",
+      unitOfAccount: "KES",
+      description: "Fresh food from Kilifi producers.",
+      voucherType: "standard",
+      expiryDate: "",
+      decimals: "6",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
+      tags: ["Agriculture"],
+      email: "issuer@example.org",
+      website: "https://kilifi.example",
+      phone: "+254712345678",
+      acceptedTerms: true,
+      acceptedPathLicense: true,
+    });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
     state.contract = {
       address: "0x7C41ba09E8d5A62f3b0D14eC7a9F26B8d3510Ee4",
@@ -108,21 +123,28 @@ describe("VoucherDeploymentReceiptPage", () => {
 
     expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
     expect(screen.getByText("Kilifi Harvest can be held, sent and redeemed.")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Copy contract address" }));
+    expect(screen.getByText("Published")).toBeTruthy();
+    expect(screen.getByText("Fresh food from Kilifi producers.")).toBeTruthy();
+    expect(screen.getByText("https://kilifi.example")).toBeTruthy();
+    expect(screen.getByText("Contract address")).toBeTruthy();
+    expect(screen.getByText("Transaction hash")).toBeTruthy();
+    const copyAddress = screen.getByRole("button", { name: "Copy contract address" });
+    const copyIcon = copyAddress.querySelector("svg");
+    expect(copyIcon?.parentElement?.classList).toContain("size-6");
+    expect(copyIcon?.classList).toContain("size-3");
+    fireEvent.click(copyAddress);
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith("0x7C41ba09E8d5A62f3b0D14eC7a9F26B8d3510Ee4"),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Add to a pool" }));
-    expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
-      history: {},
-      destination: "/pools/",
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "View voucher" }));
+    expect(screen.queryByRole("button", { name: "Add to a pool" })).toBeNull();
+    const viewVoucher = screen.getByRole("button", { name: "View voucher" });
+    expect(viewVoucher.className).toContain("bg-primary");
+    fireEvent.click(viewVoucher);
     expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
       history: {},
       destination: "/vouchers/0x7C41ba09E8d5A62f3b0D14eC7a9F26B8d3510Ee4?from=vouchers",
     });
+    expect(useVoucherCreateDraft.getState().draft).toBeNull();
   });
 });

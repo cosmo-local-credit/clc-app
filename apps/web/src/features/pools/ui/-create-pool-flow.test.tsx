@@ -101,6 +101,10 @@ describe("CreatePoolFlow", () => {
     const guidance = screen.getByText(/A pool holds vouchers together/);
     expect(guidance.tagName).toBe("P");
     expect(guidance.classList).toContain("leading-snug");
+    const guidanceTitle = screen.getByText("What's a pool?");
+    expect(guidanceTitle.classList).toContain("bg-info/[0.08]");
+    expect(guidanceTitle.classList).toContain("text-info");
+    expect(guidanceTitle.closest("aside")?.classList).toContain("bg-card");
 
     const advancedSummary = screen.getByText("Advanced");
     expect(advancedSummary.tagName).toBe("SUMMARY");
@@ -120,6 +124,7 @@ describe("CreatePoolFlow", () => {
       );
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
+    expect(screen.getByLabelText("Contact Website")).toBeTruthy();
     expect(screen.queryByText(/Public — pool members/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search pool tags" });
@@ -178,6 +183,9 @@ describe("CreatePoolFlow", () => {
 
     view.rerender(<CreatePoolFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+    fireEvent.change(screen.getByLabelText("Contact Website"), {
+      target: { value: "https://kilifi.example" },
+    });
     fireEvent.click(screen.getByRole("combobox", { name: "Search pool tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -209,6 +217,7 @@ describe("CreatePoolFlow", () => {
         baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
         description: "A pool for Kilifi growers.",
         email: "steward@example.org",
+        website: "https://kilifi.example",
         phone: "+254712345678",
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
@@ -228,7 +237,7 @@ describe("CreatePoolFlow", () => {
     render(<CreatePoolFlow step="pool" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
-    expect(await screen.findByText("Pool name is required")).toBeTruthy();
+    expect(await screen.findByText("Pool name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );

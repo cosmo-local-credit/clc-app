@@ -12,7 +12,11 @@ import {
   voucherSymbolSchema,
   voucherTermsSchema,
 } from "@clc/core/features/vouchers/logic";
-import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalWebsiteSchema,
+} from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -26,7 +30,6 @@ import { useConnection } from "wagmi";
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
-import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -45,12 +48,14 @@ import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
+import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
 import {
   beginVoucherCreateHistory,
   exitVoucherCreateHistory,
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
+import { VoucherDetailsRows } from "./voucher-details-rows";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
 
@@ -66,6 +71,7 @@ type VoucherFormValues = {
   location: LocationInput | undefined;
   tags: string[];
   email: string;
+  website: string;
   phone: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
@@ -83,13 +89,14 @@ const DEFAULT_VALUES: VoucherFormValues = {
   location: undefined,
   tags: [],
   email: "",
+  website: "",
   phone: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
 };
 
 const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
-const PLACE_FIELDS = ["location", "email", "phone"] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone"] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
@@ -99,10 +106,12 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const deployVoucher = useDeployVoucher();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
+  const draft = useVoucherCreateDraft((state) => state.draft);
+  const setDraft = useVoucherCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
 
   const form = useForm({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: draft ?? DEFAULT_VALUES,
     validators: { onSubmit: voucherCreateSchema },
     onSubmit: async ({ value }) => {
       if (!address) {
@@ -110,6 +119,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         return;
       }
       const parsed = voucherCreateSchema.parse(value);
+      setDraft(parsed);
       try {
         const result = await deployVoucher.mutateAsync(
           toVoucherDeployPayload(parsed, getAddress(address)),
@@ -132,7 +142,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
   useEffect(() => {
     const profile = profileQuery.data;
-    if (hasPrefilledProfile.current || !profile) return;
+    if (hasPrefilledProfile.current || !profile || draft) return;
     hasPrefilledProfile.current = true;
 
     const email = profile.email.trim();
@@ -148,7 +158,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
       form.setFieldValue("phone", phone, { dontUpdateMeta: true });
     }
-  }, [form, profileQuery.data]);
+  }, [draft, form, profileQuery.data]);
 
   useEffect(() => {
     if (step === "voucher") beginVoucherCreateHistory(router.history);
@@ -214,13 +224,16 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </h1>
 
             <aside
-              className="mt-3.5 border border-border bg-card p-4"
+              className="mt-3.5 border border-primary/30 bg-card"
               aria-labelledby="voucher-guidance-title"
             >
-              <p id="voucher-guidance-title" className="font-semibold text-sm leading-tight">
+              <p
+                id="voucher-guidance-title"
+                className="border-primary/20 border-b bg-primary/[0.08] px-4 py-2.5 font-semibold text-primary text-sm leading-tight"
+              >
                 <Trans>What's a voucher?</Trans>
               </p>
-              <p className="mt-1 text-muted-foreground text-sm leading-snug">
+              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
                 <Trans>
                   A voucher acts like a gift card for your offers. When someone redeems your
                   voucher, you are committing to provide them with your offers.
@@ -583,6 +596,31 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               </form.Field>
 
               <form.Field
+                name="website"
+                validators={{ onBlur: optionalWebsiteSchema, onSubmit: optionalWebsiteSchema }}
+              >
+                {(field) => (
+                  <Field
+                    label={t`Contact Website`}
+                    htmlFor="voucher-website"
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="voucher-website"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="https://example.com"
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field
                 name="phone"
                 validators={{ onBlur: optionalPhoneSchema, onSubmit: optionalPhoneSchema }}
               >
@@ -620,18 +658,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
                 <dl className="mt-3.5 border border-border bg-card">
-                  <InfoRow label={t`Name`}>{values.name}</InfoRow>
-                  <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
-                  <InfoRow label={t`Price`}>
-                    {values.price} {values.unitOfAccount}
-                  </InfoRow>
-                  <InfoRow label={t`Type`} muted>
-                    {values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
-                  </InfoRow>
-                  <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
-                  <InfoRow label={t`Tags`} muted>
-                    {values.tags.join(", ") || "—"}
-                  </InfoRow>
+                  <VoucherDetailsRows values={values} />
                 </dl>
               )}
             </form.Subscribe>

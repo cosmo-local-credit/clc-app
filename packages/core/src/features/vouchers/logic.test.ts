@@ -18,6 +18,7 @@ const validVoucher: VoucherCreateInput = {
   },
   tags: ["Agriculture", "Food production"],
   email: "issuer@example.org",
+  website: "https://kilifi.example",
   phone: "+254712345678",
   acceptedTerms: true,
   acceptedPathLicense: true,
@@ -48,6 +49,32 @@ describe("voucherCreateSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("requires at least three characters for the voucher identity fields", () => {
+    for (const field of ["name", "symbol", "description"] as const) {
+      const result = voucherCreateSchema.safeParse({ ...validVoucher, [field]: "ab" });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues).toContainEqual(
+          expect.objectContaining({
+            path: [field],
+            message: expect.stringContaining("at least 3"),
+          }),
+        );
+      }
+    }
+  });
+
+  it("accepts only blank or valid HTTP website URLs", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, website: "" }).success).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, website: "https://kilifi.example" }).success,
+    ).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, website: "kilifi.example" }).success,
+    ).toBe(false);
+  });
+
   it("requires both legal agreements", () => {
     const withoutTerms = voucherCreateSchema.safeParse({ ...validVoucher, acceptedTerms: false });
     const withoutPathLicense = voucherCreateSchema.safeParse({
@@ -64,7 +91,7 @@ describe("toVoucherDeployPayload", () => {
   it("maps voucher metadata and omits blank optional fields", () => {
     expect(
       toVoucherDeployPayload(
-        { ...validVoucher, email: "", phone: "" },
+        { ...validVoucher, email: "", website: "", phone: "" },
         "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
       ),
     ).toEqual({

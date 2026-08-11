@@ -1,18 +1,18 @@
 import { z } from "zod";
-import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
+import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 
 export const voucherNameSchema = z
   .string()
   .trim()
-  .min(1, { message: "Voucher name is required" })
+  .min(3, { message: "Voucher name must be at least 3 characters" })
   .max(80, { message: "Voucher name must be 80 characters or fewer" });
 
 export const voucherSymbolSchema = z
   .string()
   .trim()
-  .min(1, { message: "Voucher symbol is required" })
+  .min(3, { message: "Voucher symbol must be at least 3 characters" })
   .max(6, { message: "Voucher symbol must be 6 characters or fewer" })
   .regex(/^[A-Z0-9]+$/, { message: "Use only letters and numbers for the voucher symbol" });
 
@@ -26,7 +26,7 @@ export const voucherPriceSchema = z
 export const voucherDescriptionSchema = z
   .string()
   .trim()
-  .min(1, { message: "Voucher description is required" })
+  .min(3, { message: "Voucher description must be at least 3 characters" })
   .max(500, { message: "Voucher description must be 500 characters or fewer" });
 
 export const voucherTermsSchema = z.literal(true, {
@@ -79,6 +79,7 @@ const voucherPlaceSchema = z.object({
   location: locationSchema,
   tags: z.array(z.string()),
   email: optionalEmailSchema,
+  website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
 });
 
@@ -104,6 +105,7 @@ export type VoucherDeployPayload = {
   expiryTimestamp?: string;
   description: string;
   email?: string;
+  website?: string;
   phone?: string;
   voucherUoa: string;
   voucherValue: number;
@@ -130,6 +132,7 @@ export function toVoucherDeployPayload(
     ...(expiryTimestamp ? { expiryTimestamp } : {}),
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
+    ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     voucherUoa: input.unitOfAccount,
     voucherValue: Number(input.price),

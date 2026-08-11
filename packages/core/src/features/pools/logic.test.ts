@@ -27,6 +27,7 @@ const validPool: PoolCreateInput = {
   },
   tags: ["Agriculture"],
   email: "steward@example.org",
+  website: "https://kilifi.example",
   phone: "+254712345678",
   acceptedTerms: true,
   acceptedSproutLicense: true,
@@ -67,6 +68,32 @@ describe("poolCreateSchema", () => {
       poolCreateSchema.safeParse({ ...validPool, unit: "HOUR", pricing: "decimal" }).success,
     ).toBe(true);
   });
+
+  it("requires at least three characters for the pool identity fields", () => {
+    for (const field of ["name", "symbol", "description"] as const) {
+      const result = poolCreateSchema.safeParse({ ...validPool, [field]: "ab" });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues).toContainEqual(
+          expect.objectContaining({
+            path: [field],
+            message: expect.stringContaining("at least 3"),
+          }),
+        );
+      }
+    }
+  });
+
+  it("accepts only blank or valid HTTP website URLs", () => {
+    expect(poolCreateSchema.safeParse({ ...validPool, website: "" }).success).toBe(true);
+    expect(
+      poolCreateSchema.safeParse({ ...validPool, website: "https://kilifi.example" }).success,
+    ).toBe(true);
+    expect(poolCreateSchema.safeParse({ ...validPool, website: "kilifi.example" }).success).toBe(
+      false,
+    );
+  });
 });
 
 describe("toPoolDeployPayload", () => {
@@ -82,6 +109,7 @@ describe("toPoolDeployPayload", () => {
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
       description: "A pool for growers in Kilifi.",
       email: "steward@example.org",
+      website: "https://kilifi.example",
       locationName: "Kilifi, Kenya",
       geoLat: -3.5107,
       geoLng: 39.9093,
@@ -91,12 +119,13 @@ describe("toPoolDeployPayload", () => {
 
   it("omits blank optional contact fields", () => {
     const payload = toPoolDeployPayload(
-      { ...validPool, email: "", phone: "" },
+      { ...validPool, email: "", website: "", phone: "" },
       OWNER,
       CELO_MAINNET_CHAIN_ID,
     );
 
     expect(payload).not.toHaveProperty("email");
+    expect(payload).not.toHaveProperty("website");
     expect(payload).not.toHaveProperty("phone");
   });
 

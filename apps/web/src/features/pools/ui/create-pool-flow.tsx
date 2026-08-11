@@ -14,7 +14,11 @@ import {
   poolUnitSchemaForPricing,
   toPoolDeployPayload,
 } from "@clc/core/features/pools/logic";
-import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalWebsiteSchema,
+} from "@clc/core/lib/contact";
 import { CELO_MAINNET_CHAIN_ID } from "@clc/core/lib/constants/celo";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -30,7 +34,6 @@ import { AgreementField } from "#/components/ui/agreement-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
-import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -57,6 +60,7 @@ import {
   exitPoolCreateHistory,
 } from "#/lib/navigation/pool-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
+import { PoolDetailsRows } from "./pool-details-rows";
 
 export type PoolCreateStep = "pool" | "place" | "review";
 
@@ -81,6 +85,7 @@ const DEFAULT_VALUES: PoolFormValues = {
   location: undefined,
   tags: [],
   email: "",
+  website: "",
   phone: "",
   acceptedTerms: false,
   acceptedSproutLicense: false,
@@ -94,7 +99,7 @@ const DETAIL_FIELDS = [
   "feePolicyDefault",
   "decimals",
 ] as const;
-const PLACE_FIELDS = ["location", "email", "phone"] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
@@ -218,13 +223,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             </h1>
 
             <aside
-              className="mt-3.5 border border-border bg-card p-4"
+              className="mt-3.5 border border-info/30 bg-card"
               aria-labelledby="pool-guidance-title"
             >
-              <p id="pool-guidance-title" className="font-semibold text-sm leading-tight">
+              <p
+                id="pool-guidance-title"
+                className="border-info/20 border-b bg-info/[0.08] px-4 py-2.5 font-semibold text-info text-sm leading-tight"
+              >
                 <Trans>What's a pool?</Trans>
               </p>
-              <p className="mt-1 text-muted-foreground text-sm leading-snug">
+              <p className="px-4 py-3 text-muted-foreground text-sm leading-snug">
                 <Trans>
                   A pool holds vouchers together so members can swap between them at a published
                   value.
@@ -559,6 +567,31 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
               </form.Field>
 
               <form.Field
+                name="website"
+                validators={{ onBlur: optionalWebsiteSchema, onSubmit: optionalWebsiteSchema }}
+              >
+                {(field) => (
+                  <Field
+                    label={t`Contact Website`}
+                    htmlFor="pool-website"
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id="pool-website"
+                      type="url"
+                      inputMode="url"
+                      autoComplete="url"
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      placeholder="https://example.com"
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field
                 name="phone"
                 validators={{ onBlur: optionalPhoneSchema, onSubmit: optionalPhoneSchema }}
               >
@@ -596,23 +629,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
                 <dl className="mt-3.5 border border-border bg-card">
-                  <InfoRow label={t`Pool`}>{values.name}</InfoRow>
-                  <InfoRow label={t`Shortcode`}>{values.symbol}</InfoRow>
-                  <InfoRow label={t`Unit`}>{values.unit}</InfoRow>
-                  <InfoRow label={t`Pricing`} muted>
-                    {values.pricing === "oracle"
-                      ? t`Price feed`
-                      : values.pricing === "relative"
-                        ? t`Rates you set`
-                        : t`Equal value`}
-                  </InfoRow>
-                  <InfoRow label={t`Swap fee`} muted>
-                    {values.feePolicyDefault}%
-                  </InfoRow>
-                  <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
-                  <InfoRow label={t`Tags`} muted>
-                    {values.tags.join(", ") || "—"}
-                  </InfoRow>
+                  <PoolDetailsRows values={values} />
                 </dl>
               )}
             </form.Subscribe>

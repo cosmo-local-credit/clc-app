@@ -113,6 +113,7 @@ describe("PoolDeploymentReceiptPage", () => {
     expect(screen.getByText("Pricing")).toBeTruthy();
     expect(screen.getByText("The pool")).toBeTruthy();
     expect(screen.getByText("1 of 5")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Done" })).toBeNull();
   });
 
   it("shows the failed stage and keeps the submitted draft when trying again", () => {
@@ -128,6 +129,7 @@ describe("PoolDeploymentReceiptPage", () => {
       location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
       tags: [],
       email: "",
+      website: "",
       phone: "",
       acceptedTerms: true,
       acceptedSproutLicense: true,
@@ -156,6 +158,23 @@ describe("PoolDeploymentReceiptPage", () => {
   });
 
   it("shows the live pool address and exits forward to pool detail", async () => {
+    usePoolCreateDraft.getState().setDraft({
+      name: "Kilifi Growers",
+      symbol: "KGP1",
+      unit: "KES",
+      description: "A growers pool.",
+      pricing: "oracle",
+      feePolicyDefault: "1",
+      feesDecoupled: false,
+      decimals: "6",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
+      tags: ["Agriculture"],
+      email: "steward@example.org",
+      website: "https://kilifi.example",
+      phone: "+254712345678",
+      acceptedTerms: true,
+      acceptedSproutLicense: true,
+    });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
     state.contract = {
       address: "0x1111111111111111111111111111111111111111",
@@ -172,15 +191,24 @@ describe("PoolDeploymentReceiptPage", () => {
 
     expect(screen.getByRole("heading", { name: "KGP1 is live" })).toBeTruthy();
     expect(screen.getByText("Kilifi Growers is ready for vouchers and swaps.")).toBeTruthy();
+    expect(screen.getByText("Published")).toBeTruthy();
+    expect(screen.getByText("A growers pool.")).toBeTruthy();
+    expect(screen.getByText("https://kilifi.example")).toBeTruthy();
+    expect(screen.getByText("Contract address")).toBeTruthy();
+    expect(screen.getByText("Transaction hash")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Copy contract address" }));
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith("0x1111111111111111111111111111111111111111"),
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "View pool" }));
+    expect(screen.queryByRole("button", { name: "Back to pools" })).toBeNull();
+    const viewPool = screen.getByRole("button", { name: "View pool" });
+    expect(viewPool.className).toContain("bg-primary");
+    fireEvent.click(viewPool);
     expect(exitPoolCreateHistoryMock).toHaveBeenCalledWith({
       history: {},
       destination: "/pools/0x1111111111111111111111111111111111111111",
     });
+    expect(usePoolCreateDraft.getState().draft).toBeNull();
   });
 });

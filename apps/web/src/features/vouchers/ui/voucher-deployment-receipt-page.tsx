@@ -2,27 +2,26 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import {
-  EllipsizedAddress,
-  FailureCross,
-  PendingClock,
-  StatusPill,
-  SuccessCheck,
-} from "#/components/wallet";
+import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
+import { InfoRow } from "#/components/ui/info-row";
+import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
+import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
+import { VoucherDetailsRows } from "./voucher-details-rows";
 
 export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: string }) {
   const { t } = useLingui();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const draft = useVoucherCreateDraft((state) => state.draft);
+  const clearDraft = useVoucherCreateDraft((state) => state.clearDraft);
   const tracking = useOtxTracking(trackingId ?? null, { queryKey: "voucher-deploy-track" });
   const contractQuery = useDeploymentContract(
     trackingId ?? null,
@@ -39,6 +38,7 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
   }, [confirmed, queryClient]);
 
   const exit = (destination: string) => {
+    clearDraft();
     exitVoucherCreateHistory({ history: router.history, destination });
   };
 
@@ -49,7 +49,6 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
         title={t`Publishing unavailable`}
         message={t`Voucher tracking details are missing.`}
         status={<StatusPill tone="error" label={t`Unavailable`} />}
-        onDone={() => exit("/wallet/vouchers")}
       />
     );
   }
@@ -67,7 +66,6 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
         title={t`Publishing failed`}
         message={message}
         status={<StatusPill tone="error" label={t`Failed`} />}
-        onDone={() => exit("/wallet/vouchers")}
       />
     );
   }
@@ -80,21 +78,21 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
         message={t`Waiting for blockchain confirmation...`}
         status={<StatusPill tone="pending" label={t`Pending`} />}
         showContractRow
-        onDone={() => exit("/wallet/vouchers")}
       />
     );
   }
 
   const address = contract.address;
-  const copyAddress = () => {
+  const txHash = tracking.outcome.kind === "success" ? tracking.outcome.otx.txHash : "";
+  const copyValue = (value: string, successMessage: string, errorMessage: string) => {
     if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy contract address`);
+      toast.error(errorMessage);
       return;
     }
     void navigator.clipboard
-      .writeText(address)
-      .then(() => toast.success(t`Contract address copied`))
-      .catch(() => toast.error(t`Couldn't copy contract address`));
+      .writeText(value)
+      .then(() => toast.success(successMessage))
+      .catch(() => toast.error(errorMessage));
   };
 
   return (
@@ -108,33 +106,43 @@ export function VoucherDeploymentReceiptPage({ trackingId }: { trackingId?: stri
           <Trans>{contract.name} can be held, sent and redeemed.</Trans>
         </p>
         <div className="mt-3">
-          <StatusPill tone="success" label={t`Confirmed`} />
+          <StatusPill tone="success" label={t`Published`} />
         </div>
       </div>
 
-      <div className="mt-6 flex min-h-11 items-center gap-2 border border-border bg-card px-3 py-2">
-        <EllipsizedAddress address={address} className="min-w-0 flex-1" />
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="bg-card"
-          aria-label={t`Copy contract address`}
-          onClick={copyAddress}
-        >
-          <RiFileCopyLine className="size-4" aria-hidden="true" />
-        </Button>
-      </div>
+      <dl className="mt-6 border border-border bg-card">
+        {draft ? (
+          <VoucherDetailsRows values={draft} />
+        ) : (
+          <>
+            <InfoRow label={t`Name`}>{contract.name}</InfoRow>
+            <InfoRow label={t`Symbol`}>{contract.symbol}</InfoRow>
+          </>
+        )}
+        <InfoRow label={t`Contract address`}>
+          <CopyableInfoValue
+            value={address}
+            label={t`Copy contract address`}
+            onCopy={(value) =>
+              copyValue(value, t`Contract address copied`, t`Couldn't copy contract address`)
+            }
+          />
+        </InfoRow>
+        {txHash ? (
+          <InfoRow label={t`Transaction hash`}>
+            <CopyableInfoValue
+              value={txHash}
+              label={t`Copy transaction hash`}
+              onCopy={(value) =>
+                copyValue(value, t`Transaction hash copied`, t`Couldn't copy transaction hash`)
+              }
+            />
+          </InfoRow>
+        ) : null}
+      </dl>
 
-      <div className="mt-auto space-y-3 pt-6">
-        <Button className="h-11 w-full" onClick={() => exit("/pools/")}>
-          <Trans>Add to a pool</Trans>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-11 w-full bg-card"
-          onClick={() => exit(`/vouchers/${address}?from=vouchers`)}
-        >
+      <div className="mt-auto pt-6">
+        <Button className="h-11 w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
           <Trans>View voucher</Trans>
         </Button>
       </div>
@@ -148,7 +156,6 @@ function DeploymentStateShell({
   message,
   status,
   showContractRow = false,
-  onDone,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -156,7 +163,6 @@ function DeploymentStateShell({
   status: React.ReactNode;
   /** Only meaningful while the deployment is in flight — a failed publish has no contract. */
   showContractRow?: boolean;
-  onDone: () => void;
 }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -179,12 +185,6 @@ function DeploymentStateShell({
           </div>
         </div>
       ) : null}
-
-      <div className="mt-auto pt-6">
-        <Button variant="outline" className="h-11 w-full bg-card" onClick={onDone}>
-          <Trans>Done</Trans>
-        </Button>
-      </div>
     </div>
   );
 }
