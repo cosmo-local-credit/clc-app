@@ -14,7 +14,7 @@ import {
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
-import { RELAYER_URL } from "@clc/api/lib/backend-config";
+import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 

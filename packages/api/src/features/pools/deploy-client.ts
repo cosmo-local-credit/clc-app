@@ -1,24 +1,26 @@
 import type { PoolDeployPayload } from "@clc/core/features/pools/logic";
 import { isTerminalOtxFailure } from "@clc/core/lib/otx";
 
-import {
-  apiFetch,
-  type OtxRecord,
-  type OtxTrackingOutcome,
-  type OtxTrackResult,
-} from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
+import type { OtxRecord, OtxTrackingOutcome, OtxTrackResult } from "../auth/client";
 
 const POOL_TERMINAL_OTX_TYPE = "POOL_PROXY_DEPLOY";
 
-export async function deployPool(payload: PoolDeployPayload): Promise<{ trackingId: string }> {
-  const result = await apiFetch<{ trackingId?: unknown }>("/api/v2/contracts/pool", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  if (typeof result.trackingId !== "string" || !result.trackingId) {
-    throw new Error("Pool deployment response did not include a tracking ID.");
-  }
-  return { trackingId: result.trackingId };
+export type PoolDeployClient = ReturnType<typeof createPoolDeployClient>;
+
+export function createPoolDeployClient(http: HttpClient) {
+  return {
+    async deployPool(payload: PoolDeployPayload): Promise<{ trackingId: string }> {
+      const result = await http.request<{ trackingId?: unknown }>("/api/v2/contracts/pool", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      if (typeof result.trackingId !== "string" || !result.trackingId) {
+        throw new Error("Pool deployment response did not include a tracking ID.");
+      }
+      return { trackingId: result.trackingId };
+    },
+  };
 }
 
 export function getPoolTrackingOutcome(result: OtxTrackResult | undefined): OtxTrackingOutcome {

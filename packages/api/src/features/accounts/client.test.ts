@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createAccountsClient } from "./client";
 
-import { getAccountTransfers, getLatestAccountTokens } from "./client";
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createAccountsClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -36,7 +40,7 @@ describe("account token balances", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const result = await getLatestAccountTokens("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
+    const result = await api.getLatestAccountTokens("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
 
     expect(result.tokens[0]?.tokenSymbol).toBe("USD₮");
     expect(fetcher).toHaveBeenCalledWith(
@@ -51,7 +55,7 @@ describe("account token balances", () => {
     const fetcher = mockFetch({ ok: true, result: { transfers: [], first: 10, last: 5 } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getAccountTransfers({
+    await api.getAccountTransfers({
       address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
       perPage: 20,
       cursor: 5,

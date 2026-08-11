@@ -23,7 +23,7 @@ import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-bala
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { useDeploymentContract } from "#/hooks/use-deployment";
-import { RELAYER_URL } from "@clc/api/lib/backend-config";
+import { RELAYER_URL } from "#/lib/relayer-config";
 import { exitVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 
 const relayerClient = createRelayerClient(RELAYER_URL);

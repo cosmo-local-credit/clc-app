@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createPoolsClient } from "./client";
 
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 
-import {
-  getFilteredPools,
-  getPoolByAddress,
-  getPools,
-  getPoolVouchers,
-  normalizeUserPool,
-} from "./client";
+import { normalizeUserPool } from "./client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createPoolsClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -31,7 +31,7 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    await getPools({ perPage: 20 });
+    await api.getPools({ perPage: 20 });
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("/api/v2/pools?perPage=20"),
@@ -43,7 +43,7 @@ describe("pools client", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [], first: 1, last: 5 } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getPools({ perPage: 20, cursor: 5, next: true });
+    await api.getPools({ perPage: 20, cursor: 5, next: true });
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("/api/v2/pools?perPage=20&cursor=5&next=true"),
@@ -67,7 +67,7 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const pool = await getPoolByAddress("0x1111111111111111111111111111111111111111");
+    const pool = await api.getPoolByAddress("0x1111111111111111111111111111111111111111");
 
     expect(pool.name).toBe("Fresh Food Circle");
     expect(fetcher).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe("pools client", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: null } });
     vi.stubGlobal("fetch", fetcher);
 
-    await expect(getPools({ perPage: 20 })).resolves.toEqual({ pools: [], receivedCount: 0 });
+    await expect(api.getPools({ perPage: 20 })).resolves.toEqual({ pools: [], receivedCount: 0 });
 
     const pool = normalizeUserPool({
       id: "8",
@@ -116,7 +116,7 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const page = await getPools({ perPage: 20 });
+    const page = await api.getPools({ perPage: 20 });
 
     expect(page.pools).toHaveLength(1);
     expect(page.pools[0]?.name).toBe("Valid Pool");
@@ -151,7 +151,7 @@ describe("pools client", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const page = await getPoolVouchers("0x1111111111111111111111111111111111111111", {
+    const page = await api.getPoolVouchers("0x1111111111111111111111111111111111111111", {
       perPage: 20,
       cursor: 11,
       next: true,
@@ -187,7 +187,7 @@ describe("getPools pagination and cancellation", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const page = await getPools({ perPage: 20 });
+    const page = await api.getPools({ perPage: 20 });
 
     expect(page.pools).toHaveLength(1);
     expect(page.receivedCount).toBe(2);
@@ -198,7 +198,7 @@ describe("getPools pagination and cancellation", () => {
     vi.stubGlobal("fetch", fetcher);
     const controller = new AbortController();
 
-    await getPools({ perPage: 20 }, controller.signal);
+    await api.getPools({ perPage: 20 }, controller.signal);
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.any(String),
@@ -220,7 +220,7 @@ describe("getFilteredPools request", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [] } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getFilteredPools({
+    await api.getFilteredPools({
       perPage: 100,
       filter: { ...FILTER, term: "fresh food", tags: ["Food", "Common Spaces"] },
     });
@@ -236,7 +236,7 @@ describe("getFilteredPools request", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [] } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getFilteredPools({ perPage: 100, filter: FILTER });
+    await api.getFilteredPools({ perPage: 100, filter: FILTER });
 
     const url = new URL(String(fetcher.mock.calls[0]?.[0]));
     for (const key of ["q", "tags", "tagMatch", "vouchers", "voucherMatch", "facets"]) {
@@ -248,13 +248,13 @@ describe("getFilteredPools request", () => {
     const fetcher = mockFetch({ ok: true, result: { pools: [] } });
     vi.stubGlobal("fetch", fetcher);
 
-    await getFilteredPools({
+    await api.getFilteredPools({
       perPage: 100,
       filter: { ...FILTER, tags: ["Food"], tagMatch: "all" },
     });
     expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.has("tagMatch")).toBe(false);
 
-    await getFilteredPools({
+    await api.getFilteredPools({
       perPage: 100,
       filter: { ...FILTER, tags: ["Food", "Growing"], tagMatch: "all" },
     });
@@ -273,7 +273,7 @@ describe("getFilteredPools request", () => {
       address: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     };
 
-    await getFilteredPools({
+    await api.getFilteredPools({
       perPage: 100,
       filter: { ...FILTER, vouchers: [first], voucherMatch: "all" },
     });
@@ -281,7 +281,7 @@ describe("getFilteredPools request", () => {
     expect(one.get("vouchers")).toBe("1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     expect(one.has("voucherMatch")).toBe(false);
 
-    await getFilteredPools({
+    await api.getFilteredPools({
       perPage: 100,
       filter: { ...FILTER, vouchers: [first, second], voucherMatch: "all" },
     });
@@ -297,7 +297,7 @@ describe("getFilteredPools request", () => {
     vi.stubGlobal("fetch", fetcher);
     const controller = new AbortController();
 
-    await getFilteredPools({ perPage: 100, filter: FILTER, facets: true }, controller.signal);
+    await api.getFilteredPools({ perPage: 100, filter: FILTER, facets: true }, controller.signal);
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("facets=true"),
@@ -326,7 +326,7 @@ describe("getFilteredPools request", () => {
       }),
     );
 
-    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+    const page = await api.getFilteredPools({ perPage: 100, filter: FILTER });
 
     expect(page.tagFacets).toEqual([
       { tag: "Food", count: 2 },
@@ -334,7 +334,7 @@ describe("getFilteredPools request", () => {
     ]);
 
     vi.stubGlobal("fetch", mockFetch({ ok: true, result: { pools: [] } }));
-    expect((await getFilteredPools({ perPage: 100, filter: FILTER })).tagFacets).toBeNull();
+    expect((await api.getFilteredPools({ perPage: 100, filter: FILTER })).tagFacets).toBeNull();
   });
 
   it("normalizes voucher facets and drops malformed rows", async () => {
@@ -365,7 +365,7 @@ describe("getFilteredPools request", () => {
       }),
     );
 
-    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+    const page = await api.getFilteredPools({ perPage: 100, filter: FILTER });
     expect(page.voucherFacets).toEqual([
       {
         chainId: 42220,
@@ -393,7 +393,7 @@ describe("getFilteredPools request", () => {
       }),
     );
 
-    const page = await getFilteredPools({ perPage: 100, filter: FILTER });
+    const page = await api.getFilteredPools({ perPage: 100, filter: FILTER });
 
     expect(page.pools).toHaveLength(1);
     expect(page.receivedCount).toBe(2);

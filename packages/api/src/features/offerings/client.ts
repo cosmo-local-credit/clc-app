@@ -1,4 +1,4 @@
-import { apiFetch } from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
 import {
   type CursorParams,
   type HexAddress,
@@ -80,47 +80,53 @@ type BackendOfferingPage = {
   last?: number;
 };
 
-/**
- * One voucher's offerings. Public and representation-invariant, so it sends no
- * cookie and leaves the browser cache to honour the endpoint's `max-age`.
- */
-export async function getVoucherOfferings(
-  voucherAddress: string,
-  params: CursorParams,
-  signal?: AbortSignal,
-): Promise<OfferingPage> {
-  return offeringPage(
-    `/api/v2/vouchers/${encodeURIComponent(voucherAddress)}/offerings${formatCursorQuery(params)}`,
-    { method: "GET", credentials: "omit", signal },
-  );
-}
+export type OfferingsClient = ReturnType<typeof createOfferingsClient>;
 
-/**
- * Every offering backed by a voucher a pool allows.
- *
- * Unlike the voucher route this one is authenticated, matching the rest of
- * `/api/v2/pools/*` and the pool screen's own session requirement — hence the
- * session cookie and `no-store` instead of a shared public cache.
- */
-export async function getPoolOfferings(
-  poolAddress: string,
-  params: CursorParams,
-  signal?: AbortSignal,
-): Promise<OfferingPage> {
-  return offeringPage(
-    `/api/v2/pools/${encodeURIComponent(poolAddress)}/offerings${formatCursorQuery(params)}`,
-    { method: "GET", cache: "no-store", signal },
-  );
-}
+export function createOfferingsClient(http: HttpClient) {
+  async function offeringPage(path: string, init: RequestInit): Promise<OfferingPage> {
+    const result = await http.request<BackendOfferingPage>(path, init);
+    const received = result.offerings ?? [];
+    return {
+      offerings: received.map(normalizeOffering).filter(isPresent),
+      first: normalizeNumber(result.first) ?? 0,
+      last: normalizeNumber(result.last) ?? 0,
+      receivedCount: received.length,
+    };
+  }
 
-async function offeringPage(path: string, init: RequestInit): Promise<OfferingPage> {
-  const result = await apiFetch<BackendOfferingPage>(path, init);
-  const received = result.offerings ?? [];
   return {
-    offerings: received.map(normalizeOffering).filter(isPresent),
-    first: normalizeNumber(result.first) ?? 0,
-    last: normalizeNumber(result.last) ?? 0,
-    receivedCount: received.length,
+    /**
+     * One voucher's offerings. Public and representation-invariant, so it sends
+     * no cookie and leaves the browser cache to honour the endpoint's `max-age`.
+     */
+    async getVoucherOfferings(
+      voucherAddress: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<OfferingPage> {
+      return offeringPage(
+        `/api/v2/vouchers/${encodeURIComponent(voucherAddress)}/offerings${formatCursorQuery(params)}`,
+        { method: "GET", credentials: "omit", signal },
+      );
+    },
+
+    /**
+     * Every offering backed by a voucher a pool allows.
+     *
+     * Unlike the voucher route this one is authenticated, matching the rest of
+     * `/api/v2/pools/*` and the pool screen's own session requirement — hence
+     * the session cookie and `no-store` instead of a shared public cache.
+     */
+    async getPoolOfferings(
+      poolAddress: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<OfferingPage> {
+      return offeringPage(
+        `/api/v2/pools/${encodeURIComponent(poolAddress)}/offerings${formatCursorQuery(params)}`,
+        { method: "GET", cache: "no-store", signal },
+      );
+    },
   };
 }
 

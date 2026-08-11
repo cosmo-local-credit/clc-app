@@ -140,6 +140,14 @@ vi.mock("#/components/ui/step-progress", () => ({
   StepProgress: () => <div data-testid="step-progress" />,
 }));
 
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api", async () => ({
+  clcApi: {
+    auth: await import("@clc/api/features/auth/client"),
+  },
+}));
+
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingWalletStep } from "./onboarding-wallet-step";
 

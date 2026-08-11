@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { createHttpClient } from "../../client/http-client";
+import { createOfferingsClient } from "./client";
 
-import { getVoucherOfferings } from "./client";
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createOfferingsClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 const fetchMock = vi.fn();
 const VOUCHER_ADDRESS = "0x4444444444444444444444444444444444444444";
@@ -46,8 +50,8 @@ describe("getVoucherOfferings", () => {
     fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
     const controller = new AbortController();
 
-    await getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 }, controller.signal);
-    await getVoucherOfferings(
+    await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 }, controller.signal);
+    await api.getVoucherOfferings(
       VOUCHER_ADDRESS,
       { perPage: 20, cursor: 9, next: true },
       controller.signal,
@@ -76,7 +80,7 @@ describe("getVoucherOfferings", () => {
   it("normalizes valid rows while preserving addresses and numeric text", async () => {
     fetchMock.mockResolvedValue(response({ offerings: [offering()], first: 3, last: 3 }));
 
-    const page = await getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
+    const page = await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
 
     expect(page).toMatchObject({
       first: 3,
@@ -106,7 +110,7 @@ describe("getVoucherOfferings", () => {
       }),
     );
 
-    const page = await getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
+    const page = await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
 
     expect(page.receivedCount).toBe(2);
     expect(page.offerings).toHaveLength(1);
@@ -116,7 +120,7 @@ describe("getVoucherOfferings", () => {
   it("normalizes missing cursors to zero", async () => {
     fetchMock.mockResolvedValue(response({ offerings: [] }));
 
-    const page = await getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
+    const page = await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
 
     expect(page.first).toBe(0);
     expect(page.last).toBe(0);

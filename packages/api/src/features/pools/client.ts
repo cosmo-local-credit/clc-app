@@ -4,7 +4,7 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 
-import { apiFetch } from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
 import {
   type CursorParams,
   type HexAddress,
@@ -217,51 +217,82 @@ function poolReadRequest(signal?: AbortSignal): RequestInit {
   return { method: "GET", cache: "no-store", signal };
 }
 
-export async function getPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
-  const result = await apiFetch<BackendPoolPage>(
-    `/api/v2/pools${formatCursorQuery(params)}`,
-    poolReadRequest(signal),
-  );
-  const received = result.pools ?? [];
+export type PoolsClient = ReturnType<typeof createPoolsClient>;
+
+export function createPoolsClient(http: HttpClient) {
   return {
-    ...result,
-    pools: received.map(normalizeUserPool).filter(isPresent),
-    receivedCount: received.length,
-  };
-}
+    async getPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
+      const result = await http.request<BackendPoolPage>(
+        `/api/v2/pools${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
 
-export async function getFilteredPools(
-  { filter, facets, ...cursor }: FilteredPoolsParams,
-  signal?: AbortSignal,
-): Promise<FilteredPoolPage> {
-  const search = new URLSearchParams(formatCursorQuery(cursor));
-  if (filter.term !== "") search.set("q", filter.term);
-  if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
-  if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
-  if (filter.vouchers.length > 0) {
-    search.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
-  }
-  if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
-    search.set("voucherMatch", "all");
-  }
-  if (facets) search.set("facets", "true");
+    async getFilteredPools(
+      { filter, facets, ...cursor }: FilteredPoolsParams,
+      signal?: AbortSignal,
+    ): Promise<FilteredPoolPage> {
+      const search = new URLSearchParams(formatCursorQuery(cursor));
+      if (filter.term !== "") search.set("q", filter.term);
+      if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
+      if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
+      if (filter.vouchers.length > 0) {
+        search.set("vouchers", filter.vouchers.map(serializeVoucherRef).join(","));
+      }
+      if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
+        search.set("voucherMatch", "all");
+      }
+      if (facets) search.set("facets", "true");
 
-  const result = await apiFetch<BackendFilteredPoolPage>(
-    `/api/v2/pools?${search.toString()}`,
-    poolReadRequest(signal),
-  );
+      const result = await http.request<BackendFilteredPoolPage>(
+        `/api/v2/pools?${search.toString()}`,
+        poolReadRequest(signal),
+      );
 
-  const received = result.pools ?? [];
-  return {
-    ...result,
-    pools: received.map(normalizeUserPool).filter(isPresent),
-    receivedCount: received.length,
-    tagFacets: result.tagFacets
-      ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
-      : null,
-    voucherFacets: result.voucherFacets
-      ? result.voucherFacets.map(normalizePoolVoucherFacet).filter(isPresent)
-      : null,
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+        tagFacets: result.tagFacets
+          ? result.tagFacets.map(normalizePoolTagFacet).filter(isPresent)
+          : null,
+        voucherFacets: result.voucherFacets
+          ? result.voucherFacets.map(normalizePoolVoucherFacet).filter(isPresent)
+          : null,
+      };
+    },
+
+    async getPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/pools/${encodeURIComponent(address)}`,
+        poolReadRequest(signal),
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool response did not include a valid address.");
+      return pool;
+    },
+
+    async getPoolVouchers(
+      poolAddress: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<PoolVoucherPage> {
+      const result = await http.request<BackendPoolVoucherPage>(
+        `/api/v2/pools/${encodeURIComponent(poolAddress)}/vouchers${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      return {
+        ...result,
+        vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
+      };
+    },
   };
 }
 
@@ -282,31 +313,6 @@ function normalizePoolTagFacet(facet: { tag?: unknown; count?: unknown }): PoolT
   const count = normalizeNumber(facet.count);
   if (!tag || count === null || count < 0) return null;
   return { tag, count };
-}
-
-export async function getPoolByAddress(address: string, signal?: AbortSignal): Promise<UserPool> {
-  const result = await apiFetch<BackendPoolEnvelope>(
-    `/api/v2/pools/${encodeURIComponent(address)}`,
-    poolReadRequest(signal),
-  );
-  const pool = normalizeUserPool(result.pool ?? result);
-  if (!pool) throw new Error("Pool response did not include a valid address.");
-  return pool;
-}
-
-export async function getPoolVouchers(
-  poolAddress: string,
-  params: CursorParams,
-  signal?: AbortSignal,
-): Promise<PoolVoucherPage> {
-  const result = await apiFetch<BackendPoolVoucherPage>(
-    `/api/v2/pools/${encodeURIComponent(poolAddress)}/vouchers${formatCursorQuery(params)}`,
-    poolReadRequest(signal),
-  );
-  return {
-    ...result,
-    vouchers: (result.vouchers ?? []).map(normalizePoolVoucher).filter(isPresent),
-  };
 }
 
 export function normalizeUserPool(pool: BackendPool): UserPool | null {

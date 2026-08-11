@@ -5,12 +5,10 @@ import {
   type FilteredReportPage,
   type ReportCursor,
   type ReportPage,
-  getReport,
-  getFilteredReports,
-  getReports,
 } from "@clc/api/features/reports/client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 import { reverseLocation } from "#/lib/geo-client";
+import { clcApi } from "#/lib/api";
 
 const REPORTS_PAGE_SIZE = 20;
 
@@ -34,7 +32,8 @@ const reportQueryKeys = {
 export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
     queryKey: reportQueryKeys.feed(perPage),
-    queryFn: ({ pageParam, signal }) => getReports({ perPage, cursor: pageParam }, signal),
+    queryFn: ({ pageParam, signal }) =>
+      clcApi.reports.getReports({ perPage, cursor: pageParam }, signal),
     enabled,
     initialPageParam: undefined as ReportCursor | undefined,
     getNextPageParam: (lastPage: ReportPage) => lastPage.next ?? undefined,
@@ -58,7 +57,7 @@ export function useVoucherReportsInfinite(
     queryKey: reportQueryKeys.byVoucher(normalizedVoucher, perPage),
     queryFn: ({ pageParam, signal }) => {
       if (!normalizedVoucher) throw new Error("Voucher is required.");
-      return getFilteredReports(
+      return clcApi.reports.getFilteredReports(
         {
           perPage,
           cursor: pageParam,
@@ -83,7 +82,7 @@ export function useVoucherReportsInfinite(
 function reportQuery(id: string) {
   return queryOptions({
     queryKey: reportQueryKeys.byId(id),
-    queryFn: ({ signal }) => getReport(id, signal),
+    queryFn: ({ signal }) => clcApi.reports.getReport(id, signal),
     ...MARKET_QUERY_FRESHNESS,
   });
 }

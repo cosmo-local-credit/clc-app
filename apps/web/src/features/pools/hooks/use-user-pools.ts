@@ -1,6 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
-import { getPoolByAddress, getPools } from "@clc/api/features/pools/client";
+import { clcApi } from "#/lib/api";
 
 /** Matches activity / account list page size so infinite scroll pages meaningfully. */
 const DEFAULT_POOLS_PAGE_SIZE = 20;
@@ -16,7 +15,7 @@ export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled 
   return useInfiniteQuery({
     queryKey: poolQueryKeys.list(perPage),
     queryFn: ({ pageParam, signal }) =>
-      getPools(
+      clcApi.pools.getPools(
         {
           perPage,
           cursor: pageParam,
@@ -34,7 +33,7 @@ export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled 
 export function useUserPoolByAddress(poolAddress: string | undefined) {
   return useQuery({
     queryKey: poolQueryKeys.byAddress(poolAddress),
-    queryFn: ({ signal }) => getPoolByAddress(requirePoolAddress(poolAddress), signal),
+    queryFn: ({ signal }) => clcApi.pools.getPoolByAddress(requirePoolAddress(poolAddress), signal),
     enabled: !!poolAddress,
   });
 }

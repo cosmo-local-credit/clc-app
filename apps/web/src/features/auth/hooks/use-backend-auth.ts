@@ -5,12 +5,7 @@ import { createSiweMessage } from "viem/siwe";
 import { signMessage } from "wagmi/actions";
 
 import { wagmiConfig } from "#/providers/web3-config";
-import {
-  getSiweNonce,
-  signinWithSiwe,
-  signupWithSiwe,
-  submitProfile,
-} from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
@@ -23,7 +18,7 @@ async function signSiweMessage(
   account: ReturnType<typeof privateKeyToAccount>,
   statement: string,
 ): Promise<{ message: string; signature: `0x${string}` }> {
-  const nonce = await getSiweNonce();
+  const nonce = await clcApi.auth.getSiweNonce();
   const message = createSiweMessage({
     domain: window.location.host,
     address: account.address,
@@ -47,8 +42,8 @@ async function ensureSessionAndSubmitProfile(
   email: string,
 ): Promise<void> {
   const { message, signature } = await signSiweMessage(account, "Sign in to CLC App");
-  await signinWithSiwe({ message, signature });
-  await submitProfile({
+  await clcApi.auth.signinWithSiwe({ message, signature });
+  await clcApi.auth.submitProfile({
     name: profile.name,
     email,
     phone: profile.phone,
@@ -68,14 +63,14 @@ export function useBackendSignup() {
       const email =
         profile.email.trim() || `pending+${account.address.slice(2).toLowerCase()}@clc.local`;
 
-      const result = await signupWithSiwe({
+      const result = await clcApi.auth.signupWithSiwe({
         message,
         signature,
         name: profile.name,
         email,
       });
 
-      // signupWithSiwe only persists name + email (and sets the session
+      // clcApi.auth.signupWithSiwe only persists name + email (and sets the session
       // cookie). The remaining profile fields (phone, country) must be written
       // through the authenticated profile endpoint.
       //
@@ -84,7 +79,7 @@ export function useBackendSignup() {
       if (result.alreadyRegistered) {
         await ensureSessionAndSubmitProfile(account, profile, email);
       } else {
-        await submitProfile({
+        await clcApi.auth.submitProfile({
           name: profile.name,
           email,
           phone: profile.phone,
@@ -109,7 +104,7 @@ export function useBackendPrivateKeySignin() {
     mutationFn: async ({ privateKey }: BackendPrivateKeySigninInput) => {
       const account = privateKeyToAccount(privateKey);
       const { message, signature } = await signSiweMessage(account, "Sign in to CLC App");
-      return signinWithSiwe({ message, signature });
+      return clcApi.auth.signinWithSiwe({ message, signature });
     },
   });
 }
@@ -121,7 +116,7 @@ export function useBackendWalletSignin(
   return useMutation({
     mutationFn: async () => {
       if (!address) throw new Error("Wallet not connected");
-      const nonce = await getSiweNonce();
+      const nonce = await clcApi.auth.getSiweNonce();
       const message = createSiweMessage({
         domain: window.location.host,
         address,
@@ -132,7 +127,7 @@ export function useBackendWalletSignin(
         nonce,
       });
       const signature = await signMessage(wagmiConfig, { message });
-      return signinWithSiwe({ message, signature });
+      return clcApi.auth.signinWithSiwe({ message, signature });
     },
   });
 }

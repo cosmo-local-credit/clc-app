@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getTrackingOutcome,
-  trackOtx,
   TRACKING_POLL_MS,
   type OtxTrackingOutcome,
 } from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 
 /**
  * A trackingId is issued as soon as a job is enqueued, before the async
@@ -27,14 +27,14 @@ export function useOtxTracking(
     enabled?: boolean;
     pollMs?: number;
     queryKey?: string;
-    queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof trackOtx>>>;
+    queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof clcApi.auth.trackOtx>>>;
     getOutcome?: typeof getTrackingOutcome;
   } = {},
 ) {
   const enabled = options.enabled ?? true;
   const pollMs = options.pollMs ?? TRACKING_POLL_MS;
   const queryKey = options.queryKey ?? "otx-track";
-  const queryFn = options.queryFn ?? trackOtx;
+  const queryFn = options.queryFn ?? ((trackingId: string) => clcApi.auth.trackOtx(trackingId));
   const getOutcome = options.getOutcome ?? getTrackingOutcome;
 
   const query = useQuery({

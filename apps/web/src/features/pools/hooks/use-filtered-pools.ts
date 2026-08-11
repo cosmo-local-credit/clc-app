@@ -13,9 +13,9 @@ import {
   type PoolTagFacet,
   type PoolVoucherFacet,
   type UserPool,
-  getFilteredPools,
 } from "@clc/api/features/pools/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { clcApi } from "#/lib/api";
 
 const POOLS_FILTER_PAGE_SIZE = 100;
 
@@ -79,7 +79,7 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
       let cursor: number | undefined;
 
       for (let index = 0; index < MAX_FILTERED_POOL_PAGES; index++) {
-        const page = await getFilteredPools(
+        const page = await clcApi.pools.getFilteredPools(
           {
             perPage,
             cursor,
@@ -126,7 +126,7 @@ function usePoolFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredPoolQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredPools(
+      const page = await clcApi.pools.getFilteredPools(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );

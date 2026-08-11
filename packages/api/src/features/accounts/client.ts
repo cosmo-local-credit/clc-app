@@ -1,4 +1,4 @@
-import { apiFetch } from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
 
 export type AccountToken = {
   id: number;
@@ -53,33 +53,37 @@ const ACCOUNT_READ_REQUEST: RequestInit = {
   cache: "no-store",
 };
 
-// The backend returns `tokens: null` / `transfers: null` for accounts with no
-// history rather than an empty array, so normalize to `[]` at the boundary to
-// keep the typed contract honest and every consumer's `.map` / `.length` safe.
-export async function getLatestAccountTokens(address: string): Promise<AccountTokensResult> {
-  const result = await apiFetch<AccountTokensResult>(
-    `/api/v2/accounts/${address}/tokens/latest`,
-    ACCOUNT_READ_REQUEST,
-  );
-  return { ...result, tokens: result.tokens ?? [] };
-}
+export type AccountsClient = ReturnType<typeof createAccountsClient>;
 
-export async function getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
-  const result = await apiFetch<AccountTokensResult>(
-    `/api/v2/accounts/${params.address}/tokens${formatCursorQuery(params)}`,
-    ACCOUNT_READ_REQUEST,
-  );
-  return { ...result, tokens: result.tokens ?? [] };
-}
+export function createAccountsClient(http: HttpClient) {
+  return {
+    // The backend returns `tokens: null` / `transfers: null` for accounts with no
+    // history rather than an empty array, so normalize to `[]` at the boundary to
+    // keep the typed contract honest and every consumer's `.map` / `.length` safe.
+    async getLatestAccountTokens(address: string): Promise<AccountTokensResult> {
+      const result = await http.request<AccountTokensResult>(
+        `/api/v2/accounts/${address}/tokens/latest`,
+        ACCOUNT_READ_REQUEST,
+      );
+      return { ...result, tokens: result.tokens ?? [] };
+    },
 
-export async function getAccountTransfers(
-  params: CursorPageParams,
-): Promise<AccountTransfersResult> {
-  const result = await apiFetch<AccountTransfersResult>(
-    `/api/v2/accounts/${params.address}/transfers${formatCursorQuery(params)}`,
-    ACCOUNT_READ_REQUEST,
-  );
-  return { ...result, transfers: result.transfers ?? [] };
+    async getAccountTokens(params: CursorPageParams): Promise<AccountTokensResult> {
+      const result = await http.request<AccountTokensResult>(
+        `/api/v2/accounts/${params.address}/tokens${formatCursorQuery(params)}`,
+        ACCOUNT_READ_REQUEST,
+      );
+      return { ...result, tokens: result.tokens ?? [] };
+    },
+
+    async getAccountTransfers(params: CursorPageParams): Promise<AccountTransfersResult> {
+      const result = await http.request<AccountTransfersResult>(
+        `/api/v2/accounts/${params.address}/transfers${formatCursorQuery(params)}`,
+        ACCOUNT_READ_REQUEST,
+      );
+      return { ...result, transfers: result.transfers ?? [] };
+    },
+  };
 }
 
 function formatCursorQuery(params: CursorPageParams): string {

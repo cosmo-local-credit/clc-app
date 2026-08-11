@@ -1,4 +1,3 @@
-import { clcQueries } from "@clc/api/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -21,12 +20,17 @@ import {
 import { errorMessage } from "#/lib/data-state";
 import { formatDateTime, formatFeePpm } from "#/lib/format";
 import { useDataState } from "#/lib/use-data-state";
+import { poolQueryOptions } from "@clc/api/features/pools/queries";
+import { poolVouchersQueryOptions } from "@clc/api/features/pools/queries";
+import { clcApi } from "#/lib/api";
 
 const VOUCHER_PAGE_SIZE = 100;
 
 export function PoolDetailPage({ address }: { address: string }) {
-  const poolQuery = useQuery(clcQueries.pool(address));
-  const vouchersQuery = useQuery(clcQueries.poolVouchers(address, VOUCHER_PAGE_SIZE));
+  const poolQuery = useQuery(poolQueryOptions(clcApi.pools, address));
+  const vouchersQuery = useQuery(
+    poolVouchersQueryOptions(clcApi.pools, address, VOUCHER_PAGE_SIZE),
+  );
   // Every hook must run before the early returns below, or hook order changes
   // between the loading and loaded renders.
   const vouchersState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);

@@ -1,10 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
-import {
-  getAccountTokens,
-  getAccountTransfers,
-  getLatestAccountTokens,
-} from "@clc/api/features/accounts/client";
+import { clcApi } from "#/lib/api";
 
 const DEFAULT_PAGE_SIZE = 20;
 const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;
@@ -49,7 +44,7 @@ export const accountWalletQueryKeys = {
 export function useLatestAccountTokens(address: string | undefined) {
   return useQuery({
     queryKey: accountWalletQueryKeys.latestTokens(address),
-    queryFn: () => getLatestAccountTokens(requireAddress(address)),
+    queryFn: () => clcApi.accounts.getLatestAccountTokens(requireAddress(address)),
     enabled: !!address,
     ...walletAccountQueryFreshness,
     ...pollOptions(true),
@@ -63,7 +58,7 @@ export function useAccountTokensInfinite(
   return useInfiniteQuery({
     queryKey: accountWalletQueryKeys.tokens(address, perPage),
     queryFn: ({ pageParam }) =>
-      getAccountTokens({
+      clcApi.accounts.getAccountTokens({
         address: requireAddress(address),
         perPage,
         cursor: pageParam,
@@ -85,7 +80,7 @@ export function useAccountTransfersInfinite(
   return useInfiniteQuery({
     queryKey: accountWalletQueryKeys.transfers(address, perPage),
     queryFn: ({ pageParam }) =>
-      getAccountTransfers({
+      clcApi.accounts.getAccountTransfers({
         address: requireAddress(address),
         perPage,
         cursor: pageParam,

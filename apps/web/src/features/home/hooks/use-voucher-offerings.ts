@@ -1,11 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import {
-  type OfferingPage,
-  getPoolOfferings,
-  getVoucherOfferings,
-} from "@clc/api/features/offerings/client";
+import { type OfferingPage } from "@clc/api/features/offerings/client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
+import { clcApi } from "#/lib/api";
 
 /** The imported catalog's largest single-voucher offering count is 19. */
 const VOUCHER_OFFERINGS_PAGE_SIZE = 20;
@@ -25,7 +22,7 @@ export function useVoucherOfferingsInfinite(
   return useInfiniteQuery({
     queryKey: voucherOfferingQueryKeys.byVoucher(voucherAddress),
     queryFn: ({ pageParam, signal }) =>
-      getVoucherOfferings(
+      clcApi.offerings.getVoucherOfferings(
         requireAddress(voucherAddress),
         {
           perPage,
@@ -55,7 +52,7 @@ export function usePoolOfferingsInfinite(
   return useInfiniteQuery({
     queryKey: voucherOfferingQueryKeys.byPool(poolAddress),
     queryFn: ({ pageParam, signal }) =>
-      getPoolOfferings(
+      clcApi.offerings.getPoolOfferings(
         requireAddress(poolAddress),
         {
           perPage,

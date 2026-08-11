@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
 import { BackendApiError } from "@clc/api/client/errors";
-import { type MarketVoucher, getFilteredMarketVouchers } from "@clc/api/features/market/client";
+import { type MarketVoucher } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
+import { clcApi } from "#/lib/api";
 
 /** Below this the list stays closed — a one-character query matches most of the catalog. */
 export const VOUCHER_SEARCH_MIN_CHARS = 2;
@@ -60,7 +61,7 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
         vouchers: [],
         voucherMatch: "any",
       };
-      const page = await getFilteredMarketVouchers(
+      const page = await clcApi.market.getFilteredMarketVouchers(
         { perPage: VOUCHER_SEARCH_LIMIT, filter },
         signal,
       );

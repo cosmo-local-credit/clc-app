@@ -1,6 +1,6 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 
-import { apiFetch } from "../auth/client";
+import type { HttpClient } from "../../client/http-client";
 import {
   type CursorParams,
   type HexAddress,
@@ -119,54 +119,59 @@ type BackendFilteredMarketVoucherPage = BackendMarketVoucherPage & {
 
 const MARKET_KINDS = new Set<string>(["goods", "services", "voucher"]);
 
-export async function getMarketVouchers(
-  params: MarketVouchersParams,
-  signal?: AbortSignal,
-): Promise<MarketVoucherPage> {
-  const result = await apiFetch<BackendMarketVoucherPage>(
-    `/api/v2/vouchers${formatMarketQuery(params)}`,
-    { method: "GET", credentials: "omit", signal },
-  );
+export type MarketClient = ReturnType<typeof createMarketClient>;
 
-  const received = result.vouchers ?? [];
+export function createMarketClient(http: HttpClient) {
   return {
-    vouchers: received.map(normalizeMarketVoucher).filter(isPresent),
-    first: normalizeNumber(result.first) ?? 0,
-    last: normalizeNumber(result.last) ?? 0,
-    receivedCount: received.length,
-  };
-}
+    async getMarketVouchers(
+      params: MarketVouchersParams,
+      signal?: AbortSignal,
+    ): Promise<MarketVoucherPage> {
+      const result = await http.request<BackendMarketVoucherPage>(
+        `/api/v2/vouchers${formatMarketQuery(params)}`,
+        { method: "GET", credentials: "omit", signal },
+      );
 
-export async function getMarketVoucher(
-  address: string,
-  signal?: AbortSignal,
-): Promise<MarketVoucherDetail> {
-  const result = await apiFetch<{ voucher?: BackendMarketVoucherDetail | null }>(
-    `/api/v2/vouchers/${encodeURIComponent(address)}`,
-    { method: "GET", credentials: "omit", signal },
-  );
+      const received = result.vouchers ?? [];
+      return {
+        vouchers: received.map(normalizeMarketVoucher).filter(isPresent),
+        first: normalizeNumber(result.first) ?? 0,
+        last: normalizeNumber(result.last) ?? 0,
+        receivedCount: received.length,
+      };
+    },
 
-  const voucher = normalizeMarketVoucherDetail(result.voucher);
-  if (!voucher) throw new Error("Voucher response did not include a valid address.");
-  return voucher;
-}
+    async getMarketVoucher(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail> {
+      const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
+        `/api/v2/vouchers/${encodeURIComponent(address)}`,
+        { method: "GET", credentials: "omit", signal },
+      );
 
-export async function getFilteredMarketVouchers(
-  params: FilteredMarketVouchersParams,
-  signal?: AbortSignal,
-): Promise<FilteredMarketVoucherPage> {
-  const result = await apiFetch<BackendFilteredMarketVoucherPage>(
-    `/api/v2/vouchers${formatFilteredMarketQuery(params)}`,
-    { method: "GET", credentials: "omit", signal },
-  );
+      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      if (!voucher) throw new Error("Voucher response did not include a valid address.");
+      return voucher;
+    },
 
-  const received = result.vouchers ?? [];
-  return {
-    vouchers: received.map(normalizeMarketVoucher).filter(isPresent),
-    first: normalizeNumber(result.first) ?? 0,
-    last: normalizeNumber(result.last) ?? 0,
-    receivedCount: received.length,
-    tagFacets: result.tagFacets ? result.tagFacets.map(normalizeTagFacet).filter(isPresent) : null,
+    async getFilteredMarketVouchers(
+      params: FilteredMarketVouchersParams,
+      signal?: AbortSignal,
+    ): Promise<FilteredMarketVoucherPage> {
+      const result = await http.request<BackendFilteredMarketVoucherPage>(
+        `/api/v2/vouchers${formatFilteredMarketQuery(params)}`,
+        { method: "GET", credentials: "omit", signal },
+      );
+
+      const received = result.vouchers ?? [];
+      return {
+        vouchers: received.map(normalizeMarketVoucher).filter(isPresent),
+        first: normalizeNumber(result.first) ?? 0,
+        last: normalizeNumber(result.last) ?? 0,
+        receivedCount: received.length,
+        tagFacets: result.tagFacets
+          ? result.tagFacets.map(normalizeTagFacet).filter(isPresent)
+          : null,
+      };
+    },
   };
 }
 

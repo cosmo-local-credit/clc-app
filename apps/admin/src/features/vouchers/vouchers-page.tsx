@@ -1,5 +1,4 @@
 import type { MarketVoucher } from "@clc/api/features/market/client";
-import { clcQueries } from "@clc/api/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +10,8 @@ import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Badge } from "#/components/ui/badge";
+import { voucherListQueryOptions } from "@clc/api/features/market/queries";
+import { clcApi } from "#/lib/api";
 
 const PAGE_SIZE = 100;
 
@@ -57,7 +58,7 @@ const columns: Array<ColumnDef<MarketVoucher>> = [
 
 export function VouchersPage() {
   const navigate = useNavigate();
-  const vouchersQuery = useQuery(clcQueries.voucherList(PAGE_SIZE));
+  const vouchersQuery = useQuery(voucherListQueryOptions(clcApi.market, PAGE_SIZE));
 
   const vouchers = vouchersQuery.data?.vouchers ?? [];
   const dropped = (vouchersQuery.data?.receivedCount ?? 0) - vouchers.length;

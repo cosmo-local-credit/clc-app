@@ -1,4 +1,3 @@
-import { clcQueries } from "@clc/api/queries";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import {
@@ -21,6 +20,10 @@ import {
 import { useKnownOperators } from "#/features/users/use-known-operators";
 import { isFigureAvailable } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
+import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { reportListQueryOptions } from "@clc/api/features/reports/queries";
+import { voucherListQueryOptions } from "@clc/api/features/market/queries";
+import { clcApi } from "#/lib/api";
 
 /**
  * Page size for the sampled figures below.
@@ -42,9 +45,9 @@ const tagChartConfig = {
 } satisfies ChartConfig;
 
 export function OverviewPage() {
-  const poolsQuery = useQuery(clcQueries.poolList(SAMPLE_PAGE_SIZE));
-  const vouchersQuery = useQuery(clcQueries.voucherList(SAMPLE_PAGE_SIZE));
-  const reportsQuery = useQuery(clcQueries.reportList(SAMPLE_PAGE_SIZE));
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, SAMPLE_PAGE_SIZE));
+  const vouchersQuery = useQuery(voucherListQueryOptions(clcApi.market, SAMPLE_PAGE_SIZE));
+  const reportsQuery = useQuery(reportListQueryOptions(clcApi.reports, SAMPLE_PAGE_SIZE));
   const operators = useKnownOperators();
 
   // Each figure resolves its own source query. A failure in one must not blank

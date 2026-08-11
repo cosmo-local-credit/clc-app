@@ -11,7 +11,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { getStoredKey } from "#/connectors/privateKey";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
-import { CALIBUR_ADDRESS } from "@clc/api/lib/backend-config";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 import type { RelayerClient } from "./relayer-client";
 
