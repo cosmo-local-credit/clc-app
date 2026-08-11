@@ -1,1 +1,19 @@
+# Mirrors the CI "Test & Coverage" job (.github/workflows/ci.yml) minus the
+# bundle build, which runs on pre-push instead.
+#
+# Skip with `git commit --no-verify`, or VITE_GIT_HOOKS=0 for the whole session.
+
+echo "[1/5] staged files"
 vp staged
+
+echo "[2/5] check (format + lint + types, whole repo)"
+vp check
+
+echo "[3/5] dead-code analysis — cycles"
+vp run knip:cycles
+
+echo "[4/5] dead-code analysis"
+vp run knip:ci
+
+echo "[5/5] test"
+vp test --passWithNoTests

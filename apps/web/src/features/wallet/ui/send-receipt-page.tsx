@@ -1,10 +1,17 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { RiCloseLine, RiFileCopyLine, RiTimeLine } from "react-icons/ri";
+import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, SignedAmount, SuccessCheck } from "#/components/wallet";
+import {
+  EllipsizedAddress,
+  FailureCross,
+  PendingClock,
+  SignedAmount,
+  StatusPill,
+  SuccessCheck,
+} from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RELAYER_URL } from "#/lib/backend-config";
@@ -82,24 +89,12 @@ export function SendReceiptPage({
   if (outcome.kind === "pending") {
     return (
       <ReceiptShell
-        icon={
-          <span
-            className="flex items-center justify-center rounded-full border border-[oklch(0.74_0.16_80)]/40 bg-[oklch(0.74_0.16_80)]/10 text-[oklch(0.58_0.14_70)]"
-            style={{ width: 56, height: 56 }}
-          >
-            <RiTimeLine className="size-7" aria-hidden="true" />
-          </span>
-        }
+        icon={<PendingClock />}
         title={<Trans>Sending</Trans>}
         amount={amountLabel}
         message={<Trans>Waiting for on-chain confirmation</Trans>}
         toAddress={toAddress}
-        status={
-          <span className="inline-flex items-center gap-1.5 text-[oklch(0.58_0.14_70)] text-xs font-semibold">
-            <span className="size-2 rounded-full bg-[oklch(0.74_0.16_80)]" />
-            <Trans>Pending</Trans>
-          </span>
-        }
+        status={<StatusPill tone="pending" label={<Trans>Pending</Trans>} />}
         onDone={goToWallet}
       />
     );
@@ -108,24 +103,12 @@ export function SendReceiptPage({
   if (outcome.kind === "error") {
     return (
       <ReceiptShell
-        icon={
-          <span
-            className="flex items-center justify-center rounded-full border border-destructive/40 bg-destructive/10 text-destructive"
-            style={{ width: 56, height: 56 }}
-          >
-            <RiCloseLine className="size-7" aria-hidden="true" />
-          </span>
-        }
+        icon={<FailureCross />}
         title={<Trans>Reverted</Trans>}
         amount={amountLabel}
         message={outcome.error}
         toAddress={toAddress}
-        status={
-          <span className="inline-flex items-center gap-1.5 text-destructive text-xs font-semibold">
-            <span className="size-2 rounded-full bg-destructive" />
-            <Trans>Reverted</Trans>
-          </span>
-        }
+        status={<StatusPill tone="error" label={<Trans>Reverted</Trans>} />}
         onDone={goToWallet}
       />
     );
@@ -174,10 +157,7 @@ export function SendReceiptPage({
           <span className="text-muted-foreground text-xs">
             <Trans>Status</Trans>
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-            <span className="size-2 rounded-full bg-primary" />
-            <Trans>Confirmed</Trans>
-          </span>
+          <StatusPill tone="success" label={<Trans>Confirmed</Trans>} />
         </div>
       </div>
 

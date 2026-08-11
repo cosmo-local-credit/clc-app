@@ -1,18 +1,11 @@
 import { z } from "zod";
+import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
 import { locationSchema } from "../location/logic";
-
-const emailValidator = (val: string) => val === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-
-const phoneValidator = (val: string) => val === "" || /^\+[1-9]\d{1,14}$/.test(val);
 
 const nameSchema = z
   .string()
   .min(1, { message: "Name is required" })
   .max(80, { message: "Name must be 80 characters or fewer" });
-
-const emailSchema = z.string().refine(emailValidator, { message: "Invalid email address" });
-
-const phoneSchema = z.string().refine(phoneValidator, { message: "Invalid phone number" });
 
 function requireEmailOrPhone(data: { email: string; phone: string }, ctx: z.RefinementCtx) {
   if (!data.email && !data.phone) {
@@ -27,8 +20,8 @@ function requireEmailOrPhone(data: { email: string; phone: string }, ctx: z.Refi
 export const profileSchema = z
   .object({
     name: nameSchema,
-    email: emailSchema,
-    phone: phoneSchema,
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
     location: locationSchema,
   })
   .superRefine(requireEmailOrPhone);

@@ -6,10 +6,10 @@ import { OnboardingMenu } from "#/components/language-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
+import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
 import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { onboardingSearch, type WalletMethodChoice } from "#/lib/onboarding-search";
-import { OnboardingProgress } from "./onboarding-progress";
 
 const methodSchema = z.object({
   method: z.enum(["link", "paper"]),
@@ -49,7 +49,7 @@ export function OnboardingMethodStep({ redirectTo, initialChoice = "link", onCon
           className="mb-4 self-start"
         />
 
-        <OnboardingProgress step={2} total={3} />
+        <StepProgress step={2} total={3} />
 
         <div className="mb-6 space-y-2">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">

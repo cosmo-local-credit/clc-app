@@ -1,3 +1,5 @@
+import { CELO_MAINNET_CUSD_ADDRESS } from "@clc/core/lib/constants/celo";
+
 /**
  * Static placeholder data for wallet screens.
  *
@@ -44,7 +46,7 @@ const WALLET_TOKENS: WalletToken[] = [
     color: "oklch(0.62 0.16 250)",
     kind: "stable",
     glyph: "$",
-    contractAddress: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+    contractAddress: CELO_MAINNET_CUSD_ADDRESS,
   },
   {
     id: "usdt",

@@ -1,0 +1,7 @@
+# The one CI gate too slow for pre-commit: the web bundle build.
+# CI runs this from apps/web with CI=true (.github/workflows/ci.yml).
+#
+# Skip with `git push --no-verify`, or VITE_GIT_HOOKS=0 for the whole session.
+
+echo "[1/1] build web bundle"
+CI=true vp build apps/web

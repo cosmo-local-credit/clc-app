@@ -28,12 +28,14 @@ export function useOtxTracking(
     pollMs?: number;
     queryKey?: string;
     queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof trackOtx>>>;
+    getOutcome?: typeof getTrackingOutcome;
   } = {},
 ) {
   const enabled = options.enabled ?? true;
   const pollMs = options.pollMs ?? TRACKING_POLL_MS;
   const queryKey = options.queryKey ?? "otx-track";
   const queryFn = options.queryFn ?? trackOtx;
+  const getOutcome = options.getOutcome ?? getTrackingOutcome;
 
   const query = useQuery({
     queryKey: [queryKey, trackingId],
@@ -44,7 +46,7 @@ export function useOtxTracking(
     refetchInterval: (currentQuery) => {
       if (!trackingId || !enabled) return false;
       if (isNotFoundError(currentQuery.state.error)) return pollMs;
-      const outcome = getTrackingOutcome(currentQuery.state.data);
+      const outcome = getOutcome(currentQuery.state.data);
       return outcome.kind === "pending" ? pollMs : false;
     },
   });
@@ -56,7 +58,7 @@ export function useOtxTracking(
           kind: "error",
           error: query.error instanceof Error ? query.error.message : "Tracking failed.",
         }
-    : getTrackingOutcome(query.data);
+    : getOutcome(query.data);
 
   return {
     ...query,

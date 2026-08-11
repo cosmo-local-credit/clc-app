@@ -5,7 +5,7 @@ import { getPoolByAddress, getPools } from "#/features/pools/api/pools-client";
 /** Matches activity / account list page size so infinite scroll pages meaningfully. */
 const DEFAULT_POOLS_PAGE_SIZE = 20;
 
-const poolQueryKeys = {
+export const poolQueryKeys = {
   all: ["pools"] as const,
   list: (perPage: number) => [...poolQueryKeys.all, "list", { perPage }] as const,
   byAddress: (poolAddress: string | undefined) =>

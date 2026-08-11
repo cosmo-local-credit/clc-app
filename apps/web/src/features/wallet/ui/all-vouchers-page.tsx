@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
+import { useEffect, useState } from "react";
+import { RiAddLine, RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
 import { Badge } from "#/components/ui/badge";
@@ -10,6 +10,7 @@ import { TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { resetVoucherCreateHistory } from "#/lib/navigation/voucher-create-history";
 import { VoucherContactDetails } from "./voucher-contact-details";
 
 function VoucherRow({
@@ -75,6 +76,17 @@ function VoucherRow({
   );
 }
 
+function CreateVoucherButton() {
+  return (
+    <Button asChild variant="outline" className="bg-card">
+      <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
+        <RiAddLine className="size-4" aria-hidden="true" />
+        <Trans>Create</Trans>
+      </Link>
+    </Button>
+  );
+}
+
 export function AllVouchersPage() {
   const { t } = useLingui();
   const { address } = useConnection();
@@ -84,13 +96,20 @@ export function AllVouchersPage() {
     vouchersQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    resetVoucherCreateHistory();
+  }, []);
+
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
 
-      <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-        <Trans>All Vouchers</Trans>
-      </h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+          <Trans>All Vouchers</Trans>
+        </h1>
+        <CreateVoucherButton />
+      </div>
       <p className="mt-1 mb-4 text-muted-foreground text-sm">
         <Trans>Community vouchers and their details.</Trans>
       </p>
@@ -117,8 +136,11 @@ export function AllVouchersPage() {
           </div>
         ) : null}
         {vouchersQuery.isSuccess && vouchers.length === 0 ? (
-          <div className="p-3 text-muted-foreground text-sm">
-            <Trans>No vouchers yet.</Trans>
+          <div className="flex min-h-14 items-center justify-between gap-3 p-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>No vouchers yet.</Trans>
+            </p>
+            <CreateVoucherButton />
           </div>
         ) : null}
         {vouchers.map((voucher, index, list) => {

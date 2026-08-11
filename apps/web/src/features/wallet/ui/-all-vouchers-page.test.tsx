@@ -6,24 +6,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const { useConnectionMock } = vi.hoisted(() => ({ useConnectionMock: vi.fn() }));
 
 vi.mock("@tanstack/react-router", () => ({
+  // Forwards the rest of the props so `<Button asChild>` data attributes
+  // (data-slot / data-variant / data-size) reach the rendered anchor.
   Link: ({
     children,
-    className,
     params,
     to,
+    ...rest
   }: {
     children: ReactNode;
-    className?: string;
-    params?: { voucherAddress?: string };
+    params?: { step?: string; voucherAddress?: string };
     to: string;
-  }) => (
-    <a
-      href={params?.voucherAddress ? to.replace("$voucherAddress", params.voucherAddress) : to}
-      className={className}
-    >
-      {children}
-    </a>
-  ),
+  } & Record<string, unknown>) => {
+    const href = params?.voucherAddress
+      ? to.replace("$voucherAddress", params.voucherAddress)
+      : params?.step
+        ? to.replace("$step", params.step)
+        : to;
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    );
+  },
   useCanGoBack: () => false,
   useRouter: () => ({ history: { back: vi.fn() } }),
 }));
@@ -82,6 +87,21 @@ afterEach(() => {
 });
 
 describe("AllVouchersPage", () => {
+  it("opens voucher creation from the standard title-row button", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(successResponse({ tokens: [accountToken(1)] })),
+    );
+    renderWithQueryClient(<AllVouchersPage />);
+
+    await screen.findByText("Voucher 1");
+    const create = screen.getByRole("link", { name: /create/i });
+    expect(create.getAttribute("href")).toBe("/vouchers/create/voucher");
+    // Title-row action keeps the default 32px button size, not a CTA height.
+    expect(create.getAttribute("data-size")).toBe("default");
+    expect(create.getAttribute("data-variant")).toBe("outline");
+  });
+
   it("shows account vouchers and expands a voucher link", async () => {
     const token = accountToken(1);
     const fetcher = vi.fn().mockResolvedValue(successResponse({ tokens: [token], last: 1 }));
@@ -116,6 +136,7 @@ describe("AllVouchersPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
     expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
+    expect(screen.getAllByRole("link", { name: /create/i })).toHaveLength(2);
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 

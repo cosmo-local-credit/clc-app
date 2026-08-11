@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { RiArrowRightSLine } from "react-icons/ri";
+import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
@@ -9,7 +9,9 @@ import { BackChevron } from "#/components/wallet";
 import type { UserPool } from "#/features/pools/api/pools-client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
@@ -31,6 +33,7 @@ export function PoolsPage() {
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
   const [filtersEverOpened, setFiltersEverOpened] = useState(false);
+  const clearCreateDraft = usePoolCreateDraft((state) => state.clearDraft);
 
   const catalog = usePoolCatalog(
     filter,
@@ -50,6 +53,11 @@ export function PoolsPage() {
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
+
+  useEffect(() => {
+    resetPoolCreateHistory();
+    clearCreateDraft();
+  }, [clearCreateDraft]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -74,16 +82,24 @@ export function PoolsPage() {
         <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Pools</Trans>
         </h1>
-        <PoolFilterSheet
-          filter={filter}
-          facets={catalog.tagFacets}
-          voucherFacets={catalog.voucherFacets}
-          open={filtersOpen}
-          onOpenChange={(next) => {
-            if (next) setFiltersEverOpened(true);
-            setFiltersOpen(next);
-          }}
-        />
+        <div className="flex items-center gap-1.5">
+          <Button asChild variant="outline" className="bg-card">
+            <Link to="/pools/create/$step" params={{ step: "pool" }}>
+              <RiAddLine className="size-4" aria-hidden="true" />
+              <Trans>Create</Trans>
+            </Link>
+          </Button>
+          <PoolFilterSheet
+            filter={filter}
+            facets={catalog.tagFacets}
+            voucherFacets={catalog.voucherFacets}
+            open={filtersOpen}
+            onOpenChange={(next) => {
+              if (next) setFiltersEverOpened(true);
+              setFiltersOpen(next);
+            }}
+          />
+        </div>
       </div>
 
       <CatalogSearchField filter={filter} label={t`Search pools`} />

@@ -11,6 +11,8 @@ export default defineConfig({
       "**/dist/**",
       "**/.output/**",
       "packages/i18n/src/catalogs/**",
+      // Serwist output — gitignored, so it exists locally but never in CI.
+      "apps/web/public/sw.js",
     ],
   },
   lint: {
@@ -36,6 +38,7 @@ export default defineConfig({
       "**/dist/**",
       "**/.output/**",
       "packages/i18n/src/catalogs/**",
+      "apps/web/public/sw.js",
     ],
     overrides: [
       {
