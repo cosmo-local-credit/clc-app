@@ -13,11 +13,8 @@ import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import {
-  BackendApiError,
-  formatBackendApiError,
-  type ProfileResult,
-} from "@clc/api/features/auth/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { type ProfileResult } from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
 import { translateValidationError } from "#/lib/validation-i18n";

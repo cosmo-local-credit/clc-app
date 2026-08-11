@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 
 const { collectWebAuthnAssertion, signinWithWebAuthn, storeWebAuthnCredential } = vi.hoisted(

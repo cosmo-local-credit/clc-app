@@ -2,7 +2,7 @@ import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { type MarketVoucher, getFilteredMarketVouchers } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 

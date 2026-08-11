@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { BackendApiError } from "../../client/errors";
 import {
-  BackendApiError,
-  formatBackendApiError,
   getSession,
   getSiweNonce,
   signinWithWebAuthn,
@@ -111,16 +110,6 @@ describe("apiFetch — error handling", () => {
     expect((err as BackendApiError).status).toBe(200);
     expect((err as BackendApiError).description).toBe("nonce exhausted");
     expect((err as BackendApiError).code).toBe("NONCE_USED");
-  });
-
-  it("formats BackendApiError as code: description when code is present", () => {
-    const err = new BackendApiError(403, "account is pending approval by a superadmin", "E10");
-    expect(formatBackendApiError(err)).toBe("E10: account is pending approval by a superadmin");
-  });
-
-  it("formats BackendApiError as description only when code is absent", () => {
-    const err = new BackendApiError(500, "Internal Server Error");
-    expect(formatBackendApiError(err)).toBe("Internal Server Error");
   });
 
   it("returns result from ok=true envelope", async () => {

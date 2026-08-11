@@ -3,7 +3,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketCamera } from "./market-map";
 

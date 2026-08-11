@@ -32,7 +32,7 @@ vi.mock("@clc/api/features/auth/client", async () => {
   };
 });
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { useAuthStatus } from "./use-auth-status";
 
 function createWrapper() {

@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketTagFacet } from "@clc/api/features/market/client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";

@@ -50,7 +50,7 @@ import { StepProgress } from "#/components/ui/step-progress";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { BackendApiError, formatBackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";

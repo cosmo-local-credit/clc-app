@@ -7,7 +7,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import {
   type FilteredReportPage,
   type ReportCursor,

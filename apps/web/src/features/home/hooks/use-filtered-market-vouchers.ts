@@ -1,7 +1,7 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { BackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import {
   type FilteredMarketVoucherPage,
   type MarketTagFacet,

@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from "#/components/ui/dialog";
 import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/privateKey";
-import { BackendApiError, formatBackendApiError } from "@clc/api/features/auth/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
