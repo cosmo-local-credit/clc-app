@@ -54,7 +54,7 @@ export function useAuthStatus(): AuthStatus {
   } else if (sessionQuery.isPending) {
     state = "loading";
   } else if (sessionQuery.isError) {
-    if (error instanceof BackendApiError && (error.status === 401 || error.code === "E06")) {
+    if (error instanceof BackendApiError && error.kind === "unauthenticated") {
       state = "connectedNoSession";
     } else {
       state = "sessionCheckError";

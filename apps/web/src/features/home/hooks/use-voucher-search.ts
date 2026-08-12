@@ -2,7 +2,7 @@ import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
-import { BackendApiError } from "@clc/api/client/errors";
+import { isRetryableBackendError } from "@clc/api/client/errors";
 import { type MarketVoucher } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { clcApi } from "#/lib/api";
@@ -70,10 +70,7 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
     enabled,
     staleTime: VOUCHER_SEARCH_STALE_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
   return useMemo((): VoucherSearchControls => {

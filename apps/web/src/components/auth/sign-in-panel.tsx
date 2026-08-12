@@ -105,11 +105,11 @@ export function SignInPanel({
 
   function handleBackendError(err: unknown, retry?: () => void) {
     if (err instanceof BackendApiError) {
-      if (err.status === 404) {
+      if (err.kind === "not-found") {
         setAccountNotFoundOpen(true);
         return;
       }
-      if (err.status === 403) {
+      if (err.kind === "forbidden") {
         setRetryAction(() => retry ?? null);
         if (/reject/i.test(err.description) || err.code === "REJECTED") {
           setPanelState("approvalRejected");

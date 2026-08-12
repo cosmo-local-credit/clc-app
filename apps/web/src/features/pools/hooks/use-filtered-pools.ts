@@ -7,7 +7,7 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "@clc/api/client/errors";
+import { isRetryableBackendError } from "@clc/api/client/errors";
 import {
   type FilteredPoolPage,
   type PoolTagFacet,
@@ -112,13 +112,10 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) => {
-      if (error instanceof FilteredPoolsTooLargeError) return false;
-      if (error instanceof BackendApiError && error.status >= 400 && error.status < 500) {
-        return false;
-      }
-      return failureCount < 1;
-    },
+    // Only a transport failure or server fault is worth replaying; a rejected
+    // filter, an exhausted page budget, or a bug in our own query function
+    // will fail identically. See isRetryableBackendError.
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 
@@ -139,10 +136,7 @@ function usePoolFacetVocabulary(enabled: boolean) {
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 
