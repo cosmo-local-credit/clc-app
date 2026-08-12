@@ -30,11 +30,6 @@ const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PART
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
-/** True when this browser can present a platform passkey at all. */
-export function isPasskeySupported(): boolean {
-  return typeof window !== "undefined" && !!window.PublicKeyCredential;
-}
-
 export async function collectAdminAssertion(): Promise<WebAuthnAssertionPayload> {
   const {
     result: { challenge },
