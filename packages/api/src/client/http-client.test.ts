@@ -1,14 +1,20 @@
 import { describe, expect, it, vi } from "vite-plus/test";
-import { BackendApiError } from "./errors";
+import { BackendApiError, NO_HTTP_STATUS } from "./errors";
 import { createHttpClient } from "./http-client";
 
-function response(status: number, body: string, statusText = ""): Response {
+function response(
+  status: number,
+  body: string,
+  statusText = "",
+  headers: Record<string, string> = {},
+): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
     statusText,
+    headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
     text: () => Promise.resolve(body),
-  } as Response;
+  } as unknown as Response;
 }
 
 function clientWith(fetchImpl: typeof globalThis.fetch, baseUrl = "https://api.example.test") {
@@ -154,5 +160,75 @@ describe("platform fetch resolution", () => {
     await expect(client.request("/x")).resolves.toEqual({ n: "injected" });
     expect(global).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
+  });
+});
+
+describe("failure classification", () => {
+  it("wraps a rejected fetch as a network failure rather than leaking a TypeError", async () => {
+    const cause = new TypeError("Failed to fetch");
+    const err = await clientWith(vi.fn().mockRejectedValue(cause))
+      .request("/x")
+      .catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(BackendApiError);
+    expect(err).toMatchObject({ kind: "network", status: NO_HTTP_STATUS });
+    expect((err as BackendApiError).cause).toBe(cause);
+  });
+
+  it("lets an AbortError through unchanged, because a cancelled request is not a failure", async () => {
+    // React Query cancels superseded queries; converting that to a surfaced
+    // error would make every filter change look like a backend fault.
+    const abort = Object.assign(new Error("aborted"), { name: "AbortError" });
+    const err = await clientWith(vi.fn().mockRejectedValue(abort))
+      .request("/x")
+      .catch((e: unknown) => e);
+
+    expect(err).toBe(abort);
+    expect(err).not.toBeInstanceOf(BackendApiError);
+  });
+
+  it("classifies an unintelligible body on an error status by that status, so a 502 stays retryable", async () => {
+    const err = await clientWith(vi.fn().mockResolvedValue(response(502, "<html>", "Bad Gateway")))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "server", status: 502 });
+  });
+
+  it("classifies an unintelligible body on a success status as protocol", async () => {
+    const err = await clientWith(vi.fn().mockResolvedValue(response(200, "not json")))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "protocol", status: 200 });
+  });
+
+  it("maps a backend code over the status", async () => {
+    const err = await clientWith(
+      vi.fn().mockResolvedValue(response(500, '{"ok":false,"description":"expired","code":"E06"}')),
+    )
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "unauthenticated" });
+  });
+
+  it("propagates Retry-After onto a rate-limited failure", async () => {
+    const err = await clientWith(
+      vi
+        .fn()
+        .mockResolvedValue(
+          response(429, '{"ok":false,"description":"slow"}', "", { "retry-after": "42" }),
+        ),
+    )
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "rate-limited", retryAfterMs: 42_000 });
+  });
+
+  it("tolerates a response with no headers object", async () => {
+    // Not all fetch doubles provide `headers`; a missing one must not throw.
+    const bare = { ok: false, status: 500, statusText: "boom", text: () => Promise.resolve("") };
+    const err = await clientWith(vi.fn().mockResolvedValue(bare as unknown as Response))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "server", retryAfterMs: undefined });
   });
 });

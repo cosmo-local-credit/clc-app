@@ -1,6 +1,9 @@
+import { backendRetryDelayMs, isRetryableBackendError } from "@clc/api/client/errors";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+
+const MAX_RETRIES = 2;
 
 export function getRouter() {
   const queryClient = new QueryClient({
@@ -10,7 +13,12 @@ export function getRouter() {
         // operator scanning between screens should not refetch on every visit.
         staleTime: 120_000,
         refetchOnWindowFocus: false,
-        retry: 1,
+        // Retry only what a second identical attempt can fix — transport
+        // failures and server faults. Retrying a 403 or a validation error just
+        // multiplies it, and delays the operator seeing what actually happened.
+        retry: (failureCount, error) =>
+          failureCount < MAX_RETRIES && isRetryableBackendError(error),
+        retryDelay: (attempt, error) => backendRetryDelayMs(error, attempt),
       },
       mutations: { retry: 0 },
     },

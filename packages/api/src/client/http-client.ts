@@ -8,7 +8,7 @@
  * one request at a time.
  */
 
-import { BackendApiError } from "./errors";
+import { BackendApiError, NO_HTTP_STATUS, parseRetryAfterMs } from "./errors";
 
 type ApiOk<T> = {
   ok: true;
@@ -57,19 +57,44 @@ export function createHttpClient({
       ...(init?.headers as Record<string, string> | undefined),
     };
 
-    const res = await doFetch(`${normalizedBaseUrl}${path}`, {
-      credentials: "include",
-      ...init,
-      headers,
-    });
+    let res: Response;
+    try {
+      res = await doFetch(`${normalizedBaseUrl}${path}`, {
+        credentials: "include",
+        ...init,
+        headers,
+      });
+    } catch (cause) {
+      // `fetch` rejects only when no response was produced — offline, DNS, TLS,
+      // CORS, or a dropped socket. An AbortError is deliberately not converted:
+      // a cancelled request is not a failure the caller should surface.
+      if (cause instanceof Error && cause.name === "AbortError") throw cause;
+      throw new BackendApiError(
+        NO_HTTP_STATUS,
+        cause instanceof Error ? cause.message : "Could not reach the server",
+        undefined,
+        { kind: "network", cause },
+      );
+    }
+
+    const retryAfterMs = parseRetryAfterMs(res.headers?.get?.("retry-after") ?? null);
 
     const text = await res.text();
     let body: ApiOk<T> | ApiErr | T | null = null;
     if (text) {
       try {
         body = JSON.parse(text) as ApiOk<T> | ApiErr | T;
-      } catch {
-        throw new BackendApiError(res.status, res.statusText || "Non-JSON response from server");
+      } catch (cause) {
+        // An unintelligible body on an *error* status is still that error — a 502
+        // HTML gateway page is a server fault and worth retrying. `protocol` is
+        // reserved for a successful response that broke the contract, which no
+        // retry can fix.
+        throw new BackendApiError(
+          res.status,
+          res.statusText || "Non-JSON response from server",
+          undefined,
+          { kind: res.ok ? "protocol" : undefined, retryAfterMs, cause },
+        );
       }
     }
 
@@ -79,13 +104,16 @@ export function createHttpClient({
         res.status,
         errBody?.description ?? (res.statusText || "Request failed"),
         errBody?.code,
+        { retryAfterMs },
       );
     }
 
     if (body && typeof body === "object" && "ok" in body) {
       const envelope = body as ApiOk<T> | ApiErr;
       if (!envelope.ok) {
-        throw new BackendApiError(200, envelope.description ?? "Request failed", envelope.code);
+        throw new BackendApiError(200, envelope.description ?? "Request failed", envelope.code, {
+          retryAfterMs,
+        });
       }
       return envelope.result;
     }
