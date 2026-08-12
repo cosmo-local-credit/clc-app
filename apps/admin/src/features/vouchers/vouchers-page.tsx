@@ -11,9 +11,10 @@ import { PageState } from "#/components/admin/page-state";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Badge } from "#/components/ui/badge";
 import { voucherListQueryOptions } from "@clc/api/features/market/queries";
+import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
-
-const PAGE_SIZE = 100;
+import type { TableSearch } from "#/lib/table-search";
+import { usePagedTable } from "#/lib/use-paged-table";
 
 const columns: Array<ColumnDef<MarketVoucher>> = [
   {
@@ -56,20 +57,32 @@ const columns: Array<ColumnDef<MarketVoucher>> = [
   },
 ];
 
-export function VouchersPage() {
+export function VouchersPage({ search }: { search: TableSearch }) {
   const navigate = useNavigate();
-  const vouchersQuery = useQuery(voucherListQueryOptions(clcApi.market, PAGE_SIZE));
+  const vouchersQuery = useQuery(
+    voucherListQueryOptions(clcApi.market, {
+      perPage: search.perPage,
+      cursor: search.cursor,
+      next: search.dir === undefined ? undefined : search.dir === "next",
+    }),
+  );
 
   const vouchers = vouchersQuery.data?.vouchers ?? [];
   const dropped = (vouchersQuery.data?.receivedCount ?? 0) - vouchers.length;
+  const table = usePagedTable({
+    search,
+    page: vouchersQuery.data,
+    navigate: (next) => void navigate({ to: "/vouchers", search: next }),
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Vouchers"
-        description="Every voucher in the public catalog."
-        actions={
-          <span className="font-data text-xs text-muted-foreground">{vouchers.length} shown</span>
+        description={
+          search.sort
+            ? "Every voucher in the public catalog. Sorting applies to this page only."
+            : "Every voucher in the public catalog."
         }
       />
 
@@ -95,14 +108,30 @@ export function VouchersPage() {
           }
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={vouchers}
-          onRowClick={(voucher) =>
-            void navigate({ to: "/vouchers/$address", params: { address: voucher.address } })
-          }
-          emptyState={<EmptyState title="No vouchers" description="The catalog is empty." />}
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={vouchers}
+            sorting={table.sorting}
+            onSortChange={table.onSortChange}
+            onRowClick={(voucher) =>
+              void navigate({ to: "/vouchers/$address", params: { address: voucher.address } })
+            }
+            emptyState={<EmptyState title="No vouchers" description="The catalog is empty." />}
+          />
+          <TablePagination
+            search={search}
+            shown={vouchers.length}
+            dropped={dropped}
+            isFirstPage={table.isFirstPage}
+            mightHaveMore={table.mightHaveMore}
+            isFetching={vouchersQuery.isFetching}
+            onFirstPage={table.onFirstPage}
+            onPreviousPage={table.onPreviousPage}
+            onNextPage={table.onNextPage}
+            onPageSize={table.onPageSize}
+          />
+        </>
       )}
     </div>
   );

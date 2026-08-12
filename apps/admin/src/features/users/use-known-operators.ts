@@ -1,9 +1,7 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { useQuery } from "@tanstack/react-query";
-import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { type PoolListParams, poolListQueryOptions } from "@clc/api/features/pools/queries";
 import { clcApi } from "#/lib/api";
-
-const DIRECTORY_PAGE_SIZE = 100;
 
 export type KnownOperator = {
   address: string;
@@ -54,12 +52,21 @@ export function deriveOperators(pools: ReadonlyArray<OwnedPool>): Array<KnownOpe
  * every render rather than mirroring anything into a store. When a real
  * directory endpoint lands, replace the body and keep the return shape.
  */
-export function useKnownOperators() {
-  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, { perPage: DIRECTORY_PAGE_SIZE }));
+export function useKnownOperators(params: PoolListParams = { perPage: 100 }) {
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, params));
+  const pools = poolsQuery.data?.pools ?? [];
 
   return {
-    operators: deriveOperators(poolsQuery.data?.pools ?? []),
+    operators: deriveOperators(pools),
+    /**
+     * The page of *pools* the operators were derived from. Pagination steps
+     * through pools, not operators: two pools owned by one address collapse into
+     * one row, so a page of 25 pools yields at most 25 operators and often fewer.
+     */
+    poolPage: poolsQuery.data,
+    poolsShown: pools.length,
     isPending: poolsQuery.isPending,
+    isFetching: poolsQuery.isFetching,
     isError: poolsQuery.isError,
     error: poolsQuery.error,
   };
