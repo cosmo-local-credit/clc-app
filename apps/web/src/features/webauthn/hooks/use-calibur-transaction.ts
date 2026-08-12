@@ -8,7 +8,7 @@ import {
 } from "@clc/core/features/webauthn/index";
 import { encodeAbiParameters } from "viem";
 
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 import { clcApi } from "#/lib/api";

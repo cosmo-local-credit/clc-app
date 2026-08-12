@@ -5,7 +5,7 @@ import { parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");

@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { encodeAbiParameters, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
 import { createWebAuthnPasskey } from "#/features/webauthn/hooks/credential";

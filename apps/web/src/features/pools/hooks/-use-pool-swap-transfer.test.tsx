@@ -14,7 +14,7 @@ vi.mock("#/features/wallet/api/pool-swap-relay", () => ({
   relayPoolSwapExactOutput: exactOutputRelay,
 }));
 
-vi.mock("#/features/webauthn/api/relayer-client", () => ({
+vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => relayerClient,
 }));
 

@@ -4,7 +4,7 @@ import {
   relayVoucherTransfer,
   type RelayVoucherTransferInput,
 } from "#/features/wallet/api/send-voucher-relay";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);

@@ -1,6 +1,6 @@
 import type { CreateConnectorFn } from "wagmi";
 import { createConnector } from "wagmi";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { sendCaliburTransaction } from "#/features/webauthn/hooks/use-calibur-transaction";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { clearWebAuthnCredential, getWebAuthnCredential } from "#/lib/webauthn-storage";

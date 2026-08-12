@@ -1,5 +1,5 @@
 import type { EIP7702Auth, SignedBatch } from "@clc/core/features/webauthn/index";
-import type { OtxTrackResult } from "@clc/api/features/auth/client";
+import type { OtxTrackResult } from "../auth/client";
 
 type OKResponse<T> = { ok: true; description?: string; result: T };
 

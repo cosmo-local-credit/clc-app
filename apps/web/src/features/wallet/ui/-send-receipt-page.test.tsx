@@ -49,7 +49,7 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   }),
 }));
 
-vi.mock("#/features/webauthn/api/relayer-client", () => ({
+vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
 }));
 

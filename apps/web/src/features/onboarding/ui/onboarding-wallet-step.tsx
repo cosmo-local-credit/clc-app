@@ -16,7 +16,7 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 
 import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburDelegateFromPk } from "#/features/webauthn/hooks/use-calibur-delegate-from-pk";
 import { useCaliburFromPk } from "#/features/webauthn/hooks/use-calibur-from-pk";
 import { pickPasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";

@@ -1,6 +1,10 @@
 /**
- * Relayer and Calibur configuration. Web-only: the admin console has no wallet,
- * no passkey delegation and no relayer, so this stays out of @clc/api.
+ * Relayer and Calibur configuration for this app.
+ *
+ * The relayer *client* is shared (@clc/api/features/relayer/client) because the
+ * admin console needs its WebAuthn challenge endpoint to sign an operator in.
+ * The configuration stays app-local: it reads import.meta.env, which no package
+ * may do, and admin needs no Calibur address.
  */
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5003";
 

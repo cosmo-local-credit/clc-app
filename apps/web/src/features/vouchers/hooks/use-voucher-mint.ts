@@ -2,7 +2,7 @@ import { buildVoucherMintCall } from "@clc/core/features/vouchers/logic";
 import { useMutation } from "@tanstack/react-query";
 
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
 const relayerClient = createRelayerClient(RELAYER_URL);

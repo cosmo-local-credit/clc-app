@@ -13,7 +13,7 @@ import { getStoredKey } from "#/connectors/privateKey";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
-import type { RelayerClient } from "./relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 const ZERO_HASH = `0x${"00".repeat(32)}` as `0x${string}`;

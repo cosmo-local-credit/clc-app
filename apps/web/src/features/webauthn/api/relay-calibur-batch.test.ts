@@ -2,7 +2,7 @@ import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import { storePrivateKey } from "#/connectors/privateKey";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import type { RelayerClient } from "./relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 const { requestWebAuthnAssertion } = vi.hoisted(() => ({
   requestWebAuthnAssertion: vi.fn(),

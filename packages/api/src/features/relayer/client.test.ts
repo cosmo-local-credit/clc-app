@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { createRelayerClient } from "./relayer-client";
+import { createRelayerClient } from "./client";
 
 const BASE = "https://relayer.example";
 const client = createRelayerClient(BASE);
