@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import {
-  getPretiumRates,
-  getPretiumTransactionsByAddress,
-  triggerPretiumOnramp,
-} from "./pretium-client";
+import { createHttpClient } from "../../client/http-client";
+import { createPretiumClient } from "./client";
+
+// One client over a test base URL. `fetch` is left to the platform so the
+// existing vi.stubGlobal("fetch") in each test is what answers the request.
+const api = createPretiumClient(createHttpClient({ baseUrl: "https://api.test" }));
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
@@ -28,7 +29,7 @@ describe("pretium-client", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await triggerPretiumOnramp({
+    const result = await api.triggerPretiumOnramp({
       address: ADDRESS,
       phoneNumber: "+254712345678",
       asset: "cUSD",
@@ -57,7 +58,7 @@ describe("pretium-client", () => {
       }),
     );
 
-    await expect(getPretiumRates()).resolves.toEqual({ buy: "128.5", sell: "127.75" });
+    await expect(api.getPretiumRates()).resolves.toEqual({ buy: "128.5", sell: "127.75" });
   });
 
   it("normalizes address transaction responses from Pretium", async () => {
@@ -100,7 +101,7 @@ describe("pretium-client", () => {
       }),
     );
 
-    const result = await getPretiumTransactionsByAddress(ADDRESS);
+    const result = await api.getPretiumTransactionsByAddress(ADDRESS);
 
     expect(result.totalCount).toBe(2);
     expect(result.onramps[0]?.reference).toBe("ON-1");

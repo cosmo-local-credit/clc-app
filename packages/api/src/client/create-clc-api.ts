@@ -11,9 +11,11 @@
 
 import { createAccountsClient } from "../features/accounts/client";
 import { createAuthClient } from "../features/auth/client";
+import { createDeploymentsClient } from "../features/deployments/client";
 import { createMarketClient } from "../features/market/client";
 import { createOfferingsClient } from "../features/offerings/client";
 import { createPoolsClient } from "../features/pools/client";
+import { createPretiumClient } from "../features/pretium/client";
 import { createPoolDeployClient } from "../features/pools/deploy-client";
 import { createReportsClient } from "../features/reports/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
@@ -24,15 +26,18 @@ export type ClcApi = ReturnType<typeof createClcApi>;
 export function createClcApi(options: CreateHttpClientOptions) {
   const http = createHttpClient(options);
 
+  // The raw transport is deliberately not returned. Every backend call goes
+  // through a resource module, so exposing it would only invite a caller to
+  // hand-roll a request that belongs in this package.
   return {
-    /** The shared transport, for resources not yet split into their own module. */
-    http,
     accounts: createAccountsClient(http),
     auth: createAuthClient(http),
+    deployments: createDeploymentsClient(http),
     market: createMarketClient(http),
     offerings: createOfferingsClient(http),
     pools: createPoolsClient(http),
     poolDeploy: createPoolDeployClient(http),
+    pretium: createPretiumClient(http),
     reports: createReportsClient(http),
     voucherDeploy: createVoucherDeployClient(http),
   };
