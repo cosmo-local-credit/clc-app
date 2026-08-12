@@ -42,6 +42,17 @@ export type AdminSession =
 export const adminSessionQueryKey = ["admin", "session"] as const;
 
 /**
+ * Everything fetched on an operator's behalf.
+ *
+ * `@clc/api` hangs every backend query off `["clc", …]`, so this one prefix covers
+ * the whole protected surface — accounts, pools, vouchers, reports — and does not
+ * need updating when a surface is added. The session query itself lives under
+ * `["admin", …]` and is deliberately outside it, so signing out can clear the data
+ * and still re-read the session.
+ */
+const PROTECTED_QUERY_PREFIX = ["clc"] as const;
+
+/**
  * Maps the session request's outcome to the five states.
  *
  * Pure and exported so every state can be tested without a query client.
@@ -115,6 +126,11 @@ export function useAdminSignOut() {
     onSettled: async () => {
       // Settled, not success: if the request failed the cookie may still be gone,
       // and a stale "authenticated" console is the worse outcome.
+      //
+      // Everything fetched under the old session is removed, not just
+      // invalidated. staleTime is two minutes, so an invalidated cache would
+      // still serve the previous operator's rows to whoever signs in next.
+      queryClient.removeQueries({ queryKey: PROTECTED_QUERY_PREFIX });
       await queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
     },
   });
