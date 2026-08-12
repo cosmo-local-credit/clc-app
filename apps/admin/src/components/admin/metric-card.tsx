@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { formatCount } from "#/lib/format";
+import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { cn } from "#/lib/utils";
 
 export type MetricTone = "neutral" | "success" | "warning" | "danger" | "muted";
@@ -21,7 +22,12 @@ const iconShellClass: Record<MetricTone, string> = {
   muted: "border-border bg-muted text-muted-foreground",
 };
 
-type MetricLink = { to: "/pools" } | { to: "/vouchers" } | { to: "/users" };
+/**
+ * The list routes validate search params, so a link must name one. Metric tiles
+ * always land on the default first page rather than inheriting whatever view the
+ * operator last had.
+ */
+type MetricLink = { to: "/pools" | "/vouchers" | "/users" };
 
 export function MetricCard({
   label,
@@ -99,7 +105,8 @@ export function MetricCard({
 
   return (
     <Link
-      {...link}
+      to={link.to}
+      search={{ perPage: DEFAULT_PAGE_SIZE }}
       className="block h-full outline-none focus-visible:ring-1 focus-visible:ring-ring"
     >
       {body}

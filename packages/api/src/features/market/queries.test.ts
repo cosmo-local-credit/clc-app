@@ -20,7 +20,7 @@ describe("voucherKeys", () => {
     // A voucher deploy invalidates voucherKeys.all; a key outside that prefix
     // would keep serving pre-deploy data.
     for (const key of [
-      voucherKeys.list(20),
+      voucherKeys.list({ perPage: 20 }),
       voucherKeys.catalog(500),
       voucherKeys.viewport([BOX], 500),
       voucherKeys.detail(ADDRESS),
@@ -33,7 +33,7 @@ describe("voucherKeys", () => {
   });
 
   it("gives the finite list and the infinite catalog distinct keys", () => {
-    expect(voucherKeys.list(500)).not.toEqual(voucherKeys.catalog(500));
+    expect(voucherKeys.list({ perPage: 500 })).not.toEqual(voucherKeys.catalog(500));
   });
 
   it("shares one detail entry across address casings", () => {

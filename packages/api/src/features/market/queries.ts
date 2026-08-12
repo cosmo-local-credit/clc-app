@@ -13,11 +13,30 @@ import type { MarketBoundingBox, MarketClient, MarketVoucherPage } from "./clien
  * and short-lived to an operator auditing it, so each app layers its own policy
  * over these options without touching the key or the query function.
  */
+export type VoucherListParams = {
+  perPage: number;
+  cursor?: number;
+  /** True steps forward from the cursor, false steps back. */
+  next?: boolean;
+};
+
 export const voucherKeys = {
   all: ["clc", "vouchers"] as const,
 
-  /** Finite and infinite reads cache different shapes, so they never share a key. */
-  list: (perPage: number) => ["clc", "vouchers", "list", perPage] as const,
+  /**
+   * Finite and infinite reads cache different shapes, so they never share a key.
+   *
+   * Cursor and direction are keyed because they change which rows return. A sort
+   * column is not: no endpoint accepts a sort, so ordering is applied to the
+   * fetched page and re-sorting must not refetch.
+   */
+  list: (params: VoucherListParams) =>
+    [
+      "clc",
+      "vouchers",
+      "list",
+      { perPage: params.perPage, cursor: params.cursor, next: params.next },
+    ] as const,
   catalog: (perPage: number) => ["clc", "vouchers", "catalog", perPage] as const,
 
   /**
@@ -58,10 +77,12 @@ export function nextMarketCursor(perPage: number) {
   };
 }
 
-export function voucherListQueryOptions(market: MarketClient, perPage: number) {
+export function voucherListQueryOptions(market: MarketClient, params: VoucherListParams) {
   return queryOptions({
-    queryKey: voucherKeys.list(perPage),
-    queryFn: ({ signal }) => market.getMarketVouchers({ perPage }, signal),
+    queryKey: voucherKeys.list(params),
+    queryFn: ({ signal }) => market.getMarketVouchers(params, signal),
+    // Keeps the previous page visible while the next loads, so paging does not
+    // blink through an empty table.
     placeholderData: keepPreviousData,
   });
 }

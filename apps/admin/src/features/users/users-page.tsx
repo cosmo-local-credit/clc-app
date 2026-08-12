@@ -11,6 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { type KnownOperator, useKnownOperators } from "#/features/users/use-known-operators";
+import { TablePagination } from "#/components/admin/table-pagination";
+import type { TableSearch } from "#/lib/table-search";
+import { usePagedTable } from "#/lib/use-paged-table";
 
 const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
 
@@ -41,9 +44,19 @@ const columns: Array<ColumnDef<KnownOperator>> = [
   },
 ];
 
-export function UsersPage() {
+export function UsersPage({ search }: { search: TableSearch }) {
   const navigate = useNavigate();
-  const { operators, isPending, isError, error } = useKnownOperators();
+  const directory = useKnownOperators({
+    perPage: search.perPage,
+    cursor: search.cursor,
+    next: search.dir === undefined ? undefined : search.dir === "next",
+  });
+  const { operators, isPending, isError, error } = directory;
+  const table = usePagedTable({
+    search,
+    page: directory.poolPage,
+    navigate: (next) => void navigate({ to: "/users", search: next }),
+  });
   const [lookup, setLookup] = useState("");
 
   const lookupValid = ADDRESS_PATTERN.test(lookup.trim());
@@ -52,7 +65,7 @@ export function UsersPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Pool owners"
-        description="Addresses that own a pool in the current page, plus direct lookup by address. This is not a user or operator directory."
+        description="Addresses that own a pool in the current page of pools, plus direct lookup by address. This is not a user or operator directory."
       />
 
       <Alert>
@@ -96,19 +109,37 @@ export function UsersPage() {
           message={error instanceof Error ? error.message : "Request failed."}
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={operators}
-          onRowClick={(operator) =>
-            void navigate({ to: "/users/$address", params: { address: operator.address } })
-          }
-          emptyState={
-            <EmptyState
-              title="No pool owners in this page"
-              description="No pool in this page has an owner address."
-            />
-          }
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={operators}
+            sorting={table.sorting}
+            onSortChange={table.onSortChange}
+            onRowClick={(operator) =>
+              void navigate({ to: "/users/$address", params: { address: operator.address } })
+            }
+            emptyState={
+              <EmptyState
+                title="No pool owners in this page"
+                description="No pool in this page has an owner address."
+              />
+            }
+          />
+          {/* `shown` counts pools, not operators: paging walks pools, and owners
+              collapse, so an operator count would misdescribe the page size. */}
+          <TablePagination
+            search={search}
+            shown={directory.poolsShown}
+            dropped={0}
+            isFirstPage={table.isFirstPage}
+            mightHaveMore={table.mightHaveMore}
+            isFetching={directory.isFetching}
+            onFirstPage={table.onFirstPage}
+            onPreviousPage={table.onPreviousPage}
+            onNextPage={table.onNextPage}
+            onPageSize={table.onPageSize}
+          />
+        </>
       )}
     </div>
   );
