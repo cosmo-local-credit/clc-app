@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -38,25 +38,30 @@ export function AppBreadcrumb({
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
-            <BreadcrumbItem key={index}>
-              {isLast || !item.to ? (
-                <BreadcrumbPage className={cn(item.className)}>{item.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink
-                  render={
-                    <Link
-                      to={item.to}
-                      params={item.params as never}
-                      search={item.search as never}
-                    />
-                  }
-                  className={item.className}
-                >
-                  {item.label}
-                </BreadcrumbLink>
-              )}
+            // The separator is a sibling of the item, not a child: both render an
+            // <li>, and nesting them puts an <li> inside an <li> — invalid HTML,
+            // and React reports it as a hydration error.
+            <Fragment key={index}>
+              <BreadcrumbItem>
+                {isLast || !item.to ? (
+                  <BreadcrumbPage className={cn(item.className)}>{item.label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink
+                    render={
+                      <Link
+                        to={item.to}
+                        params={item.params as never}
+                        search={item.search as never}
+                      />
+                    }
+                    className={item.className}
+                  >
+                    {item.label}
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
               {!isLast ? <BreadcrumbSeparator /> : null}
-            </BreadcrumbItem>
+            </Fragment>
           );
         })}
       </BreadcrumbList>
