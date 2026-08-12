@@ -139,6 +139,12 @@ function normalizeBaseUrl(baseUrl: string): string {
     );
   }
 
+  // A same-origin path prefix — "/api" behind a reverse proxy — is a legitimate
+  // deployment and resolves against the page's own origin. Accepted rather than
+  // rejected as "not absolute", because the apps supported it before this client
+  // existed and a deployment using it would otherwise fail at module load.
+  if (trimmed.startsWith("/")) return trimmed.replace(/\/+$/, "");
+
   let parsed: URL;
   try {
     parsed = new URL(trimmed);

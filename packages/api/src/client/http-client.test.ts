@@ -29,8 +29,20 @@ describe("createHttpClient base URL validation", () => {
     expect(() => createHttpClient({ baseUrl: "   " })).toThrow(/base URL is missing/);
   });
 
-  it("rejects a relative or unparseable base URL", () => {
-    expect(() => createHttpClient({ baseUrl: "/api" })).toThrow(/not a valid absolute URL/);
+  it("accepts a same-origin path prefix, which is a real deployment shape", async () => {
+    // "/api" behind a reverse proxy resolves against the page's origin. The apps
+    // supported this before this client existed, so rejecting it would break a
+    // deployment at module load rather than at request time.
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    const client = clientWith(fetchImpl, "/api/");
+    expect(client.baseUrl).toBe("/api");
+
+    await client.request("/v2/pools");
+    expect(fetchImpl).toHaveBeenCalledWith("/api/v2/pools", expect.anything());
+  });
+
+  it("rejects an unparseable base URL that is not a path", () => {
+    expect(() => createHttpClient({ baseUrl: "not a url" })).toThrow(/not a valid absolute URL/);
   });
 
   it("rejects a non-http protocol", () => {
