@@ -19,6 +19,7 @@ import { useDataState } from "#/lib/use-data-state";
 import { accountTransfersQueryOptions } from "@clc/api/features/accounts/queries";
 import { latestAccountTokensQueryOptions } from "@clc/api/features/accounts/queries";
 import { clcApi } from "#/lib/api";
+import { AccountAdminPanel } from "./ui/account-admin-panel";
 
 const TRANSFER_PAGE_SIZE = 50;
 
@@ -40,7 +41,7 @@ export function UserDetailPage({ address }: { address: string }) {
         breadcrumbs={
           <AppBreadcrumb
             items={[
-              { label: "Users", to: "/users" },
+              { label: "Accounts", to: "/users" },
               { label: formatVoucherAddress(address as `0x${string}`) },
             ]}
           />
@@ -53,6 +54,13 @@ export function UserDetailPage({ address }: { address: string }) {
           </span>
         }
       />
+
+      <section className="flex flex-col gap-3">
+        <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+          Account
+        </h2>
+        <AccountAdminPanel address={address} />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">

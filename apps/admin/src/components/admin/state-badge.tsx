@@ -38,6 +38,16 @@ const stateTones: Record<string, StateTone> = {
     className: "border-foreground/20 bg-foreground/5 text-foreground",
   },
   // OTX lifecycle, as clc-core reports it.
+  // Account approval, as clc-core reports it. PENDING is shared with the OTX
+  // lifecycle below — same word, same meaning: awaiting an outcome.
+  APPROVED: {
+    label: "approved",
+    className: "border-state-active/30 bg-state-active/10 text-state-active",
+  },
+  REJECTED: {
+    label: "rejected",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
   SUCCESS: {
     label: "success",
     className: "border-state-active/30 bg-state-active/10 text-state-active",

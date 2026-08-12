@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { UsersPage } from "#/features/users/users-page";
-import { parseTableSearch } from "#/lib/table-search";
+import { parseUsersSearch } from "#/features/users/users-search";
 
 export const Route = createFileRoute("/_shell/users/")({
-  validateSearch: parseTableSearch,
+  validateSearch: parseUsersSearch,
   component: () => <UsersPage search={Route.useSearch()} />,
 });
