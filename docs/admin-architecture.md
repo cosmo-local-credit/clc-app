@@ -100,8 +100,24 @@ identity. Each resource module should hide:
 - Canonical query keys.
 - Base finite and infinite query options.
 
-Use explicit package exports rather than the current unrestricted `./*` export.
-Callers should import supported resource interfaces, not normalization internals.
+Use explicit package exports rather than an unrestricted `./*` export. Callers
+should import supported resource interfaces, not normalization internals.
+
+**An `exports` map alone does not enforce this.** While each app's `tsconfig.json`
+maps `@clc/api/*` to the package source, both `tsc` and the bundler resolve
+through that wildcard and never consult `exports`, so the map is decorative — a
+non-exported subpath still imports and still builds. Enforcement requires
+_removing_ the `@clc/api/*` paths entry from the consuming apps so resolution
+goes through the package's `exports` instead. With that done, `tsc` rejects an
+unlisted subpath with TS2307, which surfaces in the editor and in `pnpm -r check`.
+
+The bundler remains lenient about workspace source packages, so a violation fails
+typecheck rather than the build. Typecheck is therefore the gate; keep it in CI.
+
+`@clc/core` still uses the `./*` wildcard and is still mapped in tsconfig paths,
+so it has no such boundary yet. Narrowing it is worthwhile but separate — core's
+surface is pure functions and schemas, where an accidental import is far less
+costly than reaching into transport internals.
 
 A resource may use an internal directory, but should expose one deliberate
 interface:
