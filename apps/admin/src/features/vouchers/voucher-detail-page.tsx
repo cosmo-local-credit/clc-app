@@ -8,6 +8,7 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { SectionState } from "#/components/admin/section-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -33,18 +34,30 @@ export function VoucherDetailPage({ address }: { address: string }) {
   );
   // Every hook must run before the early returns below, or hook order changes
   // between the loading and loaded renders.
+  const voucherState = useDataState(voucherQuery, () => false);
   const offeringsState = useDataState(offeringsQuery, (page) => page.offerings.length === 0);
 
-  if (voucherQuery.isPending) return <LoadingBlock rows={8} />;
-  if (voucherQuery.isError) {
-    return <PageState title="Could not load voucher" message={errorMessage(voucherQuery.error)} />;
-  }
+  if (voucherState.kind === "pending") return <LoadingBlock rows={8} />;
 
+  // Only a failure with nothing cached replaces the screen. A failed refresh over
+  // a voucher that is still cached is `stale`: keep the screen and say so, rather
+  // than discarding a populated page an operator is working in.
   const voucher = voucherQuery.data;
+  if (!voucher) {
+    return (
+      <PageState
+        title="Could not load voucher"
+        message={
+          voucherState.kind === "error" ? voucherState.message : errorMessage(voucherQuery.error)
+        }
+      />
+    );
+  }
   const offerings = offeringsQuery.data?.offerings ?? [];
 
   return (
     <div className="flex flex-col gap-6">
+      {voucherState.kind === "stale" ? <StaleNotice message={voucherState.message} /> : null}
       <PageHeader
         breadcrumbs={
           <AppBreadcrumb
