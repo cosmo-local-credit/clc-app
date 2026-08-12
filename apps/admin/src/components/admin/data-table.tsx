@@ -30,6 +30,12 @@ import { cn } from "#/lib/utils";
  * Sort state is owned by the caller — normally the route's search params — so the
  * URL describes the view and Back restores it. An uncontrolled table would reset
  * its ordering on every navigation.
+ *
+ * `onRowClick` is a **mouse convenience only**. A row is not an interactive
+ * element: it takes no focus, answers no keyboard, and cannot be opened in a new
+ * tab. Any table whose rows navigate must also put a real `<Link>` in one cell —
+ * that link is the accessible path to the detail screen, and the row handler
+ * merely widens its hit area.
  */
 export function DataTable<TData>({
   columns,
@@ -72,7 +78,21 @@ export function DataTable<TData>({
                 const sortable = header.column.getCanSort();
                 const sorted = header.column.getIsSorted();
                 return (
-                  <TableHead key={header.id} className="whitespace-nowrap">
+                  <TableHead
+                    key={header.id}
+                    className="whitespace-nowrap"
+                    // Without this a screen reader reads the header text and the
+                    // arrow glyph but never says the column is sorted, or which way.
+                    aria-sort={
+                      sortable
+                        ? sorted === "asc"
+                          ? "ascending"
+                          : sorted === "desc"
+                            ? "descending"
+                            : "none"
+                        : undefined
+                    }
+                  >
                     {header.isPlaceholder ? null : sortable ? (
                       <button
                         type="button"
