@@ -8,6 +8,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
+import { reportKeys } from "@clc/api/features/reports/queries";
 import {
   type FilteredReportPage,
   type ReportCursor,
@@ -33,11 +34,11 @@ const EMPTY_CATALOG_FILTER: CatalogFilter = {
   voucherMatch: "any",
 };
 
+// Identity is canonical in @clc/api; the multi-page assembly and page budget
+// below stay app-specific.
 const filteredReportQueryKeys = {
-  all: ["reports"] as const,
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    [...filteredReportQueryKeys.all, "filtered", { filter, perPage }] as const,
-  facetVocabulary: () => [...filteredReportQueryKeys.all, "facet-vocabulary"] as const,
+  filtered: reportKeys.filtered,
+  facetVocabulary: reportKeys.facetVocabulary,
 };
 
 export class FilteredReportsTooLargeError extends Error {
