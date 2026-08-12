@@ -61,30 +61,27 @@ describe("passkeyBlockedReason", () => {
   });
 
   it("blocks an insecure context before anything else", () => {
-    const reason = passkeyBlockedReason(env({ isSecureContext: false }));
-    expect(reason).toMatch(/secure context/i);
+    expect(passkeyBlockedReason(env({ isSecureContext: false }))).toBe("insecure-context");
   });
 
   it("blocks a browser with no WebAuthn at all", () => {
-    expect(passkeyBlockedReason(env({ hasPublicKeyCredential: false }))).toMatch(
-      /does not support passkeys/i,
-    );
+    expect(passkeyBlockedReason(env({ hasPublicKeyCredential: false }))).toBe("no-webauthn");
   });
 
   it("blocks a browser that exposes PublicKeyCredential but not credentials.get", () => {
-    expect(passkeyBlockedReason(env({ hasCredentialsGet: false }))).toMatch(
-      /does not support passkeys/i,
-    );
+    expect(passkeyBlockedReason(env({ hasCredentialsGet: false }))).toBe("no-webauthn");
   });
 
-  it("blocks an unsupported browser and names the two that work", () => {
-    const reason = passkeyBlockedReason(env({ userAgent: FIREFOX }));
-    expect(reason).toMatch(/Chrome/);
-    expect(reason).toMatch(/Safari/);
-    expect(reason).toMatch(/paper wallet/i);
+  it.each([
+    ["Firefox", FIREFOX],
+    ["Edge", EDGE],
+    ["Opera", OPERA],
+    ["Vivaldi", VIVALDI],
+  ])("blocks %s as the wrong browser rather than as missing support", (_name, userAgent) => {
+    expect(passkeyBlockedReason(env({ userAgent }))).toBe("wrong-browser");
   });
 
   it("blocks server-side rendering, where no navigator exists", () => {
-    expect(passkeyBlockedReason(env({ hasWindow: false }))).toMatch(/only available in a browser/i);
+    expect(passkeyBlockedReason(env({ hasWindow: false }))).toBe("no-webauthn");
   });
 });
