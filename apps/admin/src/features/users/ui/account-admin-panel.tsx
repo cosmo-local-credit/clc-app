@@ -22,6 +22,20 @@ import {
   useUpdateUserLimits,
 } from "../use-admin-users";
 
+/**
+ * `PUT /admin/users/:address/limits` rejects every request with 400 / E02,
+ * including a hand-rolled curl carrying the documented payload:
+ * `adminUpdateUserLimitsHandler` calls `c.Bind` twice — once for the address
+ * param, once for the body — and the first call drains the body, so the second
+ * fails. Approve and reject bind once and work.
+ *
+ * The control is therefore disabled rather than left to fail: an operator who
+ * types a limit and gets an error has been told they did something wrong when they
+ * did not. The client side is already correct — flip this to `false` when the
+ * handler is fixed, and delete it once that has shipped.
+ */
+const LIMITS_ENDPOINT_BROKEN = true;
+
 export function AccountAdminPanel({ address }: { address: string }) {
   const usersQuery = useAdminUsers();
   const approve = useApproveUser();
@@ -148,18 +162,23 @@ export function AccountAdminPanel({ address }: { address: string }) {
         >
           <SectionLabel>Limits</SectionLabel>
           <div className="flex flex-wrap items-end gap-2">
-            <LimitField label="Max pools" value={maxPools} onChange={setMaxPools} disabled={busy} />
+            <LimitField
+              label="Max pools"
+              value={maxPools}
+              onChange={setMaxPools}
+              disabled={busy || LIMITS_ENDPOINT_BROKEN}
+            />
             <LimitField
               label="Max vouchers"
               value={maxTokens}
               onChange={setMaxTokens}
-              disabled={busy}
+              disabled={busy || LIMITS_ENDPOINT_BROKEN}
             />
             <Button
               type="submit"
               size="sm"
               variant="outline"
-              disabled={busy || !limitsValid || !limitsChanged}
+              disabled={busy || LIMITS_ENDPOINT_BROKEN || !limitsValid || !limitsChanged}
             >
               {updateLimits.isPending ? "Saving…" : "Save"}
             </Button>
@@ -169,18 +188,11 @@ export function AccountAdminPanel({ address }: { address: string }) {
               Both limits must be whole numbers, 0 or more.
             </p>
           ) : null}
-          {/*
-            Saving currently fails against clc-core with E02 "Invalid or malformed
-            request", including for a hand-rolled curl with this exact payload.
-            adminUpdateUserLimitsHandler calls c.Bind twice — once for the address
-            param and once for the body — and the first call consumes the body, so
-            the second fails. The client side is correct and needs no change when
-            that is fixed; delete this note then.
-          */}
-          <p className="text-muted-foreground text-xs">
-            Saving limits is currently rejected by the backend (E02). The approval buttons above are
-            unaffected.
-          </p>
+          {LIMITS_ENDPOINT_BROKEN ? (
+            <p className="text-muted-foreground text-xs">
+              Editing limits is disabled: the backend rejects every request to this endpoint.
+            </p>
+          ) : null}
         </form>
       </div>
     </div>
