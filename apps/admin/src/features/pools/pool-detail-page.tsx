@@ -7,6 +7,7 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { SectionState } from "#/components/admin/section-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
 import {
@@ -33,18 +34,28 @@ export function PoolDetailPage({ address }: { address: string }) {
   );
   // Every hook must run before the early returns below, or hook order changes
   // between the loading and loaded renders.
+  const poolState = useDataState(poolQuery, () => false);
   const vouchersState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);
 
-  if (poolQuery.isPending) return <LoadingBlock rows={8} />;
-  if (poolQuery.isError) {
-    return <PageState title="Could not load pool" message={errorMessage(poolQuery.error)} />;
-  }
+  if (poolState.kind === "pending") return <LoadingBlock rows={8} />;
 
+  // Only a failure with nothing cached replaces the screen. A failed refresh over
+  // a pool that is still cached is `stale`: keep the screen and say so, rather
+  // than discarding a populated page an operator is working in.
   const pool = poolQuery.data;
+  if (!pool) {
+    return (
+      <PageState
+        title="Could not load pool"
+        message={poolState.kind === "error" ? poolState.message : errorMessage(poolQuery.error)}
+      />
+    );
+  }
   const vouchers = vouchersQuery.data?.vouchers ?? [];
 
   return (
     <div className="flex flex-col gap-6">
+      {poolState.kind === "stale" ? <StaleNotice message={poolState.message} /> : null}
       <PageHeader
         breadcrumbs={
           <AppBreadcrumb items={[{ label: "Pools", to: "/pools" }, { label: pool.name }]} />
