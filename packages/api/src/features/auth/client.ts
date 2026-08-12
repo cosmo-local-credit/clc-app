@@ -46,6 +46,15 @@ export type WebAuthnSigninResult = {
 export type SessionResult = {
   address: string;
   chainId: number;
+  /**
+   * The signed-in user's role, e.g. "USER" or "SUPERADMIN".
+   *
+   * Optional because a backend older than the change that added it omits the
+   * field entirely. A client that authorizes on role must treat `undefined` as
+   * "cannot determine" rather than "not privileged" — silently denying a real
+   * superadmin is the worse failure.
+   */
+  role?: string;
 };
 
 export type ProfilePayload = {

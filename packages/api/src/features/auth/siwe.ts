@@ -15,6 +15,7 @@
  * why a console on a different origin needs no backend change to sign in.
  */
 
+import { privateKeyToAccount } from "viem/accounts";
 import { createSiweMessage } from "viem/siwe";
 
 import type { AuthClient, SigninResult } from "./client";
@@ -35,6 +36,21 @@ export type SiweRequest = {
 };
 
 export type SignedSiweMessage = { message: string; signature: `0x${string}` };
+
+/**
+ * A signer backed by a raw private key — the paper-wallet path in both apps.
+ *
+ * The key never leaves the caller's process: it is used to derive the account
+ * and sign, and is not sent to the backend, which recovers the address from the
+ * signature instead.
+ */
+export function privateKeySigner(privateKey: `0x${string}`): SiweSigner {
+  const account = privateKeyToAccount(privateKey);
+  return {
+    address: account.address,
+    signMessage: (message) => account.signMessage({ message }),
+  };
+}
 
 /**
  * Fetches a nonce and returns the signed message.

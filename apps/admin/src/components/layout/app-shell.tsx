@@ -23,7 +23,8 @@ import {
   SidebarTrigger,
 } from "#/components/ui/sidebar";
 import { Toaster } from "#/components/ui/sonner";
-import { IS_STUB_SESSION } from "#/features/auth/admin-session";
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { useAdminSession, useAdminSignOut } from "#/features/auth/admin-session";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "#/components/ui/tooltip";
 import { useHydratedTheme } from "#/providers/theme";
 
@@ -98,14 +99,10 @@ function AppShellInner() {
       </Sidebar>
 
       <SidebarInset>
-        {IS_STUB_SESSION ? (
-          <div className="shrink-0 border-b border-state-pending/30 bg-state-pending/10 px-4 py-2 text-center font-mono text-xs tracking-wide text-state-pending uppercase">
-            Stub session — authentication is not implemented
-          </div>
-        ) : null}
         <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
           <SidebarTrigger className="-ml-1" />
           <div className="ml-auto flex items-center gap-2">
+            <OperatorMenu />
             <ThemeToggle />
           </div>
         </header>
@@ -115,6 +112,43 @@ function AppShellInner() {
         </main>
       </SidebarInset>
     </>
+  );
+}
+
+/**
+ * Who is signed in, and the way out.
+ *
+ * The shell only renders inside AuthBoundary's authenticated branch, so the
+ * session is known — but it is read rather than passed down so no surface has to
+ * thread it through.
+ */
+function OperatorMenu() {
+  const session = useAdminSession();
+  const signOut = useAdminSignOut();
+
+  if (session.status !== "authenticated") return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <span className="hidden font-data text-xs text-muted-foreground sm:inline">
+              {formatVoucherAddress(session.operator.address as `0x${string}`)}
+            </span>
+          }
+        />
+        <TooltipContent>{session.operator.address}</TooltipContent>
+      </Tooltip>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={signOut.isPending}
+        onClick={() => signOut.mutate()}
+      >
+        {signOut.isPending ? "Signing out..." : "Sign out"}
+      </Button>
+    </div>
   );
 }
 
