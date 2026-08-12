@@ -309,20 +309,38 @@ Admin conventions:
 - When the API boundary drops rows (the catalog endpoint omits vouchers with no
   coordinates), surface the gap with the `receivedCount` delta. An admin total
   that silently under-reports is worse than no total.
-- Auth is stubbed at `#/features/auth/admin-session.ts` and gated by
-  `#/components/layout/auth-boundary.tsx`. That is the only seam to change when a
-  real admin session exists — surfaces read through it.
+- Auth is a real session, decided in one place:
+  `#/features/auth/admin-session.ts` reads `GET /auth/session` and authorizes on
+  `role === "SUPERADMIN"`; `#/components/layout/auth-boundary.tsx` renders the
+  five states. Operators sign in with the same credentials as `apps/web` — a
+  paper wallet (SIWE via `@clc/api/features/auth/siwe`) or a passkey. There is no
+  stub session and no bearer-token escape hatch; don't reintroduce either.
+  clc-core enforces `requireSuperAdmin` on every `/api/v2/admin` endpoint, so the
+  gate here is UX only.
+- A session whose `role` the backend omits is `unavailable`, never
+  `unauthorized`. Denying a real superadmin sends them hunting a permission
+  problem that does not exist.
 
-**Two backend blockers you will hit on first run** (both live in the `clc-core`
-repo, not here):
+**What to check in `clc-core` when admin auth misbehaves** (all in that repo's
+`config.toml`, not here):
 
-1. **CORS.** Staging allows `http://localhost:3000` (web's dev port) but not
-   `http://localhost:3001` (admin's). Until `3001` is added to the allowlist
-   every read fails as "Failed to fetch". Verify with:
+1. **CORS** — `api.cors` must list the console's origin. `http://localhost:3001`
+   is already there for local dev; staging is configured separately, so verify
+   before blaming the client:
    `curl -sD- -o/dev/null "https://staging.cosmolocal.credit/api/v2/vouchers?perPage=1" -H "Origin: http://localhost:3001" | grep -i access-control`
-2. **Auth.** `/api/v2/pools` returns **401** without a session, so pools, the
-   derived user directory, and the overview pool metrics stay empty until admin
-   auth exists. `/api/v2/vouchers` is public and works today.
+2. **Passkey origin** — `relayer.allowed_origins` is a _separate_ allowlist,
+   checked against the assertion's `clientDataJSON.origin` in
+   `internal/relayer/webauthn.go`. An origin missing here fails passkey sign-in
+   with "origin not allowed" even for a valid superadmin. Paper-wallet sign-in is
+   unaffected: the SIWE handler validates only signature, address and nonce.
+3. **Relying party** — a passkey is bound to the `relayer.relying_party_id` it
+   was registered under, so the console must be served from that host. Locally
+   that means `http://192.168.1.20:3001`, not `localhost:3001`.
+
+Admin's dev port lives in `apps/admin/vite.config.ts` as
+`server: { port: 3001, strictPort: true }`, not in the `dev` script — otherwise
+`vp dev apps/admin` from the root silently takes `apps/web`'s 3000, and both
+allowlists above name the port.
 
 ### Forms & validation
 
