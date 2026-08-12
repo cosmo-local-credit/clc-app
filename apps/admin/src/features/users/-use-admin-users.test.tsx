@@ -24,7 +24,7 @@ const { useApproveUser } = await import("./use-admin-users");
 const PENDING_ADDRESS = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 const OTHER_ADDRESS = "0x4D478F0e1c1b0b3d0F5b8d2cbde4581dB6369abc";
 
-function user(address: string, status: string): AdminUser {
+function user(address: string, status: string, overrides: Partial<AdminUser> = {}): AdminUser {
   return {
     id: 1,
     ethereumAddress: address,
@@ -38,6 +38,7 @@ function user(address: string, status: string): AdminUser {
     maxTokens: 20,
     createdAt: "2026-07-24T10:43:16Z",
     updatedAt: "2026-07-24T10:43:16Z",
+    ...overrides,
   };
 }
 
@@ -74,9 +75,16 @@ describe("useApproveUser cache writes", () => {
     expect(pending?.map((u) => u.ethereumAddress)).toEqual([OTHER_ADDRESS]);
   });
 
-  it("keeps the row in the APPROVED list, where it now belongs", async () => {
-    queryClient.setQueryData(adminKeys.users("APPROVED"), [user(PENDING_ADDRESS, "PENDING")]);
-    approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
+  it("updates the row in place in a list it still belongs to", async () => {
+    // A realistic APPROVED cache: it already holds the account, and re-approving
+    // refreshes the row rather than duplicating or dropping it. (The earlier
+    // version of this test seeded a PENDING user inside the APPROVED list, which
+    // the backend can never return, and so proved nothing.)
+    queryClient.setQueryData(adminKeys.users("APPROVED"), [
+      user(PENDING_ADDRESS, "APPROVED"),
+      user(OTHER_ADDRESS, "APPROVED"),
+    ]);
+    approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED", { name: "Renamed" }));
 
     const { result } = renderHook(() => useApproveUser(), { wrapper });
     result.current.mutate(PENDING_ADDRESS);
@@ -84,8 +92,26 @@ describe("useApproveUser cache writes", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
     const approved = queryClient.getQueryData<Array<AdminUser>>(adminKeys.users("APPROVED"));
-    expect(approved).toHaveLength(1);
-    expect(approved?.[0]?.status).toBe("APPROVED");
+    expect(approved).toHaveLength(2);
+    expect(approved?.find((u) => u.ethereumAddress === PENDING_ADDRESS)?.name).toBe("Renamed");
+  });
+
+  it("marks the lists stale so the server supplies the row where it now belongs", async () => {
+    // The optimistic writes can remove a row from a list it left, but not insert
+    // it into the list it joined — that would mean guessing a position in that
+    // list's ordering. Invalidation is what closes the gap, so it must not be
+    // downgraded to refetchType: "none".
+    queryClient.setQueryData(adminKeys.users("PENDING"), [user(PENDING_ADDRESS, "PENDING")]);
+    queryClient.setQueryData(adminKeys.users("APPROVED"), []);
+    approveUser.mockResolvedValue(user(PENDING_ADDRESS, "APPROVED"));
+
+    const { result } = renderHook(() => useApproveUser(), { wrapper });
+    result.current.mutate(PENDING_ADDRESS);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    const approvedState = queryClient.getQueryState(adminKeys.users("APPROVED"));
+    expect(approvedState?.isInvalidated).toBe(true);
   });
 
   it("updates the row in the unfiltered list without dropping it", async () => {
