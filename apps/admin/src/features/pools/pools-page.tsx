@@ -11,9 +11,10 @@ import { PageState } from "#/components/admin/page-state";
 import { Badge } from "#/components/ui/badge";
 import { formatFeePpm } from "#/lib/format";
 import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
-
-const PAGE_SIZE = 100;
+import type { TableSearch } from "#/lib/table-search";
+import { usePagedTable } from "#/lib/use-paged-table";
 
 const columns: Array<ColumnDef<UserPool>> = [
   {
@@ -78,23 +79,32 @@ const columns: Array<ColumnDef<UserPool>> = [
   },
 ];
 
-export function PoolsPage() {
+export function PoolsPage({ search }: { search: TableSearch }) {
   const navigate = useNavigate();
-  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, PAGE_SIZE));
+  const poolsQuery = useQuery(
+    poolListQueryOptions(clcApi.pools, {
+      perPage: search.perPage,
+      cursor: search.cursor,
+      next: search.dir === undefined ? undefined : search.dir === "next",
+    }),
+  );
 
   const pools = poolsQuery.data?.pools ?? [];
   const dropped = (poolsQuery.data?.receivedCount ?? 0) - pools.length;
+  const table = usePagedTable({
+    search,
+    page: poolsQuery.data,
+    navigate: (next) => void navigate({ to: "/pools", search: next }),
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Pools"
-        description="Every commitment pool the backend has indexed."
-        actions={
-          <span className="font-data text-xs text-muted-foreground">
-            {pools.length} shown
-            {dropped > 0 ? ` · ${dropped} malformed` : ""}
-          </span>
+        description={
+          search.sort
+            ? "Every commitment pool the backend has indexed. Sorting applies to this page only."
+            : "Every commitment pool the backend has indexed."
         }
       />
 
@@ -106,16 +116,35 @@ export function PoolsPage() {
           message={poolsQuery.error instanceof Error ? poolsQuery.error.message : "Request failed."}
         />
       ) : (
-        <DataTable
-          columns={columns}
-          data={pools}
-          onRowClick={(pool) =>
-            void navigate({ to: "/pools/$address", params: { address: pool.address } })
-          }
-          emptyState={
-            <EmptyState title="No pools" description="The backend has not indexed any pools yet." />
-          }
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={pools}
+            sorting={table.sorting}
+            onSortChange={table.onSortChange}
+            onRowClick={(pool) =>
+              void navigate({ to: "/pools/$address", params: { address: pool.address } })
+            }
+            emptyState={
+              <EmptyState
+                title="No pools"
+                description="The backend has not indexed any pools yet."
+              />
+            }
+          />
+          <TablePagination
+            search={search}
+            shown={pools.length}
+            dropped={dropped}
+            isFirstPage={table.isFirstPage}
+            mightHaveMore={table.mightHaveMore}
+            isFetching={poolsQuery.isFetching}
+            onFirstPage={table.onFirstPage}
+            onPreviousPage={table.onPreviousPage}
+            onNextPage={table.onNextPage}
+            onPageSize={table.onPageSize}
+          />
+        </>
       )}
     </div>
   );

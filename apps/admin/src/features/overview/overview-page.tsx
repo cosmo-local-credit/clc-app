@@ -45,7 +45,7 @@ const tagChartConfig = {
 } satisfies ChartConfig;
 
 export function OverviewPage() {
-  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, SAMPLE_PAGE_SIZE));
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, { perPage: SAMPLE_PAGE_SIZE }));
   const vouchersQuery = useQuery(voucherListQueryOptions(clcApi.market, SAMPLE_PAGE_SIZE));
   const reportsQuery = useQuery(reportListQueryOptions(clcApi.reports, SAMPLE_PAGE_SIZE));
   const operators = useKnownOperators();

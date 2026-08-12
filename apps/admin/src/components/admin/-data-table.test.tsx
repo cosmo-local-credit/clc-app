@@ -32,24 +32,30 @@ describe("DataTable", () => {
     expect(names()).toEqual(["Malindi Traders", "Kilifi Growers", "Watamu Fishers"]);
   });
 
-  it("sorts a numeric column high-to-low first, then reverses on a second activation", () => {
-    render(<DataTable columns={columns} data={rows} />);
-    const countHeader = screen.getByRole("button", { name: /count/i });
+  it("reports the activated column instead of sorting itself", () => {
+    // Sort state belongs to the route's search params so the URL describes the
+    // view and Back restores it; the table only says which header was pressed.
+    const onSortChange = vi.fn();
+    render(<DataTable columns={columns} data={rows} onSortChange={onSortChange} />);
 
-    // react-table defaults numeric columns to descending on first activation,
-    // which is what an operator scanning for the largest value expects.
-    fireEvent.click(countHeader);
-    expect(names()).toEqual(["Kilifi Growers", "Watamu Fishers", "Malindi Traders"]);
-
-    fireEvent.click(countHeader);
-    expect(names()).toEqual(["Malindi Traders", "Watamu Fishers", "Kilifi Growers"]);
+    fireEvent.click(screen.getByRole("button", { name: /count/i }));
+    expect(onSortChange).toHaveBeenCalledExactlyOnceWith("count");
   });
 
-  it("sorts a text column A-to-Z first", () => {
-    render(<DataTable columns={columns} data={rows} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /name/i }));
+  it("renders rows in the order the caller's sort state describes", () => {
+    const { rerender } = render(
+      <DataTable columns={columns} data={rows} sorting={[{ id: "name", desc: false }]} />,
+    );
     expect(names()).toEqual(["Kilifi Growers", "Malindi Traders", "Watamu Fishers"]);
+
+    rerender(<DataTable columns={columns} data={rows} sorting={[{ id: "count", desc: true }]} />);
+    expect(names()).toEqual(["Kilifi Growers", "Watamu Fishers", "Malindi Traders"]);
+  });
+
+  it("shows the sort direction its caller declared", () => {
+    render(<DataTable columns={columns} data={rows} sorting={[{ id: "name", desc: true }]} />);
+    const header = screen.getByRole("button", { name: /name/i });
+    expect(header.querySelector("svg")).toBeTruthy();
   });
 
   it("gives no sort control to a column that opts out", () => {

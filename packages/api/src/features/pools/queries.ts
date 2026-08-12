@@ -14,6 +14,13 @@ import type { PoolsClient, UserPoolPage } from "./client";
  * Every key hangs off `all`, so one `invalidateQueries({ queryKey: poolKeys.all })`
  * after a deploy reaches lists, details, vouchers, filtered results and facets.
  */
+export type PoolListParams = {
+  perPage: number;
+  cursor?: number;
+  /** True steps forward from the cursor, false steps back. */
+  next?: boolean;
+};
+
 export const poolKeys = {
   all: ["clc", "pools"] as const,
 
@@ -21,8 +28,18 @@ export const poolKeys = {
    * Finite and infinite reads of the same endpoint get distinct keys: one caches
    * a single page, the other caches `{ pages, pageParams }`. Sharing a key would
    * let one shape be read as the other.
+   *
+   * Cursor and direction are part of the key because they change which rows come
+   * back. A sort column is deliberately *not*: no endpoint accepts a sort, so
+   * ordering is applied to the fetched page and re-sorting must not refetch.
    */
-  list: (perPage: number) => ["clc", "pools", "list", perPage] as const,
+  list: (params: PoolListParams) =>
+    [
+      "clc",
+      "pools",
+      "list",
+      { perPage: params.perPage, cursor: params.cursor, next: params.next },
+    ] as const,
   listInfinite: (perPage: number) => ["clc", "pools", "list", "infinite", perPage] as const,
 
   detail: (address: string) => ["clc", "pools", "detail", address.toLowerCase()] as const,
@@ -46,10 +63,12 @@ function nextPoolCursor(page: UserPoolPage, perPage: number): number | undefined
   return page.receivedCount < perPage || page.last === undefined ? undefined : page.last;
 }
 
-export function poolListQueryOptions(pools: PoolsClient, perPage: number) {
+export function poolListQueryOptions(pools: PoolsClient, params: PoolListParams) {
   return queryOptions({
-    queryKey: poolKeys.list(perPage),
-    queryFn: ({ signal }) => pools.getPools({ perPage }, signal),
+    queryKey: poolKeys.list(params),
+    queryFn: ({ signal }) => pools.getPools(params, signal),
+    // Keeps the previous page on screen while the next one loads, so paging does
+    // not blink through an empty table.
     placeholderData: keepPreviousData,
   });
 }
