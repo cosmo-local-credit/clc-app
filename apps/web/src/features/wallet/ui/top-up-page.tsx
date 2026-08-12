@@ -27,7 +27,7 @@ import {
 import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import type { PretiumCashTransaction } from "#/features/wallet/api/pretium-client";
+import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
 import {
   usePretiumTransactionsByAddress,
   useTriggerPretiumOnramp,

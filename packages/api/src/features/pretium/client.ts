@@ -1,4 +1,4 @@
-import { clcApi } from "#/lib/api";
+import type { HttpClient } from "../../client/http-client";
 
 type PretiumAsset = "USDT" | "USDC" | "cUSD";
 
@@ -62,24 +62,6 @@ const PRETIUM_GET_REQUEST: RequestInit = {
   cache: "no-store",
 };
 
-export async function triggerPretiumOnramp(
-  input: TriggerPretiumOnrampInput,
-): Promise<PretiumOnrampResult> {
-  const result = await clcApi.http.request<Partial<PretiumOnrampResult>>(
-    "/api/v2/pretium/trigger-onramp",
-    {
-      method: "POST",
-      body: JSON.stringify(input),
-    },
-  );
-
-  return {
-    transactionCode: readString(result, "transactionCode") || readString(result, "pretium_id"),
-    status: readString(result, "status") || "PENDING",
-    message: readOptionalString(result, "message") ?? undefined,
-  };
-}
-
 export type PretiumLinkStatus = {
   linked: boolean;
   phoneNumber: string;
@@ -94,52 +76,6 @@ type PretiumLinkStatusResponse = {
   linked?: unknown;
   phoneNumber?: unknown;
 };
-
-export async function getPretiumLinkByAddress(address: `0x${string}`): Promise<PretiumLinkStatus> {
-  const result = await clcApi.http.request<PretiumLinkStatusResponse>(
-    `/api/v2/pretium/link-by-address/${address}`,
-    PRETIUM_GET_REQUEST,
-  );
-  return {
-    linked: result.linked === true,
-    phoneNumber: formatValue(result.phoneNumber),
-  };
-}
-
-export async function createPretiumLink(input: CreatePretiumLinkInput): Promise<void> {
-  await clcApi.http.request("/api/v2/pretium/link", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export async function getPretiumRates(): Promise<PretiumRatesResult> {
-  const result = await clcApi.http.request<PretiumRatesResponse>(
-    "/api/v2/pretium/rates",
-    PRETIUM_GET_REQUEST,
-  );
-  return {
-    buy: formatValue(result.buy),
-    sell: formatValue(result.sell),
-  };
-}
-
-export async function getPretiumTransactionsByAddress(
-  address: `0x${string}`,
-): Promise<PretiumTransactionsByAddressResult> {
-  const result = await clcApi.http.request<PretiumTransactionsByAddressResponse>(
-    `/api/v2/pretium/transactions-by-address/${address}`,
-    PRETIUM_GET_REQUEST,
-  );
-  const onramps = readTransactionArray(result.onramps, "onramp");
-  const offramps = readTransactionArray(result.offramps, "offramp");
-  return {
-    address: formatValue(result.address) || address,
-    onramps,
-    offramps,
-    totalCount: readNumber(result, "totalCount") ?? onramps.length + offramps.length,
-  };
-}
 
 function readTransactionArray(
   value: unknown,
@@ -226,4 +162,72 @@ function formatValue(value: unknown): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export type PretiumClient = ReturnType<typeof createPretiumClient>;
+
+export function createPretiumClient(http: HttpClient) {
+  return {
+    async triggerPretiumOnramp(input: TriggerPretiumOnrampInput): Promise<PretiumOnrampResult> {
+      const result = await http.request<Partial<PretiumOnrampResult>>(
+        "/api/v2/pretium/trigger-onramp",
+        {
+          method: "POST",
+          body: JSON.stringify(input),
+        },
+      );
+
+      return {
+        transactionCode: readString(result, "transactionCode") || readString(result, "pretium_id"),
+        status: readString(result, "status") || "PENDING",
+        message: readOptionalString(result, "message") ?? undefined,
+      };
+    },
+
+    async getPretiumLinkByAddress(address: `0x${string}`): Promise<PretiumLinkStatus> {
+      const result = await http.request<PretiumLinkStatusResponse>(
+        `/api/v2/pretium/link-by-address/${address}`,
+        PRETIUM_GET_REQUEST,
+      );
+      return {
+        linked: result.linked === true,
+        phoneNumber: formatValue(result.phoneNumber),
+      };
+    },
+
+    async createPretiumLink(input: CreatePretiumLinkInput): Promise<void> {
+      await http.request("/api/v2/pretium/link", {
+        method: "POST",
+        body: JSON.stringify(input),
+      });
+    },
+
+    async getPretiumRates(): Promise<PretiumRatesResult> {
+      const result = await http.request<PretiumRatesResponse>(
+        "/api/v2/pretium/rates",
+        PRETIUM_GET_REQUEST,
+      );
+      return {
+        buy: formatValue(result.buy),
+        sell: formatValue(result.sell),
+      };
+    },
+
+    async getPretiumTransactionsByAddress(
+      address: `0x${string}`,
+    ): Promise<PretiumTransactionsByAddressResult> {
+      const result = await http.request<PretiumTransactionsByAddressResponse>(
+        `/api/v2/pretium/transactions-by-address/${address}`,
+        PRETIUM_GET_REQUEST,
+      );
+      const onramps = readTransactionArray(result.onramps, "onramp");
+      const offramps = readTransactionArray(result.offramps, "offramp");
+      return {
+        address: formatValue(result.address) || address,
+        onramps,
+        offramps,
+        totalCount: readNumber(result, "totalCount") ?? onramps.length + offramps.length,
+      };
+    },
+  };
 }
