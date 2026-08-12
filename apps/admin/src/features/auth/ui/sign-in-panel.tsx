@@ -24,7 +24,8 @@
  */
 
 import { type FormEvent, useState } from "react";
-import { FiChevronDown, FiKey, FiLoader, FiShield } from "react-icons/fi";
+import { FaChrome, FaSafari } from "react-icons/fa";
+import { FiChevronDown, FiKey, FiLoader } from "react-icons/fi";
 import { MdOutlineFingerprint } from "react-icons/md";
 
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
@@ -34,7 +35,7 @@ import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
-import { usePasskeySupport } from "../passkey-support";
+import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
 import { PaperWalletReader } from "./paper-wallet-reader";
 
@@ -110,18 +111,14 @@ export function SignInPanel() {
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex items-center gap-2 self-center">
-          <div className="flex size-6 items-center justify-center bg-primary text-primary-foreground">
-            <FiShield className="size-3.5" />
-          </div>
+          {/* The brand mark already ships in this app's public/ as the favicon. */}
+          <img src="/logo.svg" alt="" className="size-6" />
           <span className="font-heading font-semibold tracking-tight">CLC Admin</span>
         </div>
 
         <div className="border border-border bg-card">
-          <div className="space-y-1 border-b border-border p-6 text-center">
+          <div className="border-b border-border p-6 text-center">
             <h1 className="font-heading text-lg font-semibold tracking-tight">Operator sign-in</h1>
-            <p className="text-muted-foreground text-sm">
-              Use the credentials you sign into CLC with.
-            </p>
           </div>
 
           <div className="space-y-4 p-6">
@@ -134,10 +131,7 @@ export function SignInPanel() {
 
             {encryptedKey ? (
               <form onSubmit={(event) => void handleDecrypt(event)} className="space-y-3">
-                <SectionLabel>Paper wallet password</SectionLabel>
-                <p className="text-muted-foreground text-sm">
-                  This wallet is password-protected. Enter the password used when it was created.
-                </p>
+                <SectionLabel>Wallet password</SectionLabel>
                 <Input
                   type="password"
                   autoComplete="off"
@@ -181,9 +175,7 @@ export function SignInPanel() {
                 ) : null}
 
                 {passkey.status === "unsupported" ? (
-                  <p className="border border-border bg-muted p-3 text-muted-foreground text-xs">
-                    {passkey.reason}
-                  </p>
+                  <PasskeyUnavailable reason={passkey.reason} />
                 ) : null}
 
                 {passkey.status === "available" ? (
@@ -232,13 +224,12 @@ export function SignInPanel() {
                       }}
                     >
                       <SectionLabel>Private key</SectionLabel>
-                      <p className="text-muted-foreground text-xs">
-                        Paste a private key, an encrypted wallet payload, or a paper wallet link.
-                      </p>
                       <Textarea
                         value={pastedKey}
                         onChange={(event) => setPastedKey(event.target.value)}
-                        placeholder="0x..."
+                        // Covers all three accepted forms without a paragraph
+                        // explaining them.
+                        placeholder="0x…, 6P…, or a wallet link"
                         className="min-h-16 font-mono text-xs"
                         aria-label="Private key"
                         aria-invalid={!!error}
@@ -261,11 +252,39 @@ export function SignInPanel() {
           </div>
         </div>
 
-        <p className="text-center text-muted-foreground text-xs">
-          Console access requires a superadmin account. Signing in with any other account will say
-          so rather than fail silently.
-        </p>
+        <p className="text-center text-muted-foreground text-xs">Superadmin only.</p>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Why the passkey button is absent.
+ *
+ * The common case — a browser that holds no CLC passkey — says so with the two
+ * browser marks rather than a sentence naming them. The other cases are genuinely
+ * different problems and get their own short line.
+ */
+function PasskeyUnavailable({ reason }: { reason: PasskeyUnsupportedReason }) {
+  if (reason === "insecure-context" || reason === "no-webauthn") {
+    return (
+      <p className="border border-border bg-muted p-3 text-muted-foreground text-xs">
+        {reason === "insecure-context"
+          ? "Passkeys need https or localhost."
+          : "No passkey support in this browser."}
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2 border border-border bg-muted p-3">
+      <FaChrome className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <FaSafari className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="text-muted-foreground text-xs">
+        {reason === "wrong-browser"
+          ? "Passkey needs Chrome or Safari"
+          : "No passkey on this device"}
+      </span>
     </div>
   );
 }

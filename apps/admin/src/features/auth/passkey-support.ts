@@ -22,6 +22,9 @@
  * the real gating; getting condition 2 slightly wrong shows or hides a button,
  * never a wrong sign-in.
  *
+ * This module returns reason codes, not sentences. The wording lives in the UI
+ * that renders it.
+ *
  * apps/web has the mobile counterpart of this rule
  * (`isPasskeyPlatformAvailable`, Chrome Android and Safari iOS). The two are
  * separate on purpose: this console is desktop-only and that app is mobile-only,
@@ -32,14 +35,20 @@ import { useEffect, useState } from "react";
 
 export type PasskeyProvider = "apple" | "google";
 
+export type PasskeyUnsupportedReason =
+  /** Not a secure context, so the API is unavailable regardless of browser. */
+  | "insecure-context"
+  /** No WebAuthn at all. */
+  | "no-webauthn"
+  /** A capable browser, but not one holding CLC passkeys. */
+  | "wrong-browser"
+  /** The right browser, but this machine has no platform authenticator enrolled. */
+  | "no-authenticator";
+
 export type PasskeySupport =
   | { status: "checking" }
   | { status: "available"; provider: PasskeyProvider; label: string }
-  | { status: "unsupported"; reason: string };
-
-const CHROME_NOTE =
-  "Passkey sign-in needs desktop Chrome (Google Password Manager) or Safari (Apple ID). " +
-  "On any other browser, sign in with your paper wallet instead.";
+  | { status: "unsupported"; reason: PasskeyUnsupportedReason };
 
 /** Which account manager holds passkeys on this browser, if either does. */
 export function detectPasskeyProvider(userAgent: string): PasskeyProvider | null {
@@ -60,8 +69,8 @@ export function detectPasskeyProvider(userAgent: string): PasskeyProvider | null
 /**
  * The synchronous half of the check, kept pure and exported for tests.
  *
- * Returns the reason a passkey cannot be offered, or null when only the
- * asynchronous authenticator probe is left to run.
+ * Returns why a passkey cannot be offered, or null when only the asynchronous
+ * authenticator probe is left to run.
  */
 export function passkeyBlockedReason(env: {
   hasWindow: boolean;
@@ -69,15 +78,11 @@ export function passkeyBlockedReason(env: {
   hasPublicKeyCredential: boolean;
   hasCredentialsGet: boolean;
   userAgent: string;
-}): string | null {
-  if (!env.hasWindow) return "Passkeys are only available in a browser.";
-  if (!env.isSecureContext) {
-    return "Passkeys require a secure context. Open this console over https:// or on localhost.";
-  }
-  if (!env.hasPublicKeyCredential || !env.hasCredentialsGet) {
-    return `This browser does not support passkeys. ${CHROME_NOTE}`;
-  }
-  if (!detectPasskeyProvider(env.userAgent)) return CHROME_NOTE;
+}): PasskeyUnsupportedReason | null {
+  if (!env.hasWindow) return "no-webauthn";
+  if (!env.isSecureContext) return "insecure-context";
+  if (!env.hasPublicKeyCredential || !env.hasCredentialsGet) return "no-webauthn";
+  if (!detectPasskeyProvider(env.userAgent)) return "wrong-browser";
 
   return null;
 }
@@ -119,18 +124,12 @@ export function usePasskeySupport(): PasskeySupport {
                 provider,
                 label: provider === "apple" ? "Apple ID" : "Google",
               }
-            : {
-                status: "unsupported",
-                reason: `No passkey is available on this device. ${CHROME_NOTE}`,
-              },
+            : { status: "unsupported", reason: "no-authenticator" },
         );
       })
       .catch(() => {
         if (!active) return;
-        setSupport({
-          status: "unsupported",
-          reason: `This browser could not report passkey support. ${CHROME_NOTE}`,
-        });
+        setSupport({ status: "unsupported", reason: "no-authenticator" });
       });
 
     return () => {
