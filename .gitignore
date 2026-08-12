@@ -33,7 +33,10 @@ coverage
 .vscode/mcp.json
 .pi
 .claude
-scripts
+# Anchored to the repo root on purpose. As a bare pattern this also matched
+# apps/*/scripts, which silently kept committed npm scripts' targets out of the
+# repo — apps/admin/scripts/check-bundle.mjs among them.
+/scripts
 AI.md
 dev/webpush/data/
 .codex/config.toml
