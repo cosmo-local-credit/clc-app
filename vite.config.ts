@@ -174,7 +174,36 @@ export default defineConfig({
         },
       },
       {
-        files: ["apps/web/src/features/*/ui/**"],
+        // The apps are independently deployable and must never reach into each
+        // other. Shared code goes through @clc/core (pure) or @clc/api (network).
+        files: ["apps/web/src/**", "apps/admin/src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  // Matches the literal specifier, not the resolved path, so the
+                  // relative-traversal forms are listed explicitly: `../../web/src/x`
+                  // from apps/admin is exactly how this leak happens.
+                  group: [
+                    "**/web/src/**",
+                    "**/admin/src/**",
+                    "@clc/web",
+                    "@clc/web/**",
+                    "@clc/admin",
+                    "@clc/admin/**",
+                  ],
+                  message:
+                    "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["apps/web/src/features/*/ui/**", "apps/admin/src/features/*/ui/**"],
         rules: {
           "no-restricted-imports": [
             "error",
