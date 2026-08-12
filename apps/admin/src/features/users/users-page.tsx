@@ -34,25 +34,37 @@ export function UsersPage({ search }: { search: UsersSearch }) {
   const approve = useApproveUser();
   const reject = useRejectUser();
 
-  // Which row has a mutation in flight, so only its buttons show the busy state.
-  const [pendingAddress, setPendingAddress] = useState<string | null>(null);
+  // Which rows have a mutation in flight. A set, not one address: actions on two
+  // rows can overlap, and a single value would be overwritten by the second —
+  // whichever request finished first would then clear the busy state for both.
+  const [pendingAddresses, setPendingAddresses] = useState<ReadonlySet<string>>(new Set());
 
   const sorting: SortingState = search.sort ? [{ id: search.sort, desc: !!search.desc }] : [];
 
+  function markPending(address: string, pending: boolean) {
+    setPendingAddresses((current) => {
+      const next = new Set(current);
+      if (pending) next.add(address);
+      else next.delete(address);
+      return next;
+    });
+  }
+
   async function runAction(action: "approve" | "reject", user: AdminUser) {
-    setPendingAddress(user.ethereumAddress);
+    const address = user.ethereumAddress;
+    markPending(address, true);
     const mutation = action === "approve" ? approve : reject;
     try {
-      await mutation.mutateAsync(user.ethereumAddress);
+      await mutation.mutateAsync(address);
       toast.success(
-        `${user.name || formatVoucherAddress(user.ethereumAddress as `0x${string}`)} ${
+        `${user.name || formatVoucherAddress(address as `0x${string}`)} ${
           action === "approve" ? "approved" : "rejected"
         }.`,
       );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : `Could not ${action} this account.`);
     } finally {
-      setPendingAddress(null);
+      markPending(address, false);
     }
   }
 
@@ -119,7 +131,7 @@ export function UsersPage({ search }: { search: UsersSearch }) {
       enableSorting: false,
       cell: ({ row }) => {
         const user = row.original;
-        const busy = pendingAddress === user.ethereumAddress;
+        const busy = pendingAddresses.has(user.ethereumAddress);
         return (
           <div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
             {user.status !== "APPROVED" ? (
