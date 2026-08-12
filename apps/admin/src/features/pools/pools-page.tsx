@@ -2,18 +2,20 @@ import type { UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { EmptyState } from "#/components/admin/empty-state";
 import { DataTable } from "#/components/admin/data-table";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { Badge } from "#/components/ui/badge";
 import { formatFeePpm } from "#/lib/format";
 import { poolListQueryOptions } from "@clc/api/features/pools/queries";
 import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
 import type { TableSearch } from "#/lib/table-search";
+import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 
 const columns: Array<ColumnDef<UserPool>> = [
@@ -31,7 +33,17 @@ const columns: Array<ColumnDef<UserPool>> = [
     accessorKey: "address",
     header: "Address",
     cell: ({ row }) => (
-      <span className="font-data text-xs">{formatVoucherAddress(row.original.address)}</span>
+      // The accessible route to the detail screen: focusable, keyboard-operable
+      // and openable in a new tab, none of which a <tr> click handler provides.
+      // stopPropagation keeps the row handler from navigating a second time.
+      <Link
+        to="/pools/$address"
+        params={{ address: row.original.address }}
+        className="font-data text-xs underline-offset-4 hover:underline"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {formatVoucherAddress(row.original.address)}
+      </Link>
     ),
   },
   {
@@ -90,6 +102,9 @@ export function PoolsPage({ search }: { search: TableSearch }) {
   );
 
   const pools = poolsQuery.data?.pools ?? [];
+  // Resolved rather than read off isError directly: a failed refresh with rows
+  // still cached is `stale`, and must keep showing them.
+  const listState = useDataState(poolsQuery, (page) => page.pools.length === 0);
   const dropped = (poolsQuery.data?.receivedCount ?? 0) - pools.length;
   const table = usePagedTable({
     search,
@@ -108,15 +123,13 @@ export function PoolsPage({ search }: { search: TableSearch }) {
         }
       />
 
-      {poolsQuery.isPending ? (
+      {listState.kind === "pending" ? (
         <LoadingBlock rows={8} />
-      ) : poolsQuery.isError ? (
-        <PageState
-          title="Could not load pools"
-          message={poolsQuery.error instanceof Error ? poolsQuery.error.message : "Request failed."}
-        />
+      ) : listState.kind === "error" ? (
+        <PageState title="Could not load pools" message={listState.message} />
       ) : (
         <>
+          {listState.kind === "stale" ? <StaleNotice message={listState.message} /> : null}
           <DataTable
             columns={columns}
             data={pools}
