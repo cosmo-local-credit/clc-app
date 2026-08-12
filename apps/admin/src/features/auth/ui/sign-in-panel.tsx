@@ -8,10 +8,10 @@
  *
  * Layout follows shadcn's login-03 block — centered single column, brand mark
  * above the panel, centered heading, providers first, separator, then the
- * fallback credential, footer note below. The treatment is Lyra rather than
- * shadcn's default: the container is `border border-border bg-card` rather than
- * `<Card>`, which admin reserves for sections inside the shell, and corners stay
- * square because admin zeroes the radius tokens outright.
+ * fallback credential. The treatment is Lyra rather than shadcn's default: the
+ * container is `border border-border bg-card` rather than `<Card>`, which admin
+ * reserves for sections inside the shell, and corners stay square because admin
+ * zeroes the radius tokens outright.
  *
  * Credential order matches how operators actually hold their keys. A paper wallet
  * is a printed QR code, so uploading or scanning it is the path; typing a raw
@@ -19,8 +19,10 @@
  * mirrors apps/web, where the scanner is primary and the key field sits under
  * "Advanced options".
  *
- * The role gate lives in admin-session.ts, so a successful sign-in by a
- * non-superadmin lands on the "not authorized" screen instead of failing here.
+ * The role gate lives in admin-session.ts. A session that lacks the role, or a
+ * check that failed, brings the operator here with a `notice` rather than to a
+ * dead-end screen — signing in with the right wallet is the recovery, and it
+ * replaces the cookie in place.
  */
 
 import { type FormEvent, useState } from "react";
@@ -31,18 +33,31 @@ import { MdOutlineFingerprint } from "react-icons/md";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
-import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Textarea } from "#/components/ui/textarea";
+import { useAdminSignOut } from "../admin-session";
 import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
 import { PaperWalletReader } from "./paper-wallet-reader";
 
-export function SignInPanel() {
+/**
+ * Why the operator is looking at sign-in when they did not ask for it — a session
+ * that lacks the role, or a check that failed.
+ */
+export type SignInNotice = {
+  title: string;
+  description: string;
+  /** True when a session cookie is still set, so signing out is worth offering. */
+  signedIn?: boolean;
+};
+
+export function SignInPanel({ notice }: { notice?: SignInNotice }) {
   const privateKeySignin = useAdminPrivateKeySignin();
   const passkeySignin = useAdminPasskeySignin();
   const passkey = usePasskeySupport();
+  const signOut = useAdminSignOut();
 
   const [encryptedKey, setEncryptedKey] = useState<string | null>(null);
   const [passphrase, setPassphrase] = useState("");
@@ -116,9 +131,28 @@ export function SignInPanel() {
           <span className="font-heading font-semibold tracking-tight">CLC Admin</span>
         </div>
 
+        {notice ? (
+          <Alert variant="destructive">
+            <AlertTitle>{notice.title}</AlertTitle>
+            <AlertDescription>{notice.description}</AlertDescription>
+            {notice.signedIn ? (
+              <AlertAction>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={signOut.isPending}
+                  onClick={() => signOut.mutate()}
+                >
+                  {signOut.isPending ? "Signing out..." : "Sign out"}
+                </Button>
+              </AlertAction>
+            ) : null}
+          </Alert>
+        ) : null}
+
         <div className="border border-border bg-card">
           <div className="border-b border-border p-6 text-center">
-            <h1 className="font-heading text-lg font-semibold tracking-tight">Operator sign-in</h1>
+            <h1 className="font-heading text-lg font-semibold tracking-tight">Sign in</h1>
           </div>
 
           <div className="space-y-4 p-6">
@@ -251,8 +285,6 @@ export function SignInPanel() {
             )}
           </div>
         </div>
-
-        <p className="text-center text-muted-foreground text-xs">Superadmin only.</p>
       </div>
     </div>
   );

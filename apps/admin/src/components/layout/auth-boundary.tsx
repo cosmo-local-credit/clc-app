@@ -1,13 +1,8 @@
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { lazy, type ReactNode, Suspense } from "react";
 import { LoadingBlock } from "#/components/admin/loading-block";
-import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
-import { Button } from "#/components/ui/button";
-import {
-  type AdminSession,
-  SUPERADMIN_ROLE,
-  useAdminSession,
-  useAdminSignOut,
-} from "#/features/auth/admin-session";
+import { type AdminSession, SUPERADMIN_ROLE, useAdminSession } from "#/features/auth/admin-session";
+import type { SignInNotice } from "#/features/auth/ui/sign-in-panel";
 
 /**
  * Gate for every admin surface.
@@ -36,75 +31,40 @@ export function AuthBoundary({ children }: { children: ReactNode }) {
 
   if (session.status === "authenticated") return <>{children}</>;
 
-  if (session.status === "unauthenticated") {
-    return (
-      <Suspense
-        fallback={
-          <div className="p-6">
-            <LoadingBlock rows={4} />
-          </div>
-        }
-      >
-        <SignInPanel />
-      </Suspense>
-    );
-  }
-
-  return <BlockedScreen session={session} />;
-}
-
-/**
- * The states that withhold the console from someone who already has a session.
- *
- * Both offer sign-out: an operator who signed in with the wrong account, or
- * against a backend that cannot report their role, would otherwise have no way
- * back to the sign-in panel.
- */
-function BlockedScreen({
-  session,
-}: {
-  session: Extract<AdminSession, { status: "unauthorized" } | { status: "unavailable" }>;
-}) {
-  const signOut = useAdminSignOut();
-  const { title, description } = blockedCopy(session);
-
+  // Every other state lands on sign-in, carrying a notice when there is something
+  // to explain. An operator holding the wrong account recovers by signing in with
+  // the right one, so the form is the destination rather than a dead-end screen.
   return (
-    <div className="flex min-h-screen items-start justify-center p-6">
-      <Alert className="max-w-lg">
-        <AlertTitle>{title}</AlertTitle>
-        <AlertDescription className="space-y-3">
-          <p>{description}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={signOut.isPending}
-            onClick={() => signOut.mutate()}
-          >
-            {signOut.isPending ? "Signing out..." : "Sign out"}
-          </Button>
-        </AlertDescription>
-      </Alert>
-    </div>
+    <Suspense
+      fallback={
+        <div className="p-6">
+          <LoadingBlock rows={4} />
+        </div>
+      }
+    >
+      <SignInPanel notice={noticeFor(session)} />
+    </Suspense>
   );
 }
 
 /** Exhaustive over the blocked states, so a new one fails to compile until handled. */
-function blockedCopy(
-  session: Extract<AdminSession, { status: "unauthorized" } | { status: "unavailable" }>,
-): { title: string; description: string } {
+function noticeFor(
+  session: Exclude<AdminSession, { status: "loading" } | { status: "authenticated" }>,
+): SignInNotice | undefined {
   switch (session.status) {
+    case "unauthenticated":
+      return undefined;
     case "unauthorized":
+      // Address, current role, required role — and nothing else.
       return {
         title: "Not authorized",
         description:
-          `Signed in as ${session.operator.address} with the role ${session.operator.role}. ` +
-          `This console requires ${SUPERADMIN_ROLE}. Ask a superadmin to change the role on this ` +
-          "account — signing in again will not help.",
+          `${formatVoucherAddress(session.operator.address as `0x${string}`)} is ` +
+          `${session.operator.role}. Requires ${SUPERADMIN_ROLE}.`,
+        // A stale session cookie is still set, so offer the way out of it.
+        signedIn: true,
       };
     case "unavailable":
-      return {
-        title: "Could not verify your session",
-        description: `${session.message} The console stays locked until the check succeeds.`,
-      };
+      return { title: "Session check failed", description: session.message };
   }
 }
