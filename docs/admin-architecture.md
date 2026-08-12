@@ -344,28 +344,48 @@ promoted into global `QueryClient` defaults.
 
 ## Admin authentication and authorization
 
-The current stub session must not be part of a production build.
+**Resolved. No new backend session resource was needed.**
 
-Add backend resources for:
+An earlier draft of this section called for `GET /api/v2/admin/session` plus
+operator permission claims, and for a stub session guarded out of production
+builds. Both were unnecessary: clc-core already authenticates the credentials
+operators hold, and already records the privilege that matters.
 
-- `GET /api/v2/admin/session`
-- Operator role and permission claims.
-- Logout/session invalidation if it differs from the user app.
+Operators sign in with the same credentials as `apps/web` — a paper wallet
+(SIWE over the private key) or a passkey — and the console is gated on
+`role === "SUPERADMIN"`, which `requireSuperAdmin` already enforces on every
+`/api/v2/admin` endpoint. `POST /auth/signin` and `POST /auth/webauthn/verify`
+already returned the role; the only backend change was adding it to
+`GET /auth/session` so the gate survives a page reload instead of being
+re-derived by probing an admin endpoint for a 403.
 
-The backend is the security authority. Every admin endpoint must enforce the
-required permission; the React route gate is only a UX seam.
+Reusing the web app's credentials is not the same as reusing its
+wallet-connected state as proof of privilege — the role comes from the backend's
+own record of the account, on every session check.
 
-The admin app should model these states distinctly:
+The console models these states distinctly, in
+`apps/admin/src/features/auth/admin-session.ts`:
 
 - Session loading.
-- Authenticated operator.
-- Unauthenticated.
-- Authenticated but unauthorized.
-- Session check unavailable.
+- Authenticated superadmin.
+- Unauthenticated — renders sign-in inline, wherever the operator landed.
+- Authenticated but not a superadmin — offers sign-out, not another sign-in.
+- Session check unavailable, which includes a backend that does not report the
+  role at all. Treating a missing role as "not privileged" would deny a real
+  superadmin and send them hunting a permission problem that does not exist.
 
-Add a production build guard that fails when stub authentication is enabled.
-Do not silently reuse the web app's wallet-authenticated state as proof of an
-operator role.
+The backend remains the security authority; the route gate is only a UX seam.
+
+Two environment constraints belong to passkey sign-in specifically, both
+enforced in clc-core rather than the client:
+
+- The console's origin must appear in `relayer.allowed_origins`, which
+  `internal/relayer/webauthn.go` checks against the assertion's
+  `clientDataJSON.origin`.
+- A credential is bound to the `relying_party_id` it was registered under, so
+  the console must be served from that host. Paper-wallet sign-in has neither
+  constraint — the SIWE handler validates only the signature, the claimed
+  address and the nonce.
 
 ## Correct pagination, filtering, and sorting
 
@@ -502,8 +522,9 @@ discarding the successfully loaded parent resource.
   run; unused _files_ in `components/ui` are still reported.
 
   A config that throws on load breaks knip, which reads `vite.config.ts` without
-  building. The stub-auth guard therefore runs in a build-only `buildStart` hook,
-  not at config evaluation.
+  building. Any future guard belongs in a build-only `buildStart` hook, not at
+  config evaluation — the stub-auth guard that taught this lesson has since been
+  deleted along with the stub itself.
 
 - Preserve route-level code splitting through thin route files and feature page
   modules. Do not use inline dynamic imports.
@@ -587,7 +608,7 @@ Test through module interfaces rather than implementation details.
 ### `apps/admin`
 
 - Auth boundary behavior for every session state.
-- Production rejection of stub auth.
+- Refusal to authorize a session whose role is absent or not `SUPERADMIN`.
 - Error versus empty versus stale-data rendering.
 - Overview does not turn a failed resource into zero.
 - Typed search-param normalization.
@@ -621,8 +642,7 @@ indistinguishable from a healthy empty backend.
 1. Add explicit error states to every query-backed surface, including each
    independent detail section.
 2. Label page-derived figures as samples per the interim contract below.
-3. Add a production build guard that fails when stub authentication is enabled.
-4. Add regression tests for error, partial, stale, and empty states, and for the
+3. Add regression tests for error, partial, stale, and empty states, and for the
    auth gate in every session state.
 
 **A2. Establish one backend client owner.**
@@ -668,29 +688,36 @@ indistinguishable from a healthy empty backend.
 Each item needs an owner in `clc-core` before it can be scheduled. Until then the
 interim behavior in the next section applies.
 
-**B0. Unblock local development.** Do first; it is small and gates all UI
-verification against real data.
+**B0. Unblock local development. Done.** Two claims in the first draft of this
+item were wrong, and checking `clc-core` rather than assuming is what corrected
+them:
 
-1. Allow `http://localhost:3001` in the staging CORS allowlist.
-2. Provide a supported development admin session or authentication path.
+1. `http://localhost:3001` was **already** in `api.cors`. No change was needed
+   for local development; confirm the staging allowlist separately, since it is
+   configured per environment.
+2. The development session was **already possible** — `/auth/signin` accepts the
+   credentials operators already hold. What was actually missing was `role` on
+   `GET /auth/session`, now added, plus `:3001` in `relayer.allowed_origins` for
+   passkey sign-in.
 
-CORS alone is not sufficient. It unlocks the public voucher resources, but
-`/api/v2/pools` returns 401 without a session, so pools, the operator directory
-and the pool-derived overview figures stay empty until item 2 also lands.
-
-**B1. Operator session and authorization.** Backend session endpoint, role and
-permission claims, per-endpoint enforcement, and logout semantics if they differ
-from the user app. Unblocks replacing the stub behind the existing
-`AuthBoundary` seam, and production cookie/domain configuration.
+**B1. Operator session and authorization. Done, without new backend surface.**
+See "Admin authentication and authorization" above. `requireSuperAdmin` already
+enforced per-endpoint authorization, and `/auth/logout` already covered logout;
+production cookie and domain configuration remains an environment task.
 
 **B2. Overview aggregates.** `GET /api/v2/admin/overview` with bounded payload
-and coverage metadata. Unblocks real totals and charts.
+and coverage metadata. Unblocks real totals and charts. **Still outstanding.**
 
-**B3. Paginated operator directory.** Unblocks replacing the ownership-derived
-table.
+**B3. Paginated operator directory.** A directory endpoint **already exists** —
+`GET /api/v2/admin/users`, with an optional `?status=` filter — so the earlier
+claim that none did was wrong, and the ownership-derived table can be replaced
+without any new endpoint. What it lacks is pagination: `?perPage=1` returns every
+row. Adding cursor parameters there is the remaining work, and it is much smaller
+than a new resource.
 
 **B4. Server-side sorting and filtering parameters.** Unblocks moving sort and
-filter out of the client once a resource spans more than one page.
+filter out of the client once a resource spans more than one page. **Still
+outstanding**, and it applies to the admin lists too, for the same reason as B3.
 
 Do not run production builds automatically during normal edits; run the admin
 build in CI or as an explicit release verification step.
@@ -700,14 +727,15 @@ build in CI or as an explicit release verification step.
 This is the contract that lets Track A proceed without making incomplete data
 look authoritative. Each row applies until its Track B item lands.
 
-| Missing backend capability | Required client behavior                                                     |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| Admin session              | Development-only stub; production build blocked                              |
-| Overview endpoint          | Label figures as a page sample; never call them totals                       |
-| Operator endpoint          | Label the table "pool owners in this page"; not a user or operator directory |
-| Server sorting             | Sort the current page only, labelled as such                                 |
-| Server filtering           | Do not expose filters that imply global results                              |
-| Total or `hasNextPage`     | Show "N shown" with cursor controls; do not claim completeness               |
+| Missing backend capability | Required client behavior                                                |
+| -------------------------- | ----------------------------------------------------------------------- |
+| ~~Admin session~~          | Resolved — real superadmin session, no stub in any build                |
+| Overview endpoint          | Label figures as a page sample; never call them totals                  |
+| ~~Operator endpoint~~      | Resolved — `/api/v2/admin/users` exists; see B3 for its pagination gap  |
+| Unpaginated admin list     | Show every row returned and say so; do not imply a page of a larger set |
+| Server sorting             | Sort the current page only, labelled as such                            |
+| Server filtering           | Do not expose filters that imply global results                         |
+| Total or `hasNextPage`     | Show "N shown" with cursor controls; do not claim completeness          |
 
 ## Acceptance criteria
 
@@ -727,20 +755,22 @@ another repository.
 - Each app can tune freshness and orchestration without editing the other app.
 - Errors and partial coverage cannot render as valid zero or empty data.
 - No figure derived from one cursor page is presented as a total.
-- Stub authentication cannot ship in production.
+- Console access requires a backend-reported `SUPERADMIN` role, and no stub
+  session exists in any build.
 - Admin list state is URL-addressable and Back/Forward safe.
 - Admin routes do not download complete catalogs.
 - Lint, tests, cycle checks, and the request/payload/bundle budgets pass.
 
 ### Fully complete — requires Track B
 
-- Every admin endpoint enforces backend authorization.
-- No stub session exists in any build.
+- ~~Every admin endpoint enforces backend authorization.~~ Already true via
+  `requireSuperAdmin`.
+- ~~No stub session exists in any build.~~ Done.
 - First overview data uses no more than the session and aggregate requests.
 - Admin totals come from aggregates, not samples, and no "sample" labelling
   remains.
-- The operator directory is a paginated backend resource, not derived from pool
-  ownership.
+- The operator directory reads `/api/v2/admin/users` rather than being derived
+  from pool ownership, and that endpoint accepts cursor parameters.
 - Sorting and filtering across multi-page resources happen server-side.
 
 ## Explicit non-goals
