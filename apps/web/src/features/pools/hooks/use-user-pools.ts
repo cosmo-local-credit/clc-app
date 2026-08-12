@@ -1,19 +1,9 @@
-import {
-  poolKeys,
-  poolListInfiniteQueryOptions,
-  poolQueryOptions,
-} from "@clc/api/features/pools/queries";
+import { poolListInfiniteQueryOptions, poolQueryOptions } from "@clc/api/features/pools/queries";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { clcApi } from "#/lib/api";
 
 /** Matches activity / account list page size so infinite scroll pages meaningfully. */
 const DEFAULT_POOLS_PAGE_SIZE = 20;
-
-/**
- * Re-exported so callers that only need to invalidate pool data do not each
- * reach into @clc/api. The keys themselves are canonical and live there.
- */
-export { poolKeys };
 
 export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({

@@ -18,10 +18,10 @@ export type PageSize = (typeof PAGE_SIZES)[number];
 
 export const DEFAULT_PAGE_SIZE: PageSize = 25;
 
-export type SortOrder = "asc" | "desc";
+type SortOrder = "asc" | "desc";
 
 /** Which direction the cursor was applied in; the same value means different pages. */
-export type CursorDirection = "next" | "prev";
+type CursorDirection = "next" | "prev";
 
 export type TableSearch = {
   perPage: PageSize;

@@ -6,8 +6,6 @@ import type { OtxRecord, OtxTrackingOutcome, OtxTrackResult } from "../auth/clie
 
 const POOL_TERMINAL_OTX_TYPE = "POOL_PROXY_DEPLOY";
 
-export type PoolDeployClient = ReturnType<typeof createPoolDeployClient>;
-
 export function createPoolDeployClient(http: HttpClient) {
   return {
     async deployPool(payload: PoolDeployPayload): Promise<{ trackingId: string }> {

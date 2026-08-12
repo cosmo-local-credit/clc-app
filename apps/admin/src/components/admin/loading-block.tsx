@@ -10,13 +10,3 @@ export function LoadingBlock({ rows = 4, className }: { rows?: number; className
     </div>
   );
 }
-
-export function MetricGridSkeleton({ count = 4 }: { count?: number }) {
-  return (
-    <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: count }, (_, index) => (
-        <Skeleton key={index} className="h-24 w-full" />
-      ))}
-    </div>
-  );
-}

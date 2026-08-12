@@ -16,8 +16,12 @@
       "ignoreIssues": {
         "src/features/pool-swaps/logic.ts": ["exports"],
         "src/features/webauthn/types.ts": ["exports", "types"],
-        "src/lib/api/**": ["exports"],
         "src/lib/query/**": ["exports"]
+      }
+    },
+    "apps/admin": {
+      "ignoreIssues": {
+        "src/components/ui/**": ["exports", "types"]
       }
     }
   }

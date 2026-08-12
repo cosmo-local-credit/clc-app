@@ -38,8 +38,6 @@ const DEPLOYMENT_LABELS: Record<DeploymentContractType, { noun: string; sentence
   TOKEN: { noun: "voucher", sentenceNoun: "Voucher" },
 };
 
-export type DeploymentsClient = ReturnType<typeof createDeploymentsClient>;
-
 export function createDeploymentsClient(http: HttpClient) {
   return {
     async getTokenTags(signal?: AbortSignal): Promise<string[]> {
