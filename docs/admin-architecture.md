@@ -166,13 +166,19 @@ one configured client instance, owned by each app:
 ```ts
 // apps/<app>/src/lib/api.ts — one immutable instance per app
 export const clcApi = createClcApi({
-  baseUrl: requiredApiUrl,
-  fetch: globalThis.fetch,
+  baseUrl: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? DEV_FALLBACK : ""),
 });
 
 // at a call site — plain per-resource query factory, given a resource client
 useQuery(poolQueryOptions(clcApi.pools, params));
 ```
+
+**Do not pass `fetch: globalThis.fetch` here.** It reads as harmless explicitness
+but pins the real implementation at import time, so every `vi.stubGlobal("fetch",
+…)` in the suite is bypassed and tests issue real network calls — this was
+observed as 151 failing tests hitting staging for real. The client resolves the
+platform `fetch` per request when none is supplied. Inject one only when the
+caller genuinely has a different implementation to supply, as tests do.
 
 There is deliberately **no `createClcQueries(api)` registry**. A single object
 spanning every resource becomes shallow plumbing and contradicts both "prefer
@@ -239,9 +245,27 @@ type BackendErrorKind =
 | 409, or code `E17`                | `conflict`                    |
 | 429                               | `rate-limited`                |
 | 5xx                               | `server`                      |
-| Invalid or non-JSON response body | `protocol`                    |
+| Non-JSON body on a success status | `protocol`                    |
+| Non-JSON body on an error status  | by that status                |
 | Rejected `fetch`                  | `network`                     |
+| Aborted request                   | not converted; rethrown as-is |
 | 200 with `ok: false`              | by `code`, else `application` |
+| Any other 4xx                     | `application`                 |
+
+Two refinements to the raw "non-JSON → `protocol`" rule, both chosen so the retry
+policy behaves correctly:
+
+- A 502 serving an HTML gateway page is a **server** fault that happens to be
+  unintelligible, and is worth retrying. Classifying it as `protocol` would make
+  it permanent. So an unparseable body is classified by its status whenever that
+  status is already an error; `protocol` is reserved for a _successful_ response
+  that broke the contract, which no retry can fix.
+- An `AbortError` is never converted to a `BackendApiError`. React Query cancels
+  superseded queries routinely, and surfacing that as a backend failure would
+  make every filter keystroke look like an outage.
+
+An unmapped 4xx is `application` rather than `validation`, since `validation`
+implies the caller can fix the payload, which a 405 or 418 does not.
 
 **Retry policy.** Only `network` and `server` receive the normal automatic
 retry. `rate-limited` must respect `Retry-After` via `retryAfterMs` rather than
