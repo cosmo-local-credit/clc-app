@@ -1,32 +1,35 @@
 /**
- * Admin session — STUBBED.
+ * The admin session.
  *
- * The real mechanism is not built yet: clc-core exposes no back-office session
- * endpoint or operator roles, and the user-facing passkey + wallet session in
- * apps/web is the wrong shape for an operator console. See
- * docs/admin-architecture.md, Track B1.
+ * Operators sign in with the same credentials they use on apps/web — a paper
+ * wallet (SIWE over a private key) or a passkey — and the console is gated on the
+ * role clc-core reports for that account. `SUPERADMIN` is the gate; nothing
+ * finer-grained exists on the backend, so nothing finer-grained is modelled here.
  *
- * This module is the single seam where that lands. Replacing `resolveSession`'s
- * request is the whole of the client-side work; the route guard, the shell and
- * every surface already read through `useAdminSession`.
+ * This module is the only place the gate is decided. The route guard
+ * (components/layout/auth-boundary.tsx), the shell and every surface read through
+ * `useAdminSession`, so a change to the rule lands in one place.
  *
- * The state union deliberately models all five cases the architecture requires,
- * including ones the stub cannot currently produce, so that adding the real
- * request cannot silently skip a case — an unhandled status becomes a type error
- * at the boundary rather than a blank screen.
+ * This is a UX gate only. clc-core enforces `requireSuperAdmin` on every
+ * /api/v2/admin endpoint and remains the security authority — what renders here
+ * cannot grant access the backend withholds.
  */
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { BackendApiError } from "@clc/api/client/errors";
+import type { SessionResult } from "@clc/api/features/auth/client";
+import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
 
-type AdminRole = "steward" | "operator" | "auditor";
+/** The one role that may use this console. */
+export const SUPERADMIN_ROLE = "SUPERADMIN";
 
-export type AdminOperator = {
+/** Reached through `AdminSession`, so consumers never need the name. */
+type AdminOperator = {
   address: string;
-  name: string;
-  role: AdminRole;
-  /** Permissions the backend granted. Empty until Track B1 supplies them. */
-  permissions: ReadonlyArray<string>;
+  /** The raw role string from clc-core, shown as-is when access is refused. */
+  role: string;
 };
 
 export type AdminSession =
@@ -36,66 +39,87 @@ export type AdminSession =
   | { status: "unauthorized"; operator: AdminOperator }
   | { status: "unavailable"; message: string };
 
-/**
- * True while the session is a stub rather than a real backend session.
- *
- * Env-driven rather than hard-coded so the production build guard in
- * vite.config.ts can refuse to ship it. Enabled via VITE_ADMIN_STUB_AUTH in
- * apps/admin/.env; absent from any release build.
- */
-export const IS_STUB_SESSION = import.meta.env.VITE_ADMIN_STUB_AUTH === "true";
-
-const adminSessionQueryKey = ["admin", "session"] as const;
-
-/** The permission every admin surface currently requires. */
-export const ADMIN_CONSOLE_PERMISSION = "admin:console";
-
-// Stub operator. Deliberately obvious in the UI so a stubbed session is never
-// mistaken for a real one, and deliberately granted the console permission so the
-// authorization path is exercised in development rather than bypassed.
-const STUB_OPERATOR: AdminOperator = {
-  address: "0x0000000000000000000000000000000000000000",
-  name: "Stub operator",
-  role: "steward",
-  permissions: [ADMIN_CONSOLE_PERMISSION],
-};
-
-function fetchSession(): Promise<AdminOperator | null> {
-  // With the stub disabled there is no session mechanism yet, so the console is
-  // unauthenticated rather than silently open.
-  return Promise.resolve(IS_STUB_SESSION ? STUB_OPERATOR : null);
-}
+export const adminSessionQueryKey = ["admin", "session"] as const;
 
 /**
  * Maps the session request's outcome to the five states.
  *
- * Pure and exported so every state can be tested without a query client. The
- * backend remains the security authority — this only decides what the console
- * shows. An operator lacking the permission is `unauthorized`, not
- * `unauthenticated`: they are signed in, and telling them to sign in again would
- * be a dead end.
+ * Pure and exported so every state can be tested without a query client.
+ *
+ * A signed-in operator without the role is `unauthorized`, not
+ * `unauthenticated`: they hold a valid session, and telling them to sign in
+ * again would be a dead end.
+ *
+ * A session whose role the backend does not report is `unavailable`, not
+ * `unauthorized`. Older deployments omit the field, and denying a real superadmin
+ * with "not authorized" would send them looking for a permission problem that
+ * does not exist.
  */
 export function resolveSession(query: {
   isPending: boolean;
   isError: boolean;
   error: unknown;
-  data: AdminOperator | null | undefined;
+  data: SessionResult | null | undefined;
 }): AdminSession {
   if (query.isPending) return { status: "loading" };
-  if (query.isError) return { status: "unavailable", message: errorMessage(query.error) };
+
+  if (query.isError) {
+    // /auth/session answers 204 rather than 401 when the cookie is missing or
+    // expired, so an unauthenticated error is unexpected — handled anyway, since
+    // showing "could not verify your session" to someone who simply needs to
+    // sign in would hide the fix.
+    if (query.error instanceof BackendApiError && query.error.kind === "unauthenticated") {
+      return { status: "unauthenticated" };
+    }
+    return { status: "unavailable", message: errorMessage(query.error) };
+  }
+
   if (!query.data) return { status: "unauthenticated" };
-  return query.data.permissions.includes(ADMIN_CONSOLE_PERMISSION)
-    ? { status: "authenticated", operator: query.data }
-    : { status: "unauthorized", operator: query.data };
+
+  const { address, role } = query.data;
+  if (!role) {
+    return {
+      status: "unavailable",
+      message:
+        "This backend does not report the role of a session, so operator access cannot be verified.",
+    };
+  }
+
+  const operator: AdminOperator = { address, role };
+  return role === SUPERADMIN_ROLE
+    ? { status: "authenticated", operator }
+    : { status: "unauthorized", operator };
 }
 
 export function useAdminSession(): AdminSession {
   const query = useQuery({
     queryKey: adminSessionQueryKey,
-    queryFn: fetchSession,
+    queryFn: () => clcApi.auth.getSession(),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+    // A failed session check is a state to render, not something to retry behind
+    // the operator's back while the console sits on a spinner.
+    retry: false,
   });
 
   return resolveSession(query);
+}
+
+/**
+ * Ends the session.
+ *
+ * Reachable from the shell and from the `unauthorized` screen — an operator who
+ * signed in with the wrong account must be able to get back to sign-in.
+ */
+export function useAdminSignOut() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => clcApi.auth.logout(),
+    onSettled: async () => {
+      // Settled, not success: if the request failed the cookie may still be gone,
+      // and a stale "authenticated" console is the worse outcome.
+      await queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
+    },
+  });
 }

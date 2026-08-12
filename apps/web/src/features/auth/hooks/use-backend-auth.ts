@@ -1,13 +1,12 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useMutation } from "@tanstack/react-query";
-import { privateKeyToAccount } from "viem/accounts";
 import { signMessage } from "wagmi/actions";
 
 import {
+  privateKeySigner,
   signInWithSiwe,
   signSiweMessage,
   type SiweRequest,
-  type SiweSigner,
 } from "@clc/api/features/auth/siwe";
 import { wagmiConfig } from "#/providers/web3-config";
 import { clcApi } from "#/lib/api";
@@ -26,14 +25,6 @@ function siweRequest(statement: string): SiweRequest {
     uri: window.location.origin,
     chainId: CHAIN_ID,
     statement,
-  };
-}
-
-function privateKeySigner(privateKey: `0x${string}`): SiweSigner & { address: `0x${string}` } {
-  const account = privateKeyToAccount(privateKey);
-  return {
-    address: account.address,
-    signMessage: (message) => account.signMessage({ message }),
   };
 }
 
