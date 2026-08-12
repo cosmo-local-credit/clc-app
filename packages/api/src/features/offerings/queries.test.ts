@@ -17,9 +17,9 @@ describe("offeringKeys", () => {
   it("hangs every key off `all`", () => {
     for (const key of [
       offeringKeys.byVoucher(ADDRESS, 20),
-      offeringKeys.byVoucherInfinite(ADDRESS),
+      offeringKeys.byVoucherInfinite(ADDRESS, 20),
       offeringKeys.byPool(ADDRESS, 20),
-      offeringKeys.byPoolInfinite(ADDRESS),
+      offeringKeys.byPoolInfinite(ADDRESS, 20),
     ]) {
       expect(key.slice(0, offeringKeys.all.length)).toEqual([...offeringKeys.all]);
     }
@@ -27,20 +27,32 @@ describe("offeringKeys", () => {
 
   it("keeps voucher-scoped and pool-scoped reads apart", () => {
     // The same address could name either, and they are different resources.
-    expect(offeringKeys.byVoucherInfinite(ADDRESS)).not.toEqual(
-      offeringKeys.byPoolInfinite(ADDRESS),
+    expect(offeringKeys.byVoucherInfinite(ADDRESS, 20)).not.toEqual(
+      offeringKeys.byPoolInfinite(ADDRESS, 20),
     );
   });
 
   it("gives finite and infinite reads distinct keys", () => {
     expect(offeringKeys.byVoucher(ADDRESS, 20)).not.toEqual(
-      offeringKeys.byVoucherInfinite(ADDRESS),
+      offeringKeys.byVoucherInfinite(ADDRESS, 20),
     );
   });
 
   it("normalizes address casing", () => {
-    expect(offeringKeys.byVoucherInfinite(ADDRESS)).toEqual(
-      offeringKeys.byVoucherInfinite(ADDRESS.toLowerCase()),
+    expect(offeringKeys.byVoucherInfinite(ADDRESS, 20)).toEqual(
+      offeringKeys.byVoucherInfinite(ADDRESS.toLowerCase(), 20),
+    );
+  });
+
+  it("separates infinite reads by page size", () => {
+    // perPage decides both the request size and the cursor termination rule, so
+    // two page sizes sharing one InfiniteData would give at least one of them
+    // page boundaries it never asked for.
+    expect(offeringKeys.byVoucherInfinite(ADDRESS, 20)).not.toEqual(
+      offeringKeys.byVoucherInfinite(ADDRESS, 50),
+    );
+    expect(offeringKeys.byPoolInfinite(ADDRESS, 20)).not.toEqual(
+      offeringKeys.byPoolInfinite(ADDRESS, 50),
     );
   });
 });

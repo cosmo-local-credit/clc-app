@@ -19,36 +19,62 @@ export function useAdminUsers(status?: AdminUserStatus) {
 }
 
 /**
- * Replaces one account in every cached list that holds it.
+ * Replaces one account in every cached list, dropping it from the lists it no
+ * longer belongs to.
  *
- * Every status filter is its own cache entry, so an approval has to reach all of
- * them — and a row whose new status no longer matches a filtered list is dropped
- * from it rather than left showing a stale status.
+ * Every status filter is a separate cache entry keyed by that status, so an
+ * approval has to reach all of them — and approving from the Pending view must
+ * remove the row there, not leave an APPROVED account sitting under Pending.
+ * Whether a row belongs is decided from the key, which is the only place the
+ * filter is recorded.
  */
 function useWriteUserToCache() {
   const queryClient = useQueryClient();
 
   return (updated: AdminUser) => {
-    queryClient.setQueriesData<Array<AdminUser>>(
-      { queryKey: [...adminKeys.all, "users"] },
-      (cached) => {
+    // Each entry is updated by key rather than through `setQueriesData`, whose
+    // updater receives only the old data — without the key there is no way to
+    // know which status a given cache entry was filtered by.
+    const entries = queryClient.getQueryCache().findAll({
+      queryKey: [...adminKeys.all, "users"],
+    });
+
+    for (const entry of entries) {
+      const filter = statusFilterOf(entry.queryKey);
+
+      queryClient.setQueryData<Array<AdminUser>>(entry.queryKey, (cached) => {
         if (!cached) return cached;
+
         return cached.flatMap((user) => {
           if (user.ethereumAddress.toLowerCase() !== updated.ethereumAddress.toLowerCase()) {
             return [user];
           }
-          return [updated];
+          // The unfiltered list keeps every row; a filtered list keeps it only
+          // while it still matches that filter.
+          return filter === undefined || filter === updated.status ? [updated] : [];
         });
-      },
-    );
+      });
+    }
 
-    // The filtered lists are the ones that may now hold a row that no longer
-    // belongs, so let the server decide their contents on next read.
+    // No refetch is forced: the writes above are already consistent, and this
+    // endpoint returns every account, so a refetch per approval would re-download
+    // the whole directory. Marking stale is enough for the next visit.
     void queryClient.invalidateQueries({
       queryKey: [...adminKeys.all, "users"],
       refetchType: "none",
     });
   };
+}
+
+/**
+ * The status a cached list was filtered by, or undefined for the unfiltered list.
+ *
+ * `adminKeys.users` puts the filter last, using the literal "all" when there is
+ * none — see packages/api/src/features/admin/queries.ts.
+ */
+function statusFilterOf(queryKey: readonly unknown[] | undefined): string | undefined {
+  const last = queryKey?.at(-1);
+  return typeof last === "string" && last !== "all" ? last : undefined;
 }
 
 export function useApproveUser() {

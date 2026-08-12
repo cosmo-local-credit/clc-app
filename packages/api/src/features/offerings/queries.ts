@@ -10,16 +10,23 @@ import type { OfferingPage, OfferingsClient } from "./client";
 export const offeringKeys = {
   all: ["clc", "offerings"] as const,
 
-  /** Finite and infinite reads cache different shapes, so they never share a key. */
+  /**
+   * Finite and infinite reads cache different shapes, so they never share a key.
+   *
+   * `perPage` is part of both, including the infinite ones: it decides request
+   * size *and* the cursor termination rule, so two callers using different page
+   * sizes would otherwise share one InfiniteData whose page boundaries are wrong
+   * for at least one of them.
+   */
   byVoucher: (address: string, perPage: number) =>
     ["clc", "offerings", "voucher", address.toLowerCase(), perPage] as const,
-  byVoucherInfinite: (address: string) =>
-    ["clc", "offerings", "voucher", "infinite", address.toLowerCase()] as const,
+  byVoucherInfinite: (address: string, perPage: number) =>
+    ["clc", "offerings", "voucher", "infinite", address.toLowerCase(), perPage] as const,
 
   byPool: (address: string, perPage: number) =>
     ["clc", "offerings", "pool", address.toLowerCase(), perPage] as const,
-  byPoolInfinite: (address: string) =>
-    ["clc", "offerings", "pool", "infinite", address.toLowerCase()] as const,
+  byPoolInfinite: (address: string, perPage: number) =>
+    ["clc", "offerings", "pool", "infinite", address.toLowerCase(), perPage] as const,
 } as const;
 
 /**
@@ -58,7 +65,7 @@ export function voucherOfferingsInfiniteQueryOptions(
   perPage: number,
 ) {
   return infiniteQueryOptions({
-    queryKey: offeringKeys.byVoucherInfinite(address ?? "none"),
+    queryKey: offeringKeys.byVoucherInfinite(address ?? "none", perPage),
     queryFn: ({ pageParam, signal }) =>
       offerings.getVoucherOfferings(
         requireAddress(address),
@@ -77,7 +84,7 @@ export function poolOfferingsInfiniteQueryOptions(
   perPage: number,
 ) {
   return infiniteQueryOptions({
-    queryKey: offeringKeys.byPoolInfinite(address ?? "none"),
+    queryKey: offeringKeys.byPoolInfinite(address ?? "none", perPage),
     queryFn: ({ pageParam, signal }) =>
       offerings.getPoolOfferings(
         requireAddress(address),
