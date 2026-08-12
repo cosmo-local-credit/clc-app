@@ -72,10 +72,10 @@ export function ReportFilterFeedback({
         onAction: filter.clear,
       };
     }
-    if (error instanceof BackendApiError && error.status === 429) {
+    if (error instanceof BackendApiError && error.kind === "rate-limited") {
       return { message: t`Too many searches. Try again in a moment.` };
     }
-    if (error instanceof BackendApiError && error.status === 400) {
+    if (error instanceof BackendApiError && error.kind === "validation") {
       return {
         message: t`These filters aren't valid.`,
         actionLabel: t`Clear filters`,
