@@ -42,11 +42,21 @@ export type CreateHttpClientOptions = {
    * a test double, a mock service worker — is still honoured.
    */
   fetch?: typeof globalThis.fetch;
+  /**
+   * Bearer token sent on every request.
+   *
+   * The backend accepts a user JWT in the Authorization header as well as in its
+   * session cookie, which is how a client without a wallet signature — the admin
+   * console in development — authenticates. Cookies still work and take
+   * precedence server-side; this is additive.
+   */
+  token?: string;
 };
 
 export function createHttpClient({
   baseUrl,
   fetch: fetchImpl,
+  token,
 }: CreateHttpClientOptions): HttpClient {
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
   const doFetch: typeof globalThis.fetch = fetchImpl ?? ((...args) => globalThis.fetch(...args));
@@ -54,6 +64,9 @@ export function createHttpClient({
   async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const headers: Record<string, string> = {
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      // A caller-supplied Authorization header wins, so a one-off request can
+      // still override the client-wide token.
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init?.headers as Record<string, string> | undefined),
     };
 
