@@ -1,12 +1,39 @@
-import { backendRetryDelayMs, isRetryableBackendError } from "@clc/api/client/errors";
-import { QueryClient } from "@tanstack/react-query";
+import {
+  BackendApiError,
+  backendRetryDelayMs,
+  isRetryableBackendError,
+} from "@clc/api/client/errors";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { adminSessionQueryKey } from "#/features/auth/admin-session";
 import { routeTree } from "./routeTree.gen";
 
 const MAX_RETRIES = 2;
 
+/**
+ * A session that the backend no longer accepts.
+ *
+ * Any admin request answering 401 means the cookie expired or was revoked, so the
+ * session query must be re-read — otherwise AuthBoundary keeps rendering the
+ * console from its last successful check while every panel shows an error, and
+ * the operator is never told to sign in again.
+ */
+function isAuthExpiredError(error: unknown): boolean {
+  return error instanceof BackendApiError && error.kind === "unauthenticated";
+}
+
 export function getRouter() {
-  const queryClient = new QueryClient({
+  let queryClient: QueryClient;
+
+  const revalidateSession = (error: unknown) => {
+    if (isAuthExpiredError(error)) {
+      void queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
+    }
+  };
+
+  queryClient = new QueryClient({
+    queryCache: new QueryCache({ onError: revalidateSession }),
+    mutationCache: new MutationCache({ onError: revalidateSession }),
     defaultOptions: {
       queries: {
         // Longer than apps/web's 60s: admin lists are read-mostly and an
