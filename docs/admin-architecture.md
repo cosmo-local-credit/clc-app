@@ -708,12 +708,25 @@ production cookie and domain configuration remains an environment task.
 **B2. Overview aggregates.** `GET /api/v2/admin/overview` with bounded payload
 and coverage metadata. Unblocks real totals and charts. **Still outstanding.**
 
-**B3. Paginated operator directory.** A directory endpoint **already exists** —
-`GET /api/v2/admin/users`, with an optional `?status=` filter — so the earlier
-claim that none did was wrong, and the ownership-derived table can be replaced
-without any new endpoint. What it lacks is pagination: `?perPage=1` returns every
-row. Adding cursor parameters there is the remaining work, and it is much smaller
-than a new resource.
+**B3. Paginated operator directory. Replaced; pagination outstanding.** A
+directory endpoint **already existed** — `GET /api/v2/admin/users`, with an
+optional `?status=` filter — so the earlier claim that none did was wrong. The
+ownership-derived table is gone, along with `use-known-operators`, and the
+Accounts surface now reads that endpoint with approve and reject wired up.
+
+Two things remain, both in `clc-core`:
+
+1. **Pagination.** `?perPage=1` returns every row. Until cursor parameters exist,
+   the surface states a true total and offers no paging controls — the one figure
+   in this console that is not a page sample. Adding cursors is much smaller than
+   a new resource.
+2. **`PUT /admin/users/:address/limits` is broken.** It answers 400 / `E02`
+   "Invalid or malformed request" for a correct payload, including from curl.
+   `adminUpdateUserLimitsHandler` calls `c.Bind` twice — once for the address
+   param, once for the body — and the first call consumes the body, so the second
+   fails. Approve and reject bind once and work. The client is written against the
+   documented contract and needs no change once the handler is fixed; the note in
+   `account-admin-panel.tsx` comes out at that point.
 
 **B4. Server-side sorting and filtering parameters.** Unblocks moving sort and
 filter out of the client once a resource spans more than one page. **Still
