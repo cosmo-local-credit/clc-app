@@ -18,7 +18,7 @@ describe("poolKeys", () => {
     // A pool deploy invalidates poolKeys.all; anything not prefixed by it would
     // silently keep serving stale data.
     for (const key of [
-      poolKeys.list(20),
+      poolKeys.list({ perPage: 20 }),
       poolKeys.listInfinite(20),
       poolKeys.detail(ADDRESS),
       poolKeys.vouchers(ADDRESS, 20),
@@ -33,7 +33,7 @@ describe("poolKeys", () => {
   it("gives finite and infinite reads distinct keys", () => {
     // Their cached shapes differ — a page versus { pages, pageParams } — so one
     // must never be read as the other.
-    expect(poolKeys.list(20)).not.toEqual(poolKeys.listInfinite(20));
+    expect(poolKeys.list({ perPage: 20 })).not.toEqual(poolKeys.listInfinite(20));
     expect(poolKeys.vouchers(ADDRESS, 20)).not.toEqual(poolKeys.vouchersInfinite(ADDRESS, 20));
   });
 
@@ -43,7 +43,14 @@ describe("poolKeys", () => {
   });
 
   it("varies the key with every parameter that changes the rows returned", () => {
-    expect(poolKeys.list(20)).not.toEqual(poolKeys.list(50));
+    expect(poolKeys.list({ perPage: 20 })).not.toEqual(poolKeys.list({ perPage: 50 }));
+    expect(poolKeys.list({ perPage: 20 })).not.toEqual(
+      poolKeys.list({ perPage: 20, cursor: 480, next: true }),
+    );
+    // The same cursor forwards and backwards addresses different rows.
+    expect(poolKeys.list({ perPage: 20, cursor: 480, next: true })).not.toEqual(
+      poolKeys.list({ perPage: 20, cursor: 480, next: false }),
+    );
     expect(poolKeys.vouchers(ADDRESS, 20)).not.toEqual(poolKeys.vouchers(ADDRESS, 50));
     expect(poolKeys.filtered(null, 20)).not.toEqual(poolKeys.filtered(null, 50));
   });

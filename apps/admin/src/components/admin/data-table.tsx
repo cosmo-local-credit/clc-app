@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Table,
   TableBody,
@@ -21,31 +21,41 @@ import { cn } from "#/lib/utils";
 /**
  * Sortable table over a fully-loaded page of rows.
  *
- * Sorting is client-side by design: every admin list here fetches one cursor
- * page at a time, so re-sorting server-side would cost a round trip to reorder
- * rows already in memory. When a surface grows past one page, move sorting into
- * the query params instead of paging this component.
+ * Sorting reorders **the fetched page only**. No clc-core list endpoint accepts a
+ * sort, so ordering cannot be applied across the whole resource; callers must say
+ * so next to the table rather than let an operator read one page's ordering as the
+ * resource's. When an endpoint gains a sort parameter, move `sort`/`order` into
+ * the request and drop `getSortedRowModel`.
+ *
+ * Sort state is owned by the caller — normally the route's search params — so the
+ * URL describes the view and Back restores it. An uncontrolled table would reset
+ * its ordering on every navigation.
  */
 export function DataTable<TData>({
   columns,
   data,
+  sorting,
+  onSortChange,
   onRowClick,
   emptyState,
   className,
 }: {
   columns: Array<ColumnDef<TData>>;
   data: Array<TData>;
+  /** Controlled sort state. Omit for an unsorted table. */
+  sorting?: SortingState;
+  /** Called with the column id whose header was activated. */
+  onSortChange?: (columnId: string) => void;
   onRowClick?: (row: TData) => void;
   emptyState?: ReactNode;
   className?: string;
 }) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
-    onSortingChange: setSorting,
+    state: { sorting: sorting ?? [] },
+    // The rows are sorted here, not upstream: no endpoint accepts a sort, so the
+    // fetched page is reordered locally from the caller's sort state.
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
@@ -66,7 +76,7 @@ export function DataTable<TData>({
                     {header.isPlaceholder ? null : sortable ? (
                       <button
                         type="button"
-                        onClick={header.column.getToggleSortingHandler()}
+                        onClick={() => onSortChange?.(header.column.id)}
                         className="inline-flex items-center gap-1 outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}

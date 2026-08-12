@@ -55,7 +55,7 @@ export function deriveOperators(pools: ReadonlyArray<OwnedPool>): Array<KnownOpe
  * directory endpoint lands, replace the body and keep the return shape.
  */
 export function useKnownOperators() {
-  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, DIRECTORY_PAGE_SIZE));
+  const poolsQuery = useQuery(poolListQueryOptions(clcApi.pools, { perPage: DIRECTORY_PAGE_SIZE }));
 
   return {
     operators: deriveOperators(poolsQuery.data?.pools ?? []),
