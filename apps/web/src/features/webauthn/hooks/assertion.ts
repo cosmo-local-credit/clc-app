@@ -3,7 +3,7 @@ import { base64UrlToBytes, bytesToBase64Url } from "@clc/core/features/webauthn/
 import type { WebAuthnAssertionPayload } from "@clc/api/features/auth/client";
 import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
-import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 

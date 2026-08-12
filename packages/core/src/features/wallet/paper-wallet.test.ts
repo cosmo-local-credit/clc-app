@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { parsePaperWalletImportPayload } from "./paper-wallet-import";
+import { parsePaperWalletImportPayload } from "./paper-wallet";
 
 const RAW_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const BARE_RAW_KEY = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";

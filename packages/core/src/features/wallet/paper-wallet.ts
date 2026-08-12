@@ -1,4 +1,4 @@
-import { normalizePrivateKey } from "#/connectors/normalize-private-key";
+import { normalizePrivateKey } from "./private-key";
 
 const ENCRYPTED_PAPER_WALLET_PAYLOAD = /^6P[1-9A-HJ-NP-Za-km-z]{56}$/;
 
