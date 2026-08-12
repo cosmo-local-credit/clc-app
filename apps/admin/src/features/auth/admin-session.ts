@@ -15,7 +15,7 @@
  * cannot grant access the backend withholds.
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
@@ -51,6 +51,20 @@ export const adminSessionQueryKey = ["admin", "session"] as const;
  * and still re-read the session.
  */
 const PROTECTED_QUERY_PREFIX = ["clc"] as const;
+
+/**
+ * Drops everything fetched on an operator's behalf.
+ *
+ * Removed, not invalidated: `staleTime` is two minutes, so an invalidated cache
+ * still serves the previous operator's rows to whoever comes next.
+ *
+ * Called on every identity boundary, not just explicit sign-out — a session that
+ * expires and a different operator who signs in are the same hazard, and only one
+ * of the three paths involves anyone pressing "Sign out".
+ */
+export function clearProtectedQueries(queryClient: QueryClient): void {
+  queryClient.removeQueries({ queryKey: PROTECTED_QUERY_PREFIX });
+}
 
 /**
  * Maps the session request's outcome to the five states.
@@ -126,11 +140,7 @@ export function useAdminSignOut() {
     onSettled: async () => {
       // Settled, not success: if the request failed the cookie may still be gone,
       // and a stale "authenticated" console is the worse outcome.
-      //
-      // Everything fetched under the old session is removed, not just
-      // invalidated. staleTime is two minutes, so an invalidated cache would
-      // still serve the previous operator's rows to whoever signs in next.
-      queryClient.removeQueries({ queryKey: PROTECTED_QUERY_PREFIX });
+      clearProtectedQueries(queryClient);
       await queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
     },
   });

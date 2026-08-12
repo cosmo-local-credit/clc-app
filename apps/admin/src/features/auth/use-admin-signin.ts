@@ -13,7 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { privateKeySigner, signInWithSiwe, type SiweRequest } from "@clc/api/features/auth/siwe";
 import { clcApi } from "#/lib/api";
-import { adminSessionQueryKey } from "./admin-session";
+import { adminSessionQueryKey, clearProtectedQueries } from "./admin-session";
 import { collectAdminAssertion } from "./webauthn-assertion";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
@@ -30,7 +30,11 @@ function siweRequest(): SiweRequest {
 }
 
 /**
- * Refetches the session after a sign-in.
+ * Adopts the new session after a sign-in.
+ *
+ * Anything cached under the previous identity is dropped first: an operator can
+ * sign in over another's expired session without the page reloading, and the
+ * console must not show them rows fetched for someone else.
  *
  * `refetchType: "all"` because the session query is cached as `null` from the
  * unauthenticated render and would otherwise stay inactive behind the sign-in
@@ -38,8 +42,10 @@ function siweRequest(): SiweRequest {
  */
 function useSessionRefresh() {
   const queryClient = useQueryClient();
-  return () =>
-    queryClient.invalidateQueries({ queryKey: adminSessionQueryKey, refetchType: "all" });
+  return () => {
+    clearProtectedQueries(queryClient);
+    return queryClient.invalidateQueries({ queryKey: adminSessionQueryKey, refetchType: "all" });
+  };
 }
 
 export function useAdminPrivateKeySignin() {

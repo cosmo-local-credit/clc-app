@@ -5,7 +5,7 @@ import {
 } from "@clc/api/client/errors";
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
-import { adminSessionQueryKey } from "#/features/auth/admin-session";
+import { adminSessionQueryKey, clearProtectedQueries } from "#/features/auth/admin-session";
 import { routeTree } from "./routeTree.gen";
 
 const MAX_RETRIES = 2;
@@ -26,9 +26,12 @@ export function getRouter() {
   let queryClient: QueryClient;
 
   const revalidateSession = (error: unknown) => {
-    if (isAuthExpiredError(error)) {
-      void queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
-    }
+    if (!isAuthExpiredError(error)) return;
+    // The session is gone, so what was fetched under it must go too. Otherwise a
+    // different operator signing in next inherits the previous one's rows from a
+    // cache that is still inside its staleTime.
+    clearProtectedQueries(queryClient);
+    void queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
   };
 
   queryClient = new QueryClient({
