@@ -17,4 +17,11 @@ const DEV_FALLBACK_BASE_URL = "http://localhost:5003";
 
 export const clcApi = createClcApi({
   baseUrl: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? DEV_FALLBACK_BASE_URL : ""),
+  /**
+   * Development-only operator token, minted by `make gen-user-token` in clc-core.
+   * It stands in for the session an operator will get from a real sign-in, so the
+   * console can read authenticated endpoints before Track B1 exists. Absent in
+   * any build where the stub-auth guard has been satisfied.
+   */
+  token: import.meta.env.VITE_ADMIN_API_TOKEN,
 });
