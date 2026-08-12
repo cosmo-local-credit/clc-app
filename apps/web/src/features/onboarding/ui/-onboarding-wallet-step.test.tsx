@@ -124,7 +124,7 @@ vi.mock("#/lib/paper-wallet", () => ({
   PAPER_WALLET_ORIGIN: "https://app.example.com",
 }));
 
-vi.mock("#/lib/paper-wallet-encryption", () => ({
+vi.mock("@clc/core/features/wallet/paper-wallet-encryption", () => ({
   encryptPaperWalletPrivateKey: (...args: unknown[]) => mockEncryptPaperWalletPrivateKey(...args),
 }));
 

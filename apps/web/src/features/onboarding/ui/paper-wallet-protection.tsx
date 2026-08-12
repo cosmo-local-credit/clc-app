@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { encryptPaperWalletPrivateKey } from "#/lib/paper-wallet-encryption";
+import { encryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
 import { buildPaperWalletUrl } from "#/lib/paper-wallet";
 
 type UsePaperWalletProtectionProps = {

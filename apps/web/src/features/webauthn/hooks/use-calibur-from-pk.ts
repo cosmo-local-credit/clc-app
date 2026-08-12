@@ -19,7 +19,7 @@ import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
 import { createWebAuthnPasskey } from "#/features/webauthn/hooks/credential";
-import { resolveRelyingPartyId } from "#/features/webauthn/hooks/rp-id";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
 const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??

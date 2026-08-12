@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { decryptPaperWalletPrivateKey } from "#/lib/paper-wallet-encryption";
+import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
 import { cn } from "#/lib/utils";
 
 type EncryptedPaperWalletImportFormProps = {
