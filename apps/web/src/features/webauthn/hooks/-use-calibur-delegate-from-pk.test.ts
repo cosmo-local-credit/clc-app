@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { DELEGATION_POLL_MS, useCaliburDelegateFromPk } from "./use-calibur-delegate-from-pk";
 
 const FAKE_PK =

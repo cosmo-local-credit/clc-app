@@ -20,7 +20,7 @@ import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherSupply } from "#/features/vouchers/hooks/use-voucher-supply";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { RELAYER_URL } from "#/lib/relayer-config";

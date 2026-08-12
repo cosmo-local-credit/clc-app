@@ -26,7 +26,7 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
 import { RELAYER_URL } from "#/lib/relayer-config";

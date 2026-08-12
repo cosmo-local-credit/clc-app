@@ -5,7 +5,7 @@ import {
   relayPoolSwapExactInput,
   relayPoolSwapExactOutput,
 } from "#/features/wallet/api/pool-swap-relay";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import type { PoolSwapQuoteMode } from "./use-pool-swap-quote";
 

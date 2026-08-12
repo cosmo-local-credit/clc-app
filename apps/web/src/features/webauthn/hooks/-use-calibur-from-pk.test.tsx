@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburFromPk } from "./use-calibur-from-pk";
 
 const FAKE_PK =

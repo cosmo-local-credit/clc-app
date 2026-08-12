@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { OtxTrackingOutcome, OtxTrackResult } from "@clc/api/features/auth/client";
 import { BackendApiError } from "@clc/api/client/errors";
-import { RelayerError } from "#/features/webauthn/api/relayer-client";
+import { RelayerError } from "@clc/api/features/relayer/client";
 import { useOtxTracking } from "./use-otx-tracking";
 
 function createWrapper() {

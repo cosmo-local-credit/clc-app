@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({ useOtxTracking }));
 
-vi.mock("#/features/webauthn/api/relayer-client", () => ({
+vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
 }));
 

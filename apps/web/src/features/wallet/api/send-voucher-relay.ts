@@ -2,7 +2,7 @@ import { type CaliburCall } from "@clc/core/features/webauthn/index";
 import { encodeFunctionData, erc20Abi } from "viem";
 
 import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 export type BuildVoucherTransferCallInput = {
   tokenAddress: `0x${string}`;
