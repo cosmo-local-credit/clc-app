@@ -17,7 +17,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "#/components/ui/chart";
-import { useKnownOperators } from "#/features/users/use-known-operators";
+import { useAdminUsers } from "#/features/users/use-admin-users";
 import { isFigureAvailable } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
 import { poolListQueryOptions } from "@clc/api/features/pools/queries";
@@ -50,7 +50,7 @@ export function OverviewPage() {
     voucherListQueryOptions(clcApi.market, { perPage: SAMPLE_PAGE_SIZE }),
   );
   const reportsQuery = useQuery(reportListQueryOptions(clcApi.reports, SAMPLE_PAGE_SIZE));
-  const operators = useKnownOperators();
+  const users = useAdminUsers();
 
   // Each figure resolves its own source query. A failure in one must not blank
   // the others, and must never render as zero.
@@ -77,7 +77,7 @@ export function OverviewPage() {
     poolsState.kind === "error" ? "pools" : null,
     vouchersState.kind === "error" ? "vouchers" : null,
     reportsState.kind === "error" ? "reports" : null,
-    operators.isError ? "operators" : null,
+    users.isError ? "accounts" : null,
   ].filter((name): name is string => name !== null);
 
   return (
@@ -127,11 +127,13 @@ export function OverviewPage() {
           icon={<HiOutlineTicket />}
           link={{ to: "/vouchers" }}
         />
+        {/* The only genuine total on this page: /admin/users returns every
+            account rather than a page of them. */}
         <MetricCard
-          label="Pool owners"
-          value={operators.operators.length}
-          unavailable={operators.isError || operators.isPending}
-          detail="in this page"
+          label="Accounts"
+          value={users.data?.length ?? 0}
+          unavailable={users.isError || users.isPending}
+          detail="all accounts"
           icon={<HiOutlineUsers />}
           link={{ to: "/users" }}
         />

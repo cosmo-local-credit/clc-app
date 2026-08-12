@@ -10,6 +10,7 @@
  */
 
 import { createAccountsClient } from "../features/accounts/client";
+import { createAdminClient } from "../features/admin/client";
 import { createAuthClient } from "../features/auth/client";
 import { createDeploymentsClient } from "../features/deployments/client";
 import { createMarketClient } from "../features/market/client";
@@ -29,6 +30,7 @@ export function createClcApi(options: CreateHttpClientOptions) {
   // hand-roll a request that belongs in this package.
   return {
     accounts: createAccountsClient(http),
+    admin: createAdminClient(http),
     auth: createAuthClient(http),
     deployments: createDeploymentsClient(http),
     market: createMarketClient(http),
