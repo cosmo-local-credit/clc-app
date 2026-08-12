@@ -56,13 +56,15 @@ function useWriteUserToCache() {
       });
     }
 
-    // No refetch is forced: the writes above are already consistent, and this
-    // endpoint returns every account, so a refetch per approval would re-download
-    // the whole directory. Marking stale is enough for the next visit.
-    void queryClient.invalidateQueries({
-      queryKey: [...adminKeys.all, "users"],
-      refetchType: "none",
-    });
+    // The writes above are deliberately incomplete: a row can be *removed* from a
+    // list it no longer matches, but it cannot be *inserted* into the list it now
+    // matches without inventing a position in that list's ordering. So the server
+    // reconciles. Active lists refetch — normally just the one on screen — and
+    // inactive ones are marked stale for their next mount.
+    //
+    // The optimistic writes still earn their place: they update the visible table
+    // immediately instead of after a round trip.
+    void queryClient.invalidateQueries({ queryKey: [...adminKeys.all, "users"] });
   };
 }
 
