@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
+import { voucherKeys } from "@clc/api/features/market/queries";
 import { type MarketVoucher } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { clcApi } from "#/lib/api";
@@ -15,10 +16,9 @@ const VOUCHER_SEARCH_LIMIT = 10;
 
 const VOUCHER_SEARCH_STALE_TIME = 5 * 60_000;
 
-const voucherSearchQueryKeys = {
-  all: ["market-vouchers", "search"] as const,
-  term: (term: string) => [...voucherSearchQueryKeys.all, term] as const,
-};
+// Identity is canonical in @clc/api so a voucher deploy invalidation reaches
+// search results too; the debounce and eligibility rules stay app-specific.
+const voucherSearchQueryKeys = { term: voucherKeys.search };
 
 type VoucherSearchStatus = "idle" | "searching" | "ready" | "error";
 
