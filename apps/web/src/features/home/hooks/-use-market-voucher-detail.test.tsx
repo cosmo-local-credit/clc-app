@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { voucherKeys } from "@clc/api/features/market/queries";
 import { marketVoucherDetailQuery, useMarketVoucherDetail } from "./use-market-voucher-detail";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
@@ -142,6 +143,8 @@ describe("useMarketVoucherDetail", () => {
 
     expect(options.staleTime).toBe(10 * 60_000);
     expect(options.gcTime).toBe(30 * 60_000);
-    expect(options.queryKey).toEqual(["market-voucher-detail", CHECKSUMMED.toLowerCase()]);
+    // Asserted through the canonical factory, not a literal: the key belongs to
+    // @clc/api, and duplicating its shape here would drift from it.
+    expect(options.queryKey).toEqual(voucherKeys.detail(CHECKSUMMED));
   });
 });

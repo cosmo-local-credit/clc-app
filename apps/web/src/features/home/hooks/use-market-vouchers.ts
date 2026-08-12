@@ -1,13 +1,17 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 
 import {
   type MarketBoundingBox,
   type MarketVoucher,
-  type MarketVoucherPage,
   viewportToBoundingBoxes,
 } from "@clc/api/features/market/client";
+import {
+  nextMarketCursor,
+  voucherCatalogInfiniteQueryOptions,
+  voucherKeys,
+  voucherViewportQueryOptions,
+} from "@clc/api/features/market/queries";
 import type { MarketViewport } from "#/features/home/ui/market-map";
 import { clcApi } from "#/lib/api";
 
@@ -21,55 +25,27 @@ export const MARKET_QUERY_FRESHNESS = {
   refetchOnReconnect: false,
 } as const;
 
-export const marketVoucherQueryKeys = {
-  all: ["market-vouchers"] as const,
-  catalog: (perPage: number) => [...marketVoucherQueryKeys.all, "catalog", { perPage }] as const,
-  viewport: (boxes: MarketBoundingBox[], perPage: number) =>
-    [...marketVoucherQueryKeys.all, "viewport", { boxes, perPage }] as const,
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    [...marketVoucherQueryKeys.all, "filtered", { filter, perPage }] as const,
-  facetVocabulary: () => [...marketVoucherQueryKeys.all, "facet-vocabulary"] as const,
-};
+/**
+ * Re-exported so web callers keep one import for market identity. The keys are
+ * canonical in @clc/api; only the freshness policy above is app-specific.
+ */
+export const marketVoucherQueryKeys = voucherKeys;
 
 function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
-    queryKey: marketVoucherQueryKeys.catalog(perPage),
-    queryFn: ({ pageParam, signal }) =>
-      clcApi.market.getMarketVouchers(
-        {
-          perPage,
-          cursor: pageParam,
-          next: pageParam === undefined ? undefined : true,
-        },
-        signal,
-      ),
+    ...voucherCatalogInfiniteQueryOptions(clcApi.market, perPage),
     enabled,
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: nextMarketCursor(perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
 }
 
-export function nextMarketCursor(perPage: number) {
-  return (lastPage: MarketVoucherPage, allPages: MarketVoucherPage[]): number | undefined => {
-    if (lastPage.receivedCount < perPage) return undefined;
-    if (lastPage.last === 0) return undefined;
-    const previous = allPages.at(-2);
-    if (previous && lastPage.last >= previous.last) return undefined;
-    return lastPage.last;
-  };
-}
+export { nextMarketCursor };
 
 function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean, perPage: number) {
+  const options = voucherViewportQueryOptions(clcApi.market, boxes, perPage);
   return useQuery({
-    queryKey: marketVoucherQueryKeys.viewport(boxes, perPage),
-    queryFn: async ({ signal }) => {
-      const pages = await Promise.all(
-        boxes.map((bbox) => clcApi.market.getMarketVouchers({ perPage, bbox }, signal)),
-      );
-      return pages.flatMap((entry) => entry.vouchers);
-    },
-    enabled: enabled && boxes.length > 0,
+    ...options,
+    enabled: enabled && options.enabled,
     ...MARKET_QUERY_FRESHNESS,
   });
 }
