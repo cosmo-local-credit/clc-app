@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 export type Theme = "light" | "dark";
 
-export const THEME_STORAGE_KEY = "clc.admin.theme";
+const THEME_STORAGE_KEY = "clc.admin.theme";
 
 // Inline <head> script (as a string) injected in __root.tsx. Runs synchronously
 // before first paint so the correct scheme is applied with no flash: read the
@@ -20,7 +20,7 @@ export const themeBootstrapScript =
   `var r=document.documentElement;r.classList.toggle("dark",t==="dark");r.style.colorScheme=t` +
   `}catch(e){}})();`;
 
-export function readInitialTheme(): Theme {
+function readInitialTheme(): Theme {
   if (typeof window === "undefined") return "light";
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -48,7 +48,7 @@ type ThemeState = {
 // Always starts at "light" so the server render and the first client render
 // agree. The visible theme is already correct from the inline bootstrap script;
 // consumers hydrate the displayed value via useHydratedTheme after mount.
-export const useThemeStore = create<ThemeState>((set, get) => ({
+const useThemeStore = create<ThemeState>((set, get) => ({
   theme: "light",
   setTheme: (theme) => {
     if (typeof window !== "undefined") {

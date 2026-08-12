@@ -19,7 +19,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { errorMessage } from "#/lib/data-state";
 
-export type AdminRole = "steward" | "operator" | "auditor";
+type AdminRole = "steward" | "operator" | "auditor";
 
 export type AdminOperator = {
   address: string;
@@ -45,7 +45,7 @@ export type AdminSession =
  */
 export const IS_STUB_SESSION = import.meta.env.VITE_ADMIN_STUB_AUTH === "true";
 
-export const adminSessionQueryKey = ["admin", "session"] as const;
+const adminSessionQueryKey = ["admin", "session"] as const;
 
 /** The permission every admin surface currently requires. */
 export const ADMIN_CONSOLE_PERMISSION = "admin:console";

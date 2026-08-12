@@ -21,8 +21,6 @@ import { createReportsClient } from "../features/reports/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
 import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 
-export type ClcApi = ReturnType<typeof createClcApi>;
-
 export function createClcApi(options: CreateHttpClientOptions) {
   const http = createHttpClient(options);
 

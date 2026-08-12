@@ -7,23 +7,6 @@
  * formatVoucherAddress from @clc/core/features/catalog/logic.
  */
 
-export function formatRelative(value: string | null | undefined): string {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  const diffMs = Date.now() - date.getTime();
-  const absMs = Math.abs(diffMs);
-  const suffix = diffMs >= 0 ? "ago" : "from now";
-
-  if (absMs < 5_000) return "just now";
-  if (absMs < 60_000) return `${Math.round(absMs / 1_000)}s ${suffix}`;
-  if (absMs < 3_600_000) return `${Math.round(absMs / 60_000)}m ${suffix}`;
-  if (absMs < 86_400_000) return `${Math.round(absMs / 3_600_000)}h ${suffix}`;
-  if (absMs < 7 * 86_400_000) return `${Math.round(absMs / 86_400_000)}d ${suffix}`;
-  return date.toLocaleDateString();
-}
-
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
   const date = new Date(value);

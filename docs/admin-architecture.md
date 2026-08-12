@@ -473,7 +473,16 @@ discarding the successfully loaded parent resource.
 ### Rendering and bundles
 
 - Keep charts in the overview route chunk; Recharts must not enter the shell or
-  list-route chunks.
+  list-route chunks. **Enforced** by `pnpm check:bundle:admin`
+  (`apps/admin/scripts/check-bundle.mjs`), which also holds every chunk to a
+  recorded gzip baseline with a 10% tolerance. Run it after a build; both failure
+  modes are verified to fire.
+
+  Note the chunk naming is misleading when reading build output by eye: the
+  overview lives at `_shell/index.tsx`, so its chunk is emitted as `_shell-*` and
+  looks like the layout. The layout is the _other_ `_shell-*` chunk. The check
+  distinguishes them by content, not by name.
+
 - Keep table column definitions at module scope when they do not depend on
   render state.
 - Paginate before considering row virtualization. Virtualization is warranted
@@ -484,6 +493,18 @@ discarding the successfully loaded parent resource.
   unreferenced. Some primitives are reached indirectly — `sidebar` imports
   `sheet` for its mobile drawer, so `sheet` looks unused and is not. Deleting on
   a report alone breaks the shell.
+
+  Done once already: nine genuinely unreferenced primitives and three unused
+  devtools dependencies were removed, `sheet` was correctly kept, and the
+  remaining ~46 findings were _declined_ — they are re-exports of vendored shadcn
+  primitives, kept at their full upstream API so component updates do not
+  conflict. That decision is encoded in `knip.json` rather than re-litigated each
+  run; unused _files_ in `components/ui` are still reported.
+
+  A config that throws on load breaks knip, which reads `vite.config.ts` without
+  building. The stub-auth guard therefore runs in a build-only `buildStart` hook,
+  not at config evaluation.
+
 - Preserve route-level code splitting through thin route files and feature page
   modules. Do not use inline dynamic imports.
 - Avoid expensive chart or table derivations on every render. Prefer bounded

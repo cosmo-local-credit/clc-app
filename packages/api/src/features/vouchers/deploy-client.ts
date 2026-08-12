@@ -2,8 +2,6 @@ import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 
 import type { HttpClient } from "../../client/http-client";
 
-export type VoucherDeployClient = ReturnType<typeof createVoucherDeployClient>;
-
 export function createVoucherDeployClient(http: HttpClient) {
   return {
     async deployVoucher(payload: VoucherDeployPayload): Promise<{ trackingId: string }> {

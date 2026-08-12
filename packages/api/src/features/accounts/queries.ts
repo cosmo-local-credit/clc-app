@@ -41,19 +41,6 @@ export function latestAccountTokensQueryOptions(
   });
 }
 
-export function accountTokensQueryOptions(
-  accounts: AccountsClient,
-  address: string | undefined,
-  perPage: number,
-) {
-  return queryOptions({
-    queryKey: accountKeys.tokens(address ?? "none", perPage),
-    queryFn: () => accounts.getAccountTokens({ address: requireAddress(address), perPage }),
-    enabled: Boolean(address),
-    placeholderData: keepPreviousData,
-  });
-}
-
 export function accountTokensInfiniteQueryOptions(
   accounts: AccountsClient,
   address: string | undefined,
