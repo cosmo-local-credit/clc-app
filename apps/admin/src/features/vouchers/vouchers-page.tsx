@@ -1,6 +1,6 @@
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "#/components/admin/data-table";
@@ -8,12 +8,14 @@ import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Badge } from "#/components/ui/badge";
 import { voucherListQueryOptions } from "@clc/api/features/market/queries";
 import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
 import type { TableSearch } from "#/lib/table-search";
+import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 
 const columns: Array<ColumnDef<MarketVoucher>> = [
@@ -31,7 +33,17 @@ const columns: Array<ColumnDef<MarketVoucher>> = [
     accessorKey: "address",
     header: "Address",
     cell: ({ row }) => (
-      <span className="font-data text-xs">{formatVoucherAddress(row.original.address)}</span>
+      // The accessible route to the detail screen: focusable, keyboard-operable
+      // and openable in a new tab, none of which a <tr> click handler provides.
+      // stopPropagation keeps the row handler from navigating a second time.
+      <Link
+        to="/vouchers/$address"
+        params={{ address: row.original.address }}
+        className="font-data text-xs underline-offset-4 hover:underline"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {formatVoucherAddress(row.original.address)}
+      </Link>
     ),
   },
   {
@@ -68,6 +80,9 @@ export function VouchersPage({ search }: { search: TableSearch }) {
   );
 
   const vouchers = vouchersQuery.data?.vouchers ?? [];
+  // Resolved rather than read off isError directly: a failed refresh with rows
+  // still cached is `stale`, and must keep showing them.
+  const listState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);
   const dropped = (vouchersQuery.data?.receivedCount ?? 0) - vouchers.length;
   const table = usePagedTable({
     search,
@@ -98,17 +113,13 @@ export function VouchersPage({ search }: { search: TableSearch }) {
         </Alert>
       ) : null}
 
-      {vouchersQuery.isPending ? (
+      {listState.kind === "pending" ? (
         <LoadingBlock rows={8} />
-      ) : vouchersQuery.isError ? (
-        <PageState
-          title="Could not load vouchers"
-          message={
-            vouchersQuery.error instanceof Error ? vouchersQuery.error.message : "Request failed."
-          }
-        />
+      ) : listState.kind === "error" ? (
+        <PageState title="Could not load vouchers" message={listState.message} />
       ) : (
         <>
+          {listState.kind === "stale" ? <StaleNotice message={listState.message} /> : null}
           <DataTable
             columns={columns}
             data={vouchers}

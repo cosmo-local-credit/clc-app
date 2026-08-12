@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageState } from "#/components/admin/page-state";
-import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import type { DataState } from "#/lib/data-state";
 
 /**
@@ -37,12 +37,7 @@ export function SectionState({
   // them, and say plainly that they may be out of date.
   return (
     <>
-      {state.kind === "stale" ? (
-        <Alert className="border-state-pending/30 bg-state-pending/10">
-          <AlertTitle>Showing data that may be out of date</AlertTitle>
-          <AlertDescription>{state.message}</AlertDescription>
-        </Alert>
-      ) : null}
+      {state.kind === "stale" ? <StaleNotice message={state.message} /> : null}
       {children}
     </>
   );

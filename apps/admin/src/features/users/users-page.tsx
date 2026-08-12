@@ -20,9 +20,11 @@ import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Button } from "#/components/ui/button";
 import { formatDateTime } from "#/lib/format";
+import { useDataState } from "#/lib/use-data-state";
 import { useApproveUser, useAdminUsers, useRejectUser } from "./use-admin-users";
 import { USER_STATUSES, type UsersSearch } from "./users-search";
 
@@ -147,6 +149,9 @@ export function UsersPage({ search }: { search: UsersSearch }) {
   ];
 
   const users = usersQuery.data ?? [];
+  // Resolved rather than read off isError directly: a failed refresh with rows
+  // still cached is `stale`, and must keep showing them.
+  const listState = useDataState(usersQuery, (rows) => rows.length === 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,15 +178,13 @@ export function UsersPage({ search }: { search: UsersSearch }) {
         ))}
       </div>
 
-      {usersQuery.isPending ? (
+      {listState.kind === "pending" ? (
         <LoadingBlock rows={6} />
-      ) : usersQuery.isError ? (
-        <PageState
-          title="Could not load accounts"
-          message={usersQuery.error instanceof Error ? usersQuery.error.message : "Request failed."}
-        />
+      ) : listState.kind === "error" ? (
+        <PageState title="Could not load accounts" message={listState.message} />
       ) : (
         <>
+          {listState.kind === "stale" ? <StaleNotice message={listState.message} /> : null}
           <DataTable
             columns={columns}
             data={users}
