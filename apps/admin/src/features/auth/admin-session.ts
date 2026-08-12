@@ -78,11 +78,7 @@ export function resolveSession(query: {
 
   const { address, role } = query.data;
   if (!role) {
-    return {
-      status: "unavailable",
-      message:
-        "This backend does not report the role of a session, so operator access cannot be verified.",
-    };
+    return { status: "unavailable", message: "The backend reported no role for this session." };
   }
 
   const operator: AdminOperator = { address, role };
