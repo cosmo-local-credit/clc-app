@@ -8,6 +8,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { isRetryableBackendError } from "@clc/api/client/errors";
+import { poolKeys } from "@clc/api/features/pools/queries";
 import {
   type FilteredPoolPage,
   type PoolTagFacet,
@@ -32,11 +33,11 @@ const EMPTY_CATALOG_FILTER: CatalogFilter = {
   voucherMatch: "any",
 };
 
+// Identity is canonical in @clc/api so a pool invalidation reaches these too;
+// the multi-page assembly and page budget below stay app-specific.
 const filteredPoolQueryKeys = {
-  all: ["pools"] as const,
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    [...filteredPoolQueryKeys.all, "filtered", { filter, perPage }] as const,
-  facetVocabulary: () => [...filteredPoolQueryKeys.all, "facet-vocabulary"] as const,
+  filtered: poolKeys.filtered,
+  facetVocabulary: poolKeys.facetVocabulary,
 };
 
 export class FilteredPoolsTooLargeError extends Error {
