@@ -9,6 +9,7 @@
     "./features/accounts/client": "./src/features/accounts/client.ts",
     "./features/accounts/queries": "./src/features/accounts/queries.ts",
     "./features/auth/client": "./src/features/auth/client.ts",
+    "./features/auth/siwe": "./src/features/auth/siwe.ts",
     "./features/deployments/client": "./src/features/deployments/client.ts",
     "./features/market/client": "./src/features/market/client.ts",
     "./features/market/queries": "./src/features/market/queries.ts",
@@ -28,7 +29,8 @@
   },
   "dependencies": {
     "@clc/core": "workspace:*",
-    "@tanstack/react-query": "^5.101.0"
+    "@tanstack/react-query": "^5.101.0",
+    "viem": "^2.52.2"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.10",
