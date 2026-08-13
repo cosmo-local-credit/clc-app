@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "vp dev",
     "build": "vp build",
+    "build:cf": "NITRO_PRESET=cloudflare-pages vp build",
     "preview": "vp preview",
     "test": "vp test run --passWithNoTests",
     "check": "tsc --noEmit",
