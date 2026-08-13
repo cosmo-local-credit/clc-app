@@ -22,7 +22,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "#/components/ui/sidebar";
-import { Toaster } from "#/components/ui/sonner";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useAdminSession, useAdminSignOut } from "#/features/auth/admin-session";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "#/components/ui/tooltip";
@@ -47,7 +46,6 @@ export function AppShell() {
       <SidebarProvider defaultOpen>
         <AppShellInner />
         <CommandPalette />
-        <Toaster richColors closeButton position="bottom-right" />
       </SidebarProvider>
     </TooltipProvider>
   );
