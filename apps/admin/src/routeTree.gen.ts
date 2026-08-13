@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
+import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
@@ -26,6 +27,11 @@ const ShellRoute = ShellRouteImport.update({
 const ShellIndexRoute = ShellIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellSettingsRoute = ShellSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellSplatRoute = ShellSplatRouteImport.update({
@@ -67,6 +73,7 @@ const ShellPoolsAddressRoute = ShellPoolsAddressRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/$': typeof ShellSplatRoute
+  '/settings': typeof ShellSettingsRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
@@ -76,6 +83,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
+  '/settings': typeof ShellSettingsRoute
   '/': typeof ShellIndexRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/users/$address': typeof ShellUsersAddressRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/$': typeof ShellSplatRoute
+  '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/': typeof ShellIndexRoute
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
   '/_shell/users/$address': typeof ShellUsersAddressRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/settings'
     | '/pools/$address'
     | '/users/$address'
     | '/vouchers/$address'
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/settings'
     | '/'
     | '/pools/$address'
     | '/users/$address'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_shell'
     | '/_shell/$'
+    | '/_shell/settings'
     | '/_shell/'
     | '/_shell/pools/$address'
     | '/_shell/users/$address'
@@ -148,6 +160,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ShellIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/settings': {
+      id: '/_shell/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof ShellSettingsRouteImport
       parentRoute: typeof ShellRoute
     }
     '/_shell/$': {
@@ -204,6 +223,7 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteChildren {
   ShellSplatRoute: typeof ShellSplatRoute
+  ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
   ShellUsersAddressRoute: typeof ShellUsersAddressRoute
@@ -215,6 +235,7 @@ interface ShellRouteChildren {
 
 const ShellRouteChildren: ShellRouteChildren = {
   ShellSplatRoute: ShellSplatRoute,
+  ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
   ShellUsersAddressRoute: ShellUsersAddressRoute,
