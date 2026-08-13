@@ -42,5 +42,13 @@ dev/webpush/data/
 .codex/config.toml
 .agents
 
+# One-off QA and audit artefacts: report pages and their screenshots. Both
+# patterns are anchored to the repo root, where no HTML is ever tracked — the
+# apps' own HTML lives under apps/*. Ignored rather than merely left uncommitted
+# because a stray `git add -A`, or lint-staged restoring its stash, will otherwise
+# sweep them into an unrelated commit.
+/*.html
+/qa-audit-*/
+
 # scratch canvases from AI tooling
 *_canvas.html
