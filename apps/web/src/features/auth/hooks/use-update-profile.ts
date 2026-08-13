@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
 import { type ProfilePayload } from "@clc/api/features/auth/client";
-import { authProfileQueryKeys } from "#/features/auth/hooks/use-profile";
+import { authKeys } from "@clc/api/features/auth/queries";
 import { clcApi } from "#/lib/api";
 
 export function useUpdateProfile() {
@@ -13,7 +13,7 @@ export function useUpdateProfile() {
     mutationFn: (payload: ProfilePayload) => clcApi.auth.submitProfile(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: authProfileQueryKeys.current(address),
+        queryKey: authKeys.profile(address),
       });
     },
   });
