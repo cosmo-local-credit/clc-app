@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
+  HiOutlineCog,
   HiOutlineCollection,
   HiOutlineHome,
   HiOutlineTicket,
@@ -20,6 +21,7 @@ const pages = [
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
+  { to: "/settings", label: "Settings", icon: HiOutlineCog },
 ] as const;
 
 type PagePath = (typeof pages)[number]["to"];

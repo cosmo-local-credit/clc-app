@@ -1,5 +1,4 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { MoonIcon, SunIcon } from "lucide-react";
 import type { IconType } from "react-icons";
 import {
   HiOutlineCollection,
@@ -8,7 +7,7 @@ import {
   HiOutlineUsers,
 } from "react-icons/hi";
 import { CommandPalette } from "#/components/layout/command-palette";
-import { Button } from "#/components/ui/button";
+import { OperatorMenu } from "#/components/layout/operator-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -22,10 +21,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "#/components/ui/sidebar";
-import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { useAdminSession, useAdminSignOut } from "#/features/auth/admin-session";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "#/components/ui/tooltip";
-import { useHydratedTheme } from "#/providers/theme";
+import { TooltipProvider } from "#/components/ui/tooltip";
 
 const navItems: Array<{
   to: "/" | "/pools" | "/vouchers" | "/users";
@@ -101,7 +97,6 @@ function AppShellInner() {
           <SidebarTrigger className="-ml-1" />
           <div className="ml-auto flex items-center gap-2">
             <OperatorMenu />
-            <ThemeToggle />
           </div>
         </header>
 
@@ -110,65 +105,5 @@ function AppShellInner() {
         </main>
       </SidebarInset>
     </>
-  );
-}
-
-/**
- * Who is signed in, and the way out.
- *
- * The shell only renders inside AuthBoundary's authenticated branch, so the
- * session is known — but it is read rather than passed down so no surface has to
- * thread it through.
- */
-function OperatorMenu() {
-  const session = useAdminSession();
-  const signOut = useAdminSignOut();
-
-  if (session.status !== "authenticated") return null;
-
-  return (
-    <div className="flex items-center gap-2">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <span className="hidden font-data text-xs text-muted-foreground sm:inline">
-              {formatVoucherAddress(session.operator.address as `0x${string}`)}
-            </span>
-          }
-        />
-        <TooltipContent>{session.operator.address}</TooltipContent>
-      </Tooltip>
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={signOut.isPending}
-        onClick={() => signOut.mutate()}
-      >
-        {signOut.isPending ? "Signing out..." : "Sign out"}
-      </Button>
-    </div>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, setTheme } = useHydratedTheme();
-  const next = theme === "dark" ? "light" : "dark";
-
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={`Switch to ${next} theme`}
-            onClick={() => setTheme(next)}
-          >
-            {theme === "dark" ? <MoonIcon /> : <SunIcon />}
-          </Button>
-        }
-      />
-      <TooltipContent>Switch to {next} theme</TooltipContent>
-    </Tooltip>
   );
 }
