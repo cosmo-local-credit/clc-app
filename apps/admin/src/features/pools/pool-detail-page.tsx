@@ -5,6 +5,7 @@ import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
+import { SectionHeading } from "#/components/admin/section-heading";
 import { PageState } from "#/components/admin/page-state";
 import { SectionState } from "#/components/admin/section-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
@@ -151,9 +152,7 @@ export function PoolDetailPage({ address }: { address: string }) {
       </div>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-          Vouchers ({pool.voucherCount})
-        </h2>
+        <SectionHeading>Vouchers ({pool.voucherCount})</SectionHeading>
         <SectionState
           state={vouchersState}
           errorTitle="Could not load this pool's vouchers"
@@ -207,9 +206,7 @@ export function PoolDetailPage({ address }: { address: string }) {
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="border border-border bg-card p-4">
-      <h2 className="mb-3 font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-        {title}
-      </h2>
+      <SectionHeading className="mb-3">{title}</SectionHeading>
       <dl className="space-y-2">{children}</dl>
     </div>
   );

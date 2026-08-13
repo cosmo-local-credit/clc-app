@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
 import { PageHeader } from "#/components/admin/page-header";
+import { SectionHeading } from "#/components/admin/section-heading";
 import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
 import {
@@ -56,16 +57,12 @@ export function UserDetailPage({ address }: { address: string }) {
       />
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-          Account
-        </h2>
+        <SectionHeading>Account</SectionHeading>
         <AccountAdminPanel address={address} />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-          Balances ({tokens.length})
-        </h2>
+        <SectionHeading>Balances ({tokens.length})</SectionHeading>
         <SectionState
           state={tokensState}
           errorTitle="Could not load balances"
@@ -107,9 +104,7 @@ export function UserDetailPage({ address }: { address: string }) {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-          Transfers ({transfers.length})
-        </h2>
+        <SectionHeading>Transfers ({transfers.length})</SectionHeading>
         <SectionState
           state={transfersState}
           errorTitle="Could not load transfers"
