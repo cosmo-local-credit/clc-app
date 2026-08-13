@@ -5,16 +5,22 @@
 # put it inside the scope of apps/web's service worker — which must never cache or
 # intercept anything here.
 #
-# The deploy itself is Git-connected, with these dashboard build settings:
-#   Build command            pnpm --filter @clc/admin build
-#   Build output directory   apps/admin/dist
-#   Root directory           (repository root)
+# The deploy is Git-connected, with these dashboard build settings:
+#   Root directory           apps/admin      <- must be this, not the repo root
+#   Build command            pnpm build
+#   Build output directory   dist
 #
-# THIS FILE IS REQUIRED — it is what separates the two projects. Nitro resolves a
-# Wrangler config from the build's working directory, which `pnpm --filter` sets to
-# apps/admin. Delete it and the resolution walks up to the root config, which
-# generates a deploy named "clc-app" carrying every one of apps/web's vars
-# (MapTiler key included). Verified by building with and without it.
+# The root directory is what makes the Pages platform read *this* file. It resolves
+# a Wrangler config from the project's root directory, and that config supplies the
+# asset output directory and the build environment variables. Left at the repository
+# root, the platform reads ../../wrangler.toml, takes `apps/web/dist` and apps/web's
+# eleven vars, and fails the deploy after an otherwise successful build with
+# `Output directory "apps/web/dist" not found`.
+#
+# THIS FILE IS ALSO WHAT SEPARATES THE TWO PROJECTS AT BUILD TIME. Nitro resolves a
+# Wrangler config from the build's working directory; delete this and the resolution
+# walks up to the root config, generating a worker named "clc-app" carrying every one
+# of apps/web's vars. Verified by building with and without it.
 #
 # It seeds the config the deploy actually uses, which Nitro generates at
 # dist/_worker.js/wrangler.json — hence the build-time warning that
