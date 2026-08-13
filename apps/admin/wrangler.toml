@@ -5,10 +5,14 @@
 # put it inside the scope of apps/web's service worker — which must never cache or
 # intercept anything here.
 #
-# `pages_build_output_dir` is relative to this file, so deploys must name it:
-#   pnpm build:cf:admin && wrangler pages deploy -c apps/admin/wrangler.toml
-# Running wrangler from the repo root without -c picks up the root config, which
-# is apps/web.
+# The deploy itself is Git-connected and configured in the dashboard:
+#   Build command            pnpm --filter @clc/admin build
+#   Build output directory   apps/admin/dist
+#   Root directory           (repository root)
+# This file covers Functions configuration and manual deploys
+# (`wrangler pages deploy -c apps/admin/wrangler.toml`); `pages_build_output_dir`
+# is relative to this file, and wrangler run from the root without `-c` would pick
+# up the web config instead.
 name = "clc-admin"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
@@ -17,6 +21,10 @@ compatibility_flags = ["nodejs_compat"]
 # Only the four variables this app reads. Deliberately not copied from the web
 # project: the console has no map, no Calibur wallet and no paper-wallet origin,
 # and an unused key here would imply otherwise.
+#
+# These reach the Pages Function at runtime. VITE_* values are inlined into the
+# client bundle at *build* time, so the same four must also be set as environment
+# variables on the Pages project — this file alone will not configure the bundle.
 [vars]
 VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CHAIN_ID = "42220"
