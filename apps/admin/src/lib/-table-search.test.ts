@@ -13,6 +13,7 @@ import {
 
 describe("parsePageSize", () => {
   it("accepts only supported sizes", () => {
+    expect(parsePageSize(10)).toBe(10);
     expect(parsePageSize(25)).toBe(25);
     expect(parsePageSize(50)).toBe(50);
     expect(parsePageSize(100)).toBe(100);

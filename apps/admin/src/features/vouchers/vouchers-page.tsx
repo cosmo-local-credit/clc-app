@@ -129,18 +129,19 @@ export function VouchersPage({ search }: { search: TableSearch }) {
               void navigate({ to: "/vouchers/$address", params: { address: voucher.address } })
             }
             emptyState={<EmptyState title="No vouchers" description="The catalog is empty." />}
-          />
-          <TablePagination
-            search={search}
-            shown={vouchers.length}
-            dropped={dropped}
-            isFirstPage={table.isFirstPage}
-            mightHaveMore={table.mightHaveMore}
-            isFetching={vouchersQuery.isFetching}
-            onFirstPage={table.onFirstPage}
-            onPreviousPage={table.onPreviousPage}
-            onNextPage={table.onNextPage}
-            onPageSize={table.onPageSize}
+            footer={
+              <TablePagination
+                search={search}
+                dropped={dropped}
+                isFirstPage={table.isFirstPage}
+                mightHaveMore={table.mightHaveMore}
+                isFetching={vouchersQuery.isFetching}
+                onFirstPage={table.onFirstPage}
+                onPreviousPage={table.onPreviousPage}
+                onNextPage={table.onNextPage}
+                onPageSize={table.onPageSize}
+              />
+            }
           />
         </>
       )}
