@@ -363,11 +363,25 @@ No `NITRO_PRESET` is needed. Nitro maps Cloudflare's `CF_PAGES` variable to the
 preset explicitly and exist only to reproduce the Pages artifact on a laptop —
 pair either with `wrangler pages dev apps/<app>/dist`.
 
-**`VITE_*` values must be set as dashboard environment variables on each project.**
-They are inlined into the client bundle at build time, so a value that exists only
-as `[vars]` in a Wrangler config reaches the Pages Function at runtime and never
-reaches the bundle. Admin needs exactly four: `VITE_API_URL`, `VITE_RELAYER_URL`,
+**`VITE_*` values must be set as dashboard environment variables on each project,
+not as Wrangler `[vars]`.** `vars` are Function bindings delivered at runtime;
+`VITE_` values are inlined into the client bundle at build time from the build's
+process environment. A value set only in a Wrangler config reaches the worker and
+never the browser — verified by building admin with staging in `[vars]` and
+localhost in `.env`: `dist/assets` got localhost, `dist/_worker.js` got staging.
+Admin needs exactly four: `VITE_API_URL`, `VITE_RELAYER_URL`,
 `VITE_RELYING_PARTY_ID`, `VITE_CHAIN_ID`.
+
+**Which Wrangler config a build uses is decided by the build command, not the root
+directory.** Both projects build from the repository root, but
+`pnpm --filter @clc/admin build` runs the script with `apps/admin` as its working
+directory, and Nitro resolves the Wrangler config from there. So admin picks up
+`apps/admin/wrangler.toml` — `clc-admin` — while the root `wrangler.toml`
+(`clc-app`) is what a web build resolves. Nitro then _generates_ the config the
+deploy actually uses, at `dist/_worker.js/wrangler.json`, and points
+`.wrangler/deploy/config.json` at it; the checked-in file only seeds it. Hence the
+build-time warning that `pages_build_output_dir` "is overridden and will be
+ignored" — Nitro rewrites that path itself.
 
 Separate projects, not one project with two paths: a Pages project has a single
 build output, and serving the console under the app's origin would place it inside

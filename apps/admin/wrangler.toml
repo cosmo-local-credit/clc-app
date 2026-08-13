@@ -18,19 +18,25 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# Only the four variables this app reads. Deliberately not copied from the web
-# project: the console has no map, no Calibur wallet and no paper-wallet origin,
-# and an unused key here would imply otherwise.
+# No [vars] here on purpose.
 #
-# These reach the Pages Function at runtime. VITE_* values are inlined into the
-# client bundle at *build* time, so the same four must also be set as environment
-# variables on the Pages project — this file alone will not configure the bundle.
-[vars]
-VITE_API_URL = "https://staging.cosmolocal.credit"
-VITE_CHAIN_ID = "42220"
-VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
-# The registrable domain, not this host. A passkey is bound to the relying party
-# it was registered under, so scoping it to the parent is what lets one credential
-# work on both app.cosmolocal.credit and admin.cosmolocal.credit. It must match
-# `relayer.relying_party_id` in clc-core, and the same value is set for apps/web.
-VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+# `vars` are Pages Function bindings, delivered at *runtime*. Every value this app
+# reads is a VITE_ variable, and those are inlined into the client bundle at *build*
+# time from the build's process environment — so a value set here would reach the
+# worker and never reach the browser. Verified: a build with staging in [vars] and
+# localhost in .env put localhost in dist/assets and staging only in
+# dist/_worker.js.
+#
+# The four the console reads are therefore set as environment variables on the
+# Pages project itself, for production and preview:
+#
+#   VITE_API_URL            https://staging.cosmolocal.credit
+#   VITE_RELAYER_URL        https://staging.cosmolocal.credit/api/v2/relayer
+#   VITE_CHAIN_ID           42220
+#   VITE_RELYING_PARTY_ID   cosmolocal.credit
+#
+# VITE_RELYING_PARTY_ID is the registrable domain, not this host: a passkey is
+# bound to the relying party it was registered under, so scoping it to the parent
+# is what lets one credential work on app.cosmolocal.credit and
+# admin.cosmolocal.credit alike. It must match `relayer.relying_party_id` in
+# clc-core, and apps/web must be set to the same value.

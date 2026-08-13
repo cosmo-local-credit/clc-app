@@ -5,6 +5,14 @@ pages_build_output_dir = "apps/web/dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
+# WARNING: these are Pages Function bindings, delivered at runtime. VITE_ values
+# are inlined into the client bundle at *build* time from the build's process
+# environment, which on Pages means the project's own environment variables — so
+# editing a VITE_ value here does NOT change what the browser gets. Verified in
+# apps/admin: a build with one value here and another in .env put the .env value in
+# dist/assets and this one only in dist/_worker.js.
+#
+# Change any VITE_ value in the Pages dashboard as well, or instead.
 [vars]
 VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CALIBUR_ADDRESS = "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85"
