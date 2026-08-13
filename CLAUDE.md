@@ -375,13 +375,30 @@ Admin needs exactly four: `VITE_API_URL`, `VITE_RELAYER_URL`,
 **Which Wrangler config a build uses is decided by the build command, not the root
 directory.** Both projects build from the repository root, but
 `pnpm --filter @clc/admin build` runs the script with `apps/admin` as its working
-directory, and Nitro resolves the Wrangler config from there. So admin picks up
-`apps/admin/wrangler.toml` — `clc-admin` — while the root `wrangler.toml`
-(`clc-app`) is what a web build resolves. Nitro then _generates_ the config the
-deploy actually uses, at `dist/_worker.js/wrangler.json`, and points
-`.wrangler/deploy/config.json` at it; the checked-in file only seeds it. Hence the
-build-time warning that `pages_build_output_dir` "is overridden and will be
-ignored" — Nitro rewrites that path itself.
+directory, and Nitro resolves the Wrangler config from there. Nitro then
+_generates_ the config the deploy actually uses, at
+`dist/_worker.js/wrangler.json`, pointing `.wrangler/deploy/config.json` at it; the
+checked-in file only seeds it. Hence the build-time warning that
+`pages_build_output_dir` "is overridden and will be ignored".
+
+**`apps/admin/wrangler.toml` is therefore load-bearing, not boilerplate.** Deleting
+it makes the resolution walk up to the root config, and the admin build then
+generates a deploy named `clc-app` carrying every one of `apps/web`'s vars,
+MapTiler key included. Verified by building both ways.
+
+The division of labour, from Cloudflare's own rule that a Wrangler file "serves as
+the source of truth for Pages Functions projects":
+
+| Concern                                          | Owned by                 |
+| ------------------------------------------------ | ------------------------ |
+| Build command, output directory, root directory  | Pages dashboard          |
+| Build-time `VITE_*` values                       | Pages dashboard env vars |
+| Project name, compatibility date/flags, bindings | `wrangler.toml`          |
+| Runtime `vars` for the Function                  | `wrangler.toml`          |
+
+One consequence: while a Wrangler file is present, the Functions settings it owns
+are **read-only in the dashboard**. That does not touch build-time environment
+variables, which is why the `VITE_*` values still belong there.
 
 Separate projects, not one project with two paths: a Pages project has a single
 build output, and serving the console under the app's origin would place it inside
@@ -395,14 +412,25 @@ the scope of `apps/web`'s service worker.
    (`admin.appcosmolocal.credit`, say) gets a 200 from `/auth/signin` and then a
    204 from `/auth/session`, because the browser never stored the cookie. That
    would need `SameSite=None; Secure; Partitioned` on the backend.
-2. **`VITE_RELYING_PARTY_ID` is `cosmolocal.credit` in both projects** — the parent
-   domain, so one passkey works on either host. It must equal
-   `relayer.relying_party_id` in clc-core. `resolveRelyingPartyId` only honours the
-   configured value when it is a suffix of the serving host, so `*.pages.dev`
-   preview deploys still fall back to their own hostname and keep their own
-   passkeys. Changing this value invalidates existing passkeys: WebAuthn
-   credentials cannot be re-scoped, so anyone registered under the old relying
-   party must enrol again. Paper wallets are unaffected.
+2. **`VITE_RELYING_PARTY_ID` must be the same on both projects** for one passkey to
+   work on either host — set it to the shared parent, `cosmolocal.credit`.
+
+   The value is normalized with `new URL(value).hostname`, so a scheme is stripped:
+   `https://cosmolocal.credit` and `cosmolocal.credit` are equivalent. It is honoured
+   only when it is a suffix of the serving host, so a value like
+   `https://clc-app.pages.dev` has no effect on `app.cosmolocal.credit` — that host
+   falls back to itself, and preview deploys keep their own relying party.
+
+   Enforcement is the **browser's**, not the backend's: `relayer.relying_party_id` in
+   clc-core is loaded into the relayer and never read, and the assertion check
+   verifies the P-256 signature and `clientDataJSON.origin` against
+   `relayer.allowed_origins` — it never hashes an RP ID. Keep the two consistent
+   anyway, but the setting that must include a new console origin is
+   `allowed_origins`, with the scheme (`https://admin.cosmolocal.credit`).
+
+   Changing the RP ID invalidates existing passkeys: WebAuthn credentials cannot be
+   re-scoped, so anyone registered under the old relying party must enrol again.
+   Paper wallets are unaffected.
 
 Each admin deploy also needs its origin in **both** clc-core allowlists —
 `api.cors` and `relayer.allowed_origins` — per the numbered list above.

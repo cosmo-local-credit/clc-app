@@ -9,10 +9,18 @@
 #   Build command            pnpm --filter @clc/admin build
 #   Build output directory   apps/admin/dist
 #   Root directory           (repository root)
-# This file covers Functions configuration and manual deploys
-# (`wrangler pages deploy -c apps/admin/wrangler.toml`); `pages_build_output_dir`
-# is relative to this file, and wrangler run from the root without `-c` would pick
-# up the web config instead.
+#
+# THIS FILE IS REQUIRED — it is what separates the two projects. Nitro resolves a
+# Wrangler config from the build's working directory, which `pnpm --filter` sets to
+# apps/admin. Delete it and the resolution walks up to the root config, which
+# generates a deploy named "clc-app" carrying every one of apps/web's vars
+# (MapTiler key included). Verified by building with and without it.
+#
+# It seeds the config the deploy actually uses, which Nitro generates at
+# dist/_worker.js/wrangler.json — hence the build-time warning that
+# `pages_build_output_dir` is overridden and ignored. That key is kept anyway
+# because Wrangler requires it in a Pages config, and a manual
+# `wrangler pages deploy -c apps/admin/wrangler.toml` reads it relative to here.
 name = "clc-admin"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
@@ -38,5 +46,13 @@ compatibility_flags = ["nodejs_compat"]
 # VITE_RELYING_PARTY_ID is the registrable domain, not this host: a passkey is
 # bound to the relying party it was registered under, so scoping it to the parent
 # is what lets one credential work on app.cosmolocal.credit and
-# admin.cosmolocal.credit alike. It must match `relayer.relying_party_id` in
-# clc-core, and apps/web must be set to the same value.
+# admin.cosmolocal.credit alike. apps/web must carry the same value. A scheme is
+# stripped by `new URL(value).hostname`, so https:// is optional here.
+#
+# The backend does not verify it — clc-core loads `relayer.relying_party_id` and
+# never reads it; the assertion check compares `clientDataJSON.origin` against
+# `relayer.allowed_origins`, which is where this console's origin must be added,
+# scheme included.
+#
+# Adding maps later means adding VITE_MAPTILER_KEY here too, and allowing this
+# origin on the key in the MapTiler account.
