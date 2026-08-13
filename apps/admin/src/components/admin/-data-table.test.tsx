@@ -86,4 +86,34 @@ describe("DataTable", () => {
 
     expect(onRowClick).toHaveBeenCalledExactlyOnceWith({ name: "Kilifi Growers", count: 9 });
   });
+  it("renders a footer under the table, but not in place of the empty state", () => {
+    // The pager lives here now, so it must appear with rows and stay away when the
+    // empty state replaces the table — a pager over "no rows" is nonsense.
+    const { unmount } = render(
+      <DataTable columns={columns} data={rows} footer={<span>pager</span>} />,
+    );
+    expect(screen.getByText("pager")).toBeTruthy();
+    unmount();
+
+    render(
+      <DataTable
+        columns={columns}
+        data={[]}
+        emptyState={<span>nothing here</span>}
+        footer={<span>pager</span>}
+      />,
+    );
+    expect(screen.getByText("nothing here")).toBeTruthy();
+    expect(screen.queryByText("pager")).toBeNull();
+  });
+
+  it("announces the sort direction on the sorted column header", () => {
+    // The arrow glyph is decorative; aria-sort is what a screen reader reads.
+    render(<DataTable columns={columns} data={rows} sorting={[{ id: "name", desc: true }]} />);
+    const headers = screen.getAllByRole("columnheader");
+    expect(headers[0]?.getAttribute("aria-sort")).toBe("descending");
+    expect(headers[1]?.getAttribute("aria-sort")).toBe("none");
+    // A column that opts out of sorting carries no aria-sort at all.
+    expect(headers[2]?.getAttribute("aria-sort")).toBeNull();
+  });
 });
