@@ -39,7 +39,7 @@ const toastIcons = {
 export function Toaster() {
   return (
     <Sonner
-      duration={3500}
+      duration={2000}
       expand
       gap={8}
       icons={toastIcons}
