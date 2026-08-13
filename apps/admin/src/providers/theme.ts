@@ -62,6 +62,18 @@ const useThemeStore = create<ThemeState>((set, get) => ({
   toggleTheme: () => get().setTheme(get().theme === "dark" ? "light" : "dark"),
 }));
 
+/**
+ * Sets the theme outside React — for tests that need to seed the store before
+ * rendering.
+ *
+ * Components must use `useHydratedTheme` instead. This writes straight to the
+ * store, so it skips the hydration effect that reconciles the persisted value on
+ * mount; calling it from a component would leave the two out of step.
+ */
+export function setTheme(theme: Theme) {
+  useThemeStore.getState().setTheme(theme);
+}
+
 export function useHydratedTheme() {
   const theme = useThemeStore((state) => state.theme);
   const setTheme = useThemeStore((state) => state.setTheme);
