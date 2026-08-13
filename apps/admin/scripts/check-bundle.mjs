@@ -19,19 +19,43 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const assets = join(here, "..", ".output", "public", "assets");
 const budgetPath = join(here, "bundle-budget.json");
+
+/**
+ * Both build shapes are inspected, because they are not the same artifact.
+ * `vp build` emits the Nitro server layout under .output/public, while
+ * `build:cf` (NITRO_PRESET=cloudflare-pages) emits dist/ — and dist/ is what
+ * Cloudflare Pages serves. Looking only in .output meant this check could not see
+ * the bundle that actually ships.
+ */
+const candidateAssetDirs = [
+  join(here, "..", "dist", "assets"),
+  join(here, "..", ".output", "public", "assets"),
+];
 
 const budget = JSON.parse(readFileSync(budgetPath, "utf8"));
 const tolerance = budget.tolerance ?? 0.1;
 
+let assets;
 let files;
-try {
-  files = readdirSync(assets).filter((name) => name.endsWith(".js"));
-} catch {
-  console.error(`No build output at ${assets}. Run \`vp build\` first.`);
+for (const candidate of candidateAssetDirs) {
+  try {
+    files = readdirSync(candidate).filter((name) => name.endsWith(".js"));
+    assets = candidate;
+    break;
+  } catch {
+    // Try the next layout.
+  }
+}
+
+if (!assets) {
+  console.error(
+    `No build output found. Looked in:\n${candidateAssetDirs.map((d) => `  ${d}`).join("\n")}\n` +
+      "Run `vp build` or `pnpm build:cf` first.",
+  );
   process.exit(2);
 }
+console.log(`Measuring ${assets}`);
 
 /** Content hashes change every build, so chunks are matched by their stable prefix. */
 function groupOf(name) {

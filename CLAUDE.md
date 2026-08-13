@@ -342,6 +342,46 @@ Admin's dev port lives in `apps/admin/vite.config.ts` as
 `vp dev apps/admin` from the root silently takes `apps/web`'s 3000, and both
 allowlists above name the port.
 
+### Deployment — two Cloudflare Pages projects
+
+|              | Project     | Config                     | Host                      |
+| ------------ | ----------- | -------------------------- | ------------------------- |
+| `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `app.cosmolocal.credit`   |
+| `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` |
+
+```sh
+pnpm build:cf         && wrangler pages deploy                              # web
+pnpm build:cf:admin   && wrangler pages deploy -c apps/admin/wrangler.toml  # admin
+```
+
+Both use `NITRO_PRESET=cloudflare-pages`, which emits `dist/`. Wrangler run from
+the root without `-c` picks up the **web** config, so the admin deploy must name
+its own. `pages_build_output_dir` is relative to whichever config file declares it.
+
+Separate projects, not one project with two paths: a Pages project has a single
+build output, and serving the console under the app's origin would place it inside
+the scope of `apps/web`'s service worker.
+
+**Two things are load-bearing across both hosts:**
+
+1. **The session cookie is scoped to the registrable domain.** clc-core sets it on
+   its own host with `SameSite=Lax`, so any client must share
+   `cosmolocal.credit` with the API. A console on a _different_ registrable domain
+   (`admin.appcosmolocal.credit`, say) gets a 200 from `/auth/signin` and then a
+   204 from `/auth/session`, because the browser never stored the cookie. That
+   would need `SameSite=None; Secure; Partitioned` on the backend.
+2. **`VITE_RELYING_PARTY_ID` is `cosmolocal.credit` in both projects** — the parent
+   domain, so one passkey works on either host. It must equal
+   `relayer.relying_party_id` in clc-core. `resolveRelyingPartyId` only honours the
+   configured value when it is a suffix of the serving host, so `*.pages.dev`
+   preview deploys still fall back to their own hostname and keep their own
+   passkeys. Changing this value invalidates existing passkeys: WebAuthn
+   credentials cannot be re-scoped, so anyone registered under the old relying
+   party must enrol again. Paper wallets are unaffected.
+
+Each admin deploy also needs its origin in **both** clc-core allowlists —
+`api.cors` and `relayer.allowed_origins` — per the numbered list above.
+
 ### Forms & validation
 
 TanStack Form 1.32+ accepts zod 4 Standard Schema directly — no adapter. For

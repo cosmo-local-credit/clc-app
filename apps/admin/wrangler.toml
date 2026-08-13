@@ -1,0 +1,28 @@
+# Cloudflare Pages project for the admin console.
+#
+# A separate project from apps/web on purpose. A Pages project has one build
+# output directory, and serving the console from a path on the app's origin would
+# put it inside the scope of apps/web's service worker — which must never cache or
+# intercept anything here.
+#
+# `pages_build_output_dir` is relative to this file, so deploys must name it:
+#   pnpm build:cf:admin && wrangler pages deploy -c apps/admin/wrangler.toml
+# Running wrangler from the repo root without -c picks up the root config, which
+# is apps/web.
+name = "clc-admin"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-25"
+compatibility_flags = ["nodejs_compat"]
+
+# Only the four variables this app reads. Deliberately not copied from the web
+# project: the console has no map, no Calibur wallet and no paper-wallet origin,
+# and an unused key here would imply otherwise.
+[vars]
+VITE_API_URL = "https://staging.cosmolocal.credit"
+VITE_CHAIN_ID = "42220"
+VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+# The registrable domain, not this host. A passkey is bound to the relying party
+# it was registered under, so scoping it to the parent is what lets one credential
+# work on both app.cosmolocal.credit and admin.cosmolocal.credit. It must match
+# `relayer.relying_party_id` in clc-core, and the same value is set for apps/web.
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"

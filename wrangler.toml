@@ -1,3 +1,5 @@
+# Cloudflare Pages project for the mobile PWA. The admin console is a separate
+# project — see apps/admin/wrangler.toml.
 name = "clc-app"
 pages_build_output_dir = "apps/web/dist"
 compatibility_date = "2026-05-25"
@@ -13,5 +15,15 @@ VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_URL = "https://forno.celo.org"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
-VITE_RELYING_PARTY_ID = "https://clc-app.pages.dev"
+# The registrable domain, so one passkey works on app.cosmolocal.credit and
+# admin.cosmolocal.credit alike. `resolveRelyingPartyId` uses this only when it is
+# a suffix of the serving host, so *.pages.dev preview deploys still fall back to
+# their own hostname.
+#
+# CHANGING THIS INVALIDATES EXISTING PASSKEYS. Credentials registered under
+# `app.cosmolocal.credit` cannot be re-scoped — WebAuthn has no migration path —
+# so anyone who signed up with a passkey before this change has to register a new
+# one. Their paper wallet is unaffected. Must match `relayer.relying_party_id` in
+# clc-core.
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"
 VITE_RELYING_PARTY_NAME = "CLC"
