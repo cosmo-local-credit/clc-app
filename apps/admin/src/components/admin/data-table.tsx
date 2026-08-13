@@ -44,6 +44,7 @@ export function DataTable<TData>({
   onSortChange,
   onRowClick,
   emptyState,
+  footer,
   className,
 }: {
   columns: Array<ColumnDef<TData>>;
@@ -54,6 +55,8 @@ export function DataTable<TData>({
   onSortChange?: (columnId: string) => void;
   onRowClick?: (row: TData) => void;
   emptyState?: ReactNode;
+  /** Flush bar under the table (pager, count). Omitted on empty-state. */
+  footer?: ReactNode;
   className?: string;
 }) {
   const table = useReactTable({
@@ -69,7 +72,7 @@ export function DataTable<TData>({
   if (data.length === 0 && emptyState) return <>{emptyState}</>;
 
   return (
-    <div className={cn("overflow-x-auto border border-border bg-card", className)}>
+    <div className={cn("overflow-hidden border border-border bg-card", className)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -133,6 +136,7 @@ export function DataTable<TData>({
           ))}
         </TableBody>
       </Table>
+      {footer ? <div className="border-t border-border px-4 py-3">{footer}</div> : null}
     </div>
   );
 }

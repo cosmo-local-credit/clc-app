@@ -12,7 +12,7 @@
  */
 
 /** Supported page sizes. An arbitrary `perPage` would let a URL request the world. */
-export const PAGE_SIZES = [25, 50, 100] as const;
+export const PAGE_SIZES = [10, 25, 50, 100] as const;
 
 export type PageSize = (typeof PAGE_SIZES)[number];
 

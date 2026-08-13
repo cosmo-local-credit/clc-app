@@ -1,18 +1,24 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "#/components/ui/button";
+import { ButtonGroup, ButtonGroupText } from "#/components/ui/button-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "#/components/ui/select";
 import { PAGE_SIZES, type PageSize, type TableSearch } from "#/lib/table-search";
 
 /**
- * Cursor pagination controls.
+ * Cursor pagination controls, flush under a `DataTable` footer.
  *
- * Deliberately says "N shown" rather than "N of M". No clc-core list endpoint
- * returns a total, so any "of M" would be invented, and `mightHaveMore` is a
- * suggestion from a full page rather than proof another page exists — hence
- * "Next" is offered but nothing claims how many pages remain.
+ * `mightHaveMore` is a suggestion from a full page rather than proof another
+ * page exists — Next is offered only then, and nothing claims how many pages
+ * remain. Dead siblings are omitted rather than shown disabled.
  */
 export function TablePagination({
   search,
-  shown,
   dropped,
   isFirstPage,
   mightHaveMore,
@@ -23,7 +29,6 @@ export function TablePagination({
   onPageSize,
 }: {
   search: TableSearch;
-  shown: number;
   /** Rows the backend sent that normalization rejected, for this page only. */
   dropped: number;
   isFirstPage: boolean;
@@ -34,53 +39,78 @@ export function TablePagination({
   onNextPage: () => void;
   onPageSize: (perPage: PageSize) => void;
 }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border border-border bg-card px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span className="font-data text-xs text-muted-foreground">
-          {shown} shown
-          {dropped > 0 ? ` · ${dropped} dropped from this page` : ""}
-        </span>
-        <label className="flex items-center gap-2 font-mono text-xs text-muted-foreground uppercase">
-          rows
-          <select
-            value={search.perPage}
-            onChange={(event) => onPageSize(Number(event.target.value) as PageSize)}
-            className="h-7 border border-border bg-card px-1 font-data text-xs text-foreground"
-            aria-label="Rows per page"
-          >
-            {PAGE_SIZES.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+  const showFirst = !isFirstPage;
+  const showPrev = !isFirstPage;
+  const showNext = mightHaveMore;
 
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="xs" onClick={onFirstPage} disabled={isFirstPage}>
-          First
-        </Button>
-        <Button
-          variant="outline"
-          size="icon-xs"
-          onClick={onPreviousPage}
-          disabled={isFirstPage || isFetching}
-          aria-label="Previous page"
-        >
-          <ChevronLeftIcon />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon-xs"
-          onClick={onNextPage}
-          disabled={!mightHaveMore || isFetching}
-          aria-label="Next page"
-        >
-          <ChevronRightIcon />
-        </Button>
+  return (
+    <div className="flex w-full flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <ButtonGroup>
+          <ButtonGroupText className="h-8 border-border px-2.5">Rows</ButtonGroupText>
+          <Select
+            value={String(search.perPage)}
+            onValueChange={(value) => {
+              if (value == null) return;
+              const n = Number(value);
+              if (PAGE_SIZES.includes(n as PageSize)) onPageSize(n as PageSize);
+            }}
+          >
+            <SelectTrigger
+              size="default"
+              className="h-8 min-h-8 w-20 min-w-20 rounded-none px-2.5"
+              aria-label="Rows per page"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {PAGE_SIZES.map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </ButtonGroup>
+        {dropped > 0 ? (
+          <span className="font-data text-sm text-muted-foreground tabular-nums">
+            {dropped} dropped from this page
+          </span>
+        ) : null}
       </div>
+      {showFirst || showPrev || showNext ? (
+        <ButtonGroup>
+          {showFirst ? (
+            <Button variant="outline" size="sm" disabled={isFetching} onClick={onFirstPage}>
+              First
+            </Button>
+          ) : null}
+          {showPrev ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isFetching}
+              onClick={onPreviousPage}
+              aria-label="Previous page"
+            >
+              <ChevronLeftIcon />
+              Previous
+            </Button>
+          ) : null}
+          {showNext ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isFetching}
+              onClick={onNextPage}
+              aria-label="Next page"
+            >
+              Next
+              <ChevronRightIcon />
+            </Button>
+          ) : null}
+        </ButtonGroup>
+      ) : null}
     </div>
   );
 }

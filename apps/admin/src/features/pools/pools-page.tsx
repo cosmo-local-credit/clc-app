@@ -144,18 +144,19 @@ export function PoolsPage({ search }: { search: TableSearch }) {
                 description="The backend has not indexed any pools yet."
               />
             }
-          />
-          <TablePagination
-            search={search}
-            shown={pools.length}
-            dropped={dropped}
-            isFirstPage={table.isFirstPage}
-            mightHaveMore={table.mightHaveMore}
-            isFetching={poolsQuery.isFetching}
-            onFirstPage={table.onFirstPage}
-            onPreviousPage={table.onPreviousPage}
-            onNextPage={table.onNextPage}
-            onPageSize={table.onPageSize}
+            footer={
+              <TablePagination
+                search={search}
+                dropped={dropped}
+                isFirstPage={table.isFirstPage}
+                mightHaveMore={table.mightHaveMore}
+                isFetching={poolsQuery.isFetching}
+                onFirstPage={table.onFirstPage}
+                onPreviousPage={table.onPreviousPage}
+                onNextPage={table.onNextPage}
+                onPageSize={table.onPageSize}
+              />
+            }
           />
         </>
       )}

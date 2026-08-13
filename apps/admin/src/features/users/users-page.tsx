@@ -224,13 +224,15 @@ export function UsersPage({ search }: { search: UsersSearch }) {
                 }
               />
             }
+            footer={
+              // A total, not a sample: this endpoint returns every row. Sorting is
+              // client-side, which is exact here for the same reason.
+              <p className="font-data text-sm text-muted-foreground tabular-nums">
+                {users.length} {users.length === 1 ? "account" : "accounts"}
+                {search.status ? ` with status ${search.status}` : " in total"}
+              </p>
+            }
           />
-          {/* A total, not a sample: this endpoint returns every row. Sorting is
-              client-side, which is exact here for the same reason. */}
-          <p className="font-data text-muted-foreground text-xs">
-            {users.length} {users.length === 1 ? "account" : "accounts"}
-            {search.status ? ` with status ${search.status}` : " in total"}
-          </p>
         </>
       )}
     </div>
