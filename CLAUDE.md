@@ -349,14 +349,25 @@ allowlists above name the port.
 | `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `app.cosmolocal.credit`   |
 | `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` |
 
-```sh
-pnpm build:cf         && wrangler pages deploy                              # web
-pnpm build:cf:admin   && wrangler pages deploy -c apps/admin/wrangler.toml  # admin
-```
+Both deploy from Git, configured in the Pages dashboard. Root directory stays the
+repository root for both — the build command selects the app:
 
-Both use `NITRO_PRESET=cloudflare-pages`, which emits `dist/`. Wrangler run from
-the root without `-c` picks up the **web** config, so the admin deploy must name
-its own. `pages_build_output_dir` is relative to whichever config file declares it.
+| Project     | Build command                    | Build output directory |
+| ----------- | -------------------------------- | ---------------------- |
+| `clc-app`   | `pnpm --filter @clc/web build`   | `apps/web/dist`        |
+| `clc-admin` | `pnpm --filter @clc/admin build` | `apps/admin/dist`      |
+
+No `NITRO_PRESET` is needed. Nitro maps Cloudflare's `CF_PAGES` variable to the
+`cloudflare-pages` preset on its own, which is why the same `build` script emits
+`dist/` on Pages and `.output/` locally. `pnpm build:cf` / `build:cf:admin` set the
+preset explicitly and exist only to reproduce the Pages artifact on a laptop —
+pair either with `wrangler pages dev apps/<app>/dist`.
+
+**`VITE_*` values must be set as dashboard environment variables on each project.**
+They are inlined into the client bundle at build time, so a value that exists only
+as `[vars]` in a Wrangler config reaches the Pages Function at runtime and never
+reaches the bundle. Admin needs exactly four: `VITE_API_URL`, `VITE_RELAYER_URL`,
+`VITE_RELYING_PARTY_ID`, `VITE_CHAIN_ID`.
 
 Separate projects, not one project with two paths: a Pages project has a single
 build output, and serving the console under the app's origin would place it inside
