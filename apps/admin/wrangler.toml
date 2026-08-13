@@ -5,7 +5,7 @@
 # put it inside the scope of apps/web's service worker — which must never cache or
 # intercept anything here.
 #
-# The deploy itself is Git-connected and configured in the dashboard:
+# The deploy itself is Git-connected, with these dashboard build settings:
 #   Build command            pnpm --filter @clc/admin build
 #   Build output directory   apps/admin/dist
 #   Root directory           (repository root)
@@ -26,33 +26,36 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# No [vars] here on purpose.
+# Only the four variables this app reads. Deliberately not copied from the web
+# project: the console has no map, no Calibur wallet, no paper-wallet origin and no
+# RPC, and it never *registers* a passkey — only asserts one — so it needs no
+# relying-party name. An unused key here would imply otherwise.
 #
-# `vars` are Pages Function bindings, delivered at *runtime*. Every value this app
-# reads is a VITE_ variable, and those are inlined into the client bundle at *build*
-# time from the build's process environment — so a value set here would reach the
-# worker and never reach the browser. Verified: a build with staging in [vars] and
-# localhost in .env put localhost in dist/assets and staging only in
-# dist/_worker.js.
-#
-# The four the console reads are therefore set as environment variables on the
-# Pages project itself, for production and preview:
-#
-#   VITE_API_URL            https://staging.cosmolocal.credit
-#   VITE_RELAYER_URL        https://staging.cosmolocal.credit/api/v2/relayer
-#   VITE_CHAIN_ID           42220
-#   VITE_RELYING_PARTY_ID   cosmolocal.credit
-#
-# VITE_RELYING_PARTY_ID is the registrable domain, not this host: a passkey is
-# bound to the relying party it was registered under, so scoping it to the parent
-# is what lets one credential work on app.cosmolocal.credit and
-# admin.cosmolocal.credit alike. apps/web must carry the same value. A scheme is
-# stripped by `new URL(value).hostname`, so https:// is optional here.
+# Add VITE_MAPTILER_KEY when the console gains maps, and allow this origin on the
+# key in the MapTiler account, or tiles will 403.
+[vars]
+VITE_API_URL = "https://staging.cosmolocal.credit"
+VITE_CHAIN_ID = "42220"
+VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+# The registrable domain, not this host: a passkey is bound to the relying party it
+# was registered under, so scoping it to the parent is what lets one credential work
+# on app.cosmolocal.credit and admin.cosmolocal.credit alike. apps/web carries the
+# same value. A scheme would be stripped by `new URL(value).hostname`, so https:// is
+# optional.
 #
 # The backend does not verify it — clc-core loads `relayer.relying_party_id` and
 # never reads it; the assertion check compares `clientDataJSON.origin` against
-# `relayer.allowed_origins`, which is where this console's origin must be added,
+# `relayer.allowed_origins`, which is where this console's origins must be added,
 # scheme included.
-#
-# Adding maps later means adding VITE_MAPTILER_KEY here too, and allowing this
-# origin on the key in the MapTiler account.
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+
+# Preview deploys keep their own relying party, for the same reason as apps/web:
+# `cosmolocal.credit` is not a suffix of any *.pages.dev host and would be ignored
+# there, leaving each branch on its own hostname. Every key is repeated because
+# `vars` is non-inheritable — overriding it for an environment without restating the
+# rest fails validation at deploy time.
+[env.preview.vars]
+VITE_API_URL = "https://staging.cosmolocal.credit"
+VITE_CHAIN_ID = "42220"
+VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"
