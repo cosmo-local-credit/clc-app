@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { SectionLabel } from "#/components/admin/section-heading";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -228,14 +229,6 @@ function LimitField({
 
 function Panel({ children }: { children: React.ReactNode }) {
   return <div className="border border-border bg-card p-4 text-sm">{children}</div>;
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
-      {children}
-    </p>
-  );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {

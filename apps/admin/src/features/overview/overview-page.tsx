@@ -9,6 +9,7 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { MetricCard } from "#/components/admin/metric-card";
 import { PageHeader } from "#/components/admin/page-header";
+import { SectionHeading } from "#/components/admin/section-heading";
 import { SectionState } from "#/components/admin/section-state";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import {
@@ -207,9 +208,7 @@ export function OverviewPage() {
 function ChartPanel({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="border border-border bg-card p-4">
-      <h2 className="mb-4 font-mono text-xs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-        {title}
-      </h2>
+      <SectionHeading className="mb-4">{title}</SectionHeading>
       {children}
     </div>
   );

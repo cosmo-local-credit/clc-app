@@ -33,6 +33,7 @@ import { MdOutlineFingerprint } from "react-icons/md";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { decryptPaperWalletPrivateKey } from "@clc/core/features/wallet/paper-wallet-encryption";
+import { SectionLabel } from "#/components/admin/section-heading";
 import { Alert, AlertAction, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -318,14 +319,6 @@ function PasskeyUnavailable({ reason }: { reason: PasskeyUnsupportedReason }) {
           : "No passkey on this device"}
       </span>
     </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
-      {children}
-    </p>
   );
 }
 
