@@ -20,8 +20,10 @@ describe("isModuleLoadError", () => {
 
 describe("reloadOnceForStaleChunk", () => {
   let reload: ReturnType<typeof vi.fn>;
+  let sessionStorageDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
+    sessionStorageDescriptor = Object.getOwnPropertyDescriptor(window, "sessionStorage");
     sessionStorage.clear();
     reload = vi.fn();
     Object.defineProperty(window, "location", {
@@ -32,7 +34,10 @@ describe("reloadOnceForStaleChunk", () => {
   });
 
   afterEach(() => {
-    sessionStorage.clear();
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(window, "sessionStorage", sessionStorageDescriptor);
+    }
+    window.sessionStorage.clear();
     window.name = "";
     vi.restoreAllMocks();
   });
@@ -61,11 +66,20 @@ describe("reloadOnceForStaleChunk", () => {
   });
 
   it("does not boot-loop when sessionStorage is unavailable (window.name fallback)", () => {
-    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("storage blocked");
-    });
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new Error("storage blocked");
+    Object.defineProperty(window, "sessionStorage", {
+      configurable: true,
+      value: {
+        getItem: () => {
+          throw new Error("storage blocked");
+        },
+        setItem: () => {
+          throw new Error("storage blocked");
+        },
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        key: vi.fn(() => null),
+        length: 0,
+      } satisfies Storage,
     });
 
     expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(true);

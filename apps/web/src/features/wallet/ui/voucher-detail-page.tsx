@@ -1,4 +1,5 @@
 import { formatVoucherRate } from "@clc/core/features/market/logic";
+import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { ReportList } from "#/components/reports/report-list";
 import { InfoRow } from "#/components/ui/info-row";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
@@ -29,6 +31,8 @@ import {
   type WalletToken,
 } from "#/components/wallet";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import {
@@ -47,9 +51,9 @@ import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
 type TxKind = "in" | "out";
-type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews";
+type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews" | "posts";
 
-const VOUCHER_TABS: VoucherDetailTab[] = ["offerings", "info", "activity", "reviews"];
+const VOUCHER_TABS: VoucherDetailTab[] = ["offerings", "info", "activity", "reviews", "posts"];
 
 const TX_ICON: Record<TxKind, ReactNode> = {
   in: <RiArrowLeftDownLine className="size-3.5" aria-hidden="true" />,
@@ -165,6 +169,11 @@ export function VoucherDetailPage({
   const lng = detail?.lng ?? token.lng ?? null;
   const sendToken = contractAddress ?? token.id;
   const issuerAddress = token.owner ?? null;
+  const reportChainId = detail?.chainId ?? poolVoucher?.chainId ?? null;
+  const reportVoucher: VoucherRef | undefined =
+    reportChainId && contractAddress
+      ? { chainId: reportChainId, address: contractAddress as VoucherRef["address"] }
+      : undefined;
   // Redeeming is sending the voucher back to whoever issued it.
   const redeemContent = (
     <>
@@ -236,7 +245,7 @@ export function VoucherDetailPage({
       </div>
 
       <div
-        className="mb-3 grid grid-cols-4 border border-border bg-card p-1"
+        className="mb-3 grid grid-cols-5 border border-border bg-card p-1"
         role="tablist"
         aria-label={t`Voucher details`}
       >
@@ -248,8 +257,10 @@ export function VoucherDetailPage({
               <Trans>Activity</Trans>
             ) : tab === "info" ? (
               <Trans>Info</Trans>
-            ) : (
+            ) : tab === "reviews" ? (
               <Trans>Reviews</Trans>
+            ) : (
+              <Trans>Posts</Trans>
             );
           const className = [
             "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
@@ -323,6 +334,12 @@ export function VoucherDetailPage({
           lng={lng}
         />
       ) : null}
+      {activeTab === "posts" ? (
+        <VoucherPostsPanel
+          voucher={reportVoucher}
+          voucherDataPending={detailQuery.isPending || supportingDataPending}
+        />
+      ) : null}
       {activeTab === "reviews" ? (
         <EmptyTabPanel tab="reviews">
           <Trans>Reviews for this voucher will appear here.</Trans>
@@ -341,6 +358,103 @@ function EmptyTabPanel({ tab, children }: { tab: "reviews"; children: ReactNode 
       className="border border-border bg-card p-4 text-muted-foreground text-sm"
     >
       {children}
+    </div>
+  );
+}
+
+function VoucherPostsPanel({
+  voucher,
+  voucherDataPending,
+}: {
+  voucher: VoucherRef | undefined;
+  voucherDataPending: boolean;
+}) {
+  const { t } = useLingui();
+  const auth = useAuthStatus();
+  const reportsQuery = useVoucherReportsInfinite(voucher, 20, auth.isAuthenticated && !!voucher);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const reports = reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [];
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !reportsQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting && !reportsQuery.isFetchingNextPage) {
+        void reportsQuery.fetchNextPage();
+      }
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [reportsQuery.fetchNextPage, reportsQuery.hasNextPage, reportsQuery.isFetchingNextPage]);
+
+  let content: ReactNode;
+  if (auth.isLoading || (auth.isAuthenticated && !voucher && voucherDataPending)) {
+    content = (
+      <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
+        <Trans>Loading posts…</Trans>
+      </div>
+    );
+  } else if (!auth.isAuthenticated) {
+    content = (
+      <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
+        <Trans>Sign in to view posts.</Trans>
+      </div>
+    );
+  } else if (!voucher) {
+    content = (
+      <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
+        <Trans>Posts aren't available for this voucher.</Trans>
+      </div>
+    );
+  } else if (reportsQuery.isPending) {
+    content = (
+      <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
+        <Trans>Loading posts…</Trans>
+      </div>
+    );
+  } else if (reportsQuery.isError) {
+    content = (
+      <div className="space-y-2 border border-border bg-card p-4">
+        <p className="text-muted-foreground text-sm">
+          <Trans>Couldn't load posts.</Trans>
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 bg-card"
+          onClick={() => reportsQuery.refetch()}
+        >
+          <Trans>Try again</Trans>
+        </Button>
+      </div>
+    );
+  } else if (reports.length === 0) {
+    content = (
+      <div className="border border-border bg-card p-4 text-muted-foreground text-sm">
+        <Trans>No posts yet.</Trans>
+      </div>
+    );
+  } else {
+    content = <ReportList reports={reports} ariaLabel={t`Posts`} />;
+  }
+
+  return (
+    <div
+      id="voucher-panel-posts"
+      role="tabpanel"
+      aria-labelledby="voucher-tab-posts"
+      className="space-y-2"
+    >
+      {content}
+      <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
+      {reportsQuery.isFetchingNextPage ? (
+        <p className="text-center text-muted-foreground text-xs">
+          <Trans>Loading more…</Trans>
+        </p>
+      ) : null}
     </div>
   );
 }

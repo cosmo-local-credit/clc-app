@@ -81,7 +81,10 @@ describe("searchLocations", () => {
       ),
       expect.objectContaining({ method: "GET", signal }),
     );
-    const url = new URL(String(spy.mock.calls[0]?.[0]));
+    const request = spy.mock.calls[0]?.[0];
+    expect(request).toEqual(expect.any(String));
+    if (typeof request !== "string") throw new Error("Expected fetch to receive a URL string.");
+    const url = new URL(request);
     expect(url.searchParams.get("SingleLine")).toBe("Nairobi CBD");
     expect(url.searchParams.get("f")).toBe("json");
     expect(result).toEqual([
@@ -120,7 +123,10 @@ describe("reverseLocation", () => {
       ),
       expect.objectContaining({ method: "GET", signal }),
     );
-    const url = new URL(String(spy.mock.calls[0]?.[0]));
+    const request = spy.mock.calls[0]?.[0];
+    expect(request).toEqual(expect.any(String));
+    if (typeof request !== "string") throw new Error("Expected fetch to receive a URL string.");
+    const url = new URL(request);
     expect(url.searchParams.get("location")).toBe("37.05733357847967,-0.3976733984248142");
     expect(url.searchParams.get("f")).toBe("json");
     expect(result).toEqual({
