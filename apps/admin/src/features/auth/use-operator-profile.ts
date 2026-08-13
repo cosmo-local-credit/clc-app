@@ -1,19 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { profileQueryOptions } from "@clc/api/features/auth/queries";
 import { clcApi } from "#/lib/api";
 
 /**
  * The signed-in operator's profile (name, email, …).
  *
- * Hung off `["clc", …]` so `clearProtectedQueries` drops it on sign-out and a
- * later operator cannot inherit the previous name from the cache.
+ * No address is passed: this console has no wallet, so there is one profile — the
+ * cookie's. The shared key hangs off `["clc", …]`, which is what
+ * `clearProtectedQueries` sweeps on sign-out and session expiry, so a later
+ * operator cannot inherit the previous name from the cache.
  */
-const operatorProfileQueryKey = ["clc", "auth", "profile"] as const;
-
 export function useOperatorProfile() {
-  return useQuery({
-    queryKey: operatorProfileQueryKey,
-    queryFn: () => clcApi.auth.getProfile(),
-    staleTime: 60_000,
-  });
+  return useQuery(profileQueryOptions(clcApi.auth));
 }
