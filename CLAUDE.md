@@ -400,18 +400,58 @@ One consequence: while a Wrangler file is present, the Functions settings it own
 are **read-only in the dashboard**. That does not touch build-time environment
 variables, which is why the `VITE_*` values still belong there.
 
+### Keeping `*.pages.dev` branch previews working
+
+Pages environment variables are set **per environment**, so Preview keeps its own
+values. Only the relying party differs between them:
+
+| Project     | Production          | Preview               |
+| ----------- | ------------------- | --------------------- |
+| `clc-app`   | `cosmolocal.credit` | `clc-app.pages.dev`   |
+| `clc-admin` | `cosmolocal.credit` | `clc-admin.pages.dev` |
+
+The Preview value is the project's own `pages.dev` host on purpose, and it is why
+web's was set that way to begin with: `resolveRelyingPartyId` honours a configured
+value when it is a suffix of the serving host, so every
+`<branch>.clc-app.pages.dev` shares one relying party and one passkey works across
+branches. Setting Preview to `cosmolocal.credit` would break that — no preview host
+is beneath it, so each branch would fall back to its own hostname and register its
+own credentials. Every other variable is the same in both environments.
+
+Both preview origins must also be in clc-core's allowlists. `util.OriginAllowed`
+supports a single `*` matching exactly one DNS label, so branch previews are one
+entry each:
+
+```toml
+api.cors                += "https://clc-admin.pages.dev", "https://*.clc-admin.pages.dev"
+relayer.allowed_origins += "https://clc-admin.pages.dev", "https://*.clc-admin.pages.dev"
+```
+
 Separate projects, not one project with two paths: a Pages project has a single
 build output, and serving the console under the app's origin would place it inside
 the scope of `apps/web`'s service worker.
 
 **Two things are load-bearing across both hosts:**
 
-1. **The session cookie is scoped to the registrable domain.** clc-core sets it on
-   its own host with `SameSite=Lax`, so any client must share
-   `cosmolocal.credit` with the API. A console on a _different_ registrable domain
-   (`admin.appcosmolocal.credit`, say) gets a 200 from `/auth/signin` and then a
-   204 from `/auth/session`, because the browser never stored the cookie. That
-   would need `SameSite=None; Secure; Partitioned` on the backend.
+1. **The session cookie's `SameSite` differs between local and deployed.**
+   `authCookieSameSite` returns `None` when clc-core runs with `prod` set and `Lax`
+   otherwise, so:
+   - **Deployed**, `None; Secure` means any origin works, including a different
+     registrable domain and `*.pages.dev` previews. That is deliberate — the
+     comment in `internal/api/auth.go` names previews as the reason.
+   - **Locally**, `Lax` means the browser and the API must share a registrable
+     domain. Browsing `localhost:3000` against `VITE_API_URL=http://192.168.1.20:5003`
+     is cross-site, so `/auth/signin` returns 200 and `/auth/session` then answers
+     204 — sign-in succeeds and the cookie is silently dropped. Use the LAN host for
+     both, or point `VITE_API_URL` at `localhost`.
+
+   One deployed caveat: a `None` cookie sent from a _different_ registrable domain is
+   a third-party cookie, so it depends on the browser still permitting those. The
+   cookie sets no `Partitioned` attribute, so there is no CHIPS fallback. Keeping the
+   console under `cosmolocal.credit` sidesteps this entirely — it stays first-party —
+   while `*.pages.dev` previews are inherently third-party and may need `Partitioned`
+   added if a browser tightens.
+
 2. **`VITE_RELYING_PARTY_ID` must be the same on both projects** for one passkey to
    work on either host — set it to the shared parent, `cosmolocal.credit`.
 
