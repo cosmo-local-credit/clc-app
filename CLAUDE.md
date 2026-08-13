@@ -349,13 +349,31 @@ allowlists above name the port.
 | `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `app.cosmolocal.credit`   |
 | `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` |
 
-Both deploy from Git, configured in the Pages dashboard. Root directory stays the
-repository root for both — the build command selects the app:
+Both deploy from Git. The dashboard build settings are **not** symmetric, and the
+asymmetry is load-bearing:
 
-| Project     | Build command                    | Build output directory |
-| ----------- | -------------------------------- | ---------------------- |
-| `clc-app`   | `pnpm --filter @clc/web build`   | `apps/web/dist`        |
-| `clc-admin` | `pnpm --filter @clc/admin build` | `apps/admin/dist`      |
+| Project     | Root directory | Build command                  | Output dir      |
+| ----------- | -------------- | ------------------------------ | --------------- |
+| `clc-app`   | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
+| `clc-admin` | `apps/admin`   | `pnpm build`                   | `dist`          |
+
+**Admin's root directory must be `apps/admin`.** Two different things read a
+Wrangler config and they resolve it from different places:
+
+- **Nitro**, at build time, from the build's working directory.
+- **The Pages platform**, from the project's configured root directory — and that
+  is the one that decides the asset output directory and the build environment
+  variables.
+
+With admin's root directory left at the repo root, the platform reads the _root_
+`wrangler.toml`, takes `pages_build_output_dir: apps/web/dist` and web's eleven
+vars, then fails the deploy after a successful build:
+`Error: Output directory "apps/web/dist" not found.` Pointing the root directory at
+`apps/admin` makes the platform read `apps/admin/wrangler.toml`, whose
+`pages_build_output_dir = "dist"` resolves relative to it.
+
+`pnpm install` still resolves the whole workspace from that subdirectory — pnpm
+walks up to `pnpm-workspace.yaml` — so the monorepo install is unaffected.
 
 No `NITRO_PRESET` is needed. Nitro maps Cloudflare's `CF_PAGES` variable to the
 `cloudflare-pages` preset on its own, which is why the same `build` script emits
@@ -374,19 +392,15 @@ Cloudflare's build system, so `vp build` / `build:cf` on a laptop reads `.env`
 instead. A value present in `[vars]` and absent from `.env` will be missing from a
 locally built bundle while being correct in production.
 
-**Which Wrangler config a build uses is decided by the build command, not the root
-directory.** Both projects build from the repository root, but
-`pnpm --filter @clc/admin build` runs the script with `apps/admin` as its working
-directory, and Nitro resolves the Wrangler config from there. Nitro then
-_generates_ the config the deploy actually uses, at
+Nitro also _generates_ a config from whichever file it resolved, at
 `dist/_worker.js/wrangler.json`, pointing `.wrangler/deploy/config.json` at it; the
 checked-in file only seeds it. Hence the build-time warning that
 `pages_build_output_dir` "is overridden and will be ignored".
 
-**`apps/admin/wrangler.toml` is therefore load-bearing, not boilerplate.** Deleting
-it makes the resolution walk up to the root config, and the admin build then
-generates a deploy named `clc-app` carrying every one of `apps/web`'s vars,
-MapTiler key included. Verified by building both ways.
+**`apps/admin/wrangler.toml` is load-bearing, not boilerplate.** Deleting it makes
+Nitro's resolution walk up to the root config, and the admin build then generates a
+worker named `clc-app` carrying every one of `apps/web`'s vars, MapTiler key
+included. Verified by building both ways.
 
 The division of labour, from Cloudflare's own rule that a Wrangler file "serves as
 the source of truth for Pages Functions projects":
