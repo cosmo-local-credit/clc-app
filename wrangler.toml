@@ -5,14 +5,10 @@ pages_build_output_dir = "apps/web/dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# WARNING: these are Pages Function bindings, delivered at runtime. VITE_ values
-# are inlined into the client bundle at *build* time from the build's process
-# environment, which on Pages means the project's own environment variables — so
-# editing a VITE_ value here does NOT change what the browser gets. Verified in
-# apps/admin: a build with one value here and another in .env put the .env value in
-# dist/assets and this one only in dist/_worker.js.
-#
-# Change any VITE_ value in the Pages dashboard as well, or instead.
+# This file is the source of truth for the project: while it is present, Pages
+# shows these values in the dashboard but will not let them be edited there. Pages
+# supplies them to the build as well as to the Function, which is why VITE_ values
+# belong here — they are inlined into the client bundle at build time.
 [vars]
 VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CALIBUR_ADDRESS = "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85"
@@ -24,14 +20,36 @@ VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_URL = "https://forno.celo.org"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
 # The registrable domain, so one passkey works on app.cosmolocal.credit and
-# admin.cosmolocal.credit alike. `resolveRelyingPartyId` uses this only when it is
-# a suffix of the serving host, so *.pages.dev preview deploys still fall back to
-# their own hostname.
+# admin.cosmolocal.credit alike. `resolveRelyingPartyId` honours this only when it
+# is a suffix of the serving host — see the preview override below.
 #
 # CHANGING THIS INVALIDATES EXISTING PASSKEYS. Credentials registered under
-# `app.cosmolocal.credit` cannot be re-scoped — WebAuthn has no migration path —
-# so anyone who signed up with a passkey before this change has to register a new
-# one. Their paper wallet is unaffected. Must match `relayer.relying_party_id` in
-# clc-core.
+# `app.cosmolocal.credit` cannot be re-scoped — WebAuthn has no migration path — so
+# anyone who signed up with a passkey before this change has to register a new one.
+# Their paper wallet is unaffected. clc-core does not verify it (the relying party
+# is enforced by the browser); the backend setting that must list a new origin is
+# `relayer.allowed_origins`.
 VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+VITE_RELYING_PARTY_NAME = "CLC"
+
+# Preview deploys keep their own relying party.
+#
+# `cosmolocal.credit` is not a suffix of any *.pages.dev host, so it would be
+# ignored there and each branch would fall back to its own hostname — a passkey
+# registered on one branch would not work on the next. `clc-app.pages.dev` *is* a
+# suffix of `<branch>.clc-app.pages.dev`, so every preview shares one relying party.
+#
+# Every key is repeated because `vars` is non-inheritable: overriding it for an
+# environment without restating the rest fails validation at deploy time.
+[env.preview.vars]
+VITE_API_URL = "https://staging.cosmolocal.credit"
+VITE_CALIBUR_ADDRESS = "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85"
+VITE_CHAIN_ID = "42220"
+VITE_DEFAULT_COUNTRY = "KE"
+VITE_FULL_REACT_ERRORS = "true"
+VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
+VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
+VITE_PUBLIC_RPC_URL = "https://forno.celo.org"
+VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+VITE_RELYING_PARTY_ID = "clc-app.pages.dev"
 VITE_RELYING_PARTY_NAME = "CLC"

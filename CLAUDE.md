@@ -363,14 +363,16 @@ No `NITRO_PRESET` is needed. Nitro maps Cloudflare's `CF_PAGES` variable to the
 preset explicitly and exist only to reproduce the Pages artifact on a laptop —
 pair either with `wrangler pages dev apps/<app>/dist`.
 
-**`VITE_*` values must be set as dashboard environment variables on each project,
-not as Wrangler `[vars]`.** `vars` are Function bindings delivered at runtime;
-`VITE_` values are inlined into the client bundle at build time from the build's
-process environment. A value set only in a Wrangler config reaches the worker and
-never the browser — verified by building admin with staging in `[vars]` and
-localhost in `.env`: `dist/assets` got localhost, `dist/_worker.js` got staging.
-Admin needs exactly four: `VITE_API_URL`, `VITE_RELAYER_URL`,
-`VITE_RELYING_PARTY_ID`, `VITE_CHAIN_ID`.
+**Every variable lives in the Wrangler file, not the dashboard.** While a Wrangler
+config is present it is the source of truth: Pages surfaces its `vars` in the
+dashboard read-only, and supplies them to the build as well as to the Function, so
+`VITE_` values are inlined into the client bundle from there. Admin declares exactly
+four — `VITE_API_URL`, `VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`, `VITE_CHAIN_ID`.
+
+A local build is the exception and can mislead: nothing injects `[vars]` outside
+Cloudflare's build system, so `vp build` / `build:cf` on a laptop reads `.env`
+instead. A value present in `[vars]` and absent from `.env` will be missing from a
+locally built bundle while being correct in production.
 
 **Which Wrangler config a build uses is decided by the build command, not the root
 directory.** Both projects build from the repository root, but
@@ -389,34 +391,37 @@ MapTiler key included. Verified by building both ways.
 The division of labour, from Cloudflare's own rule that a Wrangler file "serves as
 the source of truth for Pages Functions projects":
 
-| Concern                                          | Owned by                 |
-| ------------------------------------------------ | ------------------------ |
-| Build command, output directory, root directory  | Pages dashboard          |
-| Build-time `VITE_*` values                       | Pages dashboard env vars |
-| Project name, compatibility date/flags, bindings | `wrangler.toml`          |
-| Runtime `vars` for the Function                  | `wrangler.toml`          |
+| Concern                                          | Owned by        |
+| ------------------------------------------------ | --------------- |
+| Build command, output directory, root directory  | Pages dashboard |
+| Project name, compatibility date/flags, bindings | `wrangler.toml` |
+| Every `VITE_*` value, per environment            | `wrangler.toml` |
 
-One consequence: while a Wrangler file is present, the Functions settings it owns
-are **read-only in the dashboard**. That does not touch build-time environment
-variables, which is why the `VITE_*` values still belong there.
+The dashboard keeps only the three build settings. Everything else is in the file
+and read-only in the UI while the file exists.
 
 ### Keeping `*.pages.dev` branch previews working
 
-Pages environment variables are set **per environment**, so Preview keeps its own
-values. Only the relying party differs between them:
+Each project's Wrangler file carries an `[env.preview.vars]` block. Pages supports
+exactly two environment overrides, `production` and `preview`, and only the relying
+party differs between them:
 
-| Project     | Production          | Preview               |
-| ----------- | ------------------- | --------------------- |
-| `clc-app`   | `cosmolocal.credit` | `clc-app.pages.dev`   |
-| `clc-admin` | `cosmolocal.credit` | `clc-admin.pages.dev` |
+| Project     | `[vars]` (production) | `[env.preview.vars]`  |
+| ----------- | --------------------- | --------------------- |
+| `clc-app`   | `cosmolocal.credit`   | `clc-app.pages.dev`   |
+| `clc-admin` | `cosmolocal.credit`   | `clc-admin.pages.dev` |
 
-The Preview value is the project's own `pages.dev` host on purpose, and it is why
+The preview value is the project's own `pages.dev` host on purpose, and it is why
 web's was set that way to begin with: `resolveRelyingPartyId` honours a configured
-value when it is a suffix of the serving host, so every
-`<branch>.clc-app.pages.dev` shares one relying party and one passkey works across
-branches. Setting Preview to `cosmolocal.credit` would break that — no preview host
-is beneath it, so each branch would fall back to its own hostname and register its
-own credentials. Every other variable is the same in both environments.
+value when it is a suffix of the serving host, so every `<branch>.clc-app.pages.dev`
+shares one relying party and one passkey works across branches. Setting preview to
+`cosmolocal.credit` would break that — no preview host is beneath it, so each branch
+would fall back to its own hostname and register its own credentials.
+
+**`vars` is non-inheritable**, so an `[env.preview.vars]` block must restate _every_
+variable, not only the one that differs. Overriding it while omitting the rest fails
+validation at deploy time. That is why the two blocks in each file are near-duplicates
+— resist tidying them into a shared base.
 
 Both preview origins must also be in clc-core's allowlists. `util.OriginAllowed`
 supports a single `*` matching exactly one DNS label, so branch previews are one
