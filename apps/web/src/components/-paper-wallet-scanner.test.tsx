@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockScanFile, mockClear, mockGetCameras, mockStart } = vi.hoisted(() => ({
@@ -62,11 +62,9 @@ describe("PaperWalletScanner", () => {
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
 
-    await act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /scan qr code/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /scan qr code/i }));
 
-    expect(screen.getByRole("button", { name: /upload image instead/i })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /upload image instead/i })).toBeTruthy();
   });
 
   it("decodes a QR code from an uploaded image and calls onKeyDecoded", async () => {
@@ -83,20 +81,17 @@ describe("PaperWalletScanner", () => {
       <PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />,
     );
 
-    await act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
 
     const pngBuffer = readFileSync(TEST_IMAGE);
     const file = new File([pngBuffer], "test-qr.png", { type: "image/png" });
     const fileInput = screen.getByLabelText(/upload qr code image/i);
 
-    await act(() => {
-      fireEvent.change(fileInput, { target: { files: [file] } });
-    });
+    fireEvent.change(fileInput, { target: { files: [file] } });
 
-    await act(() => {
+    await act(async () => {
       resolveScan?.(decodedAddress);
+      await Promise.resolve();
     });
 
     expect(onKeyDecoded).toHaveBeenCalledWith(decodedAddress);
@@ -115,19 +110,16 @@ describe("PaperWalletScanner", () => {
       <PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />,
     );
 
-    await act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
 
     const file = new File(["not-an-image"], "blank.png", { type: "image/png" });
     const fileInput = screen.getByLabelText(/upload qr code image/i);
 
-    await act(() => {
-      fireEvent.change(fileInput, { target: { files: [file] } });
-    });
+    fireEvent.change(fileInput, { target: { files: [file] } });
 
-    await act(() => {
+    await act(async () => {
       rejectScan?.(new Error("QR parse error"));
+      await Promise.resolve();
     });
 
     expect(container.querySelector(".text-destructive")).toBeTruthy();
@@ -146,16 +138,15 @@ describe("PaperWalletScanner", () => {
     const file1 = new File(["bad"], "bad.png", { type: "image/png" });
     const fileInput = screen.getByLabelText(/upload qr code image/i);
 
-    await act(() => {
-      fireEvent.change(fileInput, { target: { files: [file1] } });
-    });
+    fireEvent.change(fileInput, { target: { files: [file1] } });
+    expect(
+      await screen.findByText("No QR code found. Try again with a clearer image."),
+    ).toBeTruthy();
 
     const file2 = new File(["good"], "good.png", { type: "image/png" });
-    await act(() => {
-      fireEvent.change(fileInput, { target: { files: [file2] } });
-    });
+    fireEvent.change(fileInput, { target: { files: [file2] } });
 
-    expect(onKeyDecoded).toHaveBeenCalledWith("0xretrykey");
+    await waitFor(() => expect(onKeyDecoded).toHaveBeenCalledWith("0xretrykey"));
   });
 
   it("ignores a late scan result after Back is clicked", async () => {
@@ -168,22 +159,17 @@ describe("PaperWalletScanner", () => {
 
     render(<PaperWalletScanner onKeyDecoded={onKeyDecoded} onCancel={onCancel} />);
 
-    await act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /upload image/i }));
 
     const file = new File(["data"], "qr.png", { type: "image/png" });
     const fileInput = screen.getByLabelText(/upload qr code image/i);
-    await act(() => {
-      fireEvent.change(fileInput, { target: { files: [file] } });
-    });
+    fireEvent.change(fileInput, { target: { files: [file] } });
 
-    await act(() => {
-      fireEvent.click(screen.getByRole("button", { name: /back/i }));
-    });
+    fireEvent.click(screen.getByRole("button", { name: /back/i }));
 
-    await act(() => {
+    await act(async () => {
       resolveScan?.("0xlatekey");
+      await Promise.resolve();
     });
 
     expect(onKeyDecoded).not.toHaveBeenCalled();
