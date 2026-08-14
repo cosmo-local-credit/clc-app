@@ -317,7 +317,7 @@ export function SendAmountPage({
                 disabled={!shareAvailable}
                 onChange={(event) => setNote(Array.from(event.target.value).slice(0, 500).join(""))}
                 placeholder={t`Add an optional note`}
-                className="min-h-20 w-full resize-y border border-input bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+                className="min-h-20 w-full resize-y border border-input bg-card px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
               />
               <p className="text-right text-muted-foreground text-[0.6875rem]">
                 {Array.from(note).length}/500

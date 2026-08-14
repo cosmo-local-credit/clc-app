@@ -12,10 +12,11 @@ catalog:
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vitest: 4.1.10
   vite-plus: latest
+  oxfmt: "^0.53.0"
 overrides:
   vite: "catalog:"
   vitest: "catalog:"
-  oxfmt: "^0.53.0"
+  oxfmt: "catalog:"
 peerDependencyRules:
   allowAny:
     - vite
