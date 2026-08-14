@@ -30,7 +30,7 @@ import { BackChevron, EllipsizedAddress } from "#/components/wallet";
 import type { ReportDetail, ReportImage } from "#/features/home/api/reports-client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
 import { openDefaultMaps } from "#/lib/default-maps";
-import { formatReportDate, formatReportPeriod } from "./report-display";
+import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
 
 export function ReportPage({ reportId }: { reportId: string }) {
   const { t, i18n } = useLingui();

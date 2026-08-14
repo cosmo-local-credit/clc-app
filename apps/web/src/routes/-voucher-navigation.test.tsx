@@ -27,6 +27,10 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div data-testid="location-map" />,
 }));
@@ -71,6 +75,19 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
   useVoucherOfferingsInfinite: () => ({
     data: { pages: [{ offerings: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-reports", () => ({
+  useVoucherReportsInfinite: () => ({
+    data: { pages: [{ reports: [] }] },
     isPending: false,
     isError: false,
     isSuccess: true,
@@ -143,9 +160,14 @@ function renderAt(initialPath: string) {
   const voucherRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/vouchers/$voucherAddress",
-    validateSearch: (search): { tab?: "activity" | "info" | "reviews"; from?: VoucherOrigin } => ({
+    validateSearch: (
+      search,
+    ): { tab?: "activity" | "info" | "reviews" | "posts"; from?: VoucherOrigin } => ({
       tab:
-        search.tab === "activity" || search.tab === "info" || search.tab === "reviews"
+        search.tab === "activity" ||
+        search.tab === "info" ||
+        search.tab === "reviews" ||
+        search.tab === "posts"
           ? search.tab
           : undefined,
       from:
@@ -157,7 +179,9 @@ function renderAt(initialPath: string) {
       const { voucherAddress } = useParams({ strict: false });
       const { tab, from } = useSearch({ strict: false });
       const activeTab =
-        tab === "activity" || tab === "info" || tab === "reviews" ? tab : "offerings";
+        tab === "activity" || tab === "info" || tab === "reviews" || tab === "posts"
+          ? tab
+          : "offerings";
       return voucherAddress ? (
         <VoucherDetailPage
           voucherAddress={voucherAddress}
@@ -213,10 +237,8 @@ describe("voucher navigation", () => {
     await waitFor(() => expect(screen.getByText("issuer@example.org")).toBeTruthy());
     expect(router.state.location.search).toMatchObject({ tab: "info" });
 
-    fireEvent.click(screen.getByRole("tab", { name: "Reviews" }));
-    await waitFor(() =>
-      expect(screen.getByText("Reviews for this voucher will appear here.")).toBeTruthy(),
-    );
+    fireEvent.click(screen.getByRole("tab", { name: "Posts" }));
+    await waitFor(() => expect(screen.getByText("No posts yet.")).toBeTruthy());
 
     await act(async () => {
       router.history.back();

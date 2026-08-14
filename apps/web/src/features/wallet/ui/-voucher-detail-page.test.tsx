@@ -1,11 +1,13 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketVoucherDetail } from "#/features/home/api/market-client";
+import type { ReportSummary } from "#/features/home/api/reports-client";
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
+  auth: { isAuthenticated: true, isLoading: false },
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -52,6 +54,18 @@ const mocks = vi.hoisted(() => ({
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   },
+  reportVoucher: undefined as { chainId: number; address: `0x${string}` } | undefined,
+  reportsEnabled: false,
+  reportsResult: {
+    data: undefined as { pages: Array<{ reports: ReportSummary[] }> } | undefined,
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  },
 }));
 
 vi.mock("wagmi", () => ({
@@ -60,6 +74,10 @@ vi.mock("wagmi", () => ({
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => mocks.auth,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -73,13 +91,16 @@ vi.mock("@tanstack/react-router", () => ({
     ...props
   }: {
     children: ReactNode;
-    params?: { voucherAddress?: string };
+    params?: Record<string, string>;
     search?: Record<string, string | undefined>;
     to: string;
     replace?: boolean;
     resetScroll?: boolean;
   }) => {
-    const path = params?.voucherAddress ? to.replace("$voucherAddress", params.voucherAddress) : to;
+    const path = Object.entries(params ?? {}).reduce(
+      (value, [key, replacement]) => value.replace(`$${key}`, replacement),
+      to,
+    );
     const query = new URLSearchParams(
       Object.entries(search ?? {}).flatMap(([key, value]) =>
         value === undefined ? [] : [[key, value] as [string, string]],
@@ -148,6 +169,18 @@ vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
   },
 }));
 
+vi.mock("#/features/home/hooks/use-reports", () => ({
+  useVoucherReportsInfinite: (
+    voucher: { chainId: number; address: `0x${string}` } | undefined,
+    _perPage: number,
+    enabled: boolean,
+  ) => {
+    mocks.reportVoucher = voucher;
+    mocks.reportsEnabled = enabled;
+    return mocks.reportsResult;
+  },
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({ lat, lng }: { lat: number; lng: number }) => (
     <div data-testid="location-map" data-lat={lat} data-lng={lng} />
@@ -183,8 +216,29 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
   };
 }
 
+function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
+  return {
+    id: "3182",
+    title: "Harvesting greengrams with Wendo group",
+    description: "7 members from Wendo group helped with the harvest.",
+    imageUrl: null,
+    locationName: "Kitui, KEN",
+    lat: -1.29,
+    lng: 36.82,
+    periodFrom: null,
+    periodTo: null,
+    authorAddress: null,
+    createdAt: null,
+    updatedAt: "2026-07-19T08:14:02.311Z",
+    tags: ["Food production"],
+    vouchers: [{ address: ADDRESS, name: "Priscilah Malii", symbol: "MALII" }],
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   mocks.address = "0x1111111111111111111111111111111111111111";
+  mocks.auth = { isAuthenticated: true, isLoading: false };
   mocks.openDefaultMaps.mockReset();
   mocks.detailResult = {
     data: detail(),
@@ -256,6 +310,18 @@ beforeEach(() => {
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   };
+  mocks.reportVoucher = undefined;
+  mocks.reportsEnabled = false;
+  mocks.reportsResult = {
+    data: { pages: [{ reports: [report()] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  };
 });
 
 afterEach(() => {
@@ -284,6 +350,7 @@ describe("VoucherDetailPage", () => {
       "Info",
       "Activity",
       "Reviews",
+      "Posts",
     ]);
     expect(screen.getByRole("tab", { name: "Offerings" }).getAttribute("aria-selected")).toBe(
       "true",
@@ -556,12 +623,104 @@ describe("VoucherDetailPage", () => {
     expect(container.textContent).toContain("MA");
   });
 
-  it("renders the reviews placeholder as the last tab panel", () => {
+  it("preserves the reviews panel alongside the posts tab", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="reviews" />);
 
     expect(screen.getByText("Reviews for this voucher will appear here.")).toBeTruthy();
     expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(
       "voucher-tab-reviews",
     );
+  });
+
+  it("renders only this voucher's posts in the posts tab", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(mocks.reportVoucher).toEqual({ chainId: 42220, address: ADDRESS });
+    expect(mocks.reportsEnabled).toBe(true);
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.getAttribute("aria-labelledby")).toBe("voucher-tab-posts");
+    expect(within(panel).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
+    expect(within(panel).getByRole("link").getAttribute("href")).toBe("/posts/3182");
+  });
+
+  it("shows an empty state when the voucher has no related posts", () => {
+    mocks.reportsResult.data = { pages: [{ reports: [] }] };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(screen.getByText("No posts yet.")).toBeTruthy();
+  });
+
+  it("shows a loading state while related posts are requested", () => {
+    mocks.reportsResult = {
+      ...mocks.reportsResult,
+      data: undefined,
+      isPending: true,
+      isSuccess: false,
+    };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(screen.getByText("Loading posts…")).toBeTruthy();
+  });
+
+  it("loads the next related-post page when the sentinel enters view", () => {
+    let intersect: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
+          intersect = callback;
+        }
+
+        observe = observe;
+        disconnect = disconnect;
+      },
+    );
+    mocks.reportsResult.hasNextPage = true;
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(observe).toHaveBeenCalledOnce();
+    act(() => intersect?.([{ isIntersecting: true }]));
+    expect(mocks.reportsResult.fetchNextPage).toHaveBeenCalledOnce();
+  });
+
+  it("offers a retry when related posts fail to load", () => {
+    const refetch = vi.fn();
+    mocks.reportsResult = {
+      ...mocks.reportsResult,
+      data: undefined,
+      isError: true,
+      isSuccess: false,
+      refetch,
+    };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(screen.getByText("Couldn't load posts.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(refetch).toHaveBeenCalledOnce();
+  });
+
+  it("does not request related posts for a guest", () => {
+    mocks.auth = { isAuthenticated: false, isLoading: false };
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(mocks.reportsEnabled).toBe(false);
+    expect(screen.getByText("Sign in to view posts.")).toBeTruthy();
+  });
+
+  it("does not guess a chain when voucher detail omits it", () => {
+    mocks.detailResult.data = detail({ chainId: null });
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    expect(mocks.reportVoucher).toBeUndefined();
+    expect(mocks.reportsEnabled).toBe(false);
+    expect(screen.getByText("Posts aren't available for this voucher.")).toBeTruthy();
   });
 });

@@ -1,23 +1,14 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
-import { Badge } from "#/components/ui/badge";
+import { ReportList } from "#/components/reports/report-list";
 import { Button } from "#/components/ui/button";
-import { ProgressiveImage } from "#/components/ui/progressive-image";
-import { TagBadge } from "#/components/ui/tag-badge";
-import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { ReportSummary } from "#/features/home/api/reports-client";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
-import { formatReportDate } from "./report-display";
 import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
-
-const VISIBLE_TAGS = 2;
-const VISIBLE_VOUCHERS = 1;
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
@@ -119,18 +110,7 @@ export function PostsPage() {
       ) : null}
 
       {reports.length > 0 ? (
-        <section
-          className={[
-            "border border-border bg-card",
-            isRefining ? "opacity-60 transition-opacity" : "",
-          ].join(" ")}
-          aria-busy={isRefining}
-          aria-label={t`Field reports`}
-        >
-          {reports.map((report, index) => (
-            <ReportRow key={report.id} report={report} isLast={index === reports.length - 1} />
-          ))}
-        </section>
+        <ReportList reports={reports} ariaLabel={t`Field reports`} busy={isRefining} />
       ) : null}
 
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
@@ -140,109 +120,5 @@ export function PostsPage() {
         </p>
       ) : null}
     </div>
-  );
-}
-
-function ReportRow({ report, isLast }: { report: ReportSummary; isLast: boolean }) {
-  const { i18n } = useLingui();
-  const extraTags = report.tags.length - VISIBLE_TAGS;
-  const extraVouchers = report.vouchers.length - VISIBLE_VOUCHERS;
-  const updated = formatReportDate(report.updatedAt, i18n.locale);
-
-  return (
-    <Link
-      to="/posts/$reportId"
-      params={{ reportId: report.id }}
-      className={["flex gap-3 p-3 active:bg-muted", isLast ? "" : "border-b border-border"].join(
-        " ",
-      )}
-    >
-      <ReportThumbnail report={report} />
-
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="line-clamp-1 font-heading text-sm font-semibold leading-snug [overflow-wrap:anywhere]">
-          {report.title}
-        </span>
-
-        {report.description ? (
-          <span className="mt-0.5 line-clamp-1 text-muted-foreground text-xs leading-snug [overflow-wrap:anywhere]">
-            {report.description}
-          </span>
-        ) : null}
-
-        {report.tags.length > 0 ? (
-          <span className="mt-1.5 flex min-w-0 items-center gap-1 overflow-hidden">
-            {report.tags.slice(0, VISIBLE_TAGS).map((tag) => (
-              <TagBadge
-                key={tag}
-                tag={tag}
-                labelClassName="block min-w-0 truncate"
-                className="h-5 min-w-0 max-w-20 shrink overflow-hidden px-1.5 text-[0.625rem]"
-              />
-            ))}
-            {extraTags > 0 ? (
-              <span className="shrink-0 text-muted-foreground text-[0.625rem]">+{extraTags}</span>
-            ) : null}
-          </span>
-        ) : null}
-
-        <span className="mt-1 flex h-5 min-w-0 items-center justify-between gap-2">
-          {updated && report.updatedAt ? (
-            <time
-              dateTime={report.updatedAt}
-              className="inline-flex h-full shrink-0 items-center text-muted-foreground text-xs leading-none"
-            >
-              {updated}
-            </time>
-          ) : null}
-          {report.vouchers.length > 0 ? (
-            <span className="ml-auto flex h-full min-w-0 items-center justify-end gap-1">
-              {report.vouchers.slice(0, VISIBLE_VOUCHERS).map((voucher) => (
-                <Badge
-                  key={voucher.address}
-                  variant="outline"
-                  className="h-full min-w-0 max-w-20 truncate px-1.5 font-mono text-[0.625rem] text-info"
-                >
-                  {voucher.symbol}
-                </Badge>
-              ))}
-              {extraVouchers > 0 ? (
-                <Badge
-                  variant="outline"
-                  className="h-full px-1.5 font-mono text-[0.625rem] text-muted-foreground"
-                >
-                  {extraVouchers}+
-                </Badge>
-              ) : null}
-            </span>
-          ) : null}
-        </span>
-      </span>
-    </Link>
-  );
-}
-
-function ReportThumbnail({ report }: { report: ReportSummary }) {
-  if (!report.imageUrl) {
-    return (
-      <span
-        aria-hidden="true"
-        className="flex min-h-16 w-16 shrink-0 self-stretch items-center justify-center font-heading text-xl font-bold text-white"
-        style={{ background: hueFromSeed(report.id) }}
-      >
-        {report.title.trim().slice(0, 1).toLocaleUpperCase() || "R"}
-      </span>
-    );
-  }
-
-  return (
-    <span className="relative block min-h-16 w-16 shrink-0 self-stretch overflow-hidden bg-muted">
-      <ProgressiveImage
-        src={report.imageUrl}
-        alt=""
-        loading="lazy"
-        className="absolute inset-0 size-full object-cover"
-      />
-    </span>
   );
 }

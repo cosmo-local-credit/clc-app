@@ -146,10 +146,8 @@ describe("NavigationShell", () => {
     );
   });
 
-  it("does not parse a voucher reviews tab as a Home tab", async () => {
-    await renderShell(
-      "/vouchers/0x2222222222222222222222222222222222222222?from=wallet&tab=reviews",
-    );
+  it("does not parse a voucher posts tab as the Home Posts tab", async () => {
+    await renderShell("/vouchers/0x2222222222222222222222222222222222222222?from=wallet&tab=posts");
 
     expect((await screen.findByRole("link", { name: "Wallet" })).getAttribute("aria-current")).toBe(
       "true",

@@ -74,11 +74,16 @@ Current local overrides:
 
 - `apps/web/src/features/home/hooks/use-reports.ts`
   - report feed (`GET /api/v2/reports`) and one report's detail
+  - voucher-scoped report feed reuses the filtered reports endpoint with one
+    canonical `<chainId>:<lowercase-address>` relationship in both the request
+    and query key; the query stays disabled until that stable identity is known
   - reuses `MARKET_QUERY_FRESHNESS` from `use-market-vouchers.ts`
   - Reason: reports are the same bulk-imported static catalog as market
     vouchers. The feed unmounts on every home-tab change, so the global
     one-minute `staleTime` would re-walk every cached page each time Posts is
-    reopened.
+    reopened. Canonical voucher keys also prevent address casing from creating
+    duplicate caches when the same voucher is opened from Market, Wallet, or a
+    pool.
 
 - `apps/web/src/features/home/hooks/use-filtered-reports.ts` and
   `apps/web/src/features/pools/hooks/use-filtered-pools.ts`
