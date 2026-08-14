@@ -33,19 +33,8 @@ export const profileEditSchema = z
     name: nameSchema,
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,
-    country: z.string().regex(/^[A-Z]{2}$/, { message: "Select your country" }),
-    saveLocation: z.boolean(),
     location: locationSchema.optional(),
   })
-  .superRefine((data, ctx) => {
-    requireEmailOrPhone(data, ctx);
-    if (data.saveLocation && !data.location) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Choose a location",
-        path: ["location"],
-      });
-    }
-  });
+  .superRefine(requireEmailOrPhone);
 
-export type ProfileEditInput = z.input<typeof profileEditSchema>;
+export type ProfileEditInput = z.infer<typeof profileEditSchema>;

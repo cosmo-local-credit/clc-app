@@ -26,11 +26,6 @@ export type RelayPreviewPayload = {
   deadline: string;
 };
 
-export type RelaySharePayload = {
-  permission: number;
-  note?: string;
-};
-
 export type RelayPayload = {
   userAddress: `0x${string}`;
   signedBatch: SignedBatch;
@@ -40,7 +35,6 @@ export type RelayPayload = {
   credentialId?: string;
   publicKeyX?: string;
   publicKeyY?: string;
-  share?: RelaySharePayload;
 };
 
 export type RecoverPayload = {
@@ -54,7 +48,6 @@ export function createRelayerClient(baseUrl: string) {
   const get = async <T>(path: string): Promise<OKResponse<T>> => {
     const res = await fetch(`${baseUrl}${path}`, {
       method: "GET",
-      credentials: "include",
     });
     return handleResponse<T>(res);
   };
@@ -62,7 +55,6 @@ export function createRelayerClient(baseUrl: string) {
   const post = async <T>(path: string, body: unknown): Promise<OKResponse<T>> => {
     const res = await fetch(`${baseUrl}${path}`, {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });

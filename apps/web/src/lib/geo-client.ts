@@ -1,3 +1,5 @@
+import countries from "i18n-iso-countries/index";
+
 export type GeocodeSuggestion = {
   address: string;
   lat: number;
@@ -11,62 +13,62 @@ export type ReverseGeocodeResult = {
   country: string;
 };
 
-type MapTilerCountryProperties = {
-  country_code?: string;
+type ArcgisCandidate = {
+  address?: string;
+  location?: { x?: number; y?: number };
+  score?: number;
+  attributes?: {
+    Match_addr?: string;
+    LongLabel?: string;
+    ShortLabel?: string;
+    Country?: string;
+    CntryName?: string;
+  };
 };
 
-type MapTilerContext = {
-  country_code?: string;
+type ArcgisSearchResponse = {
+  candidates?: ArcgisCandidate[];
 };
 
-type MapTilerFeature = {
-  center?: [number, number];
-  place_name?: string;
-  text?: string;
-  relevance?: number;
-  properties?: MapTilerCountryProperties;
-  context?: MapTilerContext[];
+type ArcgisReverseResponse = {
+  address?: {
+    Match_addr?: string;
+    LongLabel?: string;
+    ShortLabel?: string;
+    CountryCode?: string;
+    CntryName?: string;
+  };
 };
 
-type MapTilerSearchResponse = {
-  features?: MapTilerFeature[];
-};
+const ARCGIS_GEOCODE_URL = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer";
 
-const MAPTILER_GEOCODE_URL = "https://api.maptiler.com/geocoding";
-
-function mapTilerUrl(path: string, params: Record<string, string>): string | null {
-  const key = (import.meta.env.VITE_MAPTILER_KEY as string | undefined)?.trim();
-  if (!key) return null;
-
-  const search = new URLSearchParams({ ...params, key });
-  return `${MAPTILER_GEOCODE_URL}/${path}.json?${search.toString()}`;
+function arcgisUrl(operation: string, params: Record<string, string>): string {
+  const search = new URLSearchParams({ f: "json", ...params });
+  return `${ARCGIS_GEOCODE_URL}/${operation}?${search.toString()}`;
 }
 
 function normalizeCountryCode(code: string | undefined): string | undefined {
   const normalized = code?.trim().toUpperCase();
-  return normalized && /^[A-Z]{2}$/.test(normalized) ? normalized : undefined;
-}
-
-function featureCountry(feature: MapTilerFeature): string | undefined {
-  const directCountry = normalizeCountryCode(feature.properties?.country_code);
-  if (directCountry) return directCountry;
-
-  for (const item of feature.context ?? []) {
-    const contextCountry = normalizeCountryCode(item.country_code);
-    if (contextCountry) return contextCountry;
+  if (!normalized) return undefined;
+  if (/^[A-Z]{2}$/.test(normalized)) return normalized;
+  if (/^[A-Z]{3}$/.test(normalized)) {
+    return countries.alpha3ToAlpha2(normalized) ?? undefined;
   }
-
   return undefined;
 }
 
-function featureLabel(feature: MapTilerFeature): string | undefined {
-  const label = feature.place_name?.trim() || feature.text?.trim();
-  return label || undefined;
-}
-
-function featureScore(feature: MapTilerFeature): number {
-  const relevance = feature.relevance ?? 0;
-  return Math.round(Math.min(1, Math.max(0, relevance)) * 100);
+function formatLocationName(
+  primary: string | undefined,
+  countryName: string | undefined,
+): string | undefined {
+  const trimmedPrimary = primary?.trim();
+  const trimmedCountry = countryName?.trim();
+  if (!trimmedPrimary) return trimmedCountry || undefined;
+  if (!trimmedCountry) return trimmedPrimary;
+  if (trimmedPrimary.toLowerCase().includes(trimmedCountry.toLowerCase())) {
+    return trimmedPrimary;
+  }
+  return `${trimmedPrimary}, ${trimmedCountry}`;
 }
 
 export async function searchLocations(
@@ -77,33 +79,43 @@ export async function searchLocations(
   if (trimmedQuery.length < 3 || signal?.aborted) return [];
 
   try {
-    const url = mapTilerUrl(encodeURIComponent(trimmedQuery), {
-      language: "en",
-      autocomplete: "true",
-      limit: "5",
-    });
-    if (!url) return [];
-
-    const response = await fetch(url, { method: "GET", signal });
+    const response = await fetch(
+      arcgisUrl("findAddressCandidates", {
+        SingleLine: trimmedQuery,
+        outFields: "Match_addr,LongLabel,ShortLabel,Country,CntryName",
+        maxLocations: "5",
+      }),
+      { method: "GET", signal },
+    );
     if (!response.ok) return [];
 
-    const body = (await response.json()) as MapTilerSearchResponse;
-    return (body.features ?? [])
-      .map((feature): GeocodeSuggestion | null => {
-        const [lng, lat] = feature.center ?? [];
-        const address = featureLabel(feature);
-        if (typeof lat !== "number" || typeof lng !== "number" || !address) return null;
+    const body = (await response.json()) as ArcgisSearchResponse;
+    return (body.candidates ?? [])
+      .map((candidate): GeocodeSuggestion | null => {
+        const lat = candidate.location?.y;
+        const lng = candidate.location?.x;
+        if (typeof lat !== "number" || typeof lng !== "number") return null;
 
-        const country = featureCountry(feature);
+        const address =
+          formatLocationName(
+            candidate.attributes?.Match_addr ??
+              candidate.address ??
+              candidate.attributes?.ShortLabel ??
+              candidate.attributes?.LongLabel,
+            candidate.attributes?.CntryName,
+          ) ?? candidate.address;
+        if (!address) return null;
+
+        const country = normalizeCountryCode(candidate.attributes?.Country);
         return {
           address,
           lat,
           lng,
-          score: featureScore(feature),
+          score: candidate.score ?? 0,
           ...(country ? { country } : {}),
         };
       })
-      .filter((feature): feature is GeocodeSuggestion => feature !== null);
+      .filter((candidate): candidate is GeocodeSuggestion => candidate !== null);
   } catch {
     return [];
   }
@@ -117,23 +129,25 @@ export async function reverseLocation(
   if (signal?.aborted) return null;
 
   try {
-    const url = mapTilerUrl(`${lng},${lat}`, {
-      language: "en",
-      limit: "1",
-    });
-    if (!url) return null;
-
-    const response = await fetch(url, { method: "GET", signal });
+    const response = await fetch(
+      arcgisUrl("reverseGeocode", {
+        location: `${lng},${lat}`,
+        langCode: "en",
+        forStorage: "false",
+      }),
+      { method: "GET", signal },
+    );
     if (!response.ok) return null;
 
-    const body = (await response.json()) as MapTilerSearchResponse;
-    for (const feature of body.features ?? []) {
-      const country = featureCountry(feature);
-      const locationName = featureLabel(feature);
-      if (country && locationName) return { locationName, country };
-    }
+    const body = (await response.json()) as ArcgisReverseResponse;
+    const country = normalizeCountryCode(body.address?.CountryCode);
+    const locationName = formatLocationName(
+      body.address?.Match_addr ?? body.address?.ShortLabel ?? body.address?.LongLabel,
+      body.address?.CntryName,
+    );
 
-    return null;
+    if (!country || !locationName) return null;
+    return { locationName, country };
   } catch {
     return null;
   }

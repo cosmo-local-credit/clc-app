@@ -2,26 +2,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const {
-  delegationStatus,
-  navigate,
-  sendMutateAsync,
-  sendVoucherState,
-  profileState,
-  eligibilityState,
-} = vi.hoisted(() => ({
+const { delegationStatus, navigate, sendMutateAsync, sendVoucherState } = vi.hoisted(() => ({
   delegationStatus: { value: "delegated" as "checking" | "delegated" | "not-delegated" },
   navigate: vi.fn(),
   sendMutateAsync: vi.fn(),
   sendVoucherState: { error: null as Error | null, isPending: false },
-  profileState: {
-    data: {
-      email: "alice@example.com",
-      phone: "+254712345678",
-      location: { locationName: "Nairobi", lat: -1.2921, lng: 36.8219 },
-    },
-  },
-  eligibilityState: { eligible: true },
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -44,24 +29,6 @@ vi.mock("#/features/wallet/hooks/use-send-voucher-transfer", () => ({
     mutateAsync: sendMutateAsync,
     isPending: sendVoucherState.isPending,
     error: sendVoucherState.error,
-  }),
-}));
-
-vi.mock("#/features/auth/hooks/use-profile", () => ({
-  useAuthProfile: () => ({
-    data: profileState.data,
-    isSuccess: true,
-    isPending: false,
-    isError: false,
-  }),
-}));
-
-vi.mock("#/features/wallet/hooks/use-send-share", () => ({
-  useSendShareEligibility: () => ({
-    data: eligibilityState.eligible,
-    isSuccess: true,
-    isPending: false,
-    isError: false,
   }),
 }));
 
@@ -121,7 +88,6 @@ beforeEach(() => {
   delegationStatus.value = "delegated";
   sendVoucherState.error = null;
   sendVoucherState.isPending = false;
-  eligibilityState.eligible = true;
   sendMutateAsync.mockResolvedValue({ trackingId: "tracking-1", signatureType: "secp256k1" });
 });
 
@@ -144,42 +110,6 @@ describe("SendAmountPage", () => {
 
     expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe("");
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("keeps private attachment controls collapsed until requested", async () => {
-    mockTokens();
-    renderWithQueryClient(
-      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
-    );
-
-    await screen.findByRole("button", { name: /use max · 245/i });
-    const attachmentTrigger = screen.getByRole("button", {
-      name: /message and contact sharing/i,
-    });
-
-    expect(attachmentTrigger.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.queryByRole("textbox", { name: /^message$/i })).toBeNull();
-
-    fireEvent.click(attachmentTrigger);
-
-    expect(attachmentTrigger.getAttribute("aria-expanded")).toBe("true");
-    const messageInput = screen.getByRole("textbox", { name: /^message$/i });
-    fireEvent.change(messageInput, { target: { value: "Keep this message" } });
-    fireEvent.click(screen.getByRole("checkbox", { name: /email/i }));
-
-    expect(screen.getByRole("checkbox", { name: /location pin/i })).toBeTruthy();
-    expect(screen.getByRole("checkbox", { name: /phone/i })).toBeTruthy();
-
-    fireEvent.click(attachmentTrigger);
-    expect(screen.queryByRole("textbox", { name: /^message$/i })).toBeNull();
-    fireEvent.click(attachmentTrigger);
-
-    expect((screen.getByRole("textbox", { name: /^message$/i }) as HTMLTextAreaElement).value).toBe(
-      "Keep this message",
-    );
-    expect((screen.getByRole("checkbox", { name: /email/i }) as HTMLInputElement).checked).toBe(
-      true,
-    );
   });
 
   it("preselects the token passed via the search param", async () => {
@@ -318,58 +248,5 @@ describe("SendAmountPage", () => {
         symbol: "USDC",
       },
     });
-  });
-
-  it("attaches a note and selected contact permission without putting PII in the route", async () => {
-    mockTokens();
-    renderWithQueryClient(
-      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
-    );
-
-    await screen.findByRole("button", { name: /use max · 245/i });
-    fireEvent.click(screen.getByRole("button", { name: /message and contact sharing/i }));
-    fireEvent.change(screen.getByRole("textbox", { name: /^message$/i }), {
-      target: { value: "Thanks for the delivery" },
-    });
-    fireEvent.click(screen.getByRole("checkbox", { name: /email/i }));
-    fireEvent.change(screen.getByRole("textbox", { name: /^amount$/i }), {
-      target: { value: "1" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
-    fireEvent.click(screen.getByRole("button", { name: /confirm and send/i }));
-
-    await waitFor(() => {
-      expect(sendMutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({
-          share: { permission: 1, note: "Thanks for the delivery" },
-        }),
-      );
-    });
-    expect(navigate).toHaveBeenCalledWith({
-      to: "/wallet/send/receipt",
-      search: {
-        trackingId: "tracking-1",
-        recipient: RECIPIENT,
-        amount: "1",
-        symbol: "USDC",
-        shared: true,
-      },
-    });
-    expect(JSON.stringify(navigate.mock.calls)).not.toContain("alice@example.com");
-    expect(JSON.stringify(navigate.mock.calls)).not.toContain("Thanks for the delivery");
-  });
-
-  it("disables private attachment controls for an unregistered recipient", async () => {
-    eligibilityState.eligible = false;
-    mockTokens();
-    renderWithQueryClient(
-      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Unknown" />,
-    );
-
-    await screen.findByRole("button", { name: /use max · 245/i });
-    fireEvent.click(screen.getByRole("button", { name: /message and contact sharing/i }));
-    expect(screen.getByRole("textbox", { name: /^message$/i }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("checkbox", { name: /email/i }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByText(/still send without an attachment/i)).toBeTruthy();
   });
 });

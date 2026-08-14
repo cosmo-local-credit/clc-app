@@ -179,14 +179,10 @@ export type ProfilePayload = {
   email: string;
   phone: string;
   country: string;
-  location?: ProfileLocation;
+  locationName?: string | null;
+  geoLat?: number | null;
+  geoLng?: number | null;
   clearLocation?: boolean;
-};
-
-type ProfileLocation = {
-  locationName: string;
-  lat: number;
-  lng: number;
 };
 
 export async function submitProfile(payload: ProfilePayload): Promise<void> {
@@ -197,7 +193,9 @@ export async function submitProfile(payload: ProfilePayload): Promise<void> {
       email: payload.email,
       phone: payload.phone,
       country: payload.country,
-      ...(payload.location ? { location: payload.location } : {}),
+      locationName: payload.locationName,
+      geoLat: payload.geoLat,
+      geoLng: payload.geoLng,
       ...(payload.clearLocation ? { clearLocation: true } : {}),
     }),
   });
@@ -209,7 +207,9 @@ export type ProfileResult = {
   email: string;
   phone: string;
   country: string;
-  location: ProfileLocation | null;
+  locationName?: string | null;
+  geoLat?: number | null;
+  geoLng?: number | null;
   createdAt: string;
 };
 

@@ -28,10 +28,7 @@ describe("getHealth", () => {
       result: { relayerAddress: "0xabc", chainId: 42220 },
     });
     const res = await client.getHealth();
-    expect(spy).toHaveBeenCalledWith(
-      `${BASE}/health`,
-      expect.objectContaining({ method: "GET", credentials: "include" }),
-    );
+    expect(spy).toHaveBeenCalledWith(`${BASE}/health`, expect.objectContaining({ method: "GET" }));
     expect(spy).toHaveBeenCalledWith(
       `${BASE}/health`,
       expect.not.objectContaining({
@@ -195,17 +192,9 @@ describe("relay", () => {
       },
       signature: "0xabc" as `0x${string}`,
       signatureType: "secp256k1" as const,
-      share: { permission: 3, note: "Hello" },
     };
     const res = await client.relay(payload);
-    expect(spy).toHaveBeenCalledWith(
-      `${BASE}/relay`,
-      expect.objectContaining({
-        method: "POST",
-        credentials: "include",
-        body: JSON.stringify(payload),
-      }),
-    );
+    expect(spy).toHaveBeenCalledWith(`${BASE}/relay`, expect.objectContaining({ method: "POST" }));
     expect(res.result.trackingId).toBe("uuid-1");
   });
 });

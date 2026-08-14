@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getSendShare, getSendShareEligibility } from "./send-share-client";
+import { getSendShare } from "./send-share-client";
 
 function response(result: unknown, status = 200): Promise<Response> {
   return Promise.resolve({
@@ -23,22 +23,6 @@ afterEach(() => {
 });
 
 describe("send share client", () => {
-  it("checks an exact recipient address without requesting profile data", async () => {
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockImplementation(() => response({ eligible: true }));
-
-    await expect(
-      getSendShareEligibility("0x2222222222222222222222222222222222222222"),
-    ).resolves.toBe(true);
-    expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "/api/v2/users/me/shares/eligibility/0x2222222222222222222222222222222222222222",
-      ),
-      expect.objectContaining({ method: "GET", credentials: "include" }),
-    );
-  });
-
   it("normalizes a private-share 404 to no attachment", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => response(null, 404));
     await expect(getSendShare(`0x${"11".repeat(32)}`)).resolves.toBeNull();

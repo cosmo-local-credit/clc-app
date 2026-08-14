@@ -32,7 +32,7 @@ vi.mock("sonner", () => ({
   toast: { error: vi.fn(), success: toastSuccess },
 }));
 
-// The picker's own map/geolocation/MapTiler behavior is covered by
+// The picker's own map/geolocation/ArcGIS behavior is covered by
 // -location-picker.test.tsx; here it's stubbed to a plain value/onChange
 // control so this file can focus on prefill + submit-mapping behavior.
 vi.mock("#/components/ui/location-picker", () => ({
@@ -43,9 +43,12 @@ vi.mock("#/components/ui/location-picker", () => ({
     value: LocationInput | undefined;
     onChange: (next: LocationInput | undefined) => void;
   }) => (
-    <button type="button" onClick={() => onChange(PICKED_LOCATION)}>
-      {value?.locationName ?? "Set location"}
-    </button>
+    <div>
+      <span data-testid="location-value">{value?.locationName ?? ""}</span>
+      <button type="button" onClick={() => onChange(PICKED_LOCATION)}>
+        set location
+      </button>
+    </div>
   ),
 }));
 
@@ -63,7 +66,9 @@ function profilePayload(overrides: Record<string, unknown> = {}) {
     email: "alice@example.com",
     phone: "+254712345678",
     country: "KE",
-    location: null,
+    locationName: null,
+    geoLat: null,
+    geoLng: null,
     createdAt: "2026-07-01T12:20:29Z",
     ...overrides,
   };
@@ -116,31 +121,33 @@ describe("ProfileEditPage", () => {
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
 
-  it("leaves location saving disabled for an existing user with no saved pin", async () => {
+  it("leaves the location picker empty for an existing user with no captured geo", async () => {
     mockBackend();
 
     renderWithQueryClient(<ProfileEditPage />);
 
     await screen.findByDisplayValue("Alice");
-    expect(screen.getByRole("checkbox", { name: /save a location pin/i })).toHaveProperty(
-      "checked",
-      false,
-    );
-    expect(screen.queryByRole("button", { name: /set location/i })).toBeNull();
+    expect(screen.getByTestId("location-value").textContent).toBe("");
   });
 
   it("seeds the location picker from a previously captured location", async () => {
-    mockBackend({
-      location: { locationName: "Mombasa, Kenya", lat: -4.0435, lng: 39.6682 },
-    });
+    mockBackend({ locationName: "Mombasa, Kenya", geoLat: -4.0435, geoLng: 39.6682 });
 
     renderWithQueryClient(<ProfileEditPage />);
 
-    expect(await screen.findByRole("button", { name: "Mombasa, Kenya" })).toBeTruthy();
-    expect(screen.getByRole("checkbox", { name: /save a location pin/i })).toHaveProperty(
-      "checked",
-      true,
+    expect(await screen.findByTestId("location-value")).toHaveProperty(
+      "textContent",
+      "Mombasa, Kenya",
     );
+  });
+
+  it("does not seed the location picker from an incomplete geo tuple", async () => {
+    mockBackend({ locationName: "", geoLat: -4.0435, geoLng: 39.6682 });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    await screen.findByDisplayValue("Alice");
+    expect(screen.getByTestId("location-value").textContent).toBe("");
   });
 
   it("starts the email field blank when the profile has a placeholder email", async () => {
@@ -152,13 +159,14 @@ describe("ProfileEditPage", () => {
     expect(email.value).toBe("");
   });
 
-  it("saves edited fields, shows a toast, and navigates back", async () => {
+  it("saves edited fields plus the picked location, shows a toast, and navigates back", async () => {
     const fetchMock = mockBackend();
 
     renderWithQueryClient(<ProfileEditPage />);
 
     const name = (await screen.findByLabelText(/^name$/i)) as HTMLInputElement;
     fireEvent.change(name, { target: { value: "Alice Cooper" } });
+    fireEvent.click(screen.getByRole("button", { name: /set location/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
@@ -172,49 +180,41 @@ describe("ProfileEditPage", () => {
       name: "Alice Cooper",
       email: "alice@example.com",
       phone: "+254712345678",
-      country: "KE",
+      country: PICKED_LOCATION.country,
+      locationName: PICKED_LOCATION.locationName,
+      geoLat: PICKED_LOCATION.lat,
+      geoLng: PICKED_LOCATION.lng,
     });
     expect(historyBack).toHaveBeenCalledTimes(1);
   });
 
-  it("saves a selected profile location pin", async () => {
-    const fetchMock = mockBackend();
-    renderWithQueryClient(<ProfileEditPage />);
-
-    const saveLocation = await screen.findByRole("checkbox", { name: /save a location pin/i });
-    fireEvent.click(saveLocation);
-    fireEvent.click(screen.getByRole("button", { name: /set location/i }));
-    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
-
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
-    const postCall = fetchMock.mock.calls.find(
-      ([input, init]) => requestUrl(input).includes("/auth/profile") && init?.method === "POST",
-    );
-    expect(JSON.parse(postCall?.[1]?.body as string)).toMatchObject({
-      country: PICKED_LOCATION.country,
-      location: {
-        locationName: PICKED_LOCATION.locationName,
-        lat: PICKED_LOCATION.lat,
-        lng: PICKED_LOCATION.lng,
-      },
-    });
-  });
-
-  it("clears an existing profile location when saving is disabled", async () => {
+  it("clears a saved location explicitly", async () => {
     const fetchMock = mockBackend({
-      location: { locationName: "Nairobi, Kenya", lat: -1.2921, lng: 36.8219 },
+      locationName: "Mombasa, Kenya",
+      geoLat: -4.0435,
+      geoLng: 39.6682,
     });
+
     renderWithQueryClient(<ProfileEditPage />);
 
-    const saveLocation = await screen.findByRole("checkbox", { name: /save a location pin/i });
-    expect((saveLocation as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(saveLocation);
+    fireEvent.click(await screen.findByRole("button", { name: /clear location/i }));
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
     const postCall = fetchMock.mock.calls.find(
       ([input, init]) => requestUrl(input).includes("/auth/profile") && init?.method === "POST",
     );
-    expect(JSON.parse(postCall?.[1]?.body as string)).toMatchObject({ clearLocation: true });
+    const body = JSON.parse(postCall?.[1]?.body as string) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      name: "Alice",
+      email: "alice@example.com",
+      phone: "+254712345678",
+      country: "KE",
+      clearLocation: true,
+    });
+    expect(body).not.toHaveProperty("locationName");
+    expect(body).not.toHaveProperty("geoLat");
+    expect(body).not.toHaveProperty("geoLng");
   });
 });

@@ -21,14 +21,6 @@ export type SendShareAttachment = {
   };
 };
 
-export async function getSendShareEligibility(address: string): Promise<boolean> {
-  const result = await apiFetch<{ eligible: boolean }>(
-    `/api/v2/users/me/shares/eligibility/${address}`,
-    { method: "GET", cache: "no-store" },
-  );
-  return result.eligible;
-}
-
 export async function getSendShare(txHash: string): Promise<SendShareAttachment | null> {
   try {
     return await apiFetch<SendShareAttachment>(`/api/v2/users/me/shares/${txHash}`, {

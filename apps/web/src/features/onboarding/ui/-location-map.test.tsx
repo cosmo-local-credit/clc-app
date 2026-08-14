@@ -16,7 +16,7 @@ const {
     center: [number, number];
     zoom: number;
     interactive: boolean;
-    attributionControl?: boolean;
+    attributionControl: boolean;
   };
 
   class HoistedMockMap {
@@ -150,7 +150,6 @@ describe("LocationMap", () => {
     );
     expect(mapInstances[0]?.options.center).toEqual([36.8219, -1.2921]);
     expect(mapInstances[0]?.options.zoom).toBe(5);
-    expect(mapInstances[0]?.options.attributionControl).toBeUndefined();
     expect(mapInstances[0]?.controls.map((control) => control.position)).toEqual(["bottom-right"]);
   });
 

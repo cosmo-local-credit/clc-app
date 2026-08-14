@@ -36,7 +36,7 @@ vi.mock("#/lib/use-browser-geolocation", () => ({
   }),
 }));
 
-vi.mock("#/components/ui/location-map.lazy", () => ({
+vi.mock("./location-map.lazy", () => ({
   LocationMap: ({
     lat,
     lng,

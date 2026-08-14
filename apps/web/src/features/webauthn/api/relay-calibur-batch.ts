@@ -13,7 +13,7 @@ import { getStoredKey } from "#/connectors/privateKey";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { CALIBUR_ADDRESS } from "#/lib/backend-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
-import type { RelayerClient, RelaySharePayload } from "./relayer-client";
+import type { RelayerClient } from "./relayer-client";
 
 const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 const ZERO_HASH = `0x${"00".repeat(32)}` as `0x${string}`;
@@ -23,7 +23,6 @@ export type RelayCaliburBatchInput = {
   calls: CaliburCall[];
   includeAuthorization?: boolean;
   deadline?: string;
-  share?: RelaySharePayload;
 };
 
 export type RelayCaliburBatchResult = {
@@ -71,7 +70,6 @@ export async function relayCaliburBatch(
       signature,
       signatureType: "webauthn",
       authorization: undefined,
-      share: input.share,
     });
     return { trackingId: result.trackingId, signatureType: "webauthn" };
   }
@@ -109,7 +107,6 @@ export async function relayCaliburBatch(
     signature,
     signatureType: "secp256k1",
     authorization,
-    share: input.share,
   });
   return { trackingId: result.trackingId, signatureType: "secp256k1" };
 }

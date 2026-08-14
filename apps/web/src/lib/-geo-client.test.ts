@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { reverseLocation, searchLocations } from "./geo-client";
 
 function mockFetch(body: unknown, status = 200) {
@@ -10,13 +10,8 @@ function mockFetch(body: unknown, status = 200) {
   );
 }
 
-beforeEach(() => {
-  vi.stubEnv("VITE_MAPTILER_KEY", "maptiler-test-key");
-});
-
 afterEach(() => {
   vi.restoreAllMocks();
-  vi.unstubAllEnvs();
 });
 
 describe("searchLocations", () => {
@@ -40,14 +35,18 @@ describe("searchLocations", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it("uses the MapTiler place name without duplicating country text", async () => {
+  it("deduplicates country name already present in Match_addr", async () => {
     mockFetch({
-      features: [
+      candidates: [
         {
-          center: [36.8219, -1.2921],
-          place_name: "Nairobi, Kenya",
-          relevance: 0.99,
-          properties: { country_code: "ke" },
+          address: "Nairobi, Kenya",
+          location: { x: 36.8219, y: -1.2921 },
+          score: 99,
+          attributes: {
+            Match_addr: "Nairobi, Kenya",
+            Country: "KE",
+            CntryName: "Kenya",
+          },
         },
       ],
     });
@@ -57,15 +56,19 @@ describe("searchLocations", () => {
     expect(result[0]?.address).toBe("Nairobi, Kenya");
   });
 
-  it("GETs MapTiler forward geocoding with an encoded query and abort signal", async () => {
+  it("GETs ArcGIS findAddressCandidates with an encoded query and abort signal", async () => {
     const signal = new AbortController().signal;
     const spy = mockFetch({
-      features: [
+      candidates: [
         {
-          center: [36.8219, -1.2921],
-          place_name: "Nairobi, Kenya",
-          relevance: 0.99,
-          properties: { country_code: "ke" },
+          address: "Nairobi",
+          location: { x: 36.8219, y: -1.2921 },
+          score: 99,
+          attributes: {
+            Match_addr: "Nairobi",
+            Country: "KEN",
+            CntryName: "Kenya",
+          },
         },
       ],
     });
@@ -73,17 +76,17 @@ describe("searchLocations", () => {
     const result = await searchLocations("Nairobi CBD", signal);
 
     expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining("https://api.maptiler.com/geocoding/Nairobi%20CBD.json?"),
+      expect.stringContaining(
+        "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?",
+      ),
       expect.objectContaining({ method: "GET", signal }),
     );
     const request = spy.mock.calls[0]?.[0];
     expect(request).toEqual(expect.any(String));
     if (typeof request !== "string") throw new Error("Expected fetch to receive a URL string.");
     const url = new URL(request);
-    expect(url.searchParams.get("language")).toBe("en");
-    expect(url.searchParams.get("autocomplete")).toBe("true");
-    expect(url.searchParams.get("limit")).toBe("5");
-    expect(url.searchParams.get("key")).toBe("maptiler-test-key");
+    expect(url.searchParams.get("SingleLine")).toBe("Nairobi CBD");
+    expect(url.searchParams.get("f")).toBe("json");
     expect(result).toEqual([
       {
         address: "Nairobi, Kenya",
@@ -95,60 +98,28 @@ describe("searchLocations", () => {
     ]);
   });
 
-  it("reads a country code from feature context", async () => {
-    mockFetch({
-      features: [
-        {
-          center: [36.8219, -1.2921],
-          text: "Nairobi",
-          relevance: 0.95,
-          context: [{ country_code: "ke" }],
-        },
-      ],
-    });
-
-    await expect(searchLocations("Nairobi")).resolves.toEqual([
-      {
-        address: "Nairobi",
-        lat: -1.2921,
-        lng: 36.8219,
-        score: 95,
-        country: "KE",
-      },
-    ]);
-  });
-
   it("returns an empty list when search fails", async () => {
     mockFetch({ error: { message: "provider failed" } }, 502);
     await expect(searchLocations("Nairobi")).resolves.toEqual([]);
   });
-
-  it("does not geocode without a MapTiler key", async () => {
-    vi.stubEnv("VITE_MAPTILER_KEY", "");
-    const spy = vi.spyOn(globalThis, "fetch");
-
-    await expect(searchLocations("Nairobi")).resolves.toEqual([]);
-    expect(spy).not.toHaveBeenCalled();
-  });
 });
 
 describe("reverseLocation", () => {
-  it("GETs MapTiler reverse geocoding and normalizes its country code", async () => {
+  it("GETs ArcGIS reverseGeocode and normalizes the ISO-3 country code", async () => {
     const signal = new AbortController().signal;
     const spy = mockFetch({
-      features: [
-        {
-          place_name: "Mathira, Nyeri, Kenya",
-          properties: { country_code: "ke" },
-        },
-      ],
+      address: {
+        Match_addr: "Mathira, Nyeri",
+        CountryCode: "KEN",
+        CntryName: "Kenya",
+      },
     });
 
     const result = await reverseLocation(-0.3976733984248142, 37.05733357847967, signal);
 
     expect(spy).toHaveBeenCalledWith(
       expect.stringContaining(
-        "https://api.maptiler.com/geocoding/37.05733357847967,-0.3976733984248142.json?",
+        "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode?",
       ),
       expect.objectContaining({ method: "GET", signal }),
     );
@@ -156,9 +127,8 @@ describe("reverseLocation", () => {
     expect(request).toEqual(expect.any(String));
     if (typeof request !== "string") throw new Error("Expected fetch to receive a URL string.");
     const url = new URL(request);
-    expect(url.searchParams.get("language")).toBe("en");
-    expect(url.searchParams.get("limit")).toBe("1");
-    expect(url.searchParams.get("key")).toBe("maptiler-test-key");
+    expect(url.searchParams.get("location")).toBe("37.05733357847967,-0.3976733984248142");
+    expect(url.searchParams.get("f")).toBe("json");
     expect(result).toEqual({
       locationName: "Mathira, Nyeri, Kenya",
       country: "KE",
@@ -166,7 +136,7 @@ describe("reverseLocation", () => {
   });
 
   it("returns null when no country is identified", async () => {
-    mockFetch({ features: [{ place_name: "Atlantic Ocean" }] });
+    mockFetch({ address: { Match_addr: "Atlantic Ocean" } });
     await expect(reverseLocation(0, 0)).resolves.toBeNull();
   });
 
@@ -177,24 +147,15 @@ describe("reverseLocation", () => {
     await expect(reverseLocation(-1.2921, 36.8219, controller.signal)).resolves.toBeNull();
   });
 
-  it("returns null when the country code is invalid", async () => {
+  it("returns null when the ISO-3 country code is not recognized", async () => {
     mockFetch({
-      features: [
-        {
-          place_name: "Somewhere",
-          properties: { country_code: "zzz" },
-        },
-      ],
+      address: {
+        Match_addr: "Somewhere",
+        CountryCode: "ZZZ",
+        CntryName: "Unknown",
+      },
     });
 
     await expect(reverseLocation(0, 0)).resolves.toBeNull();
-  });
-
-  it("does not reverse geocode without a MapTiler key", async () => {
-    vi.stubEnv("VITE_MAPTILER_KEY", "");
-    const spy = vi.spyOn(globalThis, "fetch");
-
-    await expect(reverseLocation(-1.2921, 36.8219)).resolves.toBeNull();
-    expect(spy).not.toHaveBeenCalled();
   });
 });

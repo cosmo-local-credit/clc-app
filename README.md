@@ -21,11 +21,6 @@ vp test
 
 The web app runs on `http://localhost:3000` during development.
 
-Maps and saved location pins use `VITE_MAPTILER_KEY` in `apps/web/.env`.
-Use a browser-safe key restricted to the app's origins. Forward and reverse
-geocoding results can be persisted in the user's Core profile; keep the
-MapTiler and OpenStreetMap attribution visible in location-map UI.
-
 ## Editor setup
 
 Install the **Vite+ extension pack** for your editor:
