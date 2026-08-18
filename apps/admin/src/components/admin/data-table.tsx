@@ -3,6 +3,7 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
+  type RowData,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -18,6 +19,17 @@ import {
 } from "#/components/ui/table";
 import { cn } from "#/lib/utils";
 
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /**
+     * `right` for a column of figures. Amounts are compared down the column
+     * rather than read across the row, and a ragged right edge makes two numbers
+     * of different lengths look like different magnitudes.
+     */
+    align?: "right";
+  }
+}
+
 /**
  * Sortable table over a fully-loaded page of rows.
  *
@@ -30,6 +42,21 @@ import { cn } from "#/lib/utils";
  * Sort state is owned by the caller — normally the route's search params — so the
  * URL describes the view and Back restores it. An uncontrolled table would reset
  * its ordering on every navigation.
+ *
+ * **Cell type scale.** Headers are set by `TableHead` and need no classes here.
+ * `TableCell` sets `text-sm`; a cell overrides the size only
+ * to change typeface with it. JetBrains Mono at `text-xs` reads at about the
+ * optical size of Inter at `text-sm`, so the pairing below keeps a row's baseline
+ * weight even though the numbers differ — while a sans cell shrunk to `text-xs`
+ * just looks like a mistake next to its neighbours:
+ *
+ * | Role                                       | Classes                             |
+ * | ------------------------------------------ | ----------------------------------- |
+ * | Primary identity (name, title)             | inherited, plus `font-medium`        |
+ * | Secondary line under it (symbol, subtitle) | `font-mono text-xs text-muted-foreground` |
+ * | Figures (amount, count, address, time)     | `font-data text-xs`                 |
+ * | Enum-like text (role, kind, status)        | `font-mono text-xs`                 |
+ * | Plain secondary text (location)            | inherited, plus `text-muted-foreground` |
  *
  * `onRowClick` is a **mouse convenience only**. A row is not an interactive
  * element: it takes no focus, answers no keyboard, and cannot be opened in a new
@@ -83,7 +110,10 @@ export function DataTable<TData>({
                 return (
                   <TableHead
                     key={header.id}
-                    className="whitespace-nowrap"
+                    className={cn(
+                      "whitespace-nowrap",
+                      header.column.columnDef.meta?.align === "right" && "text-right",
+                    )}
                     // Without this a screen reader reads the header text and the
                     // arrow glyph but never says the column is sorted, or which way.
                     aria-sort={
@@ -128,7 +158,10 @@ export function DataTable<TData>({
               className={cn(onRowClick && "cursor-pointer")}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  className={cn(cell.column.columnDef.meta?.align === "right" && "text-right")}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}

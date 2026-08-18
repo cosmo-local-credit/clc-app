@@ -16,7 +16,7 @@ export const PAGE_SIZES = [10, 25, 50, 100] as const;
 
 export type PageSize = (typeof PAGE_SIZES)[number];
 
-export const DEFAULT_PAGE_SIZE: PageSize = 25;
+export const DEFAULT_PAGE_SIZE: PageSize = 10;
 
 type SortOrder = "asc" | "desc";
 
@@ -31,6 +31,8 @@ export type TableSearch = {
   /** Column id. Validated against the table's sortable columns by the caller. */
   sort?: string;
   order?: SortOrder;
+  /** Free-text filter. Callers decide what it matches. */
+  q?: string;
 };
 
 export function parsePageSize(value: unknown): PageSize {
@@ -68,24 +70,37 @@ export function parseTableSearch(search: Record<string, unknown>): TableSearch {
   const dir = parseDirection(search.dir);
   const sort = parseSort(search.sort);
 
+  const q = parseSearchText(search.q);
   return {
     perPage: parsePageSize(search.perPage),
     ...(cursor !== undefined && dir ? { cursor, dir } : {}),
     ...(sort ? { sort, order: parseOrder(search.order) ?? "asc" } : {}),
+    ...(q ? { q } : {}),
   };
 }
 
-/** Search for the first page, preserving page size and ordering. */
-export function firstPageSearch(current: TableSearch): TableSearch {
-  const { cursor: _cursor, dir: _dir, ...rest } = current;
-  return rest;
+function parseSearchText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
 }
 
-export function nextPageSearch(current: TableSearch, cursor: number): TableSearch {
+/** Reset to the first page when a filter changes; keep size and sort. */
+export function filterSearch<T extends TableSearch>(current: T, patch: Partial<T>): T {
+  return { ...firstPageSearch(current), ...patch } as T;
+}
+
+/** Search for the first page, preserving page size and ordering. */
+export function firstPageSearch<T extends TableSearch>(current: T): T {
+  const { cursor: _cursor, dir: _dir, ...rest } = current;
+  return rest as T;
+}
+
+export function nextPageSearch<T extends TableSearch>(current: T, cursor: number): T {
   return { ...current, cursor, dir: "next" };
 }
 
-export function previousPageSearch(current: TableSearch, cursor: number): TableSearch {
+export function previousPageSearch<T extends TableSearch>(current: T, cursor: number): T {
   return { ...current, cursor, dir: "prev" };
 }
 
@@ -96,16 +111,16 @@ export function previousPageSearch(current: TableSearch, cursor: number): TableS
  * so keeping a cursor while re-sorting would present one arbitrary page's
  * ordering as the resource's ordering.
  */
-export function sortSearch(current: TableSearch, column: string): TableSearch {
+export function sortSearch<T extends TableSearch>(current: T, column: string): T {
   const base = firstPageSearch(current);
   if (current.sort !== column) return { ...base, sort: column, order: "asc" };
   if (current.order === "asc") return { ...base, sort: column, order: "desc" };
   const { sort: _sort, order: _order, ...cleared } = base;
-  return cleared;
+  return cleared as T;
 }
 
 /** Page-size changes invalidate any cursor, which was issued for the old size. */
-export function pageSizeSearch(current: TableSearch, perPage: PageSize): TableSearch {
+export function pageSizeSearch<T extends TableSearch>(current: T, perPage: PageSize): T {
   return { ...firstPageSearch(current), perPage };
 }
 

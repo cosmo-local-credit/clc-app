@@ -51,12 +51,21 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
+/**
+ * Column headers are words, not data, so they are set in the body typeface.
+ *
+ * They previously stacked five legibility costs at once — 11px, mono, uppercase,
+ * 0.14em tracking and muted grey — which at header length reads as texture rather
+ * than as labels. Mono, uppercase and the wide tracking are what a micro-label
+ * (a section heading, a metric label) is for; a header is read as a word. Hierarchy
+ * against the 14px rows comes from size, weight and colour instead.
+ */
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-10 px-3 text-left align-middle text-xs font-semibold whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0",
         className,
       )}
       {...props}
@@ -68,7 +77,10 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       data-slot="table-cell"
-      className={cn("p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0", className)}
+      className={cn(
+        "px-3 py-2 align-middle text-sm whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+        className,
+      )}
       {...props}
     />
   );

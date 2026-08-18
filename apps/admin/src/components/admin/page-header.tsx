@@ -20,9 +20,10 @@ export function PageHeader({
     >
       <div className="min-w-0 space-y-1">
         {breadcrumbs}
-        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          {title}
-        </h1>
+        {/* Unstyled on purpose: styles.css owns the console's h1 scale. Restating
+            it here as utilities put a second definition in play, and `text-2xl`
+            silently overrode the tighter line height that scale specifies. */}
+        <h1>{title}</h1>
         {description ? (
           <div className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
             {description}

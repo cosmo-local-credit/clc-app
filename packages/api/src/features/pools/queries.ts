@@ -21,6 +21,9 @@ export type PoolListParams = {
   next?: boolean;
 };
 
+/** One cursor page of the pool list as the backend filtered it. */
+export type PoolFilteredListParams = PoolListParams & { filter: CatalogFilter };
+
 export const poolKeys = {
   all: ["clc", "pools"] as const,
 
@@ -55,22 +58,43 @@ export const poolKeys = {
    */
   filtered: (filter: CatalogFilter | null, perPage: number) =>
     ["clc", "pools", "filtered", { filter, perPage }] as const,
+
+  /**
+   * One page of a filtered list, as a paged table reads it — distinct from
+   * `filtered`, which caches a whole assembled catalog.
+   *
+   * The filter is keyed alongside the cursor because it is a server parameter:
+   * two terms are two different results, and a term applied after the fact to
+   * whichever page happened to load is not a search of the resource.
+   */
+  filteredPage: (params: PoolFilteredListParams) =>
+    [
+      "clc",
+      "pools",
+      "filtered",
+      "page",
+      {
+        filter: params.filter,
+        perPage: params.perPage,
+        cursor: params.cursor,
+        next: params.next,
+      },
+    ] as const,
+  /** One page of the pools an account belongs to. */
+  account: (address: string, params: PoolListParams) =>
+    [
+      "clc",
+      "pools",
+      "account",
+      address.toLowerCase(),
+      { perPage: params.perPage, cursor: params.cursor, next: params.next },
+    ] as const,
   facetVocabulary: () => ["clc", "pools", "facet-vocabulary"] as const,
 } as const;
 
 /** Termination rule for every cursor sequence over pools. */
 function nextPoolCursor(page: UserPoolPage, perPage: number): number | undefined {
   return page.receivedCount < perPage || page.last === undefined ? undefined : page.last;
-}
-
-export function poolListQueryOptions(pools: PoolsClient, params: PoolListParams) {
-  return queryOptions({
-    queryKey: poolKeys.list(params),
-    queryFn: ({ signal }) => pools.getPools(params, signal),
-    // Keeps the previous page on screen while the next one loads, so paging does
-    // not blink through an empty table.
-    placeholderData: keepPreviousData,
-  });
 }
 
 export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number) {
@@ -83,6 +107,57 @@ export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number
       ),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => nextPoolCursor(lastPage, perPage),
+  });
+}
+
+/**
+ * A paged, server-filtered pool read.
+ *
+ * An unfiltered pool query cannot answer a search: the term has to reach the
+ * endpoint for the result to describe the resource rather than the page in hand.
+ * An empty term sends no `q`, so an unsearched table pays nothing for this.
+ */
+export function poolFilteredPageQueryOptions(pools: PoolsClient, params: PoolFilteredListParams) {
+  return queryOptions({
+    queryKey: poolKeys.filteredPage(params),
+    queryFn: ({ signal }) =>
+      pools.getFilteredPools(
+        {
+          perPage: params.perPage,
+          cursor: params.cursor,
+          next: params.next,
+          filter: params.filter,
+        },
+        signal,
+      ),
+    // Keeps the previous result visible while the next loads, so paging and
+    // refining a term do not blink through an empty table.
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function poolFilteredQueryOptions(
+  pools: PoolsClient,
+  filter: CatalogFilter,
+  perPage: number,
+) {
+  return queryOptions({
+    queryKey: poolKeys.filtered(filter, perPage),
+    queryFn: ({ signal }) => pools.getFilteredPools({ filter, perPage }, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function accountPoolsQueryOptions(
+  pools: PoolsClient,
+  address: string | undefined,
+  params: PoolListParams,
+) {
+  return queryOptions({
+    queryKey: poolKeys.account(address ?? "none", params),
+    queryFn: ({ signal }) => pools.getAccountPools(requireAddress(address), params, signal),
+    enabled: Boolean(address),
+    placeholderData: keepPreviousData,
   });
 }
 

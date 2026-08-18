@@ -4,6 +4,8 @@ import {
   HiOutlineCog,
   HiOutlineCollection,
   HiOutlineHome,
+  HiOutlineLightningBolt,
+  HiOutlineSwitchHorizontal,
   HiOutlineTicket,
   HiOutlineUsers,
 } from "react-icons/hi";
@@ -16,11 +18,22 @@ import {
   CommandList,
 } from "#/components/ui/command";
 
+// The three transaction pages are listed individually rather than as one
+// "Transactions" entry. The palette is how an operator reaches a page without
+// looking at the sidebar, so a section that resolves to a redirect is one hop
+// short — and the labels are what they would have typed anyway.
 const pages = [
-  { to: "/", label: "Overview", icon: HiOutlineHome },
+  { to: "/", label: "Dashboard", icon: HiOutlineHome },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
+  {
+    to: "/transactions/vouchers",
+    label: "Voucher transactions",
+    icon: HiOutlineSwitchHorizontal,
+  },
+  { to: "/transactions/pools", label: "Pool transactions", icon: HiOutlineCollection },
+  { to: "/transactions/otx", label: "Origin transactions (OTX)", icon: HiOutlineLightningBolt },
   { to: "/settings", label: "Settings", icon: HiOutlineCog },
 ] as const;
 

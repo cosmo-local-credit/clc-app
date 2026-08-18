@@ -37,7 +37,6 @@ const stateTones: Record<string, StateTone> = {
     label: "internal",
     className: "border-foreground/20 bg-foreground/5 text-foreground",
   },
-  // OTX lifecycle, as clc-core reports it.
   // Account approval, as clc-core reports it. PENDING is shared with the OTX
   // lifecycle below — same word, same meaning: awaiting an outcome.
   APPROVED: {
@@ -68,6 +67,34 @@ const stateTones: Record<string, StateTone> = {
   },
   FAIL: {
     label: "failed",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  // The six ways a dispatch fails before the chain ever sees it. They carry the
+  // destructive tone rather than the neutral fallback because they are not a
+  // resting state: every one of them means a signed transaction is stuck, and
+  // the operator reading the OTX page is there to find exactly these.
+  LOW_NONCE: {
+    label: "low nonce",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  NO_GAS: {
+    label: "no gas",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  LOW_GAS_PRICE: {
+    label: "low gas price",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  NETWORK_ERROR: {
+    label: "network error",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  REPLACEMENT_UNDERPRICED: {
+    label: "underpriced",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
+  },
+  UNKNOWN_RPC_ERROR: {
+    label: "rpc error",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
 };
