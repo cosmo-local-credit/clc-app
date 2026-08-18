@@ -1,5 +1,6 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
@@ -174,13 +175,29 @@ export function PoolDetailPage({ address }: { address: string }) {
                 {vouchers.map((voucher) => (
                   <TableRow key={voucher.id}>
                     <TableCell>
-                      <div className="truncate font-medium">{voucher.name}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {voucher.symbol}
+                      <div className="min-w-0">
+                        <Link
+                          to="/vouchers/$address"
+                          params={{ address: voucher.tokenAddress }}
+                          search={{ tab: "pools" }}
+                          className="block truncate font-medium underline-offset-4 hover:underline"
+                        >
+                          {voucher.name}
+                        </Link>
+                        <div className="font-mono text-xs text-muted-foreground">
+                          {voucher.symbol}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="font-data text-xs">
-                      {formatVoucherAddress(voucher.tokenAddress)}
+                      <Link
+                        to="/vouchers/$address"
+                        params={{ address: voucher.tokenAddress }}
+                        search={{ tab: "pools" }}
+                        className="underline-offset-4 hover:underline"
+                      >
+                        {formatVoucherAddress(voucher.tokenAddress)}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <StateBadge
@@ -205,7 +222,9 @@ export function PoolDetailPage({ address }: { address: string }) {
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border border-border bg-card p-4">
+    // h-full so panels sharing a row share one top and one bottom edge, whatever
+    // each holds.
+    <div className="h-full border border-border bg-card p-4">
       <SectionHeading className="mb-3">{title}</SectionHeading>
       <dl className="space-y-2">{children}</dl>
     </div>

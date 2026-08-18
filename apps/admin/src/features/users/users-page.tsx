@@ -1,194 +1,125 @@
-/**
- * The account directory.
- *
- * Reads `/api/v2/admin/users`, which returns **every** account rather than a page
- * of them, so there are no pagination controls and the count is stated as a total
- * — the one case in this console where a figure is not a page sample. If that
- * endpoint gains cursor parameters, this is where paging goes, alongside the
- * search-param helpers the other tables already use.
- */
-
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
-import type { ColumnDef, SortingState } from "@tanstack/react-table";
-import { useState } from "react";
-import { toast } from "sonner";
+import type { ColumnDef } from "@tanstack/react-table";
 
 import type { AdminUser } from "@clc/api/features/admin/client";
 import { DataTable } from "#/components/admin/data-table";
 import { EmptyState } from "#/components/admin/empty-state";
+import { ListToolbar } from "#/components/admin/list-toolbar";
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
-import { StateBadge } from "#/components/admin/state-badge";
-import { Button } from "#/components/ui/button";
-import { formatDateTime } from "#/lib/format";
+import { TablePagination } from "#/components/admin/table-pagination";
+import { termFilter } from "#/lib/catalog-filter";
+import { DEFAULT_PAGE_SIZE, filterSearch, type TableSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
-import { useApproveUser, useAdminUsers, useRejectUser } from "./use-admin-users";
-import { USER_STATUSES, type UsersSearch } from "./users-search";
+import { usePagedTable } from "#/lib/use-paged-table";
+import { useAdminUsers } from "./use-admin-users";
 
-export function UsersPage({ search }: { search: UsersSearch }) {
+/**
+ * The directory columns are identity and contact only.
+ *
+ * Approval state, per-account limits and the join date are deliberately absent:
+ * they belong to one account rather than to a scan across accounts, and the
+ * account screen shows all three next to the controls that change them. A row
+ * here answers "who is this and how do we reach them".
+ */
+const columns: Array<ColumnDef<AdminUser>> = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => (
+      <span className="truncate">{row.original.name || <Muted>unnamed</Muted>}</span>
+    ),
+  },
+  {
+    accessorKey: "ethereumAddress",
+    header: "Address",
+    cell: ({ row }) => (
+      <Link
+        to="/users/$address"
+        params={{ address: row.original.ethereumAddress }}
+        search={{ tab: "transactions", perPage: DEFAULT_PAGE_SIZE }}
+        className="font-data text-xs underline-offset-4 hover:underline"
+        // The row is clickable too; this stops the row handler firing as well.
+        onClick={(event) => event.stopPropagation()}
+      >
+        {formatVoucherAddress(row.original.ethereumAddress as `0x${string}`)}
+      </Link>
+    ),
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => (
+      <span className="truncate">{row.original.email || <Muted>none</Muted>}</span>
+    ),
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+    // Stored E.164, so the country code is already part of the number.
+    cell: ({ row }) => (
+      <span className="font-data text-xs">{row.original.phone || <Muted>none</Muted>}</span>
+    ),
+  },
+  {
+    accessorKey: "country",
+    header: "Country",
+    // An ISO 3166-1 alpha-2 code, as clc-core validates it on the signup profile.
+    cell: ({ row }) => (
+      <span className="font-mono text-xs uppercase">
+        {row.original.country || <Muted>—</Muted>}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "role",
+    header: "Role",
+    cell: ({ row }) => <span className="font-mono text-xs">{row.original.role}</span>,
+  },
+];
+
+export function UsersPage({ search }: { search: TableSearch }) {
   const navigate = useNavigate();
-  const usersQuery = useAdminUsers(search.status);
-  const approve = useApproveUser();
-  const reject = useRejectUser();
+  // The term goes to the endpoint, so a search covers the whole directory rather
+  // than the page in hand. `searched` is read back off the normalized term
+  // because clc-core rejects one under two characters: below that nothing is
+  // sent, and the empty state must describe the request that was made.
+  const term = termFilter(search.q ?? "").term;
+  const usersQuery = useAdminUsers({
+    perPage: search.perPage,
+    cursor: search.cursor,
+    next: search.dir === undefined ? undefined : search.dir === "next",
+    ...(term ? { q: term } : {}),
+  });
 
-  // Which rows have a mutation in flight. A set, not one address: actions on two
-  // rows can overlap, and a single value would be overwritten by the second —
-  // whichever request finished first would then clear the busy state for both.
-  const [pendingAddresses, setPendingAddresses] = useState<ReadonlySet<string>>(new Set());
-
-  const sorting: SortingState = search.sort ? [{ id: search.sort, desc: !!search.desc }] : [];
-
-  function markPending(address: string, pending: boolean) {
-    setPendingAddresses((current) => {
-      const next = new Set(current);
-      if (pending) next.add(address);
-      else next.delete(address);
-      return next;
-    });
-  }
-
-  async function runAction(action: "approve" | "reject", user: AdminUser) {
-    const address = user.ethereumAddress;
-    markPending(address, true);
-    const mutation = action === "approve" ? approve : reject;
-    try {
-      await mutation.mutateAsync(address);
-      toast.success(
-        `${user.name || formatVoucherAddress(address as `0x${string}`)} ${
-          action === "approve" ? "approved" : "rejected"
-        }.`,
-      );
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : `Could not ${action} this account.`);
-    } finally {
-      markPending(address, false);
-    }
-  }
-
-  const columns: Array<ColumnDef<AdminUser>> = [
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ row }) => (
-        <span className="truncate">{row.original.name || <Muted>unnamed</Muted>}</span>
-      ),
-    },
-    {
-      accessorKey: "ethereumAddress",
-      header: "Address",
-      cell: ({ row }) => (
-        <Link
-          to="/users/$address"
-          params={{ address: row.original.ethereumAddress }}
-          className="font-data text-xs underline-offset-4 hover:underline"
-          // The row is clickable too; this stops the row handler firing as well.
-          onClick={(event) => event.stopPropagation()}
-        >
-          {formatVoucherAddress(row.original.ethereumAddress as `0x${string}`)}
-        </Link>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) => (
-        <span className="truncate text-xs">{row.original.email || <Muted>none</Muted>}</span>
-      ),
-    },
-    {
-      accessorKey: "role",
-      header: "Role",
-      cell: ({ row }) => <span className="font-data text-xs">{row.original.role}</span>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => <StateBadge state={row.original.status} kind="account" />,
-    },
-    {
-      id: "limits",
-      header: "Pools / vouchers",
-      enableSorting: false,
-      cell: ({ row }) => (
-        <span className="font-data text-xs">
-          {row.original.maxPools} / {row.original.maxTokens}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Joined",
-      cell: ({ row }) => (
-        <span className="font-data text-xs">{formatDateTime(row.original.createdAt)}</span>
-      ),
-    },
-    {
-      id: "actions",
-      header: "",
-      enableSorting: false,
-      cell: ({ row }) => {
-        const user = row.original;
-        const busy = pendingAddresses.has(user.ethereumAddress);
-        return (
-          <div className="flex justify-end gap-1" onClick={(event) => event.stopPropagation()}>
-            {user.status !== "APPROVED" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy}
-                onClick={() => void runAction("approve", user)}
-              >
-                Approve
-              </Button>
-            ) : null}
-            {user.status !== "REJECTED" ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={busy}
-                onClick={() => void runAction("reject", user)}
-              >
-                Reject
-              </Button>
-            ) : null}
-          </div>
-        );
-      },
-    },
-  ];
-
-  const users = usersQuery.data ?? [];
-  // Resolved rather than read off isError directly: a failed refresh with rows
-  // still cached is `stale`, and must keep showing them.
-  const listState = useDataState(usersQuery, (rows) => rows.length === 0);
+  const users = usersQuery.data?.users ?? [];
+  const listState = useDataState(usersQuery, (page) => page.users.length === 0);
+  const table = usePagedTable({
+    search,
+    page: usersQuery.data,
+    navigate: (next) => void navigate({ to: "/users", search: next }),
+  });
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Accounts"
-        description="Every CLC account, with approval state and per-account limits. Approving or rejecting here takes effect immediately."
+        actions={
+          <ListToolbar
+            search={search.q}
+            onSearchChange={(value) =>
+              void navigate({
+                to: "/users",
+                search: filterSearch(search, { q: value || undefined }),
+              })
+            }
+            searchPlaceholder="Name, email, phone, address"
+          />
+        }
       />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <StatusFilter
-          active={search.status === undefined}
-          onSelect={() => void navigate({ to: "/users", search: { ...search, status: undefined } })}
-        >
-          All
-        </StatusFilter>
-        {USER_STATUSES.map((status) => (
-          <StatusFilter
-            key={status}
-            active={search.status === status}
-            onSelect={() => void navigate({ to: "/users", search: { ...search, status } })}
-          >
-            {status.charAt(0) + status.slice(1).toLowerCase()}
-          </StatusFilter>
-        ))}
-      </div>
 
       {listState.kind === "pending" ? (
         <LoadingBlock rows={6} />
@@ -200,58 +131,43 @@ export function UsersPage({ search }: { search: UsersSearch }) {
           <DataTable
             columns={columns}
             data={users}
-            sorting={sorting}
-            // DataTable reports the activated column id, not a SortingState:
-            // re-clicking the active column flips direction, a new column starts
-            // ascending.
-            onSortChange={(columnId) => {
-              const flip = search.sort === columnId && !search.desc;
-              void navigate({
-                to: "/users",
-                search: { ...search, sort: columnId, desc: flip },
-              });
-            }}
+            rowClassName="h-12"
+            sorting={table.sorting}
+            onSortChange={table.onSortChange}
             onRowClick={(user) =>
-              void navigate({ to: "/users/$address", params: { address: user.ethereumAddress } })
+              void navigate({
+                to: "/users/$address",
+                params: { address: user.ethereumAddress },
+                search: { tab: "transactions", perPage: DEFAULT_PAGE_SIZE },
+              })
             }
             emptyState={
               <EmptyState
-                title={search.status ? `No ${search.status.toLowerCase()} accounts` : "No accounts"}
+                title={term ? "No matching accounts" : "No accounts"}
                 description={
-                  search.status
-                    ? "No account is in this approval state."
+                  term
+                    ? "No account in the directory matches this search."
                     : "The backend returned no accounts."
                 }
               />
             }
             footer={
-              // A total, not a sample: this endpoint returns every row. Sorting is
-              // client-side, which is exact here for the same reason.
-              <p className="font-data text-sm text-muted-foreground tabular-nums">
-                {users.length} {users.length === 1 ? "account" : "accounts"}
-                {search.status ? ` with status ${search.status}` : " in total"}
-              </p>
+              <TablePagination
+                search={search}
+                dropped={0}
+                isFirstPage={table.isFirstPage}
+                mightHaveMore={table.mightHaveMore}
+                isFetching={usersQuery.isFetching}
+                onFirstPage={table.onFirstPage}
+                onPreviousPage={table.onPreviousPage}
+                onNextPage={table.onNextPage}
+                onPageSize={table.onPageSize}
+              />
             }
           />
         </>
       )}
     </div>
-  );
-}
-
-function StatusFilter({
-  active,
-  onSelect,
-  children,
-}: {
-  active: boolean;
-  onSelect: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button size="sm" variant={active ? "default" : "outline"} onClick={onSelect}>
-      {children}
-    </Button>
   );
 }
 

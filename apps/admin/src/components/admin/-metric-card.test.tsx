@@ -20,10 +20,10 @@ describe("MetricCard", () => {
   });
 
   it("suppresses a supplied detail line in favour of the unavailable notice", () => {
-    render(<MetricCard label="Pools" value={9} detail="sample of 100" unavailable />);
+    render(<MetricCard label="Pools" value={9} detail="all accounts" unavailable />);
 
     expect(screen.getByText("unavailable")).toBeTruthy();
-    expect(screen.queryByText("sample of 100")).toBeNull();
+    expect(screen.queryByText("all accounts")).toBeNull();
   });
 
   it("drops a success tone when unavailable so a failure never reads as healthy", () => {
@@ -33,9 +33,9 @@ describe("MetricCard", () => {
     expect(container.querySelector(".text-state-active")).toBeNull();
   });
 
-  it("keeps the sample label visible when the figure is available", () => {
-    render(<MetricCard label="Pools" value={12} detail="sample of 100" />);
-    expect(screen.getByText("sample of 100")).toBeTruthy();
+  it("keeps the detail line visible when the figure is available", () => {
+    render(<MetricCard label="Pools" value={12} detail="all accounts" />);
+    expect(screen.getByText("all accounts")).toBeTruthy();
     expect(screen.queryByText("unavailable")).toBeNull();
   });
 });

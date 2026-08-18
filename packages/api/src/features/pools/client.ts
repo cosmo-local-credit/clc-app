@@ -234,6 +234,28 @@ export function createPoolsClient(http: HttpClient) {
       };
     },
 
+    /**
+     * The pools one account belongs to, from the superadmin route. Kept beside the
+     * public pool reads so a membership row goes through the same normalizer as a
+     * catalog row rather than growing a second shape.
+     */
+    async getAccountPools(
+      address: string,
+      params: CursorParams,
+      signal?: AbortSignal,
+    ): Promise<UserPoolPage> {
+      const result = await http.request<BackendPoolPage>(
+        `/api/v2/admin/users/${encodeURIComponent(address)}/pools${formatCursorQuery(params)}`,
+        poolReadRequest(signal),
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
+
     async getFilteredPools(
       { filter, facets, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,

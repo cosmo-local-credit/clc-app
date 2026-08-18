@@ -1,82 +1,73 @@
 /**
  * The account directory and the three operations clc-core exposes over it.
  *
- * Every mutation returns the updated row, so the cache is written directly rather
- * than refetched. That matters more here than usual: `/admin/users` is
- * unpaginated, so a refetch after each approval re-downloads every account.
- * Invalidation is still requested afterwards, marking the list stale without
- * forcing an immediate fetch, so a later visit sees the server's version.
+ * The directory pages and searches at the backend, so no screen holds the whole
+ * table. Every mutation answers with the updated row, which is written straight
+ * into the cache: the row on screen changes at once instead of after a round
+ * trip. Invalidation follows, so the server still reconciles.
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { AdminUser, AdminUserLimits, AdminUserStatus } from "@clc/api/features/admin/client";
-import { adminKeys, adminUsersQueryOptions } from "@clc/api/features/admin/queries";
+import type {
+  AdminUser,
+  AdminUserLimits,
+  AdminUserPage,
+  AdminUserParams,
+  AdminUserProfile,
+} from "@clc/api/features/admin/client";
+import {
+  adminKeys,
+  adminUserQueryOptions,
+  adminUsersQueryOptions,
+} from "@clc/api/features/admin/queries";
 import { clcApi } from "#/lib/api";
 
-export function useAdminUsers(status?: AdminUserStatus) {
-  return useQuery(adminUsersQueryOptions(clcApi.admin, status));
+export function useAdminUsers(params: AdminUserParams) {
+  return useQuery(adminUsersQueryOptions(clcApi.admin, params));
+}
+
+/** One account for the detail screen. Resolves to null for an address with no account. */
+export function useAdminUser(address: string) {
+  return useQuery(adminUserQueryOptions(clcApi.admin, address));
 }
 
 /**
- * Replaces one account in every cached list, dropping it from the lists it no
- * longer belongs to.
+ * Writes one account into every cached page and into its own entry.
  *
- * Every status filter is a separate cache entry keyed by that status, so an
- * approval has to reach all of them — and approving from the Pending view must
- * remove the row there, not leave an APPROVED account sitting under Pending.
- * Whether a row belongs is decided from the key, which is the only place the
- * filter is recorded.
+ * Rows are replaced in place, never moved or dropped. None of the three
+ * mutations touches the columns `q` matches or the id the pages are ordered by,
+ * so an approval cannot change which page an account belongs to — that is what
+ * makes a blind sweep over the cached pages correct here. A mutation that edited
+ * a name or an address would not have that property, and would need to reconcile
+ * membership rather than map over it.
  */
 function useWriteUserToCache() {
   const queryClient = useQueryClient();
 
   return (updated: AdminUser) => {
-    // Each entry is updated by key rather than through `setQueriesData`, whose
-    // updater receives only the old data — without the key there is no way to
-    // know which status a given cache entry was filtered by.
-    const entries = queryClient.getQueryCache().findAll({
-      queryKey: [...adminKeys.all, "users"],
-    });
+    // Matched case-insensitively: the backend answers with a checksummed
+    // address, which need not match the casing the row was listed under.
+    const isUpdated = (user: AdminUser) =>
+      user.ethereumAddress.toLowerCase() === updated.ethereumAddress.toLowerCase();
 
-    for (const entry of entries) {
-      const filter = statusFilterOf(entry.queryKey);
+    queryClient.setQueriesData<AdminUserPage>(
+      { queryKey: [...adminKeys.all, "users", "page"] },
+      (cached) =>
+        cached
+          ? { ...cached, users: cached.users.map((user) => (isUpdated(user) ? updated : user)) }
+          : cached,
+    );
 
-      queryClient.setQueryData<Array<AdminUser>>(entry.queryKey, (cached) => {
-        if (!cached) return cached;
+    // Only if a detail screen has already asked for this account: returning
+    // undefined leaves the cache alone rather than seeding an entry nothing is
+    // watching.
+    queryClient.setQueryData<AdminUser | null>(adminKeys.user(updated.ethereumAddress), (cached) =>
+      cached === undefined ? undefined : updated,
+    );
 
-        return cached.flatMap((user) => {
-          if (user.ethereumAddress.toLowerCase() !== updated.ethereumAddress.toLowerCase()) {
-            return [user];
-          }
-          // The unfiltered list keeps every row; a filtered list keeps it only
-          // while it still matches that filter.
-          return filter === undefined || filter === updated.status ? [updated] : [];
-        });
-      });
-    }
-
-    // The writes above are deliberately incomplete: a row can be *removed* from a
-    // list it no longer matches, but it cannot be *inserted* into the list it now
-    // matches without inventing a position in that list's ordering. So the server
-    // reconciles. Active lists refetch — normally just the one on screen — and
-    // inactive ones are marked stale for their next mount.
-    //
-    // The optimistic writes still earn their place: they update the visible table
-    // immediately instead of after a round trip.
     void queryClient.invalidateQueries({ queryKey: [...adminKeys.all, "users"] });
   };
-}
-
-/**
- * The status a cached list was filtered by, or undefined for the unfiltered list.
- *
- * `adminKeys.users` puts the filter last, using the literal "all" when there is
- * none — see packages/api/src/features/admin/queries.ts.
- */
-function statusFilterOf(queryKey: readonly unknown[] | undefined): string | undefined {
-  const last = queryKey?.at(-1);
-  return typeof last === "string" && last !== "all" ? last : undefined;
 }
 
 export function useApproveUser() {
@@ -93,6 +84,16 @@ export function useRejectUser() {
 
   return useMutation({
     mutationFn: (address: string) => clcApi.admin.rejectUser(address),
+    onSuccess: writeUser,
+  });
+}
+
+export function useUpdateUserProfile() {
+  const writeUser = useWriteUserToCache();
+
+  return useMutation({
+    mutationFn: ({ address, profile }: { address: string; profile: AdminUserProfile }) =>
+      clcApi.admin.updateUserProfile(address, profile),
     onSuccess: writeUser,
   });
 }

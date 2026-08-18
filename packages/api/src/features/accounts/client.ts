@@ -48,6 +48,14 @@ export type CursorPageParams = {
   next?: boolean;
 };
 
+/** On-chain and keystore state from `GET /api/v2/account/status/:address`. */
+export type AccountStatus = {
+  gasBalance: string;
+  networkNonce: number;
+  internalNonce: number;
+  active: boolean;
+};
+
 const ACCOUNT_READ_REQUEST: RequestInit = {
   method: "GET",
   cache: "no-store",
@@ -82,6 +90,18 @@ export function createAccountsClient(http: HttpClient) {
         ACCOUNT_READ_REQUEST,
       );
       return { ...result, transfers: result.transfers ?? [] };
+    },
+
+    /**
+     * Native gas, nonces, and keystore active flag for a signer the backend
+     * already holds. The address is a path parameter, so it is encoded even
+     * though a valid hex address needs no escaping.
+     */
+    async getAccountStatus(address: string, signal?: AbortSignal): Promise<AccountStatus> {
+      return http.request<AccountStatus>(`/api/v2/account/status/${encodeURIComponent(address)}`, {
+        ...ACCOUNT_READ_REQUEST,
+        signal,
+      });
     },
   };
 }

@@ -1,3 +1,4 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { describe, expect, it } from "vite-plus/test";
 import type { MarketClient, MarketVoucherPage } from "./client";
 import {
@@ -10,6 +11,13 @@ import {
 
 const ADDRESS = "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0";
 const BOX = { minLng: 0, minLat: 0, maxLng: 1, maxLat: 1 };
+const FILTER: CatalogFilter = {
+  term: "maize",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
 
 function page(received: number, last: number): MarketVoucherPage {
   return { vouchers: [], first: 0, last, receivedCount: received };
@@ -25,6 +33,7 @@ describe("voucherKeys", () => {
       voucherKeys.viewport([BOX], 500),
       voucherKeys.detail(ADDRESS),
       voucherKeys.filtered(null, 20),
+      voucherKeys.filteredPage({ perPage: 20, filter: FILTER }),
       voucherKeys.facetVocabulary(),
       voucherKeys.search("maize"),
     ]) {
@@ -52,6 +61,22 @@ describe("voucherKeys", () => {
 
   it("varies search by term", () => {
     expect(voucherKeys.search("maize")).not.toEqual(voucherKeys.search("beans"));
+  });
+
+  it("varies the filtered page with everything the backend filters on", () => {
+    // A term is a server parameter, so two terms are two results. Sharing an
+    // entry between them would show one term's rows under the other.
+    expect(voucherKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      voucherKeys.filteredPage({ perPage: 20, filter: { ...FILTER, term: "beans" } }),
+    );
+    expect(voucherKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      voucherKeys.filteredPage({ perPage: 20, cursor: 480, next: true, filter: FILTER }),
+    );
+    // One page of a filtered list and a whole assembled catalog cache different
+    // shapes, so they must not share a key.
+    expect(voucherKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      voucherKeys.filtered(FILTER, 20),
+    );
   });
 });
 

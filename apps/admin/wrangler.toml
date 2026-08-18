@@ -32,16 +32,19 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# Only the four variables this app reads. Deliberately not copied from the web
-# project: the console has no map, no Calibur wallet, no paper-wallet origin and no
+# Only the five variables this app reads. Deliberately not copied wholesale from
+# the web project: the console has no Calibur wallet, no paper-wallet origin and no
 # RPC, and it never *registers* a passkey — only asserts one — so it needs no
 # relying-party name. An unused key here would imply otherwise.
 #
-# Add VITE_MAPTILER_KEY when the console gains maps, and allow this origin on the
-# key in the MapTiler account, or tiles will 403.
+# VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves both
+# — and the account's allowed-origins list must include this console's hosts
+# (admin.cosmolocal.credit and the pages.dev previews) or tiles 403 while everything
+# else on the page works.
 [vars]
 VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CHAIN_ID = "42220"
+VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
 # The registrable domain, not this host: a passkey is bound to the relying party it
 # was registered under, so scoping it to the parent is what lets one credential work
@@ -63,5 +66,6 @@ VITE_RELYING_PARTY_ID = "cosmolocal.credit"
 [env.preview.vars]
 VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CHAIN_ID = "42220"
+VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
 VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"

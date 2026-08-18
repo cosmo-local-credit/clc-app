@@ -74,6 +74,8 @@ export type MarketTagFacet = {
 export type FilteredMarketVouchersParams = MarketVouchersParams & {
   filter: CatalogFilter;
   facets?: boolean;
+  /** Only vouchers owned by this address. Compared case-insensitively. */
+  owner?: string;
 };
 
 export type FilteredMarketVoucherPage = MarketVoucherPage & {
@@ -186,6 +188,7 @@ function formatFilteredMarketQuery({
   bbox,
   filter,
   facets,
+  owner,
   ...cursor
 }: FilteredMarketVouchersParams): string {
   const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -195,6 +198,7 @@ function formatFilteredMarketQuery({
   if (filter.term !== "") search.set("q", filter.term);
   if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
+  if (owner) search.set("owner", owner);
   if (facets) search.set("facets", "true");
   return `?${search.toString()}`;
 }
