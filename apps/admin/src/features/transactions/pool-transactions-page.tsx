@@ -159,6 +159,7 @@ export function PoolTransactionsPage({ search }: { search: PoolTransactionsSearc
           <DataTable
             columns={columns}
             data={rows}
+            rowClassName="h-12"
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             emptyState={

@@ -222,6 +222,7 @@ export function OTXPage({ search }: { search: OTXSearch }) {
           <DataTable
             columns={columns}
             data={rows}
+            rowClassName="h-12"
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             emptyState={
