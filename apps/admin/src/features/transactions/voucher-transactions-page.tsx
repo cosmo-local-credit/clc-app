@@ -73,7 +73,6 @@ const columns: Array<ColumnDef<AdminVoucherTransaction>> = [
   {
     id: "amount",
     header: "Amount",
-    meta: { align: "right" },
     // Amounts on this page belong to different vouchers with different decimals,
     // so ordering them against each other would compare unlike things. The Date
     // and Type headers are the two that sort.

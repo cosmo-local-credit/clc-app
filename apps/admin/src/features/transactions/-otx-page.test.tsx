@@ -104,7 +104,9 @@ describe("OTXPage", () => {
   it("renders the origin transaction type as a badge", async () => {
     renderPage([dispatch]);
 
-    expect((await table()).getByLabelText("origin transaction type relay exec")).toBeTruthy();
+    expect(
+      (await table()).getByLabelText("origin transaction type relay exec").className,
+    ).toContain("bg-yellow-50");
   });
 
   it("marks a replaced nonce, since two rows may share one", async () => {
@@ -113,6 +115,7 @@ describe("OTXPage", () => {
     const rendered = await table();
     expect(rendered.getByText("41")).toBeTruthy();
     expect(rendered.getByText("replaced")).toBeTruthy();
+    expect(rendered.getByText("41").closest("td")?.className).not.toContain("text-right");
   });
 
   it("labels its filters, which Base UI would otherwise show as the raw value", async () => {
@@ -124,13 +127,22 @@ describe("OTXPage", () => {
     expect(typeFilter.textContent).toContain("All types");
     expect(typeFilter.className).toContain("w-40");
     expect(screen.getByLabelText("Status").textContent).toContain("All statuses");
+    expect(
+      screen.getByRole("textbox", { name: "Tracking ID or transaction hash" }).className,
+    ).toContain("w-72");
+  });
+
+  it("colours a selected type filter to match its table badge", async () => {
+    renderPage([dispatch], "/?type=RELAY_EXEC");
+
+    expect((await screen.findByLabelText("Type")).className).toContain("bg-yellow-50");
   });
 
   it("offers the whole tracking ID to the clipboard, not just the shown prefix", async () => {
     renderPage([dispatch]);
 
     expect((await table()).getByRole("button", { name: "Copy tracking ID" })).toBeTruthy();
-    expect(screen.getByText("2c1f1f0e…")).toBeTruthy();
+    expect(screen.getByText("2c1f1f0e-0000-4000-8000-000000000000")).toBeTruthy();
   });
 
   it("sends tracking and hash terms to the backend query", async () => {

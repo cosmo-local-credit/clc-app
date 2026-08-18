@@ -18,7 +18,10 @@ import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
 import { StateBadge } from "#/components/admin/state-badge";
 import { TablePagination } from "#/components/admin/table-pagination";
-import { TransactionTypeBadge } from "#/components/admin/transaction-type-badge";
+import {
+  TransactionTypeBadge,
+  transactionTypeSelectClass,
+} from "#/components/admin/transaction-type-badge";
 import {
   Select,
   SelectContent,
@@ -33,6 +36,7 @@ import { formatDateTime } from "#/lib/format";
 import { filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
+import { cn } from "#/lib/utils";
 import type { OTXSearch } from "./transactions-search";
 
 /** Base UI needs a value for "no filter"; the enums cannot contain it. */
@@ -76,12 +80,11 @@ const columns: Array<ColumnDef<AdminOTX>> = [
     header: "Tracking",
     enableSorting: false,
     // The correlation key across a deployment's whole OTX chain, and what an
-    // operator pastes into /otx/track. Truncated because a UUID is thirty-six
-    // characters wide and never read in full off the screen — the copy button is
-    // how it leaves the page.
+    // operator pastes into /otx/track. It stays whole in the table so operators
+    // can compare a visible row directly with a tracking ID they were given.
     cell: ({ row }) => (
       <span className="inline-flex items-center gap-1">
-        <span className="font-data text-xs">{row.original.trackingId.slice(0, 8)}…</span>
+        <span className="font-data text-xs">{row.original.trackingId}</span>
         <CopyButton value={row.original.trackingId} label="Copy tracking ID" />
       </span>
     ),
@@ -101,7 +104,6 @@ const columns: Array<ColumnDef<AdminOTX>> = [
   {
     accessorKey: "nonce",
     header: "Nonce",
-    meta: { align: "right" },
     // The replaced flag lives here because a nonce is what was replaced: two
     // rows sharing one nonce is the expected shape, not a duplicate.
     cell: ({ row }) => (
@@ -189,12 +191,14 @@ export function OTXPage({ search }: { search: OTXSearch }) {
             search={search.q}
             onSearchChange={(q) => patch({ q: q || undefined })}
             searchPlaceholder="Tracking ID or transaction hash"
+            searchClassName="w-72"
           >
             <EnumSelect
               label="Type"
               anyLabel="All types"
               value={search.type}
               options={ADMIN_OTX_TYPES}
+              colorTypes
               onChange={(type) => patch({ type })}
             />
             <EnumSelect
@@ -255,12 +259,14 @@ function EnumSelect<TValue extends string>({
   anyLabel,
   value,
   options,
+  colorTypes = false,
   onChange,
 }: {
   label: string;
   anyLabel: string;
   value: TValue | undefined;
   options: readonly TValue[];
+  colorTypes?: boolean;
   onChange: (value: TValue | undefined) => void;
 }) {
   // Base UI renders the raw value in the trigger until the popup has mounted,
@@ -283,7 +289,7 @@ function EnumSelect<TValue extends string>({
     >
       <SelectTrigger
         size="default"
-        className="h-8 min-h-8 w-40 px-2.5"
+        className={cn("h-8 min-h-8 w-40 px-2.5", colorTypes && transactionTypeSelectClass(value))}
         aria-label={label}
         title={selectedLabel}
       >
@@ -291,7 +297,14 @@ function EnumSelect<TValue extends string>({
       </SelectTrigger>
       <SelectContent align="start">
         {items.map((item) => (
-          <SelectItem key={item.value} value={item.value} className="font-mono text-xs">
+          <SelectItem
+            key={item.value}
+            value={item.value}
+            className={cn(
+              "font-mono text-xs",
+              colorTypes && transactionTypeSelectClass(item.value === ANY ? undefined : item.value),
+            )}
+          >
             {item.label}
           </SelectItem>
         ))}
