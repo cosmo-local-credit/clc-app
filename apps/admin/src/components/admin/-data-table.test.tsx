@@ -86,6 +86,13 @@ describe("DataTable", () => {
 
     expect(onRowClick).toHaveBeenCalledExactlyOnceWith({ name: "Kilifi Growers", count: 9 });
   });
+
+  it("accepts a row-height baseline without constraining richer cell content", () => {
+    render(<DataTable columns={columns} data={rows} rowClassName="h-12" />);
+
+    expect(screen.getAllByRole("row")[1]?.className).toContain("h-12");
+  });
+
   it("renders a footer under the table, but not in place of the empty state", () => {
     // The pager lives here now, so it must appear with rows and stay away when the
     // empty state replaces the table — a pager over "no rows" is nonsense.

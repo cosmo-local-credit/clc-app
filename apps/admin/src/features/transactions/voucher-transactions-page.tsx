@@ -151,6 +151,7 @@ export function VoucherTransactionsPage({ search }: { search: VoucherTransaction
           <DataTable
             columns={columns}
             data={rows}
+            rowClassName="h-12"
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             emptyState={

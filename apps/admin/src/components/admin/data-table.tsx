@@ -73,6 +73,7 @@ export function DataTable<TData>({
   emptyState,
   footer,
   className,
+  rowClassName,
 }: {
   columns: Array<ColumnDef<TData>>;
   data: Array<TData>;
@@ -85,6 +86,8 @@ export function DataTable<TData>({
   /** Flush bar under the table (pager, count). Omitted on empty-state. */
   footer?: ReactNode;
   className?: string;
+  /** A page-level row-height baseline; row content may still expand naturally. */
+  rowClassName?: string;
 }) {
   const table = useReactTable({
     data,
@@ -155,7 +158,7 @@ export function DataTable<TData>({
             <TableRow
               key={row.id}
               onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-              className={cn(onRowClick && "cursor-pointer")}
+              className={cn(onRowClick && "cursor-pointer", rowClassName)}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
