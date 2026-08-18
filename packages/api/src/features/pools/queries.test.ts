@@ -1,3 +1,4 @@
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { describe, expect, it } from "vite-plus/test";
 import type { PoolsClient, UserPoolPage } from "./client";
 import {
@@ -8,6 +9,13 @@ import {
 } from "./queries";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+const FILTER: CatalogFilter = {
+  term: "market",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
 
 function page(received: number, last: number | undefined): UserPoolPage {
   return { pools: [], receivedCount: received, last } as UserPoolPage;
@@ -24,6 +32,7 @@ describe("poolKeys", () => {
       poolKeys.vouchers(ADDRESS, 20),
       poolKeys.vouchersInfinite(ADDRESS, 20),
       poolKeys.filtered(null, 20),
+      poolKeys.filteredPage({ perPage: 20, filter: FILTER }),
       poolKeys.facetVocabulary(),
     ]) {
       expect(key.slice(0, poolKeys.all.length)).toEqual([...poolKeys.all]);
@@ -53,6 +62,18 @@ describe("poolKeys", () => {
     );
     expect(poolKeys.vouchers(ADDRESS, 20)).not.toEqual(poolKeys.vouchers(ADDRESS, 50));
     expect(poolKeys.filtered(null, 20)).not.toEqual(poolKeys.filtered(null, 50));
+    // A term is a server parameter, so two terms are two results.
+    expect(poolKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      poolKeys.filteredPage({ perPage: 20, filter: { ...FILTER, term: "coffee" } }),
+    );
+    expect(poolKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      poolKeys.filteredPage({ perPage: 20, cursor: 480, next: true, filter: FILTER }),
+    );
+    // One page of a filtered list and a whole assembled catalog cache different
+    // shapes, so they must not share a key.
+    expect(poolKeys.filteredPage({ perPage: 20, filter: FILTER })).not.toEqual(
+      poolKeys.filtered(FILTER, 20),
+    );
   });
 });
 

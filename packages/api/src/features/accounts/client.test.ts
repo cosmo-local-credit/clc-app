@@ -70,3 +70,43 @@ describe("account token balances", () => {
     );
   });
 });
+
+describe("account status", () => {
+  it("GETs /account/status/:address and returns the gas balance", async () => {
+    const address = "0x2Dd3bB110D5609723b761416d2EA914F20E1FfD4";
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        gasBalance: "3202847782677689810",
+        networkNonce: 4,
+        internalNonce: 5,
+        active: true,
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    const status = await api.getAccountStatus(address);
+
+    expect(status.gasBalance).toBe("3202847782677689810");
+    expect(status.active).toBe(true);
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/v2/account/status/${address}`),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("encodes the address so a malformed one cannot alter the route", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      result: { gasBalance: "0", networkNonce: 0, internalNonce: 0, active: false },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getAccountStatus("../../tokens");
+
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining("/api/v2/account/status/..%2F..%2Ftokens"),
+      expect.any(Object),
+    );
+  });
+});

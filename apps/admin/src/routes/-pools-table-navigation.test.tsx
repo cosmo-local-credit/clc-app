@@ -39,10 +39,10 @@ function pool(id: number) {
   };
 }
 
-const getPools = vi.hoisted(() => vi.fn());
+const getFilteredPools = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
-  clcApi: { pools: { getPools: (...args: unknown[]) => getPools(...args) } },
+  clcApi: { pools: { getFilteredPools: (...args: unknown[]) => getFilteredPools(...args) } },
 }));
 
 function renderPoolsRoute(initialEntry = "/pools") {
@@ -77,7 +77,7 @@ function renderPoolsRoute(initialEntry = "/pools") {
 
 describe("pools table navigation", () => {
   it("records the cursor in the URL and returns to the first page on Back", async () => {
-    getPools.mockImplementation((params: { cursor?: number }) =>
+    getFilteredPools.mockImplementation((params: { cursor?: number }) =>
       Promise.resolve(params.cursor === undefined ? PAGE_ONE : PAGE_TWO),
     );
 
@@ -96,43 +96,43 @@ describe("pools table navigation", () => {
   });
 
   it("restores the exact page from a pasted URL", async () => {
-    getPools.mockImplementation((params: { cursor?: number }) =>
+    getFilteredPools.mockImplementation((params: { cursor?: number }) =>
       Promise.resolve(params.cursor === undefined ? PAGE_ONE : PAGE_TWO),
     );
 
     renderPoolsRoute("/pools?perPage=25&cursor=976&dir=next");
     // Landing directly on page two must request that page, not the first.
     await waitFor(() => expect(screen.getByText("Pool 975")).toBeTruthy());
-    expect(getPools).toHaveBeenCalledWith(
+    expect(getFilteredPools).toHaveBeenCalledWith(
       expect.objectContaining({ cursor: 976, next: true }),
       expect.anything(),
     );
   });
 
   it("requests the page size named in the URL, not a hard-coded one", async () => {
-    getPools.mockResolvedValue(PAGE_ONE);
+    getFilteredPools.mockResolvedValue(PAGE_ONE);
 
     renderPoolsRoute("/pools?perPage=50");
-    await waitFor(() => expect(getPools).toHaveBeenCalled());
-    expect(getPools).toHaveBeenCalledWith(
+    await waitFor(() => expect(getFilteredPools).toHaveBeenCalled());
+    expect(getFilteredPools).toHaveBeenCalledWith(
       expect.objectContaining({ perPage: 50 }),
       expect.anything(),
     );
   });
 
   it("clamps an unsupported page size instead of requesting it", async () => {
-    getPools.mockResolvedValue(PAGE_ONE);
+    getFilteredPools.mockResolvedValue(PAGE_ONE);
 
     renderPoolsRoute("/pools?perPage=100000");
-    await waitFor(() => expect(getPools).toHaveBeenCalled());
-    expect(getPools).toHaveBeenCalledWith(
+    await waitFor(() => expect(getFilteredPools).toHaveBeenCalled());
+    expect(getFilteredPools).toHaveBeenCalledWith(
       expect.objectContaining({ perPage: 25 }),
       expect.anything(),
     );
   });
 
   it("drops the cursor when sorting, so one page's order is not read as the resource's", async () => {
-    getPools.mockImplementation((params: { cursor?: number }) =>
+    getFilteredPools.mockImplementation((params: { cursor?: number }) =>
       Promise.resolve(params.cursor === undefined ? PAGE_ONE : PAGE_TWO),
     );
 
@@ -143,6 +143,67 @@ describe("pools table navigation", () => {
     await waitFor(() =>
       expect(router.state.location.search).toMatchObject({ sort: "voucherCount" }),
     );
+    expect(router.state.location.search).not.toHaveProperty("cursor");
+  });
+
+  it("sends a typed term to the backend rather than filtering the fetched page", async () => {
+    // The regression this guards: searching used to filter the rows already on
+    // screen, so a pool on page four could not be found from page one. The term
+    // has to reach the endpoint for the result to describe every pool.
+    getFilteredPools.mockImplementation((params: { filter: { term: string } }) =>
+      Promise.resolve(params.filter.term === "" ? PAGE_ONE : PAGE_TWO),
+    );
+
+    const router = renderPoolsRoute();
+    await waitFor(() => expect(screen.getByText("Pool 1000")).toBeTruthy());
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name, symbol, address" }), {
+      target: { value: "Pool 975" },
+    });
+
+    // Committed after the debounce, not on the keystroke.
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "Pool 975" }));
+    expect(getFilteredPools).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: expect.objectContaining({ term: "Pool 975" }) }),
+      expect.anything(),
+    );
+    await waitFor(() => expect(screen.getByText("Pool 975")).toBeTruthy());
+  });
+
+  it("does not send a one-character term, which the endpoint answers 400 for", async () => {
+    // clc-core's store.NewCatalogFilter rejects a term under two runes, so
+    // forwarding one turns a half-typed search into an error block. The table
+    // stays unfiltered until the term is long enough to send.
+    getFilteredPools.mockResolvedValue(PAGE_ONE);
+
+    const router = renderPoolsRoute();
+    await waitFor(() => expect(screen.getByText("Pool 1000")).toBeTruthy());
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name, symbol, address" }), {
+      target: { value: "P" },
+    });
+
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "P" }));
+    expect(getFilteredPools).not.toHaveBeenCalledWith(
+      expect.objectContaining({ filter: expect.objectContaining({ term: "P" }) }),
+      expect.anything(),
+    );
+    expect(screen.getByText("Pool 1000")).toBeTruthy();
+  });
+
+  it("drops the cursor when the term changes, so page four's cursor is not reused", async () => {
+    getFilteredPools.mockImplementation((params: { cursor?: number }) =>
+      Promise.resolve(params.cursor === undefined ? PAGE_ONE : PAGE_TWO),
+    );
+
+    const router = renderPoolsRoute("/pools?perPage=25&cursor=976&dir=next");
+    await waitFor(() => expect(screen.getByText("Pool 975")).toBeTruthy());
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name, symbol, address" }), {
+      target: { value: "market" },
+    });
+
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "market" }));
     expect(router.state.location.search).not.toHaveProperty("cursor");
   });
 });

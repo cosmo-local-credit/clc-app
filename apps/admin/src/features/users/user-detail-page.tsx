@@ -1,154 +1,96 @@
-import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { useState } from "react";
+
+import { LoadingBlock } from "#/components/admin/loading-block";
+import { PageState } from "#/components/admin/page-state";
+import { adminAccountStatsQueryOptions } from "@clc/api/features/admin/queries";
 import { useQuery } from "@tanstack/react-query";
-import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
-import { CopyButton } from "#/components/admin/copy-button";
-import { PageHeader } from "#/components/admin/page-header";
-import { SectionHeading } from "#/components/admin/section-heading";
-import { SectionState } from "#/components/admin/section-state";
-import { StateBadge } from "#/components/admin/state-badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "#/components/ui/table";
-import { formatDateTime } from "#/lib/format";
-import { useDataState } from "#/lib/use-data-state";
-import { accountTransfersQueryOptions } from "@clc/api/features/accounts/queries";
-import { latestAccountTokensQueryOptions } from "@clc/api/features/accounts/queries";
 import { clcApi } from "#/lib/api";
-import { AccountAdminPanel } from "./ui/account-admin-panel";
+import { useDataState } from "#/lib/use-data-state";
+import { useLatestAccountTokens } from "./use-account-balances";
+import { AccountBalancesCard } from "./ui/account-balances-card";
+import { AccountHeader } from "./ui/account-header";
+import { AccountProfileCard } from "./ui/account-profile-card";
+import { AccountRecordTabs } from "./ui/account-record-tabs";
+import { AccountSummaryMetrics } from "./ui/account-summary-metrics";
+import { EditAccountProfileSheet } from "./ui/edit-account-profile-sheet";
+import { useAdminUser } from "./use-admin-users";
+import type { UserDetailSearch } from "./user-detail-search";
 
-const TRANSFER_PAGE_SIZE = 50;
+/**
+ * One account, as an operator reads it: who it is and what to do about it first,
+ * then its details and holdings, then its records.
+ *
+ * Query orchestration stays here and the panels take data as props, so each panel
+ * renders from what it was given and there is one place to see what this screen
+ * fetches.
+ *
+ * An address with no account is a first-class case, not an error. The pools and
+ * vouchers surfaces link to addresses that hold vouchers without ever having
+ * registered, so the balances and records still render for them; only the profile
+ * panel, which needs a record, stands down.
+ */
+export function UserDetailPage({ address, search }: { address: string; search: UserDetailSearch }) {
+  const accountQuery = useAdminUser(address);
+  // Polled while this screen is open; the freshness policy lives in the hook.
+  const tokensQuery = useLatestAccountTokens(address);
+  const statsQuery = useQuery(adminAccountStatsQueryOptions(clcApi.admin, address));
 
-export function UserDetailPage({ address }: { address: string }) {
-  const tokensQuery = useQuery(latestAccountTokensQueryOptions(clcApi.accounts, address));
-  const transfersQuery = useQuery(
-    accountTransfersQueryOptions(clcApi.accounts, address, TRANSFER_PAGE_SIZE),
-  );
+  const [editing, setEditing] = useState(false);
 
-  const tokensState = useDataState(tokensQuery, (result) => result.tokens.length === 0);
-  const transfersState = useDataState(transfersQuery, (result) => result.transfers.length === 0);
-
+  const account = accountQuery.data ?? null;
   const tokens = tokensQuery.data?.tokens ?? [];
-  const transfers = transfersQuery.data?.transfers ?? [];
+  const tokensState = useDataState(tokensQuery, (result) => result.tokens.length === 0);
+
+  if (accountQuery.isPending) {
+    return <LoadingBlock rows={8} />;
+  }
+
+  if (accountQuery.isError) {
+    return (
+      <PageState
+        title="Could not load this account"
+        message={
+          accountQuery.error instanceof Error ? accountQuery.error.message : "The request failed."
+        }
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        breadcrumbs={
-          <AppBreadcrumb
-            items={[
-              { label: "Accounts", to: "/users" },
-              { label: formatVoucherAddress(address as `0x${string}`) },
-            ]}
-          />
-        }
-        title={formatVoucherAddress(address as `0x${string}`)}
-        description={
-          <span className="inline-flex items-center gap-1">
-            <span className="font-data text-xs">{address}</span>
-            <CopyButton value={address} label="Copy address" />
-          </span>
-        }
-      />
+      <AccountHeader address={address} account={account} onEditProfile={() => setEditing(true)} />
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Account</SectionHeading>
-        <AccountAdminPanel address={address} />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Balances ({tokens.length})</SectionHeading>
-        <SectionState
-          state={tokensState}
-          errorTitle="Could not load balances"
-          emptyTitle="No balances"
-          emptyDescription="This account holds no indexed tokens."
-        >
-          <div className="overflow-x-auto border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Token</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
-                  <TableHead>Last block</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tokens.map((token) => (
-                  <TableRow key={token.id}>
-                    <TableCell>
-                      <div className="truncate font-medium">{token.tokenName}</div>
-                      <div className="font-mono text-xs text-muted-foreground">
-                        {token.tokenSymbol}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-data text-xs">
-                      {formatVoucherAddress(token.tokenAddress as `0x${string}`)}
-                    </TableCell>
-                    <TableCell className="text-right font-data">
-                      {formatTokenAmount(token.balance, token.tokenDecimals)}
-                    </TableCell>
-                    <TableCell className="font-data text-xs">{token.lastDateBlock}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      {/* Profile, balances and figures share one band so the records below stay
+          above the fold on a laptop. The profile is still the widest of the three
+          but no longer takes half the page: at these widths its fields read fine
+          in two columns, and the space it gave up is what makes room for the
+          tiles. Below xl the band folds to two columns and the tiles span both,
+          then to one. */}
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(14rem,0.7fr)_minmax(15rem,0.75fr)]">
+        {account ? (
+          <AccountProfileCard account={account} />
+        ) : (
+          <div className="h-full border border-border bg-card p-4 text-sm text-muted-foreground">
+            This address holds vouchers but has no CLC account.
           </div>
-        </SectionState>
-      </section>
+        )}
+        <AccountBalancesCard tokens={tokens} state={tokensState} />
+        <div className="lg:col-span-2 xl:col-span-1">
+          {/* null while loading or after a failure: the tiles then read as
+              unavailable rather than as zero. */}
+          <AccountSummaryMetrics stats={statsQuery.data ?? null} />
+        </div>
+      </div>
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Transfers ({transfers.length})</SectionHeading>
-        <SectionState
-          state={transfersState}
-          errorTitle="Could not load transfers"
-          emptyTitle="No transfers"
-          emptyDescription="This account has no indexed transfers."
-        >
-          <div className="overflow-x-auto border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Direction</TableHead>
-                  <TableHead>Counterparty</TableHead>
-                  <TableHead>Token</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>When</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transfers.map((transfer) => (
-                  <TableRow key={transfer.id}>
-                    <TableCell className="font-mono text-xs uppercase">
-                      {transfer.direction}
-                    </TableCell>
-                    <TableCell className="font-data text-xs">
-                      {formatVoucherAddress(transfer.counterpartyAddress as `0x${string}`)}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{transfer.tokenSymbol}</TableCell>
-                    <TableCell className="text-right font-data">
-                      {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
-                    </TableCell>
-                    <TableCell>
-                      <StateBadge state={transfer.success ? "SUCCESS" : "FAIL"} kind="transfer" />
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDateTime(transfer.dateBlock)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </SectionState>
-      </section>
+      <AccountRecordTabs address={address} search={search} />
+
+      {account ? (
+        <EditAccountProfileSheet
+          account={account}
+          open={editing}
+          onClose={() => setEditing(false)}
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,0 +1,49 @@
+import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
+
+import { cn } from "#/lib/utils";
+
+/**
+ * Ported to Base UI: the shadcn registry ships this on Radix, which this repo
+ * does not use.
+ *
+ * `rounded-full` is deliberate here and one of the few places it belongs in the
+ * console — an avatar is a genuinely circular shape, not a surface with a
+ * radius, so the Lyra zero-radius tokens do not apply.
+ */
+function Avatar({ className, ...props }: AvatarPrimitive.Root.Props) {
+  return (
+    <AvatarPrimitive.Root
+      data-slot="avatar"
+      className={cn(
+        "relative flex size-8 shrink-0 overflow-hidden rounded-full select-none",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+  return (
+    <AvatarPrimitive.Image
+      data-slot="avatar-image"
+      className={cn("aspect-square size-full object-cover", className)}
+      {...props}
+    />
+  );
+}
+
+function AvatarFallback({ className, ...props }: AvatarPrimitive.Fallback.Props) {
+  return (
+    <AvatarPrimitive.Fallback
+      data-slot="avatar-fallback"
+      className={cn(
+        "flex size-full items-center justify-center bg-muted font-medium text-muted-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export { Avatar, AvatarImage, AvatarFallback };

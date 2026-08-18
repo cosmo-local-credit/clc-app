@@ -11,10 +11,12 @@ import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
 import { Badge } from "#/components/ui/badge";
 import { formatFeePpm } from "#/lib/format";
-import { poolListQueryOptions } from "@clc/api/features/pools/queries";
+import { poolFilteredPageQueryOptions } from "@clc/api/features/pools/queries";
+import { ListToolbar } from "#/components/admin/list-toolbar";
 import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
-import type { TableSearch } from "#/lib/table-search";
+import { termFilter } from "#/lib/catalog-filter";
+import { filterSearch, type TableSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 
@@ -67,7 +69,7 @@ const columns: Array<ColumnDef<UserPool>> = [
     accessorKey: "locationName",
     header: "Location",
     cell: ({ row }) => (
-      <span className="text-xs text-muted-foreground">{row.original.locationName ?? "—"}</span>
+      <span className="text-muted-foreground">{row.original.locationName ?? "—"}</span>
     ),
   },
   {
@@ -93,17 +95,22 @@ const columns: Array<ColumnDef<UserPool>> = [
 
 export function PoolsPage({ search }: { search: TableSearch }) {
   const navigate = useNavigate();
+  // The term goes to the endpoint, so a search covers every pool rather than the
+  // page in hand. Read back off the filter rather than off `search.q`: a term the
+  // backend would reject is normalized away, and the empty state must describe
+  // the request that was actually made.
+  const filter = termFilter(search.q ?? "");
+  const searched = filter.term !== "";
   const poolsQuery = useQuery(
-    poolListQueryOptions(clcApi.pools, {
+    poolFilteredPageQueryOptions(clcApi.pools, {
       perPage: search.perPage,
       cursor: search.cursor,
       next: search.dir === undefined ? undefined : search.dir === "next",
+      filter,
     }),
   );
 
   const pools = poolsQuery.data?.pools ?? [];
-  // Resolved rather than read off isError directly: a failed refresh with rows
-  // still cached is `stale`, and must keep showing them.
   const listState = useDataState(poolsQuery, (page) => page.pools.length === 0);
   const dropped = (poolsQuery.data?.receivedCount ?? 0) - pools.length;
   const table = usePagedTable({
@@ -116,10 +123,17 @@ export function PoolsPage({ search }: { search: TableSearch }) {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Pools"
-        description={
-          search.sort
-            ? "Every commitment pool the backend has indexed. Sorting applies to this page only."
-            : "Every commitment pool the backend has indexed."
+        actions={
+          <ListToolbar
+            search={search.q}
+            onSearchChange={(value) =>
+              void navigate({
+                to: "/pools",
+                search: filterSearch(search, { q: value || undefined }),
+              })
+            }
+            searchPlaceholder="Name, symbol, address"
+          />
         }
       />
 
@@ -133,6 +147,7 @@ export function PoolsPage({ search }: { search: TableSearch }) {
           <DataTable
             columns={columns}
             data={pools}
+            rowClassName="h-12"
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             onRowClick={(pool) =>
@@ -140,8 +155,12 @@ export function PoolsPage({ search }: { search: TableSearch }) {
             }
             emptyState={
               <EmptyState
-                title="No pools"
-                description="The backend has not indexed any pools yet."
+                title={searched ? "No matching pools" : "No pools"}
+                description={
+                  searched
+                    ? "No indexed pool matches this search."
+                    : "The backend has not indexed any pools yet."
+                }
               />
             }
             footer={
