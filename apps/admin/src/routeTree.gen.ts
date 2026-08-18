@@ -15,9 +15,13 @@ import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
+import { Route as ShellTransactionsIndexRouteImport } from './routes/_shell/transactions/index'
 import { Route as ShellPoolsIndexRouteImport } from './routes/_shell/pools/index'
 import { Route as ShellVouchersAddressRouteImport } from './routes/_shell/vouchers/$address'
 import { Route as ShellUsersAddressRouteImport } from './routes/_shell/users/$address'
+import { Route as ShellTransactionsVouchersRouteImport } from './routes/_shell/transactions/vouchers'
+import { Route as ShellTransactionsPoolsRouteImport } from './routes/_shell/transactions/pools'
+import { Route as ShellTransactionsOtxRouteImport } from './routes/_shell/transactions/otx'
 import { Route as ShellPoolsAddressRouteImport } from './routes/_shell/pools/$address'
 
 const ShellRoute = ShellRouteImport.update({
@@ -49,6 +53,11 @@ const ShellUsersIndexRoute = ShellUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellTransactionsIndexRoute = ShellTransactionsIndexRouteImport.update({
+  id: '/transactions/',
+  path: '/transactions/',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellPoolsIndexRoute = ShellPoolsIndexRouteImport.update({
   id: '/pools/',
   path: '/pools/',
@@ -64,6 +73,22 @@ const ShellUsersAddressRoute = ShellUsersAddressRouteImport.update({
   path: '/users/$address',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellTransactionsVouchersRoute =
+  ShellTransactionsVouchersRouteImport.update({
+    id: '/transactions/vouchers',
+    path: '/transactions/vouchers',
+    getParentRoute: () => ShellRoute,
+  } as any)
+const ShellTransactionsPoolsRoute = ShellTransactionsPoolsRouteImport.update({
+  id: '/transactions/pools',
+  path: '/transactions/pools',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellTransactionsOtxRoute = ShellTransactionsOtxRouteImport.update({
+  id: '/transactions/otx',
+  path: '/transactions/otx',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellPoolsAddressRoute = ShellPoolsAddressRouteImport.update({
   id: '/pools/$address',
   path: '/pools/$address',
@@ -75,9 +100,13 @@ export interface FileRoutesByFullPath {
   '/$': typeof ShellSplatRoute
   '/settings': typeof ShellSettingsRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
+  '/transactions/otx': typeof ShellTransactionsOtxRoute
+  '/transactions/pools': typeof ShellTransactionsPoolsRoute
+  '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/pools/': typeof ShellPoolsIndexRoute
+  '/transactions/': typeof ShellTransactionsIndexRoute
   '/users/': typeof ShellUsersIndexRoute
   '/vouchers/': typeof ShellVouchersIndexRoute
 }
@@ -86,9 +115,13 @@ export interface FileRoutesByTo {
   '/settings': typeof ShellSettingsRoute
   '/': typeof ShellIndexRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
+  '/transactions/otx': typeof ShellTransactionsOtxRoute
+  '/transactions/pools': typeof ShellTransactionsPoolsRoute
+  '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/pools': typeof ShellPoolsIndexRoute
+  '/transactions': typeof ShellTransactionsIndexRoute
   '/users': typeof ShellUsersIndexRoute
   '/vouchers': typeof ShellVouchersIndexRoute
 }
@@ -99,9 +132,13 @@ export interface FileRoutesById {
   '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/': typeof ShellIndexRoute
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
+  '/_shell/transactions/otx': typeof ShellTransactionsOtxRoute
+  '/_shell/transactions/pools': typeof ShellTransactionsPoolsRoute
+  '/_shell/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/_shell/users/$address': typeof ShellUsersAddressRoute
   '/_shell/vouchers/$address': typeof ShellVouchersAddressRoute
   '/_shell/pools/': typeof ShellPoolsIndexRoute
+  '/_shell/transactions/': typeof ShellTransactionsIndexRoute
   '/_shell/users/': typeof ShellUsersIndexRoute
   '/_shell/vouchers/': typeof ShellVouchersIndexRoute
 }
@@ -112,9 +149,13 @@ export interface FileRouteTypes {
     | '/$'
     | '/settings'
     | '/pools/$address'
+    | '/transactions/otx'
+    | '/transactions/pools'
+    | '/transactions/vouchers'
     | '/users/$address'
     | '/vouchers/$address'
     | '/pools/'
+    | '/transactions/'
     | '/users/'
     | '/vouchers/'
   fileRoutesByTo: FileRoutesByTo
@@ -123,9 +164,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/'
     | '/pools/$address'
+    | '/transactions/otx'
+    | '/transactions/pools'
+    | '/transactions/vouchers'
     | '/users/$address'
     | '/vouchers/$address'
     | '/pools'
+    | '/transactions'
     | '/users'
     | '/vouchers'
   id:
@@ -135,9 +180,13 @@ export interface FileRouteTypes {
     | '/_shell/settings'
     | '/_shell/'
     | '/_shell/pools/$address'
+    | '/_shell/transactions/otx'
+    | '/_shell/transactions/pools'
+    | '/_shell/transactions/vouchers'
     | '/_shell/users/$address'
     | '/_shell/vouchers/$address'
     | '/_shell/pools/'
+    | '/_shell/transactions/'
     | '/_shell/users/'
     | '/_shell/vouchers/'
   fileRoutesById: FileRoutesById
@@ -190,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellUsersIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/transactions/': {
+      id: '/_shell/transactions/'
+      path: '/transactions'
+      fullPath: '/transactions/'
+      preLoaderRoute: typeof ShellTransactionsIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/pools/': {
       id: '/_shell/pools/'
       path: '/pools'
@@ -211,6 +267,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellUsersAddressRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/transactions/vouchers': {
+      id: '/_shell/transactions/vouchers'
+      path: '/transactions/vouchers'
+      fullPath: '/transactions/vouchers'
+      preLoaderRoute: typeof ShellTransactionsVouchersRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/transactions/pools': {
+      id: '/_shell/transactions/pools'
+      path: '/transactions/pools'
+      fullPath: '/transactions/pools'
+      preLoaderRoute: typeof ShellTransactionsPoolsRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/transactions/otx': {
+      id: '/_shell/transactions/otx'
+      path: '/transactions/otx'
+      fullPath: '/transactions/otx'
+      preLoaderRoute: typeof ShellTransactionsOtxRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/pools/$address': {
       id: '/_shell/pools/$address'
       path: '/pools/$address'
@@ -226,9 +303,13 @@ interface ShellRouteChildren {
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
+  ShellTransactionsOtxRoute: typeof ShellTransactionsOtxRoute
+  ShellTransactionsPoolsRoute: typeof ShellTransactionsPoolsRoute
+  ShellTransactionsVouchersRoute: typeof ShellTransactionsVouchersRoute
   ShellUsersAddressRoute: typeof ShellUsersAddressRoute
   ShellVouchersAddressRoute: typeof ShellVouchersAddressRoute
   ShellPoolsIndexRoute: typeof ShellPoolsIndexRoute
+  ShellTransactionsIndexRoute: typeof ShellTransactionsIndexRoute
   ShellUsersIndexRoute: typeof ShellUsersIndexRoute
   ShellVouchersIndexRoute: typeof ShellVouchersIndexRoute
 }
@@ -238,9 +319,13 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
+  ShellTransactionsOtxRoute: ShellTransactionsOtxRoute,
+  ShellTransactionsPoolsRoute: ShellTransactionsPoolsRoute,
+  ShellTransactionsVouchersRoute: ShellTransactionsVouchersRoute,
   ShellUsersAddressRoute: ShellUsersAddressRoute,
   ShellVouchersAddressRoute: ShellVouchersAddressRoute,
   ShellPoolsIndexRoute: ShellPoolsIndexRoute,
+  ShellTransactionsIndexRoute: ShellTransactionsIndexRoute,
   ShellUsersIndexRoute: ShellUsersIndexRoute,
   ShellVouchersIndexRoute: ShellVouchersIndexRoute,
 }

@@ -12,6 +12,15 @@ import type { ReportCursor, ReportsClient } from "./client";
  * numeric one, so the infinite feed's page param is an object and its
  * termination is simply "the backend stopped offering a next cursor".
  */
+/** No text or tag narrowing: the author is the whole filter. */
+const EMPTY_REPORT_FILTER: CatalogFilter = {
+  term: "",
+  tags: [],
+  tagMatch: "any",
+  vouchers: [],
+  voucherMatch: "any",
+};
+
 export const reportKeys = {
   all: ["clc", "reports"] as const,
 
@@ -23,16 +32,12 @@ export const reportKeys = {
 
   filtered: (filter: CatalogFilter | null, perPage: number) =>
     ["clc", "reports", "filtered", { filter, perPage }] as const,
+
+  /** Reports authored by one account. */
+  byAuthor: (author: string, perPage: number) =>
+    ["clc", "reports", "author", author.toLowerCase(), perPage] as const,
   facetVocabulary: () => ["clc", "reports", "facet-vocabulary"] as const,
 } as const;
-
-export function reportListQueryOptions(reports: ReportsClient, perPage: number) {
-  return queryOptions({
-    queryKey: reportKeys.list(perPage),
-    queryFn: ({ signal }) => reports.getReports({ perPage }, signal),
-    placeholderData: keepPreviousData,
-  });
-}
 
 export function reportFeedInfiniteQueryOptions(reports: ReportsClient, perPage: number) {
   return infiniteQueryOptions({
@@ -40,6 +45,42 @@ export function reportFeedInfiniteQueryOptions(reports: ReportsClient, perPage: 
     queryFn: ({ pageParam, signal }) => reports.getReports({ perPage, cursor: pageParam }, signal),
     initialPageParam: undefined as ReportCursor | undefined,
     getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+  });
+}
+
+export function reportFilteredQueryOptions(
+  reports: ReportsClient,
+  filter: CatalogFilter,
+  perPage: number,
+) {
+  return queryOptions({
+    queryKey: reportKeys.filtered(filter, perPage),
+    queryFn: ({ signal }) => reports.getFilteredReports({ filter, perPage }, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * Reports authored by one account.
+ *
+ * Filtered at the backend rather than by scanning the feed: a global page filtered
+ * in the browser answers with whichever reports happened to be on it, which for an
+ * audit screen omits without saying so.
+ */
+export function reportsByAuthorQueryOptions(
+  reports: ReportsClient,
+  author: string | undefined,
+  perPage: number,
+) {
+  return queryOptions({
+    queryKey: reportKeys.byAuthor(author ?? "none", perPage),
+    queryFn: ({ signal }) =>
+      reports.getFilteredReports(
+        { perPage, filter: EMPTY_REPORT_FILTER, author: author ?? "" },
+        signal,
+      ),
+    enabled: Boolean(author),
+    placeholderData: keepPreviousData,
   });
 }
 

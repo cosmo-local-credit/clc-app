@@ -24,10 +24,13 @@ export function EmptyState({
       {icon ? (
         <div className="border border-border bg-muted/50 p-2.5 text-muted-foreground">{icon}</div>
       ) : null}
+      {/* The title is a mono micro-label, tracked to match section headings and
+          metric labels — the console's third letter-spacing for the same role was
+          this one. The description is body copy and takes the body size. */}
       <div className="space-y-1">
-        <p className="font-mono text-xs font-semibold tracking-wide uppercase">{title}</p>
+        <p className="font-mono text-xs font-semibold tracking-[0.14em] uppercase">{title}</p>
         {description ? (
-          <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">{description}</p>
+          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{description}</p>
         ) : null}
       </div>
       {action}

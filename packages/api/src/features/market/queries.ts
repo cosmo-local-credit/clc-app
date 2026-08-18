@@ -20,6 +20,13 @@ export type VoucherListParams = {
   next?: boolean;
 };
 
+/** One cursor page of the catalog as the backend filtered it. */
+export type VoucherFilteredListParams = VoucherListParams & {
+  filter: CatalogFilter;
+  /** Only vouchers owned by this address. */
+  owner?: string;
+};
+
 export const voucherKeys = {
   all: ["clc", "vouchers"] as const,
 
@@ -55,6 +62,29 @@ export const voucherKeys = {
 
   filtered: (filter: CatalogFilter | null, perPage: number) =>
     ["clc", "vouchers", "filtered", { filter, perPage }] as const,
+
+  /**
+   * One page of a filtered list, as a paged table reads it — distinct from
+   * `filtered`, which caches a whole assembled catalog.
+   *
+   * The filter is keyed alongside the cursor because it is a server parameter:
+   * two terms are two different results, and a term applied after the fact to
+   * whichever page happened to load is not a search of the catalog.
+   */
+  filteredPage: (params: VoucherFilteredListParams) =>
+    [
+      "clc",
+      "vouchers",
+      "filtered",
+      "page",
+      {
+        filter: params.filter,
+        owner: params.owner,
+        perPage: params.perPage,
+        cursor: params.cursor,
+        next: params.next,
+      },
+    ] as const,
   facetVocabulary: () => ["clc", "vouchers", "facet-vocabulary"] as const,
   search: (term: string) => ["clc", "vouchers", "search", term] as const,
 } as const;
@@ -77,12 +107,32 @@ export function nextMarketCursor(perPage: number) {
   };
 }
 
-export function voucherListQueryOptions(market: MarketClient, params: VoucherListParams) {
+/**
+ * A paged, server-filtered catalog read.
+ *
+ * An unfiltered catalog query cannot answer a search: the term has to reach the
+ * endpoint for the result to describe the catalog rather than the page in hand.
+ * An empty term sends no `q`, so an unsearched table pays nothing for this.
+ */
+export function voucherFilteredPageQueryOptions(
+  market: MarketClient,
+  params: VoucherFilteredListParams,
+) {
   return queryOptions({
-    queryKey: voucherKeys.list(params),
-    queryFn: ({ signal }) => market.getMarketVouchers(params, signal),
-    // Keeps the previous page visible while the next loads, so paging does not
-    // blink through an empty table.
+    queryKey: voucherKeys.filteredPage(params),
+    queryFn: ({ signal }) =>
+      market.getFilteredMarketVouchers(
+        {
+          perPage: params.perPage,
+          cursor: params.cursor,
+          next: params.next,
+          filter: params.filter,
+          ...(params.owner ? { owner: params.owner } : {}),
+        },
+        signal,
+      ),
+    // Keeps the previous result visible while the next loads, so paging and
+    // refining a term do not blink through an empty table.
     placeholderData: keepPreviousData,
   });
 }

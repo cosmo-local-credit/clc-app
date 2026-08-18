@@ -21,15 +21,15 @@ import {
  * point of keeping this state in the URL. Replacement is reserved for
  * normalization, which `parseTableSearch` already handles on entry.
  */
-export function usePagedTable({
+export function usePagedTable<T extends TableSearch>({
   search,
   page,
   navigate,
 }: {
-  search: TableSearch;
+  search: T;
   /** The fetched page's cursor bounds, or undefined while loading or failed. */
   page: { first?: number; last?: number; receivedCount: number } | undefined;
-  navigate: (search: TableSearch) => void;
+  navigate: (search: T) => void;
 }) {
   const atStart = isFirstPage(search);
 

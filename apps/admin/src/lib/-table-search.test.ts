@@ -133,6 +133,13 @@ describe("sortSearch", () => {
   });
 });
 
+describe("parseTableSearch text filter", () => {
+  it("keeps a non-empty q and drops whitespace", () => {
+    expect(parseTableSearch({ q: " kilifi " }).q).toBe("kilifi");
+    expect(parseTableSearch({ q: "   " }).q).toBeUndefined();
+  });
+});
+
 describe("isFirstPage", () => {
   it("is true only without a cursor", () => {
     expect(isFirstPage({ perPage: 25 })).toBe(true);

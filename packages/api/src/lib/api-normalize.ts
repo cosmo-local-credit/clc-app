@@ -33,6 +33,22 @@ export function normalizeNumericText(value: unknown): string | null {
   return normalizeText(value);
 }
 
+/**
+ * A raw on-chain integer, as clc-core sends it: PostgreSQL NUMERIC cast to text.
+ *
+ * `formatTokenAmount` in @clc/core throws on anything but a non-negative integer
+ * string, so a value that arrives with a scale (`"1000.000000"` from a column
+ * that gained one) would take down the row that renders it. A trailing run of
+ * zeros after the point is dropped as the notation it is; anything else is
+ * reported as no amount, which a caller shows as unavailable rather than as a
+ * number it cannot trust.
+ */
+export function normalizeRawAmount(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const match = /^(\d+)(?:\.0*)?$/.exec(value.trim());
+  return match ? match[1] : null;
+}
+
 export function normalizeNumber(value: unknown): number | null {
   if (typeof value !== "number" && typeof value !== "string") return null;
   const parsed = Number(value);

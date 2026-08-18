@@ -28,7 +28,29 @@ export const accountKeys = {
     ["clc", "accounts", "transfers", address.toLowerCase(), perPage] as const,
   transfersInfinite: (address: string, perPage: number) =>
     ["clc", "accounts", "transfers", "infinite", address.toLowerCase(), perPage] as const,
+
+  /**
+   * One cursor page of transfers, for a table that pages rather than one that
+   * appends. Keyed on the cursor and direction because both change which rows come
+   * back — the same cursor forwards and backwards addresses different pages.
+   */
+  transfersPage: (address: string, params: AccountTransfersPageParams) =>
+    [
+      "clc",
+      "accounts",
+      "transfers",
+      "page",
+      address.toLowerCase(),
+      { perPage: params.perPage, cursor: params.cursor, next: params.next },
+    ] as const,
 } as const;
+
+export type AccountTransfersPageParams = {
+  perPage: number;
+  cursor?: number;
+  /** True steps forward from the cursor, false steps back. */
+  next?: boolean;
+};
 
 export function latestAccountTokensQueryOptions(
   accounts: AccountsClient,
@@ -62,15 +84,31 @@ export function accountTokensInfiniteQueryOptions(
   });
 }
 
-export function accountTransfersQueryOptions(
+/**
+ * A paged transfers read for a cursor-paginated table.
+ *
+ * Distinct from the infinite read above, which caches `{ pages, pageParams }` for
+ * a list that grows as it is scrolled. A table shows one page at a time and steps
+ * in both directions, so it needs the single-page shape and a key that includes
+ * the step.
+ */
+export function accountTransfersPageQueryOptions(
   accounts: AccountsClient,
   address: string | undefined,
-  perPage: number,
+  params: AccountTransfersPageParams,
 ) {
   return queryOptions({
-    queryKey: accountKeys.transfers(address ?? "none", perPage),
-    queryFn: () => accounts.getAccountTransfers({ address: requireAddress(address), perPage }),
+    queryKey: accountKeys.transfersPage(address ?? "none", params),
+    queryFn: () =>
+      accounts.getAccountTransfers({
+        address: requireAddress(address),
+        perPage: params.perPage,
+        cursor: params.cursor,
+        next: params.next,
+      }),
     enabled: Boolean(address),
+    // Keeps the current page on screen while the next one loads, so paging does
+    // not blink through an empty table.
     placeholderData: keepPreviousData,
   });
 }
