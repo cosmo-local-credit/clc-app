@@ -15,6 +15,7 @@ export function ListToolbar({
   search,
   onSearchChange,
   searchPlaceholder = "Search",
+  searchClassName,
   filters,
   children,
 }: {
@@ -22,13 +23,20 @@ export function ListToolbar({
   search?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
+  /** Page-specific width without changing the console-wide h-8 control height. */
+  searchClassName?: string;
   filters?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {onSearchChange ? (
-        <ToolbarSearch value={search} onChange={onSearchChange} placeholder={searchPlaceholder} />
+        <ToolbarSearch
+          value={search}
+          onChange={onSearchChange}
+          placeholder={searchPlaceholder}
+          className={searchClassName}
+        />
       ) : null}
       {filters}
       {children}
@@ -52,10 +60,12 @@ function ToolbarSearch({
   value,
   onChange,
   placeholder,
+  className,
 }: {
   value?: string;
   onChange: (value: string) => void;
   placeholder: string;
+  className?: string;
 }) {
   const committed = value ?? "";
   const [draft, setDraft] = useState(committed);
@@ -84,7 +94,7 @@ function ToolbarSearch({
       onChange={(event) => setDraft(event.currentTarget.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className="h-8 w-56 bg-card font-sans text-sm"
+      className={cn("h-8 w-56 bg-card font-sans text-sm", className)}
     />
   );
 }

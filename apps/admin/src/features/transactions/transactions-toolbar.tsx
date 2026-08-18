@@ -1,5 +1,7 @@
 import { ListToolbar } from "#/components/admin/list-toolbar";
+import { transactionTypeFilterClass } from "#/components/admin/transaction-type-badge";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
+import { cn } from "#/lib/utils";
 
 /** Base UI needs a value for the unfiltered segment; event enums cannot contain it. */
 const ALL_TYPES = "all";
@@ -31,6 +33,7 @@ export function ChainTxToolbar<TType extends string>({
       search={search}
       onSearchChange={(value) => onSearchChange(value || undefined)}
       searchPlaceholder={searchPlaceholder}
+      searchClassName="w-72"
       filters={
         <ToggleGroup
           variant="outline"
@@ -57,7 +60,10 @@ export function ChainTxToolbar<TType extends string>({
             <ToggleGroupItem
               key={type}
               value={type}
-              className="h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase text-muted-foreground data-[pressed]:bg-muted data-[pressed]:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
+              className={cn(
+                "h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase",
+                transactionTypeFilterClass(type),
+              )}
             >
               {type}
             </ToggleGroupItem>

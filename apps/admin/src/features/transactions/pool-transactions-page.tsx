@@ -60,7 +60,6 @@ const columns: Array<ColumnDef<AdminPoolTransaction>> = [
   {
     id: "amountIn",
     header: "In",
-    meta: { align: "right" },
     enableSorting: false,
     cell: ({ row }) => (
       <TokenAmount
@@ -73,7 +72,6 @@ const columns: Array<ColumnDef<AdminPoolTransaction>> = [
   {
     id: "amountOut",
     header: "Out",
-    meta: { align: "right" },
     enableSorting: false,
     cell: ({ row }) => (
       <TokenAmount
@@ -86,7 +84,6 @@ const columns: Array<ColumnDef<AdminPoolTransaction>> = [
   {
     id: "fee",
     header: "Fee",
-    meta: { align: "right" },
     enableSorting: false,
     // Denominated in the out token, and excluding the protocol fee: the indexer
     // only records that separately for pools that emit SwapSettlement, and there

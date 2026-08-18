@@ -94,6 +94,12 @@ describe("PoolTransactionsPage", () => {
     const types = await screen.findByLabelText("Transaction types");
     expect(types.className).toContain("h-8");
     expect(types.className).toContain("p-0.5");
+    expect(
+      screen.getByRole("textbox", { name: "Hash, initiator, pool, or voucher" }).className,
+    ).toContain("w-72");
+    expect(screen.getByRole("button", { name: "swap" }).className).toContain(
+      "data-[pressed]:bg-violet-50",
+    );
   });
 
   it("shows both sides of a swap with the voucher each is denominated in", async () => {
@@ -102,7 +108,9 @@ describe("PoolTransactionsPage", () => {
     expect(await screen.findByRole("heading", { name: "Pool transactions" })).toBeTruthy();
     const rendered = await table();
     expect(rendered.getByText("swap")).toBeTruthy();
-    expect(rendered.getByText("1")).toBeTruthy();
+    const amountIn = rendered.getByText("1");
+    expect(amountIn).toBeTruthy();
+    expect(amountIn.closest("td")?.className).not.toContain("text-right");
     expect(rendered.getByText("0.99")).toBeTruthy();
     expect(rendered.getByText("SRF")).toBeTruthy();
     expect(rendered.getByText("CKS")).toBeTruthy();
@@ -112,7 +120,9 @@ describe("PoolTransactionsPage", () => {
     renderPage([swap]);
 
     const rendered = await table();
-    expect(rendered.getByLabelText("pool transaction type swap")).toBeTruthy();
+    expect(rendered.getByLabelText("pool transaction type swap").className).toContain(
+      "bg-violet-50",
+    );
     expect(rendered.getByLabelText("pool transaction state success")).toBeTruthy();
   });
 

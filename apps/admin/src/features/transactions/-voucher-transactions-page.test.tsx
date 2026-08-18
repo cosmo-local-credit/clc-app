@@ -94,6 +94,12 @@ describe("VoucherTransactionsPage", () => {
     const types = await screen.findByLabelText("Transaction types");
     expect(types.className).toContain("h-8");
     expect(types.className).toContain("p-0.5");
+    expect(screen.getByRole("textbox", { name: "From, to, hash, or voucher" }).className).toContain(
+      "w-72",
+    );
+    expect(screen.getByRole("button", { name: "transfer" }).className).toContain(
+      "data-[pressed]:bg-sky-50",
+    );
   });
 
   it("scales the amount by the voucher's decimals", async () => {
@@ -102,13 +108,16 @@ describe("VoucherTransactionsPage", () => {
     expect(await screen.findByRole("heading", { name: "Voucher transactions" })).toBeTruthy();
     const rendered = await table();
     expect(rendered.getByText("transfer")).toBeTruthy();
-    expect(rendered.getByText("1.5")).toBeTruthy();
+    const amount = rendered.getByText("1.5");
+    expect(amount).toBeTruthy();
+    expect(amount.closest("td")?.className).not.toContain("text-right");
   });
 
   it("renders the transaction type as a badge", async () => {
     renderPage([transfer]);
 
-    expect((await table()).getByLabelText("voucher transaction type transfer")).toBeTruthy();
+    const badge = (await table()).getByLabelText("voucher transaction type transfer");
+    expect(badge.className).toContain("bg-sky-50");
   });
 
   it("shows the raw integer, marked, when the catalog does not know the voucher", async () => {
