@@ -49,7 +49,6 @@ describe("TransferDetailsSheet private attachment", () => {
   it("renders only the authorized note and contact fields", async () => {
     shareState.data = {
       id: 1,
-      trackingId: "tracking-1",
       txHash: TRANSFER.txHash,
       permission: 7,
       note: "Meet me at the market",
