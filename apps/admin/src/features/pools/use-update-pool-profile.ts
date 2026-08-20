@@ -18,7 +18,7 @@ export function useUpdatePoolProfile(address: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (profile: PoolProfileUpdate) => clcApi.pools.updatePoolProfile(address, profile),
+    mutationFn: (profile: PoolProfileUpdate) => clcApi.admin.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
       return queryClient.invalidateQueries({ queryKey: poolKeys.all });

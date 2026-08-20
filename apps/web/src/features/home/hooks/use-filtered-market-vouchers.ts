@@ -13,7 +13,7 @@ import {
   marketVoucherQueryKeys,
   nextMarketCursor,
 } from "#/features/home/hooks/use-market-vouchers";
-import { clcApi } from "#/lib/api";
+import { marketClient } from "#/lib/api/market";
 
 export const MAX_FILTERED_PAGES = 6;
 
@@ -51,7 +51,7 @@ export function useFilteredMarketVouchers(
       let cursor: number | undefined;
 
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
-        const page = await clcApi.market.getFilteredMarketVouchers(
+        const page = await marketClient.getFilteredMarketVouchers(
           {
             perPage,
             cursor,
@@ -93,7 +93,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: marketVoucherQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await clcApi.market.getFilteredMarketVouchers(
+      const page = await marketClient.getFilteredMarketVouchers(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );

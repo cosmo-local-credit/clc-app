@@ -18,6 +18,7 @@ import type {
   AdminUserParams,
   AdminVoucherTransactionParams,
 } from "./client";
+import { type PoolListParams, poolKeys } from "../pools/queries";
 
 export const adminKeys = {
   all: ["clc", "admin"] as const,
@@ -98,6 +99,19 @@ export function adminAccountStatsQueryOptions(admin: AdminClient, address: strin
   });
 }
 
+export function accountPoolsQueryOptions(
+  admin: AdminClient,
+  address: string | undefined,
+  params: PoolListParams,
+) {
+  return queryOptions({
+    queryKey: poolKeys.account(address ?? "none", params),
+    queryFn: ({ signal }) => admin.getAccountPools(requireAddress(address), params, signal),
+    enabled: Boolean(address),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function adminStatsQueryOptions(admin: AdminClient, params: AdminStatsParams) {
   return queryOptions({
     queryKey: adminKeys.stats(params),
@@ -140,4 +154,9 @@ export function adminOTXQueryOptions(admin: AdminClient, params: AdminOTXParams)
     queryFn: ({ signal }) => admin.listOTX(params, signal),
     placeholderData: keepPreviousData,
   });
+}
+
+function requireAddress(address: string | undefined): string {
+  if (!address) throw new Error("An account address is required.");
+  return address;
 }

@@ -9,7 +9,7 @@ import {
   type SiweRequest,
 } from "@clc/api/features/auth/siwe";
 import { wagmiConfig } from "#/providers/web3-config";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
@@ -32,12 +32,12 @@ export function useBackendSignup() {
   return useMutation({
     mutationFn: async ({ profile, privateKey }: BackendSignupInput) => {
       const signer = privateKeySigner(privateKey);
-      const signed = await signSiweMessage(clcApi.auth, signer, siweRequest("Sign up for CLC App"));
+      const signed = await signSiweMessage(authClient, signer, siweRequest("Sign up for CLC App"));
 
       const email =
         profile.email.trim() || `pending+${signer.address.slice(2).toLowerCase()}@clc.local`;
 
-      const result = await clcApi.auth.signupWithSiwe({
+      const result = await authClient.signupWithSiwe({
         ...signed,
         name: profile.name,
         email,
@@ -51,10 +51,10 @@ export function useBackendSignup() {
       // SIWE-sign-in first — otherwise phone/country stay stale — then submit the
       // (possibly edited) profile.
       if (result.alreadyRegistered) {
-        await signInWithSiwe(clcApi.auth, signer, siweRequest("Sign in to CLC App"));
+        await signInWithSiwe(authClient, signer, siweRequest("Sign in to CLC App"));
       }
 
-      await clcApi.auth.submitProfile({
+      await authClient.submitProfile({
         name: profile.name,
         email,
         phone: profile.phone,
@@ -76,7 +76,7 @@ export type BackendPrivateKeySigninInput = {
 export function useBackendPrivateKeySignin() {
   return useMutation({
     mutationFn: ({ privateKey }: BackendPrivateKeySigninInput) =>
-      signInWithSiwe(clcApi.auth, privateKeySigner(privateKey), siweRequest("Sign in to CLC App")),
+      signInWithSiwe(authClient, privateKeySigner(privateKey), siweRequest("Sign in to CLC App")),
   });
 }
 
@@ -88,7 +88,7 @@ export function useBackendWalletSignin(
     mutationFn: async () => {
       if (!address) throw new Error("Wallet not connected");
       return signInWithSiwe(
-        clcApi.auth,
+        authClient,
         { address, signMessage: (message) => signMessage(wagmiConfig, { message }) },
         { ...siweRequest("Sign in to CLC App"), chainId: chainId ?? CHAIN_ID },
       );

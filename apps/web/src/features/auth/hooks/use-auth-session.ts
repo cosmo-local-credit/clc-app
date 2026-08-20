@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 export function useBackendLogout() {
-  return useMutation({ mutationFn: () => clcApi.auth.logout() });
+  return useMutation({ mutationFn: () => authClient.logout() });
 }

@@ -25,9 +25,9 @@ import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 export function createClcApi(options: CreateHttpClientOptions) {
   const http = createHttpClient(options);
 
-  // The raw transport is deliberately not returned. Every backend call goes
-  // through a resource module, so exposing it would only invite a caller to
-  // hand-roll a request that belongs in this package.
+  // The package exports the transport factory so apps can preserve route-level
+  // resource loading. This aggregate still returns resource clients only: a
+  // caller needing a new request must add it to the appropriate module.
   return {
     accounts: createAccountsClient(http),
     admin: createAdminClient(http),

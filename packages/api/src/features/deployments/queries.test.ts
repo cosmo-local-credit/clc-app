@@ -4,10 +4,7 @@ import { deploymentKeys, tokenTagsQueryOptions } from "./queries";
 
 describe("deploymentKeys", () => {
   it("hangs every key off `all` so one invalidation reaches them", () => {
-    for (const key of [
-      deploymentKeys.tokenTags(),
-      deploymentKeys.contract("SWAP_POOL", "track-1"),
-    ]) {
+    for (const key of [deploymentKeys.tokenTags(), deploymentKeys.contract("POOL", "track-1")]) {
       expect(key.slice(0, deploymentKeys.all.length)).toEqual([...deploymentKeys.all]);
     }
   });

@@ -1,7 +1,7 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { poolVouchersInfiniteQueryOptions } from "@clc/api/features/pools/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { clcApi } from "#/lib/api";
+import { poolsClient } from "#/lib/api/pools";
 
 const DEFAULT_POOL_VOUCHERS_PAGE_SIZE = 20;
 
@@ -9,7 +9,7 @@ export function usePoolVouchersInfinite(
   poolAddress: string | undefined,
   perPage = DEFAULT_POOL_VOUCHERS_PAGE_SIZE,
 ) {
-  return useInfiniteQuery(poolVouchersInfiniteQueryOptions(clcApi.pools, poolAddress, perPage));
+  return useInfiniteQuery(poolVouchersInfiniteQueryOptions(poolsClient, poolAddress, perPage));
 }
 
 export function usePoolVouchers(pool: UserPool | null | undefined) {

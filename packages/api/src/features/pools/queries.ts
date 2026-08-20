@@ -148,19 +148,6 @@ export function poolFilteredQueryOptions(
   });
 }
 
-export function accountPoolsQueryOptions(
-  pools: PoolsClient,
-  address: string | undefined,
-  params: PoolListParams,
-) {
-  return queryOptions({
-    queryKey: poolKeys.account(address ?? "none", params),
-    queryFn: ({ signal }) => pools.getAccountPools(requireAddress(address), params, signal),
-    enabled: Boolean(address),
-    placeholderData: keepPreviousData,
-  });
-}
-
 export function poolQueryOptions(pools: PoolsClient, address: string | undefined) {
   return queryOptions({
     queryKey: poolKeys.detail(address ?? "none"),

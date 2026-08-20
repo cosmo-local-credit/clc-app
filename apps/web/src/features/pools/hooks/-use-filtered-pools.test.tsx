@@ -18,10 +18,8 @@ vi.mock("@clc/api/features/pools/client", async (importOriginal) => {
 
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
-vi.mock("#/lib/api", async () => ({
-  clcApi: {
-    pools: await import("@clc/api/features/pools/client"),
-  },
+vi.mock("#/lib/api/pools", async () => ({
+  poolsClient: await import("@clc/api/features/pools/client"),
 }));
 
 const PER_PAGE = 100;

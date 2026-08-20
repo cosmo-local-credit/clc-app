@@ -1,5 +1,5 @@
 import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
-import { accountPoolsQueryOptions } from "@clc/api/features/pools/queries";
+import { accountPoolsQueryOptions } from "@clc/api/features/admin/queries";
 import { reportsByAuthorQueryOptions } from "@clc/api/features/reports/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
@@ -439,7 +439,7 @@ function VouchersPanel({ address, search }: { address: string; search: UserDetai
 function PoolsPanel({ address, search }: { address: string; search: UserDetailSearch }) {
   const navigate = useNavigate();
   const query = useQuery(
-    accountPoolsQueryOptions(clcApi.pools, address, {
+    accountPoolsQueryOptions(clcApi.admin, address, {
       perPage: search.perPage,
       cursor: search.cursor,
       next: search.dir === undefined ? undefined : search.dir === "next",

@@ -13,7 +13,7 @@ import {
   voucherViewportQueryOptions,
 } from "@clc/api/features/market/queries";
 import type { MarketViewport } from "#/features/home/ui/market-map";
-import { clcApi } from "#/lib/api";
+import { marketClient } from "#/lib/api/market";
 
 export const MARKET_MAP_PAGE_SIZE = 500;
 
@@ -33,7 +33,7 @@ export const marketVoucherQueryKeys = voucherKeys;
 
 function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
-    ...voucherCatalogInfiniteQueryOptions(clcApi.market, perPage),
+    ...voucherCatalogInfiniteQueryOptions(marketClient, perPage),
     enabled,
     ...MARKET_QUERY_FRESHNESS,
   });
@@ -42,7 +42,7 @@ function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = tru
 export { nextMarketCursor };
 
 function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean, perPage: number) {
-  const options = voucherViewportQueryOptions(clcApi.market, boxes, perPage);
+  const options = voucherViewportQueryOptions(marketClient, boxes, perPage);
   return useQuery({
     ...options,
     enabled: enabled && options.enabled,

@@ -29,10 +29,17 @@ import type { HttpClient } from "../../client/http-client";
 import type { CursorParams } from "../../lib/api-normalize";
 import {
   formatCursorQuery,
+  isPresent,
   normalizeNumber,
   normalizeRawAmount,
   normalizeText,
 } from "../../lib/api-normalize";
+import {
+  normalizeUserPool,
+  type PoolProfileUpdate,
+  type UserPool,
+  type UserPoolPage,
+} from "../pools/client";
 
 export type AdminUser = {
   id: number;
@@ -347,6 +354,16 @@ export type AdminClient = {
   updateUserLimits(address: string, limits: AdminUserLimits): Promise<AdminUser>;
   updateUserProfile(address: string, profile: AdminUserProfile): Promise<AdminUser>;
   getAccountStats(address: string, signal?: AbortSignal): Promise<AdminAccountStats>;
+  getAccountPools(
+    address: string,
+    params: CursorParams,
+    signal?: AbortSignal,
+  ): Promise<UserPoolPage>;
+  updatePoolProfile(
+    address: string,
+    profile: PoolProfileUpdate,
+    signal?: AbortSignal,
+  ): Promise<UserPool>;
   getStats(params: AdminStatsParams, signal?: AbortSignal): Promise<AdminStats>;
   /** Transfers, mints and burns, newest first. */
   listVoucherTransactions(
@@ -429,6 +446,21 @@ type BackendAdminPoolTransaction = Omit<
   fee: unknown;
 };
 
+type BackendAdminPool = Parameters<typeof normalizeUserPool>[0];
+
+type BackendAdminPoolPage = {
+  pools?: Array<BackendAdminPool> | null;
+  first?: number;
+  last?: number;
+};
+
+type BackendAdminPoolEnvelope = { pool?: BackendAdminPool | null } & BackendAdminPool;
+
+function emptyToNull(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
 export function createAdminClient(http: HttpClient): AdminClient {
   /**
    * Mutations answer with the updated row, which callers write straight into the
@@ -503,6 +535,45 @@ export function createAdminClient(http: HttpClient): AdminClient {
         swaps: result.swaps ?? null,
         partners: result.partners ?? null,
       };
+    },
+
+    async getAccountPools(address, params, signal) {
+      const result = await http.request<BackendAdminPoolPage>(
+        `/api/v2/admin/users/${encodeURIComponent(address)}/pools${formatCursorQuery(params)}`,
+        { method: "GET", cache: "no-store", signal },
+      );
+      const received = result.pools ?? [];
+      return {
+        ...result,
+        pools: received.map(normalizeUserPool).filter(isPresent),
+        receivedCount: received.length,
+      };
+    },
+
+    /** Saves an operator's edits to a pool's off-chain catalog record. */
+    async updatePoolProfile(address, profile, signal) {
+      const result = await http.request<BackendAdminPoolEnvelope>(
+        `/api/v2/admin/pools/${encodeURIComponent(address)}/profile`,
+        {
+          method: "PUT",
+          signal,
+          body: JSON.stringify({
+            description: emptyToNull(profile.description),
+            unitOfAccount: emptyToNull(profile.unitOfAccount),
+            email: emptyToNull(profile.email),
+            website: emptyToNull(profile.website),
+            phone: emptyToNull(profile.phone),
+            terms: emptyToNull(profile.terms),
+            locationName: emptyToNull(profile.locationName),
+            geoLat: profile.geoLat,
+            geoLng: profile.geoLng,
+            tags: profile.tags,
+          }),
+        },
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool update response did not include a valid address.");
+      return pool;
     },
 
     async getStats(params, signal) {

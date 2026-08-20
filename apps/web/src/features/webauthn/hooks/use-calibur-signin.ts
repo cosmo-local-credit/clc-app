@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { collectWebAuthnAssertion } from "#/features/webauthn/hooks/assertion";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 export type SigninStep = "idle" | "asserting" | "verifying" | "done" | "error";
 
@@ -22,7 +22,7 @@ export function useCaliburSignin(client: RelayerClient) {
       const assertion = await collectWebAuthnAssertion(client);
 
       setStep("verifying");
-      const result = await clcApi.auth.signinWithWebAuthn(assertion);
+      const result = await authClient.signinWithWebAuthn(assertion);
 
       storeWebAuthnCredential({
         credentialId: assertion.credentialId,

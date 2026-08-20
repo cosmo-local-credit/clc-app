@@ -1,11 +1,14 @@
-import { type VoucherRef, serializeVoucherRef } from "@clc/core/features/catalog/logic";
+import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { queryOptions, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { type FilteredReportPage, type ReportCursor } from "@clc/api/features/reports/client";
-import { reportFeedInfiniteQueryOptions, reportKeys } from "@clc/api/features/reports/queries";
+import {
+  reportFeedInfiniteQueryOptions,
+  reportKeys,
+  reportVoucherFeedInfiniteQueryOptions,
+} from "@clc/api/features/reports/queries";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
 import { reverseLocation } from "#/lib/geo-client";
-import { clcApi } from "#/lib/api";
+import { reportsClient } from "#/lib/api/reports";
 
 const REPORTS_PAGE_SIZE = 20;
 
@@ -14,16 +17,6 @@ const VOUCHER_REPORTS_PAGE_SIZE = 20;
 const reportQueryKeys = {
   all: reportKeys.all,
   feed: reportKeys.feed,
-  // A voucher-scoped filtered read keys on the serialized ref rather than
-  // reportKeys.filtered, whose shape is the full CatalogFilter. Kept under the
-  // shared prefix so a report invalidation still reaches it.
-  byVoucher: (voucher: VoucherRef | undefined, perPage: number) =>
-    [
-      ...reportKeys.all,
-      "voucher",
-      voucher ? serializeVoucherRef(voucher) : "none",
-      { perPage },
-    ] as const,
   byId: (id: string | undefined) => reportKeys.detail(id ?? "none"),
   // Reverse geocoding is a third-party lookup, not a clc-core resource, so its
   // identity stays here. Kept under the shared prefix so a report invalidation
@@ -34,7 +27,7 @@ const reportQueryKeys = {
 
 export function useReportsInfinite(perPage = REPORTS_PAGE_SIZE, enabled = true) {
   return useInfiniteQuery({
-    ...reportFeedInfiniteQueryOptions(clcApi.reports, perPage),
+    ...reportFeedInfiniteQueryOptions(reportsClient, perPage),
     enabled,
     ...MARKET_QUERY_FRESHNESS,
   });
@@ -53,27 +46,8 @@ export function useVoucherReportsInfinite(
     : undefined;
 
   return useInfiniteQuery({
-    queryKey: reportQueryKeys.byVoucher(normalizedVoucher, perPage),
-    queryFn: ({ pageParam, signal }) => {
-      if (!normalizedVoucher) throw new Error("Voucher is required.");
-      return clcApi.reports.getFilteredReports(
-        {
-          perPage,
-          cursor: pageParam,
-          filter: {
-            term: "",
-            tags: [],
-            tagMatch: "any",
-            vouchers: [normalizedVoucher],
-            voucherMatch: "any",
-          },
-        },
-        signal,
-      );
-    },
+    ...reportVoucherFeedInfiniteQueryOptions(reportsClient, normalizedVoucher, perPage),
     enabled: enabled && !!normalizedVoucher,
-    initialPageParam: undefined as ReportCursor | undefined,
-    getNextPageParam: (lastPage: FilteredReportPage) => lastPage.next ?? undefined,
     ...MARKET_QUERY_FRESHNESS,
   });
 }
@@ -81,7 +55,7 @@ export function useVoucherReportsInfinite(
 function reportQuery(id: string) {
   return queryOptions({
     queryKey: reportQueryKeys.byId(id),
-    queryFn: ({ signal }) => clcApi.reports.getReport(id, signal),
+    queryFn: ({ signal }) => reportsClient.getReport(id, signal),
     ...MARKET_QUERY_FRESHNESS,
   });
 }

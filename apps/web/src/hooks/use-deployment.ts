@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { DeploymentContractType } from "@clc/api/features/deployments/client";
-import { clcApi } from "#/lib/api";
+import { deploymentsClient } from "#/lib/api/deployments";
 
 const DEPLOYMENT_POLL_MS = 2_000;
 
@@ -15,7 +15,7 @@ const deploymentQueryKeys = {
 export function useTokenTags() {
   return useQuery({
     queryKey: deploymentQueryKeys.tags(),
-    queryFn: ({ signal }) => clcApi.deployments.getTokenTags(signal),
+    queryFn: ({ signal }) => deploymentsClient.getTokenTags(signal),
     staleTime: 30 * 60_000,
   });
 }
@@ -28,7 +28,7 @@ export function useDeploymentContract(
   return useQuery({
     queryKey: deploymentQueryKeys.contract(expectedType, trackingId),
     queryFn: ({ signal }) =>
-      clcApi.deployments.getDeploymentContract(trackingId!, expectedType, signal),
+      deploymentsClient.getDeploymentContract(trackingId!, expectedType, signal),
     enabled: Boolean(trackingId) && enabled,
     retry: false,
     refetchIntervalInBackground: true,
