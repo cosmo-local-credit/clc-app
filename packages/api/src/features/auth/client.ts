@@ -236,9 +236,13 @@ export function createAuthClient(http: HttpClient): AuthClient {
           geoLng: payload.geoLng,
           ...(payload.clearLocation ? { clearLocation: true } : {}),
           // Omitted stays omitted, so the field is only ever sent deliberately.
-          // `null` becomes "": clc-core decodes JSON null to the same nil pointer
-          // as an absent key, and nil preserves the stored avatar.
-          ...(payload.avatarUrl === undefined ? {} : { avatarUrl: payload.avatarUrl ?? "" }),
+          // `null` becomes clearAvatar: clc-core decodes JSON null to the same nil
+          // pointer as an absent key, and nil preserves the stored avatar.
+          ...(payload.avatarUrl === undefined
+            ? {}
+            : payload.avatarUrl === null
+              ? { clearAvatar: true }
+              : { avatarUrl: payload.avatarUrl }),
         }),
       });
     },

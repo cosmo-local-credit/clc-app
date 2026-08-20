@@ -10,13 +10,41 @@ import {
 } from "@clc/api/features/auth/siwe";
 import { wagmiConfig } from "#/providers/web3-config";
 import { authClient } from "#/lib/api/auth";
+import { isStorageConfigured, storageClient } from "#/lib/api/storage";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
 export type BackendSignupInput = {
   profile: ProfileInput;
   privateKey: `0x${string}`;
+  /** Optional profile photo, chosen during onboarding and uploaded here. */
+  avatarFile?: File | null;
 };
+
+/**
+ * Uploads the onboarding photo, or gives up quietly.
+ *
+ * Called only once a session cookie exists, because the upload service takes a
+ * clc-core token and this is the first point in onboarding where one can be
+ * fetched. Failure returns undefined rather than throwing: the account is the
+ * thing being created here, and losing it because an optional photo would not
+ * encode is the wrong trade. The user can add one later from settings.
+ *
+ * The upload id is generated per attempt rather than derived from the file, so
+ * two people uploading the same bytes get their own object.
+ */
+async function uploadOnboardingAvatar(file: File): Promise<string | undefined> {
+  try {
+    const { token } = await authClient.getStorageToken();
+    const uploaded = await storageClient().upload(
+      { file, purpose: "profile.avatar", uploadId: crypto.randomUUID().replaceAll("-", "") },
+      token,
+    );
+    return uploaded.url;
+  } catch {
+    return undefined;
+  }
+}
 
 /** The origin the user sees in the signature prompt, plus the intent. */
 function siweRequest(statement: string): SiweRequest {
@@ -30,7 +58,7 @@ function siweRequest(statement: string): SiweRequest {
 
 export function useBackendSignup() {
   return useMutation({
-    mutationFn: async ({ profile, privateKey }: BackendSignupInput) => {
+    mutationFn: async ({ profile, privateKey, avatarFile }: BackendSignupInput) => {
       const signer = privateKeySigner(privateKey);
       const signed = await signSiweMessage(authClient, signer, siweRequest("Sign up for CLC App"));
 
@@ -54,6 +82,10 @@ export function useBackendSignup() {
         await signInWithSiwe(authClient, signer, siweRequest("Sign in to CLC App"));
       }
 
+      // Only now is there a session to authorize an upload with.
+      const avatarUrl =
+        avatarFile && isStorageConfigured ? await uploadOnboardingAvatar(avatarFile) : undefined;
+
       await authClient.submitProfile({
         name: profile.name,
         email,
@@ -62,6 +94,9 @@ export function useBackendSignup() {
         locationName: profile.location.locationName,
         geoLat: profile.location.lat,
         geoLng: profile.location.lng,
+        // Uploaded above, or absent. Omitted rather than null when there is no
+        // photo: null would ask clc-core to clear an avatar that cannot exist yet.
+        ...(avatarUrl ? { avatarUrl } : {}),
       });
 
       return result;
