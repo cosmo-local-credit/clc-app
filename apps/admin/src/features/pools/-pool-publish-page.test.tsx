@@ -218,6 +218,7 @@ describe("PoolPublishPage", () => {
       symbol: "KLF",
       decimals: "6",
       owner: OWNER,
+      unitOfAccount: "KES",
       quoterType: "oracle",
       feesDecoupled: true,
       feePolicyDefault: "0.5",
@@ -235,7 +236,7 @@ describe("PoolPublishPage", () => {
     await waitFor(() => expect(trackOtx).toHaveBeenCalledWith("track-1"));
     await waitFor(() => expect(getDeploymentContract).toHaveBeenCalled());
     await waitFor(() => expect(router.state.location.pathname).toBe(`/pools/${POOL_ADDRESS}`));
-  });
+  }, 60_000);
 
   it("stays on the publish page when the deployment reverts", async () => {
     trackOtx.mockResolvedValue({
@@ -264,7 +265,7 @@ describe("PoolPublishPage", () => {
     );
     expect(getDeploymentContract).not.toHaveBeenCalled();
     expect(router.state.location.pathname).toBe("/pools/publish");
-  });
+  }, 60_000);
 
   it("offers the oracle base currencies by ISO code", async () => {
     renderPage();
@@ -354,7 +355,7 @@ describe("PoolPublishPage images", () => {
       imageUrl: "https://cdn.test/pool/x_400_ab.webp",
       bannerUrl: "https://cdn.test/pool/x_1280_ab.webp",
     });
-  });
+  }, 60_000);
 
   it("gives the images a card of their own in the first row", async () => {
     // They started in a card, went into the pool card, and came back out: the

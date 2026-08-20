@@ -61,6 +61,7 @@ describe("pools client", () => {
           name: "Fresh Food Circle",
           symbol: "FFC",
           description: "Local food vouchers",
+          unitOfAccount: "BAM",
           tags: ["Food"],
         },
       },
@@ -70,6 +71,7 @@ describe("pools client", () => {
     const pool = await api.getPoolByAddress("0x1111111111111111111111111111111111111111");
 
     expect(pool.name).toBe("Fresh Food Circle");
+    expect(pool.unitOfAccount).toBe("BAM");
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining("/api/v2/pools/0x1111111111111111111111111111111111111111"),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),

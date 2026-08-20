@@ -237,6 +237,7 @@ export function PoolPublishPage() {
         symbol: value.symbol.trim(),
         decimals: "6",
         owner,
+        unitOfAccount: value.oracleBase,
         quoterType: value.pricing,
         feesDecoupled: Number(value.feePolicyDefault) > 0 && value.feesDecoupled,
         feePolicyDefault: value.feePolicyDefault.trim(),

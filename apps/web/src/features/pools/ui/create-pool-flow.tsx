@@ -3,6 +3,7 @@ import {
   type PoolCreateInput,
   PoolOracleUnavailableError,
   type PoolPricing,
+  isPoolUnit,
   poolCreateSchema,
   poolDeploymentContractCount,
   poolDescriptionSchema,
@@ -11,6 +12,7 @@ import {
   poolSwapFeeSchema,
   poolSymbolSchema,
   poolTermsSchema,
+  poolUnitSupportsOracle,
   poolUnitSchemaForPricing,
   toPoolDeployPayload,
 } from "@clc/core/features/pools/logic";
@@ -292,14 +294,21 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       <Field
                         label={t`Unit of Account`}
                         htmlFor="pool-unit"
-                        hint={t`The unit used for pricing in this pool (e.g., USD, KES, HOUR)`}
+                        hint={t`The unit used for pricing in this pool (e.g., USD, KES, HOUR, BAM)`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <SelectRoot
                           value={field.state.value}
                           onValueChange={(value) => {
-                            if (value === "KES" || value === "USD" || value === "HOUR") {
+                            if (isPoolUnit(value)) {
                               field.handleChange(value);
+                              const activeChainId = chainId ?? CELO_MAINNET_CHAIN_ID;
+                              if (
+                                form.getFieldValue("pricing") === "oracle" &&
+                                !poolUnitSupportsOracle(value, activeChainId)
+                              ) {
+                                form.setFieldValue("pricing", "decimal");
+                              }
                             }
                           }}
                         >
@@ -310,6 +319,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                             <SelectItem value="KES">KES - Kenyan Shilling</SelectItem>
                             <SelectItem value="USD">USD - US Dollar</SelectItem>
                             <SelectItem value="HOUR">HOUR</SelectItem>
+                            <SelectItem value="BAM">
+                              <Trans>BAM — Bosnia and Herzegovina convertible mark</Trans>
+                            </SelectItem>
                           </SelectContent>
                         </SelectRoot>
                       </Field>
@@ -353,37 +365,53 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   id="pool-advanced"
                   className="mt-4 space-y-3.5 border border-border bg-card p-4"
                 >
-                  <form.Field name="pricing">
-                    {(field) => (
-                      <div>
-                        <p className="mb-2 font-medium text-sm">
-                          <Trans>Pricing</Trans>
-                        </p>
-                        <RadioGroup
-                          value={field.state.value}
-                          onValueChange={(value) => {
-                            if (value === "oracle" || value === "decimal") {
-                              field.handleChange(value);
-                            }
-                          }}
-                          aria-label={t`Pricing`}
-                          className="gap-2.5"
-                        >
-                          <PricingOption
-                            value="oracle"
-                            title={t`Price feed`}
-                            description={t`Follows the selected unit's feed`}
-                            isDefault
-                          />
-                          <PricingOption
-                            value="decimal"
-                            title={t`Equal value`}
-                            description={t`Vouchers swap one for one`}
-                          />
-                        </RadioGroup>
-                      </div>
-                    )}
-                  </form.Field>
+                  <form.Subscribe selector={(state) => state.values.unit}>
+                    {(unit) => {
+                      const oracleUnavailable = !poolUnitSupportsOracle(
+                        unit,
+                        chainId ?? CELO_MAINNET_CHAIN_ID,
+                      );
+                      return (
+                        <form.Field name="pricing">
+                          {(field) => (
+                            <div>
+                              <p className="mb-2 font-medium text-sm">
+                                <Trans>Pricing</Trans>
+                              </p>
+                              <RadioGroup
+                                value={field.state.value}
+                                onValueChange={(value) => {
+                                  if (value === "oracle" || value === "decimal") {
+                                    field.handleChange(value);
+                                  }
+                                }}
+                                aria-label={t`Pricing`}
+                                className="gap-2.5"
+                              >
+                                <PricingOption
+                                  value="oracle"
+                                  title={t`Price feed`}
+                                  description={t`Follows the selected unit's feed`}
+                                  disabled={oracleUnavailable}
+                                  isDefault
+                                />
+                                <PricingOption
+                                  value="decimal"
+                                  title={t`Equal value`}
+                                  description={t`Vouchers swap one for one`}
+                                />
+                              </RadioGroup>
+                              {oracleUnavailable ? (
+                                <p className="mt-2 text-muted-foreground text-xs">
+                                  <Trans>Choose equal value when the unit has no price feed</Trans>
+                                </p>
+                              ) : null}
+                            </div>
+                          )}
+                        </form.Field>
+                      );
+                    }}
+                  </form.Subscribe>
 
                   <form.Field
                     name="feePolicyDefault"
@@ -731,16 +759,23 @@ function PricingOption({
   value,
   title,
   description,
+  disabled = false,
   isDefault = false,
 }: {
   value: PoolPricing;
   title: string;
   description: string;
+  disabled?: boolean;
   isDefault?: boolean;
 }) {
   return (
-    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
-      <RadioGroupItem value={value} className="mt-0.5" />
+    <label
+      aria-disabled={disabled}
+      className={`grid grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05] ${
+        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+      }`}
+    >
+      <RadioGroupItem value={value} className="mt-0.5" disabled={disabled} />
       <span>
         <span className="flex flex-wrap items-center gap-2">
           <strong className="text-sm font-semibold">{title}</strong>

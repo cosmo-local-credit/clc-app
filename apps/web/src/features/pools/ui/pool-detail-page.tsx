@@ -49,6 +49,11 @@ export function PoolDetailPage({
             <p className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words">
               {pool.description}
             </p>
+            {pool.unitOfAccount ? (
+              <p className="mt-2 text-muted-foreground text-xs">
+                <Trans>Unit of account</Trans>: {pool.unitOfAccount}
+              </p>
+            ) : null}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {pool.tags.map((tag) => (
                 <span

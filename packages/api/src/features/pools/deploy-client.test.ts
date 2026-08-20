@@ -46,6 +46,7 @@ describe("pool deploy client", () => {
       symbol: "KGP1",
       decimals: "6",
       owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      unitOfAccount: "KES" as const,
       quoterType: "oracle" as const,
       feesDecoupled: false,
       feePolicyDefault: "1",

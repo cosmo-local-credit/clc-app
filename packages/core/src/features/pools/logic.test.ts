@@ -48,7 +48,7 @@ describe("poolCreateSchema", () => {
       expect(result.error.issues).toContainEqual(
         expect.objectContaining({
           path: ["unit"],
-          message: "Choose rates you set or equal value when the unit has no price feed",
+          message: "Choose equal value when the unit has no price feed",
         }),
       );
     }
@@ -59,7 +59,7 @@ describe("poolCreateSchema", () => {
 
     expect(schema.safeParse("KES").success).toBe(true);
     expect(schema.safeParse("HOUR").error?.issues[0]?.message).toBe(
-      "Choose rates you set or equal value when the unit has no price feed",
+      "Choose equal value when the unit has no price feed",
     );
   });
 
@@ -67,6 +67,13 @@ describe("poolCreateSchema", () => {
     expect(
       poolCreateSchema.safeParse({ ...validPool, unit: "HOUR", pricing: "decimal" }).success,
     ).toBe(true);
+  });
+
+  it("allows BAM with equal-value pricing and rejects its oracle pricing", () => {
+    expect(
+      poolCreateSchema.safeParse({ ...validPool, unit: "BAM", pricing: "decimal" }).success,
+    ).toBe(true);
+    expect(poolCreateSchema.safeParse({ ...validPool, unit: "BAM" }).success).toBe(false);
   });
 
   it("requires at least three characters for the pool identity fields", () => {
@@ -134,6 +141,7 @@ describe("toPoolDeployPayload", () => {
       symbol: "KGP1",
       decimals: "6",
       owner: OWNER,
+      unitOfAccount: "KES",
       quoterType: "oracle",
       feesDecoupled: false,
       feePolicyDefault: "1",
@@ -172,6 +180,16 @@ describe("toPoolDeployPayload", () => {
     expect(() =>
       toPoolDeployPayload({ ...validPool, unit: "HOUR" }, OWNER, CELO_MAINNET_CHAIN_ID),
     ).toThrow(PoolOracleUnavailableError);
+  });
+
+  it("persists BAM in deploy payloads that do not use an oracle", () => {
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, unit: "BAM", pricing: "decimal" },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ),
+    ).toMatchObject({ unitOfAccount: "BAM", quoterType: "decimal" });
   });
 
   it("does not use Celo mainnet oracle addresses on another chain", () => {

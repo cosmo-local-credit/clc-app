@@ -205,6 +205,21 @@ describe("CreatePoolFlow", () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
     const view = render(<CreatePoolFlow step="pool" />);
 
+    fireEvent.click(screen.getByLabelText("Unit of Account"));
+    const bamOption = await screen.findByRole("option", {
+      name: "BAM — Bosnia and Herzegovina convertible mark",
+    });
+    fireEvent.pointerEnter(bamOption, { pointerType: "mouse" });
+    fireEvent.mouseMove(bamOption);
+    fireEvent.click(bamOption);
+    fireEvent.click(screen.getByText("Advanced"));
+    await waitFor(() =>
+      expect(screen.getByText("Price feed").closest("label")?.getAttribute("aria-disabled")).toBe(
+        "true",
+      ),
+    );
+    expect(screen.getByText(/Choose equal value when the unit has no price feed/)).toBeTruthy();
+
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
@@ -255,10 +270,10 @@ describe("CreatePoolFlow", () => {
         symbol: "KGP1",
         decimals: "6",
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
-        quoterType: "oracle",
+        unitOfAccount: "BAM",
+        quoterType: "decimal",
         feesDecoupled: false,
         feePolicyDefault: "0",
-        baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
         description: "A pool for Kilifi growers.",
         email: "steward@example.org",
         website: "https://kilifi.example",

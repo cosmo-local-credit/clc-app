@@ -186,6 +186,7 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
             address: POOL_ADDRESS,
             name: "Trade Pool",
             symbol: "TRD",
+            unitOfAccount: "BAM",
           }),
         );
       }
@@ -254,6 +255,13 @@ afterEach(() => {
 });
 
 describe("pool voucher UI", () => {
+  it("shows the persisted pool unit of account after loading the detail route", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="vouchers" />);
+
+    expect(await screen.findByText(/Unit of account: BAM/)).toBeTruthy();
+  });
+
   it("renders wallet image logos for pool vouchers instead of text glyphs", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="vouchers" />);

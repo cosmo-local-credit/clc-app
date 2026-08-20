@@ -47,7 +47,9 @@ export const poolSproutLicenseSchema = z.literal(true, {
   error: "Accept the SPROUT License to publish your pool",
 });
 
-const poolUnitSchema = z.enum(["KES", "USD", "HOUR"]);
+const poolUnitValues = ["KES", "USD", "HOUR", "BAM"] as const;
+
+const poolUnitSchema = z.enum(poolUnitValues);
 
 /**
  * The pricing models a new pool may be published with.
@@ -89,14 +91,18 @@ function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | un
   return CELO_MAINNET_ORACLE_BASE_CURRENCY[unit as keyof typeof CELO_MAINNET_ORACLE_BASE_CURRENCY];
 }
 
-function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
+export function poolUnitSupportsOracle(unit: PoolUnit, chainId: number): boolean {
   return getPoolOracleBaseCurrency(unit, chainId) !== undefined;
+}
+
+export function isPoolUnit(value: unknown): value is PoolUnit {
+  return typeof value === "string" && poolUnitValues.some((unit) => unit === value);
 }
 
 export function poolUnitSchemaForPricing(pricing: PoolPricing, chainId: number) {
   return poolUnitSchema.refine(
-    (unit) => pricing !== "oracle" || hasPoolOracleBaseCurrency(unit, chainId),
-    "Choose rates you set or equal value when the unit has no price feed",
+    (unit) => pricing !== "oracle" || poolUnitSupportsOracle(unit, chainId),
+    "Choose equal value when the unit has no price feed",
   );
 }
 
@@ -119,16 +125,13 @@ export const poolCreateSchema = z
     acceptedSproutLicense: poolSproutLicenseSchema,
   })
   .superRefine((value, ctx) => {
-    if (
-      value.pricing !== "oracle" ||
-      hasPoolOracleBaseCurrency(value.unit, CELO_MAINNET_CHAIN_ID)
-    ) {
+    if (value.pricing !== "oracle" || poolUnitSupportsOracle(value.unit, CELO_MAINNET_CHAIN_ID)) {
       return;
     }
     ctx.addIssue({
       code: "custom",
       path: ["unit"],
-      message: "Choose rates you set or equal value when the unit has no price feed",
+      message: "Choose equal value when the unit has no price feed",
     });
   });
 
@@ -139,6 +142,7 @@ export type PoolDeployPayload = {
   symbol: string;
   decimals: string;
   owner: string;
+  unitOfAccount: string;
   quoterType: PoolPricing;
   feesDecoupled: boolean;
   feePolicyDefault: string;
@@ -174,7 +178,7 @@ export function toPoolDeployPayload(
   owner: string,
   chainId: number,
 ): PoolDeployPayload {
-  if (input.pricing === "oracle" && !hasPoolOracleBaseCurrency(input.unit, chainId)) {
+  if (input.pricing === "oracle" && !poolUnitSupportsOracle(input.unit, chainId)) {
     throw new PoolOracleUnavailableError();
   }
   const baseCurrency =
@@ -185,6 +189,7 @@ export function toPoolDeployPayload(
     symbol: input.symbol.trim(),
     decimals: "6",
     owner,
+    unitOfAccount: input.unit,
     quoterType: input.pricing,
     feesDecoupled: Number(input.feePolicyDefault) > 0 && input.feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
