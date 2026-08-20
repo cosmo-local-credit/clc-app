@@ -444,7 +444,7 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
         <Link
           to="/transactions/pools"
           search={{ perPage: DEFAULT_PAGE_SIZE, pool: pool.address }}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           Open transactions
         </Link>

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
 import { chainLabel, explorerAddressUrl } from "#/lib/explorer";
+import { cn } from "#/lib/utils";
 import { formatDateTime } from "#/lib/format";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
@@ -90,7 +91,7 @@ export function PoolHeader({
             href={explorerAddressUrl(pool.address)}
             target="_blank"
             rel="noreferrer"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <HiOutlineExternalLink />
             Explorer
@@ -98,14 +99,14 @@ export function PoolHeader({
           <Link
             to="/transactions/pools"
             search={{ perPage: DEFAULT_PAGE_SIZE, pool: pool.address }}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             <HiOutlineSwitchHorizontal />
             Transactions
           </Link>
           <Button size="sm" variant="outline" onClick={onEditProfile}>
             <HiOutlinePencil />
-            Edit record
+            Edit metadata
           </Button>
           <Button size="sm" onClick={onAddVoucher}>
             <HiOutlinePlus />
