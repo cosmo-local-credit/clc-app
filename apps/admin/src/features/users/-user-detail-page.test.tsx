@@ -27,16 +27,17 @@ vi.mock("#/lib/geo-client", () => ({
 
 // The map itself cannot run here — jsdom has no WebGL — so it is stubbed down to
 // the one thing this screen asks of it: reporting where the operator clicked.
+// Only the sheet's map is interactive; the record's is a picture, and stubbing it
+// as one keeps a single "Set pin" control on the page.
 vi.mock("#/components/ui/location-map.lazy", () => ({
-  LocationMap: ({
-    onLocationChange,
-  }: {
-    onLocationChange?: (lat: number, lng: number) => void;
-  }) => (
-    <button type="button" onClick={() => onLocationChange?.(PIN.lat, PIN.lng)}>
-      Set pin
-    </button>
-  ),
+  LocationMap: ({ onLocationChange }: { onLocationChange?: (lat: number, lng: number) => void }) =>
+    onLocationChange ? (
+      <button type="button" onClick={() => onLocationChange(PIN.lat, PIN.lng)}>
+        Set pin
+      </button>
+    ) : (
+      <div>Map</div>
+    ),
 }));
 
 const listUsers = vi.hoisted(() => vi.fn());
@@ -153,6 +154,15 @@ function renderDetailRoute(entries = ["/users", `/users/${ADDRESS}`]) {
 function fieldValue(name: string): string {
   const field = screen.getByRole("textbox", { name });
   return field instanceof HTMLInputElement ? field.value : "";
+}
+
+/** Every edit to an account's record is behind the header's Actions menu. */
+async function openProfileSheet() {
+  await waitFor(() => expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: /actions/i }));
+  await waitFor(() => expect(screen.getByRole("menuitem", { name: "Edit profile" })).toBeTruthy());
+  fireEvent.click(screen.getByRole("menuitem", { name: "Edit profile" }));
+  await waitFor(() => expect(screen.getByRole("textbox", { name: "Full name" })).toBeTruthy());
 }
 
 beforeEach(() => {
@@ -321,9 +331,10 @@ describe("UserDetailPage", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/users"));
   });
 
-  it("names the pin the operator drops, and saves the pair", async () => {
-    // Two invariants in one: the name follows the pin rather than being typed, and
-    // the four identity fields ride along because clc-core's statement assigns them
+  it("names the pin the operator drops in the sheet, and saves the pair", async () => {
+    // Three invariants in one: the place is edited in the sheet rather than on the
+    // record, the name follows the pin rather than being typed, and the four
+    // identity fields ride along because clc-core's statement assigns them
     // unconditionally — a location-only body would blank the account's name.
     const located = account({ locationName: "Nairobi", geoLat: -1.2921, geoLng: 36.8219 });
     listUsers.mockResolvedValue({ users: [located], first: 0, last: 0, receivedCount: 1 });
@@ -334,19 +345,22 @@ describe("UserDetailPage", () => {
 
     renderDetailRoute();
 
-    const field = await waitFor(() => screen.getByRole("textbox", { name: "Location name" }));
-    // Seeded from the record, not editable, and nothing to save yet.
-    expect(fieldValue("Location name")).toBe("Nairobi");
-    expect(field.hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
+    // The record itself carries no place control — the map on it is a picture.
+    await waitFor(() => expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy());
+    expect(screen.queryByRole("button", { name: "Set pin" })).toBeNull();
+
+    await openProfileSheet();
+
+    // Seeded from the record.
+    expect(fieldValue("Location")).toBe("Nairobi");
 
     fireEvent.click(screen.getByRole("button", { name: "Set pin" }));
 
     // The click reverse-geocodes the point and the field follows it.
-    await waitFor(() => expect(fieldValue("Location name")).toBe("Nairobi CBD, Kenya"));
+    await waitFor(() => expect(fieldValue("Location")).toBe("Nairobi CBD, Kenya"));
     expect(reverseLocation).toHaveBeenCalledWith(PIN.lat, PIN.lng, expect.anything());
 
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(updateUserProfile).toHaveBeenCalled());
     expect(updateUserProfile).toHaveBeenCalledWith(ADDRESS, {
@@ -361,8 +375,8 @@ describe("UserDetailPage", () => {
   });
 
   it("refuses to save a pin the geocoder cannot name", async () => {
-    // Keeping the previous name would attach the last place's label to this pin,
-    // which is the mismatch the disabled field exists to prevent.
+    // Keeping the previous name would attach the last place's label to this pin, so
+    // the field clears and the pair rule then blocks the save until it is named.
     const located = account({ locationName: "Nairobi", geoLat: -1.2921, geoLng: 36.8219 });
     listUsers.mockResolvedValue({ users: [located], first: 0, last: 0, receivedCount: 1 });
     getLatestAccountTokens.mockResolvedValue({ tokens: [] });
@@ -370,13 +384,16 @@ describe("UserDetailPage", () => {
     reverseLocation.mockResolvedValue(null);
 
     renderDetailRoute();
+    await openProfileSheet();
 
-    await waitFor(() => expect(screen.getByRole("button", { name: "Set pin" })).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: "Set pin" }));
 
     await waitFor(() => expect(screen.getByText(/no place found/i)).toBeTruthy());
-    expect(fieldValue("Location name")).toBe("");
-    expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
+    expect(fieldValue("Location")).toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(screen.getByText("Name the place this pin marks")).toBeTruthy());
     expect(updateUserProfile).not.toHaveBeenCalled();
   });
 

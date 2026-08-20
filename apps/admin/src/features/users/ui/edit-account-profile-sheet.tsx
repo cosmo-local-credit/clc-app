@@ -4,6 +4,7 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { LocationField } from "#/components/admin/location-field";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -34,24 +35,41 @@ const limitSchema = z
   // invalid text and would read as zero — a quota of none.
   .refine((value) => /^\d+$/.test(value), { message: "Enter a whole number, 0 or more" });
 
-const profileSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: "Name is required" })
-    .max(80, { message: "Name must be 80 characters or fewer" }),
-  email: optionalEmailSchema,
-  phone: optionalPhoneSchema,
-  country: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .refine((value) => value === "" || /^[A-Z]{2}$/.test(value), {
-      message: "Use a two-letter country code, for example KE",
-    }),
-  maxPools: limitSchema,
-  maxTokens: limitSchema,
-});
+const profileSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Name is required" })
+      .max(80, { message: "Name must be 80 characters or fewer" }),
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    country: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine((value) => value === "" || /^[A-Z]{2}$/.test(value), {
+        message: "Use a two-letter country code, for example KE",
+      }),
+    locationName: z.string().trim().max(200, { message: "Location name is too long" }),
+    latitude: z.string(),
+    longitude: z.string(),
+    maxPools: limitSchema,
+    maxTokens: limitSchema,
+  })
+  .superRefine((value, ctx) => {
+    // A label with no pin, or a pin with no label, describes a place nobody can
+    // point at. clc-core stores the two as a set, so catching it here is only
+    // about naming the field before a round trip.
+    const hasPin = value.latitude !== "" && value.longitude !== "";
+    if (hasPin === (value.locationName !== "")) return;
+
+    ctx.addIssue({
+      code: "custom",
+      path: hasPin ? ["locationName"] : ["latitude"],
+      message: hasPin ? "Name the place this pin marks" : "Click the map to place this account",
+    });
+  });
 
 /**
  * Profile and quota edits for one account, in a right-side sheet.
@@ -70,10 +88,16 @@ const profileSchema = z.object({
  * contract, and controls that cannot do anything are worse than their absence —
  * the header keeps its initials fallback.
  *
- * Location is absent for a different reason: clc-core stores a name and
- * coordinates as a pair, and this console has no geocoder to turn a typed place
- * into coordinates, so the only edit available would save a new label against
- * stale coordinates.
+ * The account's place is edited here too, through the same `LocationField` the
+ * pool sheet uses. It was a control on the detail card, which made the record the
+ * one panel in the console that was half reference and half form, and gave the
+ * account two save buttons on one screen. The pin is the input and the geocoder
+ * names it, so the pair clc-core stores can never disagree with itself.
+ *
+ * The pin cannot be removed, only moved: `AdminUserProfile` carries a location or
+ * omits one, and omitting it leaves whatever is stored in place. A Clear pin
+ * button would report a removal the endpoint has no way to perform, so the field
+ * is asked not to offer one.
  */
 export function EditAccountProfileSheet({
   account,
@@ -94,16 +118,32 @@ export function EditAccountProfileSheet({
       email: account.email,
       phone: account.phone,
       country: account.country,
+      locationName: account.locationName ?? "",
+      latitude: account.geoLat === null ? "" : String(account.geoLat),
+      longitude: account.geoLng === null ? "" : String(account.geoLng),
       maxPools: String(account.maxPools),
       maxTokens: String(account.maxTokens),
     },
     validators: { onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
+      // The pair travels together or not at all. Omitted, the endpoint leaves
+      // whatever place is stored alone — which is why the field offers no way to
+      // clear one.
+      const location =
+        value.latitude === "" || value.longitude === ""
+          ? null
+          : {
+              locationName: value.locationName.trim(),
+              geoLat: Number(value.latitude),
+              geoLng: Number(value.longitude),
+            };
+
       const profile = {
         name: value.name.trim(),
         email: value.email.trim(),
         phone: value.phone.trim(),
         country: value.country.trim().toUpperCase(),
+        ...location,
       };
       const limits = { maxPools: Number(value.maxPools), maxTokens: Number(value.maxTokens) };
 
@@ -117,7 +157,13 @@ export function EditAccountProfileSheet({
         profile.name !== account.name ||
         profile.email !== account.email ||
         profile.phone !== account.phone ||
-        profile.country !== account.country;
+        profile.country !== account.country ||
+        // The endpoint assigns every field it is given, so a location edit alone
+        // still sends the identity fields unchanged beside it.
+        (location !== null &&
+          (location.locationName !== (account.locationName ?? "") ||
+            location.geoLat !== account.geoLat ||
+            location.geoLng !== account.geoLng));
 
       try {
         if (profileChanged) {
@@ -232,6 +278,36 @@ export function EditAccountProfileSheet({
                 </Field>
               )}
             </form.Field>
+
+            <div className="border-border flex flex-col gap-4 border-t pt-4">
+              <SectionLabel>Location</SectionLabel>
+              <form.Field name="locationName">
+                {(nameField) => (
+                  <form.Field name="latitude">
+                    {(latitudeField) => (
+                      <form.Field name="longitude">
+                        {(longitudeField) => (
+                          <LocationField
+                            name={nameField.state.value}
+                            latitude={latitudeField.state.value}
+                            longitude={longitudeField.state.value}
+                            nameError={getFieldError(nameField.state.meta.errors)}
+                            coordinateError={getFieldError(latitudeField.state.meta.errors)}
+                            clearable={false}
+                            onNameChange={nameField.handleChange}
+                            onNameBlur={nameField.handleBlur}
+                            onCoordinatesChange={(nextLatitude, nextLongitude) => {
+                              latitudeField.handleChange(nextLatitude);
+                              longitudeField.handleChange(nextLongitude);
+                            }}
+                          />
+                        )}
+                      </form.Field>
+                    )}
+                  </form.Field>
+                )}
+              </form.Field>
+            </div>
 
             <div className="border-border flex flex-col gap-3 border-t pt-4">
               <SectionLabel>Deployment limits</SectionLabel>

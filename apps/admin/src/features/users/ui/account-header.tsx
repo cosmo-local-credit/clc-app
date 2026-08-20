@@ -1,6 +1,7 @@
 import type { AdminUser } from "@clc/api/features/admin/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { ChevronDownIcon } from "lucide-react";
+import { HiOutlineExternalLink } from "react-icons/hi";
 import { toast } from "sonner";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
@@ -8,14 +9,16 @@ import { CopyButton } from "#/components/admin/copy-button";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Avatar, AvatarFallback } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
-import { Button } from "#/components/ui/button";
+import { Button, buttonVariants } from "#/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu";
-import { formatDateTime } from "#/lib/format";
+import { explorerAddressUrl } from "#/lib/explorer";
+import { formatDateTime, initials } from "#/lib/format";
+import { cn } from "#/lib/utils";
 import { useApproveUser, useRejectUser } from "../use-admin-users";
 
 /** Shown when an account has no name, so the title is never an empty line. */
@@ -29,9 +32,21 @@ const UNNAMED = "Unnamed account";
  * usually here to act on the account, and burying the decision under the profile
  * put it below the fold on a laptop.
  *
+ * The explorer jump comes first, as it does on the pool and voucher headers: an
+ * address is worth verifying on chain whatever kind of record it belongs to, and
+ * an operator should not have to learn a different place to find that per screen.
+ * The decisions that change something sit to its right.
+ *
+ * There is deliberately no "Transactions" jump to match those two screens. The
+ * transactions pages filter by voucher and by pool, not by participant, so the
+ * button would land on an unfiltered table — and this account's transfers already
+ * page in full in the records tab below.
+ *
  * `account` is null for an address that holds vouchers without having registered.
- * The header still renders — the address is the one thing that is certainly real
- * — and offers no actions, because there is no account to approve.
+ * The header still renders — the address is the one thing that is certainly real,
+ * and the explorer jump still works — but offers no decisions, because there is
+ * no account to approve. The "No account" chip stands in for the status badge so
+ * the identity block does not lose a line and shift the address up.
  */
 export function AccountHeader({
   address,
@@ -98,71 +113,77 @@ export function AccountHeader({
                   Joined {formatDateTime(account.createdAt)}
                 </span>
               </div>
-            ) : null}
+            ) : (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <Badge variant="outline" className="font-mono text-xs uppercase">
+                  No account
+                </Badge>
+              </div>
+            )}
           </div>
         </div>
 
-        {account ? (
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {/* Approval stays a button of its own: it is the decision an operator
-                opened a pending account to make, and burying it in a menu costs a
-                click on the screen's whole purpose. Everything else is a menu
-                item. */}
-            {account.status !== "APPROVED" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy}
-                onClick={() =>
-                  void run("Account approved.", () => approve.mutateAsync(account.ethereumAddress))
-                }
-              >
-                {approve.isPending ? "Approving…" : "Approve account"}
-              </Button>
-            ) : null}
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <a
+            href={explorerAddressUrl(address)}
+            target="_blank"
+            rel="noreferrer"
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            <HiOutlineExternalLink />
+            Explorer
+          </a>
+          {account ? (
+            <>
+              {/* Approval stays a button of its own: it is the decision an operator
+                  opened a pending account to make, and burying it in a menu costs a
+                  click on the screen's whole purpose. Everything else is a menu
+                  item. */}
+              {account.status !== "APPROVED" ? (
+                <Button
+                  size="sm"
+                  disabled={busy}
+                  onClick={() =>
+                    void run("Account approved.", () =>
+                      approve.mutateAsync(account.ethereumAddress),
+                    )
+                  }
+                >
+                  {approve.isPending ? "Approving…" : "Approve account"}
+                </Button>
+              ) : null}
 
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button size="sm" variant="outline" disabled={busy}>
-                    Actions
-                    <ChevronDownIcon />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem onClick={onEditProfile}>Edit profile</DropdownMenuItem>
-                {account.status !== "REJECTED" ? (
-                  // "Ban user" over "Reject": the same endpoint serves both a
-                  // never-approved signup and an account being shut out later, and only
-                  // the second reads as rejection. The stored status stays REJECTED, so
-                  // the badge is unchanged.
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() =>
-                      void run("User banned.", () => reject.mutateAsync(account.ethereumAddress))
-                    }
-                  >
-                    {reject.isPending ? "Banning…" : "Ban user"}
-                  </DropdownMenuItem>
-                ) : null}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : null}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button size="sm" variant="outline" disabled={busy}>
+                      Actions
+                      <ChevronDownIcon />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem onClick={onEditProfile}>Edit profile</DropdownMenuItem>
+                  {account.status !== "REJECTED" ? (
+                    // "Ban user" over "Reject": the same endpoint serves both a
+                    // never-approved signup and an account being shut out later, and only
+                    // the second reads as rejection. The stored status stays REJECTED, so
+                    // the badge is unchanged.
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() =>
+                        void run("User banned.", () => reject.mutateAsync(account.ethereumAddress))
+                      }
+                    >
+                      {reject.isPending ? "Banning…" : "Ban user"}
+                    </DropdownMenuItem>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
-}
-
-/**
- * Up to two initials from the account name. Falls back to one character so the
- * circle is never empty, which would read as a failed image rather than as an
- * account without a photo.
- */
-function initials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const letters = parts.slice(0, 2).map((part) => part[0] ?? "");
-  return letters.join("").toUpperCase();
 }
