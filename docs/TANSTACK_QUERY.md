@@ -118,4 +118,14 @@ Current local overrides:
   - `refetchIntervalInBackground: true`
   - Reason: this is a short-lived confirmation flow, not general account data.
 
+- `apps/web/src/features/wallet/hooks/use-send-share.ts`
+  - private send eligibility and attachment detail
+  - `staleTime: 60_000`
+  - `retry: false`
+  - The create endpoint returns only `{ shareId, txHash }`, while the detail
+    endpoint returns the complete attachment. A successful create invalidates
+    the exact detail key; it must not write the summary response into the detail
+    cache. This keeps each cache entry bound to one response shape and leaves
+    the authenticated GET as the authoritative attachment read.
+
 When adding a new endpoint, start with the global defaults. Add a local freshness policy only when the product behavior requires it, such as live wallet/account state, tracking flows, or explicit polling UX.

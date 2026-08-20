@@ -8,7 +8,6 @@ type SendShareLocation = {
 
 export type SendShareAttachment = {
   id: number;
-  trackingId: string;
   txHash: string;
   permission: number;
   note: string;
@@ -26,6 +25,11 @@ export type CreateSendShareInput = {
   note?: string;
 };
 
+export type CreateSendShareResult = {
+  shareId: number;
+  txHash: string;
+};
+
 export async function getSendShareEligibility(address: string): Promise<boolean> {
   const result = await apiFetch<{ eligible: boolean }>(
     `/api/v2/users/me/shares/eligibility/${encodeURIComponent(address)}`,
@@ -37,8 +41,8 @@ export async function getSendShareEligibility(address: string): Promise<boolean>
 export function createSendShare(
   txHash: string,
   input: CreateSendShareInput,
-): Promise<SendShareAttachment> {
-  return apiFetch<SendShareAttachment>(`/api/v2/users/me/shares/${encodeURIComponent(txHash)}`, {
+): Promise<CreateSendShareResult> {
+  return apiFetch<CreateSendShareResult>(`/api/v2/users/me/shares/${encodeURIComponent(txHash)}`, {
     method: "POST",
     body: JSON.stringify(input),
   });
