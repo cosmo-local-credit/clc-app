@@ -38,6 +38,7 @@ import { AddressCell, TokenAmount, TxLink, TxOutcome } from "#/components/admin/
 import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageState } from "#/components/admin/page-state";
 import { formatDateTime, formatFeePpm } from "#/lib/format";
+import { cn } from "#/lib/utils";
 import { useDataState } from "#/lib/use-data-state";
 import { clcApi } from "#/lib/api";
 import type { VoucherDetailTab } from "./voucher-detail-search";
@@ -64,7 +65,7 @@ export function VoucherTabPanel({
   const filter = voucherCatalogFilter(chainId, address);
   if (!filter) {
     return (
-      <p className="border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+      <p className="border-border text-muted-foreground border border-dashed px-4 py-10 text-center text-sm">
         Chain is unknown, so this voucher cannot be joined to {tab}.
       </p>
     );
@@ -101,7 +102,7 @@ function OfferingsPanel({
   }
   if (state.kind === "empty") {
     return (
-      <p className="border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+      <p className="border-border text-muted-foreground border border-dashed px-4 py-10 text-center text-sm">
         No offerings
       </p>
     );
@@ -133,7 +134,7 @@ function TransactionsPanel({ address }: { address: string }) {
   }
   if (state.kind === "empty") {
     return (
-      <p className="border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+      <p className="border-border text-muted-foreground border border-dashed px-4 py-10 text-center text-sm">
         No transactions
       </p>
     );
@@ -147,7 +148,7 @@ function TransactionsPanel({ address }: { address: string }) {
         <Link
           to="/transactions/vouchers"
           search={{ perPage: PAGE_SIZE, voucher: address }}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
         >
           Open in transactions
         </Link>
@@ -203,7 +204,7 @@ function ReportsPanel({ filter }: { filter: CatalogFilter }) {
   }
   if (state.kind === "empty") {
     return (
-      <p className="border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+      <p className="border-border text-muted-foreground border border-dashed px-4 py-10 text-center text-sm">
         No reports
       </p>
     );
@@ -225,7 +226,7 @@ function ReportsPanel({ filter }: { filter: CatalogFilter }) {
             <TableCell>
               <div className="truncate font-medium">{report.title}</div>
               {report.description ? (
-                <div className="truncate text-xs text-muted-foreground">{report.description}</div>
+                <div className="text-muted-foreground truncate text-xs">{report.description}</div>
               ) : null}
             </TableCell>
             <TableCell className="text-muted-foreground">{report.locationName ?? "—"}</TableCell>
@@ -257,7 +258,7 @@ function PoolsPanel({ filter }: { filter: CatalogFilter }) {
   }
   if (state.kind === "empty") {
     return (
-      <p className="border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
+      <p className="border-border text-muted-foreground border border-dashed px-4 py-10 text-center text-sm">
         Not in any pool
       </p>
     );
@@ -280,11 +281,12 @@ function PoolsPanel({ filter }: { filter: CatalogFilter }) {
               <Link
                 to="/pools/$address"
                 params={{ address: pool.address }}
+                search={{ tab: "vouchers" }}
                 className="font-medium underline-offset-4 hover:underline"
               >
                 {pool.name}
               </Link>
-              <div className="font-mono text-xs text-muted-foreground">{pool.symbol}</div>
+              <div className="text-muted-foreground font-mono text-xs">{pool.symbol}</div>
             </TableCell>
             <TableCell className="font-data text-xs">
               {formatVoucherAddress(pool.address)}
@@ -304,7 +306,7 @@ function OfferingCard({ offering, onEdit }: { offering: Offering; onEdit: () => 
 
   return (
     <Card size="sm">
-      <div className="-mt-(--card-spacing) aspect-square bg-muted">
+      <div className="bg-muted -mt-(--card-spacing) aspect-square">
         {offering.imageUrl ? (
           <img
             src={offering.imageUrl}
