@@ -3,6 +3,7 @@ import {
   type VoucherRef,
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
+import { POOL_QUOTER_TYPES, type PoolQuoterType } from "@clc/core/features/pools/logic";
 
 import type { HttpClient } from "../../client/http-client";
 import {
@@ -15,6 +16,7 @@ import {
   normalizeID,
   normalizeNumber,
   normalizeNumericText,
+  normalizeRawAmount,
   normalizeStringArray,
   normalizeText,
 } from "../../lib/api-normalize";
@@ -55,6 +57,15 @@ export type UserPool = {
   tokenRegistryAddress: HexAddress | null;
   limiterAddress: HexAddress | null;
   quoterAddress: HexAddress | null;
+  /**
+   * Which quoter implementation the pool was published with.
+   *
+   * Null for pools imported from federation and for deploys that predate
+   * clc-core recording it. It cannot be recovered from `quoterAddress`: the
+   * three quoters report identical ERC-165 interfaces while taking different
+   * setters, so a caller configuring a token has to be told rather than infer.
+   */
+  quoterType: PoolQuoterType | null;
   feePolicyAddress: HexAddress | null;
   protocolFeeControllerAddress: HexAddress | null;
   feesDecoupled: boolean;
@@ -95,6 +106,12 @@ export type PoolVoucher = {
   active: boolean;
   internal: boolean;
   isAllowed: boolean;
+  /**
+   * The limiter's `limitOf(token, pool)` as a raw on-chain integer, or null when
+   * the catalog has not recorded one. Zero is a real value and not the same as
+   * null: with a limiter configured, `SwapPool.deposit` reverts once the balance
+   * would exceed the limit, so a recorded zero accepts nothing.
+   */
   tokenLimit: string | null;
   oracleFeedId: string | null;
   oracleName: string | null;
@@ -140,6 +157,7 @@ type BackendPool = Partial<{
   feePolicyAddress: string | null;
   protocolFeeControllerAddress: string | null;
   quoterAddress: string | null;
+  quoterType: string | null;
   feesDecoupled: boolean | null;
   decimals: string | number | null;
   unitOfAccount: string | null;
@@ -318,6 +336,19 @@ export function createPoolsClient(http: HttpClient) {
   };
 }
 
+/**
+ * The backend constrains this to three values, but an unrecognised one is
+ * reported as unknown rather than passed through: a caller uses it to choose
+ * which contract call to sign, and a value no builder handles must not reach
+ * that decision.
+ *
+ * `relative` is among the three even though no new pool can be published on it,
+ * because pools already running one have to keep reading back as what they are.
+ */
+function normalizePoolQuoterType(value: unknown): PoolQuoterType | null {
+  return POOL_QUOTER_TYPES.find((candidate) => candidate === value) ?? null;
+}
+
 function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet | null {
   const chainId = normalizeChainId(facet.chainId);
   const address = normalizeHex(facet.address);
@@ -354,6 +385,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
     tokenRegistryAddress: normalizeHex(pool.tokenRegistryAddress),
     limiterAddress: normalizeHex(pool.limiterAddress),
     quoterAddress: normalizeHex(pool.quoterAddress),
+    quoterType: normalizePoolQuoterType(pool.quoterType),
     feePolicyAddress: normalizeHex(pool.feePolicyAddress),
     protocolFeeControllerAddress: normalizeHex(pool.protocolFeeControllerAddress),
     feesDecoupled: Boolean(pool.feesDecoupled),
@@ -400,7 +432,7 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
     active: voucher.active !== false,
     internal: Boolean(voucher.internal),
     isAllowed: voucher.isAllowed !== false,
-    tokenLimit: normalizeNumericText(voucher.tokenLimit),
+    tokenLimit: normalizeRawAmount(voucher.tokenLimit),
     oracleFeedId: normalizeID(voucher.oracleFeedId),
     oracleName: normalizeText(voucher.oracleName),
     oracleAddress: normalizeHex(voucher.oracleAddress),
