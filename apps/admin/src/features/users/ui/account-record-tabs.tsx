@@ -1,19 +1,18 @@
+import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
 import { accountPoolsQueryOptions } from "@clc/api/features/pools/queries";
 import { reportsByAuthorQueryOptions } from "@clc/api/features/reports/queries";
-import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import type { MouseEvent } from "react";
 import { useCallback, useState } from "react";
 
-import { EmptyState } from "#/components/admin/empty-state";
-import { LoadingBlock } from "#/components/admin/loading-block";
+import { AddressCell, PoolCell } from "#/components/admin/chain-cells";
+import { RecordPanel } from "#/components/admin/record-panel";
+import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
-import { Badge } from "#/components/ui/badge";
 import { TablePagination } from "#/components/admin/table-pagination";
-import { Tabs, TabsList, TabsPanel, TabsTab } from "#/components/ui/tabs";
+import { Badge } from "#/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -29,12 +28,15 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "#/components/ui/tabs";
 import { clcApi } from "#/lib/api";
 import { termFilter } from "#/lib/catalog-filter";
+import type { DataState } from "#/lib/data-state";
 import { formatDateTime } from "#/lib/format";
+import { isModifiedClick } from "#/lib/tab-navigation";
 import { firstPageSearch } from "#/lib/table-search";
-import { usePagedTable } from "#/lib/use-paged-table";
 import { useDataState } from "#/lib/use-data-state";
+import { usePagedTable } from "#/lib/use-paged-table";
 import { useAccountTransfers } from "../use-account-balances";
 import {
   ACCOUNT_DETAIL_TABS,
@@ -66,6 +68,10 @@ const TAB_LABELS: Record<AccountDetailTab, string> = {
  * tab is linkable and Back returns to the previous one. Base UI's `render` prop
  * makes each tab an actual `<Link>`, which keeps that navigation in the router
  * instead of duplicating it in a click handler.
+ *
+ * Every panel resolves its query through `SectionState` inside a `RecordPanel`,
+ * the same as the pool and voucher records: one place decides what a failed tab
+ * looks like, and a table is flush against its frame on all three screens.
  */
 export function AccountRecordTabs({
   address,
@@ -114,7 +120,7 @@ export function AccountRecordTabs({
                   // "open this tab in a new window" work, and the reason these are
                   // real anchors at all. A plain click defers to onValueChange
                   // above so it cannot navigate twice.
-                  if (event.button === 0 && !isModified(event)) event.preventDefault();
+                  if (event.button === 0 && !isModifiedClick(event)) event.preventDefault();
                 }}
               />
             }
@@ -183,103 +189,92 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
     ),
   });
 
-  if (state.kind === "pending") {
-    return (
-      <div className="p-4">
-        <LoadingBlock rows={6} />
-      </div>
-    );
-  }
-  if (state.kind === "error") {
-    return <PanelMessage>Could not load transactions</PanelMessage>;
-  }
-  if (state.kind === "empty") {
-    return (
-      <div className="p-4">
-        <EmptyState title="No transactions" />
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
-        <span className="font-data text-muted-foreground text-xs">
-          {transfers.length} on this page
-        </span>
-        <Select
-          // Base UI renders the raw value in the trigger until the popup has
-          // mounted, so without `items` the closed control reads "all".
-          items={DIRECTIONS}
-          value={direction}
-          onValueChange={(value) => {
-            if (value === "all" || value === "IN" || value === "OUT") setDirection(value);
-          }}
+      {/* The filter is a property of rows that arrived, so the strip appears with
+          them rather than sitting above a skeleton or an error. */}
+      {hasRows(state) ? (
+        <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
+          <span className="font-data text-muted-foreground text-xs">
+            {transfers.length} on this page
+          </span>
+          <Select
+            // Base UI renders the raw value in the trigger until the popup has
+            // mounted, so without `items` the closed control reads "all".
+            items={DIRECTIONS}
+            value={direction}
+            onValueChange={(value) => {
+              if (value === "all" || value === "IN" || value === "OUT") setDirection(value);
+            }}
+          >
+            <SelectTrigger size="default" className="w-36 px-2.5" aria-label="Type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {DIRECTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
+
+      <RecordPanel state={state}>
+        <SectionState
+          state={state}
+          errorTitle="Could not load transactions"
+          emptyTitle="No transactions"
+          emptyDescription="The indexer has recorded no transfer for this address."
+          loadingRows={6}
         >
-          <SelectTrigger size="default" className="w-36 px-2.5" aria-label="Type">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent align="end">
-            {DIRECTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Partner</TableHead>
+                  <TableHead>Voucher</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transfers.map((transfer) => (
+                  <TableRow key={transfer.id}>
+                    <TableCell className="font-data text-xs">
+                      {formatDateTime(transfer.dateBlock)}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs uppercase">
+                      {transfer.direction === "IN" ? "received" : "sent"}
+                    </TableCell>
+                    <TableCell>
+                      {/* Linked, as every other address in the console is: the
+                          counterparty is an account with a screen of its own, and
+                          following a transfer to the other side of it is how an
+                          operator reads a dispute. */}
+                      <AddressCell address={transfer.counterpartyAddress} />
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{transfer.tokenSymbol}</TableCell>
+                    <TableCell className="font-data text-right">
+                      {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
+                    </TableCell>
+                    <TableCell>
+                      <StateBadge state={transfer.success ? "SUCCESS" : "FAIL"} kind="transfer" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </SectionState>
+      </RecordPanel>
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Partner</TableHead>
-              <TableHead>Voucher</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transfers.map((transfer) => (
-              <TableRow key={transfer.id}>
-                <TableCell className="font-data text-xs">
-                  {formatDateTime(transfer.dateBlock)}
-                </TableCell>
-                <TableCell className="font-mono text-xs uppercase">
-                  {transfer.direction === "IN" ? "received" : "sent"}
-                </TableCell>
-                <TableCell className="font-data text-xs">
-                  {formatVoucherAddress(transfer.counterpartyAddress as `0x${string}`)}
-                </TableCell>
-                <TableCell className="font-mono text-xs">{transfer.tokenSymbol}</TableCell>
-                <TableCell className="font-data text-right">
-                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
-                </TableCell>
-                <TableCell>
-                  <StateBadge state={transfer.success ? "SUCCESS" : "FAIL"} kind="transfer" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* The same footer the paged tables carry, flush under the rows. */}
-      <div className="border-border border-t px-4 py-3">
-        <TablePagination
-          search={search}
-          dropped={0}
-          isFirstPage={table.isFirstPage}
-          mightHaveMore={table.mightHaveMore}
-          isFetching={query.isFetching}
-          onFirstPage={table.onFirstPage}
-          onPreviousPage={table.onPreviousPage}
-          onNextPage={table.onNextPage}
-          onPageSize={table.onPageSize}
-        />
-      </div>
+      {hasRows(state) ? (
+        <PanelPagination search={search} table={table} isFetching={query.isFetching} />
+      ) : null}
     </>
   );
 }
@@ -289,48 +284,58 @@ function ReportsPanel({ address }: { address: string }) {
   const query = useQuery(reportsByAuthorQueryOptions(clcApi.reports, address, RECORD_PAGE_SIZE));
   const state = useDataState(query, (page) => page.reports.length === 0);
 
-  if (state.kind === "pending") return <PanelLoading />;
-  if (state.kind === "error") return <PanelMessage>Could not load reports</PanelMessage>;
-  if (state.kind === "empty") return <PanelEmpty title="No reports" />;
-
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead>Location</TableHead>
-            <TableHead>Created</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {(query.data?.reports ?? []).map((report) => (
-            <TableRow key={report.id}>
-              <TableCell>
-                <div className="truncate font-medium">{report.title}</div>
-                {report.description ? (
-                  <div className="text-muted-foreground truncate text-xs">{report.description}</div>
-                ) : null}
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {report.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="outline" className="font-mono text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="text-muted-foreground">{report.locationName ?? "—"}</TableCell>
-              <TableCell className="font-data text-xs">
-                {formatDateTime(report.createdAt)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <RecordPanel state={state}>
+      <SectionState
+        state={state}
+        errorTitle="Could not load reports"
+        emptyTitle="No reports"
+        emptyDescription="This account has authored nothing in the catalog."
+        loadingRows={6}
+      >
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(query.data?.reports ?? []).map((report) => (
+                <TableRow key={report.id}>
+                  <TableCell>
+                    <div className="truncate font-medium">{report.title}</div>
+                    {report.description ? (
+                      <div className="text-muted-foreground truncate text-xs">
+                        {report.description}
+                      </div>
+                    ) : null}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {report.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="font-mono text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {report.locationName ?? "—"}
+                  </TableCell>
+                  <TableCell className="font-data text-xs">
+                    {formatDateTime(report.createdAt)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </SectionState>
+    </RecordPanel>
   );
 }
 
@@ -363,53 +368,64 @@ function VouchersPanel({ address, search }: { address: string; search: UserDetai
     ),
   });
 
-  if (state.kind === "pending") return <PanelLoading />;
-  if (state.kind === "error") return <PanelMessage>Could not load vouchers</PanelMessage>;
-  if (state.kind === "empty") return <PanelEmpty title="No vouchers created" />;
-
   return (
     <>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Voucher</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Kind</TableHead>
-              <TableHead>Location</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(query.data?.vouchers ?? []).map((voucher) => (
-              <TableRow key={voucher.id}>
-                <TableCell>
-                  <div className="truncate font-medium">{voucher.name}</div>
-                  <div className="text-muted-foreground font-mono text-xs">{voucher.symbol}</div>
-                </TableCell>
-                <TableCell>
-                  <Link
-                    to="/vouchers/$address"
-                    params={{ address: voucher.address }}
-                    search={{ tab: "offerings" }}
-                    className="font-data text-xs underline-offset-4 hover:underline"
-                  >
-                    {formatVoucherAddress(voucher.address)}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-mono text-xs uppercase">
-                    {voucher.kind}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {voucher.locationName ?? "—"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <PanelPagination search={search} table={table} isFetching={query.isFetching} />
+      <RecordPanel state={state}>
+        <SectionState
+          state={state}
+          errorTitle="Could not load vouchers"
+          emptyTitle="No vouchers created"
+          emptyDescription="This account issues no voucher the catalog can show."
+          loadingRows={6}
+        >
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Voucher</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Kind</TableHead>
+                  <TableHead>Location</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(query.data?.vouchers ?? []).map((voucher) => (
+                  <TableRow key={voucher.id}>
+                    <TableCell>
+                      <div className="truncate font-medium">{voucher.name}</div>
+                      <div className="text-muted-foreground font-mono text-xs">
+                        {voucher.symbol}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        to="/vouchers/$address"
+                        params={{ address: voucher.address }}
+                        search={{ tab: "offerings" }}
+                        className="font-data text-xs underline-offset-4 hover:underline"
+                      >
+                        {formatVoucherAddress(voucher.address)}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono text-xs uppercase">
+                        {voucher.kind}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {voucher.locationName ?? "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </SectionState>
+      </RecordPanel>
+
+      {hasRows(state) ? (
+        <PanelPagination search={search} table={table} isFetching={query.isFetching} />
+      ) : null}
     </>
   );
 }
@@ -440,65 +456,69 @@ function PoolsPanel({ address, search }: { address: string; search: UserDetailSe
     ),
   });
 
-  if (state.kind === "pending") return <PanelLoading />;
-  if (state.kind === "error") return <PanelMessage>Could not load pool memberships</PanelMessage>;
-  if (state.kind === "empty") return <PanelEmpty title="No pool memberships" />;
-
   return (
     <>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Pool</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Vouchers</TableHead>
-              <TableHead>Location</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(query.data?.pools ?? []).map((pool) => (
-              <TableRow key={pool.id}>
-                <TableCell>
-                  <div className="truncate font-medium">{pool.name}</div>
-                  <div className="text-muted-foreground font-mono text-xs">{pool.symbol}</div>
-                </TableCell>
-                <TableCell>
-                  <Link
-                    to="/pools/$address"
-                    params={{ address: pool.address }}
-                    search={{ tab: "vouchers" }}
-                    className="font-data text-xs underline-offset-4 hover:underline"
-                  >
-                    {formatVoucherAddress(pool.address)}
-                  </Link>
-                </TableCell>
-                <TableCell className="font-data">{pool.voucherCount}</TableCell>
-                <TableCell className="text-muted-foreground">{pool.locationName ?? "—"}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <PanelPagination search={search} table={table} isFetching={query.isFetching} />
+      <RecordPanel state={state}>
+        <SectionState
+          state={state}
+          errorTitle="Could not load pool memberships"
+          emptyTitle="No pool memberships"
+          emptyDescription="No pool allows a voucher this account owns."
+          loadingRows={6}
+        >
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pool</TableHead>
+                  <TableHead>Address</TableHead>
+                  <TableHead>Vouchers</TableHead>
+                  <TableHead>Location</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {(query.data?.pools ?? []).map((pool) => (
+                  <TableRow key={pool.id}>
+                    <TableCell>
+                      <Link
+                        to="/pools/$address"
+                        params={{ address: pool.address }}
+                        search={{ tab: "vouchers" }}
+                        className="truncate font-medium underline-offset-4 hover:underline"
+                      >
+                        {pool.name}
+                      </Link>
+                      <div className="text-muted-foreground font-mono text-xs">{pool.symbol}</div>
+                    </TableCell>
+                    <TableCell>
+                      <PoolCell address={pool.address} />
+                    </TableCell>
+                    <TableCell className="font-data text-xs">{pool.voucherCount}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {pool.locationName ?? "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </SectionState>
+      </RecordPanel>
+
+      {hasRows(state) ? (
+        <PanelPagination search={search} table={table} isFetching={query.isFetching} />
+      ) : null}
     </>
   );
 }
 
-function PanelLoading() {
-  return (
-    <div className="p-4">
-      <LoadingBlock rows={6} />
-    </div>
-  );
-}
-
-function PanelEmpty({ title }: { title: string }) {
-  return (
-    <div className="p-4">
-      <EmptyState title={title} />
-    </div>
-  );
+/**
+ * Whether the panel is showing rows, and so whether the controls that act on them
+ * belong on screen. A pager over a skeleton or an error block is a control with
+ * nothing to page.
+ */
+function hasRows(state: DataState): boolean {
+  return state.kind === "ready" || state.kind === "stale";
 }
 
 function PanelPagination({
@@ -511,6 +531,7 @@ function PanelPagination({
   isFetching: boolean;
 }) {
   return (
+    // The same footer the paged tables carry, flush under the rows.
     <div className="border-border border-t px-4 py-3">
       <TablePagination
         search={search}
@@ -524,18 +545,5 @@ function PanelPagination({
         onPageSize={table.onPageSize}
       />
     </div>
-  );
-}
-
-/** A click the browser should own: a new tab, a new window, a download. */
-function isModified(event: MouseEvent): boolean {
-  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
-}
-
-function PanelMessage({ children }: { children: React.ReactNode }) {
-  return (
-    <p role="status" className="text-muted-foreground px-4 py-10 text-center text-sm">
-      {children}
-    </p>
   );
 }
