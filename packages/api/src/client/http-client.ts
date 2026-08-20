@@ -125,16 +125,24 @@ export function createHttpClient({
 }
 
 /**
- * Validates the configured origin once, at startup.
+ * Validates a configured origin once, at startup.
  *
  * A trailing slash is dropped so callers can pass resource paths beginning with
  * `/` without producing a double slash.
+ *
+ * Exported and parameterized because the image upload client points at a
+ * different service and needs the same validation with its own name in the
+ * message. The defaults keep clc-core's wording unchanged.
  */
-function normalizeBaseUrl(baseUrl: string): string {
+export function normalizeBaseUrl(
+  baseUrl: string,
+  service = "clc-core",
+  hint = "Pass a VITE_API_URL-derived value to createClcApi",
+): string {
   const trimmed = baseUrl?.trim() ?? "";
   if (!trimmed) {
     throw new Error(
-      "clc-core base URL is missing. Pass a VITE_API_URL-derived value to createClcApi; " +
+      `${service} base URL is missing. ${hint}; ` +
         "a build with no backend URL would send every request to the wrong place.",
     );
   }
@@ -149,11 +157,11 @@ function normalizeBaseUrl(baseUrl: string): string {
   try {
     parsed = new URL(trimmed);
   } catch {
-    throw new Error(`clc-core base URL is not a valid absolute URL: ${trimmed}`);
+    throw new Error(`${service} base URL is not a valid absolute URL: ${trimmed}`);
   }
 
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error(`clc-core base URL must be http or https, received: ${parsed.protocol}`);
+    throw new Error(`${service} base URL must be http or https, received: ${parsed.protocol}`);
   }
 
   return trimmed.replace(/\/+$/, "");
