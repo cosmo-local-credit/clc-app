@@ -24,8 +24,22 @@ type ReportVoucher = {
 
 export type ReportImage = {
   url: string;
+  /**
+   * The editor's display box, and advisory: it is not a scaled version of the
+   * intrinsic pair below. Rows imported from the old editor carry a 267x1000
+   * display box against a 1600x747 intrinsic size.
+   */
   width: number | null;
   height: number | null;
+  /**
+   * The intrinsic size of the stored object. For anything this app uploads these
+   * are the only real dimensions — the display box stays null — so a caller
+   * reserving space before the bytes arrive should read this pair first.
+   */
+  maxWidth: number | null;
+  maxHeight: number | null;
+  byteSize: number | null;
+  caption: string | null;
 };
 
 export type ReportSummary = {
@@ -111,6 +125,10 @@ type BackendReportImage = Partial<{
   url: string | null;
   width: string | number | null;
   height: string | number | null;
+  maxWidth: string | number | null;
+  maxHeight: string | number | null;
+  byteSize: string | number | null;
+  caption: string | null;
 }>;
 
 type BackendReport = Partial<{
@@ -301,6 +319,10 @@ function normalizeReportImage(image: BackendReportImage): ReportImage | null {
     url,
     width: normalizeNumber(image.width),
     height: normalizeNumber(image.height),
+    maxWidth: normalizeNumber(image.maxWidth),
+    maxHeight: normalizeNumber(image.maxHeight),
+    byteSize: normalizeNumber(image.byteSize),
+    caption: normalizeText(image.caption),
   };
 }
 

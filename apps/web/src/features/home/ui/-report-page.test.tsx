@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { ReportDetail } from "@clc/api/features/reports/client";
+import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 
 /**
  * Embla reads breakpoints and observes slide visibility and size on mount, and
@@ -115,6 +115,25 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { ReportPage } from "./report-page";
 
+/**
+ * One image row. The display box (`width`/`height`) is optional because uploads
+ * only ever record the intrinsic pair, so most rows carry nulls there.
+ */
+function reportImage(
+  url: string,
+  box: { width: number; height: number } | null = null,
+): ReportImage {
+  return {
+    url,
+    width: box?.width ?? null,
+    height: box?.height ?? null,
+    maxWidth: box?.width ?? null,
+    maxHeight: box?.height ?? null,
+    byteSize: null,
+    caption: null,
+  };
+}
+
 function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
   return {
     id: "3182",
@@ -138,9 +157,9 @@ function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
       },
     ],
     images: [
-      { url: "https://content.example/one.jpg", width: 800, height: 600 },
-      { url: "https://content.example/two.jpg", width: null, height: null },
-      { url: "https://content.example/three.jpg", width: null, height: null },
+      reportImage("https://content.example/one.jpg", { width: 800, height: 600 }),
+      reportImage("https://content.example/two.jpg"),
+      reportImage("https://content.example/three.jpg"),
     ],
     hostName: "Patricia Makau",
     participants: "7",
@@ -192,7 +211,7 @@ describe("ReportPage", () => {
 
   it("renders a single image as a plain frame with no inert controls", () => {
     mocks.detail.data = detail({
-      images: [{ url: "https://content.example/only.jpg", width: null, height: null }],
+      images: [reportImage("https://content.example/only.jpg")],
     });
     const { container } = render(<ReportPage reportId="3182" />);
 
