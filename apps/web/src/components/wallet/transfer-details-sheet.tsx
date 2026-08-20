@@ -1,8 +1,10 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Suspense } from "react";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { LocationMap } from "#/components/ui/location-map.lazy";
 import {
   SheetBackdrop,
   SheetContent,
@@ -13,6 +15,7 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { EllipsizedAddress } from "./wallet-address";
 
 export type TransferDetails = {
@@ -40,12 +43,13 @@ export function TransferDetailsSheet({
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
   const transferDate = transfer ? formatTransferDate(transfer.dateBlock) : "";
   const explorerUrl = transfer ? `https://celoscan.io/tx/${transfer.txHash}` : "#";
+  const shareQuery = useSendShare(transfer?.txHash ?? null, open && transfer?.success === true);
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
-        <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
+        <SheetContent className="max-h-[85svh] overflow-y-auto rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
             <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{badge}</Badge>
             <SheetTitle className="sr-only">
@@ -94,6 +98,8 @@ export function TransferDetailsSheet({
             </div>
           ) : null}
 
+          <PrivateShareSection query={shareQuery} />
+
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
             <Button asChild className="h-11 w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
@@ -104,5 +110,91 @@ export function TransferDetailsSheet({
         </SheetContent>
       </SheetPortal>
     </SheetRoot>
+  );
+}
+
+function PrivateShareSection({ query }: { query: ReturnType<typeof useSendShare> }) {
+  const share = query.data;
+
+  if (query.isPending && query.fetchStatus !== "idle") {
+    return (
+      <div className="px-6 pb-2 text-muted-foreground text-xs">
+        <Trans>Loading private attachment…</Trans>
+      </div>
+    );
+  }
+  if (query.isError) {
+    return (
+      <div className="px-6 pb-2 text-destructive text-xs">
+        <Trans>Couldn't load the private attachment.</Trans>
+      </div>
+    );
+  }
+  if (!share) return null;
+
+  return (
+    <section className="px-6 pb-2" aria-label="Private attachment">
+      <div className="space-y-3 border border-border bg-card p-3">
+        <div>
+          <p className="font-semibold text-sm">
+            <Trans>Private attachment</Trans>
+          </p>
+          <p className="text-muted-foreground text-xs">
+            <Trans>Shared by {share.sharedBy.name}</Trans>
+          </p>
+        </div>
+
+        {share.note ? (
+          <p className="whitespace-pre-wrap break-words border-l-2 border-primary pl-3 text-sm">
+            {share.note}
+          </p>
+        ) : null}
+
+        <div className="space-y-2 text-xs">
+          {share.sharedBy.email ? (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">
+                <Trans>Email</Trans>
+              </span>
+              <a
+                className="break-all font-semibold text-primary"
+                href={`mailto:${share.sharedBy.email}`}
+              >
+                {share.sharedBy.email}
+              </a>
+            </div>
+          ) : null}
+          {share.sharedBy.phone ? (
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-muted-foreground">
+                <Trans>Phone</Trans>
+              </span>
+              <a className="font-semibold text-primary" href={`tel:${share.sharedBy.phone}`}>
+                {share.sharedBy.phone}
+              </a>
+            </div>
+          ) : null}
+          {share.sharedBy.location ? (
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <span className="shrink-0 text-muted-foreground">
+                  <Trans>Location</Trans>
+                </span>
+                <span className="text-right font-semibold">
+                  {share.sharedBy.location.locationName}
+                </span>
+              </div>
+              <Suspense fallback={<div className="h-36 w-full bg-muted" />}>
+                <LocationMap
+                  lat={share.sharedBy.location.lat}
+                  lng={share.sharedBy.location.lng}
+                  className="h-36 rounded-none"
+                />
+              </Suspense>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }

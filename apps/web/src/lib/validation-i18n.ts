@@ -164,6 +164,16 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Supply has more decimal places than this voucher supports",
         message: "Supply has more decimal places than this voucher supports",
       });
+    case "Message must be 500 characters or fewer":
+      return i18n._({
+        id: "Message must be 500 characters or fewer",
+        message: "Message must be 500 characters or fewer",
+      });
+    case "Add a message or choose profile details":
+      return i18n._({
+        id: "Add a message or choose profile details",
+        message: "Add a message or choose profile details",
+      });
     default:
       return error;
   }

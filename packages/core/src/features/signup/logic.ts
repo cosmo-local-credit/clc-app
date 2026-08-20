@@ -27,3 +27,14 @@ export const profileSchema = z
   .superRefine(requireEmailOrPhone);
 
 export type ProfileInput = z.infer<typeof profileSchema>;
+
+export const profileEditSchema = z
+  .object({
+    name: nameSchema,
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    location: locationSchema.optional(),
+  })
+  .superRefine(requireEmailOrPhone);
+
+export type ProfileEditInput = z.infer<typeof profileEditSchema>;
