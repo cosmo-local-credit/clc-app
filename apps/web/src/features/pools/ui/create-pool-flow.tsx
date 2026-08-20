@@ -362,7 +362,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         <RadioGroup
                           value={field.state.value}
                           onValueChange={(value) => {
-                            if (value === "oracle" || value === "relative" || value === "decimal") {
+                            if (value === "oracle" || value === "decimal") {
                               field.handleChange(value);
                             }
                           }}
@@ -374,11 +374,6 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                             title={t`Price feed`}
                             description={t`Follows the selected unit's feed`}
                             isDefault
-                          />
-                          <PricingOption
-                            value="relative"
-                            title={t`Rates you set`}
-                            description={t`You set a rate per voucher`}
                           />
                           <PricingOption
                             value="decimal"

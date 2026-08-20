@@ -17,11 +17,7 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
       <InfoRow label={t`Unit`}>{values.unit}</InfoRow>
       <InfoRow label={t`Description`}>{values.description}</InfoRow>
       <InfoRow label={t`Pricing`} muted>
-        {values.pricing === "oracle"
-          ? t`Price feed`
-          : values.pricing === "relative"
-            ? t`Rates you set`
-            : t`Equal value`}
+        {values.pricing === "oracle" ? t`Price feed` : t`Equal value`}
       </InfoRow>
       <InfoRow label={t`Swap fee`} muted>
         {values.feePolicyDefault}%

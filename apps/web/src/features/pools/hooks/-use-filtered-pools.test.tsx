@@ -39,6 +39,7 @@ function pool(id: number): UserPool {
     tokenRegistryAddress: null,
     limiterAddress: null,
     quoterAddress: null,
+    quoterType: null,
     feePolicyAddress: null,
     protocolFeeControllerAddress: null,
     feesDecoupled: false,
