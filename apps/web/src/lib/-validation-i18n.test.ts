@@ -34,6 +34,8 @@ const knownErrors = [
   "Accept the terms to publish your pool",
   "Accept the SPROUT License to publish your pool",
   "Choose rates you set or equal value when the unit has no price feed",
+  "Message must be 500 characters or fewer",
+  "Add a message or choose profile details",
 ] as const;
 
 describe("translateValidationError", () => {

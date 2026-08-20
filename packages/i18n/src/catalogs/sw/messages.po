@@ -310,9 +310,18 @@ msgstr "Imewashwa"
 msgid "Activity"
 msgstr "Shughuli"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:173
+msgid "Add a message or choose profile details"
+msgstr "Ongeza ujumbe au uchague maelezo ya wasifu"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:86
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "Ongeza nambari ya simu kwenye wasifu wako ili kutumia MPESA."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:277
+msgid "Add a private message"
+msgstr "Ongeza ujumbe wa faragha"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:197
 msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
@@ -390,7 +399,7 @@ msgstr "Tayari una akaunti?"
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:114
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:190
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:323
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:132
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:142
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:320
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:573
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:684
@@ -563,6 +572,10 @@ msgstr "Angalia usambazaji tena"
 msgid "Checking availability..."
 msgstr "Inakagua upatikanaji..."
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
+msgid "Checking message availability…"
+msgstr "Inakagua upatikanaji wa ujumbe…"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:289
 msgid "Checking mint status"
 msgstr "Inaangalia hali ya utengenezaji"
@@ -643,7 +656,7 @@ msgstr "Ondoa"
 msgid "Clear filters"
 msgstr "Ondoa vichujio"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:247
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:246
 msgid "Clear location"
 msgstr "Futa eneo"
 
@@ -736,7 +749,7 @@ msgstr "Thibitisha kubadilisha"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:43
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:159
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
 msgid "Confirmed"
 msgstr "Imethibitishwa"
 
@@ -877,7 +890,7 @@ msgstr "Nakili ID ya Pretium"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:198
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:139
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:143
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
 msgid "Copy transaction hash"
 msgstr "Nakili heshi ya muamala"
 
@@ -908,6 +921,10 @@ msgstr "Haikuwezekana kulinda mkoba huu wa karatasi."
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
 #~ msgid "Could not protect this QR code."
 #~ msgstr "Haikuwezekana kulinda msimbo huu wa QR."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:243
+msgid "Couldn't check message availability."
+msgstr "Haikuweza kukagua upatikanaji wa ujumbe."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:180
 #~ msgid "Couldn't check the voucher supply"
@@ -943,8 +960,8 @@ msgstr "Haikuwezekana kunakili ID ya Pretium"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:200
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:104
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:110
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:80
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:86
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:90
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:96
 msgid "Couldn't copy transaction hash"
 msgstr "Haikuwezekana kunakili heshi ya muamala"
 
@@ -1037,13 +1054,17 @@ msgstr "Imeshindikana kusoma idadi ya desimali zinazotumiwa na vocha hii."
 msgid "Couldn't resolve that recipient."
 msgstr "Haikuwezekana kutambua mpokeaji huyo."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:127
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:126
 msgid "Couldn't save your profile."
 msgstr "Imeshindwa kuhifadhi wasifu wako."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:367
 msgid "Couldn't search vouchers."
 msgstr "Haikuwezekana kutafuta vocha."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+msgid "Couldn't share this message."
+msgstr "Haikuweza kushiriki ujumbe huu."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:292
 msgid "Couldn't start MPESA top up"
@@ -1186,8 +1207,8 @@ msgstr "Maelezo"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:164
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:208
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:168
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:180
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:441
 msgid "Done"
 msgstr "Maliza"
 
@@ -1243,18 +1264,19 @@ msgstr "Hariri"
 msgid "Edit filters"
 msgstr "Badilisha vichujio"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:135
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:39
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
 msgid "Edit profile"
 msgstr "Hariri wasifu"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:157
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:188
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:187
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:39
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:313
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:672
 msgid "Email"
 msgstr "Barua pepe"
@@ -1733,6 +1755,7 @@ msgstr "Inapakia…"
 #: apps/web/src/features/home/ui/report-page.tsx:461
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:35
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:33
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:337
 msgid "Location"
 msgstr "Eneo"
 
@@ -1789,6 +1812,23 @@ msgstr "Kiwango cha juu"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:466
 msgid "Max {max}"
 msgstr "Kiwango cha juu {max}"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:290
+msgid "Message"
+msgstr "Ujumbe"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:168
+msgid "Message must be 500 characters or fewer"
+msgstr "Ujumbe lazima uwe na herufi 500 au chache"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:269
+msgid "Message shared."
+msgstr "Ujumbe umeshirikiwa."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:261
+msgid "Messages are available only for registered Cosmo users."
+msgstr "Ujumbe unapatikana kwa watumiaji wa Cosmo waliosajiliwa pekee."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:186
 msgid "Mint status is temporarily unavailable."
@@ -1880,8 +1920,8 @@ msgstr "MPESA kupitia Pretium"
 msgid "My wallet address"
 msgstr "Anwani ya pochi yangu"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:149
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:160
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:154
@@ -1920,8 +1960,8 @@ msgstr "Jina kwenye mkoba"
 #~ msgstr "Inahitaji sahihi yako. Ada ya gesi imelipiwa kwa niaba yako."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:149
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:146
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:156
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:427
 msgid "Network"
 msgstr "Mtandao"
 
@@ -2174,6 +2214,10 @@ msgstr "Fungua kwenye Ramani"
 msgid "Opening paper wallet..."
 msgstr "Inafungua mkoba wa karatasi..."
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:298
+msgid "Optional message"
+msgstr "Ujumbe wa hiari"
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 #~ msgid "or"
 #~ msgstr "au"
@@ -2261,7 +2305,7 @@ msgstr "Leseni ya PATH"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:80
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:314
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:97
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:496
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:605
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:742
@@ -2273,15 +2317,16 @@ msgstr "Inasubiri"
 #~ msgstr "Muunganisho wa endpoint unasubiri"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:170
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:204
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:203
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:155
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:43
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:325
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:696
 msgid "Phone"
 msgstr "Simu"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:211
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:210
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:162
 msgid "Phone number"
 msgstr "Nambari ya simu"
@@ -2503,7 +2548,7 @@ msgstr "Kiambatisho cha faragha"
 msgid "Private key"
 msgstr "Ufunguo binafsi"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:115
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:114
 msgid "Profile updated"
 msgstr "Wasifu umesasishwa"
 
@@ -2757,6 +2802,7 @@ msgstr "Inatafuta mpokeaji…"
 #: apps/web/src/features/home/ui/report-page.tsx:51
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:499
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:554
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:252
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:132
 msgid "Retry"
 msgstr "Jaribu tena"
@@ -2771,8 +2817,8 @@ msgstr "Geuza mwelekeo wa ubadilishaji"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:107
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:111
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:117
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:121
 msgid "Reverted"
 msgstr "Imerejeshwa"
 
@@ -2794,11 +2840,11 @@ msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 "viwango vya pamoja."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:263
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:262
 msgid "Save changes"
 msgstr "Hifadhi mabadiliko"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:263
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:262
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 msgid "Saving…"
 msgstr "Inahifadhi…"
@@ -2915,7 +2961,7 @@ msgstr "Tuma"
 msgid "Send to"
 msgstr "Tuma kwa"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:93
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:103
 msgid "Sending"
 msgstr "Inatuma"
 
@@ -2924,7 +2970,7 @@ msgid "Sending…"
 msgstr "Inatuma…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:126
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:136
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
 msgid "Sent"
 msgstr "Umetuma"
@@ -2955,12 +3001,13 @@ msgid "Session could not be verified. Try again."
 msgstr "Kipindi hakikuweza kuthibitishwa. Jaribu tena."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:35
 #: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Mipangilio"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:364
 msgid "Share"
 msgstr "Shiriki"
 
@@ -2972,6 +3019,10 @@ msgstr "Shiriki"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:143
 msgid "Shared by {0}"
 msgstr "Imeshirikiwa na {0}"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:364
+msgid "Sharing…"
+msgstr "Inashiriki…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:93
 #~ msgid "Shop"
@@ -3079,8 +3130,8 @@ msgstr "Inaanza…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:65
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:253
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:158
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:221
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:168
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:562
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:673
 msgid "Status"
@@ -3095,7 +3146,7 @@ msgstr "Hatua {clampedStep} kati ya {clampedTotal}"
 #~ msgstr "Hatua ya {progressStep} kati ya 3"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:153
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
 msgid "Submitted"
 msgstr "Imewasilishwa"
 
@@ -3361,8 +3412,8 @@ msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:123
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:423
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
 msgid "To"
 msgstr "Kwa"
@@ -3410,7 +3461,7 @@ msgstr "Jumla"
 #~ msgstr "Muamala unaofuatiliwa"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:135
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:142
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:152
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:599
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:736
 msgid "Transaction"
@@ -3426,7 +3477,7 @@ msgstr "Hashi ya muamala"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:200
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:109
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:85
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:95
 msgid "Transaction hash copied"
 msgstr "Hashi ya muamala imenakiliwa"
 
@@ -3449,7 +3500,7 @@ msgstr "Historia ya hamisho"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:59
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:86
@@ -3516,7 +3567,7 @@ msgstr "Sasisha mkoba wa karatasi uliolindwa"
 #~ msgid "Update your contact details and country."
 #~ msgstr "Sasisha maelezo yako ya mawasiliano na nchi."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 msgid "Update your contact details and location."
 msgstr "Sasisha maelezo yako ya mawasiliano na eneo."
 
@@ -3733,7 +3784,7 @@ msgid "Waiting for blockchain confirmation..."
 msgstr "Inasubiri uthibitisho wa blockchain..."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:78
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:95
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:105
 msgid "Waiting for on-chain confirmation"
 msgstr "Inasubiri uthibitisho kwenye mnyororo"
 
@@ -3773,7 +3824,7 @@ msgstr "Hatukuweza kuthibitisha kikao chako. Angalia muunganisho wako na "
 msgid "We couldn't load your profile phone number."
 msgstr "Hatukuweza kupakia nambari ya simu kwenye wasifu wako."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:51
 msgid "We couldn't load your profile."
 msgstr "Hatukuweza kupakia wasifu wako."
 
@@ -3889,7 +3940,7 @@ msgstr "Akaunti yako inasubiri idhini. Utaweza kuendelea ikishaidhinishwa."
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Malipo yako ya MPESA yatawasili hivi karibuni."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:156
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:155
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:103
 msgid "Your name"
 msgstr "Jina lako"

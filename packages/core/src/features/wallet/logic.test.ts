@@ -8,6 +8,7 @@ import {
   parseTokenAmount,
   SEND_SHARE_PERMISSION,
   SEND_SHARE_PERMISSION_ALL,
+  sendShareFormSchema,
 } from "./logic";
 
 describe("formatTokenAmount", () => {
@@ -50,5 +51,20 @@ describe("send share permissions", () => {
     expect(hasSendSharePermission(permission, SEND_SHARE_PERMISSION.email)).toBe(true);
     expect(hasSendSharePermission(permission, SEND_SHARE_PERMISSION.phone)).toBe(false);
     expect(hasSendSharePermission(permission, SEND_SHARE_PERMISSION.location)).toBe(true);
+  });
+
+  it("requires an attachment to contain a note or selected profile details", () => {
+    expect(
+      sendShareFormSchema.safeParse({ note: "", email: false, phone: false, location: false })
+        .success,
+    ).toBe(false);
+    expect(
+      sendShareFormSchema.parse({
+        note: "  Thanks  ",
+        email: false,
+        phone: false,
+        location: false,
+      }).note,
+    ).toBe("Thanks");
   });
 });

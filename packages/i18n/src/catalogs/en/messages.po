@@ -308,9 +308,18 @@ msgstr "Active"
 msgid "Activity"
 msgstr "Activity"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:173
+msgid "Add a message or choose profile details"
+msgstr "Add a message or choose profile details"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:86
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "Add a phone number to your profile to use MPESA."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:277
+msgid "Add a private message"
+msgstr "Add a private message"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:197
 msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
@@ -388,7 +397,7 @@ msgstr "Already have an account?"
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:114
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:190
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:323
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:132
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:142
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:320
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:573
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:684
@@ -561,6 +570,10 @@ msgstr "Check supply again"
 msgid "Checking availability..."
 msgstr "Checking availability..."
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
+msgid "Checking message availability…"
+msgstr "Checking message availability…"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:289
 msgid "Checking mint status"
 msgstr "Checking mint status"
@@ -640,7 +653,7 @@ msgstr "Clear"
 msgid "Clear filters"
 msgstr "Clear filters"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:247
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:246
 msgid "Clear location"
 msgstr "Clear location"
 
@@ -733,7 +746,7 @@ msgstr "Confirm swap"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:43
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:159
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:170
 msgid "Confirmed"
 msgstr "Confirmed"
 
@@ -874,7 +887,7 @@ msgstr "Copy Pretium ID"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:198
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:139
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:143
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
 msgid "Copy transaction hash"
 msgstr "Copy transaction hash"
 
@@ -905,6 +918,10 @@ msgstr "Could not protect this paper wallet."
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
 #~ msgid "Could not protect this QR code."
 #~ msgstr "Could not protect this QR code."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:243
+msgid "Couldn't check message availability."
+msgstr "Couldn't check message availability."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:180
 #~ msgid "Couldn't check the voucher supply"
@@ -940,8 +957,8 @@ msgstr "Couldn't copy Pretium ID"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:200
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:104
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:110
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:80
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:86
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:90
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:96
 msgid "Couldn't copy transaction hash"
 msgstr "Couldn't copy transaction hash"
 
@@ -1034,13 +1051,17 @@ msgstr "Couldn't read how many decimals this voucher uses."
 msgid "Couldn't resolve that recipient."
 msgstr "Couldn't resolve that recipient."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:127
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:126
 msgid "Couldn't save your profile."
 msgstr "Couldn't save your profile."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:367
 msgid "Couldn't search vouchers."
 msgstr "Couldn't search vouchers."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+msgid "Couldn't share this message."
+msgstr "Couldn't share this message."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:292
 msgid "Couldn't start MPESA top up"
@@ -1183,8 +1204,8 @@ msgstr "Description"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:164
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:208
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:168
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:230
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:180
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:441
 msgid "Done"
 msgstr "Done"
 
@@ -1240,18 +1261,19 @@ msgstr "Edit"
 msgid "Edit filters"
 msgstr "Edit filters"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:135
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:39
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
 msgid "Edit profile"
 msgstr "Edit profile"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:157
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:188
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:176
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:187
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:39
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:313
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:672
 msgid "Email"
 msgstr "Email"
@@ -1730,6 +1752,7 @@ msgstr "Loading…"
 #: apps/web/src/features/home/ui/report-page.tsx:461
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:35
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:33
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:337
 msgid "Location"
 msgstr "Location"
 
@@ -1786,6 +1809,23 @@ msgstr "Max"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:466
 msgid "Max {max}"
 msgstr "Max {max}"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:290
+msgid "Message"
+msgstr "Message"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:168
+msgid "Message must be 500 characters or fewer"
+msgstr "Message must be 500 characters or fewer"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:269
+msgid "Message shared."
+msgstr "Message shared."
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:261
+msgid "Messages are available only for registered Cosmo users."
+msgstr "Messages are available only for registered Cosmo users."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:186
 msgid "Mint status is temporarily unavailable."
@@ -1876,8 +1916,8 @@ msgstr "MPESA via Pretium"
 msgid "My wallet address"
 msgstr "My wallet address"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:150
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:149
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:160
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:97
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:108
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:154
@@ -1916,8 +1956,8 @@ msgstr "Name on wallet"
 #~ msgstr "Needs your signature. Gas is covered for you."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:149
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:146
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:216
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:156
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:427
 msgid "Network"
 msgstr "Network"
 
@@ -2169,6 +2209,10 @@ msgstr "Open in Maps"
 msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:298
+msgid "Optional message"
+msgstr "Optional message"
+
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 #~ msgid "or"
 #~ msgstr "or"
@@ -2256,7 +2300,7 @@ msgstr "PATH License"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:80
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:131
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:314
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:97
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:496
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:605
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:742
@@ -2268,15 +2312,16 @@ msgstr "Pending"
 #~ msgstr "Pending endpoint integration"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:170
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:204
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:203
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:155
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:43
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:325
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:696
 msgid "Phone"
 msgstr "Phone"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:211
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:210
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:162
 msgid "Phone number"
 msgstr "Phone number"
@@ -2497,7 +2542,7 @@ msgstr "Private attachment"
 msgid "Private key"
 msgstr "Private key"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:115
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:114
 msgid "Profile updated"
 msgstr "Profile updated"
 
@@ -2749,6 +2794,7 @@ msgstr "Resolving recipient…"
 #: apps/web/src/features/home/ui/report-page.tsx:51
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:499
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:554
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:252
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:132
 msgid "Retry"
 msgstr "Retry"
@@ -2763,8 +2809,8 @@ msgstr "Reverse swap direction"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:107
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:111
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:117
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:121
 msgid "Reverted"
 msgstr "Reverted"
 
@@ -2785,11 +2831,11 @@ msgstr "Reviews for this voucher will appear here."
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:263
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:262
 msgid "Save changes"
 msgstr "Save changes"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:263
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:262
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:202
 msgid "Saving…"
 msgstr "Saving…"
@@ -2906,7 +2952,7 @@ msgstr "Send"
 msgid "Send to"
 msgstr "Send to"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:93
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:103
 msgid "Sending"
 msgstr "Sending"
 
@@ -2915,7 +2961,7 @@ msgid "Sending…"
 msgstr "Sending…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:126
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:136
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
 msgid "Sent"
 msgstr "Sent"
@@ -2946,12 +2992,13 @@ msgid "Session could not be verified. Try again."
 msgstr "Session could not be verified. Try again."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:35
 #: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Settings"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:364
 msgid "Share"
 msgstr "Share"
 
@@ -2963,6 +3010,10 @@ msgstr "Share"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:143
 msgid "Shared by {0}"
 msgstr "Shared by {0}"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:364
+msgid "Sharing…"
+msgstr "Sharing…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:93
 #~ msgid "Shop"
@@ -3070,8 +3121,8 @@ msgstr "Starting…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:65
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:253
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:158
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:221
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:168
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:562
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:673
 msgid "Status"
@@ -3086,7 +3137,7 @@ msgstr "Step {clampedStep} of {clampedTotal}"
 #~ msgstr "Step {progressStep} of 3"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:153
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
 msgid "Submitted"
 msgstr "Submitted"
 
@@ -3349,8 +3400,8 @@ msgstr "This QR code does not contain a valid private key."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:123
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:423
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
 msgid "To"
 msgstr "To"
@@ -3398,7 +3449,7 @@ msgstr "Total"
 #~ msgstr "Tracked transaction"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:135
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:142
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:152
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:599
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:736
 msgid "Transaction"
@@ -3414,7 +3465,7 @@ msgstr "Transaction hash"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:200
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:109
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:85
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:95
 msgid "Transaction hash copied"
 msgstr "Transaction hash copied"
 
@@ -3437,7 +3488,7 @@ msgstr "Transfer history"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/offerings/offerings-panel.tsx:115
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:59
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:86
@@ -3504,7 +3555,7 @@ msgstr "Update protected paper wallet"
 #~ msgid "Update your contact details and country."
 #~ msgstr "Update your contact details and country."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
 msgid "Update your contact details and location."
 msgstr "Update your contact details and location."
 
@@ -3721,7 +3772,7 @@ msgid "Waiting for blockchain confirmation..."
 msgstr "Waiting for blockchain confirmation..."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:78
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:95
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:105
 msgid "Waiting for on-chain confirmation"
 msgstr "Waiting for on-chain confirmation"
 
@@ -3760,7 +3811,7 @@ msgstr "We could not verify your session. Check your connection and try again."
 msgid "We couldn't load your profile phone number."
 msgstr "We couldn't load your profile phone number."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:51
 msgid "We couldn't load your profile."
 msgstr "We couldn't load your profile."
 
@@ -3877,7 +3928,7 @@ msgstr "Your account is awaiting approval. You will be able to continue once it 
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Your MPESA payout will arrive shortly."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:156
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:155
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:103
 msgid "Your name"
 msgstr "Your name"

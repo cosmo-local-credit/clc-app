@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 const DECIMAL_STRING_PATTERN = /^\d+$/;
 const TOKEN_AMOUNT_PATTERN = /^\d+(?:\.\d*)?$/;
 
@@ -27,6 +29,22 @@ export function buildSendSharePermission(selection: SendShareSelection): number 
 export function hasSendSharePermission(permission: number, flag: number): boolean {
   return (permission & flag) === flag;
 }
+
+export const sendShareFormSchema = z
+  .object({
+    note: z.string().trim().max(500, { message: "Message must be 500 characters or fewer" }),
+    email: z.boolean(),
+    phone: z.boolean(),
+    location: z.boolean(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.note || value.email || value.phone || value.location) return;
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Add a message or choose profile details",
+      path: ["note"],
+    });
+  });
 
 export function formatTokenAmount(
   rawAmount: string,
