@@ -206,4 +206,17 @@ describe("pools table navigation", () => {
     await waitFor(() => expect(router.state.location.search).toMatchObject({ q: "market" }));
     expect(router.state.location.search).not.toHaveProperty("cursor");
   });
+
+  it("lists name and symbol separately, without swap fee, unit, or tags", async () => {
+    getFilteredPools.mockResolvedValue(PAGE_ONE);
+    renderPoolsRoute();
+    await waitFor(() => expect(screen.getByText("Pool 1000")).toBeTruthy());
+
+    expect(screen.getByRole("columnheader", { name: /name/i })).toBeTruthy();
+    expect(screen.getByRole("columnheader", { name: /symbol/i })).toBeTruthy();
+    expect(screen.getByText("P1000")).toBeTruthy();
+    expect(screen.queryByRole("columnheader", { name: /swap fee/i })).toBeNull();
+    expect(screen.queryByRole("columnheader", { name: /^unit$/i })).toBeNull();
+    expect(screen.queryByRole("columnheader", { name: /^tags$/i })).toBeNull();
+  });
 });

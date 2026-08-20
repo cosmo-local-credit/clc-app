@@ -27,9 +27,9 @@ import type { PoolTransactionsSearch } from "./transactions-search";
  * them.
  *
  * In and Out are one cell each — the figure over the voucher it is denominated
- * in — rather than four columns. It is the catalog table's name-over-symbol
- * pairing applied to an amount, and it keeps a swap readable as one line instead
- * of spreading a single fact across the width of the screen.
+ * in — rather than four columns. Stacking the amount over its symbol keeps a
+ * swap readable as one line instead of spreading a single fact across the
+ * width of the screen.
  *
  * A deposit fills only the In side. Nothing leaves the pool and no fee is
  * charged, so its Out and Fee cells are empty rather than zero.
