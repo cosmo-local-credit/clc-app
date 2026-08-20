@@ -404,3 +404,42 @@ describe("signupWithSiwe — 409 swallow", () => {
     ).rejects.toBeInstanceOf(BackendApiError);
   });
 });
+
+describe("submitProfile — avatar", () => {
+  it("omits avatarUrl entirely when the caller says nothing about it", async () => {
+    const fetchMock = mockFetch({ body: { ok: true, result: { address: "0xabc" } } });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.submitProfile({ name: "N", email: "e@example.com", phone: "", country: "KE" });
+
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect("avatarUrl" in sent).toBe(false);
+  });
+
+  it("sends the backend's clearing sentinel for null, not JSON null", async () => {
+    const fetchMock = mockFetch({ body: { ok: true, result: { address: "0xabc" } } });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.submitProfile({
+      name: "N",
+      email: "e@example.com",
+      phone: "",
+      country: "KE",
+      avatarUrl: null,
+    });
+
+    // clc-core decodes JSON null to the same nil pointer as an absent key, and nil
+    // preserves. Sending null would silently leave the avatar in place.
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string);
+    expect(sent.avatarUrl).toBe("");
+  });
+
+  it("returns the saved row so a caller can seed the profile query", async () => {
+    const saved = { address: "0xabc", name: "N", email: "e@example.com", phone: "", country: "KE" };
+    vi.stubGlobal("fetch", mockFetch({ body: { ok: true, result: saved } }));
+
+    await expect(
+      api.submitProfile({ name: "N", email: "e@example.com", phone: "", country: "KE" }),
+    ).resolves.toEqual(saved);
+  });
+});

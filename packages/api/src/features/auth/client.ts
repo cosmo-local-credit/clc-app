@@ -66,6 +66,16 @@ export type ProfilePayload = {
   geoLat?: number | null;
   geoLng?: number | null;
   clearLocation?: boolean;
+  /**
+   * A URL replaces, `null` clears, omitting the key preserves.
+   *
+   * clc-core cannot distinguish an absent field from a JSON `null` — both decode
+   * to a nil pointer, and nil means preserve, which is what protects an avatar
+   * from a client that knows nothing about it. So `null` is sent as the backend's
+   * clearing sentinel, `""`, rather than as JSON null, which would silently do
+   * nothing. See submitProfile.
+   */
+  avatarUrl?: string | null;
 };
 
 export type ProfileResult = {
@@ -77,7 +87,30 @@ export type ProfileResult = {
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
+  /** Absent from a backend that predates avatars, so optional rather than nullable. */
+  avatarUrl?: string | null;
   createdAt: string;
+};
+
+/**
+ * What `POST /auth/profile` answers with: the saved row, minus `createdAt`, which
+ * the update projection does not carry.
+ */
+export type SavedProfile = Omit<ProfileResult, "createdAt">;
+
+/**
+ * A copy of the session token that JavaScript can send to storage-server.
+ *
+ * This is the same 30-day session JWT the cookie carries, not a scoped grant, so
+ * it must live only in the in-memory Query cache — never `localStorage`,
+ * `sessionStorage`, Zustand, a URL, or a dehydrated SSR payload — and it must be
+ * dropped at every identity boundary. clc-core accepts a user JWT in an
+ * `Authorization` header as well as in the cookie, so a leaked copy is API access
+ * until it expires.
+ */
+export type StorageTokenResult = {
+  token: string;
+  expiresAt: string;
 };
 
 export type OtxRecord = {
@@ -110,8 +143,9 @@ export type AuthClient = {
   signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult>;
   logout(): Promise<void>;
   getSession(): Promise<SessionResult | null>;
-  submitProfile(payload: ProfilePayload): Promise<void>;
+  submitProfile(payload: ProfilePayload): Promise<SavedProfile>;
   getProfile(): Promise<ProfileResult>;
+  getStorageToken(): Promise<StorageTokenResult>;
   trackOtx(trackingId: string): Promise<OtxTrackResult>;
   waitForTrackingCompletion(
     trackingId: string,
@@ -187,8 +221,10 @@ export function createAuthClient(http: HttpClient): AuthClient {
       return http.request<SessionResult | null>("/auth/session", { method: "GET" });
     },
 
-    async submitProfile(payload: ProfilePayload): Promise<void> {
-      await http.request("/auth/profile", {
+    // Returns the saved row rather than discarding it, so a caller can seed the
+    // profile query instead of refetching what it just wrote.
+    async submitProfile(payload: ProfilePayload): Promise<SavedProfile> {
+      return http.request<SavedProfile>("/auth/profile", {
         method: "POST",
         body: JSON.stringify({
           name: payload.name,
@@ -199,12 +235,23 @@ export function createAuthClient(http: HttpClient): AuthClient {
           geoLat: payload.geoLat,
           geoLng: payload.geoLng,
           ...(payload.clearLocation ? { clearLocation: true } : {}),
+          // Omitted stays omitted, so the field is only ever sent deliberately.
+          // `null` becomes "": clc-core decodes JSON null to the same nil pointer
+          // as an absent key, and nil preserves the stored avatar.
+          ...(payload.avatarUrl === undefined ? {} : { avatarUrl: payload.avatarUrl ?? "" }),
         }),
       });
     },
 
     async getProfile(): Promise<ProfileResult> {
       return http.request<ProfileResult>("/auth/profile", { method: "GET" });
+    },
+
+    async getStorageToken(): Promise<StorageTokenResult> {
+      return http.request<StorageTokenResult>("/auth/storage-token", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
     },
 
     async waitForTrackingCompletion(
