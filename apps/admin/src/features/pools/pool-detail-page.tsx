@@ -18,6 +18,7 @@ import {
 } from "./pool-posture";
 import { PoolRecordTabs } from "./pool-record-tabs";
 import { AddPoolVoucherSheet } from "./ui/add-pool-voucher-sheet";
+import { EditPoolProfileSheet } from "./ui/edit-pool-profile-sheet";
 import { PoolActivityChart } from "./ui/pool-activity-chart";
 import { PoolAdvisories } from "./ui/pool-advisories";
 import { PoolHeader } from "./ui/pool-header";
@@ -54,6 +55,7 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
   // use-pool-vouchers.ts for why that lag exists at all.
   const [settling, setSettling] = useState<SettlingVoucher | null>(null);
   const [addingVoucher, setAddingVoucher] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   const vouchersQuery = usePoolVouchers(address, settling);
   const activityQuery = useQuery(
@@ -97,7 +99,11 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
     <div className="flex flex-col gap-6">
       {poolState.kind === "stale" ? <StaleNotice message={poolState.message} /> : null}
 
-      <PoolHeader pool={pool} onAddVoucher={() => setAddingVoucher(true)} />
+      <PoolHeader
+        pool={pool}
+        onAddVoucher={() => setAddingVoucher(true)}
+        onEditProfile={() => setEditingProfile(true)}
+      />
 
       <PoolAdvisories advisories={poolAdvisories(pool, composition, { vouchersAvailable })} />
 
@@ -144,6 +150,12 @@ export function PoolDetailPage({ address, search }: { address: string; search: P
         open={addingVoucher}
         onClose={() => setAddingVoucher(false)}
         onAdded={(tokenAddress) => setSettling(settlingVoucher(tokenAddress))}
+      />
+
+      <EditPoolProfileSheet
+        pool={pool}
+        open={editingProfile}
+        onClose={() => setEditingProfile(false)}
       />
     </div>
   );

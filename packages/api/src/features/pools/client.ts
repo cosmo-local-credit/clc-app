@@ -88,6 +88,27 @@ export type UserPool = {
   updatedAt?: string;
 };
 
+/**
+ * A pool's editable off-chain record.
+ *
+ * Assign-all, matching the endpoint: clc-core writes every column, so a caller
+ * sends the whole record and an omitted field clears rather than preserves.
+ * Nothing here mirrors SwapPool — name, symbol, decimals and the dependency
+ * addresses come from the chain and cannot be edited into disagreement with it.
+ */
+export type PoolProfileUpdate = {
+  description: string;
+  unitOfAccount: string;
+  email: string;
+  website: string;
+  phone: string;
+  terms: string;
+  locationName: string;
+  geoLat: number | null;
+  geoLng: number | null;
+  tags: string[];
+};
+
 export type PoolVoucher = {
   id: string;
   chainId: number | null;
@@ -319,6 +340,43 @@ export function createPoolsClient(http: HttpClient) {
       return pool;
     },
 
+    /**
+     * Saves an operator's edits to a pool's catalog record.
+     *
+     * Empty strings are sent as null: the columns are nullable and "no email" is
+     * absence, not an empty string that every consumer would then have to treat
+     * as absence anyway. Coordinates travel as a pair or not at all, which is
+     * what `pools_geo_valid` enforces at the database.
+     */
+    async updatePoolProfile(
+      address: string,
+      profile: PoolProfileUpdate,
+      signal?: AbortSignal,
+    ): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/admin/pools/${encodeURIComponent(address)}/profile`,
+        {
+          method: "PUT",
+          signal,
+          body: JSON.stringify({
+            description: emptyToNull(profile.description),
+            unitOfAccount: emptyToNull(profile.unitOfAccount),
+            email: emptyToNull(profile.email),
+            website: emptyToNull(profile.website),
+            phone: emptyToNull(profile.phone),
+            terms: emptyToNull(profile.terms),
+            locationName: emptyToNull(profile.locationName),
+            geoLat: profile.geoLat,
+            geoLng: profile.geoLng,
+            tags: profile.tags,
+          }),
+        },
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool update response did not include a valid address.");
+      return pool;
+    },
+
     async getPoolVouchers(
       poolAddress: string,
       params: CursorParams,
@@ -347,6 +405,11 @@ export function createPoolsClient(http: HttpClient) {
  */
 function normalizePoolQuoterType(value: unknown): PoolQuoterType | null {
   return POOL_QUOTER_TYPES.find((candidate) => candidate === value) ?? null;
+}
+
+function emptyToNull(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
 }
 
 function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet | null {
