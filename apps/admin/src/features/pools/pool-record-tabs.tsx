@@ -6,7 +6,6 @@ import { poolOfferingsQueryOptions } from "@clc/api/features/offerings/queries";
 import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import type { ReactNode } from "react";
 
 import {
   AddressCell,
@@ -15,6 +14,7 @@ import {
   TxLink,
   VoucherCell,
 } from "#/components/admin/chain-cells";
+import { RecordPanel } from "#/components/admin/record-panel";
 import { SectionState } from "#/components/admin/section-state";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
@@ -32,6 +32,7 @@ import type { DataState } from "#/lib/data-state";
 import { clcApi } from "#/lib/api";
 import { formatDateTime } from "#/lib/format";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
+import { isModifiedClick } from "#/lib/tab-navigation";
 import { useDataState } from "#/lib/use-data-state";
 import { cn } from "#/lib/utils";
 import { POOL_DETAIL_TABS, type PoolDetailSearch, type PoolDetailTab } from "./pool-detail-search";
@@ -102,7 +103,7 @@ export function PoolRecordTabs({
                 search={{ tab: candidate }}
                 aria-current={candidate === tab ? "page" : undefined}
                 onClick={(event) => {
-                  if (event.button === 0 && !isModified(event)) event.preventDefault();
+                  if (event.button === 0 && !isModifiedClick(event)) event.preventDefault();
                 }}
               />
             }
@@ -157,7 +158,7 @@ function VouchersPanel({
   const waiting = settling !== null && !hasVoucher(vouchers, settling.tokenAddress);
 
   return (
-    <Panel state={state}>
+    <RecordPanel state={state}>
       {waiting ? (
         <p className="border-border text-muted-foreground border-b px-4 py-2.5 text-xs">
           Waiting for the indexer to record the voucher just added. The transaction has already
@@ -215,7 +216,7 @@ function VouchersPanel({
           </Table>
         </div>
       </SectionState>
-    </Panel>
+    </RecordPanel>
   );
 }
 
@@ -290,7 +291,7 @@ function FeedsPanel({
         <ContractAddress address={pool.quoterAddress} label="Copy quoter address" />
       </div>
 
-      <Panel state={state}>
+      <RecordPanel state={state}>
         <SectionState
           state={state}
           errorTitle="Could not load price feeds"
@@ -339,7 +340,7 @@ function FeedsPanel({
             </Table>
           </div>
         </SectionState>
-      </Panel>
+      </RecordPanel>
     </>
   );
 }
@@ -359,7 +360,7 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
   const offerings = query.data?.offerings ?? [];
 
   return (
-    <Panel state={state}>
+    <RecordPanel state={state}>
       <SectionState
         state={state}
         errorTitle="Could not load offerings"
@@ -387,7 +388,7 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
           </Table>
         </div>
       </SectionState>
-    </Panel>
+    </RecordPanel>
   );
 }
 
@@ -450,7 +451,7 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
         </Link>
       </div>
 
-      <Panel state={state}>
+      <RecordPanel state={state}>
         <SectionState
           state={state}
           errorTitle="Could not load activity"
@@ -480,7 +481,7 @@ function ActivityPanel({ pool }: { pool: UserPool }) {
             </Table>
           </div>
         </SectionState>
-      </Panel>
+      </RecordPanel>
     </>
   );
 }
@@ -518,35 +519,4 @@ function ActivityRow({ transaction }: { transaction: AdminPoolTransaction }) {
       </TableCell>
     </TableRow>
   );
-}
-
-/**
- * A record panel's body, and its one padding rule.
- *
- * A table fills the panel edge to edge — its header row reads as the panel's own
- * top rule — while the loading block, error and empty state SectionState renders
- * instead are inset so they do not sit flush against the frame. The `stale` case
- * is the only one that renders both, so the notice above the rows is inset on its
- * own.
- */
-function Panel({ state, children }: { state: DataState; children: ReactNode }) {
-  return (
-    <div
-      className={cn(
-        state.kind !== "ready" && state.kind !== "stale" && "p-4",
-        "[&>[data-slot=alert]]:m-4",
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-function isModified(event: {
-  metaKey: boolean;
-  ctrlKey: boolean;
-  shiftKey: boolean;
-  altKey: boolean;
-}) {
-  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }

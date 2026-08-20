@@ -8,20 +8,32 @@ import { Skeleton } from "#/components/ui/skeleton";
 import { reverseLocation } from "#/lib/geo-client";
 
 /**
- * Directory place for a pool: the pin is the coordinate input, the name is
- * the label stored next to it.
+ * The console's place editor: the pin is the coordinate input, the name is the
+ * label stored next to it.
  *
  * A click reverse-geocodes the point so the two stay a pair. The name stays
- * editable afterwards — a pool's directory label is often a market or ward,
- * not the ArcGIS street string — but a later pin still replaces it so the
- * label cannot describe the previous place.
+ * editable afterwards — a directory label is often a market or a ward, not the
+ * ArcGIS street string — but a later pin still replaces it, so the label cannot
+ * end up describing the previous place.
+ *
+ * When the geocoder cannot name a point the name is **cleared** rather than left
+ * alone. A stale label against a fresh pin is the one output worse than an empty
+ * field: both halves look filled in, and the pair each consumer's schema then
+ * saves is internally inconsistent with nothing on screen to say which half is
+ * wrong. Cleared, the pair rule blocks the save until the operator names the
+ * place or moves the pin.
+ *
+ * Shared by the pool publish form, the pool record sheet and the account profile
+ * sheet. Nothing here is per-resource: the caller owns the field names, the
+ * validation and what an empty pair means on its endpoint.
  */
-export function PoolLocationField({
+export function LocationField({
   name,
   latitude,
   longitude,
   nameError,
   coordinateError,
+  clearable = true,
   onNameChange,
   onNameBlur,
   onCoordinatesChange,
@@ -31,6 +43,15 @@ export function PoolLocationField({
   longitude: string;
   nameError: string | null;
   coordinateError: string | null;
+  /**
+   * Whether the pin can be removed outright.
+   *
+   * True where the endpoint accepts an empty pair, as the pool's does. False on
+   * an account, where `AdminUserProfile` can only carry a location or omit one —
+   * omitting it leaves whatever is stored in place, so a Clear pin button there
+   * would report a removal that never happened.
+   */
+  clearable?: boolean;
   onNameChange: (value: string) => void;
   onNameBlur: () => void;
   onCoordinatesChange: (latitude: string, longitude: string) => void;
@@ -46,6 +67,8 @@ export function PoolLocationField({
   const hasPin = lat !== null && lng !== null;
 
   async function handlePin(nextLat: number, nextLng: number) {
+    // One in-flight lookup at a time: a second click must win, and an answer for
+    // a pin the operator has already moved off must not land in the field.
     lookupRef.current?.abort();
     const lookup = new AbortController();
     lookupRef.current = lookup;
@@ -58,8 +81,8 @@ export function PoolLocationField({
     if (lookup.signal.aborted) return;
 
     setResolving(false);
-    if (resolved) onNameChange(resolved);
-    else setUnnamed(true);
+    onNameChange(resolved ?? "");
+    if (!resolved) setUnnamed(true);
   }
 
   function clearPin() {
@@ -107,9 +130,11 @@ export function PoolLocationField({
           <p className="font-data text-muted-foreground text-xs">
             {lat.toFixed(5)}, {lng.toFixed(5)}
           </p>
-          <Button type="button" variant="ghost" size="xs" onClick={clearPin}>
-            Clear pin
-          </Button>
+          {clearable ? (
+            <Button type="button" variant="ghost" size="xs" onClick={clearPin}>
+              Clear pin
+            </Button>
+          ) : null}
         </div>
       ) : (
         <p className="text-muted-foreground text-xs">Click the map to drop a pin.</p>
