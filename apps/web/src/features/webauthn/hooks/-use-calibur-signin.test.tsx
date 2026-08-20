@@ -23,10 +23,8 @@ vi.mock("@clc/api/features/auth/client", async (importOriginal) => {
 
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
-vi.mock("#/lib/api", async () => ({
-  clcApi: {
-    auth: await import("@clc/api/features/auth/client"),
-  },
+vi.mock("#/lib/api/auth", async () => ({
+  authClient: await import("@clc/api/features/auth/client"),
 }));
 
 import { useCaliburSignin } from "./use-calibur-signin";

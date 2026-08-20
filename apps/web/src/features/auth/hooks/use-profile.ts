@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
 import { profileQueryOptions } from "@clc/api/features/auth/queries";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 /**
  * This app's profile read.
@@ -16,7 +16,7 @@ export function useAuthProfile() {
   const { address } = useConnection();
 
   return useQuery({
-    ...profileQueryOptions(clcApi.auth, address),
+    ...profileQueryOptions(authClient, address),
     enabled: !!address,
     retry: false,
   });

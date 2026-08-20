@@ -5,7 +5,7 @@ import {
   accountTransfersInfiniteQueryOptions,
   latestAccountTokensQueryOptions,
 } from "@clc/api/features/accounts/queries";
-import { clcApi } from "#/lib/api";
+import { accountsClient } from "#/lib/api/accounts";
 
 const DEFAULT_PAGE_SIZE = 20;
 const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;
@@ -53,7 +53,7 @@ export const accountWalletQueryKeys = {
 /** Backs the wallet screen's "Your Vouchers" list — the one live balance poll. */
 export function useLatestAccountTokens(address: string | undefined) {
   return useQuery({
-    ...latestAccountTokensQueryOptions(clcApi.accounts, address),
+    ...latestAccountTokensQueryOptions(accountsClient, address),
     ...walletAccountQueryFreshness,
     ...pollOptions(true),
   });
@@ -64,7 +64,7 @@ export function useAccountTokensInfinite(
   { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
 ) {
   return useInfiniteQuery({
-    ...accountTokensInfiniteQueryOptions(clcApi.accounts, address, perPage),
+    ...accountTokensInfiniteQueryOptions(accountsClient, address, perPage),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
   });
@@ -75,7 +75,7 @@ export function useAccountTransfersInfinite(
   { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
 ) {
   return useInfiniteQuery({
-    ...accountTransfersInfiniteQueryOptions(clcApi.accounts, address, perPage),
+    ...accountTransfersInfiniteQueryOptions(accountsClient, address, perPage),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
   });

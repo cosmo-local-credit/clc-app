@@ -4,7 +4,7 @@ import type {
   CreatePretiumLinkInput,
   TriggerPretiumOnrampInput,
 } from "@clc/api/features/pretium/client";
-import { clcApi } from "#/lib/api";
+import { pretiumClient } from "#/lib/api/pretium";
 
 const PRETIUM_RATES_STALE_TIME_MS = 60_000;
 
@@ -33,7 +33,7 @@ export const pretiumQueryKeys = {
 export function usePretiumRates(enabled = true) {
   return useQuery({
     queryKey: pretiumQueryKeys.rates(),
-    queryFn: () => clcApi.pretium.getPretiumRates(),
+    queryFn: () => pretiumClient.getPretiumRates(),
     enabled,
     staleTime: PRETIUM_RATES_STALE_TIME_MS,
     retry: false,
@@ -43,7 +43,7 @@ export function usePretiumRates(enabled = true) {
 export function usePretiumTransactionsByAddress(address: `0x${string}` | undefined) {
   return useQuery({
     queryKey: pretiumQueryKeys.transactionsByAddress(address),
-    queryFn: () => clcApi.pretium.getPretiumTransactionsByAddress(requireAddress(address)),
+    queryFn: () => pretiumClient.getPretiumTransactionsByAddress(requireAddress(address)),
     enabled: !!address,
     ...pretiumHistoryFreshness,
   });
@@ -52,7 +52,7 @@ export function usePretiumTransactionsByAddress(address: `0x${string}` | undefin
 export function usePretiumLinkByAddress(address: `0x${string}` | undefined, enabled: boolean) {
   return useQuery({
     queryKey: pretiumQueryKeys.linkByAddress(address),
-    queryFn: () => clcApi.pretium.getPretiumLinkByAddress(requireAddress(address)),
+    queryFn: () => pretiumClient.getPretiumLinkByAddress(requireAddress(address)),
     enabled: enabled && !!address,
     // Always re-check when the sheet opens so a profile phone change is caught.
     staleTime: 0,
@@ -64,7 +64,7 @@ export function usePretiumLinkByAddress(address: `0x${string}` | undefined, enab
 export function useCreatePretiumLink() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreatePretiumLinkInput) => clcApi.pretium.createPretiumLink(input),
+    mutationFn: (input: CreatePretiumLinkInput) => pretiumClient.createPretiumLink(input),
     onSuccess: (_result, input) => {
       void queryClient.invalidateQueries({
         queryKey: pretiumQueryKeys.linkByAddress(input.publicKey),
@@ -76,7 +76,7 @@ export function useCreatePretiumLink() {
 export function useTriggerPretiumOnramp() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: TriggerPretiumOnrampInput) => clcApi.pretium.triggerPretiumOnramp(input),
+    mutationFn: (input: TriggerPretiumOnrampInput) => pretiumClient.triggerPretiumOnramp(input),
     onSuccess: (_result, input) => {
       void queryClient.invalidateQueries({
         queryKey: pretiumQueryKeys.transactionsByAddress(input.address),

@@ -9,10 +9,11 @@ import { useVoucherReportsInfinite } from "./use-reports";
 
 const getFilteredReports = vi.hoisted(() => vi.fn());
 
-vi.mock("@clc/api/features/reports/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@clc/api/features/reports/client")>();
-  return { ...actual, getFilteredReports };
-});
+vi.mock("#/lib/api/reports", () => ({
+  reportsClient: {
+    getFilteredReports: (...args: unknown[]) => getFilteredReports(...args),
+  },
+}));
 
 vi.mock("#/lib/geo-client", () => ({
   reverseLocation: vi.fn(),

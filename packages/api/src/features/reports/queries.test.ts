@@ -13,6 +13,7 @@ describe("reportKeys", () => {
       reportKeys.feed(20),
       reportKeys.detail("42"),
       reportKeys.filtered(null, 20),
+      reportKeys.voucherFeed(undefined, 20),
       reportKeys.facetVocabulary(),
     ]) {
       expect(key.slice(0, reportKeys.all.length)).toEqual([...reportKeys.all]);

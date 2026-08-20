@@ -144,6 +144,65 @@ describe("listUsers", () => {
   });
 });
 
+describe("pool administration", () => {
+  it("pages an account's pools through the admin route and preserves dropped-row counts", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        pools: [{ address: ADDRESS, name: "Kawangware", symbol: "KAW" }, { name: "Invalid" }],
+        first: 10,
+        last: 11,
+      }),
+    );
+
+    const page = await client().getAccountPools(ADDRESS, {
+      perPage: 25,
+      cursor: 9,
+      next: true,
+    });
+
+    expect(lastCall().url).toBe(
+      `${BASE_URL}/api/v2/admin/users/${ADDRESS}/pools?perPage=25&cursor=9&next=true`,
+    );
+    expect(page.pools).toHaveLength(1);
+    expect(page).toMatchObject({ first: 10, last: 11, receivedCount: 2 });
+  });
+
+  it("PUTs the whole pool profile and sends blanks as null", async () => {
+    fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS } }));
+
+    await client().updatePoolProfile(ADDRESS, {
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: "  ",
+      website: "",
+      phone: " +254700000000 ",
+      terms: "",
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+
+    const { url, init } = lastCall();
+    expect(url).toBe(`${BASE_URL}/api/v2/admin/pools/${ADDRESS}/profile`);
+    expect(init.method).toBe("PUT");
+    expect(typeof init.body).toBe("string");
+    if (typeof init.body !== "string") throw new Error("Expected a JSON request body");
+    expect(JSON.parse(init.body)).toEqual({
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: null,
+      website: null,
+      phone: "+254700000000",
+      terms: null,
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+  });
+});
+
 describe("getStats", () => {
   const payload = {
     range: {

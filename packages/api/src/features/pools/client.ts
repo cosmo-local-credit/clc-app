@@ -273,28 +273,6 @@ export function createPoolsClient(http: HttpClient) {
       };
     },
 
-    /**
-     * The pools one account belongs to, from the superadmin route. Kept beside the
-     * public pool reads so a membership row goes through the same normalizer as a
-     * catalog row rather than growing a second shape.
-     */
-    async getAccountPools(
-      address: string,
-      params: CursorParams,
-      signal?: AbortSignal,
-    ): Promise<UserPoolPage> {
-      const result = await http.request<BackendPoolPage>(
-        `/api/v2/admin/users/${encodeURIComponent(address)}/pools${formatCursorQuery(params)}`,
-        poolReadRequest(signal),
-      );
-      const received = result.pools ?? [];
-      return {
-        ...result,
-        pools: received.map(normalizeUserPool).filter(isPresent),
-        receivedCount: received.length,
-      };
-    },
-
     async getFilteredPools(
       { filter, facets, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,
@@ -340,43 +318,6 @@ export function createPoolsClient(http: HttpClient) {
       return pool;
     },
 
-    /**
-     * Saves an operator's edits to a pool's catalog record.
-     *
-     * Empty strings are sent as null: the columns are nullable and "no email" is
-     * absence, not an empty string that every consumer would then have to treat
-     * as absence anyway. Coordinates travel as a pair or not at all, which is
-     * what `pools_geo_valid` enforces at the database.
-     */
-    async updatePoolProfile(
-      address: string,
-      profile: PoolProfileUpdate,
-      signal?: AbortSignal,
-    ): Promise<UserPool> {
-      const result = await http.request<BackendPoolEnvelope>(
-        `/api/v2/admin/pools/${encodeURIComponent(address)}/profile`,
-        {
-          method: "PUT",
-          signal,
-          body: JSON.stringify({
-            description: emptyToNull(profile.description),
-            unitOfAccount: emptyToNull(profile.unitOfAccount),
-            email: emptyToNull(profile.email),
-            website: emptyToNull(profile.website),
-            phone: emptyToNull(profile.phone),
-            terms: emptyToNull(profile.terms),
-            locationName: emptyToNull(profile.locationName),
-            geoLat: profile.geoLat,
-            geoLng: profile.geoLng,
-            tags: profile.tags,
-          }),
-        },
-      );
-      const pool = normalizeUserPool(result.pool ?? result);
-      if (!pool) throw new Error("Pool update response did not include a valid address.");
-      return pool;
-    },
-
     async getPoolVouchers(
       poolAddress: string,
       params: CursorParams,
@@ -405,11 +346,6 @@ export function createPoolsClient(http: HttpClient) {
  */
 function normalizePoolQuoterType(value: unknown): PoolQuoterType | null {
   return POOL_QUOTER_TYPES.find((candidate) => candidate === value) ?? null;
-}
-
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
 }
 
 function normalizePoolVoucherFacet(facet: BackendVoucherFacet): PoolVoucherFacet | null {

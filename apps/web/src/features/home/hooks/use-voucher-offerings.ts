@@ -5,7 +5,7 @@ import {
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
-import { clcApi } from "#/lib/api";
+import { offeringsClient } from "#/lib/api/offerings";
 
 /** The imported catalog's largest single-voucher offering count is 19. */
 const VOUCHER_OFFERINGS_PAGE_SIZE = 20;
@@ -15,7 +15,7 @@ export function useVoucherOfferingsInfinite(
   perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
 ) {
   return useInfiniteQuery({
-    ...voucherOfferingsInfiniteQueryOptions(clcApi.offerings, voucherAddress, perPage),
+    ...voucherOfferingsInfiniteQueryOptions(offeringsClient, voucherAddress, perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
 }
@@ -32,7 +32,7 @@ export function usePoolOfferingsInfinite(
   perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
 ) {
   return useInfiniteQuery({
-    ...poolOfferingsInfiniteQueryOptions(clcApi.offerings, poolAddress, perPage),
+    ...poolOfferingsInfiniteQueryOptions(offeringsClient, poolAddress, perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
 }

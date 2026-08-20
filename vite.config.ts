@@ -176,7 +176,7 @@ export default defineConfig({
       {
         // The apps are independently deployable and must never reach into each
         // other. Shared code goes through @clc/core (pure) or @clc/api (network).
-        files: ["apps/web/src/**", "apps/admin/src/**"],
+        files: ["apps/admin/src/**"],
         rules: {
           "no-restricted-imports": [
             "error",
@@ -196,6 +196,47 @@ export default defineConfig({
                   ],
                   message:
                     "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // Web keeps backend resources route-scoped. The aggregate and admin
+        // client are valid in the desktop console, never in the mobile graph.
+        files: ["apps/web/src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: [
+                {
+                  name: "@clc/api/client/create-clc-api",
+                  message:
+                    "Use the exact #/lib/api/<resource> module so web route splitting is preserved.",
+                },
+                {
+                  name: "@clc/api/features/admin",
+                  message: "Admin endpoints belong to apps/admin, never apps/web.",
+                },
+              ],
+              patterns: [
+                {
+                  group: [
+                    "**/web/src/**",
+                    "**/admin/src/**",
+                    "@clc/web",
+                    "@clc/web/**",
+                    "@clc/admin",
+                    "@clc/admin/**",
+                  ],
+                  message:
+                    "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+                },
+                {
+                  group: ["@clc/api/features/admin/**"],
+                  message: "Admin endpoints belong to apps/admin, never apps/web.",
                 },
               ],
             },

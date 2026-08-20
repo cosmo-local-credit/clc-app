@@ -4,7 +4,7 @@ import { useConnection } from "wagmi";
 import { BackendApiError } from "@clc/api/client/errors";
 import { type SessionResult } from "@clc/api/features/auth/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 type AuthStatusState =
   | "loading"
@@ -37,7 +37,7 @@ export function useAuthStatus(): AuthStatus {
   const { address, chainId, connector, status } = useConnection();
   const sessionQuery = useQuery({
     queryKey: authSessionQueryKeyForAddress(address),
-    queryFn: () => clcApi.auth.getSession(),
+    queryFn: () => authClient.getSession(),
     enabled: reconnectAttempted && !!address,
     retry: false,
   });

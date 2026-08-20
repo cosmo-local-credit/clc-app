@@ -120,10 +120,8 @@ vi.mock("#/features/home/ui/market-map.lazy", () => ({
 
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
-vi.mock("#/lib/api", async () => ({
-  clcApi: {
-    market: await import("@clc/api/features/market/client"),
-  },
+vi.mock("#/lib/api/market", async () => ({
+  marketClient: await import("@clc/api/features/market/client"),
 }));
 
 import { MarketPage } from "#/features/home/ui/market-page";

@@ -13,10 +13,8 @@ vi.mock("@clc/api/features/accounts/client", () => mocks);
 
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
-vi.mock("#/lib/api", async () => ({
-  clcApi: {
-    accounts: await import("@clc/api/features/accounts/client"),
-  },
+vi.mock("#/lib/api/accounts", async () => ({
+  accountsClient: await import("@clc/api/features/accounts/client"),
 }));
 
 import { useAccountTokensInfinite, useAccountTransfersInfinite } from "./use-account-balances";

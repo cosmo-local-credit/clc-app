@@ -6,7 +6,7 @@ import { isRetryableBackendError } from "@clc/api/client/errors";
 import { voucherKeys } from "@clc/api/features/market/queries";
 import { type MarketVoucher } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
-import { clcApi } from "#/lib/api";
+import { marketClient } from "#/lib/api/market";
 
 /** Below this the list stays closed — a one-character query matches most of the catalog. */
 export const VOUCHER_SEARCH_MIN_CHARS = 2;
@@ -61,7 +61,7 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
         vouchers: [],
         voucherMatch: "any",
       };
-      const page = await clcApi.market.getFilteredMarketVouchers(
+      const page = await marketClient.getFilteredMarketVouchers(
         { perPage: VOUCHER_SEARCH_LIMIT, filter },
         signal,
       );

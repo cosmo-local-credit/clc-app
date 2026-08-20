@@ -12,7 +12,7 @@ const getTokenTags = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
-    pools: { updatePoolProfile: (...args: unknown[]) => updatePoolProfile(...args) },
+    admin: { updatePoolProfile: (...args: unknown[]) => updatePoolProfile(...args) },
     deployments: { getTokenTags: (...args: unknown[]) => getTokenTags(...args) },
   },
 }));

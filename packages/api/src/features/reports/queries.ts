@@ -1,4 +1,8 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type CatalogFilter,
+  type VoucherRef,
+  serializeVoucherRef,
+} from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { ReportCursor, ReportsClient } from "./client";
 
@@ -36,6 +40,21 @@ export const reportKeys = {
   /** Reports authored by one account. */
   byAuthor: (author: string, perPage: number) =>
     ["clc", "reports", "author", author.toLowerCase(), perPage] as const,
+
+  /**
+   * Infinite feed of reports linked to one voucher.
+   *
+   * Distinct from `filtered`: that key caches a fully assembled catalog page used
+   * by the posts search, not a cursor-walked infinite query.
+   */
+  voucherFeed: (voucher: VoucherRef | undefined, perPage: number) =>
+    [
+      "clc",
+      "reports",
+      "voucher",
+      voucher ? serializeVoucherRef(voucher) : "none",
+      perPage,
+    ] as const,
   facetVocabulary: () => ["clc", "reports", "facet-vocabulary"] as const,
 } as const;
 
@@ -43,6 +62,30 @@ export function reportFeedInfiniteQueryOptions(reports: ReportsClient, perPage: 
   return infiniteQueryOptions({
     queryKey: reportKeys.feed(perPage),
     queryFn: ({ pageParam, signal }) => reports.getReports({ perPage, cursor: pageParam }, signal),
+    initialPageParam: undefined as ReportCursor | undefined,
+    getNextPageParam: (lastPage) => lastPage.next ?? undefined,
+  });
+}
+
+/** Cursor-walked reports for one voucher, as the voucher detail posts tab reads them. */
+export function reportVoucherFeedInfiniteQueryOptions(
+  reports: ReportsClient,
+  voucher: VoucherRef | undefined,
+  perPage: number,
+) {
+  return infiniteQueryOptions({
+    queryKey: reportKeys.voucherFeed(voucher, perPage),
+    queryFn: ({ pageParam, signal }) => {
+      if (!voucher) throw new Error("Voucher is required.");
+      return reports.getFilteredReports(
+        {
+          perPage,
+          cursor: pageParam,
+          filter: { ...EMPTY_REPORT_FILTER, vouchers: [voucher] },
+        },
+        signal,
+      );
+    },
     initialPageParam: undefined as ReportCursor | undefined,
     getNextPageParam: (lastPage) => lastPage.next ?? undefined,
   });

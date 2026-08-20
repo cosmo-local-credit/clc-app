@@ -25,7 +25,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { usePaperWalletProtection } from "./paper-wallet-protection";
 import { usePaperWalletSetup } from "./paper-wallet-setup";
-import { clcApi } from "#/lib/api";
+import { authClient } from "#/lib/api/auth";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -150,7 +150,7 @@ export function OnboardingWalletStep({
   async function verifySession(): Promise<void> {
     const session = await queryClient.fetchQuery({
       queryKey: [...authSessionQueryKey, address.toLowerCase()],
-      queryFn: () => clcApi.auth.getSession(),
+      queryFn: () => authClient.getSession(),
     });
     if (!session || session.address.toLowerCase() !== address.toLowerCase()) {
       throw new Error(t`Session could not be verified. Try again.`);
