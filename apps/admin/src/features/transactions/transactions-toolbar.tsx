@@ -48,11 +48,11 @@ export function ChainTxToolbar<TType extends string>({
             onTypeChange(next === ALL_TYPES ? undefined : next);
           }}
           aria-label="Transaction types"
-          className="h-8 items-center border border-border bg-card p-0.5"
+          className="border-border bg-card h-9 items-center border p-0.5"
         >
           <ToggleGroupItem
             value={ALL_TYPES}
-            className="h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase text-muted-foreground data-[pressed]:bg-muted data-[pressed]:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
+            className="text-muted-foreground data-[pressed]:bg-muted data-[pressed]:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase"
           >
             All
           </ToggleGroupItem>

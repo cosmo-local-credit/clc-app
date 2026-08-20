@@ -124,7 +124,7 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6">
+    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex items-center gap-2 self-center">
           {/* The brand mark already ships in this app's public/ as the favicon. */}
@@ -151,8 +151,8 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
           </Alert>
         ) : null}
 
-        <div className="border border-border bg-card">
-          <div className="border-b border-border p-6 text-center">
+        <div className="border-border bg-card border">
+          <div className="border-border border-b p-6 text-center">
             <h1 className="font-heading text-lg font-semibold tracking-tight">Sign in</h1>
           </div>
 
@@ -215,11 +215,11 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
 
                 {passkey.status === "available" ? (
                   <div className="flex items-center gap-3">
-                    <span className="h-px flex-1 bg-border" />
-                    <span className="font-mono text-[0.6875rem] tracking-[0.14em] text-muted-foreground uppercase">
+                    <span className="bg-border h-px flex-1" />
+                    <span className="text-muted-foreground font-mono text-[0.6875rem] tracking-[0.14em] uppercase">
                       or paper wallet
                     </span>
-                    <span className="h-px flex-1 bg-border" />
+                    <span className="bg-border h-px flex-1" />
                   </div>
                 ) : (
                   <SectionLabel>Paper wallet</SectionLabel>
@@ -228,16 +228,16 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
                 <PaperWalletReader onDecoded={consumePayload} disabled={busy} />
 
                 {privateKeySignin.isPending ? (
-                  <p className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
+                  <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
                     <FiLoader className="size-4 animate-spin" />
                     Signing in...
                   </p>
                 ) : null}
 
-                <div className="border-t border-border pt-3">
+                <div className="border-border border-t pt-3">
                   <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-1 text-muted-foreground text-xs underline-offset-4 hover:text-foreground hover:underline"
+                    className="text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-1 text-xs underline-offset-4 hover:underline"
                     aria-expanded={showAdvanced}
                     onClick={() => {
                       setShowAdvanced((open) => !open);
@@ -301,7 +301,7 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
 function PasskeyUnavailable({ reason }: { reason: PasskeyUnsupportedReason }) {
   if (reason === "insecure-context" || reason === "no-webauthn") {
     return (
-      <p className="border border-border bg-muted p-3 text-muted-foreground text-xs">
+      <p className="border-border bg-muted text-muted-foreground border p-3 text-xs">
         {reason === "insecure-context"
           ? "Passkeys need https or localhost."
           : "No passkey support in this browser."}
@@ -310,9 +310,9 @@ function PasskeyUnavailable({ reason }: { reason: PasskeyUnsupportedReason }) {
   }
 
   return (
-    <div className="flex items-center gap-2 border border-border bg-muted p-3">
-      <FaChrome className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-      <FaSafari className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+    <div className="border-border bg-muted flex items-center gap-2 border p-3">
+      <FaChrome className="text-muted-foreground size-4 shrink-0" aria-hidden />
+      <FaSafari className="text-muted-foreground size-4 shrink-0" aria-hidden />
       <span className="text-muted-foreground text-xs">
         {reason === "wrong-browser"
           ? "Passkey needs Chrome or Safari"

@@ -92,7 +92,7 @@ describe("PoolTransactionsPage", () => {
     renderPage([swap]);
 
     const types = await screen.findByLabelText("Transaction types");
-    expect(types.className).toContain("h-8");
+    expect(types.className).toContain("h-9");
     expect(types.className).toContain("p-0.5");
     expect(
       screen.getByRole("textbox", { name: "Hash, initiator, pool, or voucher" }).className,

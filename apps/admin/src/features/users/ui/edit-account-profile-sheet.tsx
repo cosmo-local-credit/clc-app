@@ -157,8 +157,8 @@ export function EditAccountProfileSheet({
           shadow, which is desktop layering this console does not use. */}
       {/* No aria-label: SheetTitle below is the accessible name, and two sources
           for it is one that can drift. */}
-      <SheetContent className="w-full bg-card shadow-none data-[side=right]:sm:max-w-[28rem]">
-        <SheetHeader className="border-b border-border">
+      <SheetContent className="bg-card w-full shadow-none data-[side=right]:sm:max-w-[28rem]">
+        <SheetHeader className="border-border border-b">
           <SheetTitle>Edit profile</SheetTitle>
           <SheetDescription>{account.ethereumAddress}</SheetDescription>
         </SheetHeader>
@@ -233,7 +233,7 @@ export function EditAccountProfileSheet({
               )}
             </form.Field>
 
-            <div className="flex flex-col gap-3 border-t border-border pt-4">
+            <div className="border-border flex flex-col gap-3 border-t pt-4">
               <SectionLabel>Deployment limits</SectionLabel>
               <div className="grid grid-cols-2 gap-3">
                 <form.Field name="maxPools">
@@ -269,7 +269,7 @@ export function EditAccountProfileSheet({
             </div>
           </div>
 
-          <div className="sticky bottom-0 flex justify-end gap-2 border-t border-border bg-card p-4">
+          <div className="border-border bg-card sticky bottom-0 flex justify-end gap-2 border-t p-4">
             <Button type="button" variant="ghost" onClick={requestClose}>
               Cancel
             </Button>
@@ -299,9 +299,9 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id}>{label}</Label>
       {children}
-      {hint && !error ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint && !error ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
       {error ? (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-destructive text-xs">
           {error}
         </p>
       ) : null}

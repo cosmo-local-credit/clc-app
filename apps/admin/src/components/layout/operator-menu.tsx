@@ -49,17 +49,17 @@ export function OperatorMenu() {
         }
       >
         {profile.isPending && !name ? (
-          <span className="inline-block h-3.5 w-24 animate-pulse bg-muted" aria-hidden />
+          <span className="bg-muted inline-block h-3.5 w-24 animate-pulse" aria-hidden />
         ) : (
-          <span className="truncate font-heading text-sm font-medium tracking-tight">{label}</span>
+          <span className="font-heading truncate text-sm font-medium tracking-tight">{label}</span>
         )}
-        <ChevronDownIcon className="size-3.5 text-muted-foreground transition-transform group-aria-expanded/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground size-3.5 transition-transform group-aria-expanded/button:rotate-180" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56 min-w-56">
         {name ? (
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="font-heading text-sm font-semibold tracking-tight text-foreground">
+            <DropdownMenuLabel className="font-heading text-foreground text-sm font-semibold tracking-tight">
               {name}
             </DropdownMenuLabel>
           </DropdownMenuGroup>

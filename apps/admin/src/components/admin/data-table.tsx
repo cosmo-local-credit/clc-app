@@ -102,7 +102,7 @@ export function DataTable<TData>({
   if (data.length === 0 && emptyState) return <>{emptyState}</>;
 
   return (
-    <div className={cn("overflow-hidden border border-border bg-card", className)}>
+    <div className={cn("border-border bg-card overflow-hidden border", className)}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -133,7 +133,7 @@ export function DataTable<TData>({
                       <button
                         type="button"
                         onClick={() => onSortChange?.(header.column.id)}
-                        className="inline-flex items-center gap-1 outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring"
+                        className="hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-1 outline-none focus-visible:ring-1"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {sorted === "asc" ? (
@@ -172,7 +172,7 @@ export function DataTable<TData>({
           ))}
         </TableBody>
       </Table>
-      {footer ? <div className="border-t border-border px-4 py-3">{footer}</div> : null}
+      {footer ? <div className="border-border border-t px-4 py-3">{footer}</div> : null}
     </div>
   );
 }

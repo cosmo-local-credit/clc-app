@@ -70,7 +70,7 @@ export function AccountHeader({
           and the name keep their size rather than shrinking to hold one row. */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-4">
-          <Avatar className="size-16 shrink-0 border border-border">
+          <Avatar className="border-border size-16 shrink-0 border">
             <AvatarFallback className="font-heading text-xl">{initials(name)}</AvatarFallback>
           </Avatar>
 
@@ -78,7 +78,7 @@ export function AccountHeader({
             <h1 className="min-w-0 break-words">{name}</h1>
 
             <div className="flex items-center gap-1">
-              <span className="font-data text-xs break-all text-muted-foreground">{address}</span>
+              <span className="font-data text-muted-foreground text-xs break-all">{address}</span>
               <CopyButton value={address} label="Copy address" />
             </div>
 
@@ -94,7 +94,7 @@ export function AccountHeader({
                 <Badge variant="outline" className="font-data text-xs">
                   ID {account.id}
                 </Badge>
-                <span className="font-data text-xs text-muted-foreground">
+                <span className="font-data text-muted-foreground text-xs">
                   Joined {formatDateTime(account.createdAt)}
                 </span>
               </div>

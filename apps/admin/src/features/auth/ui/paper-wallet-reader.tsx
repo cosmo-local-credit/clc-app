@@ -149,18 +149,18 @@ export function PaperWalletReader({
       */}
       <div
         id={READER_ELEMENT_ID}
-        className={mode === "camera" ? "border border-border bg-muted" : "sr-only size-0"}
+        className={mode === "camera" ? "border-border bg-muted border" : "sr-only size-0"}
       />
 
       {mode === "camera" ? (
         <div className="space-y-3">
           {cameraStarting ? (
-            <div className="flex h-16 items-center justify-center gap-2 border border-border bg-card text-muted-foreground text-sm">
+            <div className="border-border bg-card text-muted-foreground flex h-16 items-center justify-center gap-2 border text-sm">
               <FiLoader className="size-4 animate-spin" />
               Starting camera...
             </div>
           ) : (
-            <p className="text-center text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-center text-sm">
               Hold the paper wallet's QR code up to the camera.
             </p>
           )}
