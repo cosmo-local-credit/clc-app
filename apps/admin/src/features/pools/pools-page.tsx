@@ -3,6 +3,8 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { HiOutlinePlus, HiOutlineRefresh } from "react-icons/hi";
+import { Button } from "#/components/ui/button";
 import { EmptyState } from "#/components/admin/empty-state";
 import { DataTable } from "#/components/admin/data-table";
 import { LoadingBlock } from "#/components/admin/loading-block";
@@ -27,7 +29,7 @@ const columns: Array<ColumnDef<UserPool>> = [
     cell: ({ row }) => (
       <div className="min-w-0">
         <div className="truncate font-medium">{row.original.name}</div>
-        <div className="font-mono text-xs text-muted-foreground">{row.original.symbol}</div>
+        <div className="text-muted-foreground font-mono text-xs">{row.original.symbol}</div>
       </div>
     ),
   },
@@ -41,6 +43,7 @@ const columns: Array<ColumnDef<UserPool>> = [
       <Link
         to="/pools/$address"
         params={{ address: row.original.address }}
+        search={{ tab: "vouchers" }}
         className="font-data text-xs underline-offset-4 hover:underline"
         onClick={(event) => event.stopPropagation()}
       >
@@ -84,7 +87,7 @@ const columns: Array<ColumnDef<UserPool>> = [
           </Badge>
         ))}
         {row.original.tags.length > 3 ? (
-          <span className="font-data text-xs text-muted-foreground">
+          <span className="font-data text-muted-foreground text-xs">
             +{row.original.tags.length - 3}
           </span>
         ) : null}
@@ -124,16 +127,31 @@ export function PoolsPage({ search }: { search: TableSearch }) {
       <PageHeader
         title="Pools"
         actions={
-          <ListToolbar
-            search={search.q}
-            onSearchChange={(value) =>
-              void navigate({
-                to: "/pools",
-                search: filterSearch(search, { q: value || undefined }),
-              })
-            }
-            searchPlaceholder="Name, symbol, address"
-          />
+          <>
+            <ListToolbar
+              search={search.q}
+              onSearchChange={(value) =>
+                void navigate({
+                  to: "/pools",
+                  search: filterSearch(search, { q: value || undefined }),
+                })
+              }
+              searchPlaceholder="Name, symbol, address"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void poolsQuery.refetch()}
+              disabled={poolsQuery.isFetching}
+            >
+              <HiOutlineRefresh />
+              Refresh
+            </Button>
+            <Button nativeButton={false} render={<Link to="/pools/publish" />}>
+              <HiOutlinePlus />
+              Publish pool
+            </Button>
+          </>
         }
       />
 
@@ -151,16 +169,16 @@ export function PoolsPage({ search }: { search: TableSearch }) {
             sorting={table.sorting}
             onSortChange={table.onSortChange}
             onRowClick={(pool) =>
-              void navigate({ to: "/pools/$address", params: { address: pool.address } })
+              void navigate({
+                to: "/pools/$address",
+                params: { address: pool.address },
+                search: { tab: "vouchers" },
+              })
             }
             emptyState={
               <EmptyState
                 title={searched ? "No matching pools" : "No pools"}
-                description={
-                  searched
-                    ? "No indexed pool matches this search."
-                    : "The backend has not indexed any pools yet."
-                }
+                description={searched ? "No pool matches this search." : "No pools are available."}
               />
             }
             footer={

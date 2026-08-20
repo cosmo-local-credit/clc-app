@@ -1,49 +1,74 @@
-import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
-import { CopyButton } from "#/components/admin/copy-button";
-import { LoadingBlock } from "#/components/admin/loading-block";
-import { PageHeader } from "#/components/admin/page-header";
-import { SectionHeading } from "#/components/admin/section-heading";
-import { PageState } from "#/components/admin/page-state";
-import { SectionState } from "#/components/admin/section-state";
-import { StaleNotice } from "#/components/admin/stale-notice";
-import { StateBadge } from "#/components/admin/state-badge";
-import { Badge } from "#/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "#/components/ui/table";
-import { errorMessage } from "#/lib/data-state";
-import { formatDateTime, formatFeePpm } from "#/lib/format";
-import { useDataState } from "#/lib/use-data-state";
+import { adminPoolTransactionsQueryOptions } from "@clc/api/features/admin/queries";
 import { poolQueryOptions } from "@clc/api/features/pools/queries";
-import { poolVouchersQueryOptions } from "@clc/api/features/pools/queries";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { LoadingBlock } from "#/components/admin/loading-block";
+import { PageState } from "#/components/admin/page-state";
+import { StaleNotice } from "#/components/admin/stale-notice";
 import { clcApi } from "#/lib/api";
+import { errorMessage, isFigureAvailable } from "#/lib/data-state";
+import { useDataState } from "#/lib/use-data-state";
+import type { PoolDetailSearch } from "./pool-detail-search";
+import {
+  poolActivitySeries,
+  poolAdvisories,
+  poolComposition,
+  poolOfferSeries,
+} from "./pool-posture";
+import { PoolRecordTabs } from "./pool-record-tabs";
+import { AddPoolVoucherSheet } from "./ui/add-pool-voucher-sheet";
+import { PoolActivityChart } from "./ui/pool-activity-chart";
+import { PoolAdvisories } from "./ui/pool-advisories";
+import { PoolHeader } from "./ui/pool-header";
+import { PoolOffersChart } from "./ui/pool-offers-chart";
+import { PoolProfileCard } from "./ui/pool-profile-card";
+import { PoolSummaryMetrics } from "./ui/pool-summary-metrics";
+import { type SettlingVoucher, settlingVoucher, usePoolVouchers } from "./use-pool-vouchers";
 
-const VOUCHER_PAGE_SIZE = 100;
+/**
+ * The largest page clc-core serves. The chart buckets over it because there is
+ * no per-pool time series endpoint, so a bigger page is a longer honest window.
+ */
+const ACTIVITY_PAGE_SIZE = 100;
 
-export function PoolDetailPage({ address }: { address: string }) {
+/**
+ * One pool, as an operator reads it: what is wrong with it first, then what it
+ * is, then what it has been doing, then its records.
+ *
+ * Query orchestration stays here and the panels take data as props, matching the
+ * account screen: the voucher page feeds the summary tiles, the advisories, the
+ * vouchers table and the feed grouping, and fetching it once means those four
+ * can never disagree about what the pool contains.
+ *
+ * Everything on this screen is the catalog's view of the pool. The console holds
+ * no chain client, so a dependency address that clc-core never recorded is shown
+ * as unrecorded rather than guessed at — on SwapPool an unset pointer changes
+ * behaviour rather than disabling it, and inventing one would be the worse error.
+ */
+export function PoolDetailPage({ address, search }: { address: string; search: PoolDetailSearch }) {
   const poolQuery = useQuery(poolQueryOptions(clcApi.pools, address));
-  const vouchersQuery = useQuery(
-    poolVouchersQueryOptions(clcApi.pools, address, VOUCHER_PAGE_SIZE),
+
+  // Set when a voucher has been signed for but not yet projected into the
+  // catalog; it makes the voucher read poll until the row lands. See
+  // use-pool-vouchers.ts for why that lag exists at all.
+  const [settling, setSettling] = useState<SettlingVoucher | null>(null);
+  const [addingVoucher, setAddingVoucher] = useState(false);
+
+  const vouchersQuery = usePoolVouchers(address, settling);
+  const activityQuery = useQuery(
+    adminPoolTransactionsQueryOptions(clcApi.admin, {
+      perPage: ACTIVITY_PAGE_SIZE,
+      pool: address,
+    }),
   );
-  // Every hook must run before the early returns below, or hook order changes
-  // between the loading and loaded renders.
+
   const poolState = useDataState(poolQuery, () => false);
   const vouchersState = useDataState(vouchersQuery, (page) => page.vouchers.length === 0);
+  const activityState = useDataState(activityQuery, () => false);
 
   if (poolState.kind === "pending") return <LoadingBlock rows={8} />;
 
-  // Only a failure with nothing cached replaces the screen. A failed refresh over
-  // a pool that is still cached is `stale`: keep the screen and say so, rather
-  // than discarding a populated page an operator is working in.
   const pool = poolQuery.data;
   if (!pool) {
     return (
@@ -53,199 +78,73 @@ export function PoolDetailPage({ address }: { address: string }) {
       />
     );
   }
+
   const vouchers = vouchersQuery.data?.vouchers ?? [];
+  // False while the voucher page is in flight or after it failed, which turns
+  // every count derived from it into "unavailable" instead of a confident zero.
+  const vouchersAvailable = isFigureAvailable(vouchersState);
+  const composition = poolComposition(pool, vouchers);
+  const activity = poolActivitySeries(
+    activityQuery.data?.transactions ?? [],
+    {
+      receivedCount: activityQuery.data?.receivedCount ?? 0,
+      perPage: ACTIVITY_PAGE_SIZE,
+    },
+    new Date(),
+  );
 
   return (
     <div className="flex flex-col gap-6">
       {poolState.kind === "stale" ? <StaleNotice message={poolState.message} /> : null}
-      <PageHeader
-        breadcrumbs={
-          <AppBreadcrumb items={[{ label: "Pools", to: "/pools" }, { label: pool.name }]} />
-        }
-        title={pool.name}
-        description={pool.description}
-        actions={
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-mono">
-              {pool.symbol}
-            </Badge>
-            <StateBadge state={pool.feesDecoupled ? "internal" : "active"} kind="pool" />
+
+      <PoolHeader pool={pool} onAddVoucher={() => setAddingVoucher(true)} />
+
+      <PoolAdvisories advisories={poolAdvisories(pool, composition, { vouchersAvailable })} />
+
+      {/* Two columns, split by how each half is read. The left is the record —
+          profile, fees, dependencies — reference an operator reads once and
+          returns to only when something is wrong. The right is everything looked
+          at rather than read: the figures, the two charts and the map. Keeping
+          the visuals together is what lets them be big enough to mean anything;
+          the map in particular was unusable at a third of a definition list's
+          width. */}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+        <PoolProfileCard pool={pool} />
+
+        {/* A grid, not a stack. Stacked, these ran to twice the height of the
+            record beside them and pushed the records tab off the screen; side by
+            side the two charts cost one row between them. */}
+        <div className="grid auto-rows-min gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <PoolSummaryMetrics
+              composition={composition}
+              feePpm={pool.feePpm}
+              available={vouchersAvailable}
+            />
           </div>
-        }
-      />
-
-      <div className="grid gap-4 xl:grid-cols-3">
-        <Panel title="Identity">
-          <Field label="Address" value={<AddressValue address={pool.address} />} />
-          <Field label="Owner" value={<AddressValue address={pool.ownerAddress} />} />
-          <Field
-            label="Chain ID"
-            value={<span className="font-data">{pool.chainId ?? "—"}</span>}
-          />
-          <Field
-            label="Decimals"
-            value={<span className="font-data">{pool.decimals ?? "—"}</span>}
-          />
-        </Panel>
-
-        <Panel title="Economics">
-          <Field
-            label="Swap fee"
-            value={<span className="font-data">{formatFeePpm(pool.feePpm)}</span>}
-          />
-          <Field label="Fee recipient" value={<AddressValue address={pool.feeAddress} />} />
-          <Field label="Fees decoupled" value={pool.feesDecoupled ? "Yes" : "No"} />
-          <Field label="Unit of account" value={pool.unitOfAccount ?? "—"} />
-        </Panel>
-
-        <Panel title="Contracts">
-          <Field
-            label="Token registry"
-            value={<AddressValue address={pool.tokenRegistryAddress} />}
-          />
-          <Field label="Limiter" value={<AddressValue address={pool.limiterAddress} />} />
-          <Field label="Quoter" value={<AddressValue address={pool.quoterAddress} />} />
-          <Field label="Fee policy" value={<AddressValue address={pool.feePolicyAddress} />} />
-        </Panel>
-
-        <Panel title="Contact">
-          <Field label="Phone" value={pool.phone ?? "—"} />
-          <Field label="Email" value={pool.email ?? "—"} />
-          <Field label="Website" value={pool.website ?? "—"} />
-        </Panel>
-
-        <Panel title="Location">
-          <Field label="Name" value={pool.locationName ?? "—"} />
-          <Field
-            label="Coordinates"
-            value={
-              pool.geoLat !== null && pool.geoLng !== null ? (
-                <span className="font-data">
-                  {pool.geoLat.toFixed(5)}, {pool.geoLng.toFixed(5)}
-                </span>
-              ) : (
-                "—"
-              )
-            }
-          />
-        </Panel>
-
-        <Panel title="Lifecycle">
-          <Field label="Created" value={formatDateTime(pool.createdAt)} />
-          <Field label="Updated" value={formatDateTime(pool.updatedAt)} />
-          <Field
-            label="Tags"
-            value={
-              pool.tags.length > 0 ? (
-                <div className="flex flex-wrap gap-1">
-                  {pool.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="font-mono text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                "—"
-              )
-            }
-          />
-        </Panel>
+          <PoolActivityChart activity={activity} state={activityState} />
+          <PoolOffersChart offers={poolOfferSeries(vouchers)} state={vouchersState} />
+        </div>
       </div>
 
-      <section className="flex flex-col gap-3">
-        <SectionHeading>Vouchers ({pool.voucherCount})</SectionHeading>
-        <SectionState
-          state={vouchersState}
-          errorTitle="Could not load this pool's vouchers"
-          emptyTitle="No vouchers"
-          emptyDescription="This pool allows no vouchers yet."
-        >
-          <div className="overflow-x-auto border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Voucher</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Offers</TableHead>
-                  <TableHead>Limit</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vouchers.map((voucher) => (
-                  <TableRow key={voucher.id}>
-                    <TableCell>
-                      <div className="min-w-0">
-                        <Link
-                          to="/vouchers/$address"
-                          params={{ address: voucher.tokenAddress }}
-                          search={{ tab: "pools" }}
-                          className="block truncate font-medium underline-offset-4 hover:underline"
-                        >
-                          {voucher.name}
-                        </Link>
-                        <div className="font-mono text-xs text-muted-foreground">
-                          {voucher.symbol}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-data text-xs">
-                      <Link
-                        to="/vouchers/$address"
-                        params={{ address: voucher.tokenAddress }}
-                        search={{ tab: "pools" }}
-                        className="underline-offset-4 hover:underline"
-                      >
-                        {formatVoucherAddress(voucher.tokenAddress)}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <StateBadge
-                        state={voucher.isAllowed ? "allowed" : "blocked"}
-                        kind="voucher"
-                      />
-                    </TableCell>
-                    <TableCell className="font-data">
-                      {voucher.availableOfferCount}/{voucher.offerCount}
-                    </TableCell>
-                    <TableCell className="font-data text-xs">{voucher.tokenLimit ?? "—"}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </SectionState>
-      </section>
-    </div>
-  );
-}
+      <PoolRecordTabs
+        pool={pool}
+        vouchers={vouchers}
+        vouchersState={vouchersState}
+        settling={settling}
+        search={search}
+      />
 
-function Panel({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    // h-full so panels sharing a row share one top and one bottom edge, whatever
-    // each holds.
-    <div className="h-full border border-border bg-card p-4">
-      <SectionHeading className="mb-3">{title}</SectionHeading>
-      <dl className="space-y-2">{children}</dl>
+      {/* The fetched page is handed over rather than refetched: the picker has to
+          exclude vouchers the pool already allows, and re-registering one reverts
+          the whole batch. */}
+      <AddPoolVoucherSheet
+        pool={pool}
+        poolVouchers={vouchers}
+        open={addingVoucher}
+        onClose={() => setAddingVoucher(false)}
+        onAdded={(tokenAddress) => setSettling(settlingVoucher(tokenAddress))}
+      />
     </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-4 text-sm">
-      <dt className="shrink-0 text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 text-right">{value}</dd>
-    </div>
-  );
-}
-
-function AddressValue({ address }: { address: string | null }) {
-  if (!address) return <span className="text-muted-foreground">—</span>;
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="font-data text-xs">{formatVoucherAddress(address as `0x${string}`)}</span>
-      <CopyButton value={address} label="Copy address" />
-    </span>
   );
 }

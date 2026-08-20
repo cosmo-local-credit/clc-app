@@ -33,6 +33,17 @@ const stateTones: Record<string, StateTone> = {
     label: "blocked",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
+  // An offering's availability. Distinct words from active/inactive, which
+  // describe whether a voucher contract is live rather than whether a seller is
+  // currently taking orders.
+  available: {
+    label: "available",
+    className: "border-state-active/30 bg-state-active/10 text-state-active",
+  },
+  unavailable: {
+    label: "unavailable",
+    className: NEUTRAL,
+  },
   internal: {
     label: "internal",
     className: "border-foreground/20 bg-foreground/5 text-foreground",
