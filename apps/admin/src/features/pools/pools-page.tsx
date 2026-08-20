@@ -11,8 +11,6 @@ import { LoadingBlock } from "#/components/admin/loading-block";
 import { PageHeader } from "#/components/admin/page-header";
 import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
-import { Badge } from "#/components/ui/badge";
-import { formatFeePpm } from "#/lib/format";
 import { poolFilteredPageQueryOptions } from "@clc/api/features/pools/queries";
 import { ListToolbar } from "#/components/admin/list-toolbar";
 import { TablePagination } from "#/components/admin/table-pagination";
@@ -25,13 +23,13 @@ import { usePagedTable } from "#/lib/use-paged-table";
 const columns: Array<ColumnDef<UserPool>> = [
   {
     accessorKey: "name",
-    header: "Pool",
-    cell: ({ row }) => (
-      <div className="min-w-0">
-        <div className="truncate font-medium">{row.original.name}</div>
-        <div className="text-muted-foreground font-mono text-xs">{row.original.symbol}</div>
-      </div>
-    ),
+    header: "Name",
+    cell: ({ row }) => <span className="truncate font-medium">{row.original.name}</span>,
+  },
+  {
+    accessorKey: "symbol",
+    header: "Symbol",
+    cell: ({ row }) => <span className="font-mono text-xs">{row.original.symbol}</span>,
   },
   {
     accessorKey: "address",
@@ -57,41 +55,10 @@ const columns: Array<ColumnDef<UserPool>> = [
     cell: ({ row }) => <span className="font-data">{row.original.voucherCount}</span>,
   },
   {
-    accessorKey: "feePpm",
-    header: "Swap fee",
-    cell: ({ row }) => <span className="font-data">{formatFeePpm(row.original.feePpm)}</span>,
-  },
-  {
-    accessorKey: "unitOfAccount",
-    header: "Unit",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.original.unitOfAccount ?? "—"}</span>
-    ),
-  },
-  {
     accessorKey: "locationName",
     header: "Location",
     cell: ({ row }) => (
       <span className="text-muted-foreground">{row.original.locationName ?? "—"}</span>
-    ),
-  },
-  {
-    id: "tags",
-    header: "Tags",
-    enableSorting: false,
-    cell: ({ row }) => (
-      <div className="flex flex-wrap gap-1">
-        {row.original.tags.slice(0, 3).map((tag) => (
-          <Badge key={tag} variant="outline" className="font-mono text-xs">
-            {tag}
-          </Badge>
-        ))}
-        {row.original.tags.length > 3 ? (
-          <span className="font-data text-muted-foreground text-xs">
-            +{row.original.tags.length - 3}
-          </span>
-        ) : null}
-      </div>
     ),
   },
 ];

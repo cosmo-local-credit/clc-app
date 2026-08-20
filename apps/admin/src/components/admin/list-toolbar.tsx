@@ -23,7 +23,7 @@ export function ListToolbar({
   search?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
-  /** Page-specific width without changing the console-wide h-8 control height. */
+  /** Page-specific width without changing the console-wide h-9 control height. */
   searchClassName?: string;
   filters?: ReactNode;
   children?: ReactNode;
@@ -94,36 +94,7 @@ function ToolbarSearch({
       onChange={(event) => setDraft(event.currentTarget.value)}
       placeholder={placeholder}
       aria-label={placeholder}
-      className={cn("h-8 w-56 bg-card font-sans text-sm", className)}
+      className={cn("bg-card h-9 w-56 font-sans text-sm", className)}
     />
   );
-}
-
-function filterChipClassName(active: boolean) {
-  return cn(
-    "inline-flex h-8 items-center border border-border px-2.5 font-mono text-xs font-medium tracking-wide uppercase",
-    active
-      ? "bg-foreground text-background"
-      : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
-  );
-}
-
-export function FilterChip({
-  active,
-  onSelect,
-  children,
-}: {
-  active: boolean;
-  onSelect: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button type="button" onClick={onSelect} className={filterChipClassName(active)}>
-      {children}
-    </button>
-  );
-}
-
-export function FilterGroup({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center">{children}</div>;
 }

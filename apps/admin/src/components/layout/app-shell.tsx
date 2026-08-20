@@ -54,9 +54,9 @@ const navItems: Array<{
   children?: Array<{ to: NavPath; label: string }>;
 }> = [
   { to: "/", label: "Dashboard", icon: HiOutlineHome, exact: true },
+  { to: "/users", label: "Accounts", icon: HiOutlineUsers },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
-  { to: "/users", label: "Accounts", icon: HiOutlineUsers },
   {
     to: "/transactions",
     label: "Transactions",
@@ -85,16 +85,16 @@ function AppShellInner() {
 
   return (
     <>
-      <Sidebar collapsible="icon" className="border-r border-sidebar-border">
+      <Sidebar collapsible="icon" className="border-sidebar-border border-r">
         {/* h-14 + border-b match the main header so the horizontal rule lines up */}
-        <SidebarHeader className="h-14 shrink-0 items-center justify-center gap-0 border-b border-sidebar-border p-0 px-3">
+        <SidebarHeader className="border-sidebar-border h-14 shrink-0 items-center justify-center gap-0 border-b p-0 px-3">
           <Link
             to="/"
             aria-label="CLC Admin dashboard"
             className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
           >
             <img src="/logo.svg" alt="" className="size-6 shrink-0" />
-            <span className="font-heading text-lg font-bold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
+            <span className="font-heading text-foreground text-lg font-bold tracking-tight group-data-[collapsible=icon]:hidden">
               CLC Admin
             </span>
           </Link>
@@ -145,7 +145,7 @@ function AppShellInner() {
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
+        <header className="border-border bg-background sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:px-4">
           <SidebarTrigger className="-ml-1" />
           <div className="ml-auto flex items-center gap-2">
             <OperatorMenu />
