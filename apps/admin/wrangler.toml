@@ -32,10 +32,16 @@ pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
-# Only the five variables this app reads. Deliberately not copied wholesale from
+# Only the six variables this app reads. Deliberately not copied wholesale from
 # the web project: the console has no Calibur wallet, no paper-wallet origin and no
 # RPC, and it never *registers* a passkey — only asserts one — so it needs no
 # relying-party name. An unused key here would imply otherwise.
+#
+# VITE_STORAGE_URL is the image upload service, shared with apps/web: the browser
+# posts multipart uploads straight to it, carrying the clc-core session token in an
+# Authorization header. Its own origin allowlist must include this console's hosts
+# (api.origin in the storage service's config) or the preflight fails while every
+# other request on the page succeeds.
 #
 # VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves both
 # — and the account's allowed-origins list must include this console's hosts
@@ -46,6 +52,7 @@ VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CHAIN_ID = "42220"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 # The registrable domain, not this host: a passkey is bound to the relying party it
 # was registered under, so scoping it to the parent is what lets one credential work
 # on app.cosmolocal.credit and admin.cosmolocal.credit alike. apps/web carries the
@@ -68,4 +75,5 @@ VITE_API_URL = "https://staging.cosmolocal.credit"
 VITE_CHAIN_ID = "42220"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"
