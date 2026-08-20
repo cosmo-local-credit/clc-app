@@ -399,3 +399,22 @@ describe("getFilteredPools request", () => {
     expect(page.receivedCount).toBe(2);
   });
 });
+
+describe("pool quoter type", () => {
+  it("keeps the three quoter kinds and reports anything else as unknown", async () => {
+    // The value decides which setter an operator signs, so a kind no call builder
+    // handles must not reach that decision as if it were understood.
+    const pool = (quoterType: unknown) =>
+      normalizeUserPool({
+        address: "0xdD97a5282D11e55d7271d466C80963d6793B276f",
+        quoterType,
+      } as never);
+
+    expect(pool("oracle")?.quoterType).toBe("oracle");
+    expect(pool("relative")?.quoterType).toBe("relative");
+    expect(pool("decimal")?.quoterType).toBe("decimal");
+    expect(pool("chainlink")?.quoterType).toBeNull();
+    expect(pool(null)?.quoterType).toBeNull();
+    expect(pool(undefined)?.quoterType).toBeNull();
+  });
+});

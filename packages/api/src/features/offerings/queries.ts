@@ -78,6 +78,27 @@ export function voucherOfferingsInfiniteQueryOptions(
   });
 }
 
+/**
+ * One page of the offerings published against a pool's allowed vouchers.
+ *
+ * The finite read exists for the console, which shows a pool's market presence
+ * as one bounded panel rather than an endless scroll: the pool screen wants a
+ * page it can summarise, not a feed.
+ */
+export function poolOfferingsQueryOptions(
+  offerings: OfferingsClient,
+  address: string | undefined,
+  perPage: number,
+) {
+  return queryOptions({
+    queryKey: offeringKeys.byPool(address ?? "none", perPage),
+    queryFn: ({ signal }) =>
+      offerings.getPoolOfferings(requireAddress(address), { perPage }, signal),
+    enabled: Boolean(address),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function poolOfferingsInfiniteQueryOptions(
   offerings: OfferingsClient,
   address: string | undefined,
