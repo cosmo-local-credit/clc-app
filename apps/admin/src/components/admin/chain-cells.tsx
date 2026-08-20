@@ -3,7 +3,8 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Link } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { HiOutlineCheck, HiOutlineExternalLink, HiOutlineXCircle } from "react-icons/hi";
-import { explorerTxUrl } from "#/lib/explorer";
+import { CopyButton } from "#/components/admin/copy-button";
+import { explorerAddressUrl, explorerTxUrl } from "#/lib/explorer";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { cn } from "#/lib/utils";
 
@@ -75,7 +76,7 @@ export function VoucherCell({
       {name ? (
         <>
           <span className="block truncate font-medium">{name}</span>
-          <span className="block font-mono text-xs text-muted-foreground">
+          <span className="text-muted-foreground block font-mono text-xs">
             {symbol || formatVoucherAddress(address as `0x${string}`)}
           </span>
         </>
@@ -92,11 +93,47 @@ export function PoolCell({ address }: { address: string }) {
     <Link
       to="/pools/$address"
       params={{ address }}
+      search={{ tab: "vouchers" }}
       className="font-data text-xs underline-offset-4 hover:underline"
       onClick={stopRowClick}
     >
       {formatVoucherAddress(address as `0x${string}`)}
     </Link>
+  );
+}
+
+/**
+ * A contract this pool or voucher depends on, copyable and linked to the
+ * explorer.
+ *
+ * Distinct from `AddressCell`, which links to an account screen: a registry, a
+ * limiter or a quoter has no page in this console, so the explorer is where an
+ * operator verifies one and the copy button is how it reaches a support thread.
+ *
+ * An absent address renders as "Not recorded" rather than as a zero address or a
+ * dash. The catalog merges rows from sources that carry no dependency addresses
+ * at all, and on SwapPool an unset pointer is not inert — an unset registry
+ * accepts every token, an unset limiter caps nothing — so a missing catalog
+ * value must not be presented as a chain fact.
+ */
+export function ContractAddress({ address, label }: { address: string | null; label: string }) {
+  if (!address) {
+    return <span className="text-muted-foreground font-mono text-xs">Not recorded</span>;
+  }
+
+  return (
+    <span className="inline-flex max-w-full items-center gap-1">
+      <a
+        href={explorerAddressUrl(address)}
+        target="_blank"
+        rel="noreferrer"
+        onClick={stopRowClick}
+        className="font-data truncate text-xs underline-offset-4 hover:underline"
+      >
+        {formatVoucherAddress(address as `0x${string}`)}
+      </a>
+      <CopyButton value={address} label={label} />
+    </span>
   );
 }
 
@@ -115,7 +152,7 @@ export function TxLink({ txHash }: { txHash: string }) {
       target="_blank"
       rel="noreferrer"
       onClick={stopRowClick}
-      className="inline-flex items-center gap-1 font-data text-xs underline-offset-4 hover:underline"
+      className="font-data inline-flex items-center gap-1 text-xs underline-offset-4 hover:underline"
     >
       {formatVoucherAddress(txHash as `0x${string}`)}
       <HiOutlineExternalLink className="size-3 shrink-0 opacity-60" aria-hidden="true" />
@@ -142,7 +179,7 @@ export function TxLink({ txHash }: { txHash: string }) {
 export function TxOutcome({ success }: { success: boolean }) {
   if (success) {
     return (
-      <span className="inline-flex items-center text-state-active" title="Succeeded">
+      <span className="text-state-active inline-flex items-center" title="Succeeded">
         <HiOutlineCheck className="size-4" aria-hidden="true" />
         <span className="sr-only">succeeded</span>
       </span>
@@ -150,7 +187,7 @@ export function TxOutcome({ success }: { success: boolean }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-destructive">
+    <span className="text-destructive inline-flex items-center gap-1.5">
       <HiOutlineXCircle className="size-4 shrink-0" aria-hidden="true" />
       <span className="font-mono text-xs tracking-wide uppercase">reverted</span>
     </span>
@@ -192,7 +229,7 @@ export function TokenAmount({
         title="This voucher is not in the catalog, so its decimals are unknown. Shown as the raw on-chain integer."
       >
         {amount}
-        <span className="ml-1 font-mono text-[0.625rem] tracking-wide text-muted-foreground uppercase">
+        <span className="text-muted-foreground ml-1 font-mono text-[0.625rem] tracking-wide uppercase">
           raw
         </span>
       </span>
@@ -205,9 +242,9 @@ export function TokenAmount({
 
   return (
     <span className={cn("block", className)}>
-      <span className="block font-data text-xs">{value}</span>
+      <span className="font-data block text-xs">{value}</span>
       {symbol ? (
-        <span className="block font-mono text-xs text-muted-foreground">{symbol}</span>
+        <span className="text-muted-foreground block font-mono text-xs">{symbol}</span>
       ) : null}
     </span>
   );

@@ -11,6 +11,22 @@
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
+const CHAIN_NAMES: Record<number, string> = {
+  42220: "Celo",
+  44787: "Alfajores",
+};
+
+/**
+ * The chain's name for a badge beside a record's id.
+ *
+ * Lives here rather than in a formatter because it answers the same question the
+ * explorer host does — which network this row is on — and a staging console
+ * pointed at Alfajores must not read as mainnet.
+ */
+export function chainLabel(chainId: number): string {
+  return CHAIN_NAMES[chainId] ?? "Chain";
+}
+
 const EXPLORERS: Record<number, string> = {
   42220: "https://celoscan.io",
   44787: "https://alfajores.celoscan.io",
@@ -21,4 +37,8 @@ const EXPLORER_URL = EXPLORERS[CHAIN_ID] ?? EXPLORERS[42220];
 
 export function explorerTxUrl(txHash: string): string {
   return `${EXPLORER_URL}/tx/${txHash}`;
+}
+
+export function explorerAddressUrl(address: string): string {
+  return `${EXPLORER_URL}/address/${address}`;
 }

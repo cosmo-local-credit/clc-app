@@ -112,6 +112,16 @@ Current local overrides:
     persisted location, so a failure must fall through immediately rather than
     retrying — it must never block basemap rendering.
 
+- `apps/admin/src/features/pools/use-pool-vouchers.ts`
+  - a pool's voucher composition
+  - `staleTime: 15_000`
+  - `refetchOnWindowFocus: true`
+  - `refetchOnReconnect: true`
+  - polls at `3_000` only while a just-added voucher is still settling, then stops
+  - gives up after `90_000`
+  - `refetchIntervalInBackground: false`
+  - Reason: adding a voucher is not a write to this catalog. The console signs three contract calls, the chain confirms them, eth-tracker decodes the logs and clc-core projects them into `pool_tokens` off NATS — so the row appears seconds after the transaction the operator watched succeed, and invalidating on success refetches the composition as it was. This is the `use-otx-tracking` shape rather than the wallet's fixed interval: an interval would poll every pool screen forever for a lag that only exists just after an add. The deadline exists because a stalled indexer means the row is never coming, and background polling stays off because this is a desktop console, not a phone the operator is watching.
+
 - `apps/web/src/features/auth/hooks/use-otx-tracking.ts`
   - operation tracking
   - polls while the operation is pending, then stops
