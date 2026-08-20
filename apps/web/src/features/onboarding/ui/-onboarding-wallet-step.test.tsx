@@ -169,6 +169,7 @@ function renderWalletStep(overrides: { linkPasskey?: boolean } = {}) {
   return render(
     <OnboardingWalletStep
       profileData={PROFILE}
+      avatarFile={null}
       privateKey={STABLE_PK}
       backendRegistered={false}
       onBackendRegistered={vi.fn()}
@@ -423,6 +424,8 @@ describe("OnboardingWalletStep continue flow", () => {
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
       profile: PROFILE,
       privateKey: STABLE_PK,
+      // No photo was chosen on the profile step, so signup has nothing to upload.
+      avatarFile: null,
     });
     expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: STABLE_PK });
     expect(mockStorePrivateKey).toHaveBeenCalledWith(STABLE_PK);
@@ -483,6 +486,8 @@ describe("OnboardingWalletStep link flow", () => {
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
       profile: PROFILE,
       privateKey: STABLE_PK,
+      // No photo was chosen on the profile step, so signup has nothing to upload.
+      avatarFile: null,
     });
     expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
   });

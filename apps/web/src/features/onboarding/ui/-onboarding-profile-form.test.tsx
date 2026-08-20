@@ -5,6 +5,13 @@ const { mockNavigate } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
 }));
 
+// Uploads are offered only where the service is configured, and the test env has
+// no VITE_STORAGE_URL, so the photo control is switched on explicitly here.
+vi.mock("#/lib/api/storage", () => ({
+  isStorageConfigured: true,
+  storageClient: () => ({ upload: vi.fn() }),
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
   useCanGoBack: () => false,
@@ -101,7 +108,10 @@ vi.mock("#/components/ui/location-picker", () => ({
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
-function renderForm(onNext: (data: ProfileInput) => void = vi.fn(), initialValues?: ProfileInput) {
+function renderForm(
+  onNext: (data: ProfileInput, avatarFile: File | null) => void = vi.fn(),
+  initialValues?: ProfileInput,
+) {
   return render(
     <OnboardingProfileForm
       onNext={onNext}
@@ -186,6 +196,9 @@ describe("OnboardingProfileForm submission", () => {
           country: "KE",
         },
       }),
+      // The photo travels beside the validated profile: it cannot be part of it,
+      // because profileSchema lives in @clc/core and cannot name a File.
+      null,
     );
   });
 
@@ -280,5 +293,47 @@ describe("OnboardingProfileForm value restoration", () => {
     renderForm();
     expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe("");
     expect(screen.getByText("No location")).toBeTruthy();
+  });
+});
+
+describe("OnboardingProfileForm photo", () => {
+  beforeEach(() => {
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: vi.fn(() => "blob:preview"),
+      revokeObjectURL: vi.fn(),
+    });
+  });
+
+  it("offers a photo alongside the identity fields", () => {
+    renderForm();
+
+    expect(screen.getByRole("button", { name: /add a photo/i })).toBeTruthy();
+  });
+
+  it("carries the chosen photo out with the validated profile", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext);
+
+    const photo = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
+    fireEvent.change(screen.getByLabelText("Choose a profile photo"), {
+      target: { files: [photo] },
+    });
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    // Beside the profile, not inside it: the schema is shared with @clc/core and
+    // cannot name a File.
+    expect(mockOnNext).toHaveBeenCalledWith(expect.objectContaining({ name: "Alice" }), photo);
   });
 });

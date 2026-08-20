@@ -5,23 +5,28 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
 
 import { OnboardingMenu } from "#/components/language-selector";
+import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
+import { isStorageConfigured } from "#/lib/api/storage";
 import { onboardingSearch } from "#/lib/onboarding-search";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 type Props = {
   initialValues?: ProfileInput;
+  /** Carried back in when the user returns to this step. */
+  initialAvatarFile?: File | null;
   redirectTo?: string;
   progressStep: number;
   progressTotal: number;
-  onNext: (data: ProfileInput) => void;
+  onNext: (data: ProfileInput, avatarFile: File | null) => void;
 };
 
 type ProfileFormValues = {
@@ -40,19 +45,24 @@ const DEFAULT_VALUES: ProfileFormValues = {
 
 export function OnboardingProfileForm({
   initialValues,
+  initialAvatarFile,
   redirectTo,
   progressStep,
   progressTotal,
   onNext,
 }: Props) {
   const { i18n, t } = useLingui();
+  // Outside the form: profileSchema lives in @clc/core, which is React Native
+  // compatible and cannot name a browser File. The photo is also optional and
+  // has nothing to validate that AvatarPicker has not already checked.
+  const [avatarFile, setAvatarFile] = useState<File | null>(initialAvatarFile ?? null);
 
   const form = useForm({
     defaultValues: initialValues ?? DEFAULT_VALUES,
     validators: { onChange: profileSchema },
     onSubmit: async ({ value }) => {
       const parsed = profileSchema.parse(value);
-      onNext(parsed);
+      onNext(parsed, avatarFile);
     },
   });
 
@@ -88,6 +98,12 @@ export function OnboardingProfileForm({
           className="space-y-4"
         >
           <div className="space-y-4 border border-border bg-card p-4">
+            {/* Hidden rather than disabled when the upload service is not
+                configured: a control that cannot work is worse than no control. */}
+            {isStorageConfigured ? (
+              <AvatarPicker value={avatarFile} onChange={setAvatarFile} />
+            ) : null}
+
             <form.Field name="name">
               {(field) => {
                 const err = getFieldError(field.state.meta.errors);
