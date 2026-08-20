@@ -25,3 +25,19 @@ export function formatFeePpm(ppm: number | null): string {
   if (ppm === null) return "—";
   return `${(ppm / 10_000).toFixed(2)}%`;
 }
+
+/**
+ * Up to two initials from a record's name, for an avatar with no image.
+ *
+ * Falls back to one character so the circle is never empty, which would read as a
+ * failed image rather than as a record without a photo.
+ */
+export function initials(name: string): string {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0] ?? "")
+    .join("")
+    .toUpperCase();
+}

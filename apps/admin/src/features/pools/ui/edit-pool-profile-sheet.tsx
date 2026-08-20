@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SectionLabel } from "#/components/admin/section-heading";
+import { LocationField } from "#/components/admin/location-field";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -27,7 +28,7 @@ import {
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { clcApi } from "#/lib/api";
-import { PoolLocationField } from "../pool-location-field";
+
 import { useUpdatePoolProfile } from "../use-update-pool-profile";
 
 /**
@@ -292,7 +293,7 @@ export function EditPoolProfileSheet({
                     {(latitudeField) => (
                       <form.Field name="longitude">
                         {(longitudeField) => (
-                          <PoolLocationField
+                          <LocationField
                             name={nameField.state.value}
                             latitude={latitudeField.state.value}
                             longitude={longitudeField.state.value}

@@ -14,7 +14,7 @@ import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
 import { chainLabel, explorerAddressUrl } from "#/lib/explorer";
 import { cn } from "#/lib/utils";
-import { formatDateTime } from "#/lib/format";
+import { formatDateTime, initials } from "#/lib/format";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 /**
@@ -116,11 +116,4 @@ export function PoolHeader({
       </div>
     </div>
   );
-}
-
-function initials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const letters = parts.slice(0, 2).map((part) => part[0] ?? "");
-  return letters.join("").toUpperCase();
 }

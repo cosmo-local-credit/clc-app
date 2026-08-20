@@ -1,16 +1,16 @@
 import type { UserPool } from "@clc/api/features/pools/client";
-import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { Link } from "@tanstack/react-router";
-import { type ReactNode, Suspense } from "react";
-import { HiOutlineExternalLink } from "react-icons/hi";
 
 import { ContractAddress } from "#/components/admin/chain-cells";
-import { CopyButton } from "#/components/admin/copy-button";
+import {
+  RecordAbsent,
+  RecordData,
+  RecordExternalLink,
+  RecordLocation,
+  RecordOwner,
+  RecordRow,
+} from "#/components/admin/record-fields";
 import { Badge } from "#/components/ui/badge";
 import { Card, CardContent } from "#/components/ui/card";
-import { LocationMap } from "#/components/ui/location-map.lazy";
-import { Skeleton } from "#/components/ui/skeleton";
-import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { poolDependencies } from "../pool-posture";
 
 /**
@@ -34,8 +34,15 @@ import { poolDependencies } from "../pool-posture";
  *
  * Nothing repeats the header: name, symbol, address, chain and voucher count all
  * live up there, and the default fee is a tile in the column beside this one.
+ *
+ * The row, the value treatments and the map column come from
+ * `components/admin/record-fields`, shared with the account and voucher records
+ * so all three read as one card in three shapes.
  */
 export function PoolProfileCard({ pool }: { pool: UserPool }) {
+  const point =
+    pool.geoLat !== null && pool.geoLng !== null ? { lat: pool.geoLat, lng: pool.geoLng } : null;
+
   return (
     <Card className="h-full">
       {/* The chain column is the widest of the three by design: it carries the
@@ -43,17 +50,23 @@ export function PoolProfileCard({ pool }: { pool: UserPool }) {
           address is unreadable in a way a clipped email is not. */}
       <CardContent className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_minmax(8rem,0.7fr)]">
         <dl className="flex flex-col">
-          <Row label="Email">
-            {pool.email ? <span className="truncate">{pool.email}</span> : <Absent>None</Absent>}
-          </Row>
-          <Row label="Phone">{pool.phone ? <Data>{pool.phone}</Data> : <Absent>None</Absent>}</Row>
-          <Row label="Website">
-            <ExternalHref href={pool.website} />
-          </Row>
-          <Row label="Terms">
-            <ExternalHref href={pool.terms} />
-          </Row>
-          <Row label="Tags">
+          <RecordRow label="Email">
+            {pool.email ? (
+              <span className="truncate">{pool.email}</span>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
+          </RecordRow>
+          <RecordRow label="Phone">
+            {pool.phone ? <RecordData>{pool.phone}</RecordData> : <RecordAbsent>None</RecordAbsent>}
+          </RecordRow>
+          <RecordRow label="Website">
+            <RecordExternalLink href={pool.website} />
+          </RecordRow>
+          <RecordRow label="Terms">
+            <RecordExternalLink href={pool.terms} />
+          </RecordRow>
+          <RecordRow label="Tags">
             {pool.tags.length > 0 ? (
               <span className="flex flex-wrap justify-end gap-1">
                 {pool.tags.map((tag) => (
@@ -63,148 +76,31 @@ export function PoolProfileCard({ pool }: { pool: UserPool }) {
                 ))}
               </span>
             ) : (
-              <Absent>None</Absent>
+              <RecordAbsent>None</RecordAbsent>
             )}
-          </Row>
+          </RecordRow>
         </dl>
 
         <dl className="flex flex-col">
-          <Row label="Owner">
-            <OwnerValue address={pool.ownerAddress} />
-          </Row>
+          <RecordRow label="Owner">
+            <RecordOwner address={pool.ownerAddress} />
+          </RecordRow>
           {/* Whether a token balance is liquidity or a fee owed to the recipient. */}
-          <Row label="Fee accounting">
+          <RecordRow label="Fee accounting">
             {pool.feesDecoupled ? "Held separately" : "Part of liquidity"}
-          </Row>
+          </RecordRow>
           {poolDependencies(pool).map((dependency) => (
-            <Row key={dependency.key} label={dependency.label}>
+            <RecordRow key={dependency.key} label={dependency.label}>
               <ContractAddress
                 address={dependency.address}
                 label={`Copy ${dependency.label.toLowerCase()} address`}
               />
-            </Row>
+            </RecordRow>
           ))}
         </dl>
 
-        <PoolLocation pool={pool} />
+        <RecordLocation point={point} name={pool.locationName} />
       </CardContent>
     </Card>
-  );
-}
-
-/**
- * Where the pool says it operates.
- *
- * The map takes whatever height the rows beside it settle on rather than a fixed
- * one, so the card is as tall as its longest column and no taller.
- *
- * Renders nothing when the catalog holds neither coordinates nor a place name.
- * An empty frame suggests a location that failed to load rather than one nobody
- * recorded.
- */
-function PoolLocation({ pool }: { pool: UserPool }) {
-  const point =
-    pool.geoLat !== null && pool.geoLng !== null ? { lat: pool.geoLat, lng: pool.geoLng } : null;
-
-  if (!point && !pool.locationName) return null;
-
-  return (
-    <div className="flex min-h-40 flex-col gap-2">
-      {point ? (
-        <Suspense fallback={<Skeleton className="min-h-32 flex-1" />}>
-          <div className="min-h-32 flex-1">
-            <LocationMap lat={point.lat} lng={point.lng} className="h-full" />
-          </div>
-        </Suspense>
-      ) : null}
-
-      {pool.locationName ? <p className="truncate text-sm">{pool.locationName}</p> : null}
-
-      {point ? (
-        <p className="font-data text-xs text-muted-foreground">
-          {point.lat.toFixed(5)}, {point.lng.toFixed(5)}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-/**
- * One record row.
- *
- * The label never shrinks and the value never wraps: a value that outgrows its
- * half truncates, which keeps every row one line tall. A card where one row runs
- * to three lines because somebody entered a long URL stops being scannable.
- *
- * The height is fixed rather than left to the content. Values are a mix of body
- * text, small mono and badges, whose line boxes differ by a few pixels each —
- * enough that by the seventh row the two columns' rules no longer meet.
- */
-function Row({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex h-10 items-center justify-between gap-3 border-b border-border last:border-b-0">
-      <dt className="shrink-0 text-sm text-muted-foreground">{label}</dt>
-      <dd className="flex min-w-0 items-center justify-end gap-1 text-sm">{children}</dd>
-    </div>
-  );
-}
-
-/** A figure or an identifier: mono and tabular, so a column of them lines up. */
-function Data({ children }: { children: ReactNode }) {
-  return <span className="truncate font-data text-xs">{children}</span>;
-}
-
-/**
- * An absent value, in the same small mono `ContractAddress` uses for a pointer
- * the catalog never recorded — so every gap in the card looks like a gap rather
- * than like a pool whose email is the word "None".
- */
-function Absent({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-xs text-muted-foreground">{children}</span>;
-}
-
-/**
- * The owner, linked to their account screen.
- *
- * An owner is an account this console has a page for, so it links there rather
- * than to the explorer the dependency contracts use — those have no page, and an
- * address that can go somewhere useful should go to the more useful of the two.
- */
-function OwnerValue({ address }: { address: string | null }) {
-  if (!address) return <Absent>Not recorded</Absent>;
-
-  return (
-    <>
-      <Link
-        to="/users/$address"
-        params={{ address }}
-        search={{ tab: "transactions", perPage: DEFAULT_PAGE_SIZE }}
-        className="truncate font-data text-xs underline-offset-4 hover:underline"
-      >
-        {formatVoucherAddress(address as `0x${string}`)}
-      </Link>
-      <CopyButton value={address} label="Copy owner address" />
-    </>
-  );
-}
-
-/**
- * A steward-supplied link. The scheme is stripped because it is noise at this
- * width, and the glyph says the link leaves the console — the grammar `TxLink`
- * already uses.
- */
-function ExternalHref({ href }: { href: string | null }) {
-  if (!href) return <Absent>None</Absent>;
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex min-w-0 items-center gap-1 underline-offset-4 hover:underline"
-    >
-      <span className="truncate">{href.replace(/^https?:\/\//, "")}</span>
-      <HiOutlineExternalLink className="size-3 shrink-0 opacity-60" aria-hidden="true" />
-    </a>
   );
 }

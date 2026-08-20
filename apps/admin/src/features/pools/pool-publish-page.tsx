@@ -23,6 +23,7 @@ import { z } from "zod";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { PageHeader } from "#/components/admin/page-header";
 import { SectionHeading } from "#/components/admin/section-heading";
+import { LocationField } from "#/components/admin/location-field";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Input } from "#/components/ui/input";
@@ -39,7 +40,7 @@ import { Textarea } from "#/components/ui/textarea";
 import { useAdminSession } from "#/features/auth/admin-session";
 import { clcApi } from "#/lib/api";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
-import { PoolLocationField } from "./pool-location-field";
+
 import { usePoolPublishDeployment } from "./use-pool-publish-deployment";
 
 /**
@@ -443,7 +444,7 @@ export function PoolPublishPage() {
                   {(latitudeField) => (
                     <form.Field name="longitude">
                       {(longitudeField) => (
-                        <PoolLocationField
+                        <LocationField
                           name={nameField.state.value}
                           latitude={latitudeField.state.value}
                           longitude={longitudeField.state.value}
