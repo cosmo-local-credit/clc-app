@@ -1,6 +1,11 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 import { Link } from "@tanstack/react-router";
-import { HiOutlineExternalLink, HiOutlinePlus, HiOutlineSwitchHorizontal } from "react-icons/hi";
+import {
+  HiOutlineExternalLink,
+  HiOutlinePencil,
+  HiOutlinePlus,
+  HiOutlineSwitchHorizontal,
+} from "react-icons/hi";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
@@ -28,7 +33,15 @@ import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
  * read-only jumps rather than inside the vouchers tab: it is the screen's
  * purpose, not a property of the table.
  */
-export function PoolHeader({ pool, onAddVoucher }: { pool: UserPool; onAddVoucher: () => void }) {
+export function PoolHeader({
+  pool,
+  onAddVoucher,
+  onEditProfile,
+}: {
+  pool: UserPool;
+  onAddVoucher: () => void;
+  onEditProfile: () => void;
+}) {
   return (
     <div className="flex flex-col gap-4">
       <AppBreadcrumb items={[{ label: "Pools", to: "/pools" }, { label: pool.name }]} />
@@ -90,6 +103,10 @@ export function PoolHeader({ pool, onAddVoucher }: { pool: UserPool; onAddVouche
             <HiOutlineSwitchHorizontal />
             Transactions
           </Link>
+          <Button size="sm" variant="outline" onClick={onEditProfile}>
+            <HiOutlinePencil />
+            Edit record
+          </Button>
           <Button size="sm" onClick={onAddVoucher}>
             <HiOutlinePlus />
             Add voucher

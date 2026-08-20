@@ -418,3 +418,52 @@ describe("pool quoter type", () => {
     expect(pool(undefined)?.quoterType).toBeNull();
   });
 });
+
+describe("updatePoolProfile", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("PUTs the whole record and sends blanks as null", async () => {
+    // The endpoint assigns every column, so an empty field is a clear. Sending
+    // "" would store an empty string every consumer then has to read as absence.
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          result: { pool: { address: "0xdD97a5282D11e55d7271d466C80963d6793B276f" } },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createPoolsClient(createHttpClient({ baseUrl: "http://api.test" }));
+    await client.updatePoolProfile("0xdD97a5282D11e55d7271d466C80963d6793B276f", {
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: "  ",
+      website: "",
+      phone: " +254700000000 ",
+      terms: "",
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("/api/v2/admin/pools/0xdD97a5282D11e55d7271d466C80963d6793B276f/profile");
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(String(init.body))).toEqual({
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: null,
+      website: null,
+      phone: "+254700000000",
+      terms: null,
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+  });
+});
