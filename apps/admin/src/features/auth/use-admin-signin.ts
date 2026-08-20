@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { privateKeySigner, signInWithSiwe, type SiweRequest } from "@clc/api/features/auth/siwe";
 import { clcApi } from "#/lib/api";
 import { adminSessionQueryKey, clearProtectedQueries } from "./admin-session";
+import { useOperatorKeyStore } from "./operator-key";
 import { collectAdminAssertion } from "./webauthn-assertion";
 
 const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
@@ -48,21 +49,55 @@ function useSessionRefresh() {
   };
 }
 
+/**
+ * Sign-in is also where the console learns the key it can sign with.
+ *
+ * Both credentials arrive here and nowhere else, so adopting them is one line in
+ * each mutation rather than a concern the sign-in form has to remember. Adoption
+ * happens only after clc-core accepted the credential: a key that failed SIWE is
+ * not the operator's, and holding it would let a later signature be attempted
+ * with it.
+ *
+ * The store is in-memory (see operator-key.ts). Reading the console after a
+ * reload still works on the session cookie; signing again asks for the wallet.
+ */
 export function useAdminPrivateKeySignin() {
   const refreshSession = useSessionRefresh();
+  const adoptPrivateKey = useOperatorKeyStore((state) => state.adoptPrivateKey);
 
   return useMutation({
     mutationFn: (privateKey: `0x${string}`) =>
       signInWithSiwe(clcApi.auth, privateKeySigner(privateKey), siweRequest()),
-    onSuccess: refreshSession,
+    onSuccess: (_result, privateKey) => {
+      adoptPrivateKey(privateKey);
+      return refreshSession();
+    },
   });
 }
 
 export function useAdminPasskeySignin() {
   const refreshSession = useSessionRefresh();
+  const adoptPasskey = useOperatorKeyStore((state) => state.adoptPasskey);
 
   return useMutation({
-    mutationFn: async () => clcApi.auth.signinWithWebAuthn(await collectAdminAssertion()),
-    onSuccess: refreshSession,
+    mutationFn: async () => {
+      const assertion = await collectAdminAssertion();
+      // The verify response carries the address, key hash and public key, so the
+      // only thing it does not already say is which credential answered — and
+      // this assertion is where that came from. Together they are a complete
+      // signing credential for no second prompt and no extra call.
+      return { result: await clcApi.auth.signinWithWebAuthn(assertion), assertion };
+    },
+    onSuccess: ({ result, assertion }) => {
+      adoptPasskey({
+        credentialId: assertion.credentialId,
+        keyHash: result.keyHash as `0x${string}`,
+        publicKeyX: result.publicKeyX,
+        publicKeyY: result.publicKeyY,
+        address: result.address as `0x${string}`,
+        stale: false,
+      });
+      return refreshSession();
+    },
   });
 }
