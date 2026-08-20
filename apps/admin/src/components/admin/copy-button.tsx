@@ -1,6 +1,5 @@
-import { HiOutlineClipboard, HiOutlineClipboardCheck } from "react-icons/hi";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { RiCheckLine, RiFileCopyLine } from "react-icons/ri";
 import { copyText } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 
@@ -16,11 +15,13 @@ export function CopyButton({
   const [copied, setCopied] = useState(false);
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="icon-xs"
-      className={cn(className)}
+      className={cn(
+        "text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center outline-none",
+        "hover:text-foreground focus-visible:ring-ring focus-visible:ring-1",
+        className,
+      )}
       aria-label={label}
       onClick={() => {
         void copyText(value, label).then((ok) => {
@@ -32,10 +33,10 @@ export function CopyButton({
       }}
     >
       {copied ? (
-        <HiOutlineClipboardCheck className="size-3.5" />
+        <RiCheckLine className="size-3" aria-hidden="true" />
       ) : (
-        <HiOutlineClipboard className="size-3.5" />
+        <RiFileCopyLine className="size-3" aria-hidden="true" />
       )}
-    </Button>
+    </button>
   );
 }

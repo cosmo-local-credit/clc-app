@@ -70,7 +70,7 @@ export function UserDetailPage({ address, search }: { address: string; search: U
         {account ? (
           <AccountProfileCard account={account} />
         ) : (
-          <div className="h-full border border-border bg-card p-4 text-sm text-muted-foreground">
+          <div className="border-border bg-card text-muted-foreground h-full border p-4 text-sm">
             This address holds vouchers but has no CLC account.
           </div>
         )}

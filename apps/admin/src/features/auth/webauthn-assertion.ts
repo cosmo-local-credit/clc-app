@@ -23,12 +23,9 @@ import { base64UrlToBytes, bytesToBase64Url } from "@clc/core/features/webauthn/
 import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 
 import type { WebAuthnAssertionPayload } from "@clc/api/features/auth/client";
-import { createRelayerClient } from "@clc/api/features/relayer/client";
-import { RELAYER_URL } from "#/lib/relayer-config";
+import { relayerClient } from "#/lib/relayer-config";
 
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
-
-const relayerClient = createRelayerClient(RELAYER_URL);
 
 export async function collectAdminAssertion(): Promise<WebAuthnAssertionPayload> {
   const {

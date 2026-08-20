@@ -79,6 +79,8 @@ export type FilteredReportsParams = {
   cursor?: ReportCursor;
   filter: CatalogFilter;
   facets?: boolean;
+  /** Only reports authored by this address. Compared case-insensitively. */
+  author?: string;
 };
 
 export type FilteredReportPage = ReportPage & {
@@ -164,7 +166,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor }: FilteredReportsParams,
+      { filter, facets, perPage, cursor, author }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -181,6 +183,7 @@ export function createReportsClient(http: HttpClient) {
       if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
         query.set("voucherMatch", "all");
       }
+      if (author) query.set("author", author);
       if (facets) query.set("facets", "true");
 
       const result = await http.request<BackendFilteredReportPage>(

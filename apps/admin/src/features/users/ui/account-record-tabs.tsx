@@ -124,7 +124,7 @@ export function AccountRecordTabs({
         ))}
       </TabsList>
 
-      <TabsPanel value={tab} className="border border-border bg-card">
+      <TabsPanel value={tab} className="border-border bg-card border">
         {tab === "transactions" ? (
           <TransfersPanel address={address} search={search} />
         ) : tab === "reports" ? (
@@ -203,8 +203,8 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2.5">
-        <span className="font-data text-xs text-muted-foreground">
+      <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
+        <span className="font-data text-muted-foreground text-xs">
           {transfers.length} on this page
         </span>
         <Select
@@ -216,7 +216,7 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
             if (value === "all" || value === "IN" || value === "OUT") setDirection(value);
           }}
         >
-          <SelectTrigger size="default" className="h-8 min-h-8 w-36 px-2.5" aria-label="Type">
+          <SelectTrigger size="default" className="w-36 px-2.5" aria-label="Type">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
@@ -254,7 +254,7 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
                   {formatVoucherAddress(transfer.counterpartyAddress as `0x${string}`)}
                 </TableCell>
                 <TableCell className="font-mono text-xs">{transfer.tokenSymbol}</TableCell>
-                <TableCell className="text-right font-data">
+                <TableCell className="font-data text-right">
                   {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
                 </TableCell>
                 <TableCell>
@@ -267,7 +267,7 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
       </div>
 
       {/* The same footer the paged tables carry, flush under the rows. */}
-      <div className="border-t border-border px-4 py-3">
+      <div className="border-border border-t px-4 py-3">
         <TablePagination
           search={search}
           dropped={0}
@@ -310,7 +310,7 @@ function ReportsPanel({ address }: { address: string }) {
               <TableCell>
                 <div className="truncate font-medium">{report.title}</div>
                 {report.description ? (
-                  <div className="truncate text-xs text-muted-foreground">{report.description}</div>
+                  <div className="text-muted-foreground truncate text-xs">{report.description}</div>
                 ) : null}
               </TableCell>
               <TableCell>
@@ -384,7 +384,7 @@ function VouchersPanel({ address, search }: { address: string; search: UserDetai
               <TableRow key={voucher.id}>
                 <TableCell>
                   <div className="truncate font-medium">{voucher.name}</div>
-                  <div className="font-mono text-xs text-muted-foreground">{voucher.symbol}</div>
+                  <div className="text-muted-foreground font-mono text-xs">{voucher.symbol}</div>
                 </TableCell>
                 <TableCell>
                   <Link
@@ -461,12 +461,13 @@ function PoolsPanel({ address, search }: { address: string; search: UserDetailSe
               <TableRow key={pool.id}>
                 <TableCell>
                   <div className="truncate font-medium">{pool.name}</div>
-                  <div className="font-mono text-xs text-muted-foreground">{pool.symbol}</div>
+                  <div className="text-muted-foreground font-mono text-xs">{pool.symbol}</div>
                 </TableCell>
                 <TableCell>
                   <Link
                     to="/pools/$address"
                     params={{ address: pool.address }}
+                    search={{ tab: "vouchers" }}
                     className="font-data text-xs underline-offset-4 hover:underline"
                   >
                     {formatVoucherAddress(pool.address)}
@@ -510,7 +511,7 @@ function PanelPagination({
   isFetching: boolean;
 }) {
   return (
-    <div className="border-t border-border px-4 py-3">
+    <div className="border-border border-t px-4 py-3">
       <TablePagination
         search={search}
         dropped={0}
@@ -533,7 +534,7 @@ function isModified(event: MouseEvent): boolean {
 
 function PanelMessage({ children }: { children: React.ReactNode }) {
   return (
-    <p role="status" className="px-4 py-10 text-center text-sm text-muted-foreground">
+    <p role="status" className="text-muted-foreground px-4 py-10 text-center text-sm">
       {children}
     </p>
   );

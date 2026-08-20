@@ -110,7 +110,7 @@ const columns: Array<ColumnDef<AdminOTX>> = [
       <span className="inline-flex items-baseline gap-1.5">
         <span className="font-data text-xs">{row.original.nonce}</span>
         {row.original.replaced ? (
-          <span className="font-mono text-[0.625rem] tracking-wide text-muted-foreground uppercase">
+          <span className="text-muted-foreground font-mono text-[0.625rem] tracking-wide uppercase">
             replaced
           </span>
         ) : null}
@@ -134,7 +134,7 @@ const columns: Array<ColumnDef<AdminOTX>> = [
       const mined = row.original.status === "SUCCESS" || row.original.status === "REVERTED";
       if (!mined) {
         return (
-          <span className="font-data text-xs text-muted-foreground" title="Not on chain yet">
+          <span className="font-data text-muted-foreground text-xs" title="Not on chain yet">
             {short}
           </span>
         );
@@ -290,7 +290,7 @@ function EnumSelect<TValue extends string>({
     >
       <SelectTrigger
         size="default"
-        className={cn("h-8 min-h-8 w-40 px-2.5", colorTypes && transactionTypeSelectClass(value))}
+        className={cn("w-40 px-2.5", colorTypes && transactionTypeSelectClass(value))}
         aria-label={label}
         title={selectedLabel}
       >

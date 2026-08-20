@@ -32,6 +32,14 @@ describe("TablePagination", () => {
     expect(screen.getByLabelText("Rows per page")).toBeTruthy();
   });
 
+  it("aligns the rows label with the page-size select", () => {
+    renderPager({ isFirstPage: false, mightHaveMore: true });
+    expect(screen.getByText("Rows").className).toContain("h-9");
+    expect(screen.getByLabelText("Rows per page").className).toContain("h-9");
+    expect(screen.getByRole("button", { name: "First" }).className).toContain("h-9");
+    expect(screen.getByRole("button", { name: "Next page" }).className).toContain("h-9");
+  });
+
   it("offers Next only when another page might exist", () => {
     const { onNextPage } = renderPager({ mightHaveMore: true });
     const next = screen.getByRole("button", { name: "Next page" });

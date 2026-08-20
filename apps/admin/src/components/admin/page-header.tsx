@@ -25,7 +25,7 @@ export function PageHeader({
             silently overrode the tighter line height that scale specifies. */}
         <h1>{title}</h1>
         {description ? (
-          <div className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          <div className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
             {description}
           </div>
         ) : null}

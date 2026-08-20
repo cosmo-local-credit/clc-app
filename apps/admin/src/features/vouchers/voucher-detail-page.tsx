@@ -117,7 +117,7 @@ export function VoucherDetailPage({
             <img
               src={voucher.iconUrl}
               alt=""
-              className="size-12 shrink-0 border border-border bg-card object-cover"
+              className="border-border bg-card size-12 shrink-0 border object-cover"
             />
           ) : null}
           <div className="min-w-0 space-y-2">
@@ -132,7 +132,7 @@ export function VoucherDetailPage({
             </div>
             <MonoCopy value={voucher.address} full />
             {voucher.description ? (
-              <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
                 {voucher.description}
               </p>
             ) : null}
@@ -168,7 +168,7 @@ export function VoucherDetailPage({
       <section className="grid gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
         {facts.map((fact) => (
           <div key={fact.label} className="min-w-0 space-y-1">
-            <div className="font-mono text-[0.6875rem] tracking-[0.14em] text-muted-foreground uppercase">
+            <div className="text-muted-foreground font-mono text-[0.6875rem] tracking-[0.14em] uppercase">
               {fact.label}
             </div>
             <div className="text-sm">{fact.value}</div>

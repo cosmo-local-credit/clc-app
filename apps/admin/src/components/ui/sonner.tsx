@@ -27,12 +27,12 @@ const toastClassNames = {
 } satisfies NonNullable<NonNullable<ToasterProps["toastOptions"]>["classNames"]>;
 
 const toastIcons = {
-  success: <RiCheckboxCircleLine className="size-4 text-primary" aria-hidden="true" />,
-  error: <RiErrorWarningLine className="size-4 text-destructive" aria-hidden="true" />,
-  info: <RiInformationLine className="size-4 text-foreground" aria-hidden="true" />,
-  warning: <RiAlertLine className="size-4 text-state-pending" aria-hidden="true" />,
+  success: <RiCheckboxCircleLine className="text-primary size-4" aria-hidden="true" />,
+  error: <RiErrorWarningLine className="text-destructive size-4" aria-hidden="true" />,
+  info: <RiInformationLine className="text-foreground size-4" aria-hidden="true" />,
+  warning: <RiAlertLine className="text-state-pending size-4" aria-hidden="true" />,
   loading: (
-    <RiLoader4Line className="size-4 animate-spin text-muted-foreground" aria-hidden="true" />
+    <RiLoader4Line className="text-muted-foreground size-4 animate-spin" aria-hidden="true" />
   ),
 } satisfies ToasterProps["icons"];
 

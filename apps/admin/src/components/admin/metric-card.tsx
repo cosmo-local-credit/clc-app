@@ -70,7 +70,7 @@ export function MetricCard({
   const body = (
     <div
       className={cn(
-        "relative flex h-full items-start justify-between gap-3 border border-border bg-card text-card-foreground transition-colors",
+        "border-border bg-card text-card-foreground relative flex h-full items-start justify-between gap-3 border transition-colors",
         compact ? "min-h-0 p-3" : "min-h-24 p-4",
         link && "hover:bg-accent/60",
         className,
@@ -79,7 +79,7 @@ export function MetricCard({
       <div className={cn("min-w-0", compact ? "space-y-1" : "space-y-2")}>
         <div
           className={cn(
-            "font-mono font-medium text-muted-foreground uppercase",
+            "text-muted-foreground font-mono font-medium uppercase",
             // Tighter tracking at the small size: "Pool memberships" has to fit a
             // column, and 0.14em is what pushes it onto a third line.
             compact ? "text-[0.625rem] tracking-[0.08em]" : "text-xs tracking-[0.14em]",
@@ -132,7 +132,7 @@ export function MetricCard({
     <Link
       to={link.to}
       search={{ perPage: DEFAULT_PAGE_SIZE }}
-      className="block h-full outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className="focus-visible:ring-ring block h-full outline-none focus-visible:ring-1"
     >
       {body}
     </Link>

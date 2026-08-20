@@ -197,7 +197,7 @@ export function LocationMap({
     <section
       ref={containerRef}
       aria-label="Location map"
-      className={cn("h-48 w-full overflow-hidden border border-border bg-card", className)}
+      className={cn("border-border bg-card h-48 w-full overflow-hidden border", className)}
     />
   );
 }

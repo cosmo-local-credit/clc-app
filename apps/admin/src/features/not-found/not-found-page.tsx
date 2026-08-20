@@ -16,12 +16,17 @@ export function NotFoundPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="No such page" description="This console has no route for that address." />
 
-      <div className="border border-border bg-card p-4">
+      <div className="border-border bg-card border p-4">
         <p className="font-data text-sm break-all">{pathname}</p>
       </div>
 
-      <Button variant="outline" className="self-start" render={<Link to="/" />}>
-        Back to overview
+      <Button
+        variant="outline"
+        className="self-start"
+        nativeButton={false}
+        render={<Link to="/" />}
+      >
+        Back to dashboard
       </Button>
     </div>
   );

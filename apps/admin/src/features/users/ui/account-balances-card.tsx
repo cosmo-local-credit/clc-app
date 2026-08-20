@@ -33,7 +33,7 @@ export function AccountBalancesCard({
         </CardTitle>
         {state.kind === "ready" ? (
           <CardAction>
-            <span className="font-data text-xs text-muted-foreground">{tokens.length}</span>
+            <span className="font-data text-muted-foreground text-xs">{tokens.length}</span>
           </CardAction>
         ) : null}
       </CardHeader>
@@ -46,13 +46,13 @@ export function AccountBalancesCard({
             ))}
           </div>
         ) : state.kind === "error" ? (
-          <p className="text-sm text-destructive">Could not load balances</p>
+          <p className="text-destructive text-sm">Could not load balances</p>
         ) : state.kind === "empty" ? (
-          <p className="text-sm text-muted-foreground">No balances</p>
+          <p className="text-muted-foreground text-sm">No balances</p>
         ) : (
           <>
             {state.kind === "stale" ? (
-              <p className="mb-3 text-xs text-muted-foreground">Showing the last known balances</p>
+              <p className="text-muted-foreground mb-3 text-xs">Showing the last known balances</p>
             ) : null}
             {/* Focusable and named so the list can be scrolled from the keyboard:
                 a scroll container that only answers to a mouse wheel strands
@@ -65,8 +65,8 @@ export function AccountBalancesCard({
               // edge whether the account holds two vouchers or twenty, and the
               // overflow scrolls inside the card instead of stretching the page.
               className={cn(
-                "flex min-h-0 flex-1 flex-col divide-y divide-border overflow-y-auto",
-                "outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                "divide-border flex min-h-0 flex-1 flex-col divide-y overflow-y-auto",
+                "focus-visible:ring-ring outline-none focus-visible:ring-1",
               )}
             >
               {tokens.map((token) => (
@@ -76,13 +76,13 @@ export function AccountBalancesCard({
                 >
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium">{token.tokenName}</div>
-                    <div className="font-data text-xs text-muted-foreground">
+                    <div className="font-data text-muted-foreground text-xs">
                       {formatVoucherAddress(token.tokenAddress as `0x${string}`)}
                     </div>
                   </div>
-                  <div className="shrink-0 text-right font-data text-sm">
+                  <div className="font-data shrink-0 text-right text-sm">
                     {formatTokenAmount(token.balance, token.tokenDecimals)}
-                    <div className="font-mono text-xs text-muted-foreground">
+                    <div className="text-muted-foreground font-mono text-xs">
                       {token.tokenSymbol}
                     </div>
                   </div>

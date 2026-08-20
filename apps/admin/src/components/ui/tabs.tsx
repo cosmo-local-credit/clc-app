@@ -30,7 +30,7 @@ function TabsList({ className, ...props }: TabsPrimitive.List.Props) {
     <TabsPrimitive.List
       data-slot="tabs-list"
       className={cn(
-        "inline-flex w-fit max-w-full items-center overflow-x-auto border border-border bg-card p-1",
+        "border-border bg-card inline-flex w-fit max-w-full items-center overflow-x-auto border p-1",
         className,
       )}
       {...props}
@@ -43,8 +43,8 @@ function TabsTab({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-tab"
       className={cn(
-        "inline-flex h-8 shrink-0 items-center gap-2 px-3 text-xs font-semibold whitespace-nowrap text-muted-foreground outline-none",
-        "focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset",
+        "text-muted-foreground inline-flex h-8 shrink-0 items-center gap-2 px-3 text-xs font-semibold whitespace-nowrap outline-none",
+        "focus-visible:ring-ring focus-visible:ring-1 focus-visible:ring-inset",
         // Keyed on aria-selected, which Base UI sets on the element itself. Its
         // own state attribute is `data-active` — there is no `data-selected`, and
         // styling one silently produces a tab bar with no visible selection.

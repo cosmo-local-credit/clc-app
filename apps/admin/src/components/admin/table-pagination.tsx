@@ -47,7 +47,7 @@ export function TablePagination({
     <div className="flex w-full flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <ButtonGroup>
-          <ButtonGroupText className="h-8 border-border px-2.5">Rows</ButtonGroupText>
+          <ButtonGroupText className="border-border px-2.5">Rows</ButtonGroupText>
           <Select
             value={String(search.perPage)}
             onValueChange={(value) => {
@@ -58,7 +58,7 @@ export function TablePagination({
           >
             <SelectTrigger
               size="default"
-              className="h-8 min-h-8 w-20 min-w-20 rounded-none px-2.5"
+              className="w-20 min-w-20 px-2.5"
               aria-label="Rows per page"
             >
               <SelectValue />
@@ -73,7 +73,7 @@ export function TablePagination({
           </Select>
         </ButtonGroup>
         {dropped > 0 ? (
-          <span className="font-data text-sm text-muted-foreground tabular-nums">
+          <span className="font-data text-muted-foreground text-sm tabular-nums">
             {dropped} dropped from this page
           </span>
         ) : null}
