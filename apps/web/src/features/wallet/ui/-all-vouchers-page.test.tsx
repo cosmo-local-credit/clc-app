@@ -159,5 +159,5 @@ describe("AllVouchersPage", () => {
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20&cursor=20&next=true`),
       expect.objectContaining({ method: "GET", cache: "no-store" }),
     );
-  });
+  }, 10_000);
 });

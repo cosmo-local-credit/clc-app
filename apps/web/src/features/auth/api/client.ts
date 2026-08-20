@@ -182,6 +182,7 @@ export type ProfilePayload = {
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
+  clearLocation?: boolean;
 };
 
 export async function submitProfile(payload: ProfilePayload): Promise<void> {
@@ -195,6 +196,7 @@ export async function submitProfile(payload: ProfilePayload): Promise<void> {
       locationName: payload.locationName,
       geoLat: payload.geoLat,
       geoLng: payload.geoLng,
+      ...(payload.clearLocation ? { clearLocation: true } : {}),
     }),
   });
 }

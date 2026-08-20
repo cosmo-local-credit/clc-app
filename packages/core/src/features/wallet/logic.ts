@@ -1,5 +1,50 @@
+import { z } from "zod";
+
 const DECIMAL_STRING_PATTERN = /^\d+$/;
 const TOKEN_AMOUNT_PATTERN = /^\d+(?:\.\d*)?$/;
+
+export const SEND_SHARE_PERMISSION = {
+  email: 1 << 0,
+  phone: 1 << 1,
+  location: 1 << 2,
+} as const;
+
+export const SEND_SHARE_PERMISSION_ALL =
+  SEND_SHARE_PERMISSION.email | SEND_SHARE_PERMISSION.phone | SEND_SHARE_PERMISSION.location;
+
+export type SendShareSelection = {
+  email: boolean;
+  phone: boolean;
+  location: boolean;
+};
+
+export function buildSendSharePermission(selection: SendShareSelection): number {
+  let permission = 0;
+  if (selection.email) permission |= SEND_SHARE_PERMISSION.email;
+  if (selection.phone) permission |= SEND_SHARE_PERMISSION.phone;
+  if (selection.location) permission |= SEND_SHARE_PERMISSION.location;
+  return permission;
+}
+
+export function hasSendSharePermission(permission: number, flag: number): boolean {
+  return (permission & flag) === flag;
+}
+
+export const sendShareFormSchema = z
+  .object({
+    note: z.string().trim().max(500, { message: "Message must be 500 characters or fewer" }),
+    email: z.boolean(),
+    phone: z.boolean(),
+    location: z.boolean(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.note || value.email || value.phone || value.location) return;
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Add a message or choose profile details",
+      path: ["note"],
+    });
+  });
 
 export function formatTokenAmount(
   rawAmount: string,

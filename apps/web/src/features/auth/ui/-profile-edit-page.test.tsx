@@ -187,4 +187,34 @@ describe("ProfileEditPage", () => {
     });
     expect(historyBack).toHaveBeenCalledTimes(1);
   });
+
+  it("clears a saved location explicitly", async () => {
+    const fetchMock = mockBackend({
+      locationName: "Mombasa, Kenya",
+      geoLat: -4.0435,
+      geoLng: 39.6682,
+    });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /clear location/i }));
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    const postCall = fetchMock.mock.calls.find(
+      ([input, init]) => requestUrl(input).includes("/auth/profile") && init?.method === "POST",
+    );
+    const body = JSON.parse(postCall?.[1]?.body as string) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      name: "Alice",
+      email: "alice@example.com",
+      phone: "+254712345678",
+      country: "KE",
+      clearLocation: true,
+    });
+    expect(body).not.toHaveProperty("locationName");
+    expect(body).not.toHaveProperty("geoLat");
+    expect(body).not.toHaveProperty("geoLng");
+  });
 });

@@ -1,9 +1,14 @@
+import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
+import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
+import { Field } from "#/components/ui/field";
+import { Textarea } from "#/components/ui/textarea";
 import {
   EllipsizedAddress,
   FailureCross,
@@ -13,6 +18,11 @@ import {
   SuccessCheck,
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import {
+  useCreateSendShare,
+  useSendShareEligibility,
+} from "#/features/wallet/hooks/use-send-share";
 import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
 import { RELAYER_URL } from "#/lib/backend-config";
 
@@ -161,6 +171,8 @@ export function SendReceiptPage({
         </div>
       </div>
 
+      {txHash && toAddress ? <SendSharePanel txHash={txHash} recipientAddress={toAddress} /> : null}
+
       <div className="flex-1" />
 
       <div className="flex gap-3">
@@ -176,6 +188,205 @@ export function SendReceiptPage({
         ) : null}
       </div>
     </div>
+  );
+}
+
+function SendSharePanel({
+  txHash,
+  recipientAddress,
+}: {
+  txHash: string;
+  recipientAddress: string;
+}) {
+  const { t } = useLingui();
+  const eligibility = useSendShareEligibility(recipientAddress);
+  const profile = useAuthProfile();
+  const createShare = useCreateSendShare(txHash);
+  const hasEmail = !!profile.data?.email && !profile.data.email.endsWith("@clc.local");
+  const hasPhone = !!profile.data?.phone;
+  const hasLocation =
+    !!profile.data?.locationName && profile.data.geoLat != null && profile.data.geoLng != null;
+  const form = useForm({
+    defaultValues: {
+      note: "",
+      email: false,
+      phone: false,
+      location: false,
+    },
+    validators: { onSubmit: sendShareFormSchema },
+    onSubmit: async ({ value }) => {
+      const parsed = sendShareFormSchema.parse(value);
+      const permission = buildSendSharePermission(parsed);
+      try {
+        await createShare.mutateAsync({
+          permission,
+          ...(parsed.note ? { note: parsed.note } : {}),
+        });
+      } catch {
+        return;
+      }
+    },
+  });
+
+  if (eligibility.isPending) {
+    return (
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+        <Trans>Checking message availability…</Trans>
+      </p>
+    );
+  }
+
+  if (eligibility.isError) {
+    return (
+      <div className="mb-5 flex items-center justify-between gap-3 border border-border bg-card p-3">
+        <p className="text-muted-foreground text-xs">
+          <Trans>Couldn't check message availability.</Trans>
+        </p>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="bg-card"
+          onClick={() => eligibility.refetch()}
+        >
+          <Trans>Retry</Trans>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!eligibility.data) {
+    return (
+      <p className="mb-5 border border-border bg-card p-3 text-muted-foreground text-xs">
+        <Trans>Messages are available only for registered Cosmo users.</Trans>
+      </p>
+    );
+  }
+
+  if (createShare.isSuccess) {
+    return (
+      <p className="mb-5 border border-primary/30 bg-card p-3 font-semibold text-primary text-sm">
+        <Trans>Message shared.</Trans>
+      </p>
+    );
+  }
+
+  return (
+    <details className="mb-5 border border-border bg-card">
+      <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+        <Trans>Add a private message</Trans>
+      </summary>
+      <form
+        className="space-y-3 border-border border-t p-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          void form.handleSubmit();
+        }}
+      >
+        <form.Field name="note">
+          {(field) => (
+            <Field
+              label={t`Message`}
+              htmlFor="send-share-note"
+              error={getFieldError(field.state.meta.errors)}
+            >
+              <Textarea
+                id="send-share-note"
+                value={field.state.value}
+                maxLength={500}
+                placeholder={t`Optional message`}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                aria-invalid={field.state.meta.errors.length > 0}
+              />
+            </Field>
+          )}
+        </form.Field>
+
+        <div className="space-y-2">
+          {hasEmail ? (
+            <form.Field name="email">
+              {(field) => (
+                <ShareOption
+                  id="send-share-email"
+                  label={t`Email`}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+              )}
+            </form.Field>
+          ) : null}
+          {hasPhone ? (
+            <form.Field name="phone">
+              {(field) => (
+                <ShareOption
+                  id="send-share-phone"
+                  label={t`Phone`}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+              )}
+            </form.Field>
+          ) : null}
+          {hasLocation ? (
+            <form.Field name="location">
+              {(field) => (
+                <ShareOption
+                  id="send-share-location"
+                  label={t`Location`}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+              )}
+            </form.Field>
+          ) : null}
+        </div>
+
+        {createShare.error ? (
+          <p className="text-destructive text-xs" role="alert">
+            {createShare.error instanceof Error
+              ? createShare.error.message
+              : t`Couldn't share this message.`}
+          </p>
+        ) : null}
+
+        <form.Subscribe selector={(state) => state.values}>
+          {(values) => {
+            const hasContent =
+              values.note.trim() !== "" || values.email || values.phone || values.location;
+            return (
+              <Button
+                type="submit"
+                className="h-11 w-full"
+                disabled={!hasContent || createShare.isPending}
+              >
+                {createShare.isPending ? <Trans>Sharing…</Trans> : <Trans>Share</Trans>}
+              </Button>
+            );
+          }}
+        </form.Subscribe>
+      </form>
+    </details>
+  );
+}
+
+function ShareOption({
+  id,
+  label,
+  checked,
+  onCheckedChange,
+}: {
+  id: string;
+  label: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <label htmlFor={id} className="flex min-h-11 cursor-pointer items-center justify-between gap-3">
+      <span className="text-sm">{label}</span>
+      <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+    </label>
   );
 }
 

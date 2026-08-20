@@ -1,6 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
-import { profileSchema } from "@clc/core/features/signup/logic";
+import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
@@ -66,13 +66,6 @@ export function ProfileEditPage() {
   );
 }
 
-type ProfileEditFormValues = {
-  name: string;
-  email: string;
-  phone: string;
-  location: LocationInput | undefined;
-};
-
 function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const { i18n, t } = useLingui();
   const router = useRouter();
@@ -91,26 +84,32 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     ? seededLocation.data
     : undefined;
 
+  const defaultValues: ProfileEditInput = {
+    name: profile.name ?? "",
+    email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
+    phone: profile.phone ?? "",
+    location: initialLocation,
+  };
+
   const form = useForm({
-    defaultValues: {
-      name: profile.name ?? "",
-      email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
-      phone: profile.phone ?? "",
-      location: initialLocation,
-    } satisfies ProfileEditFormValues,
-    validators: { onChange: profileSchema },
+    defaultValues,
+    validators: { onChange: profileEditSchema },
     onSubmit: async ({ value }) => {
       setSubmitError(null);
       try {
-        const parsed = profileSchema.parse(value);
+        const parsed = profileEditSchema.parse(value);
         await updateProfile.mutateAsync({
           name: parsed.name,
           email: parsed.email,
           phone: parsed.phone,
-          country: parsed.location.country,
-          locationName: parsed.location.locationName,
-          geoLat: parsed.location.lat,
-          geoLng: parsed.location.lng,
+          country: parsed.location?.country ?? profile.country,
+          ...(parsed.location
+            ? {
+                locationName: parsed.location.locationName,
+                geoLat: parsed.location.lat,
+                geoLng: parsed.location.lng,
+              }
+            : { clearLocation: true }),
         });
         toast.success(t`Profile updated`);
         if (canGoBack) {
@@ -225,17 +224,29 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           return (
             <form.Subscribe selector={(s) => s.submissionAttempts}>
               {(submissionAttempts) => (
-                <LocationPicker
-                  value={field.state.value}
-                  onChange={(next) => field.handleChange(next)}
-                  error={
-                    field.state.meta.isTouched || submissionAttempts > 0
-                      ? err
-                        ? translateValidationError(err, i18n)
+                <div className="space-y-3">
+                  <LocationPicker
+                    value={field.state.value}
+                    onChange={(next) => field.handleChange(next)}
+                    error={
+                      field.state.meta.isTouched || submissionAttempts > 0
+                        ? err
+                          ? translateValidationError(err, i18n)
+                          : undefined
                         : undefined
-                      : undefined
-                  }
-                />
+                    }
+                  />
+                  {field.state.value ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 w-full bg-card"
+                      onClick={() => field.handleChange(undefined)}
+                    >
+                      <Trans>Clear location</Trans>
+                    </Button>
+                  ) : null}
+                </div>
               )}
             </form.Subscribe>
           );
