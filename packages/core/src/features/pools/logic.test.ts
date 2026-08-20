@@ -164,7 +164,7 @@ describe("toPoolDeployPayload", () => {
 
   it("does not send baseCurrency when the pricing strategy does not use it", () => {
     expect(
-      toPoolDeployPayload({ ...validPool, pricing: "relative" }, OWNER, CELO_MAINNET_CHAIN_ID),
+      toPoolDeployPayload({ ...validPool, pricing: "decimal" }, OWNER, CELO_MAINNET_CHAIN_ID),
     ).not.toHaveProperty("baseCurrency");
   });
 

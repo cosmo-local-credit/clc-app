@@ -48,10 +48,36 @@ export const poolSproutLicenseSchema = z.literal(true, {
 });
 
 const poolUnitSchema = z.enum(["KES", "USD", "HOUR"]);
-const poolPricingSchema = z.enum(["oracle", "relative", "decimal"]);
+
+/**
+ * The pricing models a new pool may be published with.
+ *
+ * RelativeQuoter is deliberately absent. It prices from manually maintained
+ * per-token rates, which nothing in this product maintains — clc-core dropped
+ * `pool_tokens.exchange_rate` in migration 007 — so a pool published on it has
+ * no rate source and quotes whatever was last written by hand. DecimalQuoter
+ * covers the same ground without that: it derives every pair from token
+ * decimals, holds no state, and needs no per-voucher configuration.
+ *
+ * The backend still deploys and records relative pools, so this is a narrowing
+ * of what is offered, not of what exists — see `poolQuoterTypeSchema`.
+ */
+const poolPricingSchema = z.enum(["oracle", "decimal"]);
+
+/**
+ * The pricing models a pool may *be*, which is the wider set.
+ *
+ * A pool published before RelativeQuoter was retired still runs one, and the
+ * console has to be able to say so rather than mistake it for a model whose
+ * setters it would then sign against the wrong contract.
+ */
+const poolQuoterTypeSchema = z.enum(["oracle", "relative", "decimal"]);
 
 export type PoolUnit = z.infer<typeof poolUnitSchema>;
 export type PoolPricing = z.infer<typeof poolPricingSchema>;
+export type PoolQuoterType = z.infer<typeof poolQuoterTypeSchema>;
+
+export const POOL_QUOTER_TYPES = poolQuoterTypeSchema.options;
 
 const CELO_MAINNET_ORACLE_BASE_CURRENCY = {
   KES: CELO_MAINNET_CKES_ADDRESS,
@@ -122,9 +148,9 @@ export type PoolDeployPayload = {
   website?: string;
   phone?: string;
   terms?: string;
-  locationName: string;
-  geoLat: number;
-  geoLng: number;
+  locationName?: string;
+  geoLat?: number;
+  geoLng?: number;
   tags: string[];
 };
 
