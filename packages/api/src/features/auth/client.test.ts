@@ -416,7 +416,7 @@ describe("submitProfile — avatar", () => {
     expect("avatarUrl" in sent).toBe(false);
   });
 
-  it("sends the backend's clearing sentinel for null, not JSON null", async () => {
+  it("sends clearAvatar for null, not JSON null", async () => {
     const fetchMock = mockFetch({ body: { ok: true, result: { address: "0xabc" } } });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -431,7 +431,8 @@ describe("submitProfile — avatar", () => {
     // clc-core decodes JSON null to the same nil pointer as an absent key, and nil
     // preserves. Sending null would silently leave the avatar in place.
     const sent = JSON.parse(fetchMock.mock.calls[0][1].body as string);
-    expect(sent.avatarUrl).toBe("");
+    expect(sent.clearAvatar).toBe(true);
+    expect("avatarUrl" in sent).toBe(false);
   });
 
   it("returns the saved row so a caller can seed the profile query", async () => {

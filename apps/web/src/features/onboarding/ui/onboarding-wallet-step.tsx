@@ -31,6 +31,8 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 
 type Props = {
   profileData: ProfileInput;
+  /** Chosen on the profile step; uploaded here, once a session exists. */
+  avatarFile: File | null;
   /** Stable key owned by OnboardingFlow — must not be regenerated on remount. */
   privateKey: `0x${string}`;
   backendRegistered: boolean;
@@ -46,6 +48,7 @@ type Props = {
 
 export function OnboardingWalletStep({
   profileData,
+  avatarFile,
   privateKey: pk,
   backendRegistered,
   onBackendRegistered,
@@ -266,7 +269,7 @@ export function OnboardingWalletStep({
 
   async function ensureBackendSignup() {
     if (backendRegistered) return;
-    await backendSignup.mutateAsync({ profile: profileData, privateKey: pk });
+    await backendSignup.mutateAsync({ profile: profileData, privateKey: pk, avatarFile });
     onBackendRegistered();
   }
 
