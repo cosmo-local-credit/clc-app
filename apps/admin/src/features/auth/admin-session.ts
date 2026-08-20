@@ -20,6 +20,7 @@ import { type QueryClient, useMutation, useQuery, useQueryClient } from "@tansta
 import { BackendApiError } from "@clc/api/client/errors";
 import type { SessionResult } from "@clc/api/features/auth/client";
 import { clcApi } from "#/lib/api";
+import { useOperatorKeyStore } from "./operator-key";
 import { errorMessage } from "#/lib/data-state";
 
 /** The one role that may use this console. */
@@ -140,6 +141,11 @@ export function useAdminSignOut() {
     onSettled: async () => {
       // Settled, not success: if the request failed the cookie may still be gone,
       // and a stale "authenticated" console is the worse outcome.
+      //
+      // The signing key goes with it. It outlives no session: whoever signs in
+      // next must present their own, or the console would offer to sign as the
+      // operator who just left.
+      useOperatorKeyStore.getState().clear();
       clearProtectedQueries(queryClient);
       await queryClient.invalidateQueries({ queryKey: adminSessionQueryKey });
     },
