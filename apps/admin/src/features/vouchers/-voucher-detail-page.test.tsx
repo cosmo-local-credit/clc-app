@@ -222,7 +222,7 @@ describe("VoucherDetailPage tabs", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Transactions" }));
     expect(await screen.findByText("transfer")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Open in transactions" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open transactions" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("tab", { name: "Reports" }));
     expect(await screen.findByText("Market day")).toBeTruthy();
