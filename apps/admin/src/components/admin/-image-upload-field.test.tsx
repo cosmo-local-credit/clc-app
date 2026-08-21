@@ -79,7 +79,7 @@ describe("ImageUploadField", () => {
   });
 
   it("offers Replace once there is an image, and Upload before that", () => {
-    const { rerender, container } = render(
+    const { rerender } = render(
       <ImageUploadField label="Logo" purpose="pool.image" value={null} onChange={vi.fn()} />,
     );
     expect(screen.getByRole("button", { name: /upload/i })).toBeTruthy();
@@ -94,11 +94,27 @@ describe("ImageUploadField", () => {
       />,
     );
     expect(screen.getByRole("button", { name: /replace/i })).toBeTruthy();
+  });
+
+  it("previews the stored image", () => {
+    // A banner, because it is the one shape previewed as a plain image. A 1:1
+    // preview goes through Avatar, which mounts its image only after the browser
+    // reports a successful load — something jsdom never does, so asserting it
+    // would be asserting Base UI's loading behaviour rather than this control's.
+    const { container } = render(
+      <ImageUploadField
+        label="Banner"
+        purpose="pool.banner"
+        value="https://cdn.test/pool/b_1280_ab.webp"
+        onChange={vi.fn()}
+      />,
+    );
+
     // alt="" on purpose: the label names the control, so the preview is
     // decorative and carries no role.
     expect(container.querySelector("img")).toHaveProperty(
       "src",
-      "https://cdn.test/pool/a_400_ab.webp",
+      "https://cdn.test/pool/b_1280_ab.webp",
     );
   });
 

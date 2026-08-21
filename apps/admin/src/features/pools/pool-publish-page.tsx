@@ -607,7 +607,6 @@ export function PoolPublishPage() {
                       label="Banner"
                       hint="Wide. Stored at 1280px."
                       purpose="pool.banner"
-                      shape="wide"
                       value={field.state.value === "" ? null : field.state.value}
                       onChange={(url) => field.handleChange(url ?? "")}
                       disabled={deployment.publishing}
