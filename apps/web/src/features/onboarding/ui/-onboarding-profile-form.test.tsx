@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { mockNavigate } = vi.hoisted(() => ({
@@ -315,11 +315,8 @@ describe("OnboardingProfileForm photo", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
 
-    const photo = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
-    fireEvent.change(screen.getByLabelText("Choose a profile photo"), {
-      target: { files: [photo] },
-    });
-
+    // The identity fields first: the frame is modal, so nothing behind it is
+    // reachable while a photo is being positioned.
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
     });
@@ -328,12 +325,23 @@ describe("OnboardingProfileForm photo", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
+    const photo = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
+    fireEvent.change(screen.getByLabelText("Choose a profile photo"), {
+      target: { files: [photo] },
+    });
+    // Selection opens the frame; the photo reaches the form only once framed.
+    await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Use photo" }));
+    });
+
     await act(async () => {
       fireEvent.submit(screen.getByRole("form"));
     });
 
     // Beside the profile, not inside it: the schema is shared with @clc/core and
-    // cannot name a File.
+    // cannot name a File. jsdom has no createImageBitmap, so the encode falls
+    // back to the original file — which is the same object identity here.
     expect(mockOnNext).toHaveBeenCalledWith(expect.objectContaining({ name: "Alice" }), photo);
   });
 });

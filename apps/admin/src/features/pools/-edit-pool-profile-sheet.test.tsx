@@ -166,6 +166,12 @@ describe("EditPoolProfileSheet", () => {
   });
 });
 
+/** Selection opens the crop frame; confirming it is what uploads. */
+async function confirmCrop() {
+  await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "Crop and upload" }));
+}
+
 describe("EditPoolProfileSheet images", () => {
   it("leaves the stored images alone when the operator did not touch them", async () => {
     renderSheet({ imageUrl: "https://cdn.test/pool/kept_400_ab.webp" });
@@ -191,6 +197,7 @@ describe("EditPoolProfileSheet images", () => {
       target: { files: [new File([new Uint8Array(8)], "logo.png", { type: "image/png" })] },
     });
 
+    await confirmCrop();
     await waitFor(() => expect(screen.getByRole("button", { name: /replace/i })).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
