@@ -5,7 +5,44 @@ import { ImageCropDialog } from "./image-crop-dialog";
 
 const photo = () => new File([new Uint8Array(8)], "logo.png", { type: "image/png" });
 
+/**
+ * jsdom lays nothing out, so clientWidth/clientHeight are always 0 and the frame
+ * would measure itself as empty. Fixing them here is what lets the test see the
+ * scale the component computes — the bug this guards against rendered the image
+ * at zero size because the frame was never measured at all.
+ */
+function stubLayout(width: number, height: number) {
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(width);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(height);
+}
+
 describe("ImageCropDialog", () => {
+  it("scales the image to cover the frame it measured", async () => {
+    stubLayout(480, 256);
+    render(
+      <ImageCropDialog
+        file={photo()}
+        purpose="pool.image"
+        onCancel={vi.fn()}
+        onCropped={vi.fn()}
+      />,
+    );
+
+    const image = await waitFor(() => {
+      const found = document.querySelector<HTMLImageElement>('[role="group"] img');
+      expect(found).toBeTruthy();
+      return found as HTMLImageElement;
+    });
+
+    // The frame is measured on mount rather than on a resize event: the dialog
+    // lives in a portal that mounts after this component's first effects, so a
+    // ref read at open time is null and no resize ever follows.
+    const width = Number.parseFloat(image.style.width);
+    expect(width).toBeGreaterThan(0);
+    // A 1600x900 source in a 256x256 square frame covers via its height.
+    expect(width).toBeCloseTo((1600 * 256) / 900, 0);
+  });
+
   it("hands back a file when the frame is confirmed", async () => {
     const onCropped = vi.fn();
     render(
