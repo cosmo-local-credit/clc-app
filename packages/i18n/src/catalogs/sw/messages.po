@@ -319,7 +319,7 @@ msgstr "Ongeza ujumbe au uchague maelezo ya wasifu"
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "Ongeza nambari ya simu kwenye wasifu wako ili kutumia MPESA."
 
-#: apps/web/src/components/ui/avatar-picker.tsx:96
+#: apps/web/src/components/ui/avatar-picker.tsx:110
 msgid "Add a photo"
 msgstr "Ongeza picha"
 
@@ -560,7 +560,7 @@ msgstr "Kategoria"
 msgid "Celo network"
 msgstr "Mtandao wa Celo"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:96
+#: apps/web/src/components/ui/avatar-picker.tsx:110
 msgid "Change photo"
 msgstr "Badilisha picha"
 
@@ -604,7 +604,7 @@ msgstr "Inaangalia usambazaji…"
 msgid "Checking…"
 msgstr "Inakagua…"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:51
+#: apps/web/src/components/ui/avatar-picker.tsx:55
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Chagua picha ya JPEG, PNG au WebP."
 
@@ -613,7 +613,7 @@ msgstr "Chagua picha ya JPEG, PNG au WebP."
 msgid "Choose a location"
 msgstr "Chagua eneo"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:81
+#: apps/web/src/components/ui/avatar-picker.tsx:95
 msgid "Choose a profile photo"
 msgstr "Chagua picha ya wasifu"
 
@@ -625,6 +625,10 @@ msgstr "Chagua picha ya wasifu"
 #: apps/web/src/lib/validation-i18n.ts:83
 msgid "Choose an expiration date"
 msgstr "Chagua tarehe ya mwisho wa matumizi"
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:261
+msgid "Choose another"
+msgstr "Chagua nyingine"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:52
 msgid "Choose between light and dark mode."
@@ -1248,6 +1252,10 @@ msgid "Download or photograph this card. Anyone who scans the QR code will have 
 msgstr "Pakua au piga picha kadi hii. Yeyote anayechanganua msimbo wa QR "
 "atapata ufikiaji kamili wa mkoba huu."
 
+#: apps/web/src/components/ui/image-crop-sheet.tsx:141
+msgid "Drag to move, pinch or use the slider to zoom."
+msgstr "Vuta kusogeza, finya au tumia kitelezi kukuza."
+
 #: apps/web/src/features/home/ui/report-page.tsx:382
 msgid "Duration"
 msgstr "Muda"
@@ -1473,6 +1481,10 @@ msgstr "Usambazaji wa kwanza"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:375
 msgid "Follows the selected unit's feed"
 msgstr "Hufuata chanzo cha bei cha kipimo kilichochaguliwa"
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:138
+msgid "Frame your photo"
+msgstr "Panga picha yako"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:124
@@ -2230,7 +2242,7 @@ msgstr "Fungua kwenye Ramani"
 msgid "Opening paper wallet..."
 msgstr "Inafungua mkoba wa karatasi..."
 
-#: apps/web/src/components/ui/avatar-picker.tsx:112
+#: apps/web/src/components/ui/avatar-picker.tsx:126
 msgid "Optional"
 msgstr "Hiari"
 
@@ -2458,6 +2470,10 @@ msgstr "Vikundi"
 msgid "Pools list"
 msgstr "Orodha ya puli"
 
+#: apps/web/src/components/ui/image-crop-sheet.tsx:156
+msgid "Position your photo"
+msgstr "Weka picha yako"
+
 #: apps/web/src/features/home/ui/report-page.tsx:56
 msgid "Post not found."
 msgstr "Chapisho hakipatikani."
@@ -2495,6 +2511,10 @@ msgstr "Inaandaa utoaji wako wa pesa…"
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:163
 msgid "Preparing..."
 msgstr "Inaandaa..."
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+msgid "Preparing…"
+msgstr "Inaandaa…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:463
 msgid "Pretium deposits and withdrawals will appear here."
@@ -2773,7 +2793,7 @@ msgstr "Usajili umeshindikana. Angalia muunganisho wako na ujaribu tena."
 msgid "Related vouchers"
 msgstr "Vocha zinazohusiana"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:109
+#: apps/web/src/components/ui/avatar-picker.tsx:123
 msgid "Remove"
 msgstr "Ondoa"
 
@@ -3313,7 +3333,7 @@ msgstr "Sheria na Masharti"
 msgid "Terms URL"
 msgstr "Kiungo cha masharti"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:52
+#: apps/web/src/components/ui/avatar-picker.tsx:56
 msgid "That image is too large. Choose one under 8 MB."
 msgstr "Picha hiyo ni kubwa mno. Chagua yenye chini ya MB 8."
 
@@ -3660,6 +3680,10 @@ msgstr "Tumia herufi na nambari pekee kwa kifupisho cha puli"
 msgid "Use only letters and numbers for the voucher symbol"
 msgstr "Tumia herufi na namba pekee kwa alama ya vocha"
 
+#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+msgid "Use photo"
+msgstr "Tumia picha"
+
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:281
 #~ msgid "Use your location to order vouchers by distance."
 #~ msgstr "Tumia eneo lako kupanga vocha kulingana na umbali."
@@ -3989,7 +4013,7 @@ msgstr "Mkoba wako wa karatasi"
 msgid "Your profile"
 msgstr "Wasifu wako"
 
-#: apps/web/src/components/ui/avatar-picker.tsx:69
+#: apps/web/src/components/ui/avatar-picker.tsx:81
 msgid "Your profile photo"
 msgstr "Picha yako ya wasifu"
 
@@ -4000,3 +4024,8 @@ msgstr "Picha yako ya wasifu"
 #: apps/web/src/features/home/ui/wallet-page.tsx:63
 msgid "Your Vouchers"
 msgstr "Hati zako"
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:232
+#: apps/web/src/components/ui/image-crop-sheet.tsx:235
+msgid "Zoom"
+msgstr "Kuza"

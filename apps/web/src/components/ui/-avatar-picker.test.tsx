@@ -35,14 +35,24 @@ describe("AvatarPicker", () => {
     expect(screen.getByText("Optional")).toBeTruthy();
   });
 
-  it("hands a chosen image to the caller", () => {
+  it("opens the frame rather than accepting the file as chosen", () => {
     const onChange = vi.fn();
     render(<AvatarPicker value={null} onChange={onChange} />);
 
-    const chosen = file("me.jpg", "image/jpeg");
-    choose(chosen);
+    choose(file("me.jpg", "image/jpeg"));
 
-    expect(onChange).toHaveBeenCalledWith(chosen);
+    // An avatar has a fixed display shape, so the file is framed first. Accepting
+    // it here would store a landscape photo to be shown in a circle.
+    expect(screen.getByText("Frame your photo")).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("keeps the frame closed for a file it refused", () => {
+    render(<AvatarPicker value={null} onChange={vi.fn()} />);
+
+    choose(file("me.heic", "image/heic"));
+
+    expect(screen.queryByText("Frame your photo")).toBeNull();
   });
 
   it("previews the chosen file and offers to remove it", () => {

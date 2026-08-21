@@ -294,6 +294,12 @@ describe("PoolPublishPage", () => {
   });
 });
 
+/** Selection opens the crop frame; confirming it is what uploads. */
+async function confirmCrop() {
+  await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "Crop and upload" }));
+}
+
 describe("PoolPublishPage images", () => {
   // The same priming the block above uses: fillRequiredFields drops a pin, which
   // only names itself when the geocoder answers.
@@ -327,12 +333,18 @@ describe("PoolPublishPage images", () => {
     expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
     await fillRequiredFields();
 
+    // One at a time: the frame is modal, so the second file cannot be chosen
+    // until the first is framed.
     fireEvent.change(screen.getByLabelText("Logo", { selector: "input" }), {
       target: { files: [new File([new Uint8Array(8)], "logo.png", { type: "image/png" })] },
     });
+    await confirmCrop();
+
     fireEvent.change(screen.getByLabelText("Banner", { selector: "input" }), {
       target: { files: [new File([new Uint8Array(8)], "banner.jpg", { type: "image/jpeg" })] },
     });
+    await confirmCrop();
+
     await waitFor(() => expect(screen.getAllByRole("button", { name: /replace/i }).length).toBe(2));
 
     fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));

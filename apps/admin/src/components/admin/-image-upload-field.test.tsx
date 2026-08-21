@@ -28,6 +28,18 @@ function file(name: string, type: string, size = 2048): File {
   return f;
 }
 
+/**
+ * Confirms the crop frame that selection opens, which is what starts the upload.
+ *
+ * Readiness is the framed image appearing rather than the button's disabled
+ * attribute: the frame renders its image once the file has decoded, and that is
+ * the same condition that enables the button.
+ */
+async function confirmCrop() {
+  await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "Crop and upload" }));
+}
+
 function choose(f: File) {
   fireEvent.change(screen.getByLabelText("Logo", { selector: "input" }), {
     target: { files: [f] },
@@ -54,6 +66,7 @@ describe("ImageUploadField", () => {
     render(<ImageUploadField label="Logo" purpose="pool.image" value={null} onChange={onChange} />);
 
     choose(file("logo.png", "image/png"));
+    await confirmCrop();
 
     await waitFor(() =>
       expect(onChange).toHaveBeenCalledWith("https://cdn.test/pool/abc_400_a3f91c2e.webp"),
@@ -140,6 +153,7 @@ describe("ImageUploadField", () => {
     );
 
     choose(file("logo.png", "image/png"));
+    await confirmCrop();
 
     await waitFor(() => expect(screen.getByRole("alert").textContent).toMatch(/upload failed/i));
     // Not cleared: a failed replacement must not lose the image that is stored.

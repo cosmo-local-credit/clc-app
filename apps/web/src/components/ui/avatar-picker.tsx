@@ -1,9 +1,10 @@
-import { checkImageFile } from "@clc/api/features/images/policy";
+import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { FaCamera, FaUser } from "react-icons/fa";
 
 import { Button } from "#/components/ui/button";
+import { ImageCropSheet } from "#/components/ui/image-crop-sheet";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 
 type Props = {
@@ -31,6 +32,8 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Chosen but not yet framed. Held here so the sheet owns one job. */
+  const [pending, setPending] = useState<File | null>(null);
 
   useEffect(() => {
     if (!value) {
@@ -57,6 +60,12 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
     }
 
     setError(null);
+    // A profile photo has a fixed display shape, so it is framed before it is
+    // accepted — the picker never sets an unframed file.
+    if (IMAGE_POLICIES["profile.avatar"].aspect) {
+      setPending(file);
+      return;
+    }
     onChange(file);
   }
 
@@ -119,6 +128,16 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
 
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
       </div>
+
+      <ImageCropSheet
+        file={pending}
+        purpose="profile.avatar"
+        onCancel={() => setPending(null)}
+        onCropped={(cropped) => {
+          setPending(null);
+          onChange(cropped);
+        }}
+      />
     </div>
   );
 }
