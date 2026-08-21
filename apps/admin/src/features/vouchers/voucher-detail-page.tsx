@@ -9,7 +9,8 @@ import { StaleNotice } from "#/components/admin/stale-notice";
 import { clcApi } from "#/lib/api";
 import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
-import { EditVoucherSheet, type VoucherEditor } from "./ui/edit-voucher-sheet";
+import { EditVoucherSheet } from "./ui/edit-voucher-sheet";
+import { OfferingEditorSheet, type OfferingEditor } from "./ui/offering-editor-sheet";
 import { VoucherHeader } from "./ui/voucher-header";
 import { VoucherProfileCard } from "./ui/voucher-profile-card";
 import type { VoucherDetailSearch } from "./voucher-detail-search";
@@ -39,7 +40,8 @@ export function VoucherDetailPage({
   const voucherQuery = useQuery(voucherQueryOptions(clcApi.market, address));
   const voucherState = useDataState(voucherQuery, () => false);
 
-  const [editor, setEditor] = useState<VoucherEditor | null>(null);
+  const [editingVoucher, setEditingVoucher] = useState(false);
+  const [offeringEditor, setOfferingEditor] = useState<OfferingEditor | null>(null);
 
   if (voucherState.kind === "pending") return <LoadingBlock rows={8} />;
 
@@ -59,17 +61,28 @@ export function VoucherDetailPage({
     <div className="flex flex-col gap-6">
       {voucherState.kind === "stale" ? <StaleNotice message={voucherState.message} /> : null}
 
-      <VoucherHeader voucher={voucher} onEdit={() => setEditor({ kind: "voucher" })} />
+      <VoucherHeader voucher={voucher} onEdit={() => setEditingVoucher(true)} />
 
       <VoucherProfileCard voucher={voucher} />
 
       <VoucherRecordTabs
         voucher={voucher}
         search={search}
-        onEditOffering={(offering: Offering) => setEditor({ kind: "offering", offering })}
+        onEditOffering={(offering: Offering) => setOfferingEditor({ kind: "edit", offering })}
+        onAddOffering={() => setOfferingEditor({ kind: "create" })}
       />
 
-      <EditVoucherSheet editor={editor} voucher={voucher} onClose={() => setEditor(null)} />
+      <EditVoucherSheet
+        open={editingVoucher}
+        voucher={voucher}
+        onClose={() => setEditingVoucher(false)}
+      />
+
+      <OfferingEditorSheet
+        editor={offeringEditor}
+        voucher={voucher}
+        onClose={() => setOfferingEditor(null)}
+      />
     </div>
   );
 }

@@ -54,15 +54,21 @@ msgstr "{count, plural, one {# chapisho} other {# machapisho}}"
 
 #. placeholder {0}: price.value
 #. placeholder {0}: total.value
-#: apps/web/src/components/offerings/offerings-panel.tsx:231
-#: apps/web/src/components/offerings/offerings-panel.tsx:398
+#: apps/web/src/components/offerings/offerings-panel.tsx:262
+#: apps/web/src/components/offerings/offerings-panel.tsx:456
 msgid "{0} {voucherSymbol}"
 msgstr "{0} {voucherSymbol}"
 
 #. placeholder {0}: price.value
-#: apps/web/src/components/offerings/offerings-panel.tsx:331
+#: apps/web/src/components/offerings/offerings-panel.tsx:389
 msgid "{0} {voucherSymbol} each"
 msgstr "{0} {voucherSymbol} kwa kimoja"
+
+#. placeholder {0}: price.value
+#. placeholder {1}: offering.unitLabel
+#: apps/web/src/components/offerings/offerings-panel.tsx:258
+msgid "{0} {voucherSymbol} per {1}"
+msgstr "{0} {voucherSymbol} kwa {1}"
 
 #. placeholder {0}: contract.name
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:402
@@ -205,7 +211,7 @@ msgstr "1 {0} = {1} {2}"
 
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:635
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -216,6 +222,10 @@ msgstr "ofa 1"
 #: apps/web/src/features/pools/ui/pools-page.tsx:176
 msgid "1 voucher"
 msgstr "vocha 1"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:245
+msgid "A good"
+msgstr "Bidhaa"
 
 #: apps/web/src/routes/__root.tsx:234
 msgid "A paper wallet link was opened. Sign in with this address?"
@@ -230,6 +240,10 @@ msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
 msgstr "Puli hukusanya vocha pamoja ili wanachama waweze kuzibadilisha kwa "
 "thamani iliyochapishwa."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:251
+msgid "A service"
+msgstr "Huduma"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:240
 msgid "A voucher acts like a gift card for your offers. When someone redeems "
@@ -337,6 +351,15 @@ msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
 #~ msgid "Add money"
 #~ msgstr "Ongeza pesa"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:116
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:90
+msgid "Add offering"
+msgstr "Ongeza bidhaa au huduma"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Add photo"
+msgstr "Ongeza picha"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:116
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:306
 msgid "Add stables"
@@ -346,9 +369,13 @@ msgstr "Ongeza stables"
 #~ msgid "Add to a pool"
 #~ msgstr "Ongeza kwenye kikundi"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:418
+#: apps/web/src/components/offerings/offerings-panel.tsx:476
 msgid "Add to cart"
 msgstr "Ongeza kwenye kikapu"
+
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:109
+msgid "Add what you accept this voucher for, and it appears in the marketplace."
+msgstr "Ongeza unachokipokea kwa hati hii, na kitaonekana sokoni."
 
 #: apps/web/src/features/home/ui/account-settings-section.tsx:16
 msgid "Add your contact details"
@@ -470,6 +497,10 @@ msgstr "Rudi kwenye puli"
 #~ msgid "Back to swap"
 #~ msgstr "Rudi kubadilisha"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:63
+msgid "Bag"
+msgstr "Gunia"
+
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:203
 msgid "Balance"
 msgstr "Salio"
@@ -502,6 +533,10 @@ msgstr "Salio {tokenBalance}"
 #: apps/web/src/features/home/ui/market-page.tsx:154
 msgid "Browse all"
 msgstr "Tazama zote"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:67
+msgid "Bundle"
+msgstr "Fungu"
 
 #. placeholder {0}: ratesQuery.data.buy
 #. placeholder {1}: ratesQuery.data.sell
@@ -540,6 +575,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 #: apps/web/src/components/auth/sign-in-panel.tsx:372
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/routes/__root.tsx:248
@@ -605,6 +641,7 @@ msgid "Checking…"
 msgstr "Inakagua…"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:55
+#: apps/web/src/components/ui/image-upload-field.tsx:87
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Chagua picha ya JPEG, PNG au WebP."
 
@@ -626,7 +663,7 @@ msgstr "Chagua picha ya wasifu"
 msgid "Choose an expiration date"
 msgstr "Chagua tarehe ya mwisho wa matumizi"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:261
+#: apps/web/src/components/ui/image-crop-sheet.tsx:270
 msgid "Choose another"
 msgstr "Chagua nyingine"
 
@@ -685,7 +722,7 @@ msgstr "Futa eneo"
 msgid "Clear search"
 msgstr "Ondoa utafutaji"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:306
+#: apps/web/src/components/offerings/offerings-panel.tsx:364
 #: apps/web/src/features/home/ui/report-page.tsx:254
 msgid "Close"
 msgstr "Funga"
@@ -875,13 +912,13 @@ msgstr "Endelea na Mkoba wa Karatasi"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:185
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:166
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:645
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:646
 msgid "Contract address"
 msgstr "Anwani ya mkataba"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:658
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:659
 msgid "Contract address copied"
 msgstr "Anwani ya mkataba imenakiliwa"
 
@@ -891,7 +928,7 @@ msgstr "Nakili"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:169
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:649
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:650
 msgid "Copy contract address"
 msgstr "Nakili anwani ya mkataba"
 
@@ -957,8 +994,8 @@ msgstr "Imeshindwa kunakili anwani"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:653
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:659
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:654
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:660
 msgid "Couldn't copy contract address"
 msgstr "Haikuwezekana kunakili anwani ya mkataba"
 
@@ -995,11 +1032,11 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Haikuwezekana kutambua nchi hapa. Jaribu sehemu iliyo karibu."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:52
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:517
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:518
 msgid "Couldn't load activity."
 msgstr "Haikuwezekana kupakia shughuli."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:107
+#: apps/web/src/components/offerings/offerings-panel.tsx:126
 msgid "Couldn't load offerings."
 msgstr "Imeshindikana kupakia matoleo."
 
@@ -1012,7 +1049,7 @@ msgid "Couldn't load pools."
 msgstr "Haikuwezekana kupakia puli."
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:422
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:423
 msgid "Couldn't load posts."
 msgstr "Imeshindwa kupakia machapisho."
 
@@ -1070,9 +1107,17 @@ msgstr "Imeshindikana kuchapisha vocha yako."
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Imeshindikana kusoma idadi ya desimali zinazotumiwa na vocha hii."
 
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:76
+msgid "Couldn't remove the offering."
+msgstr "Haikuwezekana kuondoa bidhaa au huduma."
+
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:204
 msgid "Couldn't resolve that recipient."
 msgstr "Haikuwezekana kutambua mpokeaji huyo."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:187
+msgid "Couldn't save the offering."
+msgstr "Haikuwezekana kuhifadhi bidhaa au huduma."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
 msgid "Couldn't save your profile."
@@ -1093,6 +1138,10 @@ msgstr "Hatukuweza kuanzisha uwekaji pesa wa MPESA"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:170
 msgid "Couldn't submit withdrawal"
 msgstr "Haikuwezekana kuwasilisha utoaji pesa"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:121
+msgid "Couldn't upload that photo. Try again."
+msgstr "Haikuwezekana kutuma picha hiyo. Jaribu tena."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
@@ -1153,7 +1202,7 @@ msgstr "Inafungua akaunti..."
 msgid "Customize"
 msgstr "Badilisha"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:488
+#: apps/web/src/components/offerings/offerings-panel.tsx:546
 msgid "Daily"
 msgstr "Kila siku"
 
@@ -1166,6 +1215,10 @@ msgstr "Giza"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:718
 msgid "Date"
 msgstr "Tarehe"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:61
+msgid "Day"
+msgstr "Siku"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:49
 #~ msgid "Debit / Credit card"
@@ -1183,7 +1236,7 @@ msgstr "Nafasi za desimali"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "Nafasi za desimali lazima ziwe namba kamili kutoka 0 hadi 18"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:370
+#: apps/web/src/components/offerings/offerings-panel.tsx:428
 msgid "Decrease quantity"
 msgstr "Punguza kiasi"
 
@@ -1214,6 +1267,7 @@ msgstr "Eleza puli yako"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:18
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:32
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:262
 msgid "Description"
 msgstr "Maelezo"
 
@@ -1252,7 +1306,11 @@ msgid "Download or photograph this card. Anyone who scans the QR code will have 
 msgstr "Pakua au piga picha kadi hii. Yeyote anayechanganua msimbo wa QR "
 "atapata ufikiaji kamili wa mkoba huu."
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:141
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:71
+msgid "Dozen"
+msgstr "Dazani"
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:146
 msgid "Drag to move, pinch or use the slider to zoom."
 msgstr "Vuta kusogeza, finya au tumia kitelezi kukuza."
 
@@ -1280,6 +1338,7 @@ msgstr "mf. SOKO"
 #~ msgid "Eatery"
 #~ msgstr "Baa la chakula"
 
+#: apps/web/src/components/offerings/offerings-panel.tsx:290
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:136
 msgid "Edit"
 msgstr "Hariri"
@@ -1287,6 +1346,10 @@ msgstr "Hariri"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:135
 msgid "Edit filters"
 msgstr "Badilisha vichujio"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:116
+msgid "Edit offering"
+msgstr "Badilisha bidhaa au huduma"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:36
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:131
@@ -1301,7 +1364,7 @@ msgstr "Hariri wasifu"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:35
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:313
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:672
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:673
 msgid "Email"
 msgstr "Barua pepe"
 
@@ -1482,7 +1545,7 @@ msgstr "Usambazaji wa kwanza"
 msgid "Follows the selected unit's feed"
 msgstr "Hufuata chanzo cha bei cha kipimo kilichochaguliwa"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:138
+#: apps/web/src/components/ui/image-crop-sheet.tsx:143
 msgid "Frame your photo"
 msgstr "Panga picha yako"
 
@@ -1491,7 +1554,7 @@ msgstr "Panga picha yako"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:240
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:373
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:118
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:561
 msgid "From"
 msgstr "Kutoka"
 
@@ -1511,6 +1574,10 @@ msgstr "Rudi kuingia"
 msgid "Goods"
 msgstr "Bidhaa"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:53
+msgid "Gram"
+msgstr "Gramu"
+
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:437
 msgid "Has an expiration date"
 msgstr "Ina tarehe ya mwisho wa matumizi"
@@ -1526,6 +1593,10 @@ msgstr "Husaidia wanachama kupata na kuelewa puli yako"
 #: apps/web/src/features/home/ui/report-page.tsx:375
 msgid "Host"
 msgstr "Mwenyeji"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:59
+msgid "Hour"
+msgstr "Saa"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 msgid "HOUR — Hour"
@@ -1583,7 +1654,7 @@ msgstr "Kwenye mtandao"
 msgid "Inactive"
 msgstr "Haijawashwa"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:385
+#: apps/web/src/components/offerings/offerings-panel.tsx:443
 msgid "Increase quantity"
 msgstr "Ongeza kiasi"
 
@@ -1614,7 +1685,11 @@ msgstr "Nambari ya simu si sahihi"
 #~ msgid "Invalid voucher filter"
 #~ msgstr "Kichujio cha vocha si sahihi"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:702
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:235
+msgid "Is this a good or a service?"
+msgstr "Hii ni bidhaa au huduma?"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:703
 msgid "Issuer"
 msgstr "Mtoaji"
 
@@ -1623,6 +1698,10 @@ msgstr "Mtoaji"
 #~ "contractual wages."
 #~ msgstr "Husambaza ahadi za kiishara, si malipo yanayotekelezeka au mishahara ya "
 #~ "kimkataba."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:57
+msgid "Item"
+msgstr "Kipande"
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:27
 #~ msgid "Join CLC"
@@ -1635,6 +1714,10 @@ msgstr "KES — Shilingi ya Kenya"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:311
 #~ msgid "KES worth of goods & services"
 #~ msgstr "Thamani ya bidhaa na huduma kwa KES"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:51
+msgid "Kilogram"
+msgstr "Kilogramu"
 
 #: apps/web/src/components/language-selector.tsx:27
 msgid "Language"
@@ -1682,12 +1765,16 @@ msgstr "Unganisha pochi na {providerLabel}"
 msgid "Linking passkey..."
 msgstr "Inaunganisha passkey..."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:55
+msgid "Litre"
+msgstr "Lita"
+
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:167
 msgid "Load more"
 msgstr "Pakia zaidi"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:46
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:511
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:512
 msgid "Loading activity…"
 msgstr "Inapakia shughuli…"
 
@@ -1712,16 +1799,16 @@ msgstr "Inapakia ramani ya eneo"
 msgid "Loading marketplace…"
 msgstr "Inapakia soko…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:143
+#: apps/web/src/components/offerings/offerings-panel.tsx:163
 #: apps/web/src/features/home/ui/activity-page.tsx:115
 #: apps/web/src/features/home/ui/posts-page.tsx:119
 #: apps/web/src/features/pools/ui/pools-page.tsx:152
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:455
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:580
 msgid "Loading more…"
 msgstr "Inapakia zaidi…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:100
+#: apps/web/src/components/offerings/offerings-panel.tsx:119
 msgid "Loading offerings…"
 msgstr "Inapakia matoleo…"
 
@@ -1739,8 +1826,8 @@ msgid "Loading post…"
 msgstr "Inapakia chapisho…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:86
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:397
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:415
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:398
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:416
 msgid "Loading posts…"
 msgstr "Inapakia machapisho…"
 
@@ -1858,6 +1945,10 @@ msgstr "Ujumbe umeshirikiwa."
 msgid "Messages are available only for registered Cosmo users."
 msgstr "Ujumbe unapatikana kwa watumiaji wa Cosmo waliosajiliwa pekee."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:79
+msgid "Metre"
+msgstr "Mita"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:186
 msgid "Mint status is temporarily unavailable."
 msgstr "Hali ya utengenezaji haipatikani kwa muda."
@@ -1904,7 +1995,7 @@ msgstr "Utengenezaji umeshindikana"
 msgid "Minting…"
 msgstr "Inatengeneza…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:492
+#: apps/web/src/components/offerings/offerings-panel.tsx:550
 msgid "Monthly"
 msgstr "Kila mwezi"
 
@@ -2014,7 +2105,7 @@ msgid "No"
 msgstr "Hapana"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:66
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:531
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:532
 msgid "No activity yet."
 msgstr "Bado hakuna shughuli."
 
@@ -2042,7 +2133,7 @@ msgstr "Hakuna vichujio vya kategoria vinavyopatikana."
 msgid "No CLC account was found for this sign-in."
 msgstr "Hakuna akaunti ya CLC iliyopatikana kwa kuingia huku."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:154
+#: apps/web/src/components/offerings/offerings-panel.tsx:174
 msgid "No offerings yet"
 msgstr "Bado hakuna matoleo"
 
@@ -2079,7 +2170,7 @@ msgstr "Hakuna machapisho yanayolingana na utafutaji huu."
 #~ msgstr "Bado hakuna machapisho"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:99
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:437
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:438
 msgid "No posts yet."
 msgstr "Bado hakuna machapisho."
 
@@ -2196,6 +2287,18 @@ msgstr "Kwa sasa arifa zinahitaji Chrome kwenye Android au programu ya iPhone "
 #~ msgid "of 3"
 #~ msgstr "kati ya 3"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:183
+msgid "Offering published."
+msgstr "Bidhaa au huduma imewekwa sokoni."
+
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:74
+msgid "Offering removed."
+msgstr "Bidhaa au huduma imeondolewa."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:180
+msgid "Offering updated."
+msgstr "Bidhaa au huduma imesasishwa."
+
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:78
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:255
 msgid "Offerings"
@@ -2230,7 +2333,7 @@ msgid "Onramp details"
 msgstr "Maelezo ya ununuzi"
 
 #: apps/web/src/features/home/ui/report-page.tsx:480
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:721
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:722
 msgid "Open in Maps"
 msgstr "Fungua kwenye Ramani"
 
@@ -2243,6 +2346,7 @@ msgid "Opening paper wallet..."
 msgstr "Inafungua mkoba wa karatasi..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:126
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:329
 msgid "Optional"
 msgstr "Hiari"
 
@@ -2354,7 +2458,7 @@ msgstr "Inasubiri"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:41
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:43
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:325
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:696
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:697
 msgid "Phone"
 msgstr "Simu"
 
@@ -2362,6 +2466,14 @@ msgstr "Simu"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:178
 msgid "Phone number"
 msgstr "Nambari ya simu"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:328
+msgid "Photo"
+msgstr "Picha"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:69
+msgid "Piece"
+msgstr "Kipande kimoja"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:90
 #~ msgid "Placeholder confirmed"
@@ -2470,7 +2582,7 @@ msgstr "Vikundi"
 msgid "Pools list"
 msgstr "Orodha ya puli"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:156
+#: apps/web/src/components/ui/image-crop-sheet.tsx:161
 msgid "Position your photo"
 msgstr "Weka picha yako"
 
@@ -2484,11 +2596,11 @@ msgstr "Chapisho hakipatikani."
 #: apps/web/src/features/home/ui/report-page.tsx:494
 #: apps/web/src/features/home/ui/report-page.tsx:513
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:441
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:442
 msgid "Posts"
 msgstr "Machapisho"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:409
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:410
 msgid "Posts aren't available for this voucher."
 msgstr "Machapisho hayapatikani kwa vocha hii."
 
@@ -2512,7 +2624,7 @@ msgstr "Inaandaa utoaji wako wa pesa…"
 msgid "Preparing..."
 msgstr "Inaandaa..."
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+#: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Preparing…"
 msgstr "Inaandaa…"
 
@@ -2558,10 +2670,14 @@ msgstr "Chanzo cha bei"
 msgid "Price must be greater than zero"
 msgstr "Bei lazima iwe kubwa kuliko sufuri"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:235
-#: apps/web/src/components/offerings/offerings-panel.tsx:335
+#: apps/web/src/components/offerings/offerings-panel.tsx:267
+#: apps/web/src/components/offerings/offerings-panel.tsx:393
 msgid "Price on request"
 msgstr "Bei unapoomba"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:282
+msgid "Price per unit in {voucherSymbol}"
+msgstr "Bei kwa kipimo kwa {voucherSymbol}"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:334
 msgid "Priced in"
@@ -2634,6 +2750,10 @@ msgstr "Weka barua pepe au nambari ya simu"
 #~ msgid "Public — voucher holders will see this so they can reach you."
 #~ msgstr "Hadharani — wenye vocha wataona hii ili waweze kuwasiliana nawe."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:352
+msgid "Publish offering"
+msgstr "Weka sokoni"
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:172
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:405
 msgid "Published"
@@ -2675,7 +2795,7 @@ msgstr "QR kwa sasa ina ufunguo binafsi ghafi."
 #~ msgid "QR is protected. Keep the passphrase separate from the card."
 #~ msgstr "QR imelindwa. Weka kauli ya siri mbali na kadi."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:363
+#: apps/web/src/components/offerings/offerings-panel.tsx:421
 msgid "Quantity"
 msgstr "Kiasi"
 
@@ -2732,7 +2852,7 @@ msgstr "Pokea taarifa za hati, ubadilishanaji, na utoaji pesa wakati programu "
 "imefungwa."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Received"
 msgstr "Imepokelewa"
 
@@ -2793,9 +2913,16 @@ msgstr "Usajili umeshindikana. Angalia muunganisho wako na ujaribu tena."
 msgid "Related vouchers"
 msgstr "Vocha zinazohusiana"
 
+#: apps/web/src/components/offerings/offerings-panel.tsx:301
 #: apps/web/src/components/ui/avatar-picker.tsx:123
+#: apps/web/src/components/ui/image-upload-field.tsx:178
 msgid "Remove"
 msgstr "Ondoa"
+
+#. placeholder {0}: offering.name
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:70
+msgid "Remove “{0}” from the marketplace?"
+msgstr "Ondoa “{0}” kutoka sokoni?"
 
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:329
@@ -2806,6 +2933,14 @@ msgstr "Ondoa {0}"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:567
 msgid "Remove {tag}"
 msgstr "Ondoa {tag}"
+
+#: apps/web/src/components/offerings/offerings-panel.tsx:299
+msgid "Removing…"
+msgstr "Inaondoa…"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Replace photo"
+msgstr "Badilisha picha"
 
 #: apps/web/src/features/home/ui/report-page.tsx:370
 msgid "Report details"
@@ -2875,7 +3010,7 @@ msgstr "Imerejeshwa"
 msgid "Reviews"
 msgstr "Maoni"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:345
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:346
 msgid "Reviews for this voucher will appear here."
 msgstr "Maoni kuhusu vocha hii yataonekana hapa."
 
@@ -2885,11 +3020,13 @@ msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 "viwango vya pamoja."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:259
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:350
 msgid "Save changes"
 msgstr "Hifadhi mabadiliko"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:259
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:218
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:348
 msgid "Saving…"
 msgstr "Inahifadhi…"
 
@@ -3015,7 +3152,7 @@ msgstr "Inatuma…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:136
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Sent"
 msgstr "Umetuma"
 
@@ -3035,6 +3172,14 @@ msgstr "Hati iliyotumwa"
 #: apps/web/src/features/home/ui/market-labels.ts:14
 msgid "Services"
 msgstr "Huduma"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:73
+msgid "Serving"
+msgstr "Sehemu ya chakula"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:77
+msgid "Session"
+msgstr "Kipindi"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:28
 msgid "Session check failed"
@@ -3098,11 +3243,11 @@ msgstr "Huonekana kwenye ukurasa wa vocha yako"
 msgid "Sign in to continue"
 msgstr "Ingia ili kuendelea"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:506
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:507
 msgid "Sign in to view activity."
 msgstr "Ingia ili kuona shughuli."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:403
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:404
 msgid "Sign in to view posts."
 msgstr "Ingia ili kuona machapisho."
 
@@ -3334,10 +3479,11 @@ msgid "Terms URL"
 msgstr "Kiungo cha masharti"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:56
+#: apps/web/src/components/ui/image-upload-field.tsx:88
 msgid "That image is too large. Choose one under 8 MB."
 msgstr "Picha hiyo ni kubwa mno. Chagua yenye chini ya MB 8."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:414
+#: apps/web/src/components/offerings/offerings-panel.tsx:472
 msgid "The cart isn't ready yet."
 msgstr "Kikapu hakijawa tayari."
 
@@ -3384,7 +3530,7 @@ msgstr "Vocha haikuweza kuchapishwa."
 msgid "Theme"
 msgstr "Mandhari"
 
-#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:30
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:111
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "Bado hakuna kinachopatikana kwa kubadilishana kwa kutumia vocha hii."
 
@@ -3434,6 +3580,12 @@ msgstr "Kiungo hiki kina kichujio cha vocha kisicho sahihi."
 msgid "This link has too many filters ({0}, maximum {1})."
 msgstr "Kiungo hiki kina vichujio vingi mno ({0}, kiwango cha juu {1})."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:205
+msgid "This listing was imported with the unit “{legacyUnit}”. Pick one below "
+"to save your changes."
+msgstr "Orodha hii iliingizwa na kipimo “{legacyUnit}”. Chagua kimoja hapa "
+"chini ili kuhifadhi mabadiliko yako."
+
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
 #~ msgid "This pool doesn't have enough {0} liquidity for this swap."
@@ -3462,7 +3614,7 @@ msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:423
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:561
 msgid "To"
 msgstr "Kwa"
 
@@ -3496,7 +3648,7 @@ msgstr "Utafutaji ni mwingi mno. Jaribu tena baada ya muda mfupi."
 #~ msgid "Top up"
 #~ msgstr "Ongeza pesa"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:395
+#: apps/web/src/components/offerings/offerings-panel.tsx:453
 msgid "Total"
 msgstr "Jumla"
 
@@ -3537,6 +3689,10 @@ msgstr "Hashi ya muamala imenakiliwa"
 msgid "Transfer history"
 msgstr "Historia ya hamisho"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:75
+msgid "Trip"
+msgstr "Safari"
+
 #: apps/web/src/features/home/ui/posts-page.tsx:90
 #~ msgid "Try a different search, or clear the filters."
 #~ msgstr "Jaribu utafutaji mwingine, au ondoa vichujio."
@@ -3547,7 +3703,7 @@ msgstr "Historia ya hamisho"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
-#: apps/web/src/components/offerings/offerings-panel.tsx:115
+#: apps/web/src/components/offerings/offerings-panel.tsx:134
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
@@ -3557,8 +3713,8 @@ msgstr "Historia ya hamisho"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:378
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:430
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:525
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:431
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:526
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:209
 msgid "Try again"
 msgstr "Jaribu tena"
@@ -3584,6 +3740,8 @@ msgid "Unavailable"
 msgstr "Haipatikani"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:17
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:65
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:306
 msgid "Unit"
 msgstr "Kipimo"
 
@@ -3639,6 +3797,14 @@ msgstr "Pakia nembo"
 msgid "Upload QR code image"
 msgstr "Pakia picha ya msimbo wa QR"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:346
+msgid "Uploading photo…"
+msgstr "Inatuma picha…"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Uploading…"
+msgstr "Inatuma…"
+
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:351
 msgid "USD — US dollar"
 msgstr "USD — Dola ya Marekani"
@@ -3680,7 +3846,7 @@ msgstr "Tumia herufi na nambari pekee kwa kifupisho cha puli"
 msgid "Use only letters and numbers for the voucher symbol"
 msgstr "Tumia herufi na namba pekee kwa alama ya vocha"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+#: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "Tumia picha"
 
@@ -3700,8 +3866,8 @@ msgstr "Tazama zote"
 msgid "View image full screen"
 msgstr "Tazama picha kwenye skrini nzima"
 
-#. placeholder {0}: offering.commodityName
-#: apps/web/src/components/offerings/offerings-panel.tsx:193
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offerings-panel.tsx:215
 msgid "View offering details: {0}"
 msgstr "Tazama maelezo ya toleo: {0}"
 
@@ -3887,17 +4053,21 @@ msgstr "Hatukuweza kuthibitisha kama vocha hii tayari ina usambazaji."
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:38
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:40
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:681
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:682
 msgid "Website"
 msgstr "Tovuti"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:490
+#: apps/web/src/components/offerings/offerings-panel.tsx:548
 msgid "Weekly"
 msgstr "Kila wiki"
 
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
 msgid "Welcome back"
 msgstr "Karibu tena"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:216
+msgid "What are you offering?"
+msgstr "Unatoa nini?"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:99
 msgid "What they offer"
@@ -3930,7 +4100,7 @@ msgstr "Toa pesa"
 msgid "Withdrawal submitted"
 msgstr "Utoaji pesa umewasilishwa"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:494
+#: apps/web/src/components/offerings/offerings-panel.tsx:552
 msgid "Yearly"
 msgstr "Kila mwaka"
 
@@ -4025,7 +4195,7 @@ msgstr "Picha yako ya wasifu"
 msgid "Your Vouchers"
 msgstr "Hati zako"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:232
-#: apps/web/src/components/ui/image-crop-sheet.tsx:235
+#: apps/web/src/components/ui/image-crop-sheet.tsx:241
+#: apps/web/src/components/ui/image-crop-sheet.tsx:244
 msgid "Zoom"
 msgstr "Kuza"

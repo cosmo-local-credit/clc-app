@@ -280,8 +280,16 @@ describe("pool voucher UI", () => {
     // The same blue the wallet's Pools action uses.
     expect(attributions.every((element) => element.className.includes("text-info"))).toBe(true);
 
-    expect(within(panel).getByText("25 USDC")).toBeTruthy();
+    // The unit rides with the price now, so the tile says what the amount buys.
+    expect(within(panel).getByText("25 USDC per bag")).toBeTruthy();
+    // An offering with no unit keeps the bare price rather than reading "per null".
     expect(within(panel).getByText("8 TTX")).toBeTruthy();
+    // The pool view is read-only for everyone. `OfferingsPanel` takes management
+    // actions as a prop rather than deriving ownership, precisely so this screen
+    // — which lists offerings from vouchers the viewer does not own — cannot
+    // acquire write controls by accident.
+    expect(within(panel).queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(within(panel).queryByRole("button", { name: "Remove" })).toBeNull();
     expect(panel.querySelector(".grid")?.className).toContain("grid-cols-2");
   });
 

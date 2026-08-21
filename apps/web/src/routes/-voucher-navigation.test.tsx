@@ -72,17 +72,35 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
   };
 });
 
+const emptyOfferings = vi.hoisted(() => () => ({
+  data: { pages: [{ offerings: [] }] },
+  isPending: false,
+  isError: false,
+  isSuccess: true,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+  fetchNextPage: () => {},
+  refetch: () => {},
+}));
+
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
-  useVoucherOfferingsInfinite: () => ({
-    data: { pages: [{ offerings: [] }] },
+  useVoucherOfferingsInfinite: emptyOfferings,
+  useManagedVoucherOfferingsInfinite: emptyOfferings,
+}));
+
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: () => Promise.resolve({ url: "https://cdn.test/offering/a_800_b.webp" }),
+    reset: () => {},
     isPending: false,
     isError: false,
-    isSuccess: true,
-    hasNextPage: false,
-    isFetchingNextPage: false,
-    fetchNextPage: vi.fn(),
-    refetch: vi.fn(),
   }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+  useCreateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({

@@ -18,11 +18,12 @@ export type ImagePurpose =
   | "voucher.banner"
   | "pool.image"
   | "pool.banner"
-  | "report.image";
+  | "report.image"
+  | "offering.photo";
 
 export type ImagePolicy = {
   /** Storage folder. Must be present in the service's `api.allowed_folders`. */
-  folder: "profile" | "voucher" | "pool" | "report";
+  folder: "profile" | "voucher" | "pool" | "report" | "offering";
   /** Requested output width. Must be one of the service's `image.allowed_widths`. */
   width: 400 | 800 | 1280;
   /**
@@ -35,6 +36,18 @@ export type ImagePolicy = {
    * choosing the photo never sees which ones survived.
    */
   aspect?: number;
+  /**
+   * How a picker frames the preview.
+   *
+   * Not derivable from `aspect`. A 1:1 crop is displayed as a circle when it is
+   * an identity mark — an avatar, a voucher icon, a pool logo — and as a square
+   * when it is a photograph of something. Both are cropped to the same ratio, so
+   * only the preview differs, and getting it wrong shows the person choosing the
+   * image a shape nothing else in the app will use.
+   *
+   * Absent means square, which is also what a purpose with no `aspect` gets.
+   */
+  preview?: "circle";
 };
 
 /**
@@ -50,14 +63,27 @@ const BANNER_ASPECT = 16 / 9;
  * full-bleed phone header and a desktop audit view.
  */
 export const IMAGE_POLICIES: Readonly<Record<ImagePurpose, ImagePolicy>> = {
-  "profile.avatar": { folder: "profile", width: 400, aspect: 1 },
-  "voucher.icon": { folder: "voucher", width: 400, aspect: 1 },
+  "profile.avatar": { folder: "profile", width: 400, aspect: 1, preview: "circle" },
+  "voucher.icon": { folder: "voucher", width: 400, aspect: 1, preview: "circle" },
   "voucher.banner": { folder: "voucher", width: 1280, aspect: BANNER_ASPECT },
-  "pool.image": { folder: "pool", width: 400, aspect: 1 },
+  "pool.image": { folder: "pool", width: 400, aspect: 1, preview: "circle" },
   "pool.banner": { folder: "pool", width: 1280, aspect: BANNER_ASPECT },
   // No aspect: a post photograph is the content, not an identity mark. Cropping
   // it to a house shape would throw away what the author chose to show.
   "report.image": { folder: "report", width: 1280 },
+  // Square, and cropped to square before upload, because every surface that
+  // shows an offering photo frames it square — the console's card grid and the
+  // mobile tile both do. Letting it keep its own shape would mean the stored
+  // object is one ratio and every screen crops it to another at render time,
+  // which is the failure `aspect` exists to prevent: the seller would never see
+  // which part of their own photo survives.
+  //
+  // A square, not a circle: it is a photograph of a thing, not an identity mark.
+  //
+  // 800px rather than a report's 1280 — the largest surface showing it is a
+  // desktop card in the console, not a full-bleed header, and a 430px phone at 2x
+  // is 860 device pixels, close enough that the extra bytes buy nothing.
+  "offering.photo": { folder: "offering", width: 800, aspect: 1 },
 };
 
 /** The only containers storage-server can decode. Notably not HEIC. */

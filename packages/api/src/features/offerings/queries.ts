@@ -11,6 +11,17 @@ export const offeringKeys = {
   all: ["clc", "offerings"] as const,
 
   /**
+   * The prefix every read of one voucher's offerings shares.
+   *
+   * This exists because a write has to find them all. The previous shapes put the
+   * address at index 3 for a finite read and index 4 for an infinite one, so
+   * there was no prefix that matched both — and a patcher that missed a shape
+   * would fall through to invalidation, which the public endpoint's
+   * `max-age=60` can answer with the pre-mutation body.
+   */
+  voucherRoot: (address: string) => ["clc", "offerings", "voucher", address.toLowerCase()] as const,
+
+  /**
    * Finite and infinite reads cache different shapes, so they never share a key.
    *
    * `perPage` is part of both, including the infinite ones: it decides request
@@ -19,9 +30,25 @@ export const offeringKeys = {
    * for at least one of them.
    */
   byVoucher: (address: string, perPage: number) =>
-    ["clc", "offerings", "voucher", address.toLowerCase(), perPage] as const,
+    [...offeringKeys.voucherRoot(address), "page", perPage] as const,
   byVoucherInfinite: (address: string, perPage: number) =>
-    ["clc", "offerings", "voucher", "infinite", address.toLowerCase(), perPage] as const,
+    [...offeringKeys.voucherRoot(address), "infinite", perPage] as const,
+
+  /**
+   * The owner's own view of the same rows, read with `cache: "no-store"`.
+   *
+   * A separate key rather than a flag, because it caches a different thing: the
+   * guest read may legitimately be up to a minute stale while the managed one may
+   * not be, and one cache entry cannot be both. The patcher updates both.
+   */
+  byVoucherManaged: (address: string, perPage: number) =>
+    [...offeringKeys.voucherRoot(address), "managed", "page", perPage] as const,
+  byVoucherManagedInfinite: (address: string, perPage: number) =>
+    [...offeringKeys.voucherRoot(address), "managed", "infinite", perPage] as const,
+
+  /** One offering, seeded from a write's own response. */
+  detail: (address: string, id: string) =>
+    [...offeringKeys.voucherRoot(address), "detail", id] as const,
 
   byPool: (address: string, perPage: number) =>
     ["clc", "offerings", "pool", address.toLowerCase(), perPage] as const,
@@ -79,6 +106,75 @@ export function voucherOfferingsInfiniteQueryOptions(
 }
 
 /**
+ * A voucher owner's own view of their offerings.
+ *
+ * The same public URL, read with `cache: "no-store"`. Without that an owner can
+ * delete a listing, watch the refetch, and be handed the pre-mutation body the
+ * browser is entitled to keep for 60 seconds — and up to 300 more through
+ * `stale-while-revalidate`. Guests keep the shared cache, which is the whole
+ * reason this is a second query rather than a change to the first.
+ */
+export function managedVoucherOfferingsQueryOptions(
+  offerings: OfferingsClient,
+  address: string | undefined,
+  perPage: number,
+  enabled = true,
+) {
+  return queryOptions({
+    queryKey: offeringKeys.byVoucherManaged(address ?? "none", perPage),
+    queryFn: ({ signal }) =>
+      offerings.getVoucherOfferings(requireAddress(address), { perPage }, signal, {
+        cache: "no-store",
+      }),
+    enabled: Boolean(address) && enabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function managedVoucherOfferingsInfiniteQueryOptions(
+  offerings: OfferingsClient,
+  address: string | undefined,
+  perPage: number,
+  enabled = true,
+) {
+  return infiniteQueryOptions({
+    queryKey: offeringKeys.byVoucherManagedInfinite(address ?? "none", perPage),
+    queryFn: ({ pageParam, signal }) =>
+      offerings.getVoucherOfferings(
+        requireAddress(address),
+        { perPage, cursor: pageParam, next: pageParam === undefined ? undefined : true },
+        signal,
+        { cache: "no-store" },
+      ),
+    enabled: Boolean(address) && enabled,
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: nextOfferingCursor(perPage),
+  });
+}
+
+/**
+ * One offering.
+ *
+ * Mostly written rather than fetched: a create or update seeds this key with the
+ * row the server saved, so an edit form reopened straight afterwards shows what
+ * was stored rather than what was typed.
+ */
+export function voucherOfferingQueryOptions(
+  offerings: OfferingsClient,
+  address: string | undefined,
+  id: string | undefined,
+) {
+  return queryOptions({
+    queryKey: offeringKeys.detail(address ?? "none", id ?? "none"),
+    queryFn: ({ signal }) =>
+      offerings.getVoucherOffering(requireAddress(address), requireOfferingID(id), signal, {
+        cache: "no-store",
+      }),
+    enabled: Boolean(address) && Boolean(id),
+  });
+}
+
+/**
  * One page of the offerings published against a pool's allowed vouchers.
  *
  * The finite read exists for the console, which shows a pool's market presence
@@ -121,4 +217,9 @@ export function poolOfferingsInfiniteQueryOptions(
 function requireAddress(address: string | undefined): string {
   if (!address) throw new Error("Address is required.");
   return address;
+}
+
+function requireOfferingID(id: string | undefined): string {
+  if (!id) throw new Error("Offering id is required.");
+  return id;
 }

@@ -30,7 +30,7 @@ function offering(id: number) {
     voucherId: 10,
     voucherAddress: VOUCHER_ADDRESS,
     sellerAddress: SELLER_ADDRESS,
-    commodityName: `Offering ${id}`,
+    name: `Offering ${id}`,
     quantity: "1",
   };
 }

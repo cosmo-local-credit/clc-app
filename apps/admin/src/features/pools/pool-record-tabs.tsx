@@ -393,13 +393,13 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
 }
 
 function OfferingRow({ offering }: { offering: Offering }) {
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unit);
-  const price = formatOfferingPrice(offering.price);
+  const quantity = formatOfferingQuantity(offering.quantity, offering.unitLabel);
+  const price = formatOfferingPrice(offering.pricePerUnit);
 
   return (
     <TableRow>
       <TableCell>
-        <span className="block min-w-32 truncate font-medium">{offering.commodityName}</span>
+        <span className="block min-w-32 truncate font-medium">{offering.name}</span>
         <span className="text-muted-foreground font-mono text-xs uppercase">
           {offering.commodityType}
         </span>

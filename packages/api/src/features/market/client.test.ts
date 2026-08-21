@@ -388,6 +388,45 @@ describe("getMarketVoucher", () => {
     });
     expect(voucher.name).toBe("Community Voucher");
     expect(voucher.symbol).toBe("VOUCHER");
+    // Never null, unlike every field above: a caller iterating tags must not have
+    // to tell an untagged voucher from a response that predates the field.
+    expect(voucher.tags).toEqual([]);
+    expect(voucher.terms).toBeNull();
+  });
+
+  it("reads the terms and tags an operator edits", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({
+        ...DETAIL_ROW,
+        terms: "https://malii.example/terms",
+        tags: ["Agriculture", "Food"],
+      }),
+    );
+
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.terms).toBe("https://malii.example/terms");
+    expect(voucher.tags).toEqual(["Agriculture", "Food"]);
+  });
+
+  it("drops anything in tags that is not a usable string", async () => {
+    // The array reaches here straight off the wire. A number or a blank in it
+    // would be rendered as a chip nobody can filter by.
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, tags: ["Food", "", 7, null, "Care"] }),
+    );
+
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.tags).toEqual(["Food", "Care"]);
+  });
+
+  it("treats a non-array tags value as no tags", async () => {
+    fetchMock.mockResolvedValue(detailResponse({ ...DETAIL_ROW, tags: "Food" }));
+
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+
+    expect(voucher.tags).toEqual([]);
   });
 
   it.each([
@@ -641,5 +680,49 @@ describe("getFilteredMarketVouchers response", () => {
 
     expect(page.vouchers).toHaveLength(1);
     expect(page.receivedCount).toBe(2);
+  });
+});
+
+describe("catalog HTTP cache policy", () => {
+  const fresh = createMarketClient(createHttpClient({ baseUrl: "https://api.test" }), {
+    cache: "no-store",
+  });
+
+  // The endpoints answer `Cache-Control: public, max-age=60,
+  // stale-while-revalidate=300`. A console that writes what it reads must opt out,
+  // or an operator's own edit is replaced by the pre-write body the browser
+  // cached: the write returns 200, the row is correct, and the screen still shows
+  // the old value. Asserting the request's `cache` is the only way to catch that —
+  // jsdom has no HTTP cache, so no amount of rendering reproduces it.
+  it("sends no-store on every catalog read when the app asks for it", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+    await fresh.getMarketVouchers({ perPage: 10 });
+    expect(requestedInit().cache).toBe("no-store");
+
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(pageResponse({ voucher: { ...VALID_ROW, id: 1 } }));
+    await fresh.getMarketVoucher(VALID_ROW.address);
+    expect(requestedInit().cache).toBe("no-store");
+
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+    await fresh.getFilteredMarketVouchers({
+      perPage: 10,
+      filter: { term: "", tags: [], tagMatch: "any", vouchers: [], voucherMatch: "any" },
+    });
+    expect(requestedInit().cache).toBe("no-store");
+  });
+
+  // The default must stay absent, not "default": apps/web wants that cache, and
+  // the header exists so a phone panning a map does not re-fetch the catalog.
+  it("leaves the cache to the platform by default", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+    await api.getMarketVouchers({ perPage: 10 });
+    expect("cache" in requestedInit()).toBe(false);
+
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(pageResponse({ voucher: { ...VALID_ROW, id: 1 } }));
+    await api.getMarketVoucher(VALID_ROW.address);
+    expect("cache" in requestedInit()).toBe(false);
   });
 });

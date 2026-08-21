@@ -12,9 +12,10 @@ import { AddressCell, PoolCell, TokenAmount, TxLink } from "#/components/admin/c
 import { EmptyState } from "#/components/admin/empty-state";
 import { RecordPanel } from "#/components/admin/record-panel";
 import { SectionState } from "#/components/admin/section-state";
+import { SectionLabel } from "#/components/admin/section-heading";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Badge } from "#/components/ui/badge";
-import { buttonVariants } from "#/components/ui/button";
+import { Button, buttonVariants } from "#/components/ui/button";
 import {
   Table,
   TableBody,
@@ -64,10 +65,12 @@ export function VoucherRecordTabs({
   voucher,
   search,
   onEditOffering,
+  onAddOffering,
 }: {
   voucher: MarketVoucherDetail;
   search: VoucherDetailSearch;
   onEditOffering: (offering: Offering) => void;
+  onAddOffering: () => void;
 }) {
   const navigate = useNavigate();
   const tab = search.tab;
@@ -112,7 +115,11 @@ export function VoucherRecordTabs({
 
       <TabsPanel value={tab} className="border-border bg-card border">
         {tab === "offerings" ? (
-          <OfferingsPanel address={voucher.address} onEditOffering={onEditOffering} />
+          <OfferingsPanel
+            voucher={voucher}
+            onEditOffering={onEditOffering}
+            onAddOffering={onAddOffering}
+          />
         ) : tab === "transactions" ? (
           <TransactionsPanel address={voucher.address} />
         ) : (
@@ -123,29 +130,51 @@ export function VoucherRecordTabs({
   );
 }
 
-/** What is being sold for this voucher, as the marketplace shows it. */
+/**
+ * What is being sold for this voucher, as the marketplace shows it — and where an
+ * operator adds to it.
+ *
+ * There is no retired-voucher state here, because this screen cannot reach one.
+ * `get-market-voucher-by-address` ends `AND v.active`, so a retired voucher is a
+ * 404 from the detail endpoint and the page never renders far enough to show its
+ * tabs. clc-core's `409` on a write is what covers the remaining case — a voucher
+ * retired while this screen was open — and it arrives as its own message rather
+ * than as a state that cannot otherwise happen.
+ */
 function OfferingsPanel({
-  address,
+  voucher,
   onEditOffering,
+  onAddOffering,
 }: {
-  address: string;
+  voucher: MarketVoucherDetail;
   onEditOffering: (offering: Offering) => void;
+  onAddOffering: () => void;
 }) {
   const query = useQuery(
-    voucherOfferingsQueryOptions(clcApi.offerings, address, OFFERING_PAGE_SIZE),
+    voucherOfferingsQueryOptions(clcApi.offerings, voucher.address, OFFERING_PAGE_SIZE),
   );
   const state = useDataState(query, (page) => page.offerings.length === 0);
 
   return (
     <RecordPanel state={state} content="grid">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <SectionLabel>Offerings</SectionLabel>
+        <Button type="button" size="sm" onClick={onAddOffering}>
+          Add offering
+        </Button>
+      </div>
       <SectionState
         state={state}
         errorTitle="Could not load offerings"
         emptyTitle="No offerings"
-        emptyDescription="Nobody is offering anything for this voucher."
+        emptyDescription="Nobody is offering anything for this voucher yet."
         loadingRows={4}
       >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {/* Thumbnails, so the density is the point: eight across from xl, which is
+            where the console is actually used, and ten on a wide monitor. gap-2
+            rather than gap-3 because the tiles are small enough that a wider
+            gutter starts to read as the dominant element. */}
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">
           {(query.data?.offerings ?? []).map((offering) => (
             <VoucherOfferingCard
               key={offering.id}

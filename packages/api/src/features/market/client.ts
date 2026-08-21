@@ -45,8 +45,15 @@ export type MarketVoucherDetail = {
   email: string | null;
   website: string | null;
   phone: string | null;
+  terms: string | null;
   iconUrl: string | null;
   bannerUrl: string | null;
+  /**
+   * Always an array. clc-core COALESCEs the aggregate, and an older deployment
+   * that omits the key normalizes to `[]` here, so a caller never has to tell a
+   * voucher with no tags apart from a response that predates them.
+   */
+  tags: string[];
   kind: MarketVoucherKind;
 };
 
@@ -95,7 +102,7 @@ type BackendMarketVoucher = Partial<{
   kind: string;
 }>;
 
-type BackendMarketVoucherDetail = BackendMarketVoucher &
+export type BackendMarketVoucherDetail = BackendMarketVoucher &
   Partial<{
     decimals: string | number | null;
     ownerAddress: string | null;
@@ -105,9 +112,41 @@ type BackendMarketVoucherDetail = BackendMarketVoucher &
     email: string | null;
     website: string | null;
     phone: string | null;
+    terms: string | null;
     iconUrl: string | null;
     bannerUrl: string | null;
+    tags: unknown;
   }>;
+
+/**
+ * A voucher's editable off-chain record, as the admin write accepts it.
+ *
+ * Assign-all, exactly like `PoolProfileUpdate`: the caller sends the whole record
+ * and an empty string clears the field, because clc-core writes every column it
+ * receives. Nothing here mirrors the deployed ERC20 — name, symbol, decimals and
+ * the owner come from the chain and the endpoint does not accept them.
+ */
+export type VoucherProfileUpdate = {
+  description: string;
+  voucherUoa: string;
+  voucherValue: number | null;
+  email: string;
+  website: string;
+  phone: string;
+  terms: string;
+  locationName: string;
+  geoLat: number | null;
+  geoLng: number | null;
+  /**
+   * The two exceptions to this payload's assign-all rule: omitted preserves the
+   * stored image, and `""` removes it. clc-core COALESCEs them precisely so a
+   * client that sends no image fields cannot blank a voucher's images while
+   * fixing a typo in its description.
+   */
+  iconUrl?: string;
+  bannerUrl?: string;
+  tags: string[];
+};
 
 type BackendMarketVoucherPage = {
   vouchers?: BackendMarketVoucher[] | null;
@@ -123,7 +162,30 @@ const MARKET_KINDS = new Set<string>(["goods", "services", "voucher"]);
 
 export type MarketClient = ReturnType<typeof createMarketClient>;
 
-export function createMarketClient(http: HttpClient) {
+export type CreateMarketClientOptions = {
+  /**
+   * How these reads treat the browser's HTTP cache.
+   *
+   * The catalog endpoints answer `Cache-Control: public, max-age=60,
+   * stale-while-revalidate=300`, which is deliberate: the representation is
+   * identical for every caller, and a phone panning a map should not re-fetch it.
+   * The default therefore honours that cache.
+   *
+   * `"no-store"` is for a console that writes what it reads. After
+   * `PUT /admin/vouchers/:address/profile` the caller invalidates its query and
+   * refetches — and a cached response hands back the pre-write body, silently
+   * replacing the saved record the mutation had just seeded. The write returned
+   * 200, the row was correct, and the screen still showed the old value.
+   */
+  cache?: RequestCache;
+};
+
+export function createMarketClient(http: HttpClient, options: CreateMarketClientOptions = {}) {
+  // Spread into each request rather than set unconditionally: an explicit
+  // `cache: undefined` is not the same as an absent key to every fetch
+  // implementation, and the default must be "whatever the platform does".
+  const cachePolicy = options.cache ? { cache: options.cache } : {};
+
   return {
     async getMarketVouchers(
       params: MarketVouchersParams,
@@ -131,7 +193,7 @@ export function createMarketClient(http: HttpClient) {
     ): Promise<MarketVoucherPage> {
       const result = await http.request<BackendMarketVoucherPage>(
         `/api/v2/vouchers${formatMarketQuery(params)}`,
-        { method: "GET", credentials: "omit", signal },
+        { method: "GET", credentials: "omit", signal, ...cachePolicy },
       );
 
       const received = result.vouchers ?? [];
@@ -146,7 +208,7 @@ export function createMarketClient(http: HttpClient) {
     async getMarketVoucher(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail> {
       const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
         `/api/v2/vouchers/${encodeURIComponent(address)}`,
-        { method: "GET", credentials: "omit", signal },
+        { method: "GET", credentials: "omit", signal, ...cachePolicy },
       );
 
       const voucher = normalizeMarketVoucherDetail(result.voucher);
@@ -160,7 +222,7 @@ export function createMarketClient(http: HttpClient) {
     ): Promise<FilteredMarketVoucherPage> {
       const result = await http.request<BackendFilteredMarketVoucherPage>(
         `/api/v2/vouchers${formatFilteredMarketQuery(params)}`,
-        { method: "GET", credentials: "omit", signal },
+        { method: "GET", credentials: "omit", signal, ...cachePolicy },
       );
 
       const received = result.vouchers ?? [];
@@ -244,7 +306,7 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
   };
 }
 
-function normalizeMarketVoucherDetail(
+export function normalizeMarketVoucherDetail(
   voucher: BackendMarketVoucherDetail | null | undefined,
 ): MarketVoucherDetail | null {
   if (!voucher) return null;
@@ -274,8 +336,12 @@ function normalizeMarketVoucherDetail(
     email: normalizeText(voucher.email),
     website: normalizeText(voucher.website),
     phone: normalizeText(voucher.phone),
+    terms: normalizeText(voucher.terms),
     iconUrl: normalizeImageUrl(voucher.iconUrl),
     bannerUrl: normalizeImageUrl(voucher.bannerUrl),
+    tags: Array.isArray(voucher.tags)
+      ? voucher.tags.filter((tag): tag is string => typeof tag === "string" && tag !== "")
+      : [],
     kind:
       typeof kind === "string" && MARKET_KINDS.has(kind) ? (kind as MarketVoucherKind) : "voucher",
   };

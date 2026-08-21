@@ -91,7 +91,7 @@ describe("getVoucherOfferings", () => {
           voucherAddress: VOUCHER_ADDRESS,
           sellerAddress: SELLER_ADDRESS,
           quantity: "5.0000",
-          price: "10.5000",
+          pricePerUnit: "10.5000",
           frequency: "week",
         },
       ],
@@ -124,5 +124,256 @@ describe("getVoucherOfferings", () => {
 
     expect(page.first).toBe(0);
     expect(page.last).toBe(0);
+  });
+});
+
+describe("offerings HTTP cache policy", () => {
+  const fresh = createOfferingsClient(createHttpClient({ baseUrl: "https://api.test" }), {
+    cache: "no-store",
+  });
+
+  function initOf(call = 0): RequestInit {
+    return (fetchMock.mock.calls[call]?.[1] ?? {}) as RequestInit;
+  }
+
+  // The voucher-offerings route answers `Cache-Control: public, max-age=60,
+  // stale-while-revalidate=300`, so a console reading it beside a no-store
+  // voucher record would show a fresh voucher next to offerings up to six minutes
+  // old. jsdom has no HTTP cache, so the request's `cache` is the only thing that
+  // can be asserted.
+  it("sends no-store on the public voucher route when asked", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
+    await fresh.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 10 });
+    expect(initOf().cache).toBe("no-store");
+  });
+
+  it("leaves the cache to the platform by default", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
+    await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 10 });
+    expect("cache" in initOf()).toBe(false);
+  });
+
+  // The pool route is authenticated and already no-store; the option must not
+  // change what it sends.
+  it("leaves the authenticated pool route on its own no-store", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
+    await api.getPoolOfferings(VOUCHER_ADDRESS, { perPage: 10 });
+    expect(initOf().cache).toBe("no-store");
+  });
+});
+
+describe("the app-facing model", () => {
+  it("renames the backend's import vocabulary once, here", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [offering()], first: 3, last: 3 }));
+
+    const [row] = (await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 })).offerings;
+
+    expect(row).toMatchObject({
+      name: "Vegetables",
+      pricePerUnit: "10.5000",
+      commodityType: "GOOD",
+    });
+    // The old names are gone from the app model. Anything still reading them is
+    // reading the wire directly, which is the thing this layer exists to prevent.
+    expect(row).not.toHaveProperty("commodityName");
+    expect(row).not.toHaveProperty("price");
+  });
+
+  // A canonical unit is both displayable and resubmittable, so the two fields
+  // agree. Imported free text is only the former.
+  it("splits a canonical unit from imported free text", async () => {
+    fetchMock.mockResolvedValue(
+      response({
+        offerings: [
+          offering({ id: 1, unit: "kg" }),
+          offering({ id: 2, unit: "50kg sack" }),
+          offering({ id: 3, unit: "  litre  " }),
+          offering({ id: 4, unit: "KG" }),
+          offering({ id: 5, unit: null }),
+          offering({ id: 6, unit: "   " }),
+        ],
+        first: 1,
+        last: 6,
+      }),
+    );
+
+    const rows = (await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 })).offerings;
+
+    expect(rows.map((row) => [row.unit, row.unitLabel])).toEqual([
+      ["kg", "kg"],
+      // Still shown, cannot be saved back.
+      [null, "50kg sack"],
+      ["litre", "litre"],
+      // The lookup holds lower-case values, so "KG" is not one of them — but it
+      // is what the importer wrote, so it is still what a reader sees.
+      [null, "KG"],
+      [null, null],
+      [null, null],
+    ]);
+  });
+
+  // An imported row with no usable classification is readable and not writable,
+  // the same way an unknown unit is.
+  it("nulls a commodity type outside the two the database allows", async () => {
+    fetchMock.mockResolvedValue(
+      response({
+        offerings: [
+          offering({ id: 1, commodityType: "SERVICE" }),
+          offering({ id: 2, commodityType: "UNCLASSIFIED" }),
+          offering({ id: 3, commodityType: "good" }),
+          offering({ id: 4, commodityType: null }),
+        ],
+        first: 1,
+        last: 4,
+      }),
+    );
+
+    const rows = (await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 })).offerings;
+    expect(rows.map((row) => row.commodityType)).toEqual(["SERVICE", null, null, null]);
+  });
+
+  // The reason the price is a string end to end. Each of these is a value that
+  // does not survive a round trip through Number.
+  it.each(["120.50", "0.000000000000000001", "9007199254740993", "12345678901234567890.12345"])(
+    "carries %s through unchanged",
+    async (price) => {
+      fetchMock.mockResolvedValue(
+        response({ offerings: [offering({ price })], first: 1, last: 1 }),
+      );
+
+      const [row] = (await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 })).offerings;
+      expect(row?.pricePerUnit).toBe(price);
+    },
+  );
+});
+
+describe("the managed read override", () => {
+  it("sets no cache by default and no-store when asked", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
+
+    await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 });
+    expect(fetchMock.mock.calls[0]?.[1]).not.toHaveProperty("cache");
+
+    await api.getVoucherOfferings(VOUCHER_ADDRESS, { perPage: 20 }, undefined, {
+      cache: "no-store",
+    });
+    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ cache: "no-store" });
+    // Still the public endpoint and still cookie-free: only the browser cache
+    // policy differs, so a guest and an owner read the same representation.
+    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({ credentials: "omit" });
+  });
+
+  it("applies to the item read as well", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering() }));
+
+    await api.getVoucherOffering(VOUCHER_ADDRESS, "3", undefined, { cache: "no-store" });
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+      cache: "no-store",
+      credentials: "omit",
+      method: "GET",
+    });
+  });
+});
+
+describe("the write methods", () => {
+  const input = {
+    name: "Fresh maize flour",
+    commodityType: "GOOD" as const,
+    description: "Stone-ground flour packed on collection day.",
+    unit: "kg" as const,
+    pricePerUnit: "120.50",
+    imageUrl: "https://content.example/offering/a_800_b.webp",
+  };
+
+  it("posts to the nested route in the backend's vocabulary", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering() }));
+
+    await api.createVoucherOffering(VOUCHER_ADDRESS, input);
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(String(url)).toBe(`https://api.test/api/v2/vouchers/${VOUCHER_ADDRESS}/offerings`);
+    expect(init).toMatchObject({ method: "POST", cache: "no-store" });
+    // The rename happens here and nowhere else.
+    expect(JSON.parse(init.body as string)).toEqual({
+      commodityName: "Fresh maize flour",
+      commodityType: "GOOD",
+      description: "Stone-ground flour packed on collection day.",
+      unit: "kg",
+      price: "120.50",
+      imageUrl: "https://content.example/offering/a_800_b.webp",
+    });
+    // Cookies, never the storage bearer token: only the upload talks to storage.
+    expect(init.headers).not.toHaveProperty("Authorization");
+  });
+
+  // TanStack Form validates against the schema but submits the caller's own
+  // values, so trimming has to happen on the way out or a padded name travels.
+  it("normalizes the text it sends, not just the text it validated", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering() }));
+
+    await api.createVoucherOffering(VOUCHER_ADDRESS, {
+      ...input,
+      name: "  Fresh maize flour  ",
+      description: "  Stone-ground.  ",
+    });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1].body as string);
+    expect(body.commodityName).toBe("Fresh maize flour");
+    expect(body.description).toBe("Stone-ground.");
+  });
+
+  // The same guard the form has, at the boundary that actually reaches the
+  // network: a caller that skipped validation cannot send an invalid write.
+  it("refuses a write the schema rejects", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering() }));
+
+    await expect(
+      api.createVoucherOffering(VOUCHER_ADDRESS, { ...input, pricePerUnit: "0" }),
+    ).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("puts to the item route and returns the saved row", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering({ commodityName: "Renamed" }) }));
+
+    const saved = await api.updateVoucherOffering(VOUCHER_ADDRESS, "3", input);
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(String(url)).toBe(`https://api.test/api/v2/vouchers/${VOUCHER_ADDRESS}/offerings/3`);
+    expect(init).toMatchObject({ method: "PUT", cache: "no-store" });
+    // The response is the source of truth for what was stored, not the input.
+    expect(saved.name).toBe("Renamed");
+  });
+
+  // An explicit null, not an omitted key: PUT is assign-all, so the two would
+  // otherwise be indistinguishable to the server.
+  it("sends a cleared photo as null rather than omitting it", async () => {
+    fetchMock.mockResolvedValue(response({ offering: offering({ imageUrl: null }) }));
+
+    await api.updateVoucherOffering(VOUCHER_ADDRESS, "3", { ...input, imageUrl: null });
+
+    const body = JSON.parse(fetchMock.mock.calls[0]?.[1].body as string);
+    expect(body).toHaveProperty("imageUrl", null);
+  });
+
+  it("deletes the item route and returns the id the server unlisted", async () => {
+    fetchMock.mockResolvedValue(response({ id: 3 }));
+
+    const id = await api.deleteVoucherOffering(VOUCHER_ADDRESS, "3");
+
+    const [url, init] = fetchMock.mock.calls[0] ?? [];
+    expect(String(url)).toBe(`https://api.test/api/v2/vouchers/${VOUCHER_ADDRESS}/offerings/3`);
+    expect(init).toMatchObject({ method: "DELETE", cache: "no-store" });
+    // A numeric id on the wire, a string in the app: the same normalization the
+    // read path applies, so a cache key built from either matches.
+    expect(id).toBe("3");
+  });
+
+  it("treats a 2xx with no usable offering as a protocol failure", async () => {
+    fetchMock.mockResolvedValue(response({ offering: null }));
+
+    await expect(api.createVoucherOffering(VOUCHER_ADDRESS, input)).rejects.toThrow(
+      /no usable offering/,
+    );
   });
 });
