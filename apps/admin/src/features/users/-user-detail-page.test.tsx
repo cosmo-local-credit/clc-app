@@ -29,6 +29,26 @@ vi.mock("#/lib/geo-client", () => ({
 // the one thing this screen asks of it: reporting where the operator clicked.
 // Only the sheet's map is interactive; the record's is a picture, and stubbing it
 // as one keeps a single "Set pin" control on the page.
+// The photo row is hidden where the upload service is unconfigured, and the test
+// env has no VITE_STORAGE_URL.
+vi.mock("#/lib/storage", () => ({ isStorageConfigured: true }));
+
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: () =>
+      Promise.resolve({
+        url: "https://cdn.test/profile/new_400_a3f91c2e.webp",
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      }),
+    reset: () => {},
+    isPending: false,
+    isError: false,
+  }),
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({ onLocationChange }: { onLocationChange?: (lat: number, lng: number) => void }) =>
     onLocationChange ? (
@@ -74,6 +94,7 @@ function account(overrides: Partial<AdminUser> = {}): AdminUser {
     maxTokens: 20,
     createdAt: "2026-08-13T11:00:00Z",
     updatedAt: "2026-08-13T11:00:00Z",
+    avatarUrl: null,
     locationName: null,
     geoLat: null,
     geoLng: null,
@@ -484,5 +505,68 @@ describe("UserDetailPage", () => {
     expect(screen.queryByRole("textbox", { name: /status/i })).toBeNull();
     expect(screen.queryByRole("textbox", { name: /role/i })).toBeNull();
     expect(screen.getByRole("button", { name: "Save changes" })).toBeTruthy();
+  });
+});
+
+describe("UserDetailPage photo", () => {
+  // The rendered <img> is deliberately not asserted here: Avatar mounts its image
+  // only once the browser reports a successful load, which jsdom never does, so
+  // such a test would assert Base UI's loading behaviour rather than this screen's.
+  it("sends a replacement URL, and omits the keys when the photo is untouched", async () => {
+    listUsers.mockResolvedValue({ users: [account()], first: 0, last: 0, receivedCount: 1 });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserProfile.mockResolvedValue(account());
+
+    renderDetailRoute();
+    await openProfileSheet();
+
+    // Untouched: an operator fixing a phone number must not send avatar keys at
+    // all, because omitted is the only thing that means "leave it alone".
+    fireEvent.change(screen.getByRole("textbox", { name: "Phone number" }), {
+      target: { value: "+254700000111" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(updateUserProfile).toHaveBeenCalled());
+    const [, untouched] = updateUserProfile.mock.calls[0]!;
+    expect("avatarUrl" in (untouched as object)).toBe(false);
+    expect("clearAvatar" in (untouched as object)).toBe(false);
+
+    updateUserProfile.mockClear();
+    await openProfileSheet();
+    fireEvent.change(screen.getByLabelText("Profile photo", { selector: "input" }), {
+      target: { files: [new File([new Uint8Array(8)], "me.png", { type: "image/png" })] },
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: /replace/i })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateUserProfile).toHaveBeenCalled());
+    const [, replaced] = updateUserProfile.mock.calls[0]!;
+    expect(replaced).toMatchObject({ avatarUrl: "https://cdn.test/profile/new_400_a3f91c2e.webp" });
+    expect("clearAvatar" in (replaced as object)).toBe(false);
+  });
+
+  it("removes a photo with clearAvatar rather than an empty URL", async () => {
+    listUsers.mockResolvedValue({
+      users: [account({ avatarUrl: "https://cdn.test/profile/old_400_ab.webp" })],
+      first: 0,
+      last: 0,
+      receivedCount: 1,
+    });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserProfile.mockResolvedValue(account());
+
+    renderDetailRoute();
+    await openProfileSheet();
+
+    fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateUserProfile).toHaveBeenCalled());
+    const [, profile] = updateUserProfile.mock.calls[0]!;
+    // clc-core cannot tell an absent key from a JSON null, so removal is a flag.
+    expect(profile).toMatchObject({ clearAvatar: true });
+    expect("avatarUrl" in (profile as object)).toBe(false);
   });
 });

@@ -1,0 +1,161 @@
+import { checkImageFile } from "@clc/api/features/images/policy";
+import type { ImagePurpose } from "@clc/api/features/images/policy";
+import { useRef, useState } from "react";
+import { HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from "react-icons/hi";
+
+import { useImageUpload } from "#/features/images/use-image-upload";
+import { Button } from "#/components/ui/button";
+import { Label } from "#/components/ui/label";
+import { cn } from "#/lib/utils";
+
+/**
+ * The console's image editor: pick a file, and the URL it becomes is the value.
+ *
+ * Uploading happens on selection rather than on save, which is what makes replace
+ * work the same as first upload. Storage keys are content-addressed and the
+ * service never deletes, so an image uploaded for a save the operator then
+ * abandons costs one orphaned object — a far better trade than holding a File
+ * across a form and re-deriving the upload on every submit attempt.
+ *
+ * The value is therefore always a stored URL, never a File, and the caller's save
+ * carries a string it can send straight to clc-core. `null` means the operator
+ * removed the image; the caller decides what that means on its endpoint, because
+ * the two endpoints differ — the account profile has a `clearAvatar` flag and the
+ * pool profile reads `""`.
+ *
+ * Shared by the account sheet, the pool publish form and the pool record sheet.
+ * Nothing here is per-resource: the purpose decides the folder and the width, and
+ * the shared policy decides which files are worth sending at all.
+ */
+export function ImageUploadField({
+  label,
+  hint,
+  purpose,
+  value,
+  onChange,
+  shape = "square",
+  disabled,
+}: {
+  label: string;
+  hint?: string;
+  purpose: ImagePurpose;
+  /** The stored URL, or null when there is no image. */
+  value: string | null;
+  onChange: (url: string | null) => void;
+  /** `round` for a face, `wide` for a banner, `square` for a logo. */
+  shape?: "round" | "square" | "wide";
+  disabled?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const upload = useImageUpload();
+  const [rejection, setRejection] = useState<string | null>(null);
+
+  const busy = upload.isPending || disabled;
+  const error = rejection ?? (upload.isError ? "Upload failed. Try again." : null);
+
+  async function select(file: File | undefined) {
+    if (!file) return;
+
+    const check = checkImageFile(file);
+    if (!check.ok) {
+      setRejection(
+        check.reason === "unsupported-type"
+          ? "Choose a JPEG, PNG or WebP image."
+          : "That image is too large. Choose one under 8 MB.",
+      );
+      return;
+    }
+
+    setRejection(null);
+    upload.reset();
+    try {
+      // A fresh id per attempt: the object key is derived from it, so reusing one
+      // across two different files would be the only way to overwrite an object
+      // this service treats as immutable.
+      const uploaded = await upload.mutateAsync({
+        file,
+        purpose,
+        uploadId: crypto.randomUUID().replaceAll("-", ""),
+      });
+      onChange(uploaded.url);
+    } catch {
+      // Reported through upload.isError above; the previous value stays.
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={`${purpose}-file`}>{label}</Label>
+
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border",
+            shape === "round" && "size-16 rounded-full",
+            shape === "square" && "size-16",
+            shape === "wide" && "h-16 w-28",
+          )}
+        >
+          {value ? (
+            <img src={value} alt="" className="size-full object-cover" />
+          ) : (
+            <HiOutlinePhotograph aria-hidden className="text-muted-foreground size-5" />
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-col items-start gap-1.5">
+          <input
+            ref={inputRef}
+            id={`${purpose}-file`}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            disabled={busy}
+            onChange={(event) => {
+              void select(event.target.files?.[0]);
+              // Cleared so re-picking the same file still fires a change.
+              event.target.value = "";
+            }}
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={busy}
+              onClick={() => inputRef.current?.click()}
+            >
+              <HiOutlineUpload />
+              {upload.isPending ? "Uploading…" : value ? "Replace" : "Upload"}
+            </Button>
+
+            {value ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => {
+                  setRejection(null);
+                  upload.reset();
+                  onChange(null);
+                }}
+              >
+                <HiOutlineTrash />
+                Remove
+              </Button>
+            ) : null}
+          </div>
+
+          {hint && !error ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+          {error ? (
+            <p role="alert" className="text-destructive text-xs">
+              {error}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}

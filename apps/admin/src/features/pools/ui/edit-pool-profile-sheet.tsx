@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SectionLabel } from "#/components/admin/section-heading";
+import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -28,6 +29,7 @@ import {
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { clcApi } from "#/lib/api";
+import { isStorageConfigured } from "#/lib/storage";
 
 import { useUpdatePoolProfile } from "../use-update-pool-profile";
 
@@ -39,6 +41,12 @@ import { useUpdatePoolProfile } from "../use-update-pool-profile";
  * The description reuses the publish schema so a pool cannot be edited into a
  * state its own create form would have rejected.
  */
+const optionalStoredImageSchema = z
+  .string()
+  .refine((value) => value === "" || /^https?:\/\//.test(value), {
+    message: "The image must be an http(s) URL",
+  });
+
 const profileSchema = z
   .object({
     description: poolDescriptionSchema.or(z.literal("")),
@@ -53,6 +61,10 @@ const profileSchema = z
     website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
     terms: optionalTermsUrlSchema,
+    // Uploaded before they reach the form, so the only rule left is the one the
+    // catalog column enforces: a URL or nothing.
+    imageUrl: optionalStoredImageSchema,
+    bannerUrl: optionalStoredImageSchema,
     locationName: z.string().trim().max(200, { message: "Location name is too long" }),
     latitude: z.string(),
     longitude: z.string(),
@@ -104,6 +116,8 @@ export function EditPoolProfileSheet({
       website: pool.website ?? "",
       phone: pool.phone ?? "",
       terms: pool.terms ?? "",
+      imageUrl: pool.imageUrl ?? "",
+      bannerUrl: pool.bannerUrl ?? "",
       locationName: pool.locationName ?? "",
       latitude: pool.geoLat === null ? "" : String(pool.geoLat),
       longitude: pool.geoLng === null ? "" : String(pool.geoLng),
@@ -122,6 +136,11 @@ export function EditPoolProfileSheet({
           website: value.website,
           phone: value.phone,
           terms: value.terms,
+          // Unlike every other field here, these preserve on omission — so they
+          // are sent only when the operator changed one. "" is how this endpoint
+          // removes an image; omitting it would leave the stored one in place.
+          ...(value.imageUrl === (pool.imageUrl ?? "") ? {} : { imageUrl: value.imageUrl }),
+          ...(value.bannerUrl === (pool.bannerUrl ?? "") ? {} : { bannerUrl: value.bannerUrl }),
           locationName: value.locationName,
           // Sent as a pair or not at all, which is the rule the database holds.
           geoLat: value.latitude === "" ? null : Number(value.latitude),
@@ -285,7 +304,38 @@ export function EditPoolProfileSheet({
               </form.Field>
             </div>
 
-            <div className="flex flex-col gap-4 border-t border-border pt-4">
+            {isStorageConfigured ? (
+              <div className="border-border flex flex-col gap-4 border-t pt-4">
+                <SectionLabel>Images</SectionLabel>
+                <form.Field name="imageUrl">
+                  {(field) => (
+                    <ImageUploadField
+                      label="Logo"
+                      hint="Square. Stored at 400px."
+                      purpose="pool.image"
+                      value={field.state.value === "" ? null : field.state.value}
+                      onChange={(url) => field.handleChange(url ?? "")}
+                      disabled={update.isPending}
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="bannerUrl">
+                  {(field) => (
+                    <ImageUploadField
+                      label="Banner"
+                      hint="Wide. Stored at 1280px."
+                      purpose="pool.banner"
+                      shape="wide"
+                      value={field.state.value === "" ? null : field.state.value}
+                      onChange={(url) => field.handleChange(url ?? "")}
+                      disabled={update.isPending}
+                    />
+                  )}
+                </form.Field>
+              </div>
+            ) : null}
+
+            <div className="border-border flex flex-col gap-4 border-t pt-4">
               <SectionLabel>Location</SectionLabel>
               <form.Field name="locationName">
                 {(nameField) => (

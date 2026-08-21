@@ -106,6 +106,14 @@ export type PoolProfileUpdate = {
   locationName: string;
   geoLat: number | null;
   geoLng: number | null;
+  /**
+   * The two exceptions to this payload's assign-all rule: omitted preserves the
+   * stored image, and `""` removes it. clc-core COALESCEs them precisely so a
+   * console that predates pool images cannot blank them while fixing a typo in
+   * the description.
+   */
+  imageUrl?: string;
+  bannerUrl?: string;
   tags: string[];
 };
 
