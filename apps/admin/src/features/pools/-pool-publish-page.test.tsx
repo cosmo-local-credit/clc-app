@@ -355,4 +355,25 @@ describe("PoolPublishPage images", () => {
       bannerUrl: "https://cdn.test/pool/x_1280_ab.webp",
     });
   });
+
+  it("gives the images a card of their own in the first row", async () => {
+    // They started in a card, went into the pool card, and came back out: the
+    // pool card was the widest thing on the page and the images are what pays for
+    // narrowing it. jsdom lays nothing out, so assert the arrangement — same grid,
+    // separate cards, three tracks — rather than the pixels.
+    renderPage();
+
+    const name = await waitFor(() => screen.getByLabelText("Name", { selector: "input" }));
+    const poolCard = name.closest("section");
+    const imagesCard = screen.getByLabelText("Logo", { selector: "input" }).closest("section");
+
+    expect(imagesCard).toBeTruthy();
+    expect(imagesCard).not.toBe(poolCard);
+    expect(screen.getByRole("heading", { name: "Images" })).toBeTruthy();
+    expect(imagesCard?.contains(screen.getByLabelText("Banner", { selector: "input" }))).toBe(true);
+    expect(imagesCard?.parentElement).toBe(poolCard?.parentElement);
+    expect(poolCard?.parentElement?.className).toContain(
+      "xl:grid-cols-[7fr_minmax(13rem,3fr)_4fr]",
+    );
+  });
 });

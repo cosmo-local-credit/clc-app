@@ -293,9 +293,9 @@ export function PoolPublishPage() {
           void form.handleSubmit();
         }}
       >
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[7fr_minmax(13rem,3fr)_4fr]">
           <FormPanel title="Pool">
-            <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
+            <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
               <form.Field name="name">
                 {(field) => (
                   <Field label="Name" htmlFor={field.name} error={fieldError(field)}>
@@ -346,6 +346,45 @@ export function PoolPublishPage() {
               )}
             </form.Field>
           </FormPanel>
+
+          {/* Hidden where the upload service is not configured: a deploy is still
+              publishable without images, and a control that cannot work is worse
+              than its absence.
+
+              Dense fields, in a card of its own: the row's height is set by the
+              pool card beside it, and the labelled variant would stretch all
+              three cards to fit prose this card has no room for. */}
+          {isStorageConfigured ? (
+            <FormPanel title="Images">
+              <form.Field name="imageUrl">
+                {(field) => (
+                  <ImageUploadField
+                    label="Logo"
+                    hint="Optional"
+                    purpose="pool.image"
+                    value={field.state.value === "" ? null : field.state.value}
+                    onChange={(url) => field.handleChange(url ?? "")}
+                    disabled={deployment.publishing}
+                    dense
+                  />
+                )}
+              </form.Field>
+
+              <form.Field name="bannerUrl">
+                {(field) => (
+                  <ImageUploadField
+                    label="Banner"
+                    hint="Optional"
+                    purpose="pool.banner"
+                    value={field.state.value === "" ? null : field.state.value}
+                    onChange={(url) => field.handleChange(url ?? "")}
+                    disabled={deployment.publishing}
+                    dense
+                  />
+                )}
+              </form.Field>
+            </FormPanel>
+          ) : null}
 
           <FormPanel title="Pricing and fees">
             <div className="grid grid-cols-2 gap-3">
@@ -508,7 +547,7 @@ export function PoolPublishPage() {
             </form.Field>
           </FormPanel>
 
-          <FormPanel title="Contact">
+          <FormPanel title="Contact" className="xl:col-span-2">
             <div className="grid grid-cols-2 gap-3">
               <form.Field name="email">
                 {(field) => (
@@ -577,45 +616,6 @@ export function PoolPublishPage() {
               </form.Field>
             </div>
           </FormPanel>
-
-          {/* Hidden where the upload service is not configured: a deploy is still
-              publishable without images, and a control that cannot work is worse
-              than its absence. */}
-          {isStorageConfigured ? (
-            <FormPanel title="Images">
-              <p className="text-muted-foreground text-sm">
-                Optional. Both are stored once and served from the CDN; a pool published without
-                them falls back to its initials.
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <form.Field name="imageUrl">
-                  {(field) => (
-                    <ImageUploadField
-                      label="Logo"
-                      hint="Square. Stored at 400px."
-                      purpose="pool.image"
-                      value={field.state.value === "" ? null : field.state.value}
-                      onChange={(url) => field.handleChange(url ?? "")}
-                      disabled={deployment.publishing}
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field name="bannerUrl">
-                  {(field) => (
-                    <ImageUploadField
-                      label="Banner"
-                      hint="Wide. Stored at 1280px."
-                      purpose="pool.banner"
-                      value={field.state.value === "" ? null : field.state.value}
-                      onChange={(url) => field.handleChange(url ?? "")}
-                      disabled={deployment.publishing}
-                    />
-                  )}
-                </form.Field>
-              </div>
-            </FormPanel>
-          ) : null}
         </div>
 
         <aside className="border-border bg-card h-fit border p-4 xl:sticky xl:top-20">
@@ -711,9 +711,17 @@ export function PoolPublishPage() {
   );
 }
 
-function FormPanel({ title, children }: { title: string; children: ReactNode }) {
+function FormPanel({
+  title,
+  className,
+  children,
+}: {
+  title: string;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="border-border bg-card flex flex-col gap-3 border p-4">
+    <section className={`border-border bg-card flex flex-col gap-3 border p-4 ${className ?? ""}`}>
       <SectionHeading>{title}</SectionHeading>
       {children}
     </section>
