@@ -37,8 +37,10 @@ import {
 } from "#/components/ui/select";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { useAdminSession } from "#/features/auth/admin-session";
 import { clcApi } from "#/lib/api";
+import { isStorageConfigured } from "#/lib/storage";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { usePoolPublishDeployment } from "./use-pool-publish-deployment";
@@ -119,6 +121,12 @@ const requiredCoordinateSchema = z
   .min(1, { message: "Drop a pin on the map" })
   .refine((value) => Number.isFinite(Number(value)), { message: "Enter a number" });
 
+const optionalStoredImageSchema = z
+  .string()
+  .refine((value) => value === "" || /^https?:\/\//.test(value), {
+    message: "The image must be an http(s) URL",
+  });
+
 const poolPublishSchema = z
   .object({
     name: poolNameSchema,
@@ -140,6 +148,13 @@ const poolPublishSchema = z
     website: requiredWebsiteSchema,
     phone: requiredPhoneSchema,
     terms: requiredTermsUrlSchema,
+    // Optional, and already uploaded by the time they reach the form: the field
+    // uploads on selection, so these hold a stored URL or nothing. clc-core
+    // validates them as http(s) before it queues the deploy, because the catalog
+    // column that receives them refuses anything else — and refusing it there
+    // would mean a signed transaction with no catalog row.
+    imageUrl: optionalStoredImageSchema,
+    bannerUrl: optionalStoredImageSchema,
   })
   .superRefine((value, ctx) => {
     if (value.pricing === "oracle" && !oracleBaseAddress(value.oracleBase)) {
@@ -185,6 +200,8 @@ const DEFAULT_VALUES: PoolPublishValues = {
   website: "",
   phone: "",
   terms: "",
+  imageUrl: "",
+  bannerUrl: "",
 };
 
 /**
@@ -232,6 +249,10 @@ export function PoolPublishPage() {
         website: value.website.trim(),
         phone: value.phone.trim(),
         terms: value.terms.trim(),
+        // Omitted when unset rather than sent empty: the deploy request treats
+        // these as optional, and an empty string is not a URL.
+        ...(value.imageUrl ? { imageUrl: value.imageUrl } : {}),
+        ...(value.bannerUrl ? { bannerUrl: value.bannerUrl } : {}),
         tags: value.tags,
       };
 
@@ -556,6 +577,46 @@ export function PoolPublishPage() {
               </form.Field>
             </div>
           </FormPanel>
+
+          {/* Hidden where the upload service is not configured: a deploy is still
+              publishable without images, and a control that cannot work is worse
+              than its absence. */}
+          {isStorageConfigured ? (
+            <FormPanel title="Images">
+              <p className="text-muted-foreground text-sm">
+                Optional. Both are stored once and served from the CDN; a pool published without
+                them falls back to its initials.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field name="imageUrl">
+                  {(field) => (
+                    <ImageUploadField
+                      label="Logo"
+                      hint="Square. Stored at 400px."
+                      purpose="pool.image"
+                      value={field.state.value === "" ? null : field.state.value}
+                      onChange={(url) => field.handleChange(url ?? "")}
+                      disabled={deployment.publishing}
+                    />
+                  )}
+                </form.Field>
+
+                <form.Field name="bannerUrl">
+                  {(field) => (
+                    <ImageUploadField
+                      label="Banner"
+                      hint="Wide. Stored at 1280px."
+                      purpose="pool.banner"
+                      shape="wide"
+                      value={field.state.value === "" ? null : field.state.value}
+                      onChange={(url) => field.handleChange(url ?? "")}
+                      disabled={deployment.publishing}
+                    />
+                  )}
+                </form.Field>
+              </div>
+            </FormPanel>
+          ) : null}
         </div>
 
         <aside className="border-border bg-card h-fit border p-4 xl:sticky xl:top-20">

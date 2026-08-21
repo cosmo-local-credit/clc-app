@@ -41,6 +41,7 @@ function user(address: string, status: string, overrides: Partial<AdminUser> = {
     maxTokens: 20,
     createdAt: "2026-07-24T10:43:16Z",
     updatedAt: "2026-07-24T10:43:16Z",
+    avatarUrl: null,
     locationName: null,
     geoLat: null,
     geoLng: null,

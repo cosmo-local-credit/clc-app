@@ -54,6 +54,8 @@ export type AdminUser = {
   maxTokens: number;
   createdAt: string;
   updatedAt: string;
+  /** The account's profile image. Null when it has none. */
+  avatarUrl: string | null;
   /** The account's saved place. Null when it has none. */
   locationName: string | null;
   /**
@@ -70,8 +72,13 @@ export type AdminUser = {
  * every consumer would otherwise have to know the difference between "absent"
  * and "empty".
  */
-type BackendAdminUser = Omit<AdminUser, "locationName" | "geoLat" | "geoLng"> &
-  Partial<{ locationName: string | null; geoLat: number | null; geoLng: number | null }>;
+type BackendAdminUser = Omit<AdminUser, "avatarUrl" | "locationName" | "geoLat" | "geoLng"> &
+  Partial<{
+    avatarUrl: string | null;
+    locationName: string | null;
+    geoLat: number | null;
+    geoLng: number | null;
+  }>;
 
 export type AdminUserLimits = {
   maxPools: number;
@@ -103,6 +110,14 @@ export type AdminUserProfile = {
   locationName?: string;
   geoLat?: number;
   geoLng?: number;
+  /**
+   * The stored image is left alone when both keys are omitted — the same rule the
+   * location keys follow, so a client that knows nothing about avatars cannot
+   * remove one. Send `avatarUrl` to replace it, `clearAvatar` to remove it, never
+   * both: clc-core rejects the pair rather than choosing.
+   */
+  avatarUrl?: string;
+  clearAvatar?: boolean;
 };
 
 export type AdminUserParams = {
@@ -393,6 +408,9 @@ function normalizeAdminUser(user: BackendAdminUser): AdminUser {
 
   return {
     ...user,
+    // Absent on a backend that predates avatars, and "" from one that has the
+    // column but nothing in it; both mean no image.
+    avatarUrl: normalizeText(user.avatarUrl),
     locationName: normalizeText(user.locationName),
     geoLat: located ? geoLat : null,
     geoLng: located ? geoLng : null,
