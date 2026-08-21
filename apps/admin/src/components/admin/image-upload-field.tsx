@@ -35,6 +35,7 @@ export function ImageUploadField({
   value,
   onChange,
   disabled,
+  dense,
 }: {
   label: string;
   hint?: string;
@@ -43,6 +44,12 @@ export function ImageUploadField({
   value: string | null;
   onChange: (url: string | null) => void;
   disabled?: boolean;
+  /**
+   * Fits the field into a panel whose height is already set by the fields beside
+   * it: a smaller preview, icon-only controls, and the hint moved onto the
+   * label's line. Same behaviour, roughly half the vertical space.
+   */
+  dense?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useImageUpload();
@@ -57,6 +64,7 @@ export function ImageUploadField({
   const round = IMAGE_POLICIES[purpose].aspect === 1;
 
   const busy = upload.isPending || disabled;
+  const uploadLabel = upload.isPending ? "Uploading…" : value ? "Replace" : "Upload";
   const error = rejection ?? (upload.isError ? "Upload failed. Try again." : null);
 
   async function select(file: File | undefined) {
@@ -104,7 +112,15 @@ export function ImageUploadField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={`${purpose}-file`}>{label}</Label>
+      {/* Dense puts the hint on the label's line. Under the buttons it would be
+          the second line of prose that pushes the panel taller than the column
+          it sits next to, which is the whole thing this variant avoids. */}
+      <div className="flex items-baseline justify-between gap-2">
+        <Label htmlFor={`${purpose}-file`}>{label}</Label>
+        {dense && hint && !error ? (
+          <span className="text-muted-foreground text-xs">{hint}</span>
+        ) : null}
+      </div>
 
       <div className="flex items-start gap-3">
         {/* A face goes through Avatar, which is where this console's circular
@@ -112,14 +128,18 @@ export function ImageUploadField({
             a rectangle on a card, so it gets the same flat outlined box every
             other inset in the console uses. */}
         {round ? (
-          <Avatar className="border-border size-16 shrink-0 border">
+          <Avatar className={`border-border shrink-0 border ${dense ? "size-12" : "size-16"}`}>
             {value ? <AvatarImage src={value} alt="" /> : null}
             <AvatarFallback className="bg-background">
               <HiOutlinePhotograph aria-hidden className="text-muted-foreground size-5" />
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div className="border-border bg-background flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden border">
+          <div
+            className={`border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border ${
+              dense ? "h-12 w-20" : "h-16 w-28"
+            }`}
+          >
             {value ? (
               <img src={value} alt="" className="size-full object-cover" />
             ) : (
@@ -146,19 +166,21 @@ export function ImageUploadField({
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
-              size="sm"
+              size={dense ? "icon-sm" : "sm"}
               variant="outline"
               disabled={busy}
               onClick={() => inputRef.current?.click()}
+              aria-label={dense ? uploadLabel : undefined}
+              title={dense ? uploadLabel : undefined}
             >
               <HiOutlineUpload />
-              {upload.isPending ? "Uploading…" : value ? "Replace" : "Upload"}
+              {dense ? null : uploadLabel}
             </Button>
 
             {value ? (
               <Button
                 type="button"
-                size="sm"
+                size={dense ? "icon-sm" : "sm"}
                 variant="ghost"
                 disabled={busy}
                 onClick={() => {
@@ -166,14 +188,18 @@ export function ImageUploadField({
                   upload.reset();
                   onChange(null);
                 }}
+                aria-label={dense ? "Remove" : undefined}
+                title={dense ? "Remove" : undefined}
               >
                 <HiOutlineTrash />
-                Remove
+                {dense ? null : "Remove"}
               </Button>
             ) : null}
           </div>
 
-          {hint && !error ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+          {hint && !error && !dense ? (
+            <p className="text-muted-foreground text-xs">{hint}</p>
+          ) : null}
           {error ? (
             <p role="alert" className="text-destructive text-xs">
               {error}
