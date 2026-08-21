@@ -508,6 +508,12 @@ describe("UserDetailPage", () => {
   });
 });
 
+/** Selection opens the crop frame; confirming it is what uploads. */
+async function confirmCrop() {
+  await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "Crop and upload" }));
+}
+
 describe("UserDetailPage photo", () => {
   // The rendered <img> is deliberately not asserted here: Avatar mounts its image
   // only once the browser reports a successful load, which jsdom never does, so
@@ -537,6 +543,7 @@ describe("UserDetailPage photo", () => {
     fireEvent.change(screen.getByLabelText("Profile photo", { selector: "input" }), {
       target: { files: [new File([new Uint8Array(8)], "me.png", { type: "image/png" })] },
     });
+    await confirmCrop();
     await waitFor(() => expect(screen.getByRole("button", { name: /replace/i })).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 

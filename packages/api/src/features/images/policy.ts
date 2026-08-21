@@ -25,7 +25,23 @@ export type ImagePolicy = {
   folder: "profile" | "voucher" | "pool" | "report";
   /** Requested output width. Must be one of the service's `image.allowed_widths`. */
   width: 400 | 800 | 1280;
+  /**
+   * The shape the image is displayed in, and therefore the shape it is cropped
+   * to before upload. Absent means the image keeps whatever shape it arrives in.
+   *
+   * The storage service resizes but never crops, so without this an avatar taken
+   * in landscape is stored letterboxed and every screen showing it round has to
+   * throw away the sides at render time — the wrong pixels travel, and the person
+   * choosing the photo never sees which ones survived.
+   */
+  aspect?: number;
 };
+
+/**
+ * Banners are 16:9 — the ratio the screens showing them already reserve, and one
+ * a phone camera produces natively, so the common case crops to nothing.
+ */
+const BANNER_ASPECT = 16 / 9;
 
 /**
  * Avatars stay 400px even in the admin console: the same object serves a mobile
@@ -34,11 +50,13 @@ export type ImagePolicy = {
  * full-bleed phone header and a desktop audit view.
  */
 export const IMAGE_POLICIES: Readonly<Record<ImagePurpose, ImagePolicy>> = {
-  "profile.avatar": { folder: "profile", width: 400 },
-  "voucher.icon": { folder: "voucher", width: 400 },
-  "voucher.banner": { folder: "voucher", width: 1280 },
-  "pool.image": { folder: "pool", width: 400 },
-  "pool.banner": { folder: "pool", width: 1280 },
+  "profile.avatar": { folder: "profile", width: 400, aspect: 1 },
+  "voucher.icon": { folder: "voucher", width: 400, aspect: 1 },
+  "voucher.banner": { folder: "voucher", width: 1280, aspect: BANNER_ASPECT },
+  "pool.image": { folder: "pool", width: 400, aspect: 1 },
+  "pool.banner": { folder: "pool", width: 1280, aspect: BANNER_ASPECT },
+  // No aspect: a post photograph is the content, not an identity mark. Cropping
+  // it to a house shape would throw away what the author chose to show.
   "report.image": { folder: "report", width: 1280 },
 };
 

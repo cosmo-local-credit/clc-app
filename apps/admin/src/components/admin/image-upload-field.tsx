@@ -1,9 +1,10 @@
-import { checkImageFile } from "@clc/api/features/images/policy";
+import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import type { ImagePurpose } from "@clc/api/features/images/policy";
 import { useRef, useState } from "react";
 import { HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from "react-icons/hi";
 
 import { useImageUpload } from "#/features/images/use-image-upload";
+import { ImageCropDialog } from "#/components/admin/image-crop-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Button } from "#/components/ui/button";
 import { Label } from "#/components/ui/label";
@@ -50,6 +51,8 @@ export function ImageUploadField({
   const inputRef = useRef<HTMLInputElement>(null);
   const upload = useImageUpload();
   const [rejection, setRejection] = useState<string | null>(null);
+  /** Chosen, awaiting a frame. Purposes with no fixed shape skip this. */
+  const [pending, setPending] = useState<File | null>(null);
 
   const busy = upload.isPending || disabled;
   const error = rejection ?? (upload.isError ? "Upload failed. Try again." : null);
@@ -69,6 +72,19 @@ export function ImageUploadField({
 
     setRejection(null);
     upload.reset();
+
+    // A purpose with a display shape is framed first, so what is stored is what
+    // the console will render. One without — a post photograph — uploads as it is.
+    if (IMAGE_POLICIES[purpose].aspect) {
+      setPending(file);
+      return;
+    }
+
+    await send(file);
+  }
+
+  /** Uploads the framed (or unframed) file and reports its stored URL. */
+  async function send(file: File) {
     try {
       // A fresh id per attempt: the object key is derived from it, so reusing one
       // across two different files would be the only way to overwrite an object
@@ -169,6 +185,16 @@ export function ImageUploadField({
           ) : null}
         </div>
       </div>
+
+      <ImageCropDialog
+        file={pending}
+        purpose={purpose}
+        onCancel={() => setPending(null)}
+        onCropped={(cropped) => {
+          setPending(null);
+          void send(cropped);
+        }}
+      />
     </div>
   );
 }

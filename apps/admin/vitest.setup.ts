@@ -24,6 +24,34 @@ const localStorageMock: Storage = {
 
 vi.stubGlobal("localStorage", localStorageMock);
 
+// jsdom implements neither of these, and the crop frame needs both: it measures
+// the frame it encodes from, and it reads the chosen image's intrinsic size.
+// Images are reported as 1600x900 so a crop has something to crop.
+class ResizeObserverStub implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+
+class ImageStub {
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  width = 1600;
+  height = 900;
+  naturalWidth = 1600;
+  naturalHeight = 900;
+
+  set src(_value: string) {
+    // Asynchronous, like a real decode, so a component that sets state in onload
+    // is not doing it during its own render.
+    setTimeout(() => this.onload?.(), 0);
+  }
+}
+
+vi.stubGlobal("Image", ImageStub);
+
 afterEach(() => {
   cleanup();
   store.clear();
