@@ -1,7 +1,6 @@
 import type { AdminUser } from "@clc/api/features/admin/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
-import { ChevronDownIcon } from "lucide-react";
-import { HiOutlineExternalLink } from "react-icons/hi";
+import { HiOutlineExternalLink, HiOutlinePencil } from "react-icons/hi";
 import { toast } from "sonner";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
@@ -10,12 +9,6 @@ import { StateBadge } from "#/components/admin/state-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu";
 import { explorerAddressUrl } from "#/lib/explorer";
 import { formatDateTime, initials } from "#/lib/format";
 import { cn } from "#/lib/utils";
@@ -139,10 +132,11 @@ export function AccountHeader({
           </a>
           {account ? (
             <>
-              {/* Approval stays a button of its own: it is the decision an operator
-                  opened a pending account to make, and burying it in a menu costs a
-                  click on the screen's whole purpose. Everything else is a menu
-                  item. */}
+              {/* Every action is a button. There were three of them behind a menu
+                  labelled "Actions", which named the mechanism rather than the
+                  choice and cost a click to read a two-item list. Approval leads
+                  because it is the decision a pending account is opened to make;
+                  banning is last and styled as the destructive thing it is. */}
               {account.status !== "APPROVED" ? (
                 <Button
                   size="sm"
@@ -157,33 +151,27 @@ export function AccountHeader({
                 </Button>
               ) : null}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button size="sm" variant="outline" disabled={busy}>
-                      Actions
-                      <ChevronDownIcon />
-                    </Button>
+              <Button size="sm" variant="outline" disabled={busy} onClick={onEditProfile}>
+                <HiOutlinePencil />
+                Edit profile
+              </Button>
+
+              {account.status !== "REJECTED" ? (
+                // "Ban user" over "Reject": the same endpoint serves both a
+                // never-approved signup and an account being shut out later, and only
+                // the second reads as rejection. The stored status stays REJECTED, so
+                // the badge is unchanged.
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={busy}
+                  onClick={() =>
+                    void run("User banned.", () => reject.mutateAsync(account.ethereumAddress))
                   }
-                />
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuItem onClick={onEditProfile}>Edit profile</DropdownMenuItem>
-                  {account.status !== "REJECTED" ? (
-                    // "Ban user" over "Reject": the same endpoint serves both a
-                    // never-approved signup and an account being shut out later, and only
-                    // the second reads as rejection. The stored status stays REJECTED, so
-                    // the badge is unchanged.
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() =>
-                        void run("User banned.", () => reject.mutateAsync(account.ethereumAddress))
-                      }
-                    >
-                      {reject.isPending ? "Banning…" : "Ban user"}
-                    </DropdownMenuItem>
-                  ) : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                >
+                  {reject.isPending ? "Banning…" : "Ban user"}
+                </Button>
+              ) : null}
             </>
           ) : null}
         </div>

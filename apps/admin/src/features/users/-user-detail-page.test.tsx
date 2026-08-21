@@ -177,12 +177,10 @@ function fieldValue(name: string): string {
   return field instanceof HTMLInputElement ? field.value : "";
 }
 
-/** Every edit to an account's record is behind the header's Actions menu. */
+/** Every action is a button in the header; editing is one click. */
 async function openProfileSheet() {
-  await waitFor(() => expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy());
-  fireEvent.click(screen.getByRole("button", { name: /actions/i }));
-  await waitFor(() => expect(screen.getByRole("menuitem", { name: "Edit profile" })).toBeTruthy());
-  fireEvent.click(screen.getByRole("menuitem", { name: "Edit profile" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "Edit profile" })).toBeTruthy());
+  fireEvent.click(screen.getByRole("button", { name: "Edit profile" }));
   await waitFor(() => expect(screen.getByRole("textbox", { name: "Full name" })).toBeTruthy());
 }
 
@@ -209,17 +207,12 @@ describe("UserDetailPage", () => {
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Ada Lovelace");
-    // Approval is the decision this screen exists for, so it stays a button;
-    // everything else is behind Actions.
+    // Every action is a button: nothing an operator came here to do costs a click
+    // to find. Approval leads, banning is last and destructive.
     expect(screen.getByRole("button", { name: "Approve account" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Ban user" })).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: /actions/i }));
-    await waitFor(() =>
-      expect(screen.getByRole("menuitem", { name: "Edit profile" })).toBeTruthy(),
-    );
-    expect(screen.getByRole("menuitem", { name: "Ban user" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Edit profile" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Ban user" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /actions/i })).toBeNull();
   });
 
   it("names an account with no name rather than rendering an empty title", async () => {
@@ -367,7 +360,7 @@ describe("UserDetailPage", () => {
     renderDetailRoute();
 
     // The record itself carries no place control — the map on it is a picture.
-    await waitFor(() => expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Edit profile" })).toBeTruthy());
     expect(screen.queryByRole("button", { name: "Set pin" })).toBeNull();
 
     await openProfileSheet();
@@ -479,7 +472,8 @@ describe("UserDetailPage", () => {
     renderDetailRoute();
 
     await waitFor(() => expect(screen.getByText("Token 7")).toBeTruthy());
-    expect(screen.queryByRole("button", { name: /actions/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit profile" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ban user" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve account" })).toBeNull();
   });
 
@@ -489,15 +483,7 @@ describe("UserDetailPage", () => {
     getAccountTransfers.mockResolvedValue({ transfers: [] });
 
     renderDetailRoute();
-    await waitFor(() => expect(screen.getByRole("button", { name: /actions/i })).toBeTruthy());
-
-    fireEvent.click(screen.getByRole("button", { name: /actions/i }));
-    await waitFor(() =>
-      expect(screen.getByRole("menuitem", { name: "Edit profile" })).toBeTruthy(),
-    );
-    fireEvent.click(screen.getByRole("menuitem", { name: "Edit profile" }));
-
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Full name" })).toBeTruthy());
+    await openProfileSheet();
     // Deployment limits are edited here, seeded from the record.
     expect(fieldValue("Max pools")).toBe("10");
     expect(fieldValue("Max vouchers")).toBe("20");
