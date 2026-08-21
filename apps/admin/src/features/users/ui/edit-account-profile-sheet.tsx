@@ -250,7 +250,6 @@ export function EditAccountProfileSheet({
                     label="Profile photo"
                     hint="JPEG, PNG or WebP. Stored at 400px."
                     purpose="profile.avatar"
-                    shape="round"
                     value={field.state.value === "" ? null : field.state.value}
                     onChange={(url) => field.handleChange(url ?? "")}
                     disabled={saving}

@@ -585,6 +585,11 @@ export function createAdminClient(http: HttpClient): AdminClient {
             locationName: emptyToNull(profile.locationName),
             geoLat: profile.geoLat,
             geoLng: profile.geoLng,
+            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
+            // two, so null means "leave the stored image alone" and "" is the only
+            // way to remove one. Omitted entirely when the caller has no opinion.
+            ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
+            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
             tags: profile.tags,
           }),
         },
