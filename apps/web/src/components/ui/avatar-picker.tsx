@@ -1,9 +1,10 @@
 import { checkImageFile } from "@clc/api/features/images/policy";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
-import { FaCamera, FaUser } from "react-icons/fa6";
+import { FaCamera, FaUser } from "react-icons/fa";
 
 import { Button } from "#/components/ui/button";
+import { ProgressiveImage } from "#/components/ui/progressive-image";
 
 type Props = {
   /** The chosen file, owned by the caller so a form can carry it between steps. */
@@ -64,11 +65,15 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
   return (
     <div className="flex items-center gap-4">
       {/* Round, because it is a face. Everything else here stays square. */}
-      <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-card">
+      <div className="border-border bg-card relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border">
         {shown ? (
-          <img src={shown} alt={t`Your profile photo`} className="size-full object-cover" />
+          <ProgressiveImage
+            src={shown}
+            alt={t`Your profile photo`}
+            className="size-full object-cover"
+          />
         ) : (
-          <FaUser aria-hidden className="size-7 text-muted-foreground" />
+          <FaUser aria-hidden className="text-muted-foreground size-7" />
         )}
       </div>
 
