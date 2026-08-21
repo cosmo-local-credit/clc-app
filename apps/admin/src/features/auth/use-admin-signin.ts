@@ -58,8 +58,8 @@ function useSessionRefresh() {
  * not the operator's, and holding it would let a later signature be attempted
  * with it.
  *
- * The store is in-memory (see operator-key.ts). Reading the console after a
- * reload still works on the session cookie; signing again asks for the wallet.
+ * Paper-wallet keys persist across reloads after a successful sign-in; passkey
+ * signing records remain in memory. See operator-key.ts for the boundary.
  */
 export function useAdminPrivateKeySignin() {
   const refreshSession = useSessionRefresh();

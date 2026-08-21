@@ -7,6 +7,7 @@ import { useOperatorKeyStore } from "./operator-key";
 import { relayOperatorBatch } from "./relay-batch";
 
 const PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" as const;
+const OPERATOR_KEY_STORAGE_KEY = "clc.admin.operator-key";
 const RELAYER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" as const;
 const DIGEST = keccak256("0xdeadbeef");
 const CREDENTIAL_ID = "Y3JlZC1pZA";
@@ -26,13 +27,13 @@ function relayerDouble() {
 
 beforeEach(() => {
   useOperatorKeyStore.getState().clear();
+  window.localStorage.clear();
 });
 
 describe("relayOperatorBatch", () => {
   it("refuses to sign when the tab holds no key", async () => {
-    // The session cookie survives a reload and the in-memory key does not, so
-    // this is the ordinary state of a refreshed console — it must say so rather
-    // than fail somewhere inside the relayer.
+    // A cleared store must say what is missing rather than fail somewhere inside
+    // the relayer.
     await expect(relayOperatorBatch(CALLS, relayerDouble() as never)).rejects.toThrow(
       /No signing key in this session/,
     );
@@ -171,6 +172,39 @@ describe("useOperatorKeyStore", () => {
     useOperatorKeyStore.getState().clear();
 
     expect(useOperatorKeyStore.getState().key).toBeNull();
+  });
+
+  it("restores a paper-wallet key from local storage after a reload", async () => {
+    useOperatorKeyStore.getState().adoptPrivateKey(PRIVATE_KEY);
+    const persisted = window.localStorage.getItem(OPERATOR_KEY_STORAGE_KEY);
+
+    expect(persisted).toContain(PRIVATE_KEY);
+
+    // Rehydration is the store-level equivalent of loading the admin bundle in
+    // a fresh tab. Put the saved value back after blanking the live store so the
+    // assertion exercises storage rather than the current in-memory object.
+    useOperatorKeyStore.setState({ key: null });
+    window.localStorage.setItem(OPERATOR_KEY_STORAGE_KEY, persisted!);
+    await useOperatorKeyStore.persist.rehydrate();
+
+    expect(useOperatorKeyStore.getState().key).toEqual({
+      kind: "privateKey",
+      address: privateKeyToAccount(PRIVATE_KEY).address,
+      privateKey: PRIVATE_KEY,
+    });
+  });
+
+  it("does not persist the passkey signing record", () => {
+    useOperatorKeyStore.getState().adoptPasskey({
+      credentialId: CREDENTIAL_ID,
+      keyHash: `0x${"11".repeat(32)}`,
+      publicKeyX: "1",
+      publicKeyY: "2",
+      address: "0x33a573149db22e759fB9A38Bcc461C12855c2645",
+      stale: false,
+    });
+
+    expect(window.localStorage.getItem(OPERATOR_KEY_STORAGE_KEY)).not.toContain(CREDENTIAL_ID);
   });
 });
 
