@@ -52,7 +52,7 @@ export function ImageCropDialog({
   const policy = IMAGE_POLICIES[purpose];
   const aspect = policy.aspect ?? 1;
 
-  const frameRef = useRef<HTMLDivElement>(null);
+  const [frame, setFrame] = useState<HTMLDivElement | null>(null);
   const dragOrigin = useRef<{ x: number; y: number } | null>(null);
 
   const [source, setSource] = useState<{ url: string; natural: Size } | null>(null);
@@ -76,15 +76,20 @@ export function ImageCropDialog({
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  // Keyed on the node, not on the file: the frame lives in a portal that mounts
+  // after this component's effects have already run, so a ref read on open is
+  // still null — which left the frame measured at 0x0 and the image scaled to
+  // nothing. A state-held node re-runs this the moment it exists, and the first
+  // measurement is taken directly rather than waiting for a resize that a
+  // freshly mounted element never reports.
   useEffect(() => {
-    const node = frameRef.current;
-    if (!node) return;
-    const observer = new ResizeObserver(([entry]) => {
-      if (entry) setAvailable({ width: entry.contentRect.width, height: entry.contentRect.height });
-    });
-    observer.observe(node);
+    if (!frame) return;
+    const measure = () => setAvailable({ width: frame.clientWidth, height: frame.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
     return () => observer.disconnect();
-  }, [file]);
+  }, [frame]);
 
   const viewport = fitViewport(available, aspect);
   const natural = source?.natural ?? { width: 0, height: 0 };
@@ -132,7 +137,7 @@ export function ImageCropDialog({
         </DialogHeader>
 
         <div
-          ref={frameRef}
+          ref={setFrame}
           className="bg-background border-border relative flex h-64 w-full items-center justify-center overflow-hidden border"
         >
           {source ? (
