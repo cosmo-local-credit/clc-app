@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from "react-icons/hi";
 
 import { useImageUpload } from "#/features/images/use-image-upload";
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Button } from "#/components/ui/button";
 import { Label } from "#/components/ui/label";
 import { cn } from "#/lib/utils";
@@ -88,20 +89,32 @@ export function ImageUploadField({
       <Label htmlFor={`${purpose}-file`}>{label}</Label>
 
       <div className="flex items-start gap-3">
-        <div
-          className={cn(
-            "border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border",
-            shape === "round" && "size-16 rounded-full",
-            shape === "square" && "size-16",
-            shape === "wide" && "h-16 w-28",
-          )}
-        >
-          {value ? (
-            <img src={value} alt="" className="size-full object-cover" />
-          ) : (
-            <HiOutlinePhotograph aria-hidden className="text-muted-foreground size-5" />
-          )}
-        </div>
+        {/* A face goes through Avatar, which is where this console's circular
+            shape and its load-failure fallback already live. A logo or a banner is
+            a rectangle on a card, so it gets the same flat outlined box every
+            other inset in the console uses. */}
+        {shape === "round" ? (
+          <Avatar className="border-border size-16 shrink-0 border">
+            {value ? <AvatarImage src={value} alt="" /> : null}
+            <AvatarFallback className="bg-background">
+              <HiOutlinePhotograph aria-hidden className="text-muted-foreground size-5" />
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div
+            className={cn(
+              "border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border",
+              shape === "square" && "size-16",
+              shape === "wide" && "h-16 w-28",
+            )}
+          >
+            {value ? (
+              <img src={value} alt="" className="size-full object-cover" />
+            ) : (
+              <HiOutlinePhotograph aria-hidden className="text-muted-foreground size-5" />
+            )}
+          </div>
+        )}
 
         <div className="flex min-w-0 flex-col items-start gap-1.5">
           <input
