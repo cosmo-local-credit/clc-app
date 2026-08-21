@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
 import { StateBadge } from "#/components/admin/state-badge";
-import { Avatar, AvatarFallback } from "#/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
 import {
@@ -86,6 +86,10 @@ export function AccountHeader({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-4">
           <Avatar className="border-border size-16 shrink-0 border">
+            {/* Initials remain the fallback, and not only for accounts without a
+                photo: the CDN can be unreachable, and a broken image in the
+                identity block is worse than the letters. */}
+            {account?.avatarUrl ? <AvatarImage src={account.avatarUrl} alt="" /> : null}
             <AvatarFallback className="font-heading text-xl">{initials(name)}</AvatarFallback>
           </Avatar>
 

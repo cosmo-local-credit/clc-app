@@ -151,6 +151,14 @@ export type PoolDeployPayload = {
   locationName?: string;
   geoLat?: number;
   geoLng?: number;
+  /**
+   * Off-chain catalog images, carried through the deploy so a pool published with
+   * a logo still has one once its address exists. clc-core validates them as
+   * http(s) before queueing, because the catalog column that finally receives
+   * them refuses anything else — and by then the transaction is signed.
+   */
+  imageUrl?: string;
+  bannerUrl?: string;
   tags: string[];
 };
 

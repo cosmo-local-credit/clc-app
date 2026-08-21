@@ -4,6 +4,7 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
@@ -16,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { isStorageConfigured } from "#/lib/storage";
 import { useUpdateUserLimits, useUpdateUserProfile } from "../use-admin-users";
 
 /**
@@ -54,6 +56,11 @@ const profileSchema = z
     locationName: z.string().trim().max(200, { message: "Location name is too long" }),
     latitude: z.string(),
     longitude: z.string(),
+    // Already uploaded by the time it reaches the form, so the only rule left is
+    // the one the database enforces: a URL or nothing.
+    avatarUrl: z.string().refine((value) => value === "" || /^https?:\/\//.test(value), {
+      message: "The image must be an http(s) URL",
+    }),
     maxPools: limitSchema,
     maxTokens: limitSchema,
   })
@@ -84,9 +91,11 @@ const profileSchema = z
  * number must not be able to change what an account is allowed to do by tabbing
  * one field too far.
  *
- * A photo row is deliberately absent. There is no user image field and no upload
- * contract, and controls that cannot do anything are worse than their absence —
- * the header keeps its initials fallback.
+ * The photo is edited here too, now that clc-core stores one. It uploads on
+ * selection rather than on save, so replacing an image behaves exactly like
+ * setting the first one, and the form only ever carries the URL. The row hides
+ * itself where the upload service is not configured: a control that cannot work
+ * is worse than its absence, and the header still falls back to initials.
  *
  * The account's place is edited here too, through the same `LocationField` the
  * pool sheet uses. It was a control on the detail card, which made the record the
@@ -123,6 +132,10 @@ export function EditAccountProfileSheet({
       longitude: account.geoLng === null ? "" : String(account.geoLng),
       maxPools: String(account.maxPools),
       maxTokens: String(account.maxTokens),
+      // Already a stored URL: ImageUploadField uploads on selection, so this
+      // field never holds a File. Empty string is "no image", which keeps the
+      // form value a string like every other field here.
+      avatarUrl: account.avatarUrl ?? "",
     },
     validators: { onSubmit: profileSchema },
     onSubmit: async ({ value }) => {
@@ -138,12 +151,24 @@ export function EditAccountProfileSheet({
               geoLng: Number(value.longitude),
             };
 
+      // Omitted preserves, so the avatar keys are sent only when the operator
+      // actually changed the image. clearAvatar and avatarUrl are mutually
+      // exclusive — clc-core rejects the pair rather than picking one.
+      const storedAvatar = account.avatarUrl ?? "";
+      const avatar =
+        value.avatarUrl === storedAvatar
+          ? {}
+          : value.avatarUrl === ""
+            ? { clearAvatar: true }
+            : { avatarUrl: value.avatarUrl };
+
       const profile = {
         name: value.name.trim(),
         email: value.email.trim(),
         phone: value.phone.trim(),
         country: value.country.trim().toUpperCase(),
         ...location,
+        ...avatar,
       };
       const limits = { maxPools: Number(value.maxPools), maxTokens: Number(value.maxTokens) };
 
@@ -158,6 +183,7 @@ export function EditAccountProfileSheet({
         profile.email !== account.email ||
         profile.phone !== account.phone ||
         profile.country !== account.country ||
+        value.avatarUrl !== storedAvatar ||
         // The endpoint assigns every field it is given, so a location edit alone
         // still sends the identity fields unchanged beside it.
         (location !== null &&
@@ -217,6 +243,22 @@ export function EditAccountProfileSheet({
           }}
         >
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+            {isStorageConfigured ? (
+              <form.Field name="avatarUrl">
+                {(field) => (
+                  <ImageUploadField
+                    label="Profile photo"
+                    hint="JPEG, PNG or WebP. Stored at 400px."
+                    purpose="profile.avatar"
+                    shape="round"
+                    value={field.state.value === "" ? null : field.state.value}
+                    onChange={(url) => field.handleChange(url ?? "")}
+                    disabled={saving}
+                  />
+                )}
+              </form.Field>
+            ) : null}
+
             <form.Field name="name">
               {(field) => (
                 <Field label="Full name" error={getFieldError(field.state.meta.errors)}>

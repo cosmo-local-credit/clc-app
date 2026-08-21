@@ -25,6 +25,26 @@ vi.mock("#/lib/geo-client", () => ({
   reverseLocation: (...args: unknown[]) => reverseLocation(...args),
 }));
 
+// The images panel is hidden where the upload service is unconfigured, and the
+// test env has no VITE_STORAGE_URL.
+vi.mock("#/lib/storage", () => ({ isStorageConfigured: true }));
+
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: (input: { purpose: string }) =>
+      Promise.resolve({
+        url: `https://cdn.test/pool/x_${input.purpose === "pool.banner" ? 1280 : 400}_ab.webp`,
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      }),
+    reset: () => {},
+    isPending: false,
+    isError: false,
+  }),
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: ({
     onLocationChange,
@@ -271,5 +291,56 @@ describe("PoolPublishPage", () => {
     renderPage();
     expect(await screen.findByRole("textbox", { name: "Default fee (%)" })).toBeTruthy();
     expect(screen.queryByRole("checkbox", { name: "Hold fees separately" })).toBeNull();
+  });
+});
+
+describe("PoolPublishPage images", () => {
+  // The same priming the block above uses: fillRequiredFields drops a pin, which
+  // only names itself when the geocoder answers.
+  beforeEach(() => {
+    reverseLocation.mockReset();
+    getTokenTags.mockReset();
+    deployPool.mockReset();
+    reverseLocation.mockResolvedValue("Kilifi, Kenya");
+    getTokenTags.mockResolvedValue(["Agriculture", "Food"]);
+    deployPool.mockResolvedValue({ trackingId: "track-1" });
+  });
+
+  it("publishes without images, sending neither key", async () => {
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
+    await fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));
+
+    await waitFor(() => expect(deployPool).toHaveBeenCalledTimes(1));
+    const payload = deployPool.mock.calls[0]![0] as object;
+    // Absent rather than "": the deploy request treats these as optional, and an
+    // empty string is not a URL clc-core would accept.
+    expect("imageUrl" in payload).toBe(false);
+    expect("bannerUrl" in payload).toBe(false);
+  });
+
+  it("carries an uploaded logo and banner into the deploy request", async () => {
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
+    await fillRequiredFields();
+
+    fireEvent.change(screen.getByLabelText("Logo", { selector: "input" }), {
+      target: { files: [new File([new Uint8Array(8)], "logo.png", { type: "image/png" })] },
+    });
+    fireEvent.change(screen.getByLabelText("Banner", { selector: "input" }), {
+      target: { files: [new File([new Uint8Array(8)], "banner.jpg", { type: "image/jpeg" })] },
+    });
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /replace/i }).length).toBe(2));
+
+    fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));
+
+    await waitFor(() => expect(deployPool).toHaveBeenCalledTimes(1));
+    expect(deployPool.mock.calls[0]![0]).toMatchObject({
+      imageUrl: "https://cdn.test/pool/x_400_ab.webp",
+      bannerUrl: "https://cdn.test/pool/x_1280_ab.webp",
+    });
   });
 });

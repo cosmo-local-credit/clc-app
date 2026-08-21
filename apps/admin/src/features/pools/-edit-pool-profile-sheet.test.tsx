@@ -21,6 +21,26 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div>Map</div>,
 }));
 
+// The image controls are hidden where the upload service is unconfigured, and the
+// test env has no VITE_STORAGE_URL.
+vi.mock("#/lib/storage", () => ({ isStorageConfigured: true }));
+
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: () =>
+      Promise.resolve({
+        url: "https://cdn.test/pool/new_400_a3f91c2e.webp",
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      }),
+    reset: () => {},
+    isPending: false,
+    isError: false,
+  }),
+}));
+
 function pool(overrides: Partial<UserPool> = {}): UserPool {
   return {
     id: "12",
@@ -143,5 +163,51 @@ describe("EditPoolProfileSheet", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+});
+
+describe("EditPoolProfileSheet images", () => {
+  it("leaves the stored images alone when the operator did not touch them", async () => {
+    renderSheet({ imageUrl: "https://cdn.test/pool/kept_400_ab.webp" });
+
+    const email = await waitFor(() => screen.getByLabelText("Email address"));
+    fireEvent.change(email, { target: { value: "new@example.test" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updatePoolProfile).toHaveBeenCalled());
+    const [, profile] = updatePoolProfile.mock.calls[0]!;
+    // Omitted, not echoed: these two columns are COALESCEd, so sending the stored
+    // value back is indistinguishable from omitting it — but omitting is what says
+    // "no opinion", and it is the shape that keeps a future client honest.
+    expect("imageUrl" in (profile as object)).toBe(false);
+    expect("bannerUrl" in (profile as object)).toBe(false);
+  });
+
+  it("sends a replacement URL after an upload", async () => {
+    renderSheet();
+
+    await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
+    fireEvent.change(screen.getByLabelText("Logo", { selector: "input" }), {
+      target: { files: [new File([new Uint8Array(8)], "logo.png", { type: "image/png" })] },
+    });
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /replace/i })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updatePoolProfile).toHaveBeenCalled());
+    const [, profile] = updatePoolProfile.mock.calls[0]!;
+    expect(profile).toMatchObject({ imageUrl: "https://cdn.test/pool/new_400_a3f91c2e.webp" });
+  });
+
+  it("clears a stored image with an empty string, which is what the endpoint reads", async () => {
+    renderSheet({ imageUrl: "https://cdn.test/pool/old_400_ab.webp" });
+
+    await waitFor(() => expect(screen.getByRole("button", { name: /remove/i })).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updatePoolProfile).toHaveBeenCalled());
+    const [, profile] = updatePoolProfile.mock.calls[0]!;
+    expect(profile).toMatchObject({ imageUrl: "" });
   });
 });
