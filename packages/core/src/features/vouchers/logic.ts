@@ -121,6 +121,16 @@ export type VoucherDeployPayload = {
   locationName: string;
   geoLat: number;
   geoLng: number;
+  /**
+   * Off-chain catalog metadata, carried through the deploy so a voucher created
+   * with an icon has one the moment its address exists. clc-core validates both
+   * as `http_url` before it queues the job — the catalog column that receives
+   * them refuses anything else, and rejecting it in the worker would mean a
+   * signed transaction with no catalog row — so omit them rather than sending an
+   * empty string.
+   */
+  iconUrl?: string;
+  bannerUrl?: string;
   tags: string[];
 };
 

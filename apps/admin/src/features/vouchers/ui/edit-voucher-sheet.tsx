@@ -1,6 +1,21 @@
+import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import type { Offering } from "@clc/api/features/offerings/client";
+import { voucherDescriptionSchema, voucherPriceSchema } from "@clc/core/features/vouchers/logic";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalTermsUrlSchema,
+  optionalWebsiteSchema,
+} from "@clc/core/lib/contact";
+import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
+import { ImageUploadField } from "#/components/admin/image-upload-field";
+import { LocationField } from "#/components/admin/location-field";
+import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -12,145 +27,462 @@ import {
   SheetHeader,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { clcApi } from "#/lib/api";
+import { isStorageConfigured } from "#/lib/storage";
 
-/** What the sheet is editing: the voucher's own record, or one of its offerings. */
-export type VoucherEditor = { kind: "voucher" } | { kind: "offering"; offering: Offering };
+import { useUpdateVoucherProfile } from "../use-update-voucher-profile";
+
+const optionalStoredImageSchema = z
+  .string()
+  .refine((value) => value === "" || /^https?:\/\//.test(value), {
+    message: "The image must be an http(s) URL",
+  });
 
 /**
- * The edit surface for a voucher and its offerings.
+ * Contact validation is the product's, not this screen's: the same optional
+ * email, E.164 phone and URL rules apply here, in signup, on a pool's record and
+ * on the voucher publish form, and clc-core validates the same shapes on the way
+ * in.
  *
- * **This form does not save yet.** clc-core exposes no admin write for either
- * resource, so submitting is a no-op and the sheet exists as the shape the write
- * will take. It is kept rather than removed because it is the only description
- * anywhere of which fields an operator is expected to own — unlike the pool
- * screen's sheets, which relay a signed batch and are wired end to end.
+ * Description and value reuse the publish schemas, so a voucher cannot be edited
+ * into a state its own create form would have rejected. Both accept "" as well,
+ * because the endpoint does: clearing a field is a legitimate correction, and the
+ * catalog holds imported rows that never had either.
+ */
+const profileSchema = z
+  .object({
+    description: voucherDescriptionSchema.or(z.literal("")),
+    voucherUoa: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
+        message: "Use letters and numbers, for example KES",
+      }),
+    voucherValue: voucherPriceSchema.or(z.literal("")),
+    email: optionalEmailSchema,
+    website: optionalWebsiteSchema,
+    phone: optionalPhoneSchema,
+    terms: optionalTermsUrlSchema,
+    // Uploaded before they reach the form, so the only rule left is the one the
+    // catalog column enforces: a URL or nothing.
+    iconUrl: optionalStoredImageSchema,
+    bannerUrl: optionalStoredImageSchema,
+    locationName: z.string().trim().max(200, { message: "Location name is too long" }),
+    latitude: z.string(),
+    longitude: z.string(),
+    tags: z.array(z.string()),
+  })
+  .superRefine((value, ctx) => {
+    // A label with no pin, or a pin with no label, describes a place nobody can
+    // point at. clc-core rejects the pair and vouchers_geo_valid backstops it, so
+    // catching it here is only about naming the field before a round trip.
+    const hasPin = value.latitude !== "" && value.longitude !== "";
+    if (hasPin === (value.locationName !== "")) return;
+
+    ctx.addIssue({
+      code: "custom",
+      path: hasPin ? ["locationName"] : ["latitude"],
+      message: hasPin ? "Name the place this pin marks" : "Click the map to place this voucher",
+    });
+  });
+
+/**
+ * The edit surface for a voucher's own catalog record.
  *
- * Fields are uncontrolled and keyed off the record, so reopening the sheet shows
- * what the catalog holds rather than the last thing typed into it. When the write
- * lands this becomes a TanStack Form with a zod schema, the same as
- * `edit-pool-profile-sheet`.
+ * It relays a `PUT /admin/vouchers/:address/profile`, whose response is the saved
+ * catalog row, so the screen behind the sheet updates from what the backend
+ * stored rather than from what was typed.
+ *
+ * Offerings are a different resource on a different endpoint and have their own
+ * sheet — see `offering-editor-sheet.tsx`. They used to be a second branch here,
+ * which is how that half sat unsaveable for as long as it did.
+ *
+ * Only catalog metadata is editable. Name, symbol, decimals and the owner mirror
+ * the deployed ERC20, and an operator retyping one of those would produce a
+ * catalog that disagrees with the chain while winning on every screen that reads
+ * it. Those change by transacting; the endpoint does not accept them at all. So
+ * does `active` — retiring a voucher is a different operation from correcting its
+ * prose, and folding the two together would let a description edit hide a voucher
+ * by accident.
  */
 export function EditVoucherSheet({
-  editor,
+  open,
   voucher,
   onClose,
 }: {
-  editor: VoucherEditor | null;
+  open: boolean;
   voucher: MarketVoucherDetail;
   onClose: () => void;
 }) {
-  const offering = editor?.kind === "offering" ? editor.offering : null;
-
   return (
     <Sheet
-      open={editor !== null}
+      open={open}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
     >
-      <SheetContent side="right" className="sm:max-w-lg" showCloseButton>
+      <SheetContent
+        side="right"
+        className="bg-card w-full shadow-none data-[side=right]:sm:max-w-[32rem]"
+        showCloseButton
+      >
         <SheetHeader className="border-b">
-          <SheetTitle>{offering ? "Edit offering" : "Edit voucher"}</SheetTitle>
-          <SheetDescription>{offering ? offering.commodityName : voucher.name}</SheetDescription>
+          <SheetTitle>Edit voucher</SheetTitle>
+          <SheetDescription>{voucher.name}</SheetDescription>
         </SheetHeader>
-        <form
-          className="flex min-h-0 flex-1 flex-col"
-          onSubmit={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <div className="grid flex-1 gap-4 overflow-y-auto p-4">
-            {offering ? (
-              <OfferingFields offering={offering} />
-            ) : (
-              <VoucherFields voucher={voucher} />
-            )}
-          </div>
-          <SheetFooter className="flex-row justify-end border-t">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Save</Button>
-          </SheetFooter>
-        </form>
+        {/* Keyed on the address so reopening the sheet on another voucher
+            rebuilds the form: TanStack Form reads defaultValues once, and a
+            reused instance would show the previous record's values. */}
+        <VoucherForm key={voucher.address} voucher={voucher} onClose={onClose} />
       </SheetContent>
     </Sheet>
   );
 }
 
-function VoucherFields({ voucher }: { voucher: MarketVoucherDetail }) {
+function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClose: () => void }) {
+  const tokenTags = useQuery(tokenTagsQueryOptions(clcApi.deployments));
+  const update = useUpdateVoucherProfile(voucher.address);
+
+  const form = useForm({
+    defaultValues: {
+      description: voucher.description ?? "",
+      voucherUoa: voucher.voucherUoa ?? "",
+      voucherValue: voucher.voucherValue ?? "",
+      email: voucher.email ?? "",
+      website: voucher.website ?? "",
+      phone: voucher.phone ?? "",
+      terms: voucher.terms ?? "",
+      iconUrl: voucher.iconUrl ?? "",
+      bannerUrl: voucher.bannerUrl ?? "",
+      locationName: voucher.locationName ?? "",
+      latitude: voucher.lat === null ? "" : String(voucher.lat),
+      longitude: voucher.lng === null ? "" : String(voucher.lng),
+      tags: voucher.tags,
+    },
+    // Both, matching the publish form. On submit alone a rejected field blocks
+    // the save with nothing on screen to say which one — the operator clicks
+    // Save and watches nothing happen.
+    validators: { onChange: profileSchema, onSubmit: profileSchema },
+    onSubmit: async ({ value }) => {
+      try {
+        await update.mutateAsync({
+          description: value.description,
+          voucherUoa: value.voucherUoa,
+          voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
+          email: value.email,
+          website: value.website,
+          phone: value.phone,
+          terms: value.terms,
+          // Unlike every other field here, these preserve on omission — so they
+          // are sent only when the operator changed one. "" is how this endpoint
+          // removes an image; omitting it would leave the stored one in place.
+          ...(value.iconUrl === (voucher.iconUrl ?? "") ? {} : { iconUrl: value.iconUrl }),
+          ...(value.bannerUrl === (voucher.bannerUrl ?? "") ? {} : { bannerUrl: value.bannerUrl }),
+          locationName: value.locationName,
+          // Sent as a pair or not at all, which is the rule the database holds.
+          geoLat: value.latitude === "" ? null : Number(value.latitude),
+          geoLng: value.longitude === "" ? null : Number(value.longitude),
+          tags: value.tags,
+        });
+        toast.success("Voucher record updated.");
+        onClose();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not save the changes.");
+      }
+    },
+  });
+
+  /**
+   * Closing with unsaved edits asks first. A save in flight is left alone:
+   * cancelling mid-request would leave the operator unsure whether it landed.
+   */
+  function requestClose() {
+    if (update.isPending) return;
+    if (form.state.isDirty && !window.confirm("Discard unsaved changes?")) return;
+    form.reset();
+    onClose();
+  }
+
   return (
-    <>
-      <Field id="voucher-name" label="Name" defaultValue={voucher.name} />
-      <div className="grid grid-cols-2 gap-3">
-        <Field id="voucher-symbol" label="Symbol" defaultValue={voucher.symbol} />
-        <Field id="voucher-kind" label="Kind" defaultValue={voucher.kind} />
+    <form
+      className="flex min-h-0 flex-1 flex-col"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+        <form.Field name="description">
+          {(field) => (
+            <Field
+              htmlFor={field.name}
+              label="Description"
+              error={getFieldError(field.state.meta.errors)}
+            >
+              <Textarea
+                id={field.name}
+                rows={3}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
+
+        <div className="flex gap-3">
+          <form.Field name="voucherUoa">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Unit of account"
+                hint="What this voucher is priced in, for example KES."
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  className="w-32 font-mono uppercase"
+                  maxLength={16}
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="voucherValue">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Value per unit"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  inputMode="decimal"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  className="font-data w-32"
+                />
+              </Field>
+            )}
+          </form.Field>
+        </div>
+
+        <div className="border-border flex flex-col gap-4 border-t pt-4">
+          <SectionLabel>Issuer contact</SectionLabel>
+
+          <form.Field name="email">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Email address"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  type="email"
+                  inputMode="email"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="phone">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Phone number"
+                hint="Include the country code, for example +254700000000"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  inputMode="tel"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  className="font-data"
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="website">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Website"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  inputMode="url"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="terms">
+            {(field) => (
+              <Field
+                htmlFor={field.name}
+                label="Terms URL"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                <Input
+                  id={field.name}
+                  inputMode="url"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+        </div>
+
+        {isStorageConfigured ? (
+          <div className="border-border flex flex-col gap-4 border-t pt-4">
+            <SectionLabel>Images</SectionLabel>
+            <form.Field name="iconUrl">
+              {(field) => (
+                <ImageUploadField
+                  label="Icon"
+                  hint="Square. Stored at 400px."
+                  purpose="voucher.icon"
+                  value={field.state.value === "" ? null : field.state.value}
+                  onChange={(url) => field.handleChange(url ?? "")}
+                  disabled={update.isPending}
+                />
+              )}
+            </form.Field>
+            <form.Field name="bannerUrl">
+              {(field) => (
+                <ImageUploadField
+                  label="Banner"
+                  hint="Wide. Stored at 1280px."
+                  purpose="voucher.banner"
+                  value={field.state.value === "" ? null : field.state.value}
+                  onChange={(url) => field.handleChange(url ?? "")}
+                  disabled={update.isPending}
+                />
+              )}
+            </form.Field>
+          </div>
+        ) : null}
+
+        <div className="border-border flex flex-col gap-4 border-t pt-4">
+          <SectionLabel>Location</SectionLabel>
+          <form.Field name="locationName">
+            {(nameField) => (
+              <form.Field name="latitude">
+                {(latitudeField) => (
+                  <form.Field name="longitude">
+                    {(longitudeField) => (
+                      <LocationField
+                        name={nameField.state.value}
+                        latitude={latitudeField.state.value}
+                        longitude={longitudeField.state.value}
+                        nameError={getFieldError(nameField.state.meta.errors)}
+                        coordinateError={getFieldError(latitudeField.state.meta.errors)}
+                        onNameChange={nameField.handleChange}
+                        onNameBlur={nameField.handleBlur}
+                        onCoordinatesChange={(nextLatitude, nextLongitude) => {
+                          latitudeField.handleChange(nextLatitude);
+                          longitudeField.handleChange(nextLongitude);
+                        }}
+                      />
+                    )}
+                  </form.Field>
+                )}
+              </form.Field>
+            )}
+          </form.Field>
+        </div>
+
+        <div className="border-border flex flex-col gap-4 border-t pt-4">
+          <SectionLabel>Tags</SectionLabel>
+          <form.Field name="tags">
+            {(field) => (
+              <Field
+                htmlFor="voucher-tags"
+                label="Voucher tags"
+                error={getFieldError(field.state.meta.errors)}
+              >
+                {tokenTags.isPending ? (
+                  <p className="text-muted-foreground text-sm">Loading tags…</p>
+                ) : tokenTags.isError ? (
+                  <p className="text-destructive text-sm">Could not load the tag list.</p>
+                ) : (
+                  <TagCombobox
+                    items={tokenTags.data ?? []}
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                    searchLabel="Search voucher tags"
+                    selectedLabel="Selected voucher tags"
+                    listLabel="Voucher tags"
+                    placeholder="Search tags"
+                    removeLabel={(tag) => `Remove ${tag}`}
+                  />
+                )}
+              </Field>
+            )}
+          </form.Field>
+        </div>
       </div>
-      <FieldArea id="voucher-description" label="Description" defaultValue={voucher.description} />
-      <div className="grid grid-cols-2 gap-3">
-        <Field id="voucher-uoa" label="Unit of account" defaultValue={voucher.voucherUoa} />
-        <Field id="voucher-value" label="Value" defaultValue={voucher.voucherValue} />
-      </div>
-      <Field id="voucher-location" label="Location" defaultValue={voucher.locationName} />
-      <Field id="voucher-phone" label="Phone" defaultValue={voucher.phone} />
-      <Field id="voucher-email" label="Email" defaultValue={voucher.email} />
-      <Field id="voucher-website" label="Website" defaultValue={voucher.website} />
-    </>
+
+      <SheetFooter className="border-border sticky bottom-0 flex-row justify-end border-t">
+        <Button type="button" variant="ghost" onClick={requestClose}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={update.isPending}>
+          {update.isPending ? "Saving…" : "Save changes"}
+        </Button>
+      </SheetFooter>
+    </form>
   );
 }
 
-function OfferingFields({ offering }: { offering: Offering }) {
-  return (
-    <>
-      <Field id="offering-name" label="Commodity" defaultValue={offering.commodityName} />
-      <Field id="offering-type" label="Type" defaultValue={offering.commodityType} />
-      <FieldArea
-        id="offering-description"
-        label="Description"
-        defaultValue={offering.description}
-      />
-      <div className="grid grid-cols-2 gap-3">
-        <Field id="offering-quantity" label="Quantity" defaultValue={offering.quantity} />
-        <Field id="offering-unit" label="Unit" defaultValue={offering.unit} />
-      </div>
-      <Field id="offering-price" label="Price" defaultValue={offering.price} />
-    </>
-  );
-}
-
+/**
+ * `htmlFor` is passed rather than inferred: one of these fields wraps a combobox
+ * whose id belongs to an input inside it, and a Label with no target leaves the
+ * control with no accessible name at all.
+ */
 function Field({
-  id,
+  htmlFor,
   label,
-  defaultValue,
+  hint,
+  error,
+  children,
 }: {
-  id: string;
+  htmlFor: string;
   label: string;
-  defaultValue: string | null;
+  hint?: string;
+  error: string | null;
+  children: ReactNode;
 }) {
   return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input id={id} name={id} defaultValue={defaultValue ?? ""} />
-    </div>
-  );
-}
-
-function FieldArea({
-  id,
-  label,
-  defaultValue,
-}: {
-  id: string;
-  label: string;
-  defaultValue: string | null;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      {/* No `rounded-none`: the admin theme zeroes the radius tokens, so every
-          control here is square already. */}
-      <Textarea id={id} name={id} defaultValue={defaultValue ?? ""} />
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={htmlFor}>{label}</Label>
+      {children}
+      {hint && !error ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+      {error ? (
+        <p role="alert" className="text-destructive text-xs">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

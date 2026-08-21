@@ -17,4 +17,11 @@ const DEV_FALLBACK_BASE_URL = "http://localhost:5003";
 
 export const clcApi = createClcApi({
   baseUrl: import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? DEV_FALLBACK_BASE_URL : ""),
+  // The console writes what it reads, and the catalog endpoints answer
+  // `Cache-Control: public, max-age=60, stale-while-revalidate=300`. Without this
+  // an operator's own edit disappears: the mutation seeds the saved row into the
+  // query cache, the invalidation refetches, and the browser serves the pre-write
+  // body it cached up to five minutes earlier. The write is fine; only the read
+  // lies. apps/web keeps the cache, which is what that header is for.
+  catalogCache: "no-store",
 });

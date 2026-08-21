@@ -3,7 +3,7 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
-import { HiOutlineRefresh } from "react-icons/hi";
+import { HiOutlinePlus, HiOutlineRefresh } from "react-icons/hi";
 import { DataTable } from "#/components/admin/data-table";
 import { EmptyState } from "#/components/admin/empty-state";
 import { LoadingBlock } from "#/components/admin/loading-block";
@@ -109,6 +109,10 @@ export function VouchersPage({ search }: { search: TableSearch }) {
             >
               <HiOutlineRefresh />
               Refresh
+            </Button>
+            <Button nativeButton={false} render={<Link to="/vouchers/publish" />}>
+              <HiOutlinePlus />
+              Publish voucher
             </Button>
           </>
         }

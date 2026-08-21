@@ -23,8 +23,8 @@ import { reverseLocation } from "#/lib/geo-client";
  * wrong. Cleared, the pair rule blocks the save until the operator names the
  * place or moves the pin.
  *
- * Shared by the pool publish form, the pool record sheet and the account profile
- * sheet. Nothing here is per-resource: the caller owns the field names, the
+ * Shared by the pool and voucher publish forms, the pool record sheet and the
+ * account profile sheet. Nothing here is per-resource: the caller owns the field names, the
  * validation and what an empty pair means on its endpoint.
  */
 export function LocationField({

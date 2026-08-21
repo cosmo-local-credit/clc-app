@@ -313,6 +313,7 @@ export function VoucherDetailPage({
         <VoucherOfferingsPanel
           voucherAddress={contractAddress}
           voucherSymbol={token.symbol}
+          ownerAddress={detail?.ownerAddress ?? null}
           isKnownEmpty={detail?.kind === "voucher"}
         />
       ) : null}

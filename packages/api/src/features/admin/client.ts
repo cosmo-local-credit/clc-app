@@ -35,6 +35,12 @@ import {
   normalizeText,
 } from "../../lib/api-normalize";
 import {
+  type BackendMarketVoucherDetail,
+  type MarketVoucherDetail,
+  normalizeMarketVoucherDetail,
+  type VoucherProfileUpdate,
+} from "../market/client";
+import {
   normalizeUserPool,
   type PoolProfileUpdate,
   type UserPool,
@@ -379,6 +385,11 @@ export type AdminClient = {
     profile: PoolProfileUpdate,
     signal?: AbortSignal,
   ): Promise<UserPool>;
+  updateVoucherProfile(
+    address: string,
+    profile: VoucherProfileUpdate,
+    signal?: AbortSignal,
+  ): Promise<MarketVoucherDetail>;
   getStats(params: AdminStatsParams, signal?: AbortSignal): Promise<AdminStats>;
   /** Transfers, mints and burns, newest first. */
   listVoucherTransactions(
@@ -473,6 +484,10 @@ type BackendAdminPoolPage = {
 };
 
 type BackendAdminPoolEnvelope = { pool?: BackendAdminPool | null } & BackendAdminPool;
+
+type BackendAdminVoucherEnvelope = {
+  voucher?: BackendMarketVoucherDetail | null;
+} & BackendMarketVoucherDetail;
 
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim();
@@ -597,6 +612,45 @@ export function createAdminClient(http: HttpClient): AdminClient {
       const pool = normalizeUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool update response did not include a valid address.");
       return pool;
+    },
+
+    /**
+     * Saves an operator's edits to a voucher's off-chain catalog record.
+     *
+     * The response is the public detail row, not an admin-only shape, because it
+     * is what the console already caches for this voucher — so the saved record
+     * can be written straight into that cache rather than refetched through a
+     * second endpoint that would have to agree with this one.
+     */
+    async updateVoucherProfile(address, profile, signal) {
+      const result = await http.request<BackendAdminVoucherEnvelope>(
+        `/api/v2/admin/vouchers/${encodeURIComponent(address)}/profile`,
+        {
+          method: "PUT",
+          signal,
+          body: JSON.stringify({
+            description: emptyToNull(profile.description),
+            voucherUoa: emptyToNull(profile.voucherUoa),
+            voucherValue: profile.voucherValue,
+            email: emptyToNull(profile.email),
+            website: emptyToNull(profile.website),
+            phone: emptyToNull(profile.phone),
+            terms: emptyToNull(profile.terms),
+            locationName: emptyToNull(profile.locationName),
+            geoLat: profile.geoLat,
+            geoLng: profile.geoLng,
+            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
+            // two, so null means "leave the stored image alone" and "" is the only
+            // way to remove one. Omitted entirely when the caller has no opinion.
+            ...(profile.iconUrl === undefined ? {} : { iconUrl: profile.iconUrl }),
+            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
+            tags: profile.tags,
+          }),
+        },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
+      if (!voucher) throw new Error("Voucher update response did not include a valid address.");
+      return voucher;
     },
 
     async getStats(params, signal) {
