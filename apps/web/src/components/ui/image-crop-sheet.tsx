@@ -223,13 +223,13 @@ export function ImageCropSheet({
                       transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`,
                     }}
                   />
-                  {/* The shape the photo will be shown in, drawn over it: an
-                      avatar is displayed round everywhere, so framing it in a
-                      square would hide which pixels survive. */}
+                  {/* The shape the photo will be shown in, drawn over it: every
+                      1:1 image here is displayed round, so framing it in a square
+                      would hide which pixels survive. */}
                   <div
                     aria-hidden
                     className={`pointer-events-none absolute inset-0 border-2 border-white/80 ${
-                      aspect === 1 && purpose === "profile.avatar" ? "rounded-full" : ""
+                      aspect === 1 ? "rounded-full" : ""
                     }`}
                   />
                 </div>

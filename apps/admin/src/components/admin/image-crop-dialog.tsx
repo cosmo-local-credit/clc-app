@@ -195,11 +195,12 @@ export function ImageCropDialog({
                   transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px))`,
                 }}
               />
-              {/* The frame's edge, and for an avatar the circle it is shown in. */}
+              {/* The frame's edge — a circle for anything square, because every 1:1
+                  image here is displayed in an Avatar. */}
               <div
                 aria-hidden
                 className={`pointer-events-none absolute inset-0 border-2 border-white/80 ${
-                  purpose === "profile.avatar" ? "rounded-full" : ""
+                  aspect === 1 ? "rounded-full" : ""
                 }`}
               />
             </div>

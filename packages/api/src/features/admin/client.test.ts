@@ -168,6 +168,47 @@ describe("pool administration", () => {
     expect(page).toMatchObject({ first: 10, last: 11, receivedCount: 2 });
   });
 
+  it("sends the pool images only when the caller has an opinion about them", async () => {
+    const base = {
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: "steward@example.test",
+      website: "",
+      phone: "",
+      terms: "",
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    };
+
+    // Omitted: the columns are COALESCEd, so an absent key is what tells clc-core
+    // to leave the stored image alone. This was the bug — the fields existed on
+    // the type but were never serialized, so pool images silently never saved.
+    fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS } }));
+    await client().updatePoolProfile(ADDRESS, base);
+    let body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect("imageUrl" in body).toBe(false);
+    expect("bannerUrl" in body).toBe(false);
+
+    fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS } }));
+    await client().updatePoolProfile(ADDRESS, {
+      ...base,
+      imageUrl: "https://cdn.test/pool/a_400_ab.webp",
+      bannerUrl: "https://cdn.test/pool/b_1280_ab.webp",
+    });
+    body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.imageUrl).toBe("https://cdn.test/pool/a_400_ab.webp");
+    expect(body.bannerUrl).toBe("https://cdn.test/pool/b_1280_ab.webp");
+
+    // "" survives as "": it is how this endpoint removes an image, so the blanks
+    // -> null rule the other fields follow would turn a removal into a no-op.
+    fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS } }));
+    await client().updatePoolProfile(ADDRESS, { ...base, imageUrl: "" });
+    body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.imageUrl).toBe("");
+  });
+
   it("PUTs the whole pool profile and sends blanks as null", async () => {
     fetchMock.mockResolvedValue(ok({ pool: { address: ADDRESS } }));
 

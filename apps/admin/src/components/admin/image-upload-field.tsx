@@ -8,7 +8,6 @@ import { ImageCropDialog } from "#/components/admin/image-crop-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Button } from "#/components/ui/button";
 import { Label } from "#/components/ui/label";
-import { cn } from "#/lib/utils";
 
 /**
  * The console's image editor: pick a file, and the URL it becomes is the value.
@@ -35,7 +34,6 @@ export function ImageUploadField({
   purpose,
   value,
   onChange,
-  shape = "square",
   disabled,
 }: {
   label: string;
@@ -44,8 +42,6 @@ export function ImageUploadField({
   /** The stored URL, or null when there is no image. */
   value: string | null;
   onChange: (url: string | null) => void;
-  /** `round` for a face, `wide` for a banner, `square` for a logo. */
-  shape?: "round" | "square" | "wide";
   disabled?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +49,12 @@ export function ImageUploadField({
   const [rejection, setRejection] = useState<string | null>(null);
   /** Chosen, awaiting a frame. Purposes with no fixed shape skip this. */
   const [pending, setPending] = useState<File | null>(null);
+
+  // The preview matches how the image is displayed rather than being chosen at
+  // the call site: an account avatar, a voucher icon and a pool logo are all 1:1
+  // and all rendered in an Avatar, so all three are framed and previewed as
+  // circles. A banner is the only rectangle.
+  const round = IMAGE_POLICIES[purpose].aspect === 1;
 
   const busy = upload.isPending || disabled;
   const error = rejection ?? (upload.isError ? "Upload failed. Try again." : null);
@@ -109,7 +111,7 @@ export function ImageUploadField({
             shape and its load-failure fallback already live. A logo or a banner is
             a rectangle on a card, so it gets the same flat outlined box every
             other inset in the console uses. */}
-        {shape === "round" ? (
+        {round ? (
           <Avatar className="border-border size-16 shrink-0 border">
             {value ? <AvatarImage src={value} alt="" /> : null}
             <AvatarFallback className="bg-background">
@@ -117,13 +119,7 @@ export function ImageUploadField({
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div
-            className={cn(
-              "border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border",
-              shape === "square" && "size-16",
-              shape === "wide" && "h-16 w-28",
-            )}
-          >
+          <div className="border-border bg-background flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden border">
             {value ? (
               <img src={value} alt="" className="size-full object-cover" />
             ) : (
