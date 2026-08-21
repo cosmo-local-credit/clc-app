@@ -1,22 +1,19 @@
 import type { WebAuthnCredential } from "@clc/core/features/webauthn/index";
 import { privateKeyToAccount } from "viem/accounts";
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 /**
- * The signing key the operator brought to this tab.
+ * The signing key the operator brought to the console.
  *
- * **Deliberately not persisted.** The console's session survives a reload
- * because clc-core sets an HttpOnly cookie, and that cookie authorises reads —
- * it cannot sign anything. Signing needs the key itself, and a superadmin key
- * left in `localStorage` on a shared back-office desktop is a different bargain
- * from the one apps/web makes on a personal phone. So this store lives in memory
- * for the tab: an operator signs several transactions without re-authenticating,
- * and a reload asks for the paper wallet again.
+ * Paper-wallet keys follow apps/web's UX bargain: after SIWE succeeds, the raw
+ * key is kept in `localStorage` so a reload can keep signing without asking the
+ * operator to upload the wallet again. Explicit sign-out clears it.
  *
- * A passkey holds no secret here at all. The stored record is the public half —
- * address, key hash, credential id — which is what the relayer needs to build a
- * batch; the private key never leaves the authenticator, and every signature
- * prompts.
+ * A passkey follows a different lifecycle and remains memory-only. Its record is
+ * the public half — address, key hash, credential id — which is what the relayer
+ * needs to build a batch; the private key never leaves the authenticator, and
+ * every signature prompts.
  */
 
 export type OperatorKey =
@@ -30,21 +27,37 @@ type OperatorKeyState = {
   clear: () => void;
 };
 
-export const useOperatorKeyStore = create<OperatorKeyState>((set) => ({
-  key: null,
-  adoptPrivateKey: (privateKey) =>
-    set({
-      key: {
-        kind: "privateKey",
-        // Derived once here so every later check compares against the key that
-        // was actually loaded rather than against whatever the session claims.
-        address: privateKeyToAccount(privateKey).address,
-        privateKey,
-      },
+type PersistedOperatorKeyState = {
+  key: Extract<OperatorKey, { kind: "privateKey" }> | null;
+};
+
+export const useOperatorKeyStore = create<OperatorKeyState>()(
+  persist(
+    (set) => ({
+      key: null,
+      adoptPrivateKey: (privateKey) =>
+        set({
+          key: {
+            kind: "privateKey",
+            // Derived once here so every later check compares against the key
+            // that was actually loaded rather than whatever a caller claims.
+            address: privateKeyToAccount(privateKey).address,
+            privateKey,
+          },
+        }),
+      adoptPasskey: (credential) => set({ key: { kind: "passkey", credential } }),
+      clear: () => set({ key: null }),
     }),
-  adoptPasskey: (credential) => set({ key: { kind: "passkey", credential } }),
-  clear: () => set({ key: null }),
-}));
+    {
+      name: "clc.admin.operator-key",
+      // Persist only the paper-wallet signer. A passkey record is reconstructed
+      // after its own authentication flow and must not hitch a ride here.
+      partialize: (state): PersistedOperatorKeyState => ({
+        key: state.key?.kind === "privateKey" ? state.key : null,
+      }),
+    },
+  ),
+);
 
 /** Reads outside React — the relay path is a plain async function, not a hook. */
 export function getOperatorKey(): OperatorKey | null {

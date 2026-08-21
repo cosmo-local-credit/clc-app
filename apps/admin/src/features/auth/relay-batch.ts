@@ -22,9 +22,9 @@ import { getOperatorKey, type OperatorKey } from "./operator-key";
  * from @clc/core — and nothing here decides what the operator may do; clc-core
  * gates the endpoint and the contracts gate the caller.
  *
- * One thing differs from apps/web's `relayCaliburBatch`: the key comes from an
- * in-memory store rather than `localStorage`, so a reloaded tab has none and
- * says so instead of signing silently.
+ * Like apps/web's `relayCaliburBatch`, a paper-wallet key can be restored from
+ * `localStorage`. Passkey signing records remain memory-only and therefore need
+ * to be collected again after a reload.
  *
  * The EIP-7702 authorization is attached on every paper-wallet relay rather than
  * only when the account needs it. apps/web can be selective because it reads the

@@ -363,6 +363,12 @@ Reusing the web app's credentials is not the same as reusing its
 wallet-connected state as proof of privilege — the role comes from the backend's
 own record of the account, on every session check.
 
+Paper-wallet signing follows the web app's persistence model: after SIWE
+succeeds, the admin console stores the raw private-key signer in `localStorage`
+under `clc.admin.operator-key`, restores it after reloads, and removes it on
+sign-out. Only the paper-wallet branch is persisted; passkey signing records stay
+in memory and are rebuilt by their own authentication flow.
+
 The console models these states distinctly, in
 `apps/admin/src/features/auth/admin-session.ts`:
 
