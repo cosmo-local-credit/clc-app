@@ -7,7 +7,16 @@ import type { ReportSummary } from "@clc/api/features/reports/client";
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
-  auth: { isAuthenticated: true, isLoading: false },
+  auth: {
+    isAuthenticated: true,
+    isLoading: false,
+    // The backend session, which is what authorizes an offering write. Distinct
+    // from the wagmi connector address on purpose: the two can diverge.
+    session: { address: "0x1111111111111111111111111111111111111111", chainId: 42220 } as
+      | { address: string; chainId: number }
+      | null
+      | undefined,
+  },
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -16,6 +25,11 @@ const mocks = vi.hoisted(() => ({
   },
   openDefaultMaps: vi.fn(),
   offeringAddress: undefined as string | undefined,
+  managedOfferingAddress: undefined as string | undefined,
+  createOffering: vi.fn(),
+  updateOffering: vi.fn(),
+  deleteOffering: vi.fn(),
+  uploadImage: vi.fn(),
   offeringsResult: {
     data: undefined as
       | {
@@ -29,13 +43,14 @@ const mocks = vi.hoisted(() => ({
               voucherName: string | null;
               voucherSymbol: string | null;
               voucherDecimals: number | null;
-              commodityName: string;
-              commodityType: string;
+              name: string;
+              commodityType: "GOOD" | "SERVICE" | null;
               description: string;
               quantity: string;
               unit: string | null;
+              unitLabel: string | null;
               frequency: "day" | "week" | "month" | "year" | null;
-              price: string | null;
+              pricePerUnit: string | null;
               available: boolean;
               locationName: string | null;
               geoLat: number | null;
@@ -167,6 +182,29 @@ vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
     mocks.offeringAddress = address;
     return mocks.offeringsResult;
   },
+  // The owner's read. Recorded separately so a test can prove which query ran:
+  // a visitor must not issue this one and an owner must not issue the cached one.
+  useManagedVoucherOfferingsInfinite: (address: string | undefined) => {
+    mocks.managedOfferingAddress = address;
+    return mocks.offeringsResult;
+  },
+}));
+
+// The photo field is the shared one now, so its upload hook is what needs
+// stubbing rather than an offering-specific wrapper.
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: mocks.uploadImage,
+    reset: () => {},
+    isPending: false,
+    isError: false,
+  }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+  useCreateVoucherOffering: () => ({ mutateAsync: mocks.createOffering, isPending: false }),
+  useUpdateVoucherOffering: () => ({ mutateAsync: mocks.updateOffering, isPending: false }),
+  useDeleteVoucherOffering: () => ({ mutateAsync: mocks.deleteOffering, isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
@@ -190,6 +228,7 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 import { VoucherDetailPage } from "./voucher-detail-page";
 
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
+const OTHER = "0x9999999999999999999999999999999999999999";
 
 function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDetail {
   return {
@@ -209,8 +248,10 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     email: "issuer@example.org",
     website: "https://example.org",
     phone: "+254700000000",
+    terms: "https://example.org/terms",
     iconUrl: "https://content.example/icon.jpg",
     bannerUrl: "https://content.example/banner.jpg",
+    tags: ["Agriculture"],
     kind: "goods",
     ...overrides,
   };
@@ -238,7 +279,13 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
 
 beforeEach(() => {
   mocks.address = "0x1111111111111111111111111111111111111111";
-  mocks.auth = { isAuthenticated: true, isLoading: false };
+  // A signed-in visitor who is not the issuer. Ownership tests override the
+  // session; everything else reads the panel as a visitor would.
+  mocks.auth = {
+    isAuthenticated: true,
+    isLoading: false,
+    session: { address: OTHER, chainId: 42220 },
+  };
   mocks.openDefaultMaps.mockReset();
   mocks.detailResult = {
     data: detail(),
@@ -261,13 +308,14 @@ beforeEach(() => {
               voucherSymbol: "MALII",
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
-              commodityName: "Vegetables",
+              name: "Vegetables",
               commodityType: "GOOD",
               description: "Fresh produce",
               quantity: "5",
               unit: "kg",
+              unitLabel: "kg",
               frequency: "week",
-              price: "10",
+              pricePerUnit: "10",
               available: true,
               locationName: "Kangemi Market",
               geoLat: null,
@@ -284,13 +332,14 @@ beforeEach(() => {
               voucherSymbol: "MALII",
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
-              commodityName: "Farm training",
+              name: "Farm training",
               commodityType: "SERVICE",
               description: "",
               quantity: "1000000000",
               unit: null,
+              unitLabel: null,
               frequency: null,
-              price: null,
+              pricePerUnit: null,
               available: true,
               locationName: null,
               geoLat: null,
@@ -357,7 +406,8 @@ describe("VoucherDetailPage", () => {
     );
     const offerings = screen.getByRole("tabpanel");
     expect(within(offerings).getByText("Vegetables")).toBeTruthy();
-    expect(within(offerings).getByText("10 MALII")).toBeTruthy();
+    // Price per unit, as one message: the unit is part of what the figure means.
+    expect(within(offerings).getByText("10 MALII per kg")).toBeTruthy();
     expect(within(offerings).getByText("Price on request")).toBeTruthy();
     expect(
       within(offerings).getByText(
@@ -706,7 +756,7 @@ describe("VoucherDetailPage", () => {
   });
 
   it("does not request related posts for a guest", () => {
-    mocks.auth = { isAuthenticated: false, isLoading: false };
+    mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
 
@@ -722,5 +772,137 @@ describe("VoucherDetailPage", () => {
     expect(mocks.reportVoucher).toBeUndefined();
     expect(mocks.reportsEnabled).toBe(false);
     expect(screen.getByText("Posts aren't available for this voucher.")).toBeTruthy();
+  });
+});
+
+/**
+ * The owner's view of their own offerings.
+ *
+ * Two things separate it from a visitor's, and each has a reason that is not
+ * cosmetic: the controls, and which query runs. The cached public read is right
+ * for browsing and wrong for the person editing the list, because the endpoint
+ * lets the browser keep the pre-mutation body for up to a minute.
+ */
+describe("VoucherOfferingsPanel ownership", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  beforeEach(() => {
+    mocks.offeringAddress = undefined;
+    mocks.managedOfferingAddress = undefined;
+    mocks.deleteOffering.mockReset();
+    mocks.deleteOffering.mockResolvedValue("1");
+  });
+
+  it("gives the voucher's owner add, edit and remove controls", () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const offerings = screen.getByRole("tabpanel");
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+    expect(within(offerings).getAllByRole("button", { name: "Edit" }).length).toBeGreaterThan(0);
+    expect(within(offerings).getAllByRole("button", { name: "Remove" }).length).toBeGreaterThan(0);
+  });
+
+  it("reads through the uncached query for an owner and the cached one for a visitor", () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    expect(mocks.managedOfferingAddress).toBe(ADDRESS);
+    // Not both: the owner must not also hold a cached copy that a write cannot
+    // reliably refresh.
+    expect(mocks.offeringAddress).toBeUndefined();
+  });
+
+  it.each([
+    [
+      "another signed-in user",
+      { isAuthenticated: true, isLoading: false, session: { address: OTHER, chainId: 42220 } },
+    ],
+    ["a guest", { isAuthenticated: false, isLoading: false, session: null }],
+    // A session cookie is what the write is authorized against, so a connected
+    // wallet with no session is a visitor here.
+    [
+      "a connected wallet with no session",
+      { isAuthenticated: false, isLoading: false, session: undefined },
+    ],
+  ])("keeps the panel read-only for %s", (_label, auth) => {
+    Object.assign(mocks.auth, auth);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.queryByRole("button", { name: "Add offering" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(mocks.managedOfferingAddress).toBeUndefined();
+  });
+
+  // A voucher with no recorded owner has nobody to authorize, so nobody gets
+  // controls — the two nulls must not compare equal.
+  it("gives nobody controls when the catalog records no owner", () => {
+    mocks.detailResult.data = detail({ ownerAddress: null });
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.queryByRole("button", { name: "Add offering" })).toBeNull();
+  });
+
+  // Case-folded: the catalog stores the address lower-cased while a session
+  // claim is checksummed.
+  it("matches the owner regardless of address casing", () => {
+    mocks.detailResult.data = detail({
+      ownerAddress: OWNER.toLowerCase() as MarketVoucherDetail["ownerAddress"],
+    });
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+  });
+
+  // The owner needs somewhere to add the first offering, so the shortcut that is
+  // sound for a visitor must not suppress their query.
+  it("still queries for an owner when the market marker says the tab is empty", () => {
+    mocks.detailResult.data = detail({
+      ownerAddress: OWNER as MarketVoucherDetail["ownerAddress"],
+      kind: "voucher",
+    });
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(mocks.managedOfferingAddress).toBe(ADDRESS);
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+  });
+
+  it("asks before removing, and calls the mutation once confirmed", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const remove = within(screen.getByRole("tabpanel")).getAllByRole("button", {
+      name: "Remove",
+    })[0];
+    fireEvent.click(remove as HTMLElement);
+    expect(confirm).toHaveBeenCalled();
+    expect(mocks.deleteOffering).not.toHaveBeenCalled();
+
+    confirm.mockReturnValue(true);
+    await act(async () => {
+      fireEvent.click(remove as HTMLElement);
+    });
+    expect(mocks.deleteOffering).toHaveBeenCalledWith("1");
+  });
+
+  it("opens the editor sheet on Add", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    expect(screen.getByRole("heading", { name: "Add offering" })).toBeTruthy();
+    // The unit picker is translated and exhaustive, so every canonical unit is
+    // offered rather than only the ones a fixture happened to use.
+    expect(screen.getByRole("button", { name: "Kilogram", pressed: false })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Session", pressed: false })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "A good", pressed: false })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "A service", pressed: false })).toBeTruthy();
   });
 });

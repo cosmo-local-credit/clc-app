@@ -40,8 +40,10 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     email: "issuer@example.org",
     website: null,
     phone: null,
+    terms: null,
     iconUrl: null,
     bannerUrl: null,
+    tags: [],
     kind: "goods",
     ...overrides,
   };

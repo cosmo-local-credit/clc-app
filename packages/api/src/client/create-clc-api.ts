@@ -22,7 +22,19 @@ import { createReportsClient } from "../features/reports/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
 import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 
-export function createClcApi(options: CreateHttpClientOptions) {
+export type CreateClcApiOptions = CreateHttpClientOptions & {
+  /**
+   * How the public catalog reads treat the browser's HTTP cache.
+   *
+   * Applies to every client whose endpoints are marked publicly cacheable — the
+   * catalog reads and the public voucher-offerings read. An app that writes what
+   * it reads passes `"no-store"`; see CreateMarketClientOptions for what happens
+   * when it does not.
+   */
+  catalogCache?: RequestCache;
+};
+
+export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) {
   const http = createHttpClient(options);
 
   // The package exports the transport factory so apps can preserve route-level
@@ -33,8 +45,8 @@ export function createClcApi(options: CreateHttpClientOptions) {
     admin: createAdminClient(http),
     auth: createAuthClient(http),
     deployments: createDeploymentsClient(http),
-    market: createMarketClient(http),
-    offerings: createOfferingsClient(http),
+    market: createMarketClient(http, { cache: catalogCache }),
+    offerings: createOfferingsClient(http, { cache: catalogCache }),
     pools: createPoolsClient(http),
     poolDeploy: createPoolDeployClient(http),
     pretium: createPretiumClient(http),

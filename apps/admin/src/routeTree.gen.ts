@@ -17,6 +17,7 @@ import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
 import { Route as ShellTransactionsIndexRouteImport } from './routes/_shell/transactions/index'
 import { Route as ShellPoolsIndexRouteImport } from './routes/_shell/pools/index'
+import { Route as ShellVouchersPublishRouteImport } from './routes/_shell/vouchers/publish'
 import { Route as ShellVouchersAddressRouteImport } from './routes/_shell/vouchers/$address'
 import { Route as ShellUsersAddressRouteImport } from './routes/_shell/users/$address'
 import { Route as ShellTransactionsVouchersRouteImport } from './routes/_shell/transactions/vouchers'
@@ -62,6 +63,11 @@ const ShellTransactionsIndexRoute = ShellTransactionsIndexRouteImport.update({
 const ShellPoolsIndexRoute = ShellPoolsIndexRouteImport.update({
   id: '/pools/',
   path: '/pools/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellVouchersPublishRoute = ShellVouchersPublishRouteImport.update({
+  id: '/vouchers/publish',
+  path: '/vouchers/publish',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellVouchersAddressRoute = ShellVouchersAddressRouteImport.update({
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
+  '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools/': typeof ShellPoolsIndexRoute
   '/transactions/': typeof ShellTransactionsIndexRoute
   '/users/': typeof ShellUsersIndexRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/users/$address': typeof ShellUsersAddressRoute
   '/vouchers/$address': typeof ShellVouchersAddressRoute
+  '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools': typeof ShellPoolsIndexRoute
   '/transactions': typeof ShellTransactionsIndexRoute
   '/users': typeof ShellUsersIndexRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/_shell/transactions/vouchers': typeof ShellTransactionsVouchersRoute
   '/_shell/users/$address': typeof ShellUsersAddressRoute
   '/_shell/vouchers/$address': typeof ShellVouchersAddressRoute
+  '/_shell/vouchers/publish': typeof ShellVouchersPublishRoute
   '/_shell/pools/': typeof ShellPoolsIndexRoute
   '/_shell/transactions/': typeof ShellTransactionsIndexRoute
   '/_shell/users/': typeof ShellUsersIndexRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers'
     | '/users/$address'
     | '/vouchers/$address'
+    | '/vouchers/publish'
     | '/pools/'
     | '/transactions/'
     | '/users/'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers'
     | '/users/$address'
     | '/vouchers/$address'
+    | '/vouchers/publish'
     | '/pools'
     | '/transactions'
     | '/users'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/_shell/transactions/vouchers'
     | '/_shell/users/$address'
     | '/_shell/vouchers/$address'
+    | '/_shell/vouchers/publish'
     | '/_shell/pools/'
     | '/_shell/transactions/'
     | '/_shell/users/'
@@ -265,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellPoolsIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/vouchers/publish': {
+      id: '/_shell/vouchers/publish'
+      path: '/vouchers/publish'
+      fullPath: '/vouchers/publish'
+      preLoaderRoute: typeof ShellVouchersPublishRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/vouchers/$address': {
       id: '/_shell/vouchers/$address'
       path: '/vouchers/$address'
@@ -328,6 +347,7 @@ interface ShellRouteChildren {
   ShellTransactionsVouchersRoute: typeof ShellTransactionsVouchersRoute
   ShellUsersAddressRoute: typeof ShellUsersAddressRoute
   ShellVouchersAddressRoute: typeof ShellVouchersAddressRoute
+  ShellVouchersPublishRoute: typeof ShellVouchersPublishRoute
   ShellPoolsIndexRoute: typeof ShellPoolsIndexRoute
   ShellTransactionsIndexRoute: typeof ShellTransactionsIndexRoute
   ShellUsersIndexRoute: typeof ShellUsersIndexRoute
@@ -345,6 +365,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellTransactionsVouchersRoute: ShellTransactionsVouchersRoute,
   ShellUsersAddressRoute: ShellUsersAddressRoute,
   ShellVouchersAddressRoute: ShellVouchersAddressRoute,
+  ShellVouchersPublishRoute: ShellVouchersPublishRoute,
   ShellPoolsIndexRoute: ShellPoolsIndexRoute,
   ShellTransactionsIndexRoute: ShellTransactionsIndexRoute,
   ShellUsersIndexRoute: ShellUsersIndexRoute,

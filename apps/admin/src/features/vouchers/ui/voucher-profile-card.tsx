@@ -8,6 +8,7 @@ import {
   RecordOwner,
   RecordRow,
 } from "#/components/admin/record-fields";
+import { Badge } from "#/components/ui/badge";
 import { Card, CardContent } from "#/components/ui/card";
 
 /**
@@ -17,9 +18,9 @@ import { Card, CardContent } from "#/components/ui/card";
  * the unit and value a steward declared it stands for — the four facts an
  * operator needs before reading any amount denominated in it.
  *
- * **Middle: who stands behind it.** Contact details the catalog holds and no
- * contract reads. This is where a support thread starts when a holder cannot
- * redeem.
+ * **Middle: who stands behind it.** Contact details, terms and tags — off-chain
+ * metadata the catalog holds and no contract reads, all of it editable. This is
+ * where a support thread starts when a holder cannot redeem.
  *
  * **Right: where it says it operates**, which is metadata too but is read by
  * looking rather than by reading, so it gets the space a map needs instead of a
@@ -27,7 +28,8 @@ import { Card, CardContent } from "#/components/ui/card";
  *
  * That split is the card's only organising idea, which is why nothing here is
  * labelled — a heading naming the columns would say in two words what the
- * position already says.
+ * position already says. It also answers "can I change this?": the middle column
+ * is what the edit sheet writes, the left is what the contract decides.
  *
  * Nothing repeats the header: name, symbol, kind, address, chain, id and the
  * description all live up there.
@@ -91,6 +93,25 @@ export function VoucherProfileCard({ voucher }: { voucher: MarketVoucherDetail }
           </RecordRow>
           <RecordRow label="Website">
             <RecordExternalLink href={voucher.website} />
+          </RecordRow>
+          <RecordRow label="Terms">
+            <RecordExternalLink href={voucher.terms} />
+          </RecordRow>
+          {/* Here rather than beside the unit and value: a tag is catalog prose an
+              operator maintains, like the contact rows above it, and the left
+              column is what the contract decides. */}
+          <RecordRow label="Tags">
+            {voucher.tags.length > 0 ? (
+              <span className="flex flex-wrap justify-end gap-1">
+                {voucher.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="font-mono text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </span>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
           </RecordRow>
         </dl>
 

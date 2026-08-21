@@ -391,8 +391,10 @@ describe("MarketPage preview", () => {
         email: null,
         website: null,
         phone: null,
+        terms: null,
         iconUrl: "https://content.example/icon.jpg",
         bannerUrl: null,
+        tags: [],
         kind: "goods",
       },
     } as typeof detailResult.current;

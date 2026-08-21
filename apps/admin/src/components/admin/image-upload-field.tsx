@@ -1,6 +1,6 @@
 import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import type { ImagePurpose } from "@clc/api/features/images/policy";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HiOutlinePhotograph, HiOutlineTrash, HiOutlineUpload } from "react-icons/hi";
 
 import { useImageUpload } from "#/features/images/use-image-upload";
@@ -24,7 +24,8 @@ import { Label } from "#/components/ui/label";
  * the two endpoints differ — the account profile has a `clearAvatar` flag and the
  * pool profile reads `""`.
  *
- * Shared by the account sheet, the pool publish form and the pool record sheet.
+ * Shared by the account sheet, the pool and voucher publish forms, and the pool
+ * record sheet.
  * Nothing here is per-resource: the purpose decides the folder and the width, and
  * the shared policy decides which files are worth sending at all.
  */
@@ -34,6 +35,7 @@ export function ImageUploadField({
   purpose,
   value,
   onChange,
+  onBusyChange,
   disabled,
   dense,
 }: {
@@ -43,6 +45,15 @@ export function ImageUploadField({
   /** The stored URL, or null when there is no image. */
   value: string | null;
   onChange: (url: string | null) => void;
+  /**
+   * Whether an upload or a framing step is in flight.
+   *
+   * The parent form needs this because selection and save are separate actions
+   * here: the file uploads on selection, so a Save pressed while that is in
+   * flight would persist the *previous* URL — the new one has not arrived at
+   * `onChange` yet. Without this the race is invisible to the caller.
+   */
+  onBusyChange?: (busy: boolean) => void;
   disabled?: boolean;
   /**
    * Fits the field into a panel whose height is already set by the fields beside
@@ -58,12 +69,27 @@ export function ImageUploadField({
   const [pending, setPending] = useState<File | null>(null);
 
   // The preview matches how the image is displayed rather than being chosen at
-  // the call site: an account avatar, a voucher icon and a pool logo are all 1:1
-  // and all rendered in an Avatar, so all three are framed and previewed as
-  // circles. A banner is the only rectangle.
-  const round = IMAGE_POLICIES[purpose].aspect === 1;
+  // the call site: an account avatar, a voucher icon and a pool logo are all
+  // rendered in an Avatar, so all three are previewed as circles. An offering
+  // photograph is cropped to the same 1:1 but shown square, which is why the
+  // shape is a property of the purpose and not derived from its aspect.
+  const round = IMAGE_POLICIES[purpose].preview === "circle";
+  const square = !round && IMAGE_POLICIES[purpose].aspect === 1;
 
-  const busy = upload.isPending || disabled;
+  // The framing dialog counts as busy too: a file chosen and not yet cropped has
+  // not produced a URL either.
+  const inFlight = upload.isPending || pending !== null;
+  const busy = inFlight || disabled;
+
+  // Seeded false rather than from the first render: a field that mounts while an
+  // upload is already in flight has to report it, and comparing against its own
+  // initial value would treat that as "no change" and never tell the parent.
+  const reportedBusy = useRef(false);
+  useEffect(() => {
+    if (reportedBusy.current === inFlight) return;
+    reportedBusy.current = inFlight;
+    onBusyChange?.(inFlight);
+  }, [inFlight, onBusyChange]);
   const uploadLabel = upload.isPending ? "Uploading…" : value ? "Replace" : "Upload";
   const error = rejection ?? (upload.isError ? "Upload failed. Try again." : null);
 
@@ -137,7 +163,9 @@ export function ImageUploadField({
         ) : (
           <div
             className={`border-border bg-background flex shrink-0 items-center justify-center overflow-hidden border ${
-              dense ? "h-12 w-20" : "h-16 w-28"
+              // The box matches the crop: a square photo in a 16:9 slot would be
+              // letterboxed in the one place the operator is judging the framing.
+              square ? (dense ? "size-12" : "size-16") : dense ? "h-12 w-20" : "h-16 w-28"
             }`}
           >
             {value ? (

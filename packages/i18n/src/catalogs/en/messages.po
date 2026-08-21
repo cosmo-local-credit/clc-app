@@ -54,15 +54,21 @@ msgstr "{count, plural, one {# post} other {# posts}}"
 
 #. placeholder {0}: price.value
 #. placeholder {0}: total.value
-#: apps/web/src/components/offerings/offerings-panel.tsx:231
-#: apps/web/src/components/offerings/offerings-panel.tsx:398
+#: apps/web/src/components/offerings/offerings-panel.tsx:262
+#: apps/web/src/components/offerings/offerings-panel.tsx:456
 msgid "{0} {voucherSymbol}"
 msgstr "{0} {voucherSymbol}"
 
 #. placeholder {0}: price.value
-#: apps/web/src/components/offerings/offerings-panel.tsx:331
+#: apps/web/src/components/offerings/offerings-panel.tsx:389
 msgid "{0} {voucherSymbol} each"
 msgstr "{0} {voucherSymbol} each"
+
+#. placeholder {0}: price.value
+#. placeholder {1}: offering.unitLabel
+#: apps/web/src/components/offerings/offerings-panel.tsx:258
+msgid "{0} {voucherSymbol} per {1}"
+msgstr "{0} {voucherSymbol} per {1}"
 
 #. placeholder {0}: contract.name
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:402
@@ -203,7 +209,7 @@ msgstr "1 {0} = {1} {2}"
 
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:635
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:636
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -214,6 +220,10 @@ msgstr "1 offer"
 #: apps/web/src/features/pools/ui/pools-page.tsx:176
 msgid "1 voucher"
 msgstr "1 voucher"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:245
+msgid "A good"
+msgstr "A good"
 
 #: apps/web/src/routes/__root.tsx:234
 msgid "A paper wallet link was opened. Sign in with this address?"
@@ -228,6 +238,10 @@ msgid "A pool holds vouchers together so members can swap between them at a "
 "published value."
 msgstr "A pool holds vouchers together so members can swap between them at a "
 "published value."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:251
+msgid "A service"
+msgstr "A service"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:240
 msgid "A voucher acts like a gift card for your offers. When someone redeems "
@@ -335,6 +349,15 @@ msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable 
 #~ msgid "Add money"
 #~ msgstr "Add money"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:116
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:90
+msgid "Add offering"
+msgstr "Add offering"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Add photo"
+msgstr "Add photo"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:116
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:306
 msgid "Add stables"
@@ -344,9 +367,14 @@ msgstr "Add stables"
 #~ msgid "Add to a pool"
 #~ msgstr "Add to a pool"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:418
+#: apps/web/src/components/offerings/offerings-panel.tsx:476
 msgid "Add to cart"
 msgstr "Add to cart"
+
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:109
+msgid "Add what you accept this voucher for, and it appears in the marketplace."
+msgstr "Add what you accept this voucher for, and it appears in the "
+"marketplace."
 
 #: apps/web/src/features/home/ui/account-settings-section.tsx:16
 msgid "Add your contact details"
@@ -468,6 +496,10 @@ msgstr "Back to pools"
 #~ msgid "Back to swap"
 #~ msgstr "Back to swap"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:63
+msgid "Bag"
+msgstr "Bag"
+
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:203
 msgid "Balance"
 msgstr "Balance"
@@ -500,6 +532,10 @@ msgstr "Balance {tokenBalance}"
 #: apps/web/src/features/home/ui/market-page.tsx:154
 msgid "Browse all"
 msgstr "Browse all"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:67
+msgid "Bundle"
+msgstr "Bundle"
 
 #. placeholder {0}: ratesQuery.data.buy
 #. placeholder {1}: ratesQuery.data.sell
@@ -538,6 +574,7 @@ msgstr "Camera access denied."
 #: apps/web/src/components/auth/sign-in-panel.tsx:372
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/routes/__root.tsx:248
@@ -603,6 +640,7 @@ msgid "Checking…"
 msgstr "Checking…"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:55
+#: apps/web/src/components/ui/image-upload-field.tsx:87
 msgid "Choose a JPEG, PNG or WebP image."
 msgstr "Choose a JPEG, PNG or WebP image."
 
@@ -624,7 +662,7 @@ msgstr "Choose a profile photo"
 msgid "Choose an expiration date"
 msgstr "Choose an expiration date"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:261
+#: apps/web/src/components/ui/image-crop-sheet.tsx:270
 msgid "Choose another"
 msgstr "Choose another"
 
@@ -682,7 +720,7 @@ msgstr "Clear location"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:306
+#: apps/web/src/components/offerings/offerings-panel.tsx:364
 #: apps/web/src/features/home/ui/report-page.tsx:254
 msgid "Close"
 msgstr "Close"
@@ -872,13 +910,13 @@ msgstr "Continue with Paper Wallet"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:185
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:166
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:645
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:646
 msgid "Contract address"
 msgstr "Contract address"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:658
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:659
 msgid "Contract address copied"
 msgstr "Contract address copied"
 
@@ -888,7 +926,7 @@ msgstr "Copy"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:169
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:649
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:650
 msgid "Copy contract address"
 msgstr "Copy contract address"
 
@@ -954,8 +992,8 @@ msgstr "Couldn't copy address"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:653
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:659
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:654
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:660
 msgid "Couldn't copy contract address"
 msgstr "Couldn't copy contract address"
 
@@ -992,11 +1030,11 @@ msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Couldn't identify a country here. Try a nearby spot."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:52
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:517
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:518
 msgid "Couldn't load activity."
 msgstr "Couldn't load activity."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:107
+#: apps/web/src/components/offerings/offerings-panel.tsx:126
 msgid "Couldn't load offerings."
 msgstr "Couldn't load offerings."
 
@@ -1009,7 +1047,7 @@ msgid "Couldn't load pools."
 msgstr "Couldn't load pools."
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:422
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:423
 msgid "Couldn't load posts."
 msgstr "Couldn't load posts."
 
@@ -1067,9 +1105,17 @@ msgstr "Couldn't publish your voucher."
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Couldn't read how many decimals this voucher uses."
 
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:76
+msgid "Couldn't remove the offering."
+msgstr "Couldn't remove the offering."
+
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:204
 msgid "Couldn't resolve that recipient."
 msgstr "Couldn't resolve that recipient."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:187
+msgid "Couldn't save the offering."
+msgstr "Couldn't save the offering."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:123
 msgid "Couldn't save your profile."
@@ -1090,6 +1136,10 @@ msgstr "Couldn't start MPESA top up"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:170
 msgid "Couldn't submit withdrawal"
 msgstr "Couldn't submit withdrawal"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:121
+msgid "Couldn't upload that photo. Try again."
+msgstr "Couldn't upload that photo. Try again."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
@@ -1150,7 +1200,7 @@ msgstr "Creating account..."
 msgid "Customize"
 msgstr "Customize"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:488
+#: apps/web/src/components/offerings/offerings-panel.tsx:546
 msgid "Daily"
 msgstr "Daily"
 
@@ -1163,6 +1213,10 @@ msgstr "Dark"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:718
 msgid "Date"
 msgstr "Date"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:61
+msgid "Day"
+msgstr "Day"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:49
 #~ msgid "Debit / Credit card"
@@ -1180,7 +1234,7 @@ msgstr "Decimals"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "Decimals must be a whole number from 0 to 18"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:370
+#: apps/web/src/components/offerings/offerings-panel.tsx:428
 msgid "Decrease quantity"
 msgstr "Decrease quantity"
 
@@ -1211,6 +1265,7 @@ msgstr "Describe your pool"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:110
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:18
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:32
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:262
 msgid "Description"
 msgstr "Description"
 
@@ -1249,7 +1304,11 @@ msgid "Download or photograph this card. Anyone who scans the QR code will have 
 msgstr "Download or photograph this card. Anyone who scans the QR code will "
 "have full access to this wallet."
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:141
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:71
+msgid "Dozen"
+msgstr "Dozen"
+
+#: apps/web/src/components/ui/image-crop-sheet.tsx:146
 msgid "Drag to move, pinch or use the slider to zoom."
 msgstr "Drag to move, pinch or use the slider to zoom."
 
@@ -1277,6 +1336,7 @@ msgstr "e.g. MARKET"
 #~ msgid "Eatery"
 #~ msgstr "Eatery"
 
+#: apps/web/src/components/offerings/offerings-panel.tsx:290
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:136
 msgid "Edit"
 msgstr "Edit"
@@ -1284,6 +1344,10 @@ msgstr "Edit"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:135
 msgid "Edit filters"
 msgstr "Edit filters"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:116
+msgid "Edit offering"
+msgstr "Edit offering"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:36
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:131
@@ -1298,7 +1362,7 @@ msgstr "Edit profile"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:35
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:313
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:672
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:673
 msgid "Email"
 msgstr "Email"
 
@@ -1479,7 +1543,7 @@ msgstr "First supply"
 msgid "Follows the selected unit's feed"
 msgstr "Follows the selected unit's feed"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:138
+#: apps/web/src/components/ui/image-crop-sheet.tsx:143
 msgid "Frame your photo"
 msgstr "Frame your photo"
 
@@ -1488,7 +1552,7 @@ msgstr "Frame your photo"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:240
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:373
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:118
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:561
 msgid "From"
 msgstr "From"
 
@@ -1508,6 +1572,10 @@ msgstr "Go back to sign in"
 msgid "Goods"
 msgstr "Goods"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:53
+msgid "Gram"
+msgstr "Gram"
+
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:437
 msgid "Has an expiration date"
 msgstr "Has an expiration date"
@@ -1523,6 +1591,10 @@ msgstr "Helps members find and understand your pool"
 #: apps/web/src/features/home/ui/report-page.tsx:375
 msgid "Host"
 msgstr "Host"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:59
+msgid "Hour"
+msgstr "Hour"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 msgid "HOUR — Hour"
@@ -1580,7 +1652,7 @@ msgstr "In network"
 msgid "Inactive"
 msgstr "Inactive"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:385
+#: apps/web/src/components/offerings/offerings-panel.tsx:443
 msgid "Increase quantity"
 msgstr "Increase quantity"
 
@@ -1611,7 +1683,11 @@ msgstr "Invalid phone number"
 #~ msgid "Invalid voucher filter"
 #~ msgstr "Invalid voucher filter"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:702
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:235
+msgid "Is this a good or a service?"
+msgstr "Is this a good or a service?"
+
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:703
 msgid "Issuer"
 msgstr "Issuer"
 
@@ -1620,6 +1696,10 @@ msgstr "Issuer"
 #~ "contractual wages."
 #~ msgstr "It circulates symbolic commitments, not enforceable payments or "
 #~ "contractual wages."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:57
+msgid "Item"
+msgstr "Item"
 
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:27
 #~ msgid "Join CLC"
@@ -1632,6 +1712,10 @@ msgstr "KES — Kenyan shilling"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:311
 #~ msgid "KES worth of goods & services"
 #~ msgstr "KES worth of goods & services"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:51
+msgid "Kilogram"
+msgstr "Kilogram"
 
 #: apps/web/src/components/language-selector.tsx:27
 msgid "Language"
@@ -1679,12 +1763,16 @@ msgstr "Link wallet to {providerLabel}"
 msgid "Linking passkey..."
 msgstr "Linking passkey..."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:55
+msgid "Litre"
+msgstr "Litre"
+
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:167
 msgid "Load more"
 msgstr "Load more"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:46
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:511
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:512
 msgid "Loading activity…"
 msgstr "Loading activity…"
 
@@ -1709,16 +1797,16 @@ msgstr "Loading location map"
 msgid "Loading marketplace…"
 msgstr "Loading marketplace…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:143
+#: apps/web/src/components/offerings/offerings-panel.tsx:163
 #: apps/web/src/features/home/ui/activity-page.tsx:115
 #: apps/web/src/features/home/ui/posts-page.tsx:119
 #: apps/web/src/features/pools/ui/pools-page.tsx:152
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:455
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:456
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:580
 msgid "Loading more…"
 msgstr "Loading more…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:100
+#: apps/web/src/components/offerings/offerings-panel.tsx:119
 msgid "Loading offerings…"
 msgstr "Loading offerings…"
 
@@ -1736,8 +1824,8 @@ msgid "Loading post…"
 msgstr "Loading post…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:86
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:397
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:415
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:398
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:416
 msgid "Loading posts…"
 msgstr "Loading posts…"
 
@@ -1855,6 +1943,10 @@ msgstr "Message shared."
 msgid "Messages are available only for registered Cosmo users."
 msgstr "Messages are available only for registered Cosmo users."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:79
+msgid "Metre"
+msgstr "Metre"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:186
 msgid "Mint status is temporarily unavailable."
 msgstr "Mint status is temporarily unavailable."
@@ -1900,7 +1992,7 @@ msgstr "Minting failed"
 msgid "Minting…"
 msgstr "Minting…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:492
+#: apps/web/src/components/offerings/offerings-panel.tsx:550
 msgid "Monthly"
 msgstr "Monthly"
 
@@ -2010,7 +2102,7 @@ msgid "No"
 msgstr "No"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:66
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:531
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:532
 msgid "No activity yet."
 msgstr "No activity yet."
 
@@ -2038,7 +2130,7 @@ msgstr "No category filters are available."
 msgid "No CLC account was found for this sign-in."
 msgstr "No CLC account was found for this sign-in."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:154
+#: apps/web/src/components/offerings/offerings-panel.tsx:174
 msgid "No offerings yet"
 msgstr "No offerings yet"
 
@@ -2075,7 +2167,7 @@ msgstr "No posts match this search."
 #~ msgstr "No posts yet"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:99
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:437
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:438
 msgid "No posts yet."
 msgstr "No posts yet."
 
@@ -2191,6 +2283,18 @@ msgstr "Notifications currently require Chrome on Android or the installed "
 #~ msgid "of 3"
 #~ msgstr "of 3"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:183
+msgid "Offering published."
+msgstr "Offering published."
+
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:74
+msgid "Offering removed."
+msgstr "Offering removed."
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:180
+msgid "Offering updated."
+msgstr "Offering updated."
+
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:78
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:255
 msgid "Offerings"
@@ -2225,7 +2329,7 @@ msgid "Onramp details"
 msgstr "Onramp details"
 
 #: apps/web/src/features/home/ui/report-page.tsx:480
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:721
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:722
 msgid "Open in Maps"
 msgstr "Open in Maps"
 
@@ -2238,6 +2342,7 @@ msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:126
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:329
 msgid "Optional"
 msgstr "Optional"
 
@@ -2349,7 +2454,7 @@ msgstr "Pending"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:41
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:43
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:325
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:696
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:697
 msgid "Phone"
 msgstr "Phone"
 
@@ -2357,6 +2462,14 @@ msgstr "Phone"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:178
 msgid "Phone number"
 msgstr "Phone number"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:328
+msgid "Photo"
+msgstr "Photo"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:69
+msgid "Piece"
+msgstr "Piece"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:90
 #~ msgid "Placeholder confirmed"
@@ -2464,7 +2577,7 @@ msgstr "Pools"
 msgid "Pools list"
 msgstr "Pools list"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:156
+#: apps/web/src/components/ui/image-crop-sheet.tsx:161
 msgid "Position your photo"
 msgstr "Position your photo"
 
@@ -2478,11 +2591,11 @@ msgstr "Post not found."
 #: apps/web/src/features/home/ui/report-page.tsx:494
 #: apps/web/src/features/home/ui/report-page.tsx:513
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:441
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:442
 msgid "Posts"
 msgstr "Posts"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:409
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:410
 msgid "Posts aren't available for this voucher."
 msgstr "Posts aren't available for this voucher."
 
@@ -2506,7 +2619,7 @@ msgstr "Preparing your withdrawal…"
 msgid "Preparing..."
 msgstr "Preparing..."
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+#: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Preparing…"
 msgstr "Preparing…"
 
@@ -2552,10 +2665,14 @@ msgstr "Price feed"
 msgid "Price must be greater than zero"
 msgstr "Price must be greater than zero"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:235
-#: apps/web/src/components/offerings/offerings-panel.tsx:335
+#: apps/web/src/components/offerings/offerings-panel.tsx:267
+#: apps/web/src/components/offerings/offerings-panel.tsx:393
 msgid "Price on request"
 msgstr "Price on request"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:282
+msgid "Price per unit in {voucherSymbol}"
+msgstr "Price per unit in {voucherSymbol}"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:334
 msgid "Priced in"
@@ -2628,6 +2745,10 @@ msgstr "Provide an email or phone number"
 #~ msgid "Public — voucher holders will see this so they can reach you."
 #~ msgstr "Public — voucher holders will see this so they can reach you."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:352
+msgid "Publish offering"
+msgstr "Publish offering"
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:172
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:405
 msgid "Published"
@@ -2669,7 +2790,7 @@ msgstr "QR currently contains the raw private key."
 #~ msgid "QR is protected. Keep the passphrase separate from the card."
 #~ msgstr "QR is protected. Keep the passphrase separate from the card."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:363
+#: apps/web/src/components/offerings/offerings-panel.tsx:421
 msgid "Quantity"
 msgstr "Quantity"
 
@@ -2725,7 +2846,7 @@ msgid "Receive voucher, swap, and off-ramp updates when the app is closed."
 msgstr "Receive voucher, swap, and off-ramp updates when the app is closed."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Received"
 msgstr "Received"
 
@@ -2785,9 +2906,16 @@ msgstr "Registration failed. Check your connection and try again."
 msgid "Related vouchers"
 msgstr "Related vouchers"
 
+#: apps/web/src/components/offerings/offerings-panel.tsx:301
 #: apps/web/src/components/ui/avatar-picker.tsx:123
+#: apps/web/src/components/ui/image-upload-field.tsx:178
 msgid "Remove"
 msgstr "Remove"
+
+#. placeholder {0}: offering.name
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:70
+msgid "Remove “{0}” from the marketplace?"
+msgstr "Remove “{0}” from the marketplace?"
 
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:329
@@ -2798,6 +2926,14 @@ msgstr "Remove {0}"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:567
 msgid "Remove {tag}"
 msgstr "Remove {tag}"
+
+#: apps/web/src/components/offerings/offerings-panel.tsx:299
+msgid "Removing…"
+msgstr "Removing…"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Replace photo"
+msgstr "Replace photo"
 
 #: apps/web/src/features/home/ui/report-page.tsx:370
 msgid "Report details"
@@ -2867,7 +3003,7 @@ msgstr "Reverted"
 msgid "Reviews"
 msgstr "Reviews"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:345
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:346
 msgid "Reviews for this voucher will appear here."
 msgstr "Reviews for this voucher will appear here."
 
@@ -2876,11 +3012,13 @@ msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:259
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:350
 msgid "Save changes"
 msgstr "Save changes"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:259
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:218
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:348
 msgid "Saving…"
 msgstr "Saving…"
 
@@ -3006,7 +3144,7 @@ msgstr "Sending…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:136
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:557
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:558
 msgid "Sent"
 msgstr "Sent"
 
@@ -3026,6 +3164,14 @@ msgstr "Sent voucher"
 #: apps/web/src/features/home/ui/market-labels.ts:14
 msgid "Services"
 msgstr "Services"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:73
+msgid "Serving"
+msgstr "Serving"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:77
+msgid "Session"
+msgstr "Session"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:28
 msgid "Session check failed"
@@ -3089,11 +3235,11 @@ msgstr "Shown on your voucher page"
 msgid "Sign in to continue"
 msgstr "Sign in to continue"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:506
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:507
 msgid "Sign in to view activity."
 msgstr "Sign in to view activity."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:403
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:404
 msgid "Sign in to view posts."
 msgstr "Sign in to view posts."
 
@@ -3323,10 +3469,11 @@ msgid "Terms URL"
 msgstr "Terms URL"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:56
+#: apps/web/src/components/ui/image-upload-field.tsx:88
 msgid "That image is too large. Choose one under 8 MB."
 msgstr "That image is too large. Choose one under 8 MB."
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:414
+#: apps/web/src/components/offerings/offerings-panel.tsx:472
 msgid "The cart isn't ready yet."
 msgstr "The cart isn't ready yet."
 
@@ -3372,7 +3519,7 @@ msgstr "The voucher could not be published."
 msgid "Theme"
 msgstr "Theme"
 
-#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:30
+#: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:111
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "There is nothing available for exchange with this voucher yet."
 
@@ -3422,6 +3569,12 @@ msgstr "This link contains an invalid voucher filter."
 msgid "This link has too many filters ({0}, maximum {1})."
 msgstr "This link has too many filters ({0}, maximum {1})."
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:205
+msgid "This listing was imported with the unit “{legacyUnit}”. Pick one below "
+"to save your changes."
+msgstr "This listing was imported with the unit “{legacyUnit}”. Pick one below "
+"to save your changes."
+
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
 #~ msgid "This pool doesn't have enough {0} liquidity for this swap."
@@ -3450,7 +3603,7 @@ msgstr "This QR code does not contain a valid private key."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:423
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:561
 msgid "To"
 msgstr "To"
 
@@ -3484,7 +3637,7 @@ msgstr "Too many searches. Try again in a moment."
 #~ msgid "Top up"
 #~ msgstr "Top up"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:395
+#: apps/web/src/components/offerings/offerings-panel.tsx:453
 msgid "Total"
 msgstr "Total"
 
@@ -3525,6 +3678,10 @@ msgstr "Transaction hash copied"
 msgid "Transfer history"
 msgstr "Transfer history"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:75
+msgid "Trip"
+msgstr "Trip"
+
 #: apps/web/src/features/home/ui/posts-page.tsx:90
 #~ msgid "Try a different search, or clear the filters."
 #~ msgstr "Try a different search, or clear the filters."
@@ -3535,7 +3692,7 @@ msgstr "Transfer history"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
-#: apps/web/src/components/offerings/offerings-panel.tsx:115
+#: apps/web/src/components/offerings/offerings-panel.tsx:134
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
@@ -3545,8 +3702,8 @@ msgstr "Transfer history"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:378
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:451
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:430
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:525
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:431
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:526
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:209
 msgid "Try again"
 msgstr "Try again"
@@ -3572,6 +3729,8 @@ msgid "Unavailable"
 msgstr "Unavailable"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:17
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:65
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:306
 msgid "Unit"
 msgstr "Unit"
 
@@ -3627,6 +3786,14 @@ msgstr "Upload logo"
 msgid "Upload QR code image"
 msgstr "Upload QR code image"
 
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:346
+msgid "Uploading photo…"
+msgstr "Uploading photo…"
+
+#: apps/web/src/components/ui/image-upload-field.tsx:162
+msgid "Uploading…"
+msgstr "Uploading…"
+
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:351
 msgid "USD — US dollar"
 msgstr "USD — US dollar"
@@ -3668,7 +3835,7 @@ msgstr "Use only letters and numbers for the pool shortcode"
 msgid "Use only letters and numbers for the voucher symbol"
 msgstr "Use only letters and numbers for the voucher symbol"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:252
+#: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "Use photo"
 
@@ -3688,8 +3855,8 @@ msgstr "View all"
 msgid "View image full screen"
 msgstr "View image full screen"
 
-#. placeholder {0}: offering.commodityName
-#: apps/web/src/components/offerings/offerings-panel.tsx:193
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offerings-panel.tsx:215
 msgid "View offering details: {0}"
 msgstr "View offering details: {0}"
 
@@ -3874,17 +4041,21 @@ msgstr "We couldn't verify whether this voucher already has supply."
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:38
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:40
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:681
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:682
 msgid "Website"
 msgstr "Website"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:490
+#: apps/web/src/components/offerings/offerings-panel.tsx:548
 msgid "Weekly"
 msgstr "Weekly"
 
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:31
 msgid "Welcome back"
 msgstr "Welcome back"
+
+#: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:216
+msgid "What are you offering?"
+msgstr "What are you offering?"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:99
 msgid "What they offer"
@@ -3917,7 +4088,7 @@ msgstr "Withdraw"
 msgid "Withdrawal submitted"
 msgstr "Withdrawal submitted"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:494
+#: apps/web/src/components/offerings/offerings-panel.tsx:552
 msgid "Yearly"
 msgstr "Yearly"
 
@@ -4013,7 +4184,7 @@ msgstr "Your profile photo"
 msgid "Your Vouchers"
 msgstr "Your Vouchers"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:232
-#: apps/web/src/components/ui/image-crop-sheet.tsx:235
+#: apps/web/src/components/ui/image-crop-sheet.tsx:241
+#: apps/web/src/components/ui/image-crop-sheet.tsx:244
 msgid "Zoom"
 msgstr "Zoom"

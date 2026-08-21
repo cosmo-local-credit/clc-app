@@ -7,7 +7,7 @@ import {
   isRetryableStorageError,
   isStorageUnauthorized,
 } from "./client";
-import { MAX_UPLOAD_BYTES, checkImageFile } from "./policy";
+import { IMAGE_POLICIES, MAX_UPLOAD_BYTES, checkImageFile } from "./policy";
 
 const storage = createImageUploadClient({ baseUrl: "https://storage.test/" });
 
@@ -77,11 +77,39 @@ describe("request shape", () => {
       ["voucher.banner", "voucher", "1280"],
       ["pool.image", "pool", "400"],
       ["pool.banner", "pool", "1280"],
+      ["report.image", "report", "1280"],
+      ["offering.photo", "offering", "800"],
     ] as const) {
       await storage.upload({ file: jpeg(), purpose, uploadId: "abc" }, "tok");
       const form = fetchMock.mock.calls.at(-1)?.[1].body as FormData;
       expect([form.get("folder"), form.get("width")]).toEqual([folder, width]);
     }
+  });
+
+  // An offering photo is framed square before upload, like a pool logo, because
+  // every surface that shows one frames it square. The service itself never
+  // crops, so the aspect is a client-side promise the pickers have to keep.
+  it("uploads an offering photo at 800px, cropped square", async () => {
+    const fetchMock = respond({ body: okBody });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await storage.upload({ file: jpeg(), purpose: "offering.photo", uploadId: "abc" }, "tok");
+
+    const form = fetchMock.mock.calls[0][1].body as FormData;
+    expect(form.get("folder")).toBe("offering");
+    expect(form.get("width")).toBe("800");
+    // The service reads exactly four fields; the aspect is never one of them.
+    expect([...form.keys()].sort()).toEqual(["file", "folder", "name", "width"]);
+    expect(IMAGE_POLICIES["offering.photo"].aspect).toBe(1);
+  });
+
+  // Square is not the same question as round. Both are cropped 1:1; only the
+  // preview differs, and a photograph of a thing is not an identity mark.
+  it("previews identity marks as circles and a product photo as a square", () => {
+    for (const purpose of ["profile.avatar", "voucher.icon", "pool.image"] as const) {
+      expect(IMAGE_POLICIES[purpose]).toMatchObject({ aspect: 1, preview: "circle" });
+    }
+    expect(IMAGE_POLICIES["offering.photo"].preview).toBeUndefined();
   });
 
   it("leaves Content-Type unset so the browser writes its own boundary", async () => {

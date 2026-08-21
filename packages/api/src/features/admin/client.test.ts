@@ -245,6 +245,125 @@ describe("pool administration", () => {
   });
 });
 
+describe("voucher administration", () => {
+  const base = {
+    description: "A basket of fresh food",
+    voucherUoa: "KES",
+    voucherValue: 10,
+    email: "issuer@example.test",
+    website: "",
+    phone: "",
+    terms: "",
+    locationName: "Kilifi",
+    geoLat: -3.5,
+    geoLng: 39.9,
+    tags: ["food"],
+  };
+
+  it("PUTs the whole voucher profile and sends blanks as null", async () => {
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+
+    await client().updateVoucherProfile(ADDRESS, {
+      ...base,
+      email: "  ",
+      phone: " +254700000000 ",
+    });
+
+    const { url, init } = lastCall();
+    expect(url).toBe(`${BASE_URL}/api/v2/admin/vouchers/${ADDRESS}/profile`);
+    expect(init.method).toBe("PUT");
+    if (typeof init.body !== "string") throw new Error("Expected a JSON request body");
+    expect(JSON.parse(init.body)).toEqual({
+      description: "A basket of fresh food",
+      voucherUoa: "KES",
+      voucherValue: 10,
+      email: null,
+      website: null,
+      phone: "+254700000000",
+      terms: null,
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+  });
+
+  it("sends the voucher images only when the caller has an opinion about them", async () => {
+    // Omitted: the columns are COALESCEd, so an absent key is what tells clc-core
+    // to leave the stored image alone.
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+    await client().updateVoucherProfile(ADDRESS, base);
+    let body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect("iconUrl" in body).toBe(false);
+    expect("bannerUrl" in body).toBe(false);
+
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+    await client().updateVoucherProfile(ADDRESS, {
+      ...base,
+      iconUrl: "https://cdn.test/voucher/a_400_ab.webp",
+      bannerUrl: "https://cdn.test/voucher/b_1280_ab.webp",
+    });
+    body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.iconUrl).toBe("https://cdn.test/voucher/a_400_ab.webp");
+    expect(body.bannerUrl).toBe("https://cdn.test/voucher/b_1280_ab.webp");
+
+    // "" survives as "": it is how this endpoint removes an image, so the blanks
+    // -> null rule the other fields follow would turn a removal into a no-op.
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+    await client().updateVoucherProfile(ADDRESS, { ...base, iconUrl: "" });
+    body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.iconUrl).toBe("");
+  });
+
+  // A null value is how the catalog records "no stated value", and 0 is a price.
+  it("passes a cleared value through as null", async () => {
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+
+    await client().updateVoucherProfile(ADDRESS, { ...base, voucherValue: null });
+
+    const body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.voucherValue).toBeNull();
+  });
+
+  it("returns the saved catalog row so a console can seed its cache", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        voucher: {
+          id: 2710,
+          chainId: 42220,
+          address: ADDRESS,
+          name: "Kilifi Harvest",
+          symbol: "KHV",
+          voucherValue: "10",
+          terms: "https://kilifi.example/terms",
+          tags: ["food", "care"],
+          kind: "goods",
+        },
+      }),
+    );
+
+    const voucher = await client().updateVoucherProfile(ADDRESS, base);
+
+    expect(voucher).toMatchObject({
+      id: "2710",
+      address: ADDRESS,
+      name: "Kilifi Harvest",
+      voucherValue: "10",
+      terms: "https://kilifi.example/terms",
+      tags: ["food", "care"],
+      kind: "goods",
+    });
+  });
+
+  it("rejects a response with no usable address", async () => {
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, kind: "goods" } }));
+
+    await expect(client().updateVoucherProfile(ADDRESS, base)).rejects.toThrow(
+      /did not include a valid address/,
+    );
+  });
+});
+
 describe("getStats", () => {
   const payload = {
     range: {

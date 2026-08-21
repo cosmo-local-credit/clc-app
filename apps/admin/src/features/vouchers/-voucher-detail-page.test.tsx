@@ -33,8 +33,10 @@ vi.mock("@clc/api/features/market/queries", () => ({
       email: null,
       website: null,
       phone: null,
+      terms: null,
       iconUrl: null,
       bannerUrl: null,
+      tags: ["Agriculture"],
       kind: "voucher",
     }),
   }),
@@ -54,13 +56,14 @@ vi.mock("@clc/api/features/offerings/queries", () => ({
           voucherSymbol: "SRF",
           voucherDecimals: 6,
           sellerAddress: "0x33a573149db22e759fB9A38Bcc461C12855c2645",
-          commodityName: "Maize flour",
-          commodityType: "goods",
+          name: "Maize flour",
+          commodityType: "GOOD",
           description: "2kg bag",
           quantity: "10",
           unit: "bag",
+          unitLabel: "bag",
           frequency: null,
-          price: "120",
+          pricePerUnit: "120",
           available: true,
           locationName: "Nairobi",
           geoLat: null,
@@ -219,6 +222,20 @@ describe("VoucherDetailPage tabs", () => {
     expect(await screen.findByRole("heading", { name: "Sarafu" })).toBeTruthy();
     expect(await screen.findByText("Maize flour")).toBeTruthy();
     expect(screen.getByRole("img", { name: "Maize flour" })).toBeTruthy();
+
+    // Thumbnails, eight across from xl. Pinned because the density is the whole
+    // reason this panel is a grid of images rather than the table the pool screen
+    // uses for the same resource.
+    const grid = screen.getByRole("img", { name: "Maize flour" }).closest(".grid");
+    expect(grid?.className).toContain("xl:grid-cols-8");
+
+    // The tile is the edit control: a footer button would cost a row of height on
+    // every tile to duplicate what clicking the thing already means.
+    const tile = screen.getByRole("button", { name: /Maize flour/ });
+    expect(tile.querySelector("img")).toBeTruthy();
+    // Availability is not shown, because this tab reads the public list where
+    // every row is available by definition.
+    expect(screen.queryByText("available")).toBeNull();
 
     fireEvent.click(screen.getByRole("tab", { name: "Transactions" }));
     expect(await screen.findByText("transfer")).toBeTruthy();
