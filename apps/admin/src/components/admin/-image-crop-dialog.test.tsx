@@ -41,6 +41,11 @@ describe("ImageCropDialog", () => {
     expect(width).toBeGreaterThan(0);
     // A 1600x900 source in a 256x256 square frame covers via its height.
     expect(width).toBeCloseTo((1600 * 256) / 900, 0);
+    // Tailwind's preflight caps images at max-width:100% (preflight.css:225) and
+    // an inline width does not override a max-width, so zooming grew the height
+    // against a pinned width and stretched the photo. jsdom applies no
+    // stylesheet, so the class is the only thing a test here can hold onto.
+    expect(image.className).toContain("max-w-none");
   });
 
   it("hands back a file when the frame is confirmed", async () => {

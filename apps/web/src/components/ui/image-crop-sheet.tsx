@@ -212,7 +212,11 @@ export function ImageCropSheet({
                     src={source.url}
                     alt=""
                     draggable={false}
-                    className="pointer-events-none absolute top-1/2 left-1/2 origin-center select-none"
+                    // max-w-none is load-bearing: Tailwind's preflight caps every image at
+                    // max-width:100%, and an inline width does not override a max-width.
+                    // Zooming then grew the height while the width stayed pinned to the
+                    // frame, which stretched the photo vertically.
+                    className="pointer-events-none absolute top-1/2 left-1/2 max-w-none origin-center select-none"
                     style={{
                       width: natural.width * scale,
                       height: natural.height * scale,
