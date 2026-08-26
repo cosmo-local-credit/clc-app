@@ -335,7 +335,7 @@ Admin conventions:
    unaffected: the SIWE handler validates only signature, address and nonce.
 3. **Relying party** — a passkey is bound to the `relayer.relying_party_id` it
    was registered under, so the console must be served from that host. Locally
-   that means `http://192.168.1.20:3001`, not `localhost:3001`.
+   that means `http://192.168.1.14:3001`, not `localhost:3001`.
 
 Admin's dev port lives in `apps/admin/vite.config.ts` as
 `server: { port: 3001, strictPort: true }`, not in the `dev` script — otherwise
@@ -459,7 +459,7 @@ the scope of `apps/web`'s service worker.
      registrable domain and `*.pages.dev` previews. That is deliberate — the
      comment in `internal/api/auth.go` names previews as the reason.
    - **Locally**, `Lax` means the browser and the API must share a registrable
-     domain. Browsing `localhost:3000` against `VITE_API_URL=http://192.168.1.20:5003`
+     domain. Browsing `localhost:3000` against `VITE_API_URL=http://192.168.1.14:5003`
      is cross-site, so `/auth/signin` returns 200 and `/auth/session` then answers
      204 — sign-in succeeds and the cookie is silently dropped. Use the LAN host for
      both, or point `VITE_API_URL` at `localhost`.

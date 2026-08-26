@@ -8,6 +8,9 @@ const mockSubmitProfile = vi.fn();
 const mockSignMessage = vi.fn<() => Promise<`0x${string}`>>();
 const mockGetStorageToken = vi.fn();
 const mockUpload = vi.fn();
+const { mockToastError } = vi.hoisted(() => ({ mockToastError: vi.fn() }));
+
+vi.mock("sonner", () => ({ toast: { error: mockToastError, success: vi.fn() } }));
 
 vi.mock("@clc/api/features/auth/client", () => ({
   getSiweNonce: () => mockGetSiweNonce(),
@@ -287,6 +290,15 @@ describe("useBackendSignup — onboarding photo", () => {
     // Absent, not null: null would ask clc-core to clear an avatar, and there is
     // nothing to clear.
     expect("avatarUrl" in profile).toBe(false);
+    // ...and the person is told, or an account that silently dropped their photo
+    // is indistinguishable from one that never had it.
+    expect(mockToastError).toHaveBeenCalledOnce();
+  });
+
+  it("says nothing about a photo when none was chosen", async () => {
+    await signUp(null);
+
+    expect(mockToastError).not.toHaveBeenCalled();
   });
 
   it("does not reach the upload service when no photo was chosen", async () => {

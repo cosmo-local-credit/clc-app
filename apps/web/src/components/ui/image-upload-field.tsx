@@ -126,7 +126,9 @@ export function ImageUploadField({
 
       <div className="flex items-start gap-3">
         <div
-          className={`flex shrink-0 items-center justify-center overflow-hidden border border-border bg-card ${
+          // `relative` is required: ProgressiveImage's skeleton is absolutely
+          // positioned and would otherwise anchor to the page, not this box.
+          className={`relative flex shrink-0 items-center justify-center overflow-hidden border border-border bg-card ${
             round ? "size-20 rounded-full" : wide ? "h-20 w-32" : "size-20"
           }`}
         >
@@ -159,7 +161,7 @@ export function ImageUploadField({
             onClick={() => inputRef.current?.click()}
           >
             <FaCamera aria-hidden className="mr-2 size-4" />
-            {upload.isPending ? t`Uploading…` : value ? t`Replace photo` : t`Add photo`}
+            {upload.isPending ? t`Uploading…` : value ? t`Update photo` : t`Add photo`}
           </Button>
 
           {value ? (

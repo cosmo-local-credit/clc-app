@@ -39,7 +39,10 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   const searchAbortRef = useRef<AbortController | null>(null);
   const reverseAbortRef = useRef<AbortController | null>(null);
   const reverseRequestRef = useRef(0);
-  const skipNextSearchRef = useRef(false);
+  // Seeded from the initial value: the query starts as the saved place name, and
+  // without this the search effect would fire on mount and drop a suggestion list
+  // over a form the user has not typed in. Only typing sets it back to false.
+  const skipNextSearchRef = useRef(Boolean(value?.locationName));
   const onChangeRef = useRef(onChange);
   const geolocation = useBrowserGeolocation();
   const geoStatus = geolocation.state.status;
