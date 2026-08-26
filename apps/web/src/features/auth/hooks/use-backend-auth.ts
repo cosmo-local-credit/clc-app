@@ -1,5 +1,7 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
+import { useLingui } from "@lingui/react/macro";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { signMessage } from "wagmi/actions";
 
 import {
@@ -57,6 +59,8 @@ function siweRequest(statement: string): SiweRequest {
 }
 
 export function useBackendSignup() {
+  const { t } = useLingui();
+
   return useMutation({
     mutationFn: async ({ profile, privateKey, avatarFile }: BackendSignupInput) => {
       const signer = privateKeySigner(privateKey);
@@ -85,6 +89,9 @@ export function useBackendSignup() {
       // Only now is there a session to authorize an upload with.
       const avatarUrl =
         avatarFile && isStorageConfigured ? await uploadOnboardingAvatar(avatarFile) : undefined;
+      if (avatarFile && isStorageConfigured && !avatarUrl) {
+        toast.error(t`We couldn't save your photo. You can add it from Settings.`);
+      }
 
       await authClient.submitProfile({
         name: profile.name,

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -17,6 +18,7 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { type ProfileResult } from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
+import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 // The signup flow stores a placeholder email for wallets created without one.
@@ -70,6 +72,11 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
   const navigate = useNavigate();
   const updateProfile = useUpdateProfile();
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Outside the form for the same reason the picker is: the photo uploads on
+  // selection, so by submit time it is a URL and there is nothing to validate.
+  const storedAvatarUrl = profile.avatarUrl ?? null;
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(storedAvatarUrl);
+  const [avatarBusy, setAvatarBusy] = useState(false);
 
   const seededLocation = locationSchema.safeParse({
     lat: profile.geoLat,
@@ -107,6 +114,10 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 geoLng: parsed.location.lng,
               }
             : { clearLocation: true }),
+          // Sent only when it moved: an omitted key preserves whatever is
+          // stored, so a save that never touched the photo cannot disturb it.
+          // null is what the client turns into clc-core's clearAvatar flag.
+          ...(avatarUrl !== storedAvatarUrl ? { avatarUrl } : {}),
         });
         toast.success(t`Profile updated`);
         if (canGoBack) {
@@ -137,6 +148,20 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
       className="space-y-4"
     >
       <div className="space-y-4 border border-border bg-card p-4">
+        {/* Hidden rather than disabled when the upload service is not configured:
+            a control that cannot work is worse than no control. */}
+        {isStorageConfigured ? (
+          <ImageUploadField
+            label={t`Profile photo`}
+            hint={t`Optional`}
+            purpose="profile.avatar"
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            onBusyChange={setAvatarBusy}
+            disabled={updateProfile.isPending}
+          />
+        ) : null}
+
         <form.Field name="name">
           {(field) => {
             const err = getFieldError(field.state.meta.errors);
@@ -254,9 +279,15 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
 
       <form.Subscribe selector={(s) => ({ isSubmitting: s.isSubmitting, canSubmit: s.canSubmit })}>
         {({ isSubmitting, canSubmit }) => (
-          <Button type="submit" disabled={!canSubmit || isSubmitting} className="h-11 w-full">
+          // Disabled while the photo uploads, or a submit would save the URL the
+          // page held before the new file finished.
+          <Button
+            type="submit"
+            disabled={!canSubmit || isSubmitting || avatarBusy}
+            className="h-11 w-full"
+          >
             {isSubmitting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
-            {isSubmitting ? t`Saving…` : t`Save changes`}
+            {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
           </Button>
         )}
       </form.Subscribe>
