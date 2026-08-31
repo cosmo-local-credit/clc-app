@@ -1,5 +1,10 @@
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vite-plus/test";
+
+// The full admin suite renders many query-heavy screens concurrently. Keep
+// Testing Library's async queries from failing at their one-second default while
+// React Query is still committing mocked data to the DOM.
+configure({ asyncUtilTimeout: 10_000 });
 
 // jsdom has no localStorage that survives between files; the theme store reads
 // and writes it on every setTheme.

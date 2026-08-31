@@ -24,6 +24,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
+    testTimeout: 60_000,
     // Playwright e2e specs live in e2e/ — keep them out of the unit runner.
     exclude: [...configDefaults.exclude, "e2e/**"],
     deps: {

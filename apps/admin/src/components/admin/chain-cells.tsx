@@ -2,7 +2,7 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Link } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
-import { HiOutlineCheck, HiOutlineExternalLink, HiOutlineXCircle } from "react-icons/hi";
+import { HiOutlineExternalLink } from "react-icons/hi";
 import { CopyButton } from "#/components/admin/copy-button";
 import { explorerAddressUrl, explorerTxUrl } from "#/lib/explorer";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
@@ -12,8 +12,8 @@ import { cn } from "#/lib/utils";
  * The cells every chain-backed table shares.
  *
  * They live together because they are one visual grammar rather than four
- * unrelated components: an address, a transaction, an outcome and an amount are
- * the four things a row of chain activity is made of, and they have to agree on
+ * unrelated components: an address, a transaction and an amount are the things
+ * a row of chain activity is made of, and they have to agree on
  * typeface, size and colour or the row stops reading as one line.
  */
 
@@ -158,39 +158,6 @@ export function TxLink({ txHash }: { txHash: string }) {
       <HiOutlineExternalLink className="size-3 shrink-0 opacity-60" aria-hidden="true" />
       <span className="sr-only">on the block explorer</span>
     </a>
-  );
-}
-
-/**
- * Whether the chain accepted the transaction.
- *
- * A tick, not a badge. The outcome here is binary and almost always success, and
- * a full chip on every row spends the table's loudest element on its least
- * surprising fact — three hundred green badges is texture, and the one red badge
- * in the middle of it does not stand out. A quiet tick lets the failure be the
- * only marked thing on the screen, and the failure keeps its word because
- * "reverted" is what an operator is scanning for.
- *
- * The transaction index pages use `StateBadge` instead, so voucher, pool, and
- * origin transactions expose their outcome through the same table grammar.
- * This compact treatment remains useful on an account's activity tab, where a
- * status badge on every transfer would obscure the surrounding record detail.
- */
-export function TxOutcome({ success }: { success: boolean }) {
-  if (success) {
-    return (
-      <span className="text-state-active inline-flex items-center" title="Succeeded">
-        <HiOutlineCheck className="size-4" aria-hidden="true" />
-        <span className="sr-only">succeeded</span>
-      </span>
-    );
-  }
-
-  return (
-    <span className="text-destructive inline-flex items-center gap-1.5">
-      <HiOutlineXCircle className="size-4 shrink-0" aria-hidden="true" />
-      <span className="font-mono text-xs tracking-wide uppercase">reverted</span>
-    </span>
   );
 }
 
