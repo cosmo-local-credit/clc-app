@@ -28,7 +28,7 @@ describe("notification backend URL configuration", () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/vapid-public-key");
-    expect(calls[0]?.init).toMatchObject({ method: "GET" });
+    expect(calls[0]?.init).toMatchObject({ credentials: "include", method: "GET" });
   });
 
   it("falls back to VITE_API_URL", async () => {
@@ -137,7 +137,7 @@ describe("notification API wrappers", () => {
     });
 
     expect(calls[0]?.input).toBe("https://push.example/api/notifications/devices/register");
-    expect(calls[0]?.init).toMatchObject({ method: "POST" });
+    expect(calls[0]?.init).toMatchObject({ credentials: "include", method: "POST" });
     expect(header(calls[0], "Content-Type")).toBe("application/json");
     expect(await requestJson(calls[0])).toEqual({
       appVersion: "web-test",
@@ -347,6 +347,20 @@ describe("notification API error handling", () => {
         status: 404,
       });
     }
+  });
+
+  it("surfaces clc-core description errors", async () => {
+    const { fetcher } = createJsonFetcher(
+      { description: "notifications are not configured on this deployment", ok: false },
+      { status: 503 },
+    );
+
+    await expect(
+      fetchVapidPublicKey({ baseUrl: "https://api.example", fetcher }),
+    ).rejects.toMatchObject({
+      message: "notifications are not configured on this deployment",
+      status: 503,
+    });
   });
 
   it("surfaces non-JSON backend errors with status", async () => {

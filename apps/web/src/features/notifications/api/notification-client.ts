@@ -422,6 +422,7 @@ async function notificationFetch<Schema extends z.ZodType>(
   const fetcher = options.fetcher ?? fetch;
   const response = await fetcher(`${baseUrl(options)}${path}`, {
     ...init,
+    credentials: "include",
     signal: options.signal ?? init.signal,
   });
   const body = await readJsonBody(response);
@@ -466,6 +467,15 @@ function errorMessageFromBody(body: unknown): string | null {
     typeof body.error === "string"
   ) {
     return body.error;
+  }
+
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "description" in body &&
+    typeof body.description === "string"
+  ) {
+    return body.description;
   }
 
   return null;
