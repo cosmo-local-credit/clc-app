@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { HiOutlineCheck, HiOutlineExternalLink, HiOutlineXCircle } from "react-icons/hi";
 import { CopyButton } from "#/components/admin/copy-button";
-import { explorerAddressUrl, explorerTxUrl } from "#/lib/explorer";
+import { addressUrl, txUrl } from "#/lib/explorer";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 import { cn } from "#/lib/utils";
 
@@ -124,7 +124,7 @@ export function ContractAddress({ address, label }: { address: string | null; la
   return (
     <span className="inline-flex max-w-full items-center gap-1">
       <a
-        href={explorerAddressUrl(address)}
+        href={addressUrl(address)}
         target="_blank"
         rel="noreferrer"
         onClick={stopRowClick}
@@ -148,7 +148,7 @@ export function ContractAddress({ address, label }: { address: string | null; la
 export function TxLink({ txHash }: { txHash: string }) {
   return (
     <a
-      href={explorerTxUrl(txHash)}
+      href={txUrl(txHash)}
       target="_blank"
       rel="noreferrer"
       onClick={stopRowClick}

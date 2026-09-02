@@ -10,7 +10,8 @@ import {
 import { encodeAbiParameters, hexToBytes, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { CALIBUR_ADDRESS, CHAIN_ID } from "#/lib/relayer-config";
+import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getOperatorKey, type OperatorKey } from "./operator-key";
 
 /**
@@ -167,7 +168,7 @@ async function signDelegation(
   const signature = parseSignature(
     await account.sign({
       hash: eip7702AuthMessage({
-        chainId: CHAIN_ID,
+        chainId: CHAIN_ID_BIGINT,
         contractAddress: CALIBUR_ADDRESS,
         nonce: BigInt(nonce),
       }),

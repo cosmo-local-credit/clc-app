@@ -31,7 +31,7 @@ import {
 } from "#/components/ui/select";
 import { clcApi } from "#/lib/api";
 import { termFilter } from "#/lib/catalog-filter";
-import { explorerTxUrl } from "#/lib/explorer";
+import { txUrl } from "#/lib/explorer";
 import { formatDateTime } from "#/lib/format";
 import { filterSearch } from "#/lib/table-search";
 import { useDataState } from "#/lib/use-data-state";
@@ -141,7 +141,7 @@ const columns: Array<ColumnDef<AdminOTX>> = [
       }
       return (
         <a
-          href={explorerTxUrl(row.original.txHash)}
+          href={txUrl(row.original.txHash)}
           target="_blank"
           rel="noreferrer"
           className="font-data text-xs underline-offset-4 hover:underline"

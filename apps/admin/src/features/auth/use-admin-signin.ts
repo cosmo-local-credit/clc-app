@@ -13,11 +13,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { privateKeySigner, signInWithSiwe, type SiweRequest } from "@clc/api/features/auth/siwe";
 import { clcApi } from "#/lib/api";
+import { CHAIN_ID } from "#/lib/chain";
 import { adminSessionQueryKey, clearProtectedQueries } from "./admin-session";
 import { useOperatorKeyStore } from "./operator-key";
 import { collectAdminAssertion } from "./webauthn-assertion";
-
-const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
 function siweRequest(): SiweRequest {
   return {

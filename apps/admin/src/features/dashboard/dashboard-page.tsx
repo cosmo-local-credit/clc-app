@@ -28,7 +28,12 @@ import {
   formatSeriesTick,
   formatSeriesTooltip,
 } from "#/lib/time-range";
-import { formatRelayerGas, RELAYER_GAS_FLOOR_WEI, relayerGasTone } from "./relayer-gas";
+import {
+  formatRelayerGas,
+  RELAYER_GAS_FLOOR_LABEL,
+  RELAYER_GAS_FLOOR_WEI,
+  relayerGasTone,
+} from "./relayer-gas";
 import { useDashboardStats, useRelayerGas } from "./use-dashboard-metrics";
 
 const catalogChartConfig = {
@@ -122,7 +127,11 @@ export function DashboardPage({
           value={gasAvailable ? formatRelayerGas(gasQuery.data?.wei ?? "0") : "—"}
           unavailable={!gasAvailable}
           tone={gasAvailable ? relayerGasTone(gasWei) : "muted"}
-          detail={gasAvailable && gasWei < RELAYER_GAS_FLOOR_WEI ? "below 10 CELO" : undefined}
+          detail={
+            gasAvailable && gasWei < RELAYER_GAS_FLOOR_WEI
+              ? `below ${RELAYER_GAS_FLOOR_LABEL}`
+              : undefined
+          }
           icon={<HiOutlineLightningBolt />}
         />
         <MetricCard
