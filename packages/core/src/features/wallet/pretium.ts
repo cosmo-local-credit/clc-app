@@ -32,6 +32,17 @@ const PRETIUM_OFFRAMP: Record<
   },
 };
 
+/**
+ * Whether Pretium's MPESA ramps are wired up on this chain at all.
+ *
+ * Both directions ride the same deployment, so a chain with no offramp has no
+ * onramp either: the entry points are hidden rather than shown and then failing
+ * on every call to a service that is not there.
+ */
+export function chainHasPretiumRamp(chainId: number): boolean {
+  return PRETIUM_OFFRAMP[chainId] !== undefined;
+}
+
 /** The offramp recipient for a chain, or undefined where there is no offramp. */
 export function pretiumOfframpRecipient(chainId: number): `0x${string}` | undefined {
   return PRETIUM_OFFRAMP[chainId]?.recipient;
