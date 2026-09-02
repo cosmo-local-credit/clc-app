@@ -1,4 +1,8 @@
-# Cloudflare Pages project for the admin console.
+# Cloudflare Pages project for the admin console on **Gnosis**.
+#
+# See the header of the root wrangler.toml for why the Gnosis deploy is a branch
+# rather than a directory. This file and that one are the only two on
+# `sohail/gnosis` that must never reach master.
 #
 # A separate project from apps/web on purpose. A Pages project has one build
 # output directory, and serving the console from a path on the app's origin would
@@ -6,6 +10,7 @@
 # intercept anything here.
 #
 # The deploy is Git-connected, with these dashboard build settings:
+#   Production branch        sohail/gnosis
 #   Root directory           apps/admin      <- must be this, not the repo root
 #   Build command            pnpm build
 #   Build output directory   dist
@@ -14,20 +19,20 @@
 # a Wrangler config from the project's root directory, and that config supplies the
 # asset output directory and the build environment variables. Left at the repository
 # root, the platform reads ../../wrangler.toml, takes `apps/web/dist` and apps/web's
-# eleven vars, and fails the deploy after an otherwise successful build with
+# vars, and fails the deploy after an otherwise successful build with
 # `Output directory "apps/web/dist" not found`.
 #
 # THIS FILE IS ALSO WHAT SEPARATES THE TWO PROJECTS AT BUILD TIME. Nitro resolves a
 # Wrangler config from the build's working directory; delete this and the resolution
-# walks up to the root config, generating a worker named "clc-app" carrying every one
-# of apps/web's vars. Verified by building with and without it.
+# walks up to the root config, generating a worker named "clc-app-gnosis" carrying
+# every one of apps/web's vars. Verified by building with and without it.
 #
 # It seeds the config the deploy actually uses, which Nitro generates at
 # dist/_worker.js/wrangler.json — hence the build-time warning that
 # `pages_build_output_dir` is overridden and ignored. That key is kept anyway
 # because Wrangler requires it in a Pages config, and a manual
 # `wrangler pages deploy -c apps/admin/wrangler.toml` reads it relative to here.
-name = "clc-admin"
+name = "clc-admin-gnosis"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
@@ -40,44 +45,49 @@ compatibility_flags = ["nodejs_compat"]
 # It does relay operator batches, so it needs a Calibur address — but that comes
 # from the chain table in @clc/core, keyed by VITE_CHAIN_ID, and only a deployment
 # whose clc-core points at a different implementation sets VITE_CALIBUR_ADDRESS.
+# Chain 100's entry matches this stack's CORE_RELAYER__CALIBUR_ADDRESS.
 #
 # VITE_STORAGE_URL is the image upload service, shared with apps/web: the browser
 # posts multipart uploads straight to it, carrying the clc-core session token in an
 # Authorization header. Its own origin allowlist must include this console's hosts
-# (api.origin in the storage service's config) or the preflight fails while every
+# (STORAGE_API__ORIGIN on the clc-gnosis box) or the preflight fails while every
 # other request on the page succeeds.
 #
 # VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves both
 # — and the account's allowed-origins list must include this console's hosts
-# (admin.cosmolocal.credit and the pages.dev previews) or tiles 403 while everything
-# else on the page works.
+# (admin.gnosis.cosmolocal.credit and the pages.dev previews) or tiles 403 while
+# everything else on the page works.
 [vars]
-VITE_API_URL = "https://staging.cosmolocal.credit"
-VITE_CHAIN_ID = "42220"
+VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
+VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
-VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
-# The registrable domain, not this host: a passkey is bound to the relying party it
-# was registered under, so scoping it to the parent is what lets one credential work
-# on app.cosmolocal.credit and admin.cosmolocal.credit alike. apps/web carries the
-# same value. A scheme would be stripped by `new URL(value).hostname`, so https:// is
-# optional.
+VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
+VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+# The Gnosis subtree, not this host: a passkey is bound to the relying party it was
+# registered under, so scoping it to the parent is what lets one credential work on
+# app.gnosis.cosmolocal.credit and admin.gnosis.cosmolocal.credit alike. apps/web
+# carries the same value. A scheme would be stripped by `new URL(value).hostname`,
+# so https:// is optional.
+#
+# Not `cosmolocal.credit`: that parent is shared with the Celo apps, whose clc-core
+# holds different credentials, so a passkey offered there would fail against this
+# backend.
 #
 # The backend does not verify it — clc-core loads `relayer.relying_party_id` and
 # never reads it; the assertion check compares `clientDataJSON.origin` against
 # `relayer.allowed_origins`, which is where this console's origins must be added,
 # scheme included.
-VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+VITE_RELYING_PARTY_ID = "gnosis.cosmolocal.credit"
 
 # Preview deploys keep their own relying party, for the same reason as apps/web:
-# `cosmolocal.credit` is not a suffix of any *.pages.dev host and would be ignored
-# there, leaving each branch on its own hostname. Every key is repeated because
-# `vars` is non-inheritable — overriding it for an environment without restating the
-# rest fails validation at deploy time.
+# `gnosis.cosmolocal.credit` is not a suffix of any *.pages.dev host and would be
+# ignored there, leaving each branch on its own hostname. Every key is repeated
+# because `vars` is non-inheritable — overriding it for an environment without
+# restating the rest fails validation at deploy time.
 [env.preview.vars]
-VITE_API_URL = "https://staging.cosmolocal.credit"
-VITE_CHAIN_ID = "42220"
+VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
+VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
-VITE_RELAYER_URL = "https://staging.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
-VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"
+VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
+VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_RELYING_PARTY_ID = "clc-admin-gnosis.pages.dev"
