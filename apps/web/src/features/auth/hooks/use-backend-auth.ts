@@ -12,9 +12,8 @@ import {
 } from "@clc/api/features/auth/siwe";
 import { wagmiConfig } from "#/providers/web3-config";
 import { authClient } from "#/lib/api/auth";
+import { CHAIN_ID } from "#/lib/chain";
 import { isStorageConfigured, storageClient } from "#/lib/api/storage";
-
-const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
 
 export type BackendSignupInput = {
   profile: ProfileInput;

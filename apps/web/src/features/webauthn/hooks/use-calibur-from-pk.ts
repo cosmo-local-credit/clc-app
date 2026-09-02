@@ -20,11 +20,10 @@ import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { assertWebAuthnSupported } from "#/features/webauthn/hooks/browser-support";
 import { createWebAuthnPasskey } from "#/features/webauthn/hooks/credential";
 import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
+import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
-const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
-  "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
-const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 const RELYING_PARTY_NAME = import.meta.env.VITE_RELYING_PARTY_NAME ?? "CLC";
 
@@ -98,7 +97,7 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
         result: { nonce: nonceStr },
       } = await client.getEOANonce(account.address);
       const authMsg = eip7702AuthMessage({
-        chainId: CHAIN_ID,
+        chainId: CHAIN_ID_BIGINT,
         contractAddress: CALIBUR_ADDRESS,
         nonce: BigInt(nonceStr),
       });
@@ -157,7 +156,12 @@ export function useCaliburFromPk(pk: `0x${string}`, client: RelayerClient) {
         deadline: "0",
       };
 
-      const digest = computeEIP712Digest(signedBatch, account.address, CALIBUR_ADDRESS, CHAIN_ID);
+      const digest = computeEIP712Digest(
+        signedBatch,
+        account.address,
+        CALIBUR_ADDRESS,
+        CHAIN_ID_BIGINT,
+      );
       const rawSig = await account.sign({
         hash: `0x${Array.from(digest, (b) => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`,
       });
