@@ -33,9 +33,13 @@ compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
 # Only the six variables this app reads. Deliberately not copied wholesale from
-# the web project: the console has no Calibur wallet, no paper-wallet origin and no
-# RPC, and it never *registers* a passkey — only asserts one — so it needs no
-# relying-party name. An unused key here would imply otherwise.
+# the web project: the console has no paper-wallet origin and no RPC, and it never
+# *registers* a passkey — only asserts one — so it needs no relying-party name. An
+# unused key here would imply otherwise.
+#
+# It does relay operator batches, so it needs a Calibur address — but that comes
+# from the chain table in @clc/core, keyed by VITE_CHAIN_ID, and only a deployment
+# whose clc-core points at a different implementation sets VITE_CALIBUR_ADDRESS.
 #
 # VITE_STORAGE_URL is the image upload service, shared with apps/web: the browser
 # posts multipart uploads straight to it, carrying the clc-core session token in an

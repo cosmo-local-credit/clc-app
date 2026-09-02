@@ -23,6 +23,13 @@ export type ChainMetadata = {
   explorerUrl: string;
   /** What to call that explorer on a button that opens it. */
   explorerName: string;
+  /**
+   * The Calibur implementation an EOA delegates to under EIP-7702 on this
+   * chain, where one is deployed. It is a property of the chain, not of the
+   * app, and it must match clc-core's `relayer.calibur_address` for that
+   * deployment or the relayer rejects every batch as undelegated.
+   */
+  caliburAddress?: `0x${string}`;
 };
 
 const CHAIN_METADATA = {
@@ -31,6 +38,7 @@ const CHAIN_METADATA = {
     nativeSymbol: "CELO",
     explorerUrl: "https://celoscan.io",
     explorerName: "Celoscan",
+    caliburAddress: "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85",
   },
   [CELO_ALFAJORES_CHAIN_ID]: {
     name: "Alfajores",
@@ -43,6 +51,7 @@ const CHAIN_METADATA = {
     nativeSymbol: "xDAI",
     explorerUrl: "https://gnosisscan.io",
     explorerName: "Gnosisscan",
+    caliburAddress: "0x48A910C8e9FF0b14051b78d0c96dB069E57f0729",
   },
 } as const satisfies Record<number, ChainMetadata>;
 
