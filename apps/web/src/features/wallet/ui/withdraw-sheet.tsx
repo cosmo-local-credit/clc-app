@@ -3,7 +3,7 @@ import {
   formatTokenAmountFixed,
   parseTokenAmount,
 } from "@clc/core/features/wallet/logic";
-import { offrampTokenSymbol, PRETIUM_OFFRAMP_RECIPIENT } from "@clc/core/features/wallet/pretium";
+import { offrampTokenSymbol, pretiumOfframpRecipient } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -34,6 +34,7 @@ import {
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { CHAIN_ID } from "#/lib/chain";
 import { cn } from "#/lib/utils";
 
 /** KES cash amounts are whole shillings only. */
@@ -59,6 +60,10 @@ export function WithdrawSheet({
   const { t } = useLingui();
   const queryClient = useQueryClient();
 
+  // Undefined on a chain with no offramp wired up, which also leaves `eligible`
+  // empty — there is then nothing to select and nothing to send.
+  const offrampRecipient = pretiumOfframpRecipient(CHAIN_ID);
+
   const ratesQuery = usePretiumRates(open);
   const buyRate = Number(ratesQuery.data?.buy);
   const hasRate = ratesQuery.isSuccess && Number.isFinite(buyRate) && buyRate > 0;
@@ -74,7 +79,7 @@ export function WithdrawSheet({
   const eligible = useMemo(() => {
     const all = tokensQuery.data?.pages.flatMap((page) => page.tokens) ?? [];
     return all.flatMap((token) => {
-      const symbol = offrampTokenSymbol(token.tokenAddress);
+      const symbol = offrampTokenSymbol(CHAIN_ID, token.tokenAddress);
       if (!symbol || BigInt(token.balance) <= 0n) return [];
       return [{ token, symbol }];
     });
@@ -142,7 +147,7 @@ export function WithdrawSheet({
   };
 
   const onWithdraw = async () => {
-    if (!address || !selected || !hasValidAmount) return;
+    if (!address || !selected || !hasValidAmount || !offrampRecipient) return;
     // Reverse the whole-shilling KES amount through the buy rate. MAX also uses
     // the trimmed whole KES value, so the displayed KES amount and signed token
     // amount stay consistent.
@@ -154,7 +159,7 @@ export function WithdrawSheet({
       await sendTransfer.mutateAsync({
         senderAddress: address,
         tokenAddress: selected.token.tokenAddress as `0x${string}`,
-        recipientAddress: PRETIUM_OFFRAMP_RECIPIENT as `0x${string}`,
+        recipientAddress: offrampRecipient,
         amountRaw,
         includeAuthorization: delegation === "not-delegated",
       });
