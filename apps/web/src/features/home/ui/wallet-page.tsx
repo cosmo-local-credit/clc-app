@@ -1,3 +1,4 @@
+import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { RiBankCardLine, RiDownloadLine, RiGroupLine, RiSendPlane2Line } from "react-icons/ri";
@@ -6,10 +7,13 @@ import { Button } from "#/components/ui/button";
 import { SectionHeader, TokenLogo } from "#/components/wallet";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { CHAIN_ID } from "#/lib/chain";
 
 export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
+  // Pretium's ramps exist only on the chains its worker watches; elsewhere the
+  // tile would lead to a screen that can do nothing.
   const actions = [
     { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
@@ -19,7 +23,17 @@ export function WalletPage({ address }: { address?: string }) {
       variant: "outline",
       to: "/wallet/receive",
     },
-    { id: "topup", label: t`Cash`, icon: RiBankCardLine, variant: "outline", to: "/wallet/top-up" },
+    ...(chainHasPretiumRamp(CHAIN_ID)
+      ? ([
+          {
+            id: "topup",
+            label: t`Cash`,
+            icon: RiBankCardLine,
+            variant: "outline",
+            to: "/wallet/top-up",
+          },
+        ] as const)
+      : []),
     { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
