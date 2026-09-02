@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 import { CELO_MAINNET_CHAIN_ID } from "../../lib/constants/celo";
+import { GNOSIS_MAINNET_CHAIN_ID } from "../../lib/constants/gnosis";
 import {
+  chainHasPoolOracle,
   getPoolDeploymentStages,
   type PoolCreateInput,
-  poolCreateSchema,
+  poolCreateSchemaForChain,
   poolDeploymentContractCount,
   PoolOracleUnavailableError,
   poolUnitSchemaForPricing,
@@ -35,6 +37,15 @@ const validPool: PoolCreateInput = {
 
 const OWNER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 
+const poolCreateSchema = poolCreateSchemaForChain(CELO_MAINNET_CHAIN_ID);
+
+describe("chainHasPoolOracle", () => {
+  it("is true only where a base currency is configured", () => {
+    expect(chainHasPoolOracle(CELO_MAINNET_CHAIN_ID)).toBe(true);
+    expect(chainHasPoolOracle(GNOSIS_MAINNET_CHAIN_ID)).toBe(false);
+  });
+});
+
 describe("poolCreateSchema", () => {
   it("accepts the price-feed defaults", () => {
     expect(poolCreateSchema.safeParse(validPool).success).toBe(true);
@@ -61,6 +72,13 @@ describe("poolCreateSchema", () => {
     expect(schema.safeParse("HOUR").error?.issues[0]?.message).toBe(
       "Choose rates you set or equal value when the unit has no price feed",
     );
+  });
+
+  it("refuses price-feed pricing on a chain with no base currency at all", () => {
+    const gnosisSchema = poolCreateSchemaForChain(GNOSIS_MAINNET_CHAIN_ID);
+
+    expect(gnosisSchema.safeParse(validPool).success).toBe(false);
+    expect(gnosisSchema.safeParse({ ...validPool, pricing: "decimal" }).success).toBe(true);
   });
 
   it("allows HOUR for pool pricing that does not need a base currency", () => {

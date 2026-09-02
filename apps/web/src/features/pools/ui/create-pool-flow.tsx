@@ -3,7 +3,8 @@ import {
   type PoolCreateInput,
   PoolOracleUnavailableError,
   type PoolPricing,
-  poolCreateSchema,
+  chainHasPoolOracle,
+  poolCreateSchemaForChain,
   poolDeploymentContractCount,
   poolDescriptionSchema,
   poolNameSchema,
@@ -99,6 +100,12 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const navigate = useNavigate();
   const router = useRouter();
   const { address, chainId } = useConnection();
+  // Pre-connect the form still has to validate, so it assumes the chain this
+  // build was configured for — which is the one the wallet will connect to.
+  const activeChainId = chainId ?? CHAIN_ID;
+  const hasOracle = chainHasPoolOracle(activeChainId);
+  const defaultPricing: PoolPricing = hasOracle ? "oracle" : "decimal";
+  const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
   const deployPool = useDeployPool();
   const tagsQuery = useTokenTags();
   const profileQuery = useAuthProfile();
@@ -109,7 +116,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
   const form = useForm({
-    defaultValues: draft ?? DEFAULT_VALUES,
+    defaultValues: draft ?? { ...DEFAULT_VALUES, pricing: defaultPricing },
     validators: { onSubmit: poolCreateSchema },
     onSubmit: async ({ value }) => {
       if (!address || chainId === undefined) {
@@ -284,8 +291,8 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   <form.Field
                     name="unit"
                     validators={{
-                      onBlur: poolUnitSchemaForPricing(pricing, chainId ?? CHAIN_ID),
-                      onSubmit: poolUnitSchemaForPricing(pricing, chainId ?? CHAIN_ID),
+                      onBlur: poolUnitSchemaForPricing(pricing, activeChainId),
+                      onSubmit: poolUnitSchemaForPricing(pricing, activeChainId),
                     }}
                   >
                     {(field) => (
@@ -369,16 +376,19 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                           aria-label={t`Pricing`}
                           className="gap-2.5"
                         >
-                          <PricingOption
-                            value="oracle"
-                            title={t`Price feed`}
-                            description={t`Follows the selected unit's feed`}
-                            isDefault
-                          />
+                          {hasOracle ? (
+                            <PricingOption
+                              value="oracle"
+                              title={t`Price feed`}
+                              description={t`Follows the selected unit's feed`}
+                              isDefault
+                            />
+                          ) : null}
                           <PricingOption
                             value="decimal"
                             title={t`Equal value`}
                             description={t`Vouchers swap one for one`}
+                            isDefault={!hasOracle}
                           />
                         </RadioGroup>
                       </div>
