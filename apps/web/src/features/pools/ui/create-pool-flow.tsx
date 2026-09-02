@@ -20,7 +20,6 @@ import {
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
-import { CELO_MAINNET_CHAIN_ID } from "@clc/core/lib/constants/celo";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -55,6 +54,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { CHAIN_ID } from "#/lib/chain";
 import {
   beginPoolCreateHistory,
   exitPoolCreateHistory,
@@ -284,8 +284,8 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   <form.Field
                     name="unit"
                     validators={{
-                      onBlur: poolUnitSchemaForPricing(pricing, chainId ?? CELO_MAINNET_CHAIN_ID),
-                      onSubmit: poolUnitSchemaForPricing(pricing, chainId ?? CELO_MAINNET_CHAIN_ID),
+                      onBlur: poolUnitSchemaForPricing(pricing, chainId ?? CHAIN_ID),
+                      onSubmit: poolUnitSchemaForPricing(pricing, chainId ?? CHAIN_ID),
                     }}
                   >
                     {(field) => (
