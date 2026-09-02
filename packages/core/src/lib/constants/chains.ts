@@ -21,6 +21,8 @@ export type ChainMetadata = {
   nativeSymbol: string;
   /** Block explorer origin, no trailing slash. */
   explorerUrl: string;
+  /** What to call that explorer on a button that opens it. */
+  explorerName: string;
 };
 
 const CHAIN_METADATA = {
@@ -28,16 +30,19 @@ const CHAIN_METADATA = {
     name: "Celo",
     nativeSymbol: "CELO",
     explorerUrl: "https://celoscan.io",
+    explorerName: "Celoscan",
   },
   [CELO_ALFAJORES_CHAIN_ID]: {
     name: "Alfajores",
     nativeSymbol: "CELO",
     explorerUrl: "https://alfajores.celoscan.io",
+    explorerName: "Celoscan",
   },
   [GNOSIS_MAINNET_CHAIN_ID]: {
     name: "Gnosis",
     nativeSymbol: "xDAI",
     explorerUrl: "https://gnosisscan.io",
+    explorerName: "Gnosisscan",
   },
 } as const satisfies Record<number, ChainMetadata>;
 

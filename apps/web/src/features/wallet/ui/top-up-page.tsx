@@ -34,6 +34,8 @@ import {
   usePretiumRates,
 } from "#/features/wallet/hooks/use-pretium";
 import { cn } from "#/lib/utils";
+import { CHAIN_ID } from "#/lib/chain";
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { WithdrawSheet } from "./withdraw-sheet";
 
 // We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
@@ -527,7 +529,7 @@ function OnrampDetailsSheet({
   const { t } = useLingui();
   const isComplete = onramp ? isCompletePretiumStatus(onramp.status) : false;
   const hasTxHash = !!onramp?.txHash;
-  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${onramp?.txHash}` : "#";
+  const explorerUrl = (hasTxHash ? explorerTxUrl(CHAIN_ID, onramp?.txHash ?? "") : null) ?? "#";
 
   const copyPretiumId = (value: string) => {
     if (!navigator.clipboard) {
@@ -638,7 +640,7 @@ function OfframpDetailsSheet({
   const isComplete = offramp ? isCompletePretiumStatus(offramp.status) : false;
   const hasTxHash = !!offramp?.txHash;
   const hasMpesaConfirmation = !!offramp?.mpesaConfirmation;
-  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${offramp?.txHash}` : "#";
+  const explorerUrl = (hasTxHash ? explorerTxUrl(CHAIN_ID, offramp?.txHash ?? "") : null) ?? "#";
 
   const copyPretiumId = (value: string) => {
     if (!navigator.clipboard) {

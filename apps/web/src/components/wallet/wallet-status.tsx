@@ -11,15 +11,18 @@ import {
 import { Trans } from "@lingui/react/macro";
 import { Badge } from "#/components/ui/badge";
 import { cn } from "#/lib/utils";
+import { CHAIN_INFO } from "#/lib/chain";
 
 export function NetworkBadge({ className }: { className?: string }) {
+  const chainName = CHAIN_INFO.name;
+
   return (
     <Badge
       variant="muted"
       className={cn("h-auto gap-1.5 bg-card px-2 py-0.5 text-xs normal-case", className)}
     >
       <span className="size-2 rounded-full bg-primary" />
-      <Trans>Celo network</Trans>
+      <Trans>{chainName} network</Trans>
     </Badge>
   );
 }
