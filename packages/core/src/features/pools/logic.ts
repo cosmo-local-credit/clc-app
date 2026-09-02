@@ -79,14 +79,28 @@ export type PoolQuoterType = z.infer<typeof poolQuoterTypeSchema>;
 
 export const POOL_QUOTER_TYPES = poolQuoterTypeSchema.options;
 
-const CELO_MAINNET_ORACLE_BASE_CURRENCY = {
-  KES: CELO_MAINNET_CKES_ADDRESS,
-  USD: CELO_MAINNET_CUSD_ADDRESS,
-} as const satisfies Partial<Record<PoolUnit, string>>;
+/**
+ * The token an OracleQuoter prices a pool's unit against, per chain.
+ *
+ * A unit is offered for oracle pricing only where the chain has a stable whose
+ * feed the quoter can read. Celo has Mento's; a chain absent from this table
+ * has none, so oracle pricing is refused there rather than deploying a quoter
+ * with a base currency that does not exist.
+ */
+const POOL_ORACLE_BASE_CURRENCY: Record<number, Partial<Record<PoolUnit, string>>> = {
+  [CELO_MAINNET_CHAIN_ID]: {
+    KES: CELO_MAINNET_CKES_ADDRESS,
+    USD: CELO_MAINNET_CUSD_ADDRESS,
+  },
+};
 
 function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | undefined {
-  if (chainId !== CELO_MAINNET_CHAIN_ID) return undefined;
-  return CELO_MAINNET_ORACLE_BASE_CURRENCY[unit as keyof typeof CELO_MAINNET_ORACLE_BASE_CURRENCY];
+  return POOL_ORACLE_BASE_CURRENCY[chainId]?.[unit];
+}
+
+/** Whether any unit at all can be oracle-priced on this chain. */
+export function chainHasPoolOracle(chainId: number): boolean {
+  return Object.keys(POOL_ORACLE_BASE_CURRENCY[chainId] ?? {}).length > 0;
 }
 
 function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
@@ -100,39 +114,45 @@ export function poolUnitSchemaForPricing(pricing: PoolPricing, chainId: number) 
   );
 }
 
-export const poolCreateSchema = z
-  .object({
-    name: poolNameSchema,
-    symbol: poolSymbolSchema,
-    unit: poolUnitSchema,
-    description: poolDescriptionSchema,
-    pricing: poolPricingSchema,
-    feePolicyDefault: poolSwapFeeSchema,
-    feesDecoupled: z.boolean(),
-    location: locationSchema,
-    tags: z.array(z.string()),
-    email: optionalEmailSchema,
-    website: optionalWebsiteSchema,
-    phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
-    acceptedTerms: poolTermsSchema,
-    acceptedSproutLicense: poolSproutLicenseSchema,
-  })
-  .superRefine((value, ctx) => {
-    if (
-      value.pricing !== "oracle" ||
-      hasPoolOracleBaseCurrency(value.unit, CELO_MAINNET_CHAIN_ID)
-    ) {
-      return;
-    }
-    ctx.addIssue({
-      code: "custom",
-      path: ["unit"],
-      message: "Choose rates you set or equal value when the unit has no price feed",
+/**
+ * Takes the chain because the unit check depends on it: which units can be
+ * oracle-priced is a property of what is deployed on the chain being published
+ * to. It used to be fixed at Celo mainnet here while `poolUnitSchemaForPricing`
+ * and `toPoolDeployPayload` were both given the connected chain, so on any other
+ * chain the form accepted a unit that the payload builder then threw on.
+ */
+export function poolCreateSchemaForChain(chainId: number) {
+  return z
+    .object({
+      name: poolNameSchema,
+      symbol: poolSymbolSchema,
+      unit: poolUnitSchema,
+      description: poolDescriptionSchema,
+      pricing: poolPricingSchema,
+      feePolicyDefault: poolSwapFeeSchema,
+      feesDecoupled: z.boolean(),
+      location: locationSchema,
+      tags: z.array(z.string()),
+      email: optionalEmailSchema,
+      website: optionalWebsiteSchema,
+      phone: optionalPhoneSchema,
+      terms: optionalTermsUrlSchema,
+      acceptedTerms: poolTermsSchema,
+      acceptedSproutLicense: poolSproutLicenseSchema,
+    })
+    .superRefine((value, ctx) => {
+      if (value.pricing !== "oracle" || hasPoolOracleBaseCurrency(value.unit, chainId)) {
+        return;
+      }
+      ctx.addIssue({
+        code: "custom",
+        path: ["unit"],
+        message: "Choose rates you set or equal value when the unit has no price feed",
+      });
     });
-  });
+}
 
-export type PoolCreateInput = z.infer<typeof poolCreateSchema>;
+export type PoolCreateInput = z.infer<ReturnType<typeof poolCreateSchemaForChain>>;
 
 export type PoolDeployPayload = {
   name: string;
