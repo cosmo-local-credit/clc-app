@@ -342,20 +342,55 @@ Admin's dev port lives in `apps/admin/vite.config.ts` as
 `vp dev apps/admin` from the root silently takes `apps/web`'s 3000, and both
 allowlists above name the port.
 
+### The `sohail/gnosis` branch — a second chain, not a second app
+
+This branch deploys the same two apps against the **Gnosis** stack (chain 100)
+on the `clc-gnosis` box. Everything in it is chain-agnostic and belongs on
+master **except the two Wrangler files**, which rename the Pages projects:
+
+|                            | master (Celo) | `sohail/gnosis`    |
+| -------------------------- | ------------- | ------------------ |
+| `wrangler.toml`            | `clc-app`     | `clc-app-gnosis`   |
+| `apps/admin/wrangler.toml` | `clc-admin`   | `clc-admin-gnosis` |
+
+It is a branch rather than a directory because Pages resolves one Wrangler
+config per root directory and that file's `name` binds it to one project, so
+the two configs must occupy the same paths. **Merging those two files to master
+renames the Celo projects out from under themselves.**
+
+Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
+`#/lib/chain` and validated at boot. The chain's name, gas symbol, explorer and
+Calibur implementation come from the table in
+`@clc/core/lib/constants/chains`; per-chain token addresses (pool oracle base
+currencies, Pretium ramp) sit beside the feature that reads them. Nothing else
+may read `VITE_CHAIN_ID`, and no new `?? "42220"` — a module that defaults on
+its own is how the wagmi config ended up signing against Celo while the SIWE
+request claimed another chain.
+
+Backend for this branch (`~/gnosis` on the `clc-gnosis` host):
+`https://gnosis-staging.cosmolocal.credit` (clc-core) and
+`https://gnosis-storage.cosmolocal.credit` (uploads, sharing Celo's R2 bucket
+and CDN). Each frontend origin must appear in that box's `CORE_API__CORS`,
+`CORE_RELAYER__ALLOWED_ORIGINS` and `STORAGE_API__ORIGIN`.
+
 ### Deployment — two Cloudflare Pages projects
 
-|              | Project     | Config                     | Host                      |
-| ------------ | ----------- | -------------------------- | ------------------------- |
-| `apps/web`   | `clc-app`   | `wrangler.toml` (root)     | `app.cosmolocal.credit`   |
-| `apps/admin` | `clc-admin` | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit` |
+On this branch (the Celo equivalents, `clc-app` / `clc-admin`, live on master):
+
+|              | Project            | Config                     | Host                             |
+| ------------ | ------------------ | -------------------------- | -------------------------------- |
+| `apps/web`   | `clc-app-gnosis`   | `wrangler.toml` (root)     | `app.gnosis.cosmolocal.credit`   |
+| `apps/admin` | `clc-admin-gnosis` | `apps/admin/wrangler.toml` | `admin.gnosis.cosmolocal.credit` |
 
 Both deploy from Git. The dashboard build settings are **not** symmetric, and the
 asymmetry is load-bearing:
 
-| Project     | Root directory | Build command                  | Output dir      |
-| ----------- | -------------- | ------------------------------ | --------------- |
-| `clc-app`   | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
-| `clc-admin` | `apps/admin`   | `pnpm build`                   | `dist`          |
+| Project            | Root directory | Build command                  | Output dir      |
+| ------------------ | -------------- | ------------------------------ | --------------- |
+| `clc-app-gnosis`   | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
+| `clc-admin-gnosis` | `apps/admin`   | `pnpm build`                   | `dist`          |
+
+Production branch for both: `sohail/gnosis`.
 
 **Admin's root directory must be `apps/admin`.** Two different things read a
 Wrangler config and they resolve it from different places:
