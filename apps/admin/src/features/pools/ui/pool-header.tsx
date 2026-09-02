@@ -12,7 +12,7 @@ import { CopyButton } from "#/components/admin/copy-button";
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/ui/avatar";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
-import { chainLabel, explorerAddressUrl } from "#/lib/explorer";
+import { chainLabel, addressUrl } from "#/lib/explorer";
 import { cn } from "#/lib/utils";
 import { formatDateTime, initials } from "#/lib/format";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
@@ -88,7 +88,7 @@ export function PoolHeader({
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <a
-            href={explorerAddressUrl(pool.address)}
+            href={addressUrl(pool.address)}
             target="_blank"
             rel="noreferrer"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}

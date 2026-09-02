@@ -26,5 +26,3 @@ export const relayerClient = createRelayerClient(RELAYER_URL);
  */
 export const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
   "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
-
-export const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
