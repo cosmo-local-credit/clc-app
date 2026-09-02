@@ -16,7 +16,7 @@ import {
 } from "#/components/ui/sheet";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
-import { CHAIN_ID } from "#/lib/chain";
+import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { EllipsizedAddress } from "./wallet-address";
 
@@ -44,7 +44,7 @@ export function TransferDetailsSheet({
   const badge = transfer?.direction === "IN" ? t`Received voucher` : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
   const transferDate = transfer ? formatTransferDate(transfer.dateBlock) : "";
-  const explorerUrl = (transfer ? explorerTxUrl(CHAIN_ID, transfer.txHash) : null) ?? "#";
+  const explorerUrl = transfer ? explorerTxUrl(CHAIN_INFO, transfer.txHash) : "#";
   const shareQuery = useSendShare(transfer?.txHash ?? null, open && transfer?.success === true);
 
   return (
