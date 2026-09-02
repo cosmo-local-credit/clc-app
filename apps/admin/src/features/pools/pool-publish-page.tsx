@@ -10,6 +10,7 @@ import {
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import {
   CELO_MAINNET_CEUR_ADDRESS,
+  CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
   CELO_MAINNET_CUSD_ADDRESS,
   CELO_MAINNET_CZAR_ADDRESS,
@@ -40,10 +41,37 @@ import { Textarea } from "#/components/ui/textarea";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { useAdminSession } from "#/features/auth/admin-session";
 import { clcApi } from "#/lib/api";
+import { CHAIN_ID } from "#/lib/chain";
 import { isStorageConfigured } from "#/lib/storage";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { usePoolPublishDeployment } from "./use-pool-publish-deployment";
+
+const ORACLE_BASE_CODES = ["KES", "USD", "BAM", "BTN", "EUR", "INR", "ZAR"] as const;
+
+type OracleBase = (typeof ORACLE_BASE_CODES)[number];
+
+const ORACLE_OPTIONS = ORACLE_BASE_CODES.map((value) => ({ value, label: value }));
+
+/**
+ * The token an OracleQuoter prices against, per chain and per currency.
+ *
+ * Celo's are Mento's. A chain absent from this table has no feed the quoter can
+ * read, so oracle pricing is not offered there at all — the alternative is a
+ * console that lists it, takes a full form, and refuses at the last field.
+ */
+const ORACLE_BASES: Record<number, Partial<Record<OracleBase, string>>> = {
+  [CELO_MAINNET_CHAIN_ID]: {
+    KES: CELO_MAINNET_CKES_ADDRESS,
+    USD: CELO_MAINNET_CUSD_ADDRESS,
+    EUR: CELO_MAINNET_CEUR_ADDRESS,
+    ZAR: CELO_MAINNET_CZAR_ADDRESS,
+  },
+};
+
+const CHAIN_ORACLE_BASES = ORACLE_BASES[CHAIN_ID] ?? {};
+
+const HAS_ORACLE_BASES = Object.keys(CHAIN_ORACLE_BASES).length > 0;
 
 /**
  * "Managed rates" — the RelativeQuoter — is deliberately gone. It prices from
@@ -53,29 +81,16 @@ import { usePoolPublishDeployment } from "./use-pool-publish-deployment";
  * one, so pools already on it keep working and keep reading back correctly.
  */
 const PRICING_OPTIONS = [
-  { value: "oracle", label: "Oracle rates" },
-  { value: "decimal", label: "Equal value" },
-] as const;
-
-const ORACLE_BASE_CODES = ["KES", "USD", "BAM", "BTN", "EUR", "INR", "ZAR"] as const;
-
-type OracleBase = (typeof ORACLE_BASE_CODES)[number];
-
-const ORACLE_OPTIONS = ORACLE_BASE_CODES.map((value) => ({ value, label: value }));
-
-const ORACLE_BASES = {
-  KES: CELO_MAINNET_CKES_ADDRESS,
-  USD: CELO_MAINNET_CUSD_ADDRESS,
-  EUR: CELO_MAINNET_CEUR_ADDRESS,
-  ZAR: CELO_MAINNET_CZAR_ADDRESS,
-} as const satisfies Partial<Record<OracleBase, string>>;
+  ...(HAS_ORACLE_BASES ? [{ value: "oracle" as const, label: "Oracle rates" }] : []),
+  { value: "decimal" as const, label: "Equal value" },
+];
 
 function isOracleBase(value: string): value is OracleBase {
   return (ORACLE_BASE_CODES as readonly string[]).includes(value);
 }
 
 function oracleBaseAddress(code: OracleBase): string | undefined {
-  return ORACLE_BASES[code as keyof typeof ORACLE_BASES];
+  return CHAIN_ORACLE_BASES[code];
 }
 
 const requiredEmailSchema = z
@@ -188,7 +203,7 @@ const DEFAULT_VALUES: PoolPublishValues = {
   name: "",
   symbol: "",
   description: "",
-  pricing: "oracle",
+  pricing: HAS_ORACLE_BASES ? "oracle" : "decimal",
   oracleBase: "KES",
   feePolicyDefault: "0",
   feesDecoupled: false,
