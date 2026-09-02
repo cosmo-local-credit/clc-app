@@ -25,7 +25,7 @@ import {
 } from "#/features/wallet/hooks/use-send-share";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
@@ -127,7 +127,7 @@ export function SendReceiptPage({
   }
 
   const txHash = outcome.otx.txHash || null;
-  const explorerUrl = txHash ? explorerTxUrl(CHAIN_ID, txHash) : null;
+  const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
   const submittedAt = outcome.otx.createdAt ? formatSubmittedAt(outcome.otx.createdAt) : null;
 
   return (

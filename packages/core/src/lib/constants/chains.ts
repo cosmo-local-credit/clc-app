@@ -57,12 +57,15 @@ export function chainMetadata(chainId: number): ChainMetadata | undefined {
   return CHAIN_METADATA[chainId as keyof typeof CHAIN_METADATA];
 }
 
-export function explorerTxUrl(chainId: number, txHash: string): string | undefined {
-  const chain = chainMetadata(chainId);
-  return chain ? `${chain.explorerUrl}/tx/${txHash}` : undefined;
+/**
+ * Both link builders take the metadata rather than a chain id, so a caller that
+ * has already resolved its chain — which both apps do, at boot — gets a string
+ * back instead of a maybe it has to spell a fallback for.
+ */
+export function explorerTxUrl(chain: ChainMetadata, txHash: string): string {
+  return `${chain.explorerUrl}/tx/${txHash}`;
 }
 
-export function explorerAddressUrl(chainId: number, address: string): string | undefined {
-  const chain = chainMetadata(chainId);
-  return chain ? `${chain.explorerUrl}/address/${address}` : undefined;
+export function explorerAddressUrl(chain: ChainMetadata, address: string): string {
+  return `${chain.explorerUrl}/address/${address}`;
 }
