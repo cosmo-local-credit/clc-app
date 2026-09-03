@@ -118,7 +118,7 @@ describe("market marker images", () => {
 
 describe("market marker colours without Canvas OKLCH support", () => {
   const EXPECTED_FALLBACK: Record<MarketLocationKind, [number, number, number]> = {
-    goods: [0x0d, 0x7d, 0x6e],
+    goods: [0x17, 0x62, 0xb8],
     services: [0x25, 0x63, 0xeb],
     voucher: [0x1f, 0x24, 0x30],
   };

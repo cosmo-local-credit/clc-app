@@ -8,10 +8,10 @@ export const THEME_STORAGE_KEY = "clc.theme";
 // Mirrors the --primary token in styles.css for each scheme. Used for the
 // PWA <meta name="theme-color">, which needs a concrete sRGB value (oklch is
 // not reliably honored there across browsers). Keeps the Android status bar
-// in the brand green in both schemes.
+// in the Gnosis blue in both schemes.
 const THEME_COLOR: Record<Theme, string> = {
-  light: "#007a55",
-  dark: "#009268",
+  light: "#1762b8",
+  dark: "#3178d0",
 };
 
 // Inline <head> script (as a string) injected in __root.tsx. Runs synchronously
