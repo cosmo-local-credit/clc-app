@@ -19,6 +19,8 @@ export type ChainMetadata = {
   name: string;
   /** Native gas token symbol — what a relayer balance is denominated in. */
   nativeSymbol: string;
+  /** Expected block interval, used to pace the non-numeric pending indicator. */
+  blockTimeMs: number;
   /** Block explorer origin, no trailing slash. */
   explorerUrl: string;
   /** What to call that explorer on a button that opens it. */
@@ -36,6 +38,7 @@ const CHAIN_METADATA = {
   [CELO_MAINNET_CHAIN_ID]: {
     name: "Celo",
     nativeSymbol: "CELO",
+    blockTimeMs: 1_000,
     explorerUrl: "https://celoscan.io",
     explorerName: "Celoscan",
     caliburAddress: "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85",
@@ -43,12 +46,14 @@ const CHAIN_METADATA = {
   [CELO_ALFAJORES_CHAIN_ID]: {
     name: "Alfajores",
     nativeSymbol: "CELO",
+    blockTimeMs: 1_000,
     explorerUrl: "https://alfajores.celoscan.io",
     explorerName: "Celoscan",
   },
   [GNOSIS_MAINNET_CHAIN_ID]: {
     name: "Gnosis",
     nativeSymbol: "xDAI",
+    blockTimeMs: 5_000,
     explorerUrl: "https://gnosisscan.io",
     explorerName: "Gnosisscan",
     caliburAddress: "0x48A910C8e9FF0b14051b78d0c96dB069E57f0729",
