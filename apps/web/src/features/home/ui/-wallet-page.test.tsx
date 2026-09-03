@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
@@ -63,16 +65,28 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("links Send, Receive, Cash, and Pools without Swap", () => {
+  it("keeps Cash visible and disables it only when this chain has no ramp", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
     expect(screen.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
     expect(screen.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
       "/wallet/receive",
     );
-    expect(screen.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe("/wallet/top-up");
     expect(screen.getByRole("link", { name: /pools/i }).getAttribute("href")).toBe("/pools");
     expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
+
+    if (chainHasPretiumRamp(CHAIN_ID)) {
+      expect(screen.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe(
+        "/wallet/top-up",
+      );
+      expect(screen.queryByRole("button", { name: /cash/i })).toBeNull();
+      return;
+    }
+
+    const cash = screen.getByRole("button", { name: /cash/i }) as HTMLButtonElement;
+    expect(cash.disabled).toBe(true);
+    expect(cash.title).toBe(`Cash services aren't available on ${CHAIN_INFO.name}.`);
+    expect(screen.queryByRole("link", { name: /cash/i })).toBeNull();
   });
 
   it("shows fetched voucher balances with real logos", async () => {

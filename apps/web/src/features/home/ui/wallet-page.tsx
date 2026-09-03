@@ -7,13 +7,13 @@ import { Button } from "#/components/ui/button";
 import { SectionHeader, TokenLogo } from "#/components/wallet";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
-import { CHAIN_ID } from "#/lib/chain";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  // Pretium's ramps exist only on the chains its worker watches; elsewhere the
-  // tile would lead to a screen that can do nothing.
+  const cashAvailable = chainHasPretiumRamp(CHAIN_ID);
+  const cashUnavailableReason = t`Cash services aren't available on ${CHAIN_INFO.name}.`;
   const actions = [
     { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
@@ -23,17 +23,13 @@ export function WalletPage({ address }: { address?: string }) {
       variant: "outline",
       to: "/wallet/receive",
     },
-    ...(chainHasPretiumRamp(CHAIN_ID)
-      ? ([
-          {
-            id: "topup",
-            label: t`Cash`,
-            icon: RiBankCardLine,
-            variant: "outline",
-            to: "/wallet/top-up",
-          },
-        ] as const)
-      : []),
+    {
+      id: "topup",
+      label: t`Cash`,
+      icon: RiBankCardLine,
+      variant: "outline",
+      to: "/wallet/top-up",
+    },
     { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
@@ -54,6 +50,25 @@ export function WalletPage({ address }: { address?: string }) {
         <div className="grid grid-cols-4 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
+            // Pretium's ramps exist only on the chains its worker watches. Keep
+            // Cash visible elsewhere so the wallet's four capabilities do not
+            // shift around, but use a real disabled button rather than a link to
+            // a screen that cannot complete an operation.
+            if (action.id === "topup" && !cashAvailable) {
+              return (
+                <Button
+                  key={action.id}
+                  disabled
+                  variant={action.variant}
+                  aria-label={`${action.label}. ${cashUnavailableReason}`}
+                  title={cashUnavailableReason}
+                  className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                  {action.label}
+                </Button>
+              );
+            }
             return (
               <Button
                 key={action.id}
