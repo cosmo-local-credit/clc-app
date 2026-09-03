@@ -45,7 +45,7 @@ const KIND_CSS_VARIABLE: Record<MarketLocationKind, string> = {
  * used only when `CSS.supports("color", "oklch(...)")` is false.
  */
 const KIND_SRGB_FALLBACK: Record<MarketLocationKind, string> = {
-  goods: "#0d7d6e",
+  goods: "#1762b8",
   services: "#2563eb",
   voucher: "#1f2430",
 };
