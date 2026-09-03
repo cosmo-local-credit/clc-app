@@ -317,7 +317,7 @@ describe("UserDetailPage", () => {
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.search).toMatchObject({ tab: "transactions" });
 
-    fireEvent.click(screen.getByRole("tab", { name: "Reports" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Posts" }));
     await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: "reports" }));
 
     act(() => {
@@ -456,8 +456,8 @@ describe("UserDetailPage", () => {
       `/users/${ADDRESS}?perPage=25&cursor=8999&dir=next`,
     ]);
 
-    await waitFor(() => expect(screen.getByRole("tab", { name: "Reports" })).toBeTruthy());
-    fireEvent.click(screen.getByRole("tab", { name: "Reports" }));
+    await waitFor(() => expect(screen.getByRole("tab", { name: "Posts" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("tab", { name: "Posts" }));
 
     await waitFor(() => expect(router.state.location.search).toMatchObject({ tab: "reports" }));
     expect(router.state.location.search).not.toHaveProperty("cursor");

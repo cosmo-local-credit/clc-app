@@ -58,6 +58,19 @@ const stateTones: Record<string, StateTone> = {
     label: "rejected",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
+  // The other two post states. SUBMITTED reads "awaiting approval" rather than
+  // "submitted": the author has already submitted, and what the queue needs to
+  // say is that an operator has to act. DRAFT is legacy — nothing creates one —
+  // but imported rows hold it.
+  SUBMITTED: {
+    label: "awaiting approval",
+    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
+    pulse: true,
+  },
+  DRAFT: {
+    label: "draft",
+    className: NEUTRAL,
+  },
   SUCCESS: {
     label: "success",
     className: "border-state-active/30 bg-state-active/10 text-state-active",

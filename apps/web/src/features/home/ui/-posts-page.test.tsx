@@ -173,6 +173,8 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     tags: ["Food production"],
     vouchers: [
       {
+        id: "22",
+        chainId: 42220,
         address: "0x2222222222222222222222222222222222222222",
         name: "Kiriba",
         symbol: "KCH",
@@ -213,6 +215,16 @@ beforeEach(() => {
   };
 });
 
+/**
+ * The report feed, scoped away from the header.
+ *
+ * The header carries New post and My posts links of its own, so a bare
+ * `getByRole("link")` no longer names the row.
+ */
+function feed() {
+  return screen.getByRole("region", { name: "Field reports" });
+}
+
 describe("PostsPage", () => {
   it("renders a report as a list row linking to its own page", () => {
     render(<PostsPage />);
@@ -222,7 +234,7 @@ describe("PostsPage", () => {
       screen.queryByText("Field reports from pools, service providers, and stewards."),
     ).toBeNull();
     expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-8");
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
     expect(within(row).getByText(/7 members from Wendo group/)).toBeTruthy();
@@ -235,7 +247,7 @@ describe("PostsPage", () => {
   it("shows the updated date instead of the author address", () => {
     render(<PostsPage />);
 
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     const time = row.querySelector("time");
     expect(time?.getAttribute("datetime")).toBe("2026-07-19T08:14:02.311Z");
     expect(time?.textContent).toContain("2026");
@@ -263,7 +275,7 @@ describe("PostsPage", () => {
     expect(tagLabel.className).toContain("truncate");
     expect(tagLabel.parentElement?.className).toContain("overflow-hidden");
 
-    const time = screen.getByRole("link").querySelector("time");
+    const time = within(feed()).getByRole("link").querySelector("time");
     const metadataRow = time?.parentElement;
     const voucher = screen.getByText("KCH");
     expect(metadataRow?.className).toContain("h-5");
@@ -286,7 +298,7 @@ describe("PostsPage", () => {
     const { container } = render(<PostsPage />);
 
     expect(container.querySelector("img")).toBeNull();
-    expect(screen.getByRole("link").textContent).toContain("H");
+    expect(within(feed()).getByRole("link").textContent).toContain("H");
   });
 
   it("caps tags and vouchers so a row cannot grow unbounded", () => {
@@ -297,9 +309,9 @@ describe("PostsPage", () => {
             report({
               tags: ["Education", "Care", "Culture", "Art"],
               vouchers: [
-                { address: "0x1", name: "One", symbol: "ONE" },
-                { address: "0x2", name: "Two", symbol: "TWO" },
-                { address: "0x3", name: "Three", symbol: "THREE" },
+                { id: "1", chainId: 42220, address: "0x1", name: "One", symbol: "ONE" },
+                { id: "2", chainId: 42220, address: "0x2", name: "Two", symbol: "TWO" },
+                { id: "3", chainId: 42220, address: "0x3", name: "Three", symbol: "THREE" },
               ],
             }),
           ],
@@ -308,7 +320,7 @@ describe("PostsPage", () => {
     };
     render(<PostsPage />);
 
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     expect(within(row).getByText("Education")).toBeTruthy();
     expect(within(row).getByText("Care")).toBeTruthy();
     expect(within(row).queryByText("Culture")).toBeNull();
@@ -342,7 +354,11 @@ describe("PostsPage", () => {
     render(<PostsPage />);
 
     expect(screen.getByText("No posts yet.")).toBeTruthy();
-    expect(screen.queryByRole("link")).toBeNull();
+    // The header's own actions stay: an empty feed is exactly when an author
+    // needs somewhere to write.
+    expect(screen.queryByRole("region", { name: "Field reports" })).toBeNull();
+    expect(screen.getByRole("link", { name: "New post" }).getAttribute("href")).toBe("/posts/new");
+    expect(screen.getByRole("link", { name: "My posts" }).getAttribute("href")).toBe("/posts/mine");
   });
 });
 

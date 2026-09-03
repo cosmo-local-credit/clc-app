@@ -5,6 +5,7 @@ import {
   HiOutlineCollection,
   HiOutlineHome,
   HiOutlineLightningBolt,
+  HiOutlineNewspaper,
   HiOutlineSwitchHorizontal,
   HiOutlineTicket,
   HiOutlineUsers,
@@ -27,6 +28,7 @@ const pages = [
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
+  { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
   {
     to: "/transactions/vouchers",
     label: "Voucher transactions",
