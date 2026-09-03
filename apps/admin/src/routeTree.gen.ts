@@ -16,6 +16,7 @@ import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
 import { Route as ShellTransactionsIndexRouteImport } from './routes/_shell/transactions/index'
+import { Route as ShellPostsIndexRouteImport } from './routes/_shell/posts/index'
 import { Route as ShellPoolsIndexRouteImport } from './routes/_shell/pools/index'
 import { Route as ShellVouchersPublishRouteImport } from './routes/_shell/vouchers/publish'
 import { Route as ShellVouchersAddressRouteImport } from './routes/_shell/vouchers/$address'
@@ -23,8 +24,11 @@ import { Route as ShellUsersAddressRouteImport } from './routes/_shell/users/$ad
 import { Route as ShellTransactionsVouchersRouteImport } from './routes/_shell/transactions/vouchers'
 import { Route as ShellTransactionsPoolsRouteImport } from './routes/_shell/transactions/pools'
 import { Route as ShellTransactionsOtxRouteImport } from './routes/_shell/transactions/otx'
+import { Route as ShellPostsNewRouteImport } from './routes/_shell/posts/new'
 import { Route as ShellPoolsPublishRouteImport } from './routes/_shell/pools/publish'
 import { Route as ShellPoolsAddressRouteImport } from './routes/_shell/pools/$address'
+import { Route as ShellPostsReportIdIndexRouteImport } from './routes/_shell/posts/$reportId/index'
+import { Route as ShellPostsReportIdEditRouteImport } from './routes/_shell/posts/$reportId/edit'
 
 const ShellRoute = ShellRouteImport.update({
   id: '/_shell',
@@ -58,6 +62,11 @@ const ShellUsersIndexRoute = ShellUsersIndexRouteImport.update({
 const ShellTransactionsIndexRoute = ShellTransactionsIndexRouteImport.update({
   id: '/transactions/',
   path: '/transactions/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellPostsIndexRoute = ShellPostsIndexRouteImport.update({
+  id: '/posts/',
+  path: '/posts/',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellPoolsIndexRoute = ShellPoolsIndexRouteImport.update({
@@ -96,6 +105,11 @@ const ShellTransactionsOtxRoute = ShellTransactionsOtxRouteImport.update({
   path: '/transactions/otx',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellPostsNewRoute = ShellPostsNewRouteImport.update({
+  id: '/posts/new',
+  path: '/posts/new',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellPoolsPublishRoute = ShellPoolsPublishRouteImport.update({
   id: '/pools/publish',
   path: '/pools/publish',
@@ -106,6 +120,16 @@ const ShellPoolsAddressRoute = ShellPoolsAddressRouteImport.update({
   path: '/pools/$address',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellPostsReportIdIndexRoute = ShellPostsReportIdIndexRouteImport.update({
+  id: '/posts/$reportId/',
+  path: '/posts/$reportId/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellPostsReportIdEditRoute = ShellPostsReportIdEditRouteImport.update({
+  id: '/posts/$reportId/edit',
+  path: '/posts/$reportId/edit',
+  getParentRoute: () => ShellRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
@@ -113,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof ShellSettingsRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
+  '/posts/new': typeof ShellPostsNewRoute
   '/transactions/otx': typeof ShellTransactionsOtxRoute
   '/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -120,9 +145,12 @@ export interface FileRoutesByFullPath {
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools/': typeof ShellPoolsIndexRoute
+  '/posts/': typeof ShellPostsIndexRoute
   '/transactions/': typeof ShellTransactionsIndexRoute
   '/users/': typeof ShellUsersIndexRoute
   '/vouchers/': typeof ShellVouchersIndexRoute
+  '/posts/$reportId/edit': typeof ShellPostsReportIdEditRoute
+  '/posts/$reportId/': typeof ShellPostsReportIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
@@ -130,6 +158,7 @@ export interface FileRoutesByTo {
   '/': typeof ShellIndexRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
+  '/posts/new': typeof ShellPostsNewRoute
   '/transactions/otx': typeof ShellTransactionsOtxRoute
   '/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -137,9 +166,12 @@ export interface FileRoutesByTo {
   '/vouchers/$address': typeof ShellVouchersAddressRoute
   '/vouchers/publish': typeof ShellVouchersPublishRoute
   '/pools': typeof ShellPoolsIndexRoute
+  '/posts': typeof ShellPostsIndexRoute
   '/transactions': typeof ShellTransactionsIndexRoute
   '/users': typeof ShellUsersIndexRoute
   '/vouchers': typeof ShellVouchersIndexRoute
+  '/posts/$reportId/edit': typeof ShellPostsReportIdEditRoute
+  '/posts/$reportId': typeof ShellPostsReportIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,6 +181,7 @@ export interface FileRoutesById {
   '/_shell/': typeof ShellIndexRoute
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
   '/_shell/pools/publish': typeof ShellPoolsPublishRoute
+  '/_shell/posts/new': typeof ShellPostsNewRoute
   '/_shell/transactions/otx': typeof ShellTransactionsOtxRoute
   '/_shell/transactions/pools': typeof ShellTransactionsPoolsRoute
   '/_shell/transactions/vouchers': typeof ShellTransactionsVouchersRoute
@@ -156,9 +189,12 @@ export interface FileRoutesById {
   '/_shell/vouchers/$address': typeof ShellVouchersAddressRoute
   '/_shell/vouchers/publish': typeof ShellVouchersPublishRoute
   '/_shell/pools/': typeof ShellPoolsIndexRoute
+  '/_shell/posts/': typeof ShellPostsIndexRoute
   '/_shell/transactions/': typeof ShellTransactionsIndexRoute
   '/_shell/users/': typeof ShellUsersIndexRoute
   '/_shell/vouchers/': typeof ShellVouchersIndexRoute
+  '/_shell/posts/$reportId/edit': typeof ShellPostsReportIdEditRoute
+  '/_shell/posts/$reportId/': typeof ShellPostsReportIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -168,6 +204,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/pools/$address'
     | '/pools/publish'
+    | '/posts/new'
     | '/transactions/otx'
     | '/transactions/pools'
     | '/transactions/vouchers'
@@ -175,9 +212,12 @@ export interface FileRouteTypes {
     | '/vouchers/$address'
     | '/vouchers/publish'
     | '/pools/'
+    | '/posts/'
     | '/transactions/'
     | '/users/'
     | '/vouchers/'
+    | '/posts/$reportId/edit'
+    | '/posts/$reportId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -185,6 +225,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pools/$address'
     | '/pools/publish'
+    | '/posts/new'
     | '/transactions/otx'
     | '/transactions/pools'
     | '/transactions/vouchers'
@@ -192,9 +233,12 @@ export interface FileRouteTypes {
     | '/vouchers/$address'
     | '/vouchers/publish'
     | '/pools'
+    | '/posts'
     | '/transactions'
     | '/users'
     | '/vouchers'
+    | '/posts/$reportId/edit'
+    | '/posts/$reportId'
   id:
     | '__root__'
     | '/_shell'
@@ -203,6 +247,7 @@ export interface FileRouteTypes {
     | '/_shell/'
     | '/_shell/pools/$address'
     | '/_shell/pools/publish'
+    | '/_shell/posts/new'
     | '/_shell/transactions/otx'
     | '/_shell/transactions/pools'
     | '/_shell/transactions/vouchers'
@@ -210,9 +255,12 @@ export interface FileRouteTypes {
     | '/_shell/vouchers/$address'
     | '/_shell/vouchers/publish'
     | '/_shell/pools/'
+    | '/_shell/posts/'
     | '/_shell/transactions/'
     | '/_shell/users/'
     | '/_shell/vouchers/'
+    | '/_shell/posts/$reportId/edit'
+    | '/_shell/posts/$reportId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -270,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellTransactionsIndexRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/posts/': {
+      id: '/_shell/posts/'
+      path: '/posts'
+      fullPath: '/posts/'
+      preLoaderRoute: typeof ShellPostsIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/pools/': {
       id: '/_shell/pools/'
       path: '/pools'
@@ -319,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellTransactionsOtxRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/posts/new': {
+      id: '/_shell/posts/new'
+      path: '/posts/new'
+      fullPath: '/posts/new'
+      preLoaderRoute: typeof ShellPostsNewRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/pools/publish': {
       id: '/_shell/pools/publish'
       path: '/pools/publish'
@@ -333,6 +395,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellPoolsAddressRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/posts/$reportId/': {
+      id: '/_shell/posts/$reportId/'
+      path: '/posts/$reportId'
+      fullPath: '/posts/$reportId/'
+      preLoaderRoute: typeof ShellPostsReportIdIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/posts/$reportId/edit': {
+      id: '/_shell/posts/$reportId/edit'
+      path: '/posts/$reportId/edit'
+      fullPath: '/posts/$reportId/edit'
+      preLoaderRoute: typeof ShellPostsReportIdEditRouteImport
+      parentRoute: typeof ShellRoute
+    }
   }
 }
 
@@ -342,6 +418,7 @@ interface ShellRouteChildren {
   ShellIndexRoute: typeof ShellIndexRoute
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
   ShellPoolsPublishRoute: typeof ShellPoolsPublishRoute
+  ShellPostsNewRoute: typeof ShellPostsNewRoute
   ShellTransactionsOtxRoute: typeof ShellTransactionsOtxRoute
   ShellTransactionsPoolsRoute: typeof ShellTransactionsPoolsRoute
   ShellTransactionsVouchersRoute: typeof ShellTransactionsVouchersRoute
@@ -349,9 +426,12 @@ interface ShellRouteChildren {
   ShellVouchersAddressRoute: typeof ShellVouchersAddressRoute
   ShellVouchersPublishRoute: typeof ShellVouchersPublishRoute
   ShellPoolsIndexRoute: typeof ShellPoolsIndexRoute
+  ShellPostsIndexRoute: typeof ShellPostsIndexRoute
   ShellTransactionsIndexRoute: typeof ShellTransactionsIndexRoute
   ShellUsersIndexRoute: typeof ShellUsersIndexRoute
   ShellVouchersIndexRoute: typeof ShellVouchersIndexRoute
+  ShellPostsReportIdEditRoute: typeof ShellPostsReportIdEditRoute
+  ShellPostsReportIdIndexRoute: typeof ShellPostsReportIdIndexRoute
 }
 
 const ShellRouteChildren: ShellRouteChildren = {
@@ -360,6 +440,7 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellIndexRoute: ShellIndexRoute,
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
   ShellPoolsPublishRoute: ShellPoolsPublishRoute,
+  ShellPostsNewRoute: ShellPostsNewRoute,
   ShellTransactionsOtxRoute: ShellTransactionsOtxRoute,
   ShellTransactionsPoolsRoute: ShellTransactionsPoolsRoute,
   ShellTransactionsVouchersRoute: ShellTransactionsVouchersRoute,
@@ -367,9 +448,12 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellVouchersAddressRoute: ShellVouchersAddressRoute,
   ShellVouchersPublishRoute: ShellVouchersPublishRoute,
   ShellPoolsIndexRoute: ShellPoolsIndexRoute,
+  ShellPostsIndexRoute: ShellPostsIndexRoute,
   ShellTransactionsIndexRoute: ShellTransactionsIndexRoute,
   ShellUsersIndexRoute: ShellUsersIndexRoute,
   ShellVouchersIndexRoute: ShellVouchersIndexRoute,
+  ShellPostsReportIdEditRoute: ShellPostsReportIdEditRoute,
+  ShellPostsReportIdIndexRoute: ShellPostsReportIdIndexRoute,
 }
 
 const ShellRouteWithChildren = ShellRoute._addFileChildren(ShellRouteChildren)

@@ -9,6 +9,29 @@ const NO_FILTER: CatalogFilter = {
 };
 
 /**
+ * A filter with relationships, for the tables that have them.
+ *
+ * `termFilter` covers the term-only screens. The post moderation queue also
+ * filters by tag and by linked voucher, and both cross the wire in the catalog's
+ * own comma-separated syntax, so the same parser that validates the term
+ * validates those too. A malformed reference falls back to no filter rather than
+ * throwing: the table still renders, unfiltered, which is what a hand-edited URL
+ * should degrade to.
+ */
+export function relationshipFilter(state: {
+  q?: string;
+  tags?: string;
+  vouchers?: string;
+}): CatalogFilter {
+  const parsed = parseCatalogFilter({
+    q: state.q ?? "",
+    ...(state.tags ? { tags: state.tags } : {}),
+    ...(state.vouchers ? { vouchers: state.vouchers } : {}),
+  });
+  return parsed.ok ? parsed.filter : NO_FILTER;
+}
+
+/**
  * The catalog filter a console table sends: a server-side term and nothing else.
  *
  * `/api/v2/vouchers` and `/api/v2/pools` take one filter object covering tags and

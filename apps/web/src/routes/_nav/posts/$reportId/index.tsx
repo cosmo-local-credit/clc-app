@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { ReportPage } from "#/features/home/ui/report-page";
 
-export const Route = createFileRoute("/_nav/posts/$reportId")({
+export const Route = createFileRoute("/_nav/posts/$reportId/")({
   staticData: { navOwner: "posts" },
   component: ReportRoute,
 });
