@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -82,13 +82,45 @@ export function SuccessCheck({ className }: { className?: string }) {
 }
 
 export function PendingClock({ className }: { className?: string }) {
+  const animationStyle = {
+    "--pending-clock-duration": `${CHAIN_INFO.blockTimeMs}ms`,
+  } as CSSProperties;
+
   return (
     <span
       className={cn(
-        "flex size-14 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning-foreground",
+        "relative flex size-14 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning-foreground",
         className,
       )}
+      data-slot="pending-clock"
+      style={animationStyle}
     >
+      <svg
+        viewBox="0 0 64 64"
+        className="pointer-events-none absolute -inset-1 size-16 overflow-visible"
+        aria-hidden="true"
+      >
+        <circle
+          cx="32"
+          cy="32"
+          r="30"
+          fill="none"
+          strokeWidth="1.5"
+          className="stroke-warning/15"
+        />
+        <circle
+          cx="32"
+          cy="32"
+          r="30"
+          fill="none"
+          pathLength="100"
+          strokeDasharray="12 88"
+          strokeLinecap="round"
+          strokeWidth="1.5"
+          className="pending-clock-indicator stroke-warning/60"
+          data-slot="pending-clock-indicator"
+        />
+      </svg>
       <RiTimeLine className="size-7" aria-hidden="true" />
     </span>
   );

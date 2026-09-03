@@ -8,7 +8,9 @@ describe("chainMetadata", () => {
     expect(chainMetadata(CELO_MAINNET_CHAIN_ID)?.name).toBe("Celo");
     expect(chainMetadata(GNOSIS_MAINNET_CHAIN_ID)?.name).toBe("Gnosis");
     expect(chainMetadata(GNOSIS_MAINNET_CHAIN_ID)?.nativeSymbol).toBe("xDAI");
+    expect(chainMetadata(GNOSIS_MAINNET_CHAIN_ID)?.blockTimeMs).toBe(5_000);
     expect(chainMetadata(GNOSIS_MAINNET_CHAIN_ID)?.explorerName).toBe("Gnosisscan");
+    expect(chainMetadata(CELO_MAINNET_CHAIN_ID)?.blockTimeMs).toBe(1_000);
   });
 
   it("returns undefined rather than defaulting an unknown chain to mainnet", () => {

@@ -157,6 +157,25 @@ body {
 	color: var(--color-foreground);
 }
 
+.pending-clock-indicator {
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: pending-clock-orbit var(--pending-clock-duration, 5s) linear infinite;
+}
+
+@keyframes pending-clock-orbit {
+	to {
+		transform: rotate(-360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pending-clock-indicator {
+		animation: none;
+		transform: rotate(-45deg);
+	}
+}
+
 .market-map-fallback {
 	background-color: var(--color-card);
 	background-image:
