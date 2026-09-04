@@ -9,9 +9,11 @@ allowBuilds:
   sharp: true
   workerd: true
 catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
+  # Nitro's Cloudflare Pages worker currently 500s under Vite+ 0.3.0. Keep the
+  # CLI and its Vite-compatible core on the last deployment-proven release.
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vitest: 4.1.10
-  vite-plus: latest
+  vite-plus: 0.2.9
   oxfmt: "^0.53.0"
 overrides:
   vite: "catalog:"
