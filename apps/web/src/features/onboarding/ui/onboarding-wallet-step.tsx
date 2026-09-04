@@ -3,7 +3,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
-import { FiLoader } from "react-icons/fi";
 import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
@@ -11,6 +10,7 @@ import { OnboardingMenu } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
 import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
+import { PendingClock, StatusPill } from "#/components/wallet/wallet-status";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 
@@ -80,6 +80,7 @@ export function OnboardingWalletStep({
   const [acked, setAcked] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [caliburConnecting, setCaliburConnecting] = useState(false);
+  const [pendingMethod, setPendingMethod] = useState<"passkey" | "paper" | null>(null);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [linkConnectError, setLinkConnectError] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState<string | null>(null);
@@ -93,6 +94,8 @@ export function OnboardingWalletStep({
    * stored private key after a successful paper connect.
    */
   const connectorReadyRef = useRef<"none" | "calibur" | "pk">("none");
+  /** Prevent the confirmed paper activation effect from reconnecting on rerender. */
+  const paperConnectStartedRef = useRef(false);
   const backendSignup = useBackendSignup();
   const {
     step: delegateStep,
@@ -244,6 +247,21 @@ export function OnboardingWalletStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only fire on upgrade completion / clear errors
   }, [upgradeStep]);
 
+  // Paper-wallet activation resolves its mutation when the relayer accepts the
+  // job. Wait for the separately tracked on-chain confirmation before opening
+  // the wallet, which can take two or more blocks on Gnosis.
+  useEffect(() => {
+    if (pendingMethod !== "paper") return;
+    if (delegateStep === "error") {
+      setConnecting(false);
+      return;
+    }
+    if (delegateStep !== "done" || paperConnectStartedRef.current) return;
+    paperConnectStartedRef.current = true;
+    void connectPaperWallet();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- react only to tracked activation outcome
+  }, [delegateStep, pendingMethod]);
+
   async function connectPaperWallet() {
     if (finishingRef.current || caliburPending) return;
     setConnectError(null);
@@ -274,6 +292,7 @@ export function OnboardingWalletStep({
   }
 
   async function handleLinkPasskey() {
+    setPendingMethod("passkey");
     setConnectError(null);
     setLinkConnectError(null);
     setSessionError(null);
@@ -286,12 +305,14 @@ export function OnboardingWalletStep({
       await ensureBackendSignup();
       upgradeAndLink.mutate();
     } catch {
+      setPendingMethod(null);
       // backendSignup.error is rendered below.
     }
   }
 
   async function handleContinue() {
     if (finishingRef.current || caliburPending) return;
+    setPendingMethod("paper");
     setConnecting(true);
     setConnectError(null);
     setSessionError(null);
@@ -304,19 +325,24 @@ export function OnboardingWalletStep({
       } else {
         setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
       }
+      setPendingMethod(null);
       setConnecting(false);
+      return;
+    }
+
+    // Activation already reached chain confirmation and only connector/session
+    // recovery remains. Do not submit another delegation transaction.
+    if (delegateStep === "done" || paperConnectStartedRef.current) {
+      paperConnectStartedRef.current = true;
+      await connectPaperWallet();
       return;
     }
 
     try {
       await activatePaperWallet({ privateKey: pk });
     } catch {
-      // Delegation is a best-effort activation request. Do not block paper-wallet
-      // access: the relayer/backend can retry accepted jobs and the user can
-      // manually retry activation later.
+      setConnecting(false);
     }
-
-    await connectPaperWallet();
   }
 
   const formBlocked = !acked || !paperWalletReady || paperWalletEncrypting;
@@ -327,6 +353,17 @@ export function OnboardingWalletStep({
     workInProgress ||
     (passkeyRegistered && !linkConnectError && !sessionError && !caliburPending);
   const paperBusy = formBlocked || workInProgress;
+  const pendingError =
+    backendSignup.error ||
+    sessionError ||
+    (pendingMethod === "passkey"
+      ? upgradeError || linkConnectError
+      : delegateError || connectError);
+  const showPendingView = pendingMethod !== null && !pendingError;
+
+  if (showPendingView) {
+    return <OnboardingWalletPending status={statusText} />;
+  }
 
   return (
     <div className="relative flex min-h-[100svh] flex-col bg-background">
@@ -403,11 +440,7 @@ export function OnboardingWalletStep({
                 onClick={() => void handleLinkPasskey()}
                 disabled={linkBusy}
               >
-                {isRegistering || isUpgrading || caliburPending ? (
-                  <FiLoader className="mr-2 size-4 animate-spin" />
-                ) : (
-                  <ProviderIcon className="mr-2 size-4" />
-                )}
+                <ProviderIcon className="mr-2 size-4" />
                 {passkeyRegistered && (linkConnectError || sessionError)
                   ? t`Retry ${providerLabel} connection`
                   : t`Link wallet to ${providerLabel}`}
@@ -418,9 +451,6 @@ export function OnboardingWalletStep({
                 onClick={() => void handleContinue()}
                 disabled={paperBusy}
               >
-                {connecting || isRegistering || isDelegating ? (
-                  <FiLoader className="mr-2 size-4 animate-spin" />
-                ) : null}
                 <Trans>Continue with paper wallet</Trans>
               </Button>
             </>
@@ -430,12 +460,31 @@ export function OnboardingWalletStep({
               onClick={() => void handleContinue()}
               disabled={paperBusy}
             >
-              {connecting || isRegistering || isDelegating ? (
-                <FiLoader className="mr-2 size-4 animate-spin" />
-              ) : null}
               <Trans>Continue to wallet</Trans>
             </Button>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OnboardingWalletPending({ status }: { status: string | null }) {
+  return (
+    <div
+      className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+      aria-live="polite"
+    >
+      <div className="flex flex-col items-center text-center">
+        <PendingClock />
+        <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
+          <Trans>Setting up your wallet...</Trans>
+        </h1>
+        <p className="mt-2 text-muted-foreground text-sm">
+          {status ?? <Trans>Waiting for blockchain confirmation...</Trans>}
+        </p>
+        <div className="mt-3">
+          <StatusPill tone="pending" label={<Trans>Pending</Trans>} />
         </div>
       </div>
     </div>

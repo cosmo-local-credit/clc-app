@@ -14,14 +14,14 @@ vi.mock("#/lib/chain", () => ({
 import { NetworkBadge, PendingClock } from "./wallet-status";
 
 describe("PendingClock", () => {
-  it("paces its subtle counterclockwise indicator to the Gnosis block time", () => {
+  it("paces its subtle counterclockwise indicator to two Gnosis block times", () => {
     const { container } = render(<PendingClock />);
     const clock = container.querySelector<HTMLElement>('[data-slot="pending-clock"]');
     const indicator = container.querySelector<SVGCircleElement>(
       '[data-slot="pending-clock-indicator"]',
     );
 
-    expect(clock?.style.getPropertyValue("--pending-clock-duration")).toBe("5000ms");
+    expect(clock?.style.getPropertyValue("--pending-clock-duration")).toBe("10000ms");
     expect(indicator?.classList.contains("pending-clock-indicator")).toBe(true);
     expect(indicator?.getAttribute("stroke-dasharray")).toBe("12 88");
   });

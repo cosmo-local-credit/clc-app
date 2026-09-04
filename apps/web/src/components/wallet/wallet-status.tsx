@@ -83,7 +83,9 @@ export function SuccessCheck({ className }: { className?: string }) {
 
 export function PendingClock({ className }: { className?: string }) {
   const animationStyle = {
-    "--pending-clock-duration": `${CHAIN_INFO.blockTimeMs}ms`,
+    // Pace one orbit to a conservative two-block confirmation window. Gnosis
+    // targets five-second blocks, so its indicator now completes every 10s.
+    "--pending-clock-duration": `${CHAIN_INFO.blockTimeMs * 2}ms`,
   } as CSSProperties;
 
   return (
