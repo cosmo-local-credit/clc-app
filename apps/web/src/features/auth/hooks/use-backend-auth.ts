@@ -10,6 +10,7 @@ import {
   signSiweMessage,
   type SiweRequest,
 } from "@clc/api/features/auth/siwe";
+import { isRetryableStorageError, type UploadedImage } from "@clc/api/features/images/client";
 import { wagmiConfig } from "#/providers/web3-config";
 import { authClient } from "#/lib/api/auth";
 import { CHAIN_ID } from "#/lib/chain";
@@ -31,16 +32,28 @@ export type BackendSignupInput = {
  * thing being created here, and losing it because an optional photo would not
  * encode is the wrong trade. The user can add one later from settings.
  *
- * The upload id is generated per attempt rather than derived from the file, so
- * two people uploading the same bytes get their own object.
+ * The upload id is generated per user action rather than derived from the file,
+ * so two people uploading the same bytes get their own object. A transient
+ * server or network failure gets one retry with that same id, making the retry
+ * idempotent at storage.
  */
 async function uploadOnboardingAvatar(file: File): Promise<string | undefined> {
   try {
     const { token } = await authClient.getStorageToken();
-    const uploaded = await storageClient().upload(
-      { file, purpose: "profile.avatar", uploadId: crypto.randomUUID().replaceAll("-", "") },
-      token,
-    );
+    const storage = storageClient();
+    const input = {
+      file,
+      purpose: "profile.avatar" as const,
+      uploadId: crypto.randomUUID().replaceAll("-", ""),
+    };
+
+    let uploaded: UploadedImage;
+    try {
+      uploaded = await storage.upload(input, token);
+    } catch (error) {
+      if (!isRetryableStorageError(error)) throw error;
+      uploaded = await storage.upload(input, token);
+    }
     return uploaded.url;
   } catch {
     return undefined;

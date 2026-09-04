@@ -14,7 +14,7 @@ vi.mock("#/lib/chain", () => ({
 import { NetworkBadge, PendingClock } from "./wallet-status";
 
 describe("PendingClock", () => {
-  it("paces its subtle counterclockwise indicator to two Gnosis block times", () => {
+  it("paces its circular counterclockwise indicator to two Gnosis block times", () => {
     const { container } = render(<PendingClock />);
     const clock = container.querySelector<HTMLElement>('[data-slot="pending-clock"]');
     const indicator = container.querySelector<SVGCircleElement>(
@@ -22,8 +22,11 @@ describe("PendingClock", () => {
     );
 
     expect(clock?.style.getPropertyValue("--pending-clock-duration")).toBe("10000ms");
+    expect(clock?.children).toHaveLength(1);
+    expect(clock?.querySelectorAll("circle")).toHaveLength(2);
     expect(indicator?.classList.contains("pending-clock-indicator")).toBe(true);
-    expect(indicator?.getAttribute("stroke-dasharray")).toBe("12 88");
+    expect(indicator?.getAttribute("stroke-dasharray")).toBe("78 22");
+    expect(indicator?.getAttribute("stroke-linecap")).toBe("butt");
   });
 });
 
