@@ -5,7 +5,6 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiFingerprintLine,
-  RiTimeLine,
 } from "react-icons/ri";
 
 import { Trans } from "@lingui/react/macro";
@@ -90,40 +89,25 @@ export function PendingClock({ className }: { className?: string }) {
 
   return (
     <span
-      className={cn(
-        "relative flex size-14 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning-foreground",
-        className,
-      )}
+      className={cn("relative block size-14 rounded-full", className)}
       data-slot="pending-clock"
       style={animationStyle}
     >
-      <svg
-        viewBox="0 0 64 64"
-        className="pointer-events-none absolute -inset-1 size-16 overflow-visible"
-        aria-hidden="true"
-      >
+      <svg viewBox="0 0 64 64" className="pointer-events-none size-14" aria-hidden="true">
+        <circle cx="32" cy="32" r="28" fill="none" strokeWidth="2" className="stroke-warning/25" />
         <circle
           cx="32"
           cy="32"
-          r="30"
-          fill="none"
-          strokeWidth="1.5"
-          className="stroke-warning/15"
-        />
-        <circle
-          cx="32"
-          cy="32"
-          r="30"
+          r="28"
           fill="none"
           pathLength="100"
-          strokeDasharray="12 88"
-          strokeLinecap="round"
-          strokeWidth="1.5"
-          className="pending-clock-indicator stroke-warning/60"
+          strokeDasharray="78 22"
+          strokeLinecap="butt"
+          strokeWidth="2"
+          className="pending-clock-indicator stroke-warning"
           data-slot="pending-clock-indicator"
         />
       </svg>
-      <RiTimeLine className="size-7" aria-hidden="true" />
     </span>
   );
 }

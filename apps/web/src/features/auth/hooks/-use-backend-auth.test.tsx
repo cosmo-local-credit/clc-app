@@ -41,6 +41,7 @@ vi.mock("#/lib/api/auth", async () => ({
 
 // QueryClient wrapper for useMutation
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StorageApiError } from "@clc/api/features/images/client";
 import type { ReactNode } from "react";
 import React from "react";
 
@@ -278,6 +279,30 @@ describe("useBackendSignup — onboarding photo", () => {
     const signupAt = mockSignupWithSiwe.mock.invocationCallOrder[0] ?? 0;
     const tokenAt = mockGetStorageToken.mock.invocationCallOrder[0] ?? 0;
     expect(tokenAt).toBeGreaterThan(signupAt);
+  });
+
+  it("retries one transient storage failure with the same upload id", async () => {
+    mockUpload
+      .mockRejectedValueOnce(
+        new StorageApiError(500, "unexpected EOF", undefined, { kind: "server" }),
+      )
+      .mockResolvedValueOnce({
+        url: "https://cdn.test/profile/abc_400_a3f91c2e.webp",
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      });
+
+    await signUp(photo());
+
+    expect(mockUpload).toHaveBeenCalledTimes(2);
+    const firstInput = mockUpload.mock.calls[0]?.[0] as { uploadId: string };
+    const retryInput = mockUpload.mock.calls[1]?.[0] as { uploadId: string };
+    expect(retryInput.uploadId).toBe(firstInput.uploadId);
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as { avatarUrl?: string };
+    expect(profile.avatarUrl).toBe("https://cdn.test/profile/abc_400_a3f91c2e.webp");
+    expect(mockToastError).not.toHaveBeenCalled();
   });
 
   it("still creates the account when the upload fails", async () => {
