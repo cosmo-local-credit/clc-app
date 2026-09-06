@@ -100,6 +100,16 @@ describe("EditVoucherSheet", () => {
     }
   });
 
+  it("shows the unit of account as a searchable named currency", async () => {
+    renderSheet();
+
+    const currency = await waitFor(() => screen.getByLabelText("Unit of account"));
+    expect((currency as HTMLInputElement).value).toBe("KES - Kenyan Shillings");
+    fireEvent.click(currency);
+    fireEvent.change(currency, { target: { value: "Ugandan" } });
+    expect(await screen.findByRole("option", { name: "UGX - Ugandan Shilling" })).toBeTruthy();
+  });
+
   it("sends the whole record, since the endpoint assigns every column", async () => {
     renderSheet();
 

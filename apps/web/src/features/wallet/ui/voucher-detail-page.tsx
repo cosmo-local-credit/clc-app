@@ -158,10 +158,9 @@ export function VoucherDetailPage({
     lng: detail?.lng ?? baseToken?.lng,
   };
   const contractAddress = token.contractAddress;
-  const rate = formatVoucherRate(
-    detail?.voucherValue ?? poolVoucher?.voucherValue ?? null,
-    detail?.voucherUoa ?? poolVoucher?.voucherUoa ?? null,
-  );
+  const voucherValue = detail?.voucherValue ?? poolVoucher?.voucherValue ?? null;
+  const voucherUoa = detail?.voucherUoa ?? poolVoucher?.voucherUoa ?? null;
+  const rate = formatVoucherRate(voucherValue, voucherUoa);
   const description = detail?.description ?? poolVoucher?.description ?? null;
   const website = detail?.website ?? null;
   const locationName = detail?.locationName ?? poolVoucher?.locationName ?? token.location ?? null;
@@ -313,6 +312,8 @@ export function VoucherDetailPage({
         <VoucherOfferingsPanel
           voucherAddress={contractAddress}
           voucherSymbol={token.symbol}
+          voucherValue={voucherValue}
+          voucherUoa={voucherUoa}
           ownerAddress={detail?.ownerAddress ?? null}
           isKnownEmpty={detail?.kind === "voucher"}
         />

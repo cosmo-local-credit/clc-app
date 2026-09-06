@@ -15,6 +15,11 @@ export type OfferingQuantity = {
   unit: string | null;
 };
 
+export type OfferingDisplayPrice = {
+  value: string;
+  unit: string;
+};
+
 /**
  * A plain non-negative decimal, matching the column's `>= 0` check. No sign, no
  * exponent, no separators — `NUMERIC::TEXT` emits none of those, so anything
@@ -43,17 +48,49 @@ export function formatOfferingPrice(price: string | null): { value: string } | n
 }
 
 /**
+ * An offering price in the unit a person uses to compare value.
+ *
+ * Offering writes store voucher units, while a voucher says what one of those
+ * units is worth: `1 voucher = voucherValue voucherUoa`. A complete positive
+ * rate therefore wins for display; legacy vouchers without one keep their own
+ * symbol so their price remains legible rather than disappearing.
+ */
+export function formatOfferingDisplayPrice(
+  price: string | null,
+  voucherValue: string | null,
+  voucherUoa: string | null,
+  voucherSymbol: string,
+): OfferingDisplayPrice | null {
+  const unitPrice = formatOfferingPrice(price);
+  if (!unitPrice) return null;
+
+  const rate = formatVoucherRate(voucherValue, voucherUoa);
+  if (rate && !isZero(rate.value)) {
+    return {
+      value: multiplyDecimals(unitPrice.value, rate.value),
+      unit: rate.unit,
+    };
+  }
+
+  const symbol = voucherSymbol.trim();
+  return symbol ? { value: unitPrice.value, unit: symbol } : null;
+}
+
+/**
  * A positive available quantity. The unit is issuer-authored free text and is
  * therefore trimmed but never translated or normalised.
  */
 export function formatOfferingQuantity(
   quantity: string | null,
   unit: string | null,
+  suppressSyntheticOne = false,
 ): OfferingQuantity | null {
   const trimmedQuantity = quantity?.trim();
   if (!trimmedQuantity || !DECIMAL.test(trimmedQuantity) || isZero(trimmedQuantity)) return null;
+  const value = trimScale(trimmedQuantity);
+  if (suppressSyntheticOne && value === "1") return null;
   return {
-    value: trimScale(trimmedQuantity),
+    value,
     unit: unit?.trim() || null,
   };
 }
@@ -80,8 +117,36 @@ export function formatOfferingTotal(price: string | null, count: number): { valu
   return { value: trimScale(`${digits.slice(0, boundary)}.${digits.slice(boundary)}`) };
 }
 
+/** A selected quantity multiplied by the same converted price shown per unit. */
+export function formatOfferingDisplayTotal(
+  price: string | null,
+  voucherValue: string | null,
+  voucherUoa: string | null,
+  voucherSymbol: string,
+  count: number,
+): OfferingDisplayPrice | null {
+  const displayPrice = formatOfferingDisplayPrice(price, voucherValue, voucherUoa, voucherSymbol);
+  if (!displayPrice) return null;
+
+  const total = formatOfferingTotal(displayPrice.value, count);
+  return total ? { ...total, unit: displayPrice.unit } : null;
+}
+
 function isZero(value: string): boolean {
   return /^0+(\.0+)?$/.test(value);
+}
+
+/** Multiplies two valid decimal strings exactly and returns an unpadded decimal. */
+function multiplyDecimals(left: string, right: string): string {
+  const [leftWhole = "", leftFraction = ""] = left.split(".");
+  const [rightWhole = "", rightFraction = ""] = right.split(".");
+  const scale = leftFraction.length + rightFraction.length;
+  const product = BigInt(leftWhole + leftFraction) * BigInt(rightWhole + rightFraction);
+  if (scale === 0) return product.toString();
+
+  const digits = product.toString().padStart(scale + 1, "0");
+  const boundary = digits.length - scale;
+  return trimScale(`${digits.slice(0, boundary)}.${digits.slice(boundary)}`);
 }
 
 /**

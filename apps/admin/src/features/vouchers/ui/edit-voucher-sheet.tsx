@@ -33,6 +33,7 @@ import { clcApi } from "#/lib/api";
 import { isStorageConfigured } from "#/lib/storage";
 
 import { useUpdateVoucherProfile } from "../use-update-voucher-profile";
+import { UnitOfAccountCombobox } from "./unit-of-account-combobox";
 
 const optionalStoredImageSchema = z
   .string()
@@ -234,25 +235,24 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
         </form.Field>
 
         <div className="flex gap-3">
-          <form.Field name="voucherUoa">
-            {(field) => (
-              <Field
-                htmlFor={field.name}
-                label="Unit of account"
-                hint="What this voucher is priced in, for example KES."
-                error={getFieldError(field.state.meta.errors)}
-              >
-                <Input
-                  id={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  className="w-32 font-mono uppercase"
-                  maxLength={16}
-                />
-              </Field>
-            )}
-          </form.Field>
+          <div className="min-w-0 flex-1">
+            <form.Field name="voucherUoa">
+              {(field) => (
+                <Field
+                  htmlFor={field.name}
+                  label="Unit of account"
+                  hint="What this voucher is priced in, for example KES."
+                  error={getFieldError(field.state.meta.errors)}
+                >
+                  <UnitOfAccountCombobox
+                    id={field.name}
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                  />
+                </Field>
+              )}
+            </form.Field>
+          </div>
 
           <form.Field name="voucherValue">
             {(field) => (

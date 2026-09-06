@@ -94,6 +94,8 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
                 name: "USD Coin",
                 symbol: "USDC",
                 decimals: 6,
+                voucherUoa: "USD",
+                voucherValue: "1",
                 iconUrl: "https://pool.example/usdc.png",
               },
               {
@@ -102,6 +104,8 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
                 name: "Trade Token",
                 symbol: "TTX",
                 decimals: 6,
+                voucherUoa: "KES",
+                voucherValue: "2",
                 iconUrl: "https://pool.example/ttx.png",
               },
             ],
@@ -281,9 +285,9 @@ describe("pool voucher UI", () => {
     expect(attributions.every((element) => element.className.includes("text-info"))).toBe(true);
 
     // The unit rides with the price now, so the tile says what the amount buys.
-    expect(within(panel).getByText("25 USDC per bag")).toBeTruthy();
+    expect(within(panel).getByText("25 USD / bag")).toBeTruthy();
     // An offering with no unit keeps the bare price rather than reading "per null".
-    expect(within(panel).getByText("8 TTX")).toBeTruthy();
+    expect(within(panel).getByText("16 KES")).toBeTruthy();
     // The pool view is read-only for everyone. `OfferingsPanel` takes management
     // actions as a prop rather than deriving ownership, precisely so this screen
     // — which lists offerings from vouchers the viewer does not own — cannot
@@ -301,12 +305,12 @@ describe("pool voucher UI", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
-    expect(within(dialog).getByText("25 USDC each")).toBeTruthy();
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USDC");
+    expect(within(dialog).getByText("25 USD / bag")).toBeTruthy();
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USD");
     expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USDC");
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USD");
   });
 
   it("puts offerings first and links the vouchers tab without stacking history", async () => {

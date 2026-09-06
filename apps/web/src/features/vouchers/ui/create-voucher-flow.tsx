@@ -35,13 +35,6 @@ import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
-import {
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValue,
-} from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
@@ -57,6 +50,7 @@ import {
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
+import { UnitOfAccountCombobox } from "./unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
 
@@ -295,7 +289,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {(unit) => (
                   <div
                     data-slot="voucher-pricing-row"
-                    className="grid grid-cols-[minmax(0,1fr)_7rem] items-start gap-2.5"
+                    className="grid grid-cols-[7rem_minmax(0,1fr)] items-start gap-2.5"
                   >
                     <form.Field
                       name="price"
@@ -332,29 +326,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     <form.Field name="unitOfAccount">
                       {(field) => (
                         <Field label={t`Priced in`} htmlFor="voucher-currency">
-                          <SelectRoot
+                          <UnitOfAccountCombobox
+                            id="voucher-currency"
                             value={field.state.value}
-                            onValueChange={(value) => {
-                              if (value === "KES" || value === "USD" || value === "HOUR") {
-                                field.handleChange(value);
-                              }
-                            }}
-                          >
-                            <SelectTrigger id="voucher-currency" className="w-full">
-                              <SelectValue>{() => field.state.value}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="KES">
-                                <Trans>KES — Kenyan shilling</Trans>
-                              </SelectItem>
-                              <SelectItem value="USD">
-                                <Trans>USD — US dollar</Trans>
-                              </SelectItem>
-                              <SelectItem value="HOUR">
-                                <Trans>HOUR — Hour</Trans>
-                              </SelectItem>
-                            </SelectContent>
-                          </SelectRoot>
+                            onValueChange={field.handleChange}
+                            placeholder={t`Search currencies`}
+                            emptyMessage={t`No currencies found.`}
+                          />
                         </Field>
                       )}
                     </form.Field>

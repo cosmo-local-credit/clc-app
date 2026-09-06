@@ -409,7 +409,7 @@ describe("VoucherDetailPage", () => {
     const offerings = screen.getByRole("tabpanel");
     expect(within(offerings).getByText("Vegetables")).toBeTruthy();
     // Price per unit, as one message: the unit is part of what the figure means.
-    expect(within(offerings).getByText("10 MALII per kg")).toBeTruthy();
+    expect(within(offerings).getByText("100 KSH / kg")).toBeTruthy();
     expect(within(offerings).getByText("Price on request")).toBeTruthy();
     expect(
       within(offerings).getByText(
@@ -494,21 +494,42 @@ describe("VoucherDetailPage", () => {
       name: "Decrease quantity",
     }) as HTMLButtonElement;
 
-    expect(within(dialog).getByText("10 MALII each")).toBeTruthy();
-    expect(totalRow()).toContain("10 MALII");
+    expect(within(dialog).getByText("100 KSH / kg")).toBeTruthy();
+    expect(totalRow()).toContain("100 KSH");
     // One is the floor, so the minus is inert until the quantity leaves it.
     expect(decrease.disabled).toBe(true);
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
 
-    expect(totalRow()).toContain("30 MALII");
+    expect(totalRow()).toContain("300 KSH");
     expect(decrease.disabled).toBe(false);
 
     fireEvent.click(decrease);
 
-    expect(totalRow()).toContain("20 MALII");
+    expect(totalRow()).toContain("200 KSH");
     expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
+  });
+
+  it("shows the unit-of-account price and hides a new offering's synthetic quantity", () => {
+    mocks.detailResult.data = detail({ voucherUoa: "KES", voucherValue: "1" });
+    const offering = mocks.offeringsResult.data?.pages[0]?.offerings[0];
+    if (!offering) throw new Error("expected offering fixture");
+    offering.pricePerUnit = "600";
+    offering.quantity = "1";
+    offering.unit = "hour";
+    offering.unitLabel = "hour";
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByText("600 KES / hour")).toBeTruthy();
+    expect(within(panel).queryByText("1 hour")).toBeNull();
+
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "View offering details: Vegetables" }),
+    );
+    expect(within(screen.getByRole("dialog")).getByText("600 KES / hour")).toBeTruthy();
   });
 
   it("shows no total for an offering the issuer never priced", () => {
