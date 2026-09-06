@@ -218,6 +218,29 @@ describe("LocationPicker", () => {
     rerender(<LocationPicker onChange={vi.fn()} value={undefined} />);
 
     expect(screen.getByTestId("map-pin").textContent).toBe(",");
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty("value", "");
+  });
+
+  it("fills the visible input when the parent loads a saved location", () => {
+    const { rerender } = render(<LocationPicker onChange={vi.fn()} value={undefined} />);
+
+    rerender(
+      <LocationPicker
+        onChange={vi.fn()}
+        value={{
+          lat: -4.9098,
+          lng: 38.8784,
+          locationName: "Muheza, Tanga, Tanzania",
+          country: "TZ",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+      "value",
+      "Muheza, Tanga, Tanzania",
+    );
+    expect(mockSearchLocations).not.toHaveBeenCalled();
   });
 
   it("reverse-geocodes map taps and fills the location input", async () => {
