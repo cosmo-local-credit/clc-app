@@ -6,6 +6,7 @@ import {
   normalizeS,
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { encodeAbiParameters } from "viem";
 
 import type { RelayerClient } from "@clc/api/features/relayer/client";
@@ -14,6 +15,8 @@ import { CHAIN_ID_BIGINT } from "#/lib/chain";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 import { authClient } from "#/lib/api/auth";
+
+const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 
 export type CaliburCall = {
   to: `0x${string}`;
@@ -63,6 +66,7 @@ export async function sendCaliburTransaction(
   const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(digestBytes),
+      rpId: RELYING_PARTY_ID,
       allowCredentials: [
         {
           id: toArrayBuffer(base64UrlToBytes(cred.credentialId)),

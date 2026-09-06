@@ -7,6 +7,7 @@ import {
   normalizeS,
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { encodeAbiParameters, hexToBytes, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -49,6 +50,7 @@ const ROOT_KEY_HASH = `0x${"00".repeat(32)}` as const;
 
 /** No expiry. The relayer dispatches immediately and clc-core tracks the OTX. */
 const NO_DEADLINE = "0";
+const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 
 export async function relayOperatorBatch(
   calls: CaliburCall[],
@@ -201,6 +203,7 @@ async function signDigestWithPasskey(
   const assertion = (await navigator.credentials.get({
     publicKey: {
       challenge: toArrayBuffer(hexToBytes(digest)),
+      rpId: RELYING_PARTY_ID,
       allowCredentials: [{ id: toArrayBuffer(base64UrlToBytes(credentialId)), type: "public-key" }],
       userVerification: "required",
     },
