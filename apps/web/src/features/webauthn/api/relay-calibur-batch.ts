@@ -6,6 +6,7 @@ import {
   parseDERSignature,
   type CaliburCall,
 } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { encodeAbiParameters, hexToBytes, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
@@ -17,6 +18,7 @@ import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 const ZERO_HASH = `0x${"00".repeat(32)}` as `0x${string}`;
+const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 
 export type RelayCaliburBatchInput = {
   senderAddress: `0x${string}`;
@@ -141,6 +143,7 @@ async function signPreviewWithWebAuthn(
   const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(hexToBytes(digest)),
+      rpId: RELYING_PARTY_ID,
       allowCredentials: [
         {
           id: toArrayBuffer(base64UrlToBytes(credentialId)),
