@@ -54,6 +54,18 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   }, [onChange]);
 
   useEffect(() => {
+    const nextQuery = value?.locationName ?? "";
+    setQuery((currentQuery) => {
+      if (currentQuery === nextQuery) return currentQuery;
+      // A parent-provided place name is already selected data, not a new search.
+      // Suppress the search effect that follows this state update so opening an
+      // edit form cannot cover the saved location with a suggestion dropdown.
+      skipNextSearchRef.current = Boolean(nextQuery);
+      return nextQuery;
+    });
+  }, [value?.locationName]);
+
+  useEffect(() => {
     setCanRenderMap(true);
   }, []);
 
