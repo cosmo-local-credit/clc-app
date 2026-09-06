@@ -119,7 +119,9 @@ export function PoolDetailPage({
         })}
       </div>
 
-      {activeTab === "offerings" ? <PoolOfferingsPanel poolAddress={poolAddress} /> : null}
+      {activeTab === "offerings" ? (
+        <PoolOfferingsPanel poolAddress={poolAddress} vouchers={vouchers} />
+      ) : null}
 
       {activeTab === "vouchers" ? (
         <div id="pool-panel-vouchers" role="tabpanel" aria-labelledby="pool-tab-vouchers">

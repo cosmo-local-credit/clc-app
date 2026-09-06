@@ -34,11 +34,15 @@ import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-shee
 export function VoucherOfferingsPanel({
   voucherAddress,
   voucherSymbol,
+  voucherValue,
+  voucherUoa,
   ownerAddress,
   isKnownEmpty,
 }: {
   voucherAddress: string | undefined;
   voucherSymbol: string;
+  voucherValue: string | null;
+  voucherUoa: string | null;
   /** The catalog's owner for this voucher, or null when it records none. */
   ownerAddress: string | null;
   /** `kind === "voucher"` already proves the result is empty — skip the request. */
@@ -95,6 +99,7 @@ export function VoucherOfferingsPanel({
         query={query}
         suppressed={!isOwner && isKnownEmpty}
         fallbackSymbol={voucherSymbol}
+        resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
         management={
           isOwner
             ? {

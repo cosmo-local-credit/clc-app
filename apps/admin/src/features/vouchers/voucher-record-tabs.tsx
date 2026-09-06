@@ -179,6 +179,8 @@ function OfferingsPanel({
             <VoucherOfferingCard
               key={offering.id}
               offering={offering}
+              voucherValue={voucher.voucherValue}
+              voucherUoa={voucher.voucherUoa}
               onEdit={() => onEditOffering(offering)}
             />
           ))}

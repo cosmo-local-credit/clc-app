@@ -6,6 +6,7 @@ import {
   voucherNameSchema,
   voucherPriceSchema,
   voucherSymbolSchema,
+  voucherUnitSchema,
 } from "@clc/core/features/vouchers/logic";
 import {
   optionalEmailSchema,
@@ -45,18 +46,7 @@ import { isStorageConfigured } from "#/lib/storage";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { useVoucherPublishDeployment } from "./use-voucher-publish-deployment";
-
-/**
- * The units a voucher can be denominated in, matching the member app's own list.
- * clc-core accepts any string for `voucherUoa`, so widening this is a product
- * decision rather than a console one — an operator typing "EURO" here would put a
- * value in the catalog no other screen knows how to read.
- */
-const UNIT_OPTIONS = [
-  { value: "KES", label: "KES" },
-  { value: "USD", label: "USD" },
-  { value: "HOUR", label: "HOUR" },
-] as const;
+import { UnitOfAccountCombobox } from "./ui/unit-of-account-combobox";
 
 const TYPE_OPTIONS = [
   { value: "standard", label: "Standard" },
@@ -114,7 +104,7 @@ const voucherPublishSchema = z
     description: voucherDescriptionSchema,
     owner: ownerSchema,
     decimals: tokenDecimalsSchema,
-    unitOfAccount: z.enum(["KES", "USD", "HOUR"]),
+    unitOfAccount: voucherUnitSchema,
     price: voucherPriceSchema,
     voucherType: z.enum(["standard", "expiring"]),
     expiryDate: z.string(),
@@ -421,26 +411,11 @@ function VoucherPublishForm({ operator }: { operator: string }) {
               <form.Field name="unitOfAccount">
                 {(field) => (
                   <Field label="Unit of account" htmlFor={field.name} error={fieldError(field)}>
-                    <Select
-                      items={UNIT_OPTIONS}
+                    <UnitOfAccountCombobox
+                      id={field.name}
                       value={field.state.value}
-                      onValueChange={(value) => {
-                        if (value === "KES" || value === "USD" || value === "HOUR") {
-                          field.handleChange(value);
-                        }
-                      }}
-                    >
-                      <SelectTrigger id={field.name} className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {UNIT_OPTIONS.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onValueChange={field.handleChange}
+                    />
                   </Field>
                 )}
               </form.Field>

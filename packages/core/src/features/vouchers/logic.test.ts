@@ -38,6 +38,15 @@ describe("voucherCreateSchema", () => {
     expect(voucherCreateSchema.safeParse(validVoucher).success).toBe(true);
   });
 
+  it("accepts currencies beyond the former three-option list", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, unitOfAccount: "TZS" }).success).toBe(
+      true,
+    );
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, unitOfAccount: "EUR" }).success).toBe(
+      true,
+    );
+  });
+
   it("requires an expiration date for an expiring voucher", () => {
     const result = voucherCreateSchema.safeParse({
       ...validVoucher,

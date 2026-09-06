@@ -138,6 +138,27 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByText("1 KHV = 10 KES")).toBeTruthy();
   });
 
+  it("searches the full currency list using code or currency name", async () => {
+    render(<CreateVoucherFlow step="voucher" />);
+
+    const currency = screen.getByRole("combobox", { name: "Priced in" });
+    fireEvent.click(currency);
+    expect(screen.getByRole("option", { name: "KES - Kenyan Shillings" })).toBeTruthy();
+    expect(screen.queryByText(/KES —/)).toBeNull();
+
+    fireEvent.change(currency, { target: { value: "Tanzanian" } });
+    const tanzanianShilling = await screen.findByRole("option", {
+      name: "TZS - Tanzanian Shilling",
+    });
+    fireEvent.pointerDown(tanzanianShilling, { pointerType: "touch" });
+    fireEvent.click(tanzanianShilling);
+
+    await waitFor(() =>
+      expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
+    );
+    expect(screen.getByText("1 XYZ = 1 TZS")).toBeTruthy();
+  });
+
   it("keeps tags compact and prefills contact details from the profile", async () => {
     render(<CreateVoucherFlow step="place" />);
 

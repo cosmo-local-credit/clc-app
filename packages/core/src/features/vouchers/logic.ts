@@ -6,6 +6,7 @@ import {
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
+import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 import type { CaliburCall } from "../webauthn/index";
@@ -44,7 +45,9 @@ export const voucherPathLicenseSchema = z.literal(true, {
   error: "Accept the PATH License to publish your voucher",
 });
 
-const voucherUnitSchema = z.enum(["KES", "USD", "HOUR"]);
+export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
+  message: "Choose a currency",
+});
 const voucherTypeSchema = z.enum(["standard", "expiring"]);
 
 export type VoucherUnit = z.infer<typeof voucherUnitSchema>;

@@ -3,7 +3,10 @@ import type { Offering } from "@clc/api/features/offerings/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { adminPoolTransactionsQueryOptions } from "@clc/api/features/admin/queries";
 import { poolOfferingsQueryOptions } from "@clc/api/features/offerings/queries";
-import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
+import {
+  formatOfferingDisplayPrice,
+  formatOfferingQuantity,
+} from "@clc/core/features/market/logic";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 
@@ -124,7 +127,7 @@ export function PoolRecordTabs({
         ) : tab === "feeds" ? (
           <FeedsPanel pool={pool} vouchers={vouchers} state={vouchersState} />
         ) : tab === "offerings" ? (
-          <OfferingsPanel pool={pool} />
+          <OfferingsPanel pool={pool} vouchers={vouchers} />
         ) : (
           <ActivityPanel pool={pool} />
         )}
@@ -352,7 +355,7 @@ function FeedsPanel({
  * the console that answers "is this pool trading" with something other than a
  * transaction count.
  */
-function OfferingsPanel({ pool }: { pool: UserPool }) {
+function OfferingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const query = useQuery(
     poolOfferingsQueryOptions(clcApi.offerings, pool.address, OFFERING_PAGE_SIZE),
   );
@@ -382,7 +385,15 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
             </TableHeader>
             <TableBody>
               {offerings.map((offering) => (
-                <OfferingRow key={offering.id} offering={offering} />
+                <OfferingRow
+                  key={offering.id}
+                  offering={offering}
+                  voucher={vouchers.find(
+                    (candidate) =>
+                      candidate.tokenAddress.toLowerCase() ===
+                      offering.voucherAddress.toLowerCase(),
+                  )}
+                />
               ))}
             </TableBody>
           </Table>
@@ -392,9 +403,18 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
   );
 }
 
-function OfferingRow({ offering }: { offering: Offering }) {
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unitLabel);
-  const price = formatOfferingPrice(offering.pricePerUnit);
+function OfferingRow({ offering, voucher }: { offering: Offering; voucher?: PoolVoucher }) {
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucher?.voucherValue ?? null,
+    voucher?.voucherUoa ?? null,
+    offering.voucherSymbol ?? "",
+  );
 
   return (
     <TableRow>
@@ -419,7 +439,7 @@ function OfferingRow({ offering }: { offering: Offering }) {
       </TableCell>
       <TableCell className="font-data text-xs">
         {price
-          ? `${price.value}${offering.voucherSymbol ? ` ${offering.voucherSymbol}` : ""}`
+          ? `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
           : "—"}
       </TableCell>
       <TableCell>
