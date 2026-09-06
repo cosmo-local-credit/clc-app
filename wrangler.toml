@@ -29,10 +29,11 @@ VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"
-# publicnode, the same endpoint clc-core and the tracker use. Left unset, viem
-# would fall back to the chain's own default and the client could read a different
-# node's view of the head than the backend writes to.
-VITE_PUBLIC_RPC_URL = "https://gnosis-rpc.publicnode.com"
+# Our own Gnosis full node, the same endpoint clc-core, eth-tracker and
+# eth-indexer use. Left unset, viem would fall back to the chain's own default and
+# the client could read a different node's view of the head than the backend writes
+# to. Self-hosting also removes the third-party rate limit that capped the tracker.
+VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 # Scoped to the Gnosis subtree, not to cosmolocal.credit, so one passkey works on
@@ -72,7 +73,7 @@ VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"
-VITE_PUBLIC_RPC_URL = "https://gnosis-rpc.publicnode.com"
+VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-app-gnosis.pages.dev"
