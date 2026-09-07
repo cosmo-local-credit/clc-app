@@ -22,7 +22,7 @@ import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -31,6 +31,7 @@ import { useConnection } from "wagmi";
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
+import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -44,6 +45,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { isStorageConfigured } from "#/lib/api/storage";
 import {
   beginVoucherCreateHistory,
   exitVoucherCreateHistory,
@@ -69,6 +71,8 @@ type VoucherFormValues = {
   website: string;
   phone: string;
   terms: string;
+  iconUrl: string;
+  bannerUrl: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
 };
@@ -88,12 +92,22 @@ const DEFAULT_VALUES: VoucherFormValues = {
   website: "",
   phone: "",
   terms: "",
+  iconUrl: "",
+  bannerUrl: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
 };
 
 const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone", "terms"] as const;
+const PLACE_FIELDS = [
+  "location",
+  "email",
+  "website",
+  "phone",
+  "terms",
+  "iconUrl",
+  "bannerUrl",
+] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
@@ -106,6 +120,10 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const draft = useVoucherCreateDraft((state) => state.draft);
   const setDraft = useVoucherCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
+  const [iconBusy, setIconBusy] = useState(false);
+  const [bannerBusy, setBannerBusy] = useState(false);
+  const imagesBusy = iconBusy || bannerBusy;
 
   const form = useForm({
     defaultValues: draft ?? DEFAULT_VALUES,
@@ -184,6 +202,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   async function goToReview() {
+    if (imagesBusy) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/vouchers/create/$step", params: { step: "review" } });
   }
@@ -201,6 +220,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
       <BackChevron
         label={step === "voucher" ? t`Vouchers` : t`Back`}
         to={fallbackTo}
+        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
         className="self-start"
       />
 
@@ -493,6 +513,38 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </h1>
 
             <div className="mt-3.5 space-y-3.5">
+              {isStorageConfigured ? (
+                <div className="space-y-5 border border-border bg-card p-4">
+                  <form.Field name="iconUrl">
+                    {(field) => (
+                      <ImageUploadField
+                        label={t`Logo`}
+                        hint={t`Optional`}
+                        purpose="voucher.icon"
+                        value={field.state.value || null}
+                        onChange={(url) => field.handleChange(url ?? "")}
+                        onBusyChange={setIconBusy}
+                        disabled={deployVoucher.isPending}
+                      />
+                    )}
+                  </form.Field>
+
+                  <form.Field name="bannerUrl">
+                    {(field) => (
+                      <ImageUploadField
+                        label={t`Cover photo`}
+                        hint={t`Optional`}
+                        purpose="voucher.banner"
+                        value={field.state.value || null}
+                        onChange={(url) => field.handleChange(url ?? "")}
+                        onBusyChange={setBannerBusy}
+                        disabled={deployVoucher.isPending}
+                      />
+                    )}
+                  </form.Field>
+                </div>
+              ) : null}
+
               <form.Field name="location" validators={{ onSubmit: locationSchema }}>
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
@@ -543,6 +595,9 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         listLabel={t`Voucher tags`}
                         placeholder={t`Search tags`}
                         removeLabel={(tag) => t`Remove ${tag}`}
+                        navigationHistory={router.history}
+                        open={tagsOpen}
+                        onOpenChange={setTagsOpen}
                       />
                     ) : null}
                     <p className="mt-1.5 text-muted-foreground text-xs">
@@ -649,8 +704,16 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </div>
 
             <div className="mt-auto pt-6">
-              <Button type="button" className="h-11 w-full" onClick={() => void goToReview()}>
-                <Trans>Next</Trans>
+              <Button
+                type="button"
+                className="h-11 w-full"
+                disabled={imagesBusy}
+                onClick={() => void goToReview()}
+              >
+                {imagesBusy ? (
+                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                {imagesBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
           </>

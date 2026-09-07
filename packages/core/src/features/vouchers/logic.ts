@@ -49,6 +49,13 @@ export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
   message: "Choose a currency",
 });
 const voucherTypeSchema = z.enum(["standard", "expiring"]);
+const optionalVoucherImageUrlSchema = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || /^https?:\/\//i.test(value), {
+    message: "The image must be an http(s) URL",
+  })
+  .optional();
 
 export type VoucherUnit = z.infer<typeof voucherUnitSchema>;
 export type VoucherType = z.infer<typeof voucherTypeSchema>;
@@ -92,6 +99,8 @@ const voucherPlaceSchema = z.object({
   website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
   terms: optionalTermsUrlSchema,
+  iconUrl: optionalVoucherImageUrlSchema,
+  bannerUrl: optionalVoucherImageUrlSchema,
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
@@ -157,6 +166,8 @@ export function toVoucherDeployPayload(
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
+    ...(input.iconUrl?.trim() ? { iconUrl: input.iconUrl.trim() } : {}),
+    ...(input.bannerUrl?.trim() ? { bannerUrl: input.bannerUrl.trim() } : {}),
     voucherUoa: input.unitOfAccount,
     voucherValue: Number(input.price),
     locationName: input.location.locationName,

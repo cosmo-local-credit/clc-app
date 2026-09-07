@@ -21,6 +21,7 @@ vi.mock("@tanstack/react-router", () => ({
       push: vi.fn(),
       replace: vi.fn(),
       back: vi.fn(),
+      block: vi.fn(() => vi.fn()),
     },
   }),
 }));
@@ -84,6 +85,44 @@ vi.mock("#/hooks/use-deployment", () => ({
     isPending: false,
     refetch: vi.fn(),
   }),
+}));
+
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
+
+// Cropping and uploading are covered by the shared field's tests. This keeps
+// this suite on form integration: stored URLs must survive the steps and reach
+// the deploy request.
+vi.mock("#/components/ui/image-upload-field", () => ({
+  ImageUploadField: ({
+    label,
+    purpose,
+    value,
+    onChange,
+    onBusyChange,
+  }: {
+    label: string;
+    purpose: "voucher.icon" | "voucher.banner";
+    value: string | null;
+    onChange: (url: string | null) => void;
+    onBusyChange?: (busy: boolean) => void;
+  }) => (
+    <div>
+      <span>{label}</span>
+      <span data-testid={`${purpose}-value`}>{value ?? ""}</span>
+      <button
+        type="button"
+        onClick={() => onChange(`https://cdn.test/${purpose.replace(".", "/")}.webp`)}
+      >
+        {`Upload ${label}`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(true)}>
+        {`Start ${label} upload`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(false)}>
+        {`Finish ${label} upload`}
+      </button>
+    </div>
+  ),
 }));
 
 import { CreateVoucherFlow } from "./create-voucher-flow";
@@ -169,6 +208,8 @@ describe("CreateVoucherFlow", () => {
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
     expect(screen.getByLabelText("Contact Website")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Upload Logo" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Upload Cover photo" })).toBeTruthy();
     expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search voucher tags" });
@@ -189,6 +230,20 @@ describe("CreateVoucherFlow", () => {
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
     expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
+  });
+
+  it("does not advance while a voucher image is still uploading", () => {
+    render(<CreateVoucherFlow step="place" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Start Logo upload" }));
+    expect((screen.getByRole("button", { name: "Uploading…" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Finish Logo upload" }));
+    expect((screen.getByRole("button", { name: "Next" }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
   });
 
   it("requires both linked legal agreements before publishing", () => {
@@ -241,6 +296,8 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Terms URL"), {
       target: { value: "https://kilifi.example/terms" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Upload Logo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Upload Cover photo" }));
     fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -282,6 +339,8 @@ describe("CreateVoucherFlow", () => {
         website: "https://kilifi.example",
         terms: "https://kilifi.example/terms",
         phone: "+254712345678",
+        iconUrl: "https://cdn.test/voucher/icon.webp",
+        bannerUrl: "https://cdn.test/voucher/banner.webp",
       }),
     );
     expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({

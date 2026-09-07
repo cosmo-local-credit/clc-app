@@ -54,7 +54,12 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 }));
 
 vi.mock("#/hooks/use-deployment", () => ({
-  useTokenTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
+  useTokenTags: () => ({
+    data: ["Agriculture"],
+    isError: false,
+    isPending: false,
+    refetch: vi.fn(),
+  }),
 }));
 
 import { CreatePoolFlow, type PoolCreateStep } from "#/features/pools/ui";
@@ -129,6 +134,32 @@ describe("pool create navigation", () => {
     history.back();
     await screen.findByRole("heading", { name: "Create pool" });
     expect((screen.getByLabelText("Pool Name") as HTMLInputElement).value).toBe("Kilifi Growers");
+  });
+
+  it("uses the first Back press to close an open tag search", async () => {
+    const { history } = await renderFlow();
+
+    fireEvent.change(screen.getByLabelText("Pool Name"), {
+      target: { value: "Kilifi Growers" },
+    });
+    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "KGP1" } });
+    fireEvent.change(screen.getByLabelText("Pool Description"), {
+      target: { value: "A pool for Kilifi growers." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await screen.findByRole("heading", { name: "Where and what for" });
+    fireEvent.click(screen.getByRole("combobox", { name: "Search pool tags" }));
+    expect(screen.getByRole("option", { name: "Agriculture" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Where and what for" })).toBeTruthy();
+    expect(history.location.pathname).toBe("/pools/create/place");
+
+    fireEvent.click(screen.getByRole("link", { name: "Back" }));
+    await screen.findByRole("heading", { name: "Create pool" });
   });
 
   it("redirects an unknown pool step before the flow loads", async () => {
