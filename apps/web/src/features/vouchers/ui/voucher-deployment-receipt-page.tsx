@@ -16,6 +16,7 @@ import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherSupply } from "#/features/vouchers/hooks/use-voucher-supply";
@@ -54,6 +55,9 @@ export function VoucherDeploymentReceiptPage({
   );
   const contract = contractQuery.data;
   const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
+  const voucherDetail = useMarketVoucherDetail(
+    confirmed && !draft ? (contract?.address ?? undefined) : undefined,
+  );
 
   const [supply, setSupply] = useState(mintAmount ?? "");
   const [supplyError, setSupplyError] = useState<string | null>(null);
@@ -150,9 +154,14 @@ export function VoucherDeploymentReceiptPage({
   };
 
   const decimals = contract.decimals ?? (draft ? Number(draft.decimals) : null);
-  const supplyValue = draft
-    ? formatOfferingDisplayPrice(supply, draft.price, draft.unitOfAccount, contract.symbol)
-    : null;
+  const voucherValue = draft?.price ?? voucherDetail.data?.voucherValue ?? null;
+  const voucherUnit = draft?.unitOfAccount ?? voucherDetail.data?.voucherUoa ?? null;
+  const supplyValue = formatOfferingDisplayPrice(
+    supply,
+    voucherValue,
+    voucherUnit,
+    contract.symbol,
+  );
   const detailRows = (
     <>
       <InfoRow label={t`Name`}>{contract.name}</InfoRow>
@@ -401,13 +410,16 @@ export function VoucherDeploymentReceiptPage({
       ? formatTokenAmount(voucherSupply.data, decimals, decimals)
       : "";
   const publishedSupply = chainSupply || mintAmount || supply.trim();
+  const publishedSupplyValue = publishedSupply
+    ? formatOfferingDisplayPrice(publishedSupply, voucherValue, voucherUnit, contract.symbol)
+    : null;
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>{contract.symbol} is live</Trans>
+          <Trans>{contract.name} is live</Trans>
         </h1>
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>{contract.name} can be held, sent and redeemed.</Trans>
@@ -419,7 +431,11 @@ export function VoucherDeploymentReceiptPage({
 
       {publishedSupply ? (
         <dl className="mt-6 border border-border bg-card">
-          <InfoRow label={t`Supply`}>{`${publishedSupply} ${contract.symbol}`}</InfoRow>
+          <InfoRow label={t`Supply`}>
+            {publishedSupplyValue
+              ? `${publishedSupplyValue.value} ${publishedSupplyValue.unit}`
+              : `${publishedSupply} ${contract.symbol}`}
+          </InfoRow>
         </dl>
       ) : null}
 

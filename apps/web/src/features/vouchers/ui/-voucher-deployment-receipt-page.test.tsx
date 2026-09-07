@@ -37,6 +37,8 @@ const {
     mintTrackingQueryError: null as Error | null,
     supplyRaw: "0" as string | undefined,
     supplyError: null as Error | null,
+    voucherValue: null as string | null,
+    voucherUoa: null as string | null,
     walletAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as `0x${string}` | undefined,
     delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
   },
@@ -69,6 +71,15 @@ vi.mock("#/features/vouchers/hooks/use-voucher-supply", () => ({
 
 vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
   useVoucherMint: () => ({ mutateAsync: mintMock, isPending: false }),
+}));
+
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({
+    data:
+      state.voucherValue && state.voucherUoa
+        ? { voucherValue: state.voucherValue, voucherUoa: state.voucherUoa }
+        : undefined,
+  }),
 }));
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({
@@ -125,6 +136,8 @@ beforeEach(() => {
   state.mintTrackingQueryError = null;
   state.supplyRaw = "0";
   state.supplyError = null;
+  state.voucherValue = null;
+  state.voucherUoa = null;
   state.walletAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
   state.delegationStatus = "delegated";
   mintMock.mockResolvedValue({ trackingId: "mint-1", signatureType: "webauthn" });
@@ -196,11 +209,12 @@ describe("VoucherDeploymentReceiptPage", () => {
     Object.defineProperty(navigatorMock, "clipboard", { value: { writeText } });
     vi.stubGlobal("navigator", navigatorMock);
 
-    renderReceipt();
+    renderReceipt({ mintTrackingId: "mint-1", mintAmount: "100" });
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
     expect(screen.getByText("Kilifi Harvest can be held, sent and redeemed.")).toBeTruthy();
     expect(screen.getByText("Published")).toBeTruthy();
+    expect(screen.getByText("100 KES")).toBeTruthy();
     expect(screen.getByText("Standard")).toBeTruthy();
     expect(screen.getByText("Decimals")).toBeTruthy();
     expect(screen.getByText("Contract address")).toBeTruthy();
@@ -299,11 +313,13 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
   it("recovers a completed mint from on-chain supply after refresh", () => {
     state.supplyRaw = "10000000000";
+    state.voucherValue = "1";
+    state.voucherUoa = "KES";
 
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
-    expect(screen.getByText("10000 KHV")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
+    expect(screen.getByText("10000 KES")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Mint supply" })).toBeNull();
   });
 
@@ -431,12 +447,14 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
   it("releases the flow once the mint confirms, showing what was minted", () => {
     state.mintTrackingOutcome = { kind: "success", otx: { txHash: "0xmint" } };
+    state.voucherValue = "1";
+    state.voucherUoa = "KES";
 
     renderReceipt({ mintTrackingId: "mint-1", mintAmount: "500" });
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "View voucher" })).toBeTruthy();
     expect(screen.queryByLabelText("Create vouchers")).toBeNull();
-    expect(screen.getByText("500 KHV")).toBeTruthy();
+    expect(screen.getByText("500 KES")).toBeTruthy();
   });
 });

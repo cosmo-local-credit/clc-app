@@ -28,6 +28,10 @@ vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
   useVoucherMint: () => ({ mutateAsync: mintMock, isPending: false }),
 }));
 
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({ data: undefined }),
+}));
+
 vi.mock("#/features/vouchers/hooks/use-voucher-supply", () => ({
   useVoucherSupply: () => ({
     data: "0",
