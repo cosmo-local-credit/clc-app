@@ -39,8 +39,8 @@ export function MyPostsPage() {
 
       {postsQuery.isPending ? (
         <div aria-busy="true" aria-label={t`Loading your posts…`} className="space-y-2">
-          <Skeleton className="h-20 w-full rounded-none" />
-          <Skeleton className="h-20 w-full rounded-none" />
+          <Skeleton className="h-[6.5rem] w-full rounded-none" />
+          <Skeleton className="h-[6.5rem] w-full rounded-none" />
         </div>
       ) : null}
 
@@ -88,17 +88,13 @@ function MyPostRow({ post, locale }: { post: ManagedReportSummary; locale: strin
   const updated = formatReportDate(post.updatedAt, locale);
 
   return (
-    <li className="space-y-3 border border-border bg-card p-4">
+    <li className="space-y-2 border border-border bg-card p-3">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 flex-1 font-heading text-base font-semibold leading-snug [overflow-wrap:anywhere]">
           {post.title}
         </p>
         <PostStatusBadge status={post.status} />
       </div>
-
-      {post.description ? (
-        <p className="line-clamp-2 text-muted-foreground text-sm">{post.description}</p>
-      ) : null}
 
       {updated && post.updatedAt ? (
         <p className="text-muted-foreground text-xs">
