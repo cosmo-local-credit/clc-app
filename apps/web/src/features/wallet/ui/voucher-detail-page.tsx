@@ -339,6 +339,7 @@ export function VoucherDetailPage({
       {activeTab === "posts" ? (
         <VoucherPostsPanel
           voucher={reportVoucher}
+          voucherName={token.name}
           voucherDataPending={detailQuery.isPending || supportingDataPending}
         />
       ) : null}
@@ -366,9 +367,11 @@ function EmptyTabPanel({ tab, children }: { tab: "reviews"; children: ReactNode 
 
 function VoucherPostsPanel({
   voucher,
+  voucherName,
   voucherDataPending,
 }: {
   voucher: VoucherRef | undefined;
+  voucherName: string;
   voucherDataPending: boolean;
 }) {
   const { t } = useLingui();
@@ -450,6 +453,19 @@ function VoucherPostsPanel({
       aria-labelledby="voucher-tab-posts"
       className="space-y-2"
     >
+      {/* Writing about this voucher starts here as well as on the Posts screen.
+          The editor is the same one either way — the voucher travels in the URL
+          and arrives already linked. */}
+      {auth.isAuthenticated && voucher ? (
+        <Button asChild size="sm" className="h-9 w-full">
+          <Link
+            to="/posts/new"
+            search={{ voucher: voucher.address, chainId: voucher.chainId, voucherName }}
+          >
+            <Trans>Write a post</Trans>
+          </Link>
+        </Button>
+      ) : null}
       {content}
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
       {reportsQuery.isFetchingNextPage ? (
