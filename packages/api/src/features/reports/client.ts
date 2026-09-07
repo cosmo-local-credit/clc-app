@@ -507,7 +507,9 @@ export function serializeReportWrite(input: ReportWrite): string {
   const body = JSON.stringify({
     title: normalized.title,
     body: normalized.body,
-    description: normalized.description,
+    // Empty is an explicit null, like the other optional text: the editor no
+    // longer asks for a summary, and `""` would store a blank string.
+    description: normalized.description === "" ? null : normalized.description,
     imageUrl: normalized.imageUrl,
     geoLat: normalized.geoLat,
     geoLng: normalized.geoLng,

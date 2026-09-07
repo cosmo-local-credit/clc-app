@@ -22,7 +22,16 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({ isAuthenticated: true, isLoading: false, session: { address: "0x1" } }),
+  useAuthStatus: () => ({
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0xAbC0000000000000000000000000000000000123",
+    session: { address: "0x1" },
+  }),
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({ data: undefined, isPending: false }),
 }));
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));

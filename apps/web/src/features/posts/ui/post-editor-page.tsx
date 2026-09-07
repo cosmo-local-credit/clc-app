@@ -5,7 +5,6 @@ import {
 import type { LocationInput } from "@clc/core/features/location/logic";
 import {
   REPORT_BODY_MAX,
-  REPORT_DESCRIPTION_MAX,
   REPORT_HOST_NAME_MAX,
   REPORT_MAX_ATTACHMENTS,
   REPORT_MAX_IMAGES,
@@ -19,13 +18,15 @@ import {
   reportToFormValues,
   reportWriteSchema,
   toDateTimeLocalValue,
+  todayReportPeriod,
   voucherRefKey,
+  type ReportVoucherRef,
   type ReportWrite,
 } from "@clc/core/features/reports/logic";
 import { getFieldError, useForm, useStore } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -39,19 +40,29 @@ import { Textarea } from "#/components/ui/textarea";
 import { Toggle } from "#/components/ui/toggle";
 import { BackChevron } from "#/components/wallet";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import {
+  clearPostDraft,
+  readPostDraft,
+  writePostDraft,
+} from "#/features/posts/api/post-draft-storage";
 import { useMyPost } from "#/features/posts/hooks/use-my-posts";
 import { useCreatePost, useUpdatePost } from "#/features/posts/hooks/use-post-mutations";
+import { useDebouncedValue } from "#/lib/use-debounced-value";
 import { PostAttachmentFields } from "./post-attachment-fields";
 import { PostConfirmDialog } from "./post-confirm-dialog";
 import { PostImageManager } from "./post-image-manager";
 import { PostVoucherPicker } from "./post-voucher-picker";
 
+/** Quiet time before an in-progress post is parked in local storage. */
+const DRAFT_SAVE_DEBOUNCE_MS = 500;
+
+/** A voucher a screen carried in, so the post opens already linked to it. */
+type SeedVoucher = { chainId: number; address: string; name?: string };
+
 export type PostEditorTarget =
-  | {
-      mode: "create";
-      /** A voucher to start the post linked to, carried in from its own screen. */
-      voucher?: { chainId: number; address: string; name?: string } | null;
-    }
+  | { mode: "create"; voucher?: SeedVoucher | null }
   | { mode: "edit"; reportId: string };
 
 /**
@@ -62,33 +73,112 @@ export type PostEditorTarget =
  * behind a `<details>` group so a quick post stays quick.
  */
 export function PostEditorPage(target: PostEditorTarget) {
-  const { t } = useLingui();
-
   if (target.mode === "create") {
-    const seed = target.voucher;
-    const ref = seed ? { chainId: seed.chainId, address: seed.address } : null;
-    return (
-      <PostEditorForm
-        initial={ref ? { ...emptyReportWrite, vouchers: [ref] } : emptyReportWrite}
-        linkedNames={
-          ref && seed?.name ? new Map([[voucherRefKey(ref), seed.name]]) : new Map<string, string>()
-        }
-        // Started from a voucher, so Back names the voucher — and a deep load
-        // with no history lands back on the tab the button was pressed from.
-        back={
-          ref
-            ? {
-                label: seed?.name ?? t`Voucher`,
-                to: `/vouchers/${ref.address}`,
-                search: { tab: "posts" },
-              }
-            : undefined
-        }
-        previousStatus={null}
-      />
-    );
+    return <PostEditorCreate voucher={target.voucher ?? null} />;
   }
   return <PostEditorLoader reportId={target.reportId} />;
+}
+
+/**
+ * What a new post starts with.
+ *
+ * Nothing here is asked for twice. The place is the one the author gave at
+ * signup, the period is today, and a voucher a screen carried in arrives
+ * linked — all of it editable, and none of it a field to fill before writing.
+ *
+ * A draft this device parked wins over all of it: it is what the author
+ * actually typed. The profile read is awaited rather than merged in later
+ * because TanStack Form reads `defaultValues` once, so a form mounted before
+ * the profile arrived would keep an empty Place.
+ */
+function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
+  const { t } = useLingui();
+  const auth = useAuthStatus();
+  const profileQuery = useAuthProfile();
+  const owner = auth.address?.toLowerCase() ?? "";
+  // Read once, on mount: the editor writes to this same slot as it is typed in,
+  // so a later read would hand back the values the form already holds.
+  const [draft, setDraft] = useState(() => readPostDraft(owner));
+  // Stable across renders: the form's save effect keys off this, and a fresh
+  // object every keystroke would park the post on every render instead of on
+  // the debounce.
+  const draftControls = useMemo(
+    () => ({
+      owner,
+      restored: draft !== null,
+      onStartOver: () => {
+        clearPostDraft();
+        setDraft(null);
+      },
+    }),
+    [draft, owner],
+  );
+
+  if (profileQuery.isPending) {
+    return (
+      <EditorShell>
+        <div aria-busy="true" aria-label={t`Loading your post…`} className="space-y-4">
+          <Skeleton className="h-8 w-4/5 rounded-none" />
+          <Skeleton className="h-24 w-full rounded-none" />
+          <Skeleton className="h-40 w-full rounded-none" />
+        </div>
+      </EditorShell>
+    );
+  }
+
+  const seededRef: ReportVoucherRef | null = voucher
+    ? { chainId: voucher.chainId, address: voucher.address }
+    : null;
+  const profile = profileQuery.data;
+  // Both halves of a coordinate or neither: a profile with one is not a place.
+  const hasProfileLocation =
+    typeof profile?.geoLat === "number" && typeof profile?.geoLng === "number";
+  const fresh: ReportWrite = {
+    ...emptyReportWrite,
+    ...todayReportPeriod(),
+    geoLat: hasProfileLocation ? (profile?.geoLat ?? null) : null,
+    geoLng: hasProfileLocation ? (profile?.geoLng ?? null) : null,
+    vouchers: seededRef ? [seededRef] : [],
+  };
+  // The voucher was pressed just now, so it is linked even when a draft is
+  // restored over everything else.
+  const initial: ReportWrite = draft
+    ? {
+        ...draft,
+        vouchers:
+          seededRef &&
+          !draft.vouchers.some((entry) => voucherRefKey(entry) === voucherRefKey(seededRef))
+            ? [...draft.vouchers, seededRef].slice(0, REPORT_MAX_VOUCHERS)
+            : draft.vouchers,
+      }
+    : fresh;
+
+  return (
+    <PostEditorForm
+      // Remounted rather than reset when the draft is dropped: `defaultValues`
+      // is read once, so a new starting document is a new form.
+      key={draft ? "draft" : "fresh"}
+      initial={initial}
+      linkedNames={
+        seededRef && voucher?.name
+          ? new Map([[voucherRefKey(seededRef), voucher.name]])
+          : new Map<string, string>()
+      }
+      // Started from a voucher, so Back names the voucher — and a deep load
+      // with no history lands back on the tab the button was pressed from.
+      back={
+        seededRef
+          ? {
+              label: voucher?.name ?? t`Voucher`,
+              to: `/vouchers/${seededRef.address}`,
+              search: { tab: "posts" },
+            }
+          : undefined
+      }
+      draft={draftControls}
+      previousStatus={null}
+    />
+  );
 }
 
 function PostEditorLoader({ reportId }: { reportId: string }) {
@@ -146,13 +236,20 @@ function PostEditorForm({
   initial,
   linkedNames,
   back,
+  draft,
   previousStatus,
 }: {
   post?: ManagedReportDetail;
   initial: ReportWrite;
-  /** Names for rows the picker's search may not return, keyed by `voucherRefKey`. */
+  /** Names for chips the picker's search may not return, keyed by `voucherRefKey`. */
   linkedNames: Map<string, string>;
   back?: EditorBack;
+  /**
+   * Local draft persistence, on the create screen only. An edit has a server
+   * copy of the same post, and whichever copy won would depend on which screen
+   * was opened last.
+   */
+  draft?: { owner: string; restored: boolean; onStartOver: () => void };
   previousStatus: ManagedReportDetail["status"] | null;
 }) {
   const { t } = useLingui();
@@ -185,6 +282,7 @@ function PostEditorForm({
           );
         } else {
           await create.mutateAsync(value);
+          clearPostDraft();
           toast.success(t`Submitted for approval.`);
         }
         await navigate({ to: "/posts/mine" });
@@ -205,6 +303,22 @@ function PostEditorForm({
   // prompt would both stay armed against the values the page mounted with.
   const formIsDirty = useStore(form.store, (state) => state.isDirty);
   const isDirty = formIsDirty && !saving;
+  const values = useStore(form.store, (state) => state.values);
+  // Debounced, because this runs on every keystroke and a draft is only ever
+  // read on a later visit; `isDirty` is false while saving, which is what stops
+  // a write landing after the submit that cleared the draft.
+  const { settled: settledValues, isPending: settling } = useDebouncedValue(
+    values,
+    DRAFT_SAVE_DEBOUNCE_MS,
+  );
+
+  useEffect(() => {
+    // `settling` matters as much as the debounce: the settled values lag the
+    // form, so the render that first turns the form dirty still holds the
+    // values it mounted with, and writing those would park an empty post.
+    if (!draft || !isDirty || settling) return;
+    writePostDraft(draft.owner, settledValues);
+  }, [draft, isDirty, settledValues, settling]);
 
   // The browser's own prompt covers a reload or a closed tab; the dialog below
   // covers in-app navigation, which this never sees.
@@ -225,6 +339,23 @@ function PostEditorForm({
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         {post ? <Trans>Edit post</Trans> : <Trans>New post</Trans>}
       </h1>
+
+      {draft?.restored ? (
+        <div className="space-y-3 border border-border bg-card p-3">
+          <p className="text-muted-foreground text-sm">
+            <Trans>Picked up where you left off — this post has not been submitted yet.</Trans>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 bg-card"
+            onClick={draft.onStartOver}
+          >
+            <Trans>Start over</Trans>
+          </Button>
+        </div>
+      ) : null}
 
       {wasApproved ? (
         <p className="border border-border bg-card p-3 text-muted-foreground text-sm">
@@ -261,28 +392,6 @@ function PostEditorForm({
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
               />
-            </Field>
-          )}
-        </form.Field>
-
-        <form.Field name="description">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Summary`}
-              hint={t`Shown in the Posts feed`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              <Textarea
-                id={field.name}
-                rows={3}
-                className="bg-card"
-                maxLength={REPORT_DESCRIPTION_MAX}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-              />
-              <Counter value={field.state.value.length} max={REPORT_DESCRIPTION_MAX} />
             </Field>
           )}
         </form.Field>
@@ -600,6 +709,8 @@ function PostEditorForm({
         confirmLabel={t`Discard changes`}
         onConfirm={() => {
           setConfirmLeave(false);
+          // Discard means discard: the parked copy goes with the changes.
+          if (draft) clearPostDraft();
           router.history.back();
         }}
         onCancel={() => setConfirmLeave(false)}
@@ -619,19 +730,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       </summary>
       <div className="mt-4">{children}</div>
     </details>
-  );
-}
-
-function Counter({ value, max }: { value: number; max: number }) {
-  const near = value > max * 0.9;
-  return (
-    <p
-      className={`mt-1 text-right text-xs tabular-nums ${
-        near ? "text-destructive" : "text-muted-foreground"
-      }`}
-    >
-      {value} / {max}
-    </p>
   );
 }
 

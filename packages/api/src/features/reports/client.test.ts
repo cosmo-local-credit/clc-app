@@ -186,6 +186,7 @@ describe("serializeReportWrite", () => {
     // Empty values chosen by the form travel as explicit nulls and empty arrays,
     // not as absent keys.
     expect(body.hostName).toBeNull();
+    expect(body.description).toBeNull();
     expect(body.periodFrom).toBeNull();
     expect(body.imageUrl).toBeNull();
     expect(body.tags).toEqual([]);

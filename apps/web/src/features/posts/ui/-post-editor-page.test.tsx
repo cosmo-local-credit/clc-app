@@ -1,5 +1,5 @@
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -16,6 +16,11 @@ const mocks = vi.hoisted(() => ({
     isError: false,
     refetch: vi.fn(),
   },
+  profile: {
+    data: undefined as { geoLat?: number | null; geoLng?: number | null } | undefined,
+    isPending: false,
+  },
+  voucherResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
   upload: vi.fn(),
@@ -30,6 +35,18 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("sonner", () => ({
   toast: { success: mocks.toastSuccess, error: mocks.toastError },
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0xAbC0000000000000000000000000000000000123",
+  }),
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => mocks.profile,
 }));
 
 vi.mock("#/features/posts/hooks/use-my-posts", () => ({
@@ -48,11 +65,11 @@ vi.mock("#/hooks/use-deployment", () => ({
 
 vi.mock("#/features/home/hooks/use-voucher-search", () => ({
   VOUCHER_SEARCH_MIN_CHARS: 2,
-  useVoucherSearch: () => ({
-    query: "",
+  useVoucherSearch: (query: string) => ({
+    query,
     setQuery: vi.fn(),
-    results: [],
-    status: "idle",
+    results: mocks.voucherResults,
+    status: mocks.voucherResults.length > 0 ? "ready" : "idle",
     retry: vi.fn(),
   }),
 }));
@@ -105,9 +122,13 @@ beforeEach(() => {
   mocks.creating = false;
   mocks.updating = false;
   mocks.detail = { data: undefined, isPending: false, isError: false, refetch: vi.fn() };
+  mocks.profile = { data: undefined, isPending: false };
+  mocks.voucherResults = [];
+  window.localStorage.clear();
 });
 
 const VOUCHER = "0x1111111111111111111111111111111111111111";
+const OTHER_VOUCHER = "0x2222222222222222222222222222222222222222";
 
 function typeTitle(value: string) {
   fireEvent.change(screen.getByLabelText("Title"), { target: { value } });
@@ -243,17 +264,125 @@ describe("creating a post", () => {
     });
   });
 
+  it("starts on today and at the place the author gave at signup", async () => {
+    mocks.profile = { data: { geoLat: -1.2864, geoLng: 36.8172 }, isPending: false };
+    render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    const sent = mocks.createPost.mock.calls[0]?.[0] as {
+      geoLat: number | null;
+      geoLng: number | null;
+      periodFrom: string;
+      periodTo: string;
+    };
+    expect(sent.geoLat).toBe(-1.2864);
+    expect(sent.geoLng).toBe(36.8172);
+    const from = new Date(sent.periodFrom);
+    const to = new Date(sent.periodTo);
+    const today = new Date();
+    expect(from.getDate()).toBe(today.getDate());
+    expect([from.getHours(), from.getMinutes()]).toEqual([0, 0]);
+    expect(to.getDate()).toBe(today.getDate());
+    expect([to.getHours(), to.getMinutes()]).toEqual([23, 59]);
+  });
+
+  // clc-core rejects a half coordinate, and one half of a profile's place is
+  // not a place.
+  it("ignores a profile that holds only one coordinate", async () => {
+    mocks.profile = { data: { geoLat: -1.2864, geoLng: null }, isPending: false };
+    render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ geoLat: null, geoLng: null });
+  });
+
+  it("no longer asks for a summary", async () => {
+    render(<PostEditorPage mode="create" />);
+
+    expect(screen.queryByLabelText("Summary")).toBeNull();
+
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    // The client turns this into the wire's null.
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ description: "" });
+  });
+
+  it("parks an unsent post and picks it up on the next visit", async () => {
+    const first = render(<PostEditorPage mode="create" />);
+    typeTitle("Half-written");
+
+    await waitFor(() => expect(window.localStorage.getItem("clc_post_draft_v1")).toBeTruthy(), {
+      timeout: 2000,
+    });
+    first.unmount();
+
+    render(<PostEditorPage mode="create" />);
+    expect((screen.getByLabelText("Title") as HTMLInputElement).value).toBe("Half-written");
+    expect(screen.getByText(/Picked up where you left off/)).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Start over" }));
+    });
+    expect((screen.getByLabelText("Title") as HTMLInputElement).value).toBe("");
+    expect(window.localStorage.getItem("clc_post_draft_v1")).toBeNull();
+  });
+
+  it("drops the parked post once it has been submitted", async () => {
+    render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
+    await waitFor(() => expect(window.localStorage.getItem("clc_post_draft_v1")).toBeTruthy(), {
+      timeout: 2000,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(window.localStorage.getItem("clc_post_draft_v1")).toBeNull();
+  });
+
+  it("links vouchers as chips from one search field", async () => {
+    mocks.voucherResults = [
+      { chainId: 42220, address: VOUCHER, name: "Priscilah Malii", symbol: "MALII" },
+      { chainId: 42220, address: OTHER_VOUCHER, name: "Wendo Group", symbol: "WENDO" },
+    ];
+    render(<PostEditorPage mode="create" />);
+    typeTitle("August community harvest");
+
+    fireEvent.focus(screen.getByLabelText("Search vouchers"));
+    fireEvent.click(screen.getByRole("option", { name: /Priscilah Malii/ }));
+    fireEvent.focus(screen.getByLabelText("Search vouchers"));
+    fireEvent.click(screen.getByRole("option", { name: /Wendo Group/ }));
+
+    // Two chips, not two rows of delete buttons.
+    expect(screen.getByRole("button", { name: "Unlink Priscilah Malii" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Unlink Wendo Group" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      vouchers: [
+        { chainId: 42220, address: VOUCHER },
+        { chainId: 42220, address: OTHER_VOUCHER },
+      ],
+    });
+  });
+
   it("keeps a seeded voucher removable and does not treat the seed as an edit", () => {
     render(<PostEditorPage mode="create" voucher={{ chainId: 42220, address: VOUCHER }} />);
 
-    // No name in the URL: the row falls back to the address.
-    const unlink = screen.getByRole("button", { name: `Unlink ${VOUCHER}` });
+    // No name in the URL: the chip falls back to the shortened address.
+    const label = `Unlink ${VOUCHER.slice(0, 8)}…${VOUCHER.slice(-6)}`;
+    const unlink = screen.getByRole("button", { name: label });
     // A link rather than the discard-guard button: seeding is not an edit, so
     // Back leaves without a prompt.
     expect(screen.getByRole("link", { name: /Voucher/ })).toBeTruthy();
 
     fireEvent.click(unlink);
-    expect(screen.queryByRole("button", { name: `Unlink ${VOUCHER}` })).toBeNull();
+    expect(screen.queryByRole("button", { name: label })).toBeNull();
   });
 });
 
