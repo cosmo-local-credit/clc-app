@@ -237,7 +237,9 @@ describe("PostsPage", () => {
     const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
-    expect(within(row).getByText(/7 members from Wendo group/)).toBeTruthy();
+    // No summary line: a post written in this app has no description, so the
+    // row is title, tags, date and voucher symbols.
+    expect(within(row).queryByText(/7 members from Wendo group/)).toBeNull();
     expect(within(row).getByText("Food production")).toBeTruthy();
     expect(within(row).getByText("KCH")).toBeTruthy();
     expect(screen.getByRole("region", { name: "Field reports" }).className).not.toMatch(/rounded-/);
@@ -255,13 +257,12 @@ describe("PostsPage", () => {
     expect(screen.queryByText(/Jul 3, 2026/)).toBeNull();
   });
 
-  it("limits the title and description to one line", () => {
+  it("limits the title to one line", () => {
     render(<PostsPage />);
 
     expect(screen.getByText("Harvesting greengrams with Wendo group").className).toContain(
       "line-clamp-1",
     );
-    expect(screen.getByText(/7 members from Wendo group/).className).toContain("line-clamp-1");
   });
 
   it("contains long tag labels and vertically aligns the date metadata", () => {
