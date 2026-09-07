@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Button } from "#/components/ui/button";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
+import { SearchableSelect } from "#/components/ui/searchable-select";
 import {
   SheetBackdrop,
   SheetContent,
@@ -146,6 +147,7 @@ function OfferingForm({
 }) {
   const { t } = useLingui();
   const unitLabel = useUnitLabel();
+  const unitOptions = OFFERING_UNITS.map((unit) => ({ value: unit, label: unitLabel(unit) }));
   const create = useCreateVoucherOffering(voucherAddress);
   const update = useUpdateVoucherOffering(voucherAddress);
 
@@ -275,49 +277,51 @@ function OfferingForm({
           )}
         </form.Field>
 
+        {/* One line for the pair, because they are one figure: fifteen unit
+            chips filled a screen of a sheet that has five other fields, and the
+            price they qualify sat above the fold on its own. */}
         <form.Field name="pricePerUnit">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Price per unit in ${voucherSymbol}`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              {/* inputMode, not type="number": a number input lets the browser
-                  localise and round, and this value has to reach the database as
-                  the exact text that was typed. */}
-              <Input
-                id={field.name}
-                inputMode="decimal"
-                autoComplete="off"
-                className="bg-card font-mono"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                maxLength={64}
-              />
-            </Field>
-          )}
-        </form.Field>
-
-        <form.Field name="unit">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Unit`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              <div className="flex flex-wrap gap-2" id={field.name}>
-                {OFFERING_UNITS.map((unit) => (
-                  <ChoiceButton
-                    key={unit}
-                    selected={field.state.value === unit}
-                    onClick={() => field.handleChange(unit)}
-                  >
-                    {unitLabel(unit)}
-                  </ChoiceButton>
-                ))}
-              </div>
-            </Field>
+          {(priceField) => (
+            <form.Field name="unit">
+              {(unitField) => (
+                <Field
+                  htmlFor={priceField.name}
+                  label={t`Price per unit in ${voucherSymbol}`}
+                  // The row's first complaint. Both cannot be shown without
+                  // stacking two alerts under a single label.
+                  error={
+                    getFieldError(priceField.state.meta.errors) ??
+                    getFieldError(unitField.state.meta.errors)
+                  }
+                >
+                  <div className="flex gap-2">
+                    {/* inputMode, not type="number": a number input lets the
+                        browser localise and round, and this value has to reach
+                        the database as the exact text that was typed. */}
+                    <Input
+                      id={priceField.name}
+                      inputMode="decimal"
+                      autoComplete="off"
+                      className="min-w-0 flex-1 bg-card font-mono"
+                      value={priceField.state.value}
+                      onBlur={priceField.handleBlur}
+                      onChange={(event) => priceField.handleChange(event.target.value)}
+                      maxLength={64}
+                    />
+                    <SearchableSelect
+                      id={unitField.name}
+                      className="w-[8.5rem] shrink-0"
+                      options={unitOptions}
+                      value={unitField.state.value}
+                      onValueChange={(unit) => unitField.handleChange(unit as OfferingUnit)}
+                      ariaLabel={t`Unit`}
+                      placeholder={t`Unit`}
+                      emptyMessage={t`No units found.`}
+                    />
+                  </div>
+                </Field>
+              )}
+            </form.Field>
           )}
         </form.Field>
 

@@ -936,11 +936,39 @@ describe("VoucherOfferingsPanel ownership", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Add offering" })).toBeTruthy();
-    // The unit picker is translated and exhaustive, so every canonical unit is
-    // offered rather than only the ones a fixture happened to use.
-    expect(screen.getByRole("button", { name: "Kilogram", pressed: false })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Session", pressed: false })).toBeTruthy();
     expect(screen.getByRole("button", { name: "A good", pressed: false })).toBeTruthy();
     expect(screen.getByRole("button", { name: "A service", pressed: false })).toBeTruthy();
+    // Price and unit share a line under one label, so the unit control carries
+    // its own name.
+    expect(screen.getByLabelText("Price per unit in MALII")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Unit" })).toBeTruthy();
+  });
+
+  it("searches the units instead of listing fifteen chips", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    // Closed, the list offers nothing — the fifteen units are behind a search.
+    expect(screen.queryByRole("option", { name: "Kilogram" })).toBeNull();
+
+    const unit = screen.getByRole("combobox", { name: "Unit" });
+    await act(async () => {
+      fireEvent.focus(unit);
+    });
+    await act(async () => {
+      fireEvent.change(unit, { target: { value: "kilo" } });
+    });
+
+    const option = screen.getByRole("option", { name: "Kilogram" });
+    expect(screen.queryByRole("option", { name: "Session" })).toBeNull();
+
+    await act(async () => {
+      fireEvent.click(option);
+    });
+    expect((unit as HTMLInputElement).value).toBe("Kilogram");
   });
 });
