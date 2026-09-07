@@ -46,7 +46,13 @@ import { PostConfirmDialog } from "./post-confirm-dialog";
 import { PostImageManager } from "./post-image-manager";
 import { PostVoucherPicker } from "./post-voucher-picker";
 
-export type PostEditorTarget = { mode: "create" } | { mode: "edit"; reportId: string };
+export type PostEditorTarget =
+  | {
+      mode: "create";
+      /** A voucher to start the post linked to, carried in from its own screen. */
+      voucher?: { chainId: number; address: string; name?: string } | null;
+    }
+  | { mode: "edit"; reportId: string };
 
 /**
  * Writing or editing one post.
@@ -56,8 +62,31 @@ export type PostEditorTarget = { mode: "create" } | { mode: "edit"; reportId: st
  * behind a `<details>` group so a quick post stays quick.
  */
 export function PostEditorPage(target: PostEditorTarget) {
+  const { t } = useLingui();
+
   if (target.mode === "create") {
-    return <PostEditorForm initial={emptyReportWrite} previousStatus={null} />;
+    const seed = target.voucher;
+    const ref = seed ? { chainId: seed.chainId, address: seed.address } : null;
+    return (
+      <PostEditorForm
+        initial={ref ? { ...emptyReportWrite, vouchers: [ref] } : emptyReportWrite}
+        linkedNames={
+          ref && seed?.name ? new Map([[voucherRefKey(ref), seed.name]]) : new Map<string, string>()
+        }
+        // Started from a voucher, so Back names the voucher — and a deep load
+        // with no history lands back on the tab the button was pressed from.
+        back={
+          ref
+            ? {
+                label: seed?.name ?? t`Voucher`,
+                to: `/vouchers/${ref.address}`,
+                search: { tab: "posts" },
+              }
+            : undefined
+        }
+        previousStatus={null}
+      />
+    );
   }
   return <PostEditorLoader reportId={target.reportId} />;
 }
@@ -99,6 +128,14 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
       key={post.id}
       post={post}
       initial={reportToFormValues(post)}
+      linkedNames={
+        new Map(
+          post.vouchers.map((voucher) => [
+            voucherRefKey({ chainId: voucher.chainId, address: voucher.address }),
+            voucher.name,
+          ]),
+        )
+      }
       previousStatus={post.status}
     />
   );
@@ -107,10 +144,15 @@ function PostEditorLoader({ reportId }: { reportId: string }) {
 function PostEditorForm({
   post,
   initial,
+  linkedNames,
+  back,
   previousStatus,
 }: {
   post?: ManagedReportDetail;
   initial: ReportWrite;
+  /** Names for rows the picker's search may not return, keyed by `voucherRefKey`. */
+  linkedNames: Map<string, string>;
+  back?: EditorBack;
   previousStatus: ManagedReportDetail["status"] | null;
 }) {
   const { t } = useLingui();
@@ -173,20 +215,13 @@ function PostEditorForm({
     return () => window.removeEventListener("beforeunload", warn);
   }, [isDirty]);
 
-  const linkedNames = new Map(
-    (post?.vouchers ?? []).map((voucher) => [
-      voucherRefKey({ chainId: voucher.chainId, address: voucher.address }),
-      voucher.name,
-    ]),
-  );
-
   function submit() {
     setConfirmApprovedEdit(false);
     void form.handleSubmit();
   }
 
   return (
-    <EditorShell onBack={isDirty ? () => setConfirmLeave(true) : undefined}>
+    <EditorShell back={back} onBack={isDirty ? () => setConfirmLeave(true) : undefined}>
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         {post ? <Trans>Edit post</Trans> : <Trans>New post</Trans>}
       </h1>
@@ -600,11 +635,26 @@ function Counter({ value, max }: { value: number; max: number }) {
   );
 }
 
-function EditorShell({ children, onBack }: { children: ReactNode; onBack?: () => void }) {
+type EditorBack = { label: string; to: string; search?: Record<string, unknown> };
+
+function EditorShell({
+  children,
+  back,
+  onBack,
+}: {
+  children: ReactNode;
+  back?: EditorBack;
+  onBack?: () => void;
+}) {
   const { t } = useLingui();
   return (
     <div className="space-y-4">
-      <BackChevron label={t`My posts`} to="/posts/mine" onClick={onBack} />
+      <BackChevron
+        label={back?.label ?? t`My posts`}
+        to={back?.to ?? "/posts/mine"}
+        search={back?.search}
+        onClick={onBack}
+      />
       {children}
     </div>
   );

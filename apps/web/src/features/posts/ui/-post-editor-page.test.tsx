@@ -107,6 +107,8 @@ beforeEach(() => {
   mocks.detail = { data: undefined, isPending: false, isError: false, refetch: vi.fn() };
 });
 
+const VOUCHER = "0x1111111111111111111111111111111111111111";
+
 function typeTitle(value: string) {
   fireEvent.change(screen.getByLabelText("Title"), { target: { value } });
 }
@@ -213,6 +215,45 @@ describe("creating a post", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Discard changes" }));
     expect(mocks.back).toHaveBeenCalledTimes(1);
+  });
+
+  // Opened from a voucher screen: the voucher arrives linked, by name, and the
+  // seed is not an edit — a form that only carries it is not dirty.
+  it("starts linked to a voucher carried in from its own screen", async () => {
+    render(
+      <PostEditorPage
+        mode="create"
+        voucher={{ chainId: 42220, address: VOUCHER, name: "Priscilah Malii" }}
+      />,
+    );
+
+    // Named in the picker, and named again on the chevron that goes back to it.
+    expect(screen.getByRole("button", { name: `Unlink Priscilah Malii` })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Priscilah Malii/ }).getAttribute("href")).toBe(
+      `/vouchers/${VOUCHER}`,
+    );
+
+    typeTitle("Harvest at the shop");
+    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      title: "Harvest at the shop",
+      vouchers: [{ chainId: 42220, address: VOUCHER }],
+    });
+  });
+
+  it("keeps a seeded voucher removable and does not treat the seed as an edit", () => {
+    render(<PostEditorPage mode="create" voucher={{ chainId: 42220, address: VOUCHER }} />);
+
+    // No name in the URL: the row falls back to the address.
+    const unlink = screen.getByRole("button", { name: `Unlink ${VOUCHER}` });
+    // A link rather than the discard-guard button: seeding is not an edit, so
+    // Back leaves without a prompt.
+    expect(screen.getByRole("link", { name: /Voucher/ })).toBeTruthy();
+
+    fireEvent.click(unlink);
+    expect(screen.queryByRole("button", { name: `Unlink ${VOUCHER}` })).toBeNull();
   });
 });
 

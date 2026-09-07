@@ -713,7 +713,22 @@ describe("VoucherDetailPage", () => {
     const panel = screen.getByRole("tabpanel");
     expect(panel.getAttribute("aria-labelledby")).toBe("voucher-tab-posts");
     expect(within(panel).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
-    expect(within(panel).getByRole("link").getAttribute("href")).toBe("/posts/3182");
+    expect(
+      within(panel)
+        .getByRole("link", { name: /Harvesting greengrams/ })
+        .getAttribute("href"),
+    ).toBe("/posts/3182");
+  });
+
+  it("opens the post editor with this voucher already linked", () => {
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    const href = screen.getByRole("link", { name: "Write a post" }).getAttribute("href");
+    expect(href?.startsWith("/posts/new?")).toBe(true);
+    const search = new URLSearchParams(href?.slice(href.indexOf("?")));
+    expect(search.get("voucher")).toBe(ADDRESS);
+    expect(search.get("chainId")).toBe("42220");
+    expect(search.get("voucherName")).toBe("Priscilah Malii");
   });
 
   it("shows an empty state when the voucher has no related posts", () => {
