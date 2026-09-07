@@ -58,8 +58,15 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 }));
 
 vi.mock("#/hooks/use-deployment", () => ({
-  useTokenTags: () => ({ data: [], isError: false, isPending: false, refetch: vi.fn() }),
+  useTokenTags: () => ({
+    data: ["Agriculture"],
+    isError: false,
+    isPending: false,
+    refetch: vi.fn(),
+  }),
 }));
+
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 
 import { CreateVoucherFlow, type VoucherCreateStep } from "#/features/vouchers/ui";
 
@@ -133,6 +140,32 @@ describe("voucher create navigation", () => {
     expect((screen.getByLabelText("Voucher Name") as HTMLInputElement).value).toBe(
       "Kilifi Harvest",
     );
+  });
+
+  it("uses the first Back press to close an open tag search", async () => {
+    const { history } = await renderFlow();
+
+    fireEvent.change(screen.getByLabelText("Voucher Name"), {
+      target: { value: "Kilifi Harvest" },
+    });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food from Kilifi producers." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await screen.findByRole("heading", { name: "Where and what for" });
+    fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
+    expect(screen.getByRole("option", { name: "Agriculture" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+
+    expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+    expect(screen.getByRole("heading", { name: "Where and what for" })).toBeTruthy();
+    expect(history.location.pathname).toBe("/vouchers/create/place");
+
+    fireEvent.click(screen.getByRole("link", { name: "Back" }));
+    await screen.findByRole("heading", { name: "Create voucher" });
   });
 
   it("redirects an unknown step to the first step before the flow loads", async () => {

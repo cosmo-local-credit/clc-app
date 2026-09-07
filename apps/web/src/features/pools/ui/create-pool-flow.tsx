@@ -24,7 +24,7 @@ import {
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -112,6 +112,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const draft = usePoolCreateDraft((state) => state.draft);
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
@@ -203,6 +204,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
       <BackChevron
         label={step === "pool" ? t`Pools` : t`Back`}
         to={fallbackTo}
+        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
         className="self-start"
       />
 
@@ -515,6 +517,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         listLabel={t`Pool tags`}
                         placeholder={t`Search tags`}
                         removeLabel={(tag) => t`Remove ${tag}`}
+                        navigationHistory={router.history}
+                        open={tagsOpen}
+                        onOpenChange={setTagsOpen}
                       />
                     ) : null}
                     <p className="mt-1.5 text-muted-foreground text-xs">

@@ -29,6 +29,8 @@ const validVoucher: VoucherCreateInput = {
   website: "https://kilifi.example",
   phone: "+254712345678",
   terms: "https://kilifi.example/terms",
+  iconUrl: "",
+  bannerUrl: "",
   acceptedTerms: true,
   acceptedPathLicense: true,
 };
@@ -116,6 +118,21 @@ describe("voucherCreateSchema", () => {
     expect(withoutTerms.success).toBe(false);
     expect(withoutPathLicense.success).toBe(false);
   });
+
+  it("accepts blank or HTTP voucher image URLs", () => {
+    expect(voucherCreateSchema.safeParse(validVoucher).success).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({
+        ...validVoucher,
+        iconUrl: "https://cdn.example/voucher/icon.webp",
+        bannerUrl: "http://cdn.example/voucher/banner.webp",
+      }).success,
+    ).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, iconUrl: "data:image/png;base64,abc" })
+        .success,
+    ).toBe(false);
+  });
 });
 
 describe("toVoucherDeployPayload", () => {
@@ -144,6 +161,22 @@ describe("toVoucherDeployPayload", () => {
     expect(
       toVoucherDeployPayload(validVoucher, "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d").terms,
     ).toBe("https://kilifi.example/terms");
+  });
+
+  it("maps uploaded voucher images into the deploy payload", () => {
+    const payload = toVoucherDeployPayload(
+      {
+        ...validVoucher,
+        iconUrl: "https://cdn.example/voucher/icon.webp",
+        bannerUrl: "https://cdn.example/voucher/banner.webp",
+      },
+      "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+    );
+
+    expect(payload).toMatchObject({
+      iconUrl: "https://cdn.example/voucher/icon.webp",
+      bannerUrl: "https://cdn.example/voucher/banner.webp",
+    });
   });
 
   it("sends the live deploy worker a Unix expiry timestamp", () => {
