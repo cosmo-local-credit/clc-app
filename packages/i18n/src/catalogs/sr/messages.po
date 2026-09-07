@@ -68,7 +68,7 @@ msgstr "{count, plural, one {# објава} few {# објаве} other {# об�
 #~ msgstr "{0} {voucherSymbol} по {1}"
 
 #. placeholder {0}: contract.name
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:402
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:413
 msgid "{0} can be held, sent and redeemed."
 msgstr "{0} се може чувати, слати и искористити."
 
@@ -84,14 +84,14 @@ msgstr "{0} није успела на блокчејну. Пул није на�
 #~ msgstr "{0} још нема количину. Исковајте прву количину да бисте завршили — не "
 #~ "може се чувати, слати или искористити док то не урадите."
 
-#. placeholder {0}: contract.symbol
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:295
+#. placeholder {0}: contract.name
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:299
 msgid "{0} is deployed"
 msgstr "{0} је постављен"
 
 #. placeholder {0}: contract.symbol
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:166
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:399
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:410
 msgid "{0} is live"
 msgstr "{0} је активан"
 
@@ -427,6 +427,10 @@ msgstr "Администратор"
 msgid "Advanced"
 msgstr "Напредно"
 
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:479
+msgid "Advanced details"
+msgstr "Напредни детаљи"
+
 #: apps/web/src/components/auth/sign-in-panel.tsx:315
 msgid "Advanced options"
 msgstr "Напредне опције"
@@ -625,11 +629,11 @@ msgstr "Промени фотографију"
 msgid "Check again"
 msgstr "Провјери поново"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:368
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:379
 msgid "Check mint status"
 msgstr "Провери стање ковања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:370
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:381
 msgid "Check supply again"
 msgstr "Поново провери количину"
 
@@ -641,7 +645,7 @@ msgstr "Провјера доступности..."
 msgid "Checking message availability…"
 msgstr "Провјера доступности порука…"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:289
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:293
 msgid "Checking mint status"
 msgstr "Провера стања ковања"
 
@@ -649,7 +653,7 @@ msgstr "Провера стања ковања"
 msgid "Checking notification support on this device."
 msgstr "Провјера подршке за обавјештења на овом уређају."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:374
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:385
 msgid "Checking supply…"
 msgstr "Провера количине…"
 
@@ -848,7 +852,7 @@ msgstr "Потврђено"
 msgid "Connect your wallet before publishing."
 msgstr "Повежите новчаник пре објављивања."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:214
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
 msgid "Connect your wallet to mint."
 msgstr "Повежите новчаник да бисте ковали."
 
@@ -924,13 +928,13 @@ msgid "Continue with Paper Wallet"
 msgstr "Настави са папирним новчаником"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:185
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:166
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:170
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:647
 msgid "Contract address"
 msgstr "Адреса уговора"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:175
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:660
 msgid "Contract address copied"
 msgstr "Адреса уговора је копирана"
@@ -940,16 +944,16 @@ msgid "Copy"
 msgstr "Копирај"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:188
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:169
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:173
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:651
 msgid "Copy contract address"
 msgstr "Копирај адресу уговора"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:418
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:432
 msgid "Copy deployment transaction hash"
 msgstr "Копирај хеш трансакције постављања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:433
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:447
 msgid "Copy mint transaction hash"
 msgstr "Копирај хеш трансакције ковања"
 
@@ -998,17 +1002,17 @@ msgid "Couldn't copy address"
 msgstr "Адресу није могуће копирати"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:171
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:175
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:655
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:661
 msgid "Couldn't copy contract address"
 msgstr "Адресу уговора није могуће копирати"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:423
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:437
 msgid "Couldn't copy deployment transaction hash"
 msgstr "Није могуће копирати хеш трансакције постављања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:452
 msgid "Couldn't copy mint transaction hash"
 msgstr "Није могуће копирати хеш трансакције ковања"
 
@@ -1110,7 +1114,7 @@ msgstr "Ваучере није могуће учитати."
 msgid "Couldn't load your posts."
 msgstr "Није могуће учитати ваше објаве."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:237
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:241
 msgid "Couldn't mint the first supply."
 msgstr "Није било могуће исковати прву количину."
 
@@ -1122,7 +1126,7 @@ msgstr "Није могуће објавити ваш пул."
 msgid "Couldn't publish your voucher."
 msgstr "Није могуће објавити ваучер."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:204
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Није било могуће прочитати број децимала овог ваучера."
 
@@ -1172,8 +1176,8 @@ msgstr "Отпремање фотографије није успело. Про�
 msgid "Couldn't verify this swap. Try again."
 msgstr "Није могуће провјерити ову размјену. Покушајте поново."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:218
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:271
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:222
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:275
 msgid "Couldn't verify who owns this voucher."
 msgstr "Није могуће потврдити власника овог ваучера."
 
@@ -1214,6 +1218,10 @@ msgstr "Креирај пул"
 msgid "Create voucher"
 msgstr "Креирај ваучер"
 
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:328
+msgid "Create vouchers"
+msgstr "Креирај ваучере"
+
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:84
 msgid "Create your account"
 msgstr "Направите свој налог"
@@ -1250,7 +1258,7 @@ msgstr "Дан"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:28
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:462
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:162
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:166
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:29
 msgid "Decimals"
 msgstr "Децимале"
@@ -1272,15 +1280,15 @@ msgstr "Подразумевано"
 msgid "Delegated to Calibur"
 msgstr "Делегирано Calibur-у"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:317
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:321
 msgid "Deployed"
 msgstr "Постављено"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:415
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:429
 msgid "Deployment transaction"
 msgstr "Трансакција постављања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:422
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:436
 msgid "Deployment transaction hash copied"
 msgstr "Хеш трансакције постављања је копиран"
 
@@ -1516,7 +1524,7 @@ msgid "Expiration date must be in the future"
 msgstr "Датум истека мора бити у будућности"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:414
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:158
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:162
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:24
 msgid "Expiring"
 msgstr "Са роком трајања"
@@ -1532,8 +1540,8 @@ msgstr "Са роком трајања"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:45
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:120
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:312
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:121
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:316
 msgid "Failed"
 msgstr "Неуспјешно"
 
@@ -1617,8 +1625,8 @@ msgid "Finding location"
 msgstr "Проналажење локације"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:326
-msgid "First supply"
-msgstr "Прва количина"
+#~ msgid "First supply"
+#~ msgstr "Прва количина"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:383
 msgid "Follows the selected unit's feed"
@@ -1724,7 +1732,7 @@ msgid "Import wallet"
 msgstr "Увези новчаник"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:52
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:485
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:516
 msgid "In network"
 msgstr "На мрежи"
 
@@ -2068,23 +2076,23 @@ msgstr "Поруке су доступне само регистрованим C
 msgid "Metre"
 msgstr "Метар"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:186
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:190
 msgid "Mint status is temporarily unavailable."
 msgstr "Стање ковања тренутно није доступно."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:380
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:391
 msgid "Mint supply"
 msgstr "Исковај количину"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:303
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:307
 msgid "Mint the first supply to finish publishing this voucher."
 msgstr "Исковај почетну количину да завршиш објављивање овог ваучера."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:444
 msgid "Mint transaction"
 msgstr "Трансакција ковања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:437
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:451
 msgid "Mint transaction hash copied"
 msgstr "Хеш трансакције ковања је копиран"
 
@@ -2097,15 +2105,15 @@ msgstr "Хеш трансакције ковања је копиран"
 #~ msgstr "Ковање"
 
 #. placeholder {0}: contract.symbol
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:293
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:297
 msgid "Minting {0}..."
 msgstr "Ковање {0}..."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:287
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:291
 msgid "Minting failed"
 msgstr "Ковање није успело"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:372
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:383
 msgid "Minting…"
 msgstr "Ковање…"
 
@@ -2166,7 +2174,7 @@ msgstr "Адреса мог новчаника"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:182
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:113
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:124
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:154
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:158
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:18
 msgid "Name"
 msgstr "Име"
@@ -2561,8 +2569,8 @@ msgstr "PATH лиценца"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:487
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:82
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:131
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:314
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:132
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:318
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:109
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:501
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:610
@@ -2766,7 +2774,7 @@ msgstr "Објаве нису доступне за овај ваучер."
 msgid "Preferences"
 msgstr "Подешавања"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:376
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:387
 msgid "Preparing wallet…"
 msgstr "Припрема новчаника…"
 
@@ -2898,7 +2906,7 @@ msgid "Publish offering"
 msgstr "Објави понуду"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:172
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:405
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:416
 msgid "Published"
 msgstr "Објављено"
 
@@ -2908,12 +2916,12 @@ msgid "Publishes {0} contracts"
 msgstr "Објављује {0} уговора"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:107
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:118
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:119
 msgid "Publishing failed"
 msgstr "Објављивање није успело"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:84
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:101
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:102
 msgid "Publishing unavailable"
 msgstr "Објављивање није доступно"
 
@@ -2921,7 +2929,7 @@ msgstr "Објављивање није доступно"
 msgid "Publishing your pool..."
 msgstr "Објављивање вашег пула..."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:129
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:130
 msgid "Publishing your voucher..."
 msgstr "Објављивање вашег ваучера..."
 
@@ -3006,8 +3014,8 @@ msgstr "ENS, телефон или адреса примаоца"
 msgid "Recommended"
 msgstr "Preporučeno"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:222
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:269
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:226
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:273
 msgid "Reconnect the wallet that published this voucher to mint."
 msgstr "Поново повежи новчаник којим је овај ваучер објављен да би исковао "
 "количину."
@@ -3450,7 +3458,7 @@ msgid "Stable sent"
 msgstr "Стабилни токен је послат"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:409
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:158
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:162
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:24
 msgid "Standard"
 msgstr "Стандардни"
@@ -3506,11 +3514,11 @@ msgstr "Резиме"
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "Резиме мора имати 10.000 знакова или мање"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:412
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:422
 msgid "Supply"
 msgstr "Количина"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:291
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:295
 msgid "Supply check unavailable"
 msgstr "Провера количине није доступна"
 
@@ -3602,7 +3610,7 @@ msgstr "Промијени новчаник"
 msgid "Switch wallet?"
 msgstr "Промијенити новчаник?"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:155
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:159
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:19
 msgid "Symbol"
 msgstr "Ознака"
@@ -3703,7 +3711,7 @@ msgstr "Изабрана јединица нема подешен извор ц�
 msgid "The unit used for pricing in this pool (e.g., USD, KES, HOUR)"
 msgstr "Јединица која се користи за цене у овом пулу (нпр. USD, KES, HOUR)"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:114
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:115
 msgid "The voucher could not be published."
 msgstr "Ваучер није могао бити објављен."
 
@@ -3878,7 +3886,7 @@ msgstr "Вожња"
 #: apps/web/src/features/home/ui/wallet-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:378
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:389
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:456
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:432
@@ -3887,7 +3895,7 @@ msgstr "Вожња"
 msgid "Try again"
 msgstr "Покушај поново"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:157
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:161
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:23
 msgid "Type"
 msgstr "Врста"
@@ -3906,8 +3914,8 @@ msgstr "Језик није могуће учитати. Враћено је н�
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:67
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:103
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:316
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:320
 msgid "Unavailable"
 msgstr "Недоступно"
 
@@ -4036,6 +4044,12 @@ msgstr "Употреби фотографију"
 #~ msgid "Value"
 #~ msgstr "Вредност"
 
+#. placeholder {0}: supplyValue.value
+#. placeholder {1}: supplyValue.unit
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:352
+msgid "Value: {0} {1}"
+msgstr "Вредност: {0} {1}"
+
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:115
 msgid "View"
 msgstr "Прикажи"
@@ -4063,7 +4077,7 @@ msgstr "Прикажи у прегледачу блокова"
 msgid "View pool"
 msgstr "Погледај пул"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:448
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:462
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:69
 msgid "View voucher"
 msgstr "Прикажи ваучер"
@@ -4076,7 +4090,7 @@ msgstr "Ваучер"
 msgid "Voucher actions"
 msgstr "Радње са ваучером"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:482
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:513
 msgid "Voucher contract"
 msgstr "Уговор ваучера"
 
@@ -4142,7 +4156,7 @@ msgstr "Ознака ваучера мора имати највише 6 зна�
 msgid "Voucher tags"
 msgstr "Ознаке ваучера"
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:102
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:103
 msgid "Voucher tracking details are missing."
 msgstr "Недостају подаци за праћење ваучера."
 
@@ -4180,7 +4194,7 @@ msgstr "Ваучери се размењују један за један"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:484
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:135
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:130
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:131
 msgid "Waiting for blockchain confirmation..."
 msgstr "Чека се потврда на блокчејну..."
 
@@ -4230,7 +4244,7 @@ msgid "We couldn't save your photo. You can add it from Settings."
 msgstr "Нисмо могли да сачувамо вашу фотографију. Можете је додати у "
 "Подешавањима."
 
-#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:302
+#: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:306
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Није могуће потврдити да ли овај ваучер већ има количину."
 

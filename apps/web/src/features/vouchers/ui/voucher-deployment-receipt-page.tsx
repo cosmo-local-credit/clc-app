@@ -1,3 +1,4 @@
+import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -149,6 +150,9 @@ export function VoucherDeploymentReceiptPage({
   };
 
   const decimals = contract.decimals ?? (draft ? Number(draft.decimals) : null);
+  const supplyValue = draft
+    ? formatOfferingDisplayPrice(supply, draft.price, draft.unitOfAccount, contract.symbol)
+    : null;
   const detailRows = (
     <>
       <InfoRow label={t`Name`}>{contract.name}</InfoRow>
@@ -292,7 +296,7 @@ export function VoucherDeploymentReceiptPage({
             ) : minting ? (
               <Trans>Minting {contract.symbol}...</Trans>
             ) : (
-              <Trans>{contract.symbol} is deployed</Trans>
+              <Trans>{contract.name} is deployed</Trans>
             )}
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
@@ -320,10 +324,8 @@ export function VoucherDeploymentReceiptPage({
           </div>
         </div>
 
-        <dl className="mt-6 border border-border bg-card">{detailRows}</dl>
-
-        <div className="mt-3.5">
-          <Field label={t`First supply`} htmlFor="voucher-supply" error={supplyError}>
+        <div className="mt-6">
+          <Field label={t`Create vouchers`} htmlFor="voucher-supply" error={supplyError}>
             <Input
               id="voucher-supply"
               inputMode="decimal"
@@ -345,7 +347,16 @@ export function VoucherDeploymentReceiptPage({
               aria-invalid={supplyError !== null}
             />
           </Field>
+          {supplyValue ? (
+            <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
+              <Trans>
+                Value: {supplyValue.value} {supplyValue.unit}
+              </Trans>
+            </p>
+          ) : null}
         </div>
+
+        <AdvancedDeploymentDetails className="mt-3.5">{detailRows}</AdvancedDeploymentDetails>
 
         <div className="mt-auto pt-6">
           <Button
@@ -406,11 +417,14 @@ export function VoucherDeploymentReceiptPage({
         </div>
       </div>
 
-      <dl className="mt-6 border border-border bg-card">
-        {detailRows}
-        {publishedSupply ? (
+      {publishedSupply ? (
+        <dl className="mt-6 border border-border bg-card">
           <InfoRow label={t`Supply`}>{`${publishedSupply} ${contract.symbol}`}</InfoRow>
-        ) : null}
+        </dl>
+      ) : null}
+
+      <AdvancedDeploymentDetails className={publishedSupply ? "mt-3.5" : "mt-6"}>
+        {detailRows}
         {deploymentTxHash ? (
           <InfoRow label={t`Deployment transaction`}>
             <CopyableInfoValue
@@ -441,7 +455,7 @@ export function VoucherDeploymentReceiptPage({
             />
           </InfoRow>
         ) : null}
-      </dl>
+      </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
         <Button className="h-11 w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
@@ -449,6 +463,23 @@ export function VoucherDeploymentReceiptPage({
         </Button>
       </div>
     </div>
+  );
+}
+
+function AdvancedDeploymentDetails({
+  className,
+  children,
+}: {
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className={`${className} border border-border bg-card`}>
+      <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+        <Trans>Advanced details</Trans>
+      </summary>
+      <dl className="border-border border-t">{children}</dl>
+    </details>
   );
 }
 

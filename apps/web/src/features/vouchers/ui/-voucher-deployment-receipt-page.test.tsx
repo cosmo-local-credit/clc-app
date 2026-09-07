@@ -209,6 +209,10 @@ describe("VoucherDeploymentReceiptPage", () => {
     expect(screen.queryByText("Kilifi, Kenya")).toBeNull();
     expect(screen.getByText("Deployment transaction")).toBeTruthy();
     expect(screen.getByText("Mint transaction")).toBeTruthy();
+    const advancedDetails = screen.getByText("Advanced details").closest("details");
+    expect(advancedDetails?.open).toBe(false);
+    expect(advancedDetails?.textContent).toContain("Deployment transaction");
+    expect(advancedDetails?.textContent).toContain("Mint transaction");
     const copyAddress = screen.getByRole("button", { name: "Copy contract address" });
     const copyIcon = copyAddress.querySelector("svg");
     expect(copyIcon?.parentElement?.classList).toContain("size-6");
@@ -248,10 +252,40 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
   it("holds the flow on the mint step until the issuer mints", () => {
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "KHV is deployed" })).toBeTruthy();
-    expect(screen.getByLabelText("First supply")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is deployed" })).toBeTruthy();
+    expect(screen.getByLabelText("Create vouchers")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
+
+    const advancedDetails = screen.getByText("Advanced details").closest("details");
+    expect(advancedDetails?.open).toBe(false);
+    expect(advancedDetails?.textContent).toContain("Contract address");
+  });
+
+  it("shows the value of the vouchers to create in the draft's unit of account", () => {
+    useVoucherCreateDraft.getState().setDraft({
+      name: "Kilifi Harvest",
+      symbol: "KHV",
+      price: "2.5",
+      unitOfAccount: "KES",
+      description: "Fresh food from Kilifi producers.",
+      voucherType: "standard",
+      expiryDate: "",
+      decimals: "6",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
+      tags: ["Agriculture"],
+      email: "issuer@example.org",
+      website: "",
+      phone: "",
+      terms: "",
+      acceptedTerms: true,
+      acceptedPathLicense: true,
+    });
+    renderReceipt();
+
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "12" } });
+
+    expect(screen.getByText("Value: 30 KES")).toBeTruthy();
   });
 
   it("waits for an on-chain supply check before enabling mint", () => {
@@ -276,7 +310,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
   it("rejects a supply of zero without relaying anything", () => {
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "0" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     expect(screen.getByText("Supply must be greater than zero")).toBeTruthy();
@@ -287,7 +321,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     state.contract = { ...confirmedContract, decimals: 2 };
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "1.234" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "1.234" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     expect(
@@ -299,7 +333,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
   it("mints the scaled supply to the issuer's own wallet", async () => {
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "10000" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     await waitFor(() =>
@@ -327,7 +361,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     mintMock.mockReturnValue(new Promise(() => undefined));
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "10000" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     const button = screen.getByRole("button", { name: "Mint supply" });
     fireEvent.click(button);
     fireEvent.click(button);
@@ -386,7 +420,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     mintMock.mockRejectedValueOnce(new Error("Credential is stale; re-authenticate"));
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "500" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "500" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     await waitFor(() =>
@@ -402,7 +436,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
     expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "View voucher" })).toBeTruthy();
-    expect(screen.queryByLabelText("First supply")).toBeNull();
+    expect(screen.queryByLabelText("Create vouchers")).toBeNull();
     expect(screen.getByText("500 KHV")).toBeTruthy();
   });
 });
