@@ -112,7 +112,7 @@ describe("voucher mint receipt navigation", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.change(await screen.findByLabelText("First supply"), {
+    fireEvent.change(await screen.findByLabelText("Create vouchers"), {
       target: { value: "500" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
