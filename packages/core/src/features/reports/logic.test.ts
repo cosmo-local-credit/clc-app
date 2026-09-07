@@ -10,9 +10,11 @@ import {
   formValuesToReportWrite,
   fromDateTimeLocalValue,
   isReportStatus,
+  reportDraftSchema,
   reportToFormValues,
   reportWriteSchema,
   toDateTimeLocalValue,
+  todayReportPeriod,
   type ReportWrite,
 } from "./logic";
 
@@ -466,5 +468,42 @@ describe("formatByteSize", () => {
     expect(formatByteSize(0)).toBeNull();
     expect(formatByteSize(-1)).toBeNull();
     expect(formatByteSize(Number.NaN)).toBeNull();
+  });
+});
+
+describe("an unfinished draft", () => {
+  // What a draft is judged on is its shape, not its readiness: the editor parks
+  // one on every keystroke, long before it could pass the write schema.
+  it("accepts a post that is not ready to send", () => {
+    const partial = write({
+      title: "",
+      periodFrom: "2026-08-02T08:00:00.000Z",
+      periodTo: "2026-08-01T08:00:00.000Z",
+    });
+
+    expect(reportWriteSchema.safeParse(partial).success).toBe(false);
+    expect(reportDraftSchema.safeParse(partial).success).toBe(true);
+  });
+
+  it("still refuses a document of the wrong shape", () => {
+    expect(reportDraftSchema.safeParse({ ...write(), tags: "Youth" }).success).toBe(false);
+    expect(reportDraftSchema.safeParse({ title: "Only a title" }).success).toBe(false);
+  });
+});
+
+describe("todayReportPeriod", () => {
+  it("spans the local day, to the minute a datetime-local input can hold", () => {
+    const period = todayReportPeriod(new Date(2026, 7, 20, 14, 32, 17));
+    const from = new Date(period.periodFrom);
+    const to = new Date(period.periodTo);
+
+    expect([from.getFullYear(), from.getMonth(), from.getDate()]).toEqual([2026, 7, 20]);
+    expect([from.getHours(), from.getMinutes(), from.getSeconds()]).toEqual([0, 0, 0]);
+    expect([to.getFullYear(), to.getMonth(), to.getDate()]).toEqual([2026, 7, 20]);
+    expect([to.getHours(), to.getMinutes(), to.getSeconds()]).toEqual([23, 59, 0]);
+    // The pair a new post starts with must pass the write schema unchanged.
+    expect(reportWriteSchema.safeParse(write(period)).success).toBe(true);
+    // And survive the round trip through the inputs it is bound to.
+    expect(fromDateTimeLocalValue(toDateTimeLocalValue(period.periodTo))).toBe(period.periodTo);
   });
 });

@@ -148,47 +148,48 @@ const reportAttachmentWriteSchema = z.object({
  * input can bind to them directly. The API client is what turns `""` into the
  * explicit `null` the wire needs.
  */
-export const reportWriteSchema = z
-  .object({
-    title: reportTitleSchema,
-    body: reportBodySchema,
-    description: reportDescriptionSchema,
-    imageUrl: storedMediaUrl.nullable(),
-    geoLat: latitudeSchema,
-    geoLng: longitudeSchema,
-    periodFrom: reportInstantSchema,
-    periodTo: reportInstantSchema,
-    hostName: z
-      .string()
-      .trim()
-      .max(REPORT_HOST_NAME_MAX, { message: "Host must be 200 characters or fewer" }),
-    participants: z
-      .string()
-      .trim()
-      .max(REPORT_PARTICIPANTS_MAX, { message: "Participants must be 100 characters or fewer" }),
-    timeTaken: z
-      .string()
-      .trim()
-      .max(REPORT_TIME_TAKEN_MAX, { message: "Duration must be 100 characters or fewer" }),
-    tags: z
-      .array(
-        z
-          .string()
-          .trim()
-          .min(1, { message: "Tags must not be blank" })
-          .max(REPORT_TAG_MAX, { message: "Tags must be 100 characters or fewer" }),
-      )
-      .max(REPORT_MAX_TAGS, { message: "Choose at most 12 tags" }),
-    vouchers: z
-      .array(reportVoucherRefSchema)
-      .max(REPORT_MAX_VOUCHERS, { message: "Link at most 12 vouchers" }),
-    images: z
-      .array(reportImageWriteSchema)
-      .max(REPORT_MAX_IMAGES, { message: "Add at most 50 images" }),
-    attachments: z
-      .array(reportAttachmentWriteSchema)
-      .max(REPORT_MAX_ATTACHMENTS, { message: "Add at most 20 attachments" }),
-  })
+const reportWriteObjectSchema = z.object({
+  title: reportTitleSchema,
+  body: reportBodySchema,
+  description: reportDescriptionSchema,
+  imageUrl: storedMediaUrl.nullable(),
+  geoLat: latitudeSchema,
+  geoLng: longitudeSchema,
+  periodFrom: reportInstantSchema,
+  periodTo: reportInstantSchema,
+  hostName: z
+    .string()
+    .trim()
+    .max(REPORT_HOST_NAME_MAX, { message: "Host must be 200 characters or fewer" }),
+  participants: z
+    .string()
+    .trim()
+    .max(REPORT_PARTICIPANTS_MAX, { message: "Participants must be 100 characters or fewer" }),
+  timeTaken: z
+    .string()
+    .trim()
+    .max(REPORT_TIME_TAKEN_MAX, { message: "Duration must be 100 characters or fewer" }),
+  tags: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1, { message: "Tags must not be blank" })
+        .max(REPORT_TAG_MAX, { message: "Tags must be 100 characters or fewer" }),
+    )
+    .max(REPORT_MAX_TAGS, { message: "Choose at most 12 tags" }),
+  vouchers: z
+    .array(reportVoucherRefSchema)
+    .max(REPORT_MAX_VOUCHERS, { message: "Link at most 12 vouchers" }),
+  images: z
+    .array(reportImageWriteSchema)
+    .max(REPORT_MAX_IMAGES, { message: "Add at most 50 images" }),
+  attachments: z
+    .array(reportAttachmentWriteSchema)
+    .max(REPORT_MAX_ATTACHMENTS, { message: "Add at most 20 attachments" }),
+});
+
+export const reportWriteSchema = reportWriteObjectSchema
   // Both halves of a location or neither. clc-core rejects a half coordinate,
   // and a map control that lost one is a bug, not a partial answer.
   .refine((value) => (value.geoLat === null) === (value.geoLng === null), {
@@ -221,6 +222,20 @@ export const reportWriteSchema = z
     path: ["attachments"],
   });
 
+/**
+ * The same document, judged as an unfinished draft.
+ *
+ * A draft is restored from wherever an editor parked it, so what matters is that
+ * the shape and the field limits still hold — not that the post is ready to
+ * send. The one relaxed field is the title, which a finished post requires and a
+ * draft is usually missing; the cross-field rules are dropped for the same
+ * reason, since a period whose end precedes its start is a form mid-edit rather
+ * than a document to throw away.
+ */
+export const reportDraftSchema = reportWriteObjectSchema.safeExtend({
+  title: z.string().max(REPORT_TITLE_MAX, { message: "Title must be 200 characters or fewer" }),
+});
+
 export type ReportWrite = z.infer<typeof reportWriteSchema>;
 export type ReportVoucherRef = z.infer<typeof reportVoucherRefSchema>;
 export type ReportImageWrite = z.infer<typeof reportImageWriteSchema>;
@@ -237,6 +252,22 @@ export function voucherRefKey(voucher: ReportVoucherRef): string {
  */
 function attachmentKey(attachment: ReportAttachmentWrite): string {
   return `${attachment.kind} ${attachment.url.trim()}`;
+}
+
+/**
+ * Today, as the period a new post starts with.
+ *
+ * Local wall-clock rather than UTC, and to the minute rather than the second:
+ * the pair is bound to two `datetime-local` inputs, so a value they cannot
+ * represent would be silently rewritten the first time either is touched.
+ */
+export function todayReportPeriod(now: Date = new Date()): {
+  periodFrom: string;
+  periodTo: string;
+} {
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 0, 0);
+  return { periodFrom: start.toISOString(), periodTo: end.toISOString() };
 }
 
 /** A blank post. Everything optional starts empty rather than defaulted. */
