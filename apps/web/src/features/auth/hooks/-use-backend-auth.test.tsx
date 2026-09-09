@@ -67,6 +67,12 @@ const LOCATION = {
   country: "KE",
 };
 
+const PROFILE_DETAILS = {
+  preferredCurrency: "KES",
+  bio: "Neighbourhood organiser",
+  website: "https://alice.example",
+} as const;
+
 beforeEach(() => {
   mockGetSiweNonce.mockResolvedValue("testNonce1234");
   mockSignupWithSiwe.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
@@ -101,7 +107,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "a@b.com", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     expect(mockGetSiweNonce).toHaveBeenCalledOnce();
@@ -114,7 +126,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "   ", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "   ",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
@@ -131,6 +149,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -148,6 +167,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -157,6 +177,9 @@ describe("useBackendSignup", () => {
       email: string;
       phone: string;
       country: string;
+      preferredCurrency: string;
+      bio: string;
+      website: string;
       locationName: string;
       geoLat: number;
       geoLng: number;
@@ -164,6 +187,9 @@ describe("useBackendSignup", () => {
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
     expect(payload.country).toBe("KE");
+    expect(payload.preferredCurrency).toBe("KES");
+    expect(payload.bio).toBe("Neighbourhood organiser");
+    expect(payload.website).toBe("https://alice.example");
     expect(payload.locationName).toBe("Nairobi");
     expect(payload.geoLat).toBe(-1.286);
     expect(payload.geoLng).toBe(36.817);
@@ -185,6 +211,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254711111111",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -247,7 +274,13 @@ describe("useBackendSignup — onboarding photo", () => {
   const signUp = async (avatarFile: File | null) => {
     const { result } = renderHook(() => useBackendSignup(), { wrapper: createWrapper() });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "a@b.com", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
       avatarFile,
     });

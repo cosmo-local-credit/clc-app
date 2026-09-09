@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { NAIROBI_DEFAULT_CAMERA, resolveIPCamera } from "./ip-geolocation-client";
+import { NAIROBI_DEFAULT_CAMERA, resolveIPCamera, resolveIPCountry } from "./ip-geolocation-client";
 
 const fetchMock = vi.fn();
 
@@ -142,5 +142,22 @@ describe("resolveIPCamera", () => {
     });
 
     await expect(resolveIPCamera()).resolves.toEqual(NAIROBI_DEFAULT_CAMERA);
+  });
+});
+
+describe("resolveIPCountry", () => {
+  it("uses MapTiler's IP country even when its city coordinates are unavailable", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ country_code: "TZ" }));
+
+    await expect(resolveIPCountry()).resolves.toBe("TZ");
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to the Cloudflare IP country", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({}, false))
+      .mockResolvedValueOnce(textResponse("loc=UG\n"));
+
+    await expect(resolveIPCountry()).resolves.toBe("UG");
   });
 });
