@@ -406,6 +406,27 @@ describe("signupWithSiwe — 409 swallow", () => {
 });
 
 describe("submitProfile — avatar", () => {
+  it("serializes profile preferences when supplied", async () => {
+    const fetchMock = mockFetch({ body: { ok: true, result: { address: "0xabc" } } });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.submitProfile({
+      name: "N",
+      email: "e@example.com",
+      phone: "",
+      country: "KE",
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://example.com",
+    });
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)).toMatchObject({
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://example.com",
+    });
+  });
+
   it("omits avatarUrl entirely when the caller says nothing about it", async () => {
     const fetchMock = mockFetch({ body: { ok: true, result: { address: "0xabc" } } });
     vi.stubGlobal("fetch", fetchMock);

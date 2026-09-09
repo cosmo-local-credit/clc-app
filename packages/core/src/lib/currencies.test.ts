@@ -4,6 +4,7 @@ import {
   findUnitOfAccountOption,
   formatUnitOfAccountOption,
   ISO_CURRENCIES,
+  isIsoCurrency,
   UNIT_OF_ACCOUNT_OPTIONS,
 } from "./currencies";
 
@@ -21,5 +22,10 @@ describe("unit-of-account currency catalog", () => {
     if (!kes) throw new Error("KES is missing from the currency catalog");
     expect(formatUnitOfAccountOption(kes)).toBe("KES - Kenyan Shillings");
     expect(formatUnitOfAccountOption(kes)).not.toContain("—");
+  });
+
+  it("keeps a profile preference to ISO currencies, excluding the time unit", () => {
+    expect(isIsoCurrency("KES")).toBe(true);
+    expect(isIsoCurrency("HOUR")).toBe(false);
   });
 });
