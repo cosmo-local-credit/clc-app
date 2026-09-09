@@ -1,11 +1,21 @@
 import { z } from "zod";
-import { optionalEmailSchema, optionalPhoneSchema } from "../../lib/contact";
+import { isIsoCurrency } from "../../lib/currencies";
+import { optionalEmailSchema, optionalPhoneSchema, optionalWebsiteSchema } from "../../lib/contact";
 import { locationSchema } from "../location/logic";
 
 const nameSchema = z
   .string()
   .min(1, { message: "Name is required" })
   .max(80, { message: "Name must be 80 characters or fewer" });
+
+const preferredCurrencySchema = z
+  .string()
+  // Keep the form value's TypeScript shape as `string`; the runtime catalog
+  // check still rejects unsupported values, while TanStack Form needs the
+  // input and output shapes of its Standard Schema to match.
+  .refine((value): boolean => isIsoCurrency(value), { message: "Choose a preferred currency" });
+
+const bioSchema = z.string().trim().max(500, { message: "Bio must be 500 characters or fewer" });
 
 function requireEmailOrPhone(data: { email: string; phone: string }, ctx: z.RefinementCtx) {
   if (!data.email && !data.phone) {
@@ -23,6 +33,9 @@ export const profileSchema = z
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,
     location: locationSchema,
+    preferredCurrency: preferredCurrencySchema,
+    bio: bioSchema,
+    website: optionalWebsiteSchema,
   })
   .superRefine(requireEmailOrPhone);
 
@@ -34,6 +47,9 @@ export const profileEditSchema = z
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,
     location: locationSchema.optional(),
+    preferredCurrency: preferredCurrencySchema,
+    bio: bioSchema,
+    website: optionalWebsiteSchema,
   })
   .superRefine(requireEmailOrPhone);
 

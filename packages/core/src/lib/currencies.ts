@@ -166,8 +166,18 @@ export const ISO_CURRENCIES = [
 
 export const UNIT_OF_ACCOUNT_OPTIONS = [...ISO_CURRENCIES, { code: "HOUR", name: "Hour" }] as const;
 
+/** A government-issued currency, excluding CLC's time-based unit of account. */
+export type IsoCurrency = (typeof ISO_CURRENCIES)[number]["code"];
 export type UnitOfAccount = (typeof UNIT_OF_ACCOUNT_OPTIONS)[number]["code"];
 export type UnitOfAccountOption = (typeof UNIT_OF_ACCOUNT_OPTIONS)[number];
+
+export function isIsoCurrency(value: unknown): value is IsoCurrency {
+  return typeof value === "string" && ISO_CURRENCIES.some((option) => option.code === value);
+}
+
+export function findIsoCurrencyOption(code: string): (typeof ISO_CURRENCIES)[number] | null {
+  return ISO_CURRENCIES.find((option) => option.code === code) ?? null;
+}
 
 export function isUnitOfAccount(value: unknown): value is UnitOfAccount {
   return (

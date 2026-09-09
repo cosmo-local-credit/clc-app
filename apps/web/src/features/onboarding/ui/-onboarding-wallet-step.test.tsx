@@ -155,6 +155,9 @@ const PROFILE: ProfileInput = {
   name: "Alice",
   email: "alice@example.com",
   phone: "",
+  preferredCurrency: "KES",
+  bio: "",
+  website: "",
   location: {
     lat: -1.2921,
     lng: 36.8219,

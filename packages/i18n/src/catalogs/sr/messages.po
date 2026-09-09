@@ -272,22 +272,22 @@ msgstr "Прихватите"
 #~ msgstr "Прихвати услове коришћења"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:98
+#: apps/web/src/lib/validation-i18n.ts:113
 msgid "Accept the PATH License to publish your voucher"
 msgstr "Прихватите PATH лиценцу да бисте објавили ваучер"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
+#: apps/web/src/lib/validation-i18n.ts:163
 msgid "Accept the SPROUT License to publish your pool"
 msgstr "Прихватите SPROUT лиценцу да бисте објавили пул"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:143
+#: apps/web/src/lib/validation-i18n.ts:158
 msgid "Accept the terms to publish your pool"
 msgstr "Прихватите услове да бисте објавили пул"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:93
+#: apps/web/src/lib/validation-i18n.ts:108
 msgid "Accept the terms to publish your voucher"
 msgstr "Прихватите услове да бисте објавили ваучер"
 
@@ -334,7 +334,7 @@ msgid "Add a link"
 msgstr "Додај везу"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:173
+#: apps/web/src/lib/validation-i18n.ts:188
 msgid "Add a message or choose profile details"
 msgstr "Додајте поруку или изаберите податке профила"
 
@@ -351,12 +351,12 @@ msgid "Add a private message"
 msgstr "Додајте приватну поруку"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:280
+#: apps/web/src/lib/validation-i18n.ts:295
 msgid "Add at most 20 attachments"
 msgstr "Додајте највише 20 прилога"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:275
+#: apps/web/src/lib/validation-i18n.ts:290
 msgid "Add at most 50 images"
 msgstr "Додајте највише 50 слика"
 
@@ -450,7 +450,7 @@ msgstr "Све изабране"
 msgid "All Vouchers"
 msgstr "Сви ваучери"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:225
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:376
 msgid "Already have an account?"
 msgstr "Већ имате налог?"
 
@@ -504,7 +504,7 @@ msgid "Attachment {0} link"
 msgstr "Веза прилога {0}"
 
 #: apps/web/src/features/home/ui/report-page.tsx:411
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:660
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:667
 msgid "Attachments"
 msgstr "Прилози"
 
@@ -519,7 +519,7 @@ msgstr "Чека одобрење"
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:373
 #: apps/web/src/features/onboarding/ui/sign-in-page.tsx:23
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:205
@@ -556,6 +556,16 @@ msgstr "Стање {0}"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:255
 msgid "Balance {tokenBalance}"
 msgstr "Стање {tokenBalance}"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:286
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:280
+msgid "Bio"
+msgstr "Биографија"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:38
+msgid "Bio must be 500 characters or fewer"
+msgstr "Биографија може имати највише 500 знакова"
 
 #: apps/web/src/features/home/ui/market-page.tsx:154
 msgid "Browse all"
@@ -598,7 +608,7 @@ msgid "Caption for photo {0}"
 msgstr "Опис фотографије {0}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:225
+#: apps/web/src/lib/validation-i18n.ts:240
 msgid "Caption must be 500 characters or fewer"
 msgstr "Опис мора имати 500 знакова или мање"
 
@@ -667,7 +677,7 @@ msgid "Checking…"
 msgstr "Провјера…"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:230
+#: apps/web/src/lib/validation-i18n.ts:245
 msgid "Choose a file or an embed"
 msgstr "Изаберите датотеку или уграђену везу"
 
@@ -682,16 +692,21 @@ msgid "Choose a location"
 msgstr "Изаберите локацију"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:285
+#: apps/web/src/lib/validation-i18n.ts:300
 msgid "Choose a place on the map or clear it"
 msgstr "Изаберите мјесто на карти или га уклоните"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:33
+msgid "Choose a preferred currency"
+msgstr "Изаберите жељену валуту"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:95
 msgid "Choose a profile photo"
 msgstr "Изаберите фотографију профила"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:220
+#: apps/web/src/lib/validation-i18n.ts:235
 msgid "Choose a voucher"
 msgstr "Изаберите ваучер"
 
@@ -700,7 +715,7 @@ msgstr "Изаберите ваучер"
 #~ msgstr "Изаберите новчаник да бисте наставили."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:83
+#: apps/web/src/lib/validation-i18n.ts:98
 msgid "Choose an expiration date"
 msgstr "Изаберите датум истека"
 
@@ -709,7 +724,7 @@ msgid "Choose another"
 msgstr "Изаберите другу"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:265
+#: apps/web/src/lib/validation-i18n.ts:280
 msgid "Choose at most 12 tags"
 msgstr "Изаберите највише 12 ознака"
 
@@ -722,7 +737,7 @@ msgid "Choose Image"
 msgstr "Изаберите слику"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:153
+#: apps/web/src/lib/validation-i18n.ts:168
 msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Изаберите стопе које сами постављате или једнаку вредност када јединица "
 "нема извор цене"
@@ -759,7 +774,7 @@ msgstr "Обриши"
 msgid "Clear filters"
 msgstr "Обриши филтере"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:268
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:366
 msgid "Clear location"
 msgstr "Обриши локацију"
 
@@ -906,7 +921,7 @@ msgid "Contact Website"
 msgstr "Веб-сајт за контакт"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:218
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:224
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:415
 msgid "Continue"
@@ -1068,7 +1083,7 @@ msgstr "Није могуће учитати објаве."
 msgid "Couldn't load Pretium history."
 msgstr "Pretium историју није могуће учитати."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:594
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:601
 msgid "Couldn't load tags."
 msgstr "Није могуће учитати ознаке."
 
@@ -1085,7 +1100,7 @@ msgstr "Овај пул није могуће учитати."
 msgid "Couldn't load this post."
 msgstr "Није могуће учитати ову објаву."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:197
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:204
 msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Није могуће учитати ову објаву. Можете уређивати само објаве које сте "
 "сами написали."
@@ -1143,11 +1158,11 @@ msgstr "Тог примаоца није могуће пронаћи."
 msgid "Couldn't save the offering."
 msgstr "Понуда није могла да буде сачувана."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:289
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:296
 msgid "Couldn't save your post."
 msgstr "Није могуће сачувати вашу објаву."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:134
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:148
 msgid "Couldn't save your profile."
 msgstr "Профил није могуће сачувати."
 
@@ -1203,7 +1218,7 @@ msgstr "Направи"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:42
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:92
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:147
 msgid "Create account"
 msgstr "Направите налог"
 
@@ -1224,7 +1239,7 @@ msgstr "Креирај ваучер"
 msgid "Create vouchers"
 msgstr "Креирај ваучере"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:84
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:136
 msgid "Create your account"
 msgstr "Направите свој налог"
 
@@ -1266,7 +1281,7 @@ msgid "Decimals"
 msgstr "Децимале"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:78
+#: apps/web/src/lib/validation-i18n.ts:93
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "Број децимала мора бити цео број од 0 до 18"
 
@@ -1305,7 +1320,7 @@ msgstr "Опишите свој пул"
 msgid "Description"
 msgstr "Опис"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:702
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:709
 msgid "Discard changes"
 msgstr "Одбаци измјене"
 
@@ -1349,12 +1364,12 @@ msgid "Drag to move, pinch or use the slider to zoom."
 msgstr "Превуците да померите, скупите прсте или користите клизач за увећање."
 
 #: apps/web/src/features/home/ui/report-page.tsx:389
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:534
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:541
 msgid "Duration"
 msgstr "Трајање"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:250
+#: apps/web/src/lib/validation-i18n.ts:265
 msgid "Duration must be 100 characters or fewer"
 msgstr "Трајање мора имати 100 знакова или мање"
 
@@ -1375,22 +1390,22 @@ msgid "e.g. MARKET"
 msgstr "нпр. MARKET"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:310
+#: apps/web/src/lib/validation-i18n.ts:325
 msgid "Each attachment can only be added once"
 msgstr "Сваки прилог може се додати само једном"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:305
+#: apps/web/src/lib/validation-i18n.ts:320
 msgid "Each image can only be added once"
 msgstr "Свака слика може се додати само једном"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:295
+#: apps/web/src/lib/validation-i18n.ts:310
 msgid "Each tag can only be added once"
 msgstr "Свака ознака може се додати само једном"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:300
+#: apps/web/src/lib/validation-i18n.ts:315
 msgid "Each voucher can only be linked once"
 msgstr "Сваки ваучер може се повезати само једном"
 
@@ -1399,7 +1414,7 @@ msgstr "Сваки ваучер може се повезати само једн
 #~ msgstr "Угоститељство"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:301
-#: apps/web/src/features/posts/ui/my-posts-page.tsx:121
+#: apps/web/src/features/posts/ui/my-posts-page.tsx:117
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:136
 msgid "Edit"
 msgstr "Измијени"
@@ -1412,20 +1427,20 @@ msgstr "Измени филтере"
 msgid "Edit offering"
 msgstr "Уреди понуду"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:333
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:340
 msgid "Edit post"
 msgstr "Уреди објаву"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:142
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:42
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:156
 msgid "Edit profile"
 msgstr "Измијени профил"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:159
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:198
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:209
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:142
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:153
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:212
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:223
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:197
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:208
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:35
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:37
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:315
@@ -1445,7 +1460,7 @@ msgstr "Омогућавање обавјештења"
 msgid "Enabling notifications..."
 msgstr "Омогућавање обавјештења..."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:475
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:482
 msgid "Ends"
 msgstr "Завршава"
 
@@ -1454,18 +1469,23 @@ msgid "Enter a link starting with http:// or https://"
 msgstr "Унесите везу која почиње са http:// или https://"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:180
+#: apps/web/src/lib/validation-i18n.ts:195
 msgid "Enter a title for your post"
 msgstr "Унесите наслов објаве"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:215
+#: apps/web/src/lib/validation-i18n.ts:230
 msgid "Enter a valid date and time"
 msgstr "Унесите исправан датум и вријеме"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:206
 msgid "Enter a valid private key or paper wallet."
 msgstr "Унесите важећи приватни кључ или папирни новчаник."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:43
+msgid "Enter a valid website URL including https://"
+msgstr "Унесите исправну адресу веб-сајта укључујући https://"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:216
 msgid "Enter an amount greater than zero."
@@ -1502,7 +1522,7 @@ msgstr "Једнака вредност"
 #~ msgstr "Процјена користи привремене податке ваучера за пул. Не шаље се захтјев "
 #~ "за понуду или relay."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:448
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:455
 msgid "Event details"
 msgstr "Детаљи догађаја"
 
@@ -1521,7 +1541,7 @@ msgid "Expiration Date"
 msgstr "Датум истека"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:88
+#: apps/web/src/lib/validation-i18n.ts:103
 msgid "Expiration date must be in the future"
 msgstr "Датум истека мора бити у будућности"
 
@@ -1589,7 +1609,7 @@ msgid "File name (optional)"
 msgstr "Име датотеке (необавезно)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:235
+#: apps/web/src/lib/validation-i18n.ts:250
 msgid "File name must be 255 characters or fewer"
 msgstr "Име датотеке мора имати 255 знакова или мање"
 
@@ -1651,7 +1671,7 @@ msgstr "Од"
 #~ msgid "Go back"
 #~ msgstr "Назад"
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:232
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:383
 msgid "Go back to sign in"
 msgstr "Вратите се на пријаву"
 
@@ -1676,12 +1696,12 @@ msgid "Helps members find and understand your pool"
 msgstr "Помаже члановима да пронађу и разумеју ваш пул"
 
 #: apps/web/src/features/home/ui/report-page.tsx:382
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:496
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:503
 msgid "Host"
 msgstr "Домаћин"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:240
+#: apps/web/src/lib/validation-i18n.ts:255
 msgid "Host must be 200 characters or fewer"
 msgstr "Домаћин мора имати 200 знакова или мање"
 
@@ -1760,7 +1780,7 @@ msgid "Invalid email address"
 msgstr "Неисправна имејл адреса"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:33
+#: apps/web/src/lib/validation-i18n.ts:48
 msgid "Invalid location"
 msgstr "Неисправна локација"
 
@@ -1808,11 +1828,11 @@ msgid "Language"
 msgstr "Језик"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:205
+#: apps/web/src/lib/validation-i18n.ts:220
 msgid "Latitude must be between -90 and 90"
 msgstr "Географска ширина мора бити између -90 и 90"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:701
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:708
 msgid "Leave without saving?"
 msgstr "Изаћи без чувања?"
 
@@ -1848,7 +1868,7 @@ msgid "Link a video, a document or an external page."
 msgstr "Повежите видео, документ или спољну страницу."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:270
+#: apps/web/src/lib/validation-i18n.ts:285
 msgid "Link at most 12 vouchers"
 msgstr "Повежите највише 12 ваучера"
 
@@ -1968,8 +1988,8 @@ msgstr "Учитавање ваучера…"
 msgid "Loading vouchers…"
 msgstr "Учитавање ваучера…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:106
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:184
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:120
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:191
 msgid "Loading your post…"
 msgstr "Учитавање ваше објаве…"
 
@@ -2013,7 +2033,7 @@ msgid "Logo"
 msgstr "Лого"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:210
+#: apps/web/src/lib/validation-i18n.ts:225
 msgid "Longitude must be between -180 and 180"
 msgstr "Географска дужина мора бити између -180 и 180"
 
@@ -2029,7 +2049,7 @@ msgstr "Управљајте сесијом новчаника и подешав
 msgid "Map"
 msgstr "Мапа"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:441
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:448
 msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 msgstr "Markdown: **подебљано**, # наслови, - листе, [везе](https://…)"
 
@@ -2059,7 +2079,7 @@ msgid "Max {max}"
 msgstr "Макс. {max}"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:200
+#: apps/web/src/lib/validation-i18n.ts:215
 msgid "Media must be an uploaded http(s) URL"
 msgstr "Медијски садржај мора бити отпремљена http(s) адреса"
 
@@ -2068,7 +2088,7 @@ msgid "Message"
 msgstr "Порука"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:168
+#: apps/web/src/lib/validation-i18n.ts:183
 msgid "Message must be 500 characters or fewer"
 msgstr "Порука мора имати највише 500 знакова"
 
@@ -2170,7 +2190,7 @@ msgstr "MPESA преко Pretium-а"
 #: apps/web/src/features/home/ui/posts-page.tsx:92
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:31
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:77
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:744
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:751
 msgid "My posts"
 msgstr "Моје објаве"
 
@@ -2178,18 +2198,18 @@ msgstr "Моје објаве"
 msgid "My wallet address"
 msgstr "Адреса мог новчаника"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:171
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:182
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:113
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:124
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:185
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:196
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:168
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:179
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:167
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:18
 msgid "Name"
 msgstr "Име"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:87
-msgid "Name and location are required. Provide an email or phone number."
-msgstr "Име и локација су обавезни. Унесите имејл или број телефона."
+#~ msgid "Name and location are required. Provide an email or phone number."
+#~ msgstr "Име и локација су обавезни. Унесите имејл или број телефона."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:6
@@ -2204,6 +2224,18 @@ msgstr "Име може имати највише 80 знакова"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:84
 msgid "Name on wallet"
 msgstr "Име на новчанику"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:123
+#~ msgid "Name, location, and preferred currency are required. Add a bio or "
+#~ "website if you'd like."
+#~ msgstr "Име, локација и жељена валута су обавезни. Додајте биографију или "
+#~ "веб-сајт ако желите."
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:139
+msgid "Name, location, and preferred currency are required. Provide an email "
+"address or phone number. Bio and website are optional."
+msgstr "Име, локација и жељена валута су обавезни. Наведите адресу е-поште или број "
+"телефона. Биографија и веб-сајт су опциони."
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:63
 #~ msgid "Near me"
@@ -2225,7 +2257,7 @@ msgstr "Мрежа"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:87
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:35
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:333
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:340
 msgid "New post"
 msgstr "Нова објава"
 
@@ -2277,6 +2309,11 @@ msgstr "Нема доступних филтера категорија."
 #: apps/web/src/components/auth/sign-in-panel.tsx:397
 msgid "No CLC account was found for this sign-in."
 msgstr "Nije pronađen CLC nalog za ovu prijavu."
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:269
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:261
+msgid "No currencies found"
+msgstr "Ниједна валута није пронађена"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:354
 msgid "No currencies found."
@@ -2392,7 +2429,7 @@ msgstr "Није послато"
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Ништа што одговара упиту „{searchTerm}“ нема категорију."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:416
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:423
 msgid "Nothing to preview yet."
 msgstr "Још нема шта да се прикаже."
 
@@ -2505,7 +2542,11 @@ msgid "Opening paper wallet..."
 msgstr "Отварање папирног новчаника..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:126
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:156
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:170
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:288
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:282
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:313
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:522
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:536
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:333
@@ -2537,12 +2578,12 @@ msgid "Paper wallet only"
 msgstr "Samo papirni novčanik"
 
 #: apps/web/src/features/home/ui/report-page.tsx:387
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:515
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:522
 msgid "Participants"
 msgstr "Учесници"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:245
+#: apps/web/src/lib/validation-i18n.ts:260
 msgid "Participants must be 100 characters or fewer"
 msgstr "Учесници морају имати 100 знакова или мање"
 
@@ -2597,8 +2638,8 @@ msgstr "На чекању"
 #~ msgstr "Интеграција endpoint-а је на чекању"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:172
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:225
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:171
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:239
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:226
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:41
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:43
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:327
@@ -2606,8 +2647,8 @@ msgstr "На чекању"
 msgid "Phone"
 msgstr "Телефон"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:232
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:178
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:246
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:233
 msgid "Phone number"
 msgstr "Број телефона"
 
@@ -2620,7 +2661,7 @@ msgstr "Фотографија"
 msgid "Photo {0}"
 msgstr "Фотографија {0}"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:640
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:647
 msgid "Photos"
 msgstr "Фотографије"
 
@@ -2628,7 +2669,7 @@ msgstr "Фотографије"
 msgid "Photos appear in the order you add them."
 msgstr "Фотографије се приказују у реду у којем их додате."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:339
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:346
 msgid "Picked up where you left off — this post has not been submitted yet."
 msgstr "Настављено где сте стали — ова објава још није послата."
 
@@ -2636,7 +2677,7 @@ msgstr "Настављено где сте стали — ова објава ј
 msgid "Piece"
 msgstr "Комад"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:551
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:558
 msgid "Place"
 msgstr "Мјесто"
 
@@ -2668,12 +2709,12 @@ msgid "Pool Description"
 msgstr "Опис пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:128
+#: apps/web/src/lib/validation-i18n.ts:143
 msgid "Pool description is required"
 msgstr "Опис пула је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:133
+#: apps/web/src/lib/validation-i18n.ts:148
 msgid "Pool description must be 500 characters or fewer"
 msgstr "Опис пула мора имати највише 500 знакова"
 
@@ -2696,12 +2737,12 @@ msgid "Pool Name"
 msgstr "Назив пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:103
+#: apps/web/src/lib/validation-i18n.ts:118
 msgid "Pool name is required"
 msgstr "Назив пула је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:108
+#: apps/web/src/lib/validation-i18n.ts:123
 msgid "Pool name must be 80 characters or fewer"
 msgstr "Назив пула мора имати највише 80 знакова"
 
@@ -2715,12 +2756,12 @@ msgid "Pool Shortcode"
 msgstr "Кратка ознака пула"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:113
+#: apps/web/src/lib/validation-i18n.ts:128
 msgid "Pool shortcode is required"
 msgstr "Кратка ознака пула је обавезна"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:118
+#: apps/web/src/lib/validation-i18n.ts:133
 msgid "Pool shortcode must be 6 characters or fewer"
 msgstr "Кратка ознака пула мора имати највише 6 знакова"
 
@@ -2756,20 +2797,20 @@ msgstr "Поставите фотографију"
 msgid "Post not found."
 msgstr "Објава није нађена."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:587
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:594
 msgid "Post tags"
 msgstr "Ознаке објаве"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:397
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:404
 msgid "Post text"
 msgstr "Текст објаве"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:190
+#: apps/web/src/lib/validation-i18n.ts:205
 msgid "Post text is too long"
 msgstr "Текст објаве је предуг"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:273
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:280
 msgid "Post updated."
 msgstr "Објава је ажурирана."
 
@@ -2791,6 +2832,13 @@ msgstr "Објаве нису доступне за овај ваучер."
 #: apps/web/src/features/home/ui/settings-page.tsx:40
 msgid "Preferences"
 msgstr "Подешавања"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:262
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:270
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:251
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:262
+msgid "Preferred currency"
+msgstr "Жељена валута"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:396
 msgid "Preparing wallet…"
@@ -2826,8 +2874,8 @@ msgstr "Pretium ID"
 msgid "Pretium ID copied"
 msgstr "Pretium ID је копиран"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:406
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:408
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:413
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:415
 msgid "Preview"
 msgstr "Приказ"
 
@@ -2847,7 +2895,7 @@ msgid "Price feed"
 msgstr "Извор цена"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:63
+#: apps/web/src/lib/validation-i18n.ts:78
 msgid "Price must be greater than zero"
 msgstr "Цена мора бити већа од нуле"
 
@@ -2885,11 +2933,11 @@ msgstr "Приватни прилог"
 msgid "Private key"
 msgstr "Приватни кључ"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:155
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:169
 msgid "Profile photo"
 msgstr "Slika profila"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:122
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:136
 msgid "Profile updated"
 msgstr "Профил је ажуриран"
 
@@ -3047,7 +3095,7 @@ msgid "Registration failed. Check your connection and try again."
 msgstr "Регистрација није успјела. Провјерите везу и покушајте поново."
 
 #: apps/web/src/features/home/ui/report-page.tsx:467
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:620
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:627
 msgid "Related vouchers"
 msgstr "Повезани ваучери"
 
@@ -3069,7 +3117,7 @@ msgid "Remove {0}"
 msgstr "Уклони {0}"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:519
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:589
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:596
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:597
 msgid "Remove {tag}"
 msgstr "Уклони {tag}"
@@ -3127,8 +3175,8 @@ msgstr "Проналажење примаоца…"
 #: apps/web/src/features/home/ui/report-page.tsx:53
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:506
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:200
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:603
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:207
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:610
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:215
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:584
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:254
@@ -3169,23 +3217,23 @@ msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Усмјерите откупљива потраживања кроз одабрана тржишта уз заједничке "
 "стандарде."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:689
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:696
 msgid "Save and resubmit"
 msgstr "Сачувај и пошаљи поново"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:290
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:679
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:686
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:354
 msgid "Save changes"
 msgstr "Сачувај измјене"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:274
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:281
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Сачувано. Ваша објава поново чека одобрење."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:290
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:218
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:677
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:684
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:352
 msgid "Saving…"
 msgstr "Чување…"
@@ -3210,6 +3258,8 @@ msgstr "Померите за још"
 msgid "Search by name or symbol"
 msgstr "Претражи по имену или симболу"
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:268
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:260
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:353
 msgid "Search currencies"
 msgstr "Претражи валуте"
@@ -3230,7 +3280,7 @@ msgstr "Претражи ознаке пула"
 msgid "Search pools"
 msgstr "Претражи пулове"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:585
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:592
 msgid "Search post tags"
 msgstr "Претражи ознаке објава"
 
@@ -3239,7 +3289,7 @@ msgid "Search posts by title or description"
 msgstr "Претражи објаве по наслову или опису"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:518
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:588
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:595
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:596
 msgid "Search tags"
 msgstr "Претражи ознаке"
@@ -3286,7 +3336,7 @@ msgstr "Изаберите токен"
 msgid "Selected pool tags"
 msgstr "Изабране ознаке пула"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:586
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:593
 msgid "Selected post tags"
 msgstr "Изабране ознаке објаве"
 
@@ -3313,7 +3363,7 @@ msgstr "Продајте стабилне токене за локални но�
 msgid "Send"
 msgstr "Пошаљи"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:688
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:695
 msgid "Send this post back for approval?"
 msgstr "Послати ову објаву поново на одобрење?"
 
@@ -3368,7 +3418,7 @@ msgid "Setting up your wallet..."
 msgstr "Подешавање вашег новчаника..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:34
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
 #: apps/web/src/features/home/ui/settings-page.tsx:29
 msgid "Settings"
 msgstr "Подешавања"
@@ -3481,7 +3531,7 @@ msgstr "Стабилни токен је послат"
 msgid "Standard"
 msgstr "Стандардни"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:348
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:355
 msgid "Start over"
 msgstr "Почни испочетка"
 
@@ -3489,7 +3539,7 @@ msgstr "Почни испочетка"
 msgid "Starting…"
 msgstr "Покретање…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:454
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:461
 msgid "Starts"
 msgstr "Почиње"
 
@@ -3510,7 +3560,7 @@ msgstr "Korak {clampedStep} od {clampedTotal}"
 #~ msgid "Step {progressStep} of 3"
 #~ msgstr "Корак {progressStep} од 3"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:681
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:688
 msgid "Submit for approval"
 msgstr "Пошаљи на одобрење"
 
@@ -3519,7 +3569,7 @@ msgstr "Пошаљи на одобрење"
 msgid "Submitted"
 msgstr "Послато"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:279
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:286
 msgid "Submitted for approval."
 msgstr "Послато на одобрење."
 
@@ -3532,7 +3582,7 @@ msgstr "Слање…"
 #~ msgstr "Резиме"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:195
+#: apps/web/src/lib/validation-i18n.ts:210
 msgid "Summary must be 10,000 characters or fewer"
 msgstr "Резиме мора имати 10.000 знакова или мање"
 
@@ -3545,12 +3595,12 @@ msgid "Supply check unavailable"
 msgstr "Провера количине није доступна"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:163
+#: apps/web/src/lib/validation-i18n.ts:178
 msgid "Supply has more decimal places than this voucher supports"
 msgstr "Количина има више децималних места него што овај ваучер подржава"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
+#: apps/web/src/lib/validation-i18n.ts:173
 msgid "Supply must be greater than zero"
 msgstr "Количина мора бити већа од нуле"
 
@@ -3583,7 +3633,7 @@ msgid "Swap Fee (%)"
 msgstr "Накнада за размену (%)"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:138
+#: apps/web/src/lib/validation-i18n.ts:153
 msgid "Swap fee must be a number from 0 to 100"
 msgstr "Накнада за размену мора бити број од 0 до 100"
 
@@ -3638,29 +3688,34 @@ msgid "Symbol"
 msgstr "Ознака"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:32
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:578
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:585
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:565
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:34
 msgid "Tags"
 msgstr "Ознаке"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:572
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:579
 msgid "Tags and vouchers"
 msgstr "Ознаке и ваучери"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:260
+#: apps/web/src/lib/validation-i18n.ts:275
 msgid "Tags must be 100 characters or fewer"
 msgstr "Ознаке морају имати 100 знакова или мање"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:255
+#: apps/web/src/lib/validation-i18n.ts:270
 msgid "Tags must not be blank"
 msgstr "Ознаке не смију бити празне"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:433
 msgid "Take fees separately"
 msgstr "Одвајај накнаде"
+
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:295
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:289
+msgid "Tell people a little about yourself"
+msgstr "Реците људима нешто о себи"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:394
 msgid "Tell people about your business..."
@@ -3695,7 +3750,7 @@ msgid "The cart isn't ready yet."
 msgstr "Корпа још није спремна."
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:290
+#: apps/web/src/lib/validation-i18n.ts:305
 msgid "The end of the period must not be before its start"
 msgstr "Крај периода не смије бити прије његовог почетка"
 
@@ -3806,13 +3861,13 @@ msgstr "Ова тржница нема доступних {0} за размје�
 msgid "This pool only has {0} {1} available to swap."
 msgstr "На овој тржници је за размјену доступно само {0} {1}."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:355
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:362
 msgid "This post is published. Saving changes sends it back for approval, so it "
 "leaves the Posts feed until it is approved again."
 msgstr "Ова објава је објављена. Чување измјена шаље је поново на одобрење, па "
 "неће бити у листи објава док не буде поново одобрена."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:286
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:293
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Ова објава је превелика да би се сачувала. Скратите текст или уклоните "
 "дио медијског садржаја."
@@ -3821,12 +3876,12 @@ msgstr "Ова објава је превелика да би се сачува�
 msgid "This QR code does not contain a valid private key."
 msgstr "Овај QR код не садржи важећи приватни кључ."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:377
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:384
 msgid "Title"
 msgstr "Наслов"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:185
+#: apps/web/src/lib/validation-i18n.ts:200
 msgid "Title must be 200 characters or fewer"
 msgstr "Наслов мора имати 200 знакова или мање"
 
@@ -3902,7 +3957,7 @@ msgstr "Вожња"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:58
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:115
@@ -3981,12 +4036,12 @@ msgstr "Ажурирај заштићени папирни новчаник"
 #~ msgid "Update your contact details and country."
 #~ msgstr "Ажурирајте контакт податке и земљу."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 msgid "Update your contact details and location."
 msgstr "Ажурирајте контакт податке и локацију."
 
 #: apps/web/src/features/home/ui/report-page.tsx:79
-#: apps/web/src/features/posts/ui/my-posts-page.tsx:105
+#: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "Ажурирано"
 
@@ -4006,12 +4061,12 @@ msgstr "Отпреми лого"
 msgid "Upload QR code image"
 msgstr "Отпреми слику QR кода"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:290
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:350
 msgid "Uploading photo…"
 msgstr "Отпремање фотографије…"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:675
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:682
 msgid "Uploading photos…"
 msgstr "Отпремање фотографија…"
 
@@ -4047,12 +4102,12 @@ msgid "Use my location"
 msgstr "Користи моју локацију"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:123
+#: apps/web/src/lib/validation-i18n.ts:138
 msgid "Use only letters and numbers for the pool shortcode"
 msgstr "За кратку ознаку пула користите само слова и бројеве"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:58
+#: apps/web/src/lib/validation-i18n.ts:73
 msgid "Use only letters and numbers for the voucher symbol"
 msgstr "За ознаку ваучера користите само слова и бројеве"
 
@@ -4074,7 +4129,7 @@ msgstr "Употреби фотографију"
 msgid "Value: {0} {1}"
 msgstr "Вредност: {0} {1}"
 
-#: apps/web/src/features/posts/ui/my-posts-page.tsx:115
+#: apps/web/src/features/posts/ui/my-posts-page.tsx:111
 msgid "View"
 msgstr "Прикажи"
 
@@ -4107,7 +4162,7 @@ msgid "View voucher"
 msgstr "Прикажи ваучер"
 
 #: apps/web/src/features/home/ui/market-labels.ts:16
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:158
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:172
 msgid "Voucher"
 msgstr "Ваучер"
 
@@ -4124,12 +4179,12 @@ msgid "Voucher Description"
 msgstr "Опис ваучера"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:68
+#: apps/web/src/lib/validation-i18n.ts:83
 msgid "Voucher description is required"
 msgstr "Опис ваучера је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:73
+#: apps/web/src/lib/validation-i18n.ts:88
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "Опис ваучера мора имати највише 500 знакова"
 
@@ -4146,12 +4201,12 @@ msgid "Voucher Name"
 msgstr "Назив ваучера"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:38
+#: apps/web/src/lib/validation-i18n.ts:53
 msgid "Voucher name is required"
 msgstr "Назив ваучера је обавезан"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:43
+#: apps/web/src/lib/validation-i18n.ts:58
 msgid "Voucher name must be 80 characters or fewer"
 msgstr "Назив ваучера мора имати највише 80 знакова"
 
@@ -4168,12 +4223,12 @@ msgid "Voucher Symbol"
 msgstr "Ознака ваучера"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:48
+#: apps/web/src/lib/validation-i18n.ts:63
 msgid "Voucher symbol is required"
 msgstr "Ознака ваучера је обавезна"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:53
+#: apps/web/src/lib/validation-i18n.ts:68
 msgid "Voucher symbol must be 6 characters or fewer"
 msgstr "Ознака ваучера мора имати највише 6 знакова"
 
@@ -4261,7 +4316,7 @@ msgstr "Нисмо могли да потврдимо вашу сесију. П�
 msgid "We couldn't load your profile phone number."
 msgstr "Нисмо могли да учитамо број телефона са вашег профила."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:50
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
 msgid "We couldn't load your profile."
 msgstr "Нисмо могли да учитамо ваш профил."
 
@@ -4274,6 +4329,10 @@ msgstr "Нисмо могли да сачувамо вашу фотографи�
 msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Није могуће потврдити да ли овај ваучер већ има количину."
 
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:315
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:330
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:311
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:326
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:38
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:40
@@ -4314,7 +4373,7 @@ msgstr "Када овај ваучер истиче?"
 msgid "Where and what for"
 msgstr "Где и за коју намену"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:557
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:564
 msgid "Where did this happen?"
 msgstr "Гдје се то догодило?"
 
@@ -4398,7 +4457,7 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 "is approved."
 msgstr "Ваш налог чека одобрење. Моћи ћете да наставите када буде одобрен."
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:693
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:700
 msgid "Your changes leave the Posts feed until a steward approves them again. "
 "Approval cannot be undone once given."
 msgstr "Ваше измјене неће бити у листи објава док их управник поново не одобри. "
@@ -4408,8 +4467,8 @@ msgstr "Ваше измјене неће бити у листи објава д�
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Ваша MPESA исплата ће ускоро стићи."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:119
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:191
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:174
 msgid "Your name"
 msgstr "Ваше име"
 
@@ -4433,7 +4492,7 @@ msgstr "Ваш профил"
 msgid "Your profile photo"
 msgstr "Ваша фотографија профила"
 
-#: apps/web/src/features/posts/ui/post-editor-page.tsx:711
+#: apps/web/src/features/posts/ui/post-editor-page.tsx:718
 msgid "Your unsaved changes to this post will be lost."
 msgstr "Ваше несачуване измјене ове објаве биће изгубљене."
 
