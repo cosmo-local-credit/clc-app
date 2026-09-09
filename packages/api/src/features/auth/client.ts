@@ -62,6 +62,12 @@ export type ProfilePayload = {
   email: string;
   phone: string;
   country: string;
+  /** Omitted only by clients released before profile preferences existed. */
+  preferredCurrency?: string;
+  /** An empty string explicitly clears a previously saved value. */
+  bio?: string;
+  /** An empty string explicitly clears a previously saved value. */
+  website?: string;
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
@@ -84,6 +90,12 @@ export type ProfileResult = {
   email: string;
   phone: string;
   country: string;
+  /** Optional while an older backend is deployed. */
+  preferredCurrency?: string | null;
+  /** Optional while an older backend is deployed. */
+  bio?: string | null;
+  /** Optional while an older backend is deployed. */
+  website?: string | null;
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
@@ -231,6 +243,11 @@ export function createAuthClient(http: HttpClient): AuthClient {
           email: payload.email,
           phone: payload.phone,
           country: payload.country,
+          ...(payload.preferredCurrency === undefined
+            ? {}
+            : { preferredCurrency: payload.preferredCurrency }),
+          ...(payload.bio === undefined ? {} : { bio: payload.bio }),
+          ...(payload.website === undefined ? {} : { website: payload.website }),
           locationName: payload.locationName,
           geoLat: payload.geoLat,
           geoLng: payload.geoLng,

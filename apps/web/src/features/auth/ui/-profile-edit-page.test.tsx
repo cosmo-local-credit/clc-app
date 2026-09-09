@@ -158,6 +158,9 @@ describe("ProfileEditPage", () => {
 
     expect(await screen.findByDisplayValue("Alice")).toBeTruthy();
     expect(screen.getByDisplayValue("alice@example.com")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     const phone = screen.getByLabelText(/phone number/i) as HTMLInputElement;
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
@@ -222,6 +225,9 @@ describe("ProfileEditPage", () => {
       email: "alice@example.com",
       phone: "+254712345678",
       country: PICKED_LOCATION.country,
+      preferredCurrency: "KES",
+      bio: "",
+      website: "",
       locationName: PICKED_LOCATION.locationName,
       geoLat: PICKED_LOCATION.lat,
       geoLng: PICKED_LOCATION.lng,
@@ -257,6 +263,28 @@ describe("ProfileEditPage", () => {
     expect(body).not.toHaveProperty("locationName");
     expect(body).not.toHaveProperty("geoLat");
     expect(body).not.toHaveProperty("geoLng");
+  });
+
+  it("prefills and persists the saved profile details", async () => {
+    const fetchMock = mockBackend({
+      preferredCurrency: "TZS",
+      bio: "Tanzanian grower",
+      website: "https://grow.example",
+    });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    expect(await screen.findByDisplayValue("Tanzanian grower")).toBeTruthy();
+    expect(screen.getByDisplayValue("https://grow.example")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({
+      preferredCurrency: "TZS",
+      bio: "Tanzanian grower",
+      website: "https://grow.example",
+    });
   });
 
   it("saves a newly chosen profile photo", async () => {

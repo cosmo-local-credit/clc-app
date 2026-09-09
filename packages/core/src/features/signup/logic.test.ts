@@ -13,16 +13,17 @@ const VALID_BASE = {
   email: "alice@example.com",
   phone: "",
   location: VALID_LOCATION,
+  preferredCurrency: "KES",
+  bio: "Neighbourhood organiser",
+  website: "https://alice.example",
 };
 
 describe("profileSchema", () => {
   it("accepts a fully populated object", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
-        email: "alice@example.com",
+        ...VALID_BASE,
         phone: "+254712345678",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -34,10 +35,9 @@ describe("profileSchema", () => {
   it("accepts name + phone + location (no email)", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
+        ...VALID_BASE,
         email: "",
         phone: "+254712345678",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -88,10 +88,9 @@ describe("profileSchema", () => {
 
   it("rejects when both email and phone are empty", () => {
     const result = profileSchema.safeParse({
-      name: "Alice",
+      ...VALID_BASE,
       email: "",
       phone: "",
-      location: VALID_LOCATION,
     });
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -103,10 +102,8 @@ describe("profileSchema", () => {
   it("passes when only email is provided", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
-        email: "alice@example.com",
+        ...VALID_BASE,
         phone: "",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -114,10 +111,9 @@ describe("profileSchema", () => {
   it("passes when only phone is provided", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
+        ...VALID_BASE,
         email: "",
         phone: "+254712345678",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -125,10 +121,8 @@ describe("profileSchema", () => {
   it("passes when both email and phone are provided", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
-        email: "alice@example.com",
+        ...VALID_BASE,
         phone: "+254712345678",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -144,10 +138,9 @@ describe("profileSchema", () => {
   it("accepts a valid E.164 phone number", () => {
     expect(
       profileSchema.safeParse({
-        name: "Alice",
+        ...VALID_BASE,
         email: "",
         phone: "+254712345678",
-        location: VALID_LOCATION,
       }).success,
     ).toBe(true);
   });
@@ -179,11 +172,26 @@ describe("profileEditSchema", () => {
   it("allows an existing location to be cleared", () => {
     expect(
       profileEditSchema.safeParse({
-        name: "Alice",
-        email: "alice@example.com",
-        phone: "",
+        ...VALID_BASE,
         location: undefined,
       }).success,
     ).toBe(true);
+  });
+
+  it("accepts blank optional bio and website values", () => {
+    expect(profileSchema.safeParse({ ...VALID_BASE, bio: "", website: "" }).success).toBe(true);
+  });
+
+  it("rejects a currency outside the ISO catalog", () => {
+    expect(profileSchema.safeParse({ ...VALID_BASE, preferredCurrency: "HOUR" }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects a malformed website and an overlong bio", () => {
+    expect(profileSchema.safeParse({ ...VALID_BASE, website: "alice.example" }).success).toBe(
+      false,
+    );
+    expect(profileSchema.safeParse({ ...VALID_BASE, bio: "a".repeat(501) }).success).toBe(false);
   });
 });

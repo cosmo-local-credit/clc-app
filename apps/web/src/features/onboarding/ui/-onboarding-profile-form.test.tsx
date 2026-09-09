@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate } = vi.hoisted(() => ({
+const { mockNavigate, mockResolvePreferredCurrency } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
+  mockResolvePreferredCurrency: vi.fn(),
 }));
 
 // Uploads are offered only where the service is configured, and the test env has
@@ -11,6 +12,11 @@ vi.mock("#/lib/api/storage", () => ({
   isStorageConfigured: true,
   storageClient: () => ({ upload: vi.fn() }),
 }));
+
+vi.mock("#/lib/profile-currency", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/lib/profile-currency")>();
+  return { ...actual, resolvePreferredCurrency: mockResolvePreferredCurrency };
+});
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
@@ -124,14 +130,19 @@ function renderForm(
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockResolvePreferredCurrency.mockReset();
+  mockResolvePreferredCurrency.mockResolvedValue("USD");
 });
 
 describe("OnboardingProfileForm rendering", () => {
-  it("renders name, email, phone, and location fields", () => {
+  it("renders contact, profile, currency, and location fields", () => {
     renderForm();
     expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(screen.getByTestId("phone-input")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     expect(screen.getByTestId("location-picker")).toBeTruthy();
     expect(screen.queryByTestId("country-select")).toBeNull();
   });
@@ -189,6 +200,9 @@ describe("OnboardingProfileForm submission", () => {
       expect.objectContaining<Partial<ProfileInput>>({
         name: "Alice",
         email: "alice@example.com",
+        preferredCurrency: "KES",
+        bio: "",
+        website: "",
         location: {
           lat: -1.2921,
           lng: 36.8219,
@@ -198,6 +212,38 @@ describe("OnboardingProfileForm submission", () => {
       }),
       // The photo travels beside the validated profile: it cannot be part of it,
       // because profileSchema lives in @clc/core and cannot name a File.
+      null,
+    );
+  });
+
+  it("keeps a location currency when the network suggestion arrives later", async () => {
+    let resolveNetworkCurrency: (currency: string) => void = () => undefined;
+    mockResolvePreferredCurrency.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveNetworkCurrency = resolve;
+        }),
+    );
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      resolveNetworkCurrency("USD");
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
       null,
     );
   });
@@ -272,6 +318,9 @@ describe("OnboardingProfileForm value restoration", () => {
       name: "Alice",
       email: "alice@example.com",
       phone: "",
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://alice.example",
       location: {
         lat: -1.2921,
         lng: 36.8219,

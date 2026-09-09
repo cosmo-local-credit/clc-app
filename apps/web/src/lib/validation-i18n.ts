@@ -29,6 +29,21 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Choose a location",
         message: "Choose a location",
       });
+    case "Choose a preferred currency":
+      return i18n._({
+        id: "Choose a preferred currency",
+        message: "Choose a preferred currency",
+      });
+    case "Bio must be 500 characters or fewer":
+      return i18n._({
+        id: "Bio must be 500 characters or fewer",
+        message: "Bio must be 500 characters or fewer",
+      });
+    case "Enter a valid website URL including https://":
+      return i18n._({
+        id: "Enter a valid website URL including https://",
+        message: "Enter a valid website URL including https://",
+      });
     case "Invalid location":
       return i18n._({
         id: "Invalid location",
