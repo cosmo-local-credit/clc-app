@@ -10,6 +10,7 @@ import {
   CELO_MAINNET_CKES_ADDRESS,
   CELO_MAINNET_CUSD_ADDRESS,
 } from "../../lib/constants/celo";
+import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { isTerminalOtxFailure } from "../../lib/otx";
 import { locationSchema } from "../location/logic";
 
@@ -137,6 +138,10 @@ export function poolCreateSchemaForChain(chainId: number) {
       website: optionalWebsiteSchema,
       phone: optionalPhoneSchema,
       terms: optionalTermsUrlSchema,
+      // Already uploaded by the time they reach the form: the picker uploads on
+      // selection, so these hold a stored URL or nothing.
+      imageUrl: optionalStoredImageUrlSchema,
+      bannerUrl: optionalStoredImageUrlSchema,
       acceptedTerms: poolTermsSchema,
       acceptedSproutLicense: poolSproutLicenseSchema,
     })
@@ -214,6 +219,8 @@ export function toPoolDeployPayload(
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
+    ...(input.imageUrl?.trim() ? { imageUrl: input.imageUrl.trim() } : {}),
+    ...(input.bannerUrl?.trim() ? { bannerUrl: input.bannerUrl.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,

@@ -21,6 +21,7 @@ import {
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
+import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
@@ -35,6 +36,7 @@ import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Field } from "#/components/ui/field";
+import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
@@ -55,6 +57,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { isStorageConfigured } from "#/lib/api/storage";
 import { CHAIN_ID } from "#/lib/chain";
 import {
   beginPoolCreateHistory,
@@ -88,12 +91,25 @@ const DEFAULT_VALUES: PoolFormValues = {
   website: "",
   phone: "",
   terms: "",
+  imageUrl: "",
+  bannerUrl: "",
   acceptedTerms: false,
   acceptedSproutLicense: false,
 };
 
+/** The text fields a saved profile can seed, all of which default to "". */
+type SeedableTextField = "email" | "phone" | "website" | "description" | "imageUrl";
+
 const DETAIL_FIELDS = ["name", "symbol", "unit", "description", "feePolicyDefault"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone", "terms"] as const;
+const PLACE_FIELDS = [
+  "location",
+  "email",
+  "website",
+  "phone",
+  "terms",
+  "imageUrl",
+  "bannerUrl",
+] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
@@ -113,6 +129,9 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
   const [tagsOpen, setTagsOpen] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
+  const [bannerBusy, setBannerBusy] = useState(false);
+  const imagesBusy = logoBusy || bannerBusy;
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
@@ -148,25 +167,58 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     },
   });
 
+  // A steward already gave all of this during onboarding, so the form starts
+  // from it. Only an untouched field still holding its default is seeded — a
+  // retry draft, or anything typed over, always wins.
   useEffect(() => {
     const profile = profileQuery.data;
     if (hasPrefilledProfile.current || !profile || draft) return;
     hasPrefilledProfile.current = true;
 
-    const email = profile.email.trim();
-    if (
-      !form.getFieldMeta("email")?.isTouched &&
-      form.getFieldValue("email") === "" &&
-      !email.endsWith("@clc.local")
-    ) {
-      form.setFieldValue("email", email, { dontUpdateMeta: true });
+    const prefill = profilePrefill(profile);
+
+    function seedText(name: SeedableTextField, value: string) {
+      if (!value) return;
+      if (form.getFieldMeta(name)?.isTouched) return;
+      if (form.getFieldValue(name) !== "") return;
+      form.setFieldValue(name, value, { dontUpdateMeta: true });
     }
 
-    const phone = profile.phone.trim();
-    if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
-      form.setFieldValue("phone", phone, { dontUpdateMeta: true });
+    seedText("email", prefill.email);
+    seedText("phone", prefill.phone);
+    seedText("website", prefill.website);
+    // The bio is free text with no minimum, so it only becomes a description
+    // when it would pass as one.
+    if (poolDescriptionSchema.safeParse(prefill.description).success) {
+      seedText("description", prefill.description);
     }
-  }, [draft, form, profileQuery.data]);
+    // Only where the upload fields are rendered: seeding a hidden field would
+    // attach a photo the steward was never shown.
+    if (isStorageConfigured) seedText("imageUrl", prefill.imageUrl);
+
+    // A pool unit is the narrower set, and under oracle pricing it also has to
+    // be one this chain has a feed for — so the preference is offered to the
+    // same schema the field itself validates against rather than assumed.
+    const preferredUnit = poolUnitSchemaForPricing(
+      form.getFieldValue("pricing"),
+      activeChainId,
+    ).safeParse(prefill.unitOfAccount);
+    if (
+      preferredUnit.success &&
+      !form.getFieldMeta("unit")?.isTouched &&
+      form.getFieldValue("unit") === DEFAULT_VALUES.unit
+    ) {
+      form.setFieldValue("unit", preferredUnit.data, { dontUpdateMeta: true });
+    }
+
+    if (
+      prefill.location &&
+      !form.getFieldMeta("location")?.isTouched &&
+      form.getFieldValue("location") === undefined
+    ) {
+      form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
+    }
+  }, [activeChainId, draft, form, profileQuery.data]);
 
   useEffect(() => {
     if (step === "pool") beginPoolCreateHistory(router.history);
@@ -191,6 +243,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   }
 
   async function goToReview() {
+    if (imagesBusy) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/pools/create/$step", params: { step: "review" } });
   }
@@ -466,6 +519,38 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             </h1>
 
             <div className="mt-3.5 space-y-3.5">
+              {isStorageConfigured ? (
+                <div className="space-y-5 border border-border bg-card p-4">
+                  <form.Field name="imageUrl">
+                    {(field) => (
+                      <ImageUploadField
+                        label={t`Logo`}
+                        hint={t`Optional`}
+                        purpose="pool.image"
+                        value={field.state.value || null}
+                        onChange={(url) => field.handleChange(url ?? "")}
+                        onBusyChange={setLogoBusy}
+                        disabled={deployPool.isPending}
+                      />
+                    )}
+                  </form.Field>
+
+                  <form.Field name="bannerUrl">
+                    {(field) => (
+                      <ImageUploadField
+                        label={t`Cover photo`}
+                        hint={t`Optional`}
+                        purpose="pool.banner"
+                        value={field.state.value || null}
+                        onChange={(url) => field.handleChange(url ?? "")}
+                        onBusyChange={setBannerBusy}
+                        disabled={deployPool.isPending}
+                      />
+                    )}
+                  </form.Field>
+                </div>
+              ) : null}
+
               <form.Field name="location" validators={{ onSubmit: locationSchema }}>
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
@@ -626,8 +711,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             </div>
 
             <div className="mt-auto pt-6">
-              <Button type="button" className="h-11 w-full" onClick={() => void goToReview()}>
-                <Trans>Next</Trans>
+              <Button
+                type="button"
+                className="h-11 w-full"
+                disabled={imagesBusy}
+                onClick={() => void goToReview()}
+              >
+                {imagesBusy ? (
+                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                {imagesBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
           </>

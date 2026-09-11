@@ -7,6 +7,7 @@ import {
   optionalWebsiteSchema,
 } from "../../lib/contact";
 import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 import type { CaliburCall } from "../webauthn/index";
@@ -49,14 +50,6 @@ export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
   message: "Choose a currency",
 });
 const voucherTypeSchema = z.enum(["standard", "expiring"]);
-const optionalVoucherImageUrlSchema = z
-  .string()
-  .trim()
-  .refine((value) => value === "" || /^https?:\/\//i.test(value), {
-    message: "The image must be an http(s) URL",
-  })
-  .optional();
-
 export type VoucherUnit = z.infer<typeof voucherUnitSchema>;
 export type VoucherType = z.infer<typeof voucherTypeSchema>;
 
@@ -99,8 +92,8 @@ const voucherPlaceSchema = z.object({
   website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
   terms: optionalTermsUrlSchema,
-  iconUrl: optionalVoucherImageUrlSchema,
-  bannerUrl: optionalVoucherImageUrlSchema,
+  iconUrl: optionalStoredImageUrlSchema,
+  bannerUrl: optionalStoredImageUrlSchema,
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
