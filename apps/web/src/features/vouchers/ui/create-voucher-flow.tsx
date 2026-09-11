@@ -46,6 +46,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
 import {
   beginVoucherCreateHistory,
@@ -103,6 +104,8 @@ const DEFAULT_VALUES: VoucherFormValues = {
 type SeedableTextField = "email" | "phone" | "website" | "description" | "iconUrl";
 
 const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
+/** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
+const ADVANCED_FIELDS = ["symbol", "expiryDate", "decimals"] as const;
 const PLACE_FIELDS = [
   "location",
   "email",
@@ -124,6 +127,11 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const draft = useVoucherCreateDraft((state) => state.draft);
   const setDraft = useVoucherCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
+  const advancedRef = useRef<HTMLDetailsElement>(null);
+  const suggestedSymbol = useSuggestedSymbol({
+    kind: "voucher",
+    initialSymbol: draft?.symbol ?? "",
+  });
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
   const [bannerBusy, setBannerBusy] = useState(false);
@@ -137,7 +145,16 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
       }
-      const parsed = voucherCreateSchema.parse(value);
+      const check = await suggestedSymbol.confirm(value.name, value.symbol);
+      if (!check.ok) {
+        toast.error(t`That symbol is already in use.`);
+        return;
+      }
+      if (check.symbol !== value.symbol) {
+        form.setFieldValue("symbol", check.symbol);
+        toast.info(t`Symbol was taken, using ${check.symbol} instead.`);
+      }
+      const parsed = voucherCreateSchema.parse({ ...value, symbol: check.symbol });
       setDraft(parsed);
       try {
         const result = await deployVoucher.mutateAsync(
@@ -228,7 +245,17 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   async function goToPlace() {
-    if (!(await fieldsAreValid(DETAIL_FIELDS))) return;
+    // Blur may not have fired, or its lookup may still be in flight.
+    if (form.getFieldValue("symbol") === "") {
+      const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
+      if (symbol) form.setFieldValue("symbol", symbol);
+    }
+    if (!(await fieldsAreValid(DETAIL_FIELDS))) {
+      if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
+        if (advancedRef.current) advancedRef.current.open = true;
+      }
+      return;
+    }
     void navigate({ to: "/vouchers/create/$step", params: { step: "place" } });
   }
 
@@ -304,32 +331,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       id="voucher-name"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        void suggestedSymbol.suggest(field.state.value).then((symbol) => {
+                          if (symbol !== undefined) form.setFieldValue("symbol", symbol);
+                        });
+                      }}
                       placeholder={t`e.g. Community Market`}
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
-                  </Field>
-                )}
-              </form.Field>
-
-              <form.Field
-                name="symbol"
-                validators={{ onBlur: voucherSymbolSchema, onSubmit: voucherSymbolSchema }}
-              >
-                {(field) => (
-                  <Field
-                    label={t`Voucher Symbol`}
-                    htmlFor="voucher-symbol"
-                    hint={t`Short ticker, max 6 characters`}
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Input
-                      id="voucher-symbol"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
-                      onBlur={field.handleBlur}
-                      placeholder={t`e.g. MARKET`}
-                      maxLength={6}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
@@ -430,7 +438,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <details>
+              <details ref={advancedRef}>
                 <summary className="cursor-pointer font-medium text-foreground text-sm">
                   <Trans>Advanced</Trans>
                 </summary>
@@ -439,6 +447,34 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   id="voucher-advanced"
                   className="mt-4 space-y-3.5 border border-border bg-card p-4"
                 >
+                  <form.Field
+                    name="symbol"
+                    validators={{ onBlur: voucherSymbolSchema, onSubmit: voucherSymbolSchema }}
+                  >
+                    {(field) => (
+                      <Field
+                        label={t`Voucher Symbol`}
+                        htmlFor="voucher-symbol"
+                        hint={t`Suggested from the name. You can change it.`}
+                        error={getFieldError(field.state.meta.errors)}
+                      >
+                        <Input
+                          id="voucher-symbol"
+                          value={field.state.value}
+                          onChange={(event) => {
+                            const symbol = event.target.value.toUpperCase();
+                            field.handleChange(symbol);
+                            suggestedSymbol.track(symbol);
+                          }}
+                          onBlur={field.handleBlur}
+                          placeholder={t`e.g. MARKET`}
+                          maxLength={6}
+                          aria-invalid={field.state.meta.errors.length > 0}
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+
                   <form.Field name="voucherType">
                     {(field) => (
                       <div>

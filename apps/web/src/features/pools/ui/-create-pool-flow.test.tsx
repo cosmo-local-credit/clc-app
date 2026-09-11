@@ -1,12 +1,16 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import type { ReactElement, ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitPoolCreateHistoryMock, navigateMock } = vi.hoisted(() => ({
-  deployMutateAsync: vi.fn(),
-  exitPoolCreateHistoryMock: vi.fn(),
-  navigateMock: vi.fn(),
-}));
+const { deployMutateAsync, exitPoolCreateHistoryMock, getTakenSymbols, navigateMock } = vi.hoisted(
+  () => ({
+    deployMutateAsync: vi.fn(),
+    exitPoolCreateHistoryMock: vi.fn(),
+    getTakenSymbols: vi.fn(),
+    navigateMock: vi.fn(),
+  }),
+);
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
@@ -33,7 +37,9 @@ vi.mock("wagmi", () => ({
   }),
 }));
 
-vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
+
+vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
 
 vi.mock("#/lib/navigation/pool-create-history", () => ({
   beginPoolCreateHistory: vi.fn(),
@@ -134,6 +140,24 @@ vi.mock("#/hooks/use-deployment", () => ({
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CreatePoolFlow } from "./create-pool-flow";
 
+/** The flow reads symbol occupancy through the query cache, so it needs a client. */
+function renderFlow(ui: ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    ),
+  });
+}
+
+beforeEach(() => {
+  getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
+    kind,
+    prefix,
+    taken: [],
+  }));
+});
+
 afterEach(() => {
   vi.clearAllMocks();
   usePoolCreateDraft.getState().clearDraft();
@@ -141,7 +165,7 @@ afterEach(() => {
 
 describe("CreatePoolFlow", () => {
   it("uses compact guidance and the standard advanced disclosure", () => {
-    render(<CreatePoolFlow step="pool" />);
+    renderFlow(<CreatePoolFlow step="pool" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Create pool" })).toBeTruthy();
 
@@ -160,10 +184,11 @@ describe("CreatePoolFlow", () => {
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Pool Shortcode"))).toBe(true);
   });
 
   it("does not expose pool decimals for editing", () => {
-    render(<CreatePoolFlow step="pool" />);
+    renderFlow(<CreatePoolFlow step="pool" />);
 
     fireEvent.click(screen.getByText("Advanced"));
 
@@ -171,7 +196,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("defaults the pool swap fee to zero percent", () => {
-    render(<CreatePoolFlow step="pool" />);
+    renderFlow(<CreatePoolFlow step="pool" />);
 
     fireEvent.click(screen.getByText("Advanced"));
 
@@ -179,7 +204,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("shows a checkbox for separate fees only when the swap fee is above zero", () => {
-    render(<CreatePoolFlow step="pool" />);
+    renderFlow(<CreatePoolFlow step="pool" />);
 
     fireEvent.click(screen.getByText("Advanced"));
     const fee = screen.getByLabelText("Swap Fee (%)");
@@ -195,7 +220,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
-    render(<CreatePoolFlow step="place" />);
+    renderFlow(<CreatePoolFlow step="place" />);
 
     await waitFor(() => {
       expect((screen.getByLabelText("Contact Email") as HTMLInputElement).value).toBe(
@@ -221,7 +246,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("seeds the location, logo and unit from the saved profile", async () => {
-    const view = render(<CreatePoolFlow step="place" />);
+    const view = renderFlow(<CreatePoolFlow step="place" />);
 
     await waitFor(() =>
       expect(screen.getByTestId("pool.image-value").textContent).toBe(
@@ -239,7 +264,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("does not advance while a pool image is still uploading", () => {
-    render(<CreatePoolFlow step="place" />);
+    renderFlow(<CreatePoolFlow step="place" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Start Logo upload" }));
     expect((screen.getByRole("button", { name: "Uploading…" }) as HTMLButtonElement).disabled).toBe(
@@ -253,7 +278,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("collects an optional pool terms URL", () => {
-    render(<CreatePoolFlow step="place" />);
+    renderFlow(<CreatePoolFlow step="place" />);
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
@@ -261,7 +286,7 @@ describe("CreatePoolFlow", () => {
   });
 
   it("requires both linked legal agreements before publishing", () => {
-    render(<CreatePoolFlow step="review" />);
+    renderFlow(<CreatePoolFlow step="review" />);
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
     const sproutLicense = screen.getByRole("checkbox", { name: "Accept SPROUT License" });
@@ -284,7 +309,7 @@ describe("CreatePoolFlow", () => {
 
   it("keeps form state across all three routes and deploys only supported API fields", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
-    const view = render(<CreatePoolFlow step="pool" />);
+    const view = renderFlow(<CreatePoolFlow step="pool" />);
 
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
@@ -360,12 +385,55 @@ describe("CreatePoolFlow", () => {
   });
 
   it("does not advance while required pool fields are empty", async () => {
-    render(<CreatePoolFlow step="pool" />);
+    renderFlow(<CreatePoolFlow step="pool" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     expect(await screen.findByText("Pool name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );
+  });
+
+  describe("shortcode suggestion", () => {
+    const symbolInput = () => screen.getByLabelText("Pool Shortcode") as HTMLInputElement;
+
+    it("fills the shortcode from the name once the name blurs", async () => {
+      renderFlow(<CreatePoolFlow step="pool" />);
+
+      const name = screen.getByLabelText("Pool Name");
+      fireEvent.change(name, { target: { value: "Kawangware Community Pool" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KWNG"));
+      expect(getTakenSymbols).toHaveBeenCalledWith("pool", "KWNG", expect.anything());
+    });
+
+    it("skips to the first free numbered candidate when the stem is taken", async () => {
+      getTakenSymbols.mockResolvedValue({ kind: "pool", prefix: "KWNG", taken: ["KWNG", "KWNG1"] });
+      renderFlow(<CreatePoolFlow step="pool" />);
+
+      const name = screen.getByLabelText("Pool Name");
+      fireEvent.change(name, { target: { value: "Kawangware Community Pool" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KWNG2"));
+    });
+
+    it("leaves a shortcode the steward typed alone when the name changes", async () => {
+      renderFlow(<CreatePoolFlow step="pool" />);
+      const name = screen.getByLabelText("Pool Name");
+
+      fireEvent.change(name, { target: { value: "Kilifi Growers" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KLFG"));
+
+      fireEvent.change(symbolInput(), { target: { value: "kgp1" } });
+      fireEvent.change(name, { target: { value: "Kawangware Community Pool" } });
+      fireEvent.blur(name);
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(symbolInput().value).toBe("KGP1");
+      expect(getTakenSymbols).toHaveBeenCalledTimes(1);
+    });
   });
 });
