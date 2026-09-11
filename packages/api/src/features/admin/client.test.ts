@@ -451,6 +451,9 @@ describe("user mutations", () => {
       email: "ada@example.com",
       phone: "+254700000000",
       country: "KE",
+      preferredCurrency: "KES",
+      bio: "Community organiser",
+      website: "https://ada.example",
     });
 
     const { url, init } = lastCall();
@@ -461,6 +464,9 @@ describe("user mutations", () => {
       email: "ada@example.com",
       phone: "+254700000000",
       country: "KE",
+      preferredCurrency: "KES",
+      bio: "Community organiser",
+      website: "https://ada.example",
     });
     expect(updated.name).toBe("Ada Lovelace");
   });

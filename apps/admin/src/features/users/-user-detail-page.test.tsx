@@ -388,6 +388,39 @@ describe("UserDetailPage", () => {
     });
   });
 
+  it("edits the account's currency, bio, and website", async () => {
+    const profiled = account({
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://ada.example",
+    });
+    listUsers.mockResolvedValue({ users: [profiled], first: 0, last: 0, receivedCount: 1 });
+    getLatestAccountTokens.mockResolvedValue({ tokens: [] });
+    getAccountTransfers.mockResolvedValue({ transfers: [] });
+    updateUserProfile.mockResolvedValue(profiled);
+
+    renderDetailRoute();
+    await openProfileSheet();
+
+    fireEvent.change(screen.getByLabelText("Preferred currency"), { target: { value: "USD" } });
+    fireEvent.change(screen.getByLabelText("Bio"), { target: { value: "Mutual aid organiser" } });
+    fireEvent.change(screen.getByLabelText("Website"), {
+      target: { value: "https://new.example" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateUserProfile).toHaveBeenCalled());
+    expect(updateUserProfile).toHaveBeenCalledWith(ADDRESS, {
+      name: "Ada Lovelace",
+      email: "ada@example.test",
+      phone: "+254700000000",
+      country: "KE",
+      preferredCurrency: "USD",
+      bio: "Mutual aid organiser",
+      website: "https://new.example",
+    });
+  });
+
   it("refuses to save a pin the geocoder cannot name", async () => {
     // Keeping the previous name would attach the last place's label to this pin, so
     // the field clears and the pair rule then blocks the save until it is named.
