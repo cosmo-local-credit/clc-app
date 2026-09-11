@@ -53,6 +53,10 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => ({ data: undefined }),
 }));
 
+// This suite is about navigation, not uploads: without a storage service the
+// place step renders no image fields, which is one less thing to mock.
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture"],

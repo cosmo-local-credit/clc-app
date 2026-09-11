@@ -72,8 +72,54 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
     data: {
       email: "steward@example.org",
       phone: "+254712345678",
+      website: "https://steward.example",
+      bio: "We grow and trade around Kilifi.",
+      preferredCurrency: "USD",
+      country: "KE",
+      locationName: "Kilifi, Kenya",
+      geoLat: -3.5107,
+      geoLng: 39.9093,
+      avatarUrl: "https://cdn.test/profile/avatar.webp",
     },
   }),
+}));
+
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
+
+// Cropping and uploading are covered by the shared field's tests. This keeps
+// this suite on form integration: stored URLs must survive the steps and reach
+// the deploy request.
+vi.mock("#/components/ui/image-upload-field", () => ({
+  ImageUploadField: ({
+    label,
+    purpose,
+    value,
+    onChange,
+    onBusyChange,
+  }: {
+    label: string;
+    purpose: "pool.image" | "pool.banner";
+    value: string | null;
+    onChange: (url: string | null) => void;
+    onBusyChange?: (busy: boolean) => void;
+  }) => (
+    <div>
+      <span>{label}</span>
+      <span data-testid={`${purpose}-value`}>{value ?? ""}</span>
+      <button
+        type="button"
+        onClick={() => onChange(`https://cdn.test/${purpose.replace(".", "/")}.webp`)}
+      >
+        {`Upload ${label}`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(true)}>
+        {`Start ${label} upload`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(false)}>
+        {`Finish ${label} upload`}
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("#/hooks/use-deployment", () => ({
@@ -157,7 +203,9 @@ describe("CreatePoolFlow", () => {
       );
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
-    expect(screen.getByLabelText("Contact Website")).toBeTruthy();
+    expect((screen.getByLabelText("Contact Website") as HTMLInputElement).value).toBe(
+      "https://steward.example",
+    );
     expect(screen.queryByText(/Public — pool members/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search pool tags" });
@@ -170,6 +218,38 @@ describe("CreatePoolFlow", () => {
 
     fireEvent.pointerDown(screen.getByLabelText("Contact Email"));
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+  });
+
+  it("seeds the location, logo and unit from the saved profile", async () => {
+    const view = render(<CreatePoolFlow step="place" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("pool.image-value").textContent).toBe(
+        "https://cdn.test/profile/avatar.webp",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
+    expect(screen.getByTestId("pool.banner-value").textContent).toBe("");
+
+    view.rerender(<CreatePoolFlow step="pool" />);
+    expect((screen.getByLabelText("Pool Description") as HTMLTextAreaElement).value).toBe(
+      "We grow and trade around Kilifi.",
+    );
+    expect(screen.getByLabelText("Unit of Account").textContent).toContain("USD");
+  });
+
+  it("does not advance while a pool image is still uploading", () => {
+    render(<CreatePoolFlow step="place" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Start Logo upload" }));
+    expect((screen.getByRole("button", { name: "Uploading…" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Finish Logo upload" }));
+    expect((screen.getByRole("button", { name: "Next" }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
   });
 
   it("collects an optional pool terms URL", () => {
@@ -223,7 +303,6 @@ describe("CreatePoolFlow", () => {
     );
 
     view.rerender(<CreatePoolFlow step="place" />);
-    fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
     fireEvent.change(screen.getByLabelText("Contact Website"), {
       target: { value: "https://kilifi.example" },
     });
@@ -259,12 +338,13 @@ describe("CreatePoolFlow", () => {
         quoterType: "oracle",
         feesDecoupled: false,
         feePolicyDefault: "0",
-        baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
+        baseCurrency: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
         description: "A pool for Kilifi growers.",
         email: "steward@example.org",
         website: "https://kilifi.example",
         terms: "https://kilifi.example/terms",
         phone: "+254712345678",
+        imageUrl: "https://cdn.test/profile/avatar.webp",
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
         geoLng: 39.9093,

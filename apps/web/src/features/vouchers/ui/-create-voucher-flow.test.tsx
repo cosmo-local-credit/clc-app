@@ -1,12 +1,26 @@
+import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitVoucherCreateHistoryMock, navigateMock } = vi.hoisted(() => ({
-  deployMutateAsync: vi.fn(),
-  exitVoucherCreateHistoryMock: vi.fn(),
-  navigateMock: vi.fn(),
-}));
+const { deployMutateAsync, exitVoucherCreateHistoryMock, navigateMock, profile } = vi.hoisted(
+  () => ({
+    deployMutateAsync: vi.fn(),
+    exitVoucherCreateHistoryMock: vi.fn(),
+    navigateMock: vi.fn(),
+    // Mutable so one test can hand the form a profile that also carries a saved
+    // location and currency, which the rest deliberately leave at their defaults.
+    profile: { current: {} as ProfileDefaults },
+  }),
+);
+
+const DEFAULT_PROFILE: ProfileDefaults = {
+  email: "issuer@example.org",
+  phone: "+254712345678",
+  website: "https://issuer.example",
+  bio: "Fresh produce from Kilifi.",
+  avatarUrl: "https://cdn.test/profile/avatar.webp",
+};
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
@@ -70,12 +84,7 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
-  useAuthProfile: () => ({
-    data: {
-      email: "issuer@example.org",
-      phone: "+254712345678",
-    },
-  }),
+  useAuthProfile: () => ({ data: profile.current }),
 }));
 
 vi.mock("#/hooks/use-deployment", () => ({
@@ -127,6 +136,10 @@ vi.mock("#/components/ui/image-upload-field", () => ({
 
 import { CreateVoucherFlow } from "./create-voucher-flow";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
+
+beforeEach(() => {
+  profile.current = { ...DEFAULT_PROFILE };
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -207,7 +220,9 @@ describe("CreateVoucherFlow", () => {
       );
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
-    expect(screen.getByLabelText("Contact Website")).toBeTruthy();
+    expect((screen.getByLabelText("Contact Website") as HTMLInputElement).value).toBe(
+      "https://issuer.example",
+    );
     expect(screen.getByRole("button", { name: "Upload Logo" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Upload Cover photo" })).toBeTruthy();
     expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
@@ -222,6 +237,34 @@ describe("CreateVoucherFlow", () => {
 
     fireEvent.pointerDown(screen.getByLabelText("Contact Email"));
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
+  });
+
+  it("seeds the location, icon and unit of account from the saved profile", async () => {
+    profile.current = {
+      ...DEFAULT_PROFILE,
+      preferredCurrency: "TZS",
+      country: "KE",
+      locationName: "Kilifi, Kenya",
+      geoLat: -3.5107,
+      geoLng: 39.9093,
+    };
+    const view = render(<CreateVoucherFlow step="place" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("voucher.icon-value").textContent).toBe(
+        "https://cdn.test/profile/avatar.webp",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
+    expect(screen.getByTestId("voucher.banner-value").textContent).toBe("");
+
+    view.rerender(<CreateVoucherFlow step="voucher" />);
+    expect((screen.getByLabelText("Voucher Description") as HTMLTextAreaElement).value).toBe(
+      "Fresh produce from Kilifi.",
+    );
+    expect((screen.getByLabelText("Priced in") as HTMLInputElement).value).toBe(
+      "TZS - Tanzanian Shilling",
+    );
   });
 
   it("collects an optional voucher terms URL", () => {

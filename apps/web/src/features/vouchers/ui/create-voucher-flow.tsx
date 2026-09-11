@@ -18,6 +18,7 @@ import {
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
+import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -98,6 +99,9 @@ const DEFAULT_VALUES: VoucherFormValues = {
   acceptedPathLicense: false,
 };
 
+/** The text fields a saved profile can seed, all of which default to "". */
+type SeedableTextField = "email" | "phone" | "website" | "description" | "iconUrl";
+
 const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
 const PLACE_FIELDS = [
   "location",
@@ -155,23 +159,50 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     },
   });
 
+  // Everything the issuer already told us about themselves during onboarding is
+  // the same thing this form asks for again, so it starts filled in. Only an
+  // untouched field still holding its default is seeded — a retry draft, or a
+  // value the issuer has typed over, always wins.
   useEffect(() => {
     const profile = profileQuery.data;
     if (hasPrefilledProfile.current || !profile || draft) return;
     hasPrefilledProfile.current = true;
 
-    const email = profile.email.trim();
-    if (
-      !form.getFieldMeta("email")?.isTouched &&
-      form.getFieldValue("email") === "" &&
-      !email.endsWith("@clc.local")
-    ) {
-      form.setFieldValue("email", email, { dontUpdateMeta: true });
+    const prefill = profilePrefill(profile);
+
+    function seedText(name: SeedableTextField, value: string) {
+      if (!value) return;
+      if (form.getFieldMeta(name)?.isTouched) return;
+      if (form.getFieldValue(name) !== "") return;
+      form.setFieldValue(name, value, { dontUpdateMeta: true });
     }
 
-    const phone = profile.phone.trim();
-    if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
-      form.setFieldValue("phone", phone, { dontUpdateMeta: true });
+    seedText("email", prefill.email);
+    seedText("phone", prefill.phone);
+    seedText("website", prefill.website);
+    // The bio is free text with no minimum, so it only becomes a description
+    // when it would pass as one.
+    if (voucherDescriptionSchema.safeParse(prefill.description).success) {
+      seedText("description", prefill.description);
+    }
+    // Only where the upload fields are rendered: seeding a hidden field would
+    // attach a photo the issuer was never shown.
+    if (isStorageConfigured) seedText("iconUrl", prefill.imageUrl);
+
+    if (
+      prefill.unitOfAccount &&
+      !form.getFieldMeta("unitOfAccount")?.isTouched &&
+      form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
+    ) {
+      form.setFieldValue("unitOfAccount", prefill.unitOfAccount, { dontUpdateMeta: true });
+    }
+
+    if (
+      prefill.location &&
+      !form.getFieldMeta("location")?.isTouched &&
+      form.getFieldValue("location") === undefined
+    ) {
+      form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
   }, [draft, form, profileQuery.data]);
 
