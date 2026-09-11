@@ -57,6 +57,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { CHAIN_ID } from "#/lib/chain";
 import {
@@ -101,6 +102,8 @@ const DEFAULT_VALUES: PoolFormValues = {
 type SeedableTextField = "email" | "phone" | "website" | "description" | "imageUrl";
 
 const DETAIL_FIELDS = ["name", "symbol", "unit", "description", "feePolicyDefault"] as const;
+/** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
+const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
 const PLACE_FIELDS = [
   "location",
   "email",
@@ -128,6 +131,8 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const draft = usePoolCreateDraft((state) => state.draft);
   const setDraft = usePoolCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
+  const advancedRef = useRef<HTMLDetailsElement>(null);
+  const suggestedSymbol = useSuggestedSymbol({ kind: "pool", initialSymbol: draft?.symbol ?? "" });
   const [tagsOpen, setTagsOpen] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const [bannerBusy, setBannerBusy] = useState(false);
@@ -143,7 +148,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
       }
-      const parsed = poolCreateSchema.parse(value);
+      const check = await suggestedSymbol.confirm(value.name, value.symbol);
+      if (!check.ok) {
+        toast.error(t`That symbol is already in use.`);
+        return;
+      }
+      if (check.symbol !== value.symbol) {
+        form.setFieldValue("symbol", check.symbol);
+        toast.info(t`Symbol was taken, using ${check.symbol} instead.`);
+      }
+      const parsed = poolCreateSchema.parse({ ...value, symbol: check.symbol });
       setDraft(parsed);
       try {
         const result = await deployPool.mutateAsync(
@@ -238,7 +252,17 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   }
 
   async function goToPlace() {
-    if (!(await fieldsAreValid(DETAIL_FIELDS))) return;
+    // Blur may not have fired, or its lookup may still be in flight.
+    if (form.getFieldValue("symbol") === "") {
+      const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
+      if (symbol) form.setFieldValue("symbol", symbol);
+    }
+    if (!(await fieldsAreValid(DETAIL_FIELDS))) {
+      if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
+        if (advancedRef.current) advancedRef.current.open = true;
+      }
+      return;
+    }
     void navigate({ to: "/pools/create/$step", params: { step: "place" } });
   }
 
@@ -310,31 +334,13 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       id="pool-name"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        void suggestedSymbol.suggest(field.state.value).then((symbol) => {
+                          if (symbol !== undefined) form.setFieldValue("symbol", symbol);
+                        });
+                      }}
                       placeholder={t`Enter pool name`}
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
-                  </Field>
-                )}
-              </form.Field>
-
-              <form.Field
-                name="symbol"
-                validators={{ onBlur: poolSymbolSchema, onSubmit: poolSymbolSchema }}
-              >
-                {(field) => (
-                  <Field
-                    label={t`Pool Shortcode`}
-                    htmlFor="pool-symbol"
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Input
-                      id="pool-symbol"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
-                      onBlur={field.handleBlur}
-                      placeholder={t`Enter pool shortcode, eg. ABC1`}
-                      maxLength={6}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
@@ -406,7 +412,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <details>
+              <details ref={advancedRef}>
                 <summary className="cursor-pointer font-medium text-foreground text-sm">
                   <Trans>Advanced</Trans>
                 </summary>
@@ -415,6 +421,34 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   id="pool-advanced"
                   className="mt-4 space-y-3.5 border border-border bg-card p-4"
                 >
+                  <form.Field
+                    name="symbol"
+                    validators={{ onBlur: poolSymbolSchema, onSubmit: poolSymbolSchema }}
+                  >
+                    {(field) => (
+                      <Field
+                        label={t`Pool Shortcode`}
+                        htmlFor="pool-symbol"
+                        hint={t`Suggested from the name. You can change it.`}
+                        error={getFieldError(field.state.meta.errors)}
+                      >
+                        <Input
+                          id="pool-symbol"
+                          value={field.state.value}
+                          onChange={(event) => {
+                            const symbol = event.target.value.toUpperCase();
+                            field.handleChange(symbol);
+                            suggestedSymbol.track(symbol);
+                          }}
+                          onBlur={field.handleBlur}
+                          placeholder={t`Enter pool shortcode, eg. ABC1`}
+                          maxLength={6}
+                          aria-invalid={field.state.meta.errors.length > 0}
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+
                   <form.Field name="pricing">
                     {(field) => (
                       <div>

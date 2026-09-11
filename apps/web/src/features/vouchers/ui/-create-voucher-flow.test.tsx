@@ -1,18 +1,19 @@
 import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitVoucherCreateHistoryMock, navigateMock, profile } = vi.hoisted(
-  () => ({
+const { deployMutateAsync, exitVoucherCreateHistoryMock, getTakenSymbols, navigateMock, profile } =
+  vi.hoisted(() => ({
     deployMutateAsync: vi.fn(),
     exitVoucherCreateHistoryMock: vi.fn(),
+    getTakenSymbols: vi.fn(),
     navigateMock: vi.fn(),
     // Mutable so one test can hand the form a profile that also carries a saved
     // location and currency, which the rest deliberately leave at their defaults.
     profile: { current: {} as ProfileDefaults },
-  }),
-);
+  }));
 
 const DEFAULT_PROFILE: ProfileDefaults = {
   email: "issuer@example.org",
@@ -44,7 +45,9 @@ vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
-vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
+
+vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
 
 vi.mock("#/lib/navigation/voucher-create-history", () => ({
   beginVoucherCreateHistory: vi.fn(),
@@ -137,8 +140,24 @@ vi.mock("#/components/ui/image-upload-field", () => ({
 import { CreateVoucherFlow } from "./create-voucher-flow";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 
+/** The flow reads symbol occupancy through the query cache, so it needs a client. */
+function renderFlow(ui: ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    ),
+  });
+  return { ...view, queryClient };
+}
+
 beforeEach(() => {
   profile.current = { ...DEFAULT_PROFILE };
+  getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
+    kind,
+    prefix,
+    taken: [],
+  }));
 });
 
 afterEach(() => {
@@ -148,7 +167,7 @@ afterEach(() => {
 
 describe("CreateVoucherFlow", () => {
   it("uses compact guidance, issuer-facing pricing fields, and the standard disclosure pattern", () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Create voucher" })).toBeTruthy();
 
@@ -177,10 +196,11 @@ describe("CreateVoucherFlow", () => {
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Voucher Symbol"))).toBe(true);
   });
 
   it("previews the voucher price in its selected currency or measure", () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
 
     expect(screen.getByText("1 XYZ = 1 KES")).toBeTruthy();
 
@@ -191,7 +211,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("searches the full currency list using code or currency name", async () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
 
     const currency = screen.getByRole("combobox", { name: "Priced in" });
     fireEvent.click(currency);
@@ -212,7 +232,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
-    render(<CreateVoucherFlow step="place" />);
+    renderFlow(<CreateVoucherFlow step="place" />);
 
     await waitFor(() => {
       expect((screen.getByLabelText("Contact Email") as HTMLInputElement).value).toBe(
@@ -248,7 +268,7 @@ describe("CreateVoucherFlow", () => {
       geoLat: -3.5107,
       geoLng: 39.9093,
     };
-    const view = render(<CreateVoucherFlow step="place" />);
+    const view = renderFlow(<CreateVoucherFlow step="place" />);
 
     await waitFor(() =>
       expect(screen.getByTestId("voucher.icon-value").textContent).toBe(
@@ -268,7 +288,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("collects an optional voucher terms URL", () => {
-    render(<CreateVoucherFlow step="place" />);
+    renderFlow(<CreateVoucherFlow step="place" />);
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
@@ -276,7 +296,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("does not advance while a voucher image is still uploading", () => {
-    render(<CreateVoucherFlow step="place" />);
+    renderFlow(<CreateVoucherFlow step="place" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Start Logo upload" }));
     expect((screen.getByRole("button", { name: "Uploading…" }) as HTMLButtonElement).disabled).toBe(
@@ -290,7 +310,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("requires both linked legal agreements before publishing", () => {
-    render(<CreateVoucherFlow step="review" />);
+    renderFlow(<CreateVoucherFlow step="review" />);
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
     const pathLicense = screen.getByRole("checkbox", { name: "Accept PATH License" });
@@ -313,7 +333,7 @@ describe("CreateVoucherFlow", () => {
 
   it("keeps form state across all three routes and deploys only after confirmation", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
-    const view = render(<CreateVoucherFlow step="voucher" />);
+    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
 
     fireEvent.change(screen.getByLabelText("Voucher Name"), {
       target: { value: "Kilifi Harvest" },
@@ -393,7 +413,7 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("enables and requires the expiry date as soon as the voucher is marked expiring", async () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
     fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
@@ -429,12 +449,161 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("does not advance while required voucher fields are empty", async () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     expect(await screen.findByText("Voucher name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );
+  });
+
+  describe("symbol suggestion", () => {
+    const symbolInput = () => screen.getByLabelText("Voucher Symbol") as HTMLInputElement;
+
+    it("fills the symbol from the name once the name blurs", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
+      expect(getTakenSymbols).toHaveBeenCalledWith("voucher", "KVKS", expect.anything());
+      expect(screen.getByText("1 KVKS = 1 KES")).toBeTruthy();
+    });
+
+    it("skips to the first free numbered candidate when the stem is taken", async () => {
+      getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KVKS", taken: ["KVKS"] });
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS1"));
+    });
+
+    it("still suggests the bare stem when the occupancy lookup fails", async () => {
+      getTakenSymbols.mockRejectedValue(new Error("Not Found"));
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+    });
+
+    it("suggests before validating when the issuer goes straight to Next", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      fireEvent.change(screen.getByLabelText("Voucher Name"), {
+        target: { value: "Kilifi Harvest" },
+      });
+      fireEvent.change(screen.getByLabelText("Voucher Description"), {
+        target: { value: "Fresh food from Kilifi producers." },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith({
+          to: "/vouchers/create/$step",
+          params: { step: "place" },
+        }),
+      );
+      expect(symbolInput().value).toBe("KLFH");
+    });
+
+    it("leaves a symbol the issuer typed alone when the name changes", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+      const name = screen.getByLabelText("Voucher Name");
+
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+
+      fireEvent.change(symbolInput(), { target: { value: "kivs" } });
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(symbolInput().value).toBe("KIVS");
+      expect(getTakenSymbols).toHaveBeenCalledTimes(1);
+
+      // Clearing the field hands it back to the suggestion.
+      fireEvent.change(symbolInput(), { target: { value: "" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
+    });
+
+    it("does not overwrite the symbol of a restored draft", async () => {
+      useVoucherCreateDraft.getState().setDraft({
+        name: "Kilifi Harvest",
+        symbol: "KHV",
+        price: "1",
+        unitOfAccount: "KES",
+        description: "Fresh food from Kilifi producers.",
+        voucherType: "standard",
+        expiryDate: "",
+        decimals: "6",
+        location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5107, lng: 39.9093 },
+        tags: [],
+        email: "",
+        website: "",
+        phone: "",
+        terms: "",
+        iconUrl: "",
+        bannerUrl: "",
+        acceptedTerms: true,
+        acceptedPathLicense: true,
+      });
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(symbolInput().value).toBe("KHV");
+      expect(getTakenSymbols).not.toHaveBeenCalled();
+    });
+
+    it("bumps a suggested symbol that was taken before publish", async () => {
+      deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+      const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+      fireEvent.change(screen.getByLabelText("Voucher Description"), {
+        target: { value: "Fresh food from Kilifi producers." },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith(
+          expect.objectContaining({ params: { step: "place" } }),
+        ),
+      );
+      view.rerender(<CreateVoucherFlow step="place" />);
+      fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+
+      // Someone else claimed the stem after the blur lookup was cached.
+      getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KLFH", taken: ["KLFH"] });
+      view.queryClient.clear();
+
+      view.rerender(<CreateVoucherFlow step="review" />);
+      fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+
+      await waitFor(() =>
+        expect(deployMutateAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ symbol: "KLFH1" }),
+        ),
+      );
+    });
   });
 });

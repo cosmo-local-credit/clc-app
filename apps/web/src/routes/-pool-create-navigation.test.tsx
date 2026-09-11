@@ -7,6 +7,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -57,6 +58,12 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 // place step renders no image fields, which is one less thing to mock.
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: false }));
 
+vi.mock("#/lib/api/symbols", () => ({
+  symbolsClient: {
+    getTakenSymbols: vi.fn(async (kind: string, prefix: string) => ({ kind, prefix, taken: [] })),
+  },
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture"],
@@ -94,7 +101,13 @@ async function renderFlow() {
   });
 
   await router.load();
-  render(<RouterProvider router={router} />);
+  // The create flow reads symbol occupancy through the query cache.
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
   return { history };
 }
 
