@@ -651,6 +651,9 @@ export function createAdminClient(http: HttpClient): AdminClient {
           signal,
           body: JSON.stringify({
             description: emptyToNull(profile.description),
+            // Display name is a separate override rather than a replacement for
+            // the ERC20 name. Omission preserves it; "" deliberately clears it.
+            ...(profile.displayName === undefined ? {} : { displayName: profile.displayName }),
             voucherUoa: emptyToNull(profile.voucherUoa),
             voucherValue: profile.voucherValue,
             email: emptyToNull(profile.email),

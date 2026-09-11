@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -13,10 +13,11 @@ const mocks = vi.hoisted(() => ({
     // The backend session, which is what authorizes an offering write. Distinct
     // from the wagmi connector address on purpose: the two can diverge.
     session: { address: "0x1111111111111111111111111111111111111111", chainId: 42220 } as
-      | { address: string; chainId: number }
+      | { address: string; chainId: number; role?: string }
       | null
       | undefined,
   },
+  updateDisplayName: vi.fn(),
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -198,6 +199,13 @@ vi.mock("#/features/images/use-image-upload", () => ({
     reset: () => {},
     isPending: false,
     isError: false,
+  }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-update-voucher-display-name", () => ({
+  useUpdateVoucherDisplayName: () => ({
+    mutateAsync: mocks.updateDisplayName,
+    isPending: false,
   }),
 }));
 
@@ -970,5 +978,63 @@ describe("VoucherOfferingsPanel ownership", () => {
       fireEvent.click(option);
     });
     expect((unit as HTMLInputElement).value).toBe("Kilogram");
+  });
+});
+
+describe("VoucherDetailPage display name", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  beforeEach(() => {
+    mocks.updateDisplayName.mockReset();
+    mocks.updateDisplayName.mockResolvedValue(detail({ name: "Malii Fresh" }));
+  });
+
+  it("offers a rename only to the voucher's owner", () => {
+    mocks.auth.session = { address: OTHER, chainId: 42220 };
+    const view = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByRole("button", { name: "Rename voucher" })).toBeNull();
+
+    view.unmount();
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Rename voucher" })).toBeTruthy();
+  });
+
+  it("lets a superadmin rename a voucher they do not own", () => {
+    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Rename voucher" })).toBeTruthy();
+  });
+
+  it("keeps the editor collapsed until asked, then saves the trimmed name", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByLabelText("Display name")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Rename voucher" }));
+    const input = screen.getByLabelText("Display name") as HTMLInputElement;
+    expect(input.value).toBe("Priscilah Malii");
+
+    fireEvent.change(input, { target: { value: "  Malii Fresh  " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(mocks.updateDisplayName).toHaveBeenCalledWith("Malii Fresh"));
+    await waitFor(() => expect(screen.queryByLabelText("Display name")).toBeNull());
+  });
+
+  it("does not write a blank or unchanged name", () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Rename voucher" }));
+    const input = screen.getByLabelText("Display name");
+
+    fireEvent.change(input, { target: { value: "   " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(mocks.updateDisplayName).not.toHaveBeenCalled();
+
+    fireEvent.change(input, { target: { value: "Priscilah Malii" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(mocks.updateDisplayName).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Display name")).toBeNull();
   });
 });

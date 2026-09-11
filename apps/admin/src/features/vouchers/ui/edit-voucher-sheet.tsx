@@ -54,6 +54,11 @@ const optionalStoredImageSchema = z
  */
 const profileSchema = z
   .object({
+    displayName: z
+      .string()
+      .trim()
+      .min(1, { message: "Display name is required" })
+      .max(120, { message: "Display name must be 120 characters or fewer" }),
     description: voucherDescriptionSchema.or(z.literal("")),
     voucherUoa: z
       .string()
@@ -101,11 +106,10 @@ const profileSchema = z
  * sheet — see `offering-editor-sheet.tsx`. They used to be a second branch here,
  * which is how that half sat unsaveable for as long as it did.
  *
- * Only catalog metadata is editable. Name, symbol, decimals and the owner mirror
- * the deployed ERC20, and an operator retyping one of those would produce a
- * catalog that disagrees with the chain while winning on every screen that reads
- * it. Those change by transacting; the endpoint does not accept them at all. So
- * does `active` — retiring a voucher is a different operation from correcting its
+ * The display name is catalog metadata. It changes the public label only; the
+ * deployed ERC20 name remains readable on the record card and never reaches this
+ * form. Symbol, decimals and owner follow the same chain-derived rule. So does
+ * `active` — retiring a voucher is a different operation from correcting its
  * prose, and folding the two together would let a description edit hide a voucher
  * by accident.
  */
@@ -149,6 +153,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
   const form = useForm({
     defaultValues: {
+      displayName: voucher.name,
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -170,6 +175,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     onSubmit: async ({ value }) => {
       try {
         await update.mutateAsync({
+          displayName: value.displayName,
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
@@ -216,6 +222,24 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+        <form.Field name="displayName">
+          {(field) => (
+            <Field
+              htmlFor={field.name}
+              label="Display name"
+              hint="The public catalog label. It does not change the deployed contract name."
+              error={getFieldError(field.state.meta.errors)}
+            >
+              <Input
+                id={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
+
         <form.Field name="description">
           {(field) => (
             <Field
