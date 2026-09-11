@@ -32,7 +32,10 @@ export type MarketVoucherDetail = {
   id: string;
   chainId: number | null;
   address: HexAddress;
+  /** The effective public label: the owner override or, absent one, the ERC20 name. */
   name: string;
+  /** The immutable ERC20 name, retained so edit surfaces can distinguish it from the label. */
+  contractName?: string | null;
   symbol: string;
   decimals: number | null;
   ownerAddress: HexAddress | null;
@@ -104,6 +107,7 @@ type BackendMarketVoucher = Partial<{
 
 export type BackendMarketVoucherDetail = BackendMarketVoucher &
   Partial<{
+    contractName: string | null;
     decimals: string | number | null;
     ownerAddress: string | null;
     description: string | null;
@@ -127,6 +131,8 @@ export type BackendMarketVoucherDetail = BackendMarketVoucher &
  * the owner come from the chain and the endpoint does not accept them.
  */
 export type VoucherProfileUpdate = {
+  /** Omit to preserve the current override; send an empty string to clear it. */
+  displayName?: string;
   description: string;
   voucherUoa: string;
   voucherValue: number | null;
@@ -213,6 +219,26 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
 
       const voucher = normalizeMarketVoucherDetail(result.voucher);
       if (!voucher) throw new Error("Voucher response did not include a valid address.");
+      return voucher;
+    },
+
+    /** Updates only the owner-managed public label, never the deployed ERC20 name. */
+    async updateVoucherDisplayName(
+      address: string,
+      displayName: string,
+      signal?: AbortSignal,
+    ): Promise<MarketVoucherDetail> {
+      const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
+        `/api/v2/vouchers/${encodeURIComponent(address)}/display-name`,
+        {
+          method: "PUT",
+          cache: "no-store",
+          signal,
+          body: JSON.stringify({ displayName }),
+        },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher);
+      if (!voucher) throw new Error("Voucher update response did not include a valid address.");
       return voucher;
     },
 
@@ -324,6 +350,7 @@ export function normalizeMarketVoucherDetail(
     chainId: normalizeChainId(voucher.chainId),
     address,
     name: normalizeText(voucher.name) ?? "Community Voucher",
+    contractName: normalizeText(voucher.contractName),
     symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
     decimals: normalizeNumber(voucher.decimals),
     ownerAddress: normalizeHex(voucher.ownerAddress),

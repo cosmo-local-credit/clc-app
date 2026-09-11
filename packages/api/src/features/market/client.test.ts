@@ -336,7 +336,45 @@ function detailResponse(voucher: unknown) {
   } as Response;
 }
 
+describe("updateVoucherDisplayName", () => {
+  it("PUTs the label to the owner route and returns the fresh record", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, name: "Malii Fresh", contractName: "Priscilah Malii" }),
+    );
+
+    const voucher = await api.updateVoucherDisplayName(DETAIL_ROW.address, "Malii Fresh");
+
+    expect(requestedUrl()).toBe(
+      `https://api.test/api/v2/vouchers/${DETAIL_ROW.address}/display-name`,
+    );
+    expect(requestedInit().method).toBe("PUT");
+    expect(requestedInit().cache).toBe("no-store");
+    expect(JSON.parse(requestedInit().body as string)).toEqual({ displayName: "Malii Fresh" });
+    expect(voucher.name).toBe("Malii Fresh");
+    expect(voucher.contractName).toBe("Priscilah Malii");
+  });
+
+  it("rejects a response without a usable voucher", async () => {
+    fetchMock.mockResolvedValue(detailResponse(null));
+    await expect(api.updateVoucherDisplayName(DETAIL_ROW.address, "X")).rejects.toThrow(
+      /valid address/,
+    );
+  });
+});
+
 describe("getMarketVoucher", () => {
+  it("keeps the immutable contract name beside the effective label", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, name: "Malii Fresh", contractName: " Priscilah Malii " }),
+    );
+    const voucher = await api.getMarketVoucher(DETAIL_ROW.address);
+    expect(voucher.name).toBe("Malii Fresh");
+    expect(voucher.contractName).toBe("Priscilah Malii");
+
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    expect((await api.getMarketVoucher(DETAIL_ROW.address)).contractName).toBeNull();
+  });
+
   it("reads the voucher the card and the page render", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 
