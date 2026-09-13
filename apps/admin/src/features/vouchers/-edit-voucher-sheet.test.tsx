@@ -138,6 +138,18 @@ describe("EditVoucherSheet", () => {
     });
   });
 
+  it("sends a display-name override only when the operator changes the public label", async () => {
+    renderSheet();
+
+    const displayName = await waitFor(() => screen.getByLabelText("Display name"));
+    fireEvent.change(displayName, { target: { value: "Kilifi Community Market" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalled());
+    const [, profile] = updateVoucherProfile.mock.calls[0]!;
+    expect(profile).toMatchObject({ displayName: "Kilifi Community Market" });
+  });
+
   it("sends a cleared value as null rather than zero", async () => {
     renderSheet();
 
