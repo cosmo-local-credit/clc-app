@@ -82,8 +82,9 @@ export function SuccessCheck({ className }: { className?: string }) {
 
 export function PendingClock({ className }: { className?: string }) {
   const animationStyle = {
-    // Pace one orbit to a conservative two-block confirmation window. Gnosis
-    // targets five-second blocks, so its indicator now completes every 10s.
+    // Pace the countdown to a conservative two-block confirmation window.
+    // Gnosis targets five-second blocks, so the ring depletes over 10s. The
+    // wait may finish sooner; the ring holds empty if it runs long.
     "--pending-clock-duration": `${CHAIN_INFO.blockTimeMs * 2}ms`,
   } as CSSProperties;
 
@@ -101,9 +102,11 @@ export function PendingClock({ className }: { className?: string }) {
           r="28"
           fill="none"
           pathLength="100"
-          strokeDasharray="78 22"
+          strokeDasharray="100"
+          strokeDashoffset="0"
           strokeLinecap="butt"
           strokeWidth="2"
+          transform="rotate(-90 32 32)"
           className="pending-clock-indicator stroke-warning"
           data-slot="pending-clock-indicator"
         />
