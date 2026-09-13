@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
 import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
@@ -116,7 +116,7 @@ const voucherPlaceSchema = z.object({
   email: optionalEmailSchema,
   website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
-  terms: optionalTermsUrlSchema,
+  terms: optionalTermsSchema,
   iconUrl: optionalStoredImageUrlSchema,
   bannerUrl: optionalStoredImageUrlSchema,
 });

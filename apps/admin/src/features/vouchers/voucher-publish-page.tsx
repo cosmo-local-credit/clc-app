@@ -11,7 +11,7 @@ import {
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -122,7 +122,7 @@ const voucherPublishSchema = z
     email: optionalEmailSchema,
     website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
+    terms: optionalTermsSchema,
     // Already uploaded by the time they reach the form — the field uploads on
     // selection — so these hold a stored URL or nothing. clc-core validates them
     // as http(s) before it queues the deploy, because the catalog column that
@@ -613,10 +613,15 @@ function VoucherPublishForm({ operator }: { operator: string }) {
               </form.Field>
               <form.Field name="terms">
                 {(field) => (
-                  <Field label="Terms URL" htmlFor={field.name} error={fieldError(field)}>
-                    <Input
+                  <Field
+                    htmlFor={field.name}
+                    label="Terms"
+                    hint="A link to the terms, or the terms themselves written as Markdown."
+                    error={fieldError(field)}
+                  >
+                    <Textarea
                       id={field.name}
-                      type="url"
+                      rows={3}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
