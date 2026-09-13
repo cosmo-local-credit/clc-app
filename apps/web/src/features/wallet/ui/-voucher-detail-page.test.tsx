@@ -17,7 +17,7 @@ const mocks = vi.hoisted(() => ({
       | null
       | undefined,
   },
-  updateDisplayName: vi.fn(),
+  updateProfile: vi.fn(),
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -202,11 +202,35 @@ vi.mock("#/features/images/use-image-upload", () => ({
   }),
 }));
 
-vi.mock("#/features/wallet/hooks/use-update-voucher-display-name", () => ({
-  useUpdateVoucherDisplayName: () => ({
-    mutateAsync: mocks.updateDisplayName,
+vi.mock("#/features/wallet/hooks/use-update-voucher-profile", () => ({
+  useUpdateVoucherProfile: () => ({
+    mutateAsync: mocks.updateProfile,
     isPending: false,
   }),
+}));
+
+vi.mock("#/hooks/use-deployment", () => ({
+  useTokenTags: () => ({
+    data: ["Agriculture", "Food"],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
+// The picker geocodes and renders a map; the editor only needs it to hold a place.
+vi.mock("#/components/ui/location-picker", () => ({
+  LocationPicker: ({
+    value,
+    onChange,
+  }: {
+    value?: { locationName: string };
+    onChange: (value: undefined) => void;
+  }) => (
+    <button type="button" onClick={() => onChange(undefined)}>
+      {value?.locationName ?? "Choose a location"}
+    </button>
+  ),
 }));
 
 vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
@@ -998,60 +1022,108 @@ describe("VoucherOfferingsPanel ownership", () => {
   });
 });
 
-describe("VoucherDetailPage display name", () => {
+describe("VoucherDetailPage voucher details editor", () => {
   const OWNER = "0xDeF0000000000000000000000000000000000456";
+  const savedProfile = {
+    description: "Fresh produce and household goods.",
+    voucherUoa: "KSH",
+    voucherValue: 10,
+    email: "issuer@example.org",
+    website: "https://example.org",
+    phone: "+254700000000",
+    terms: "https://example.org/terms",
+    locationName: "C96, KEN",
+    geoLat: -1.450979,
+    geoLng: 38.235115,
+    tags: ["Agriculture"],
+  };
 
   beforeEach(() => {
-    mocks.updateDisplayName.mockReset();
-    mocks.updateDisplayName.mockResolvedValue(detail({ name: "Malii Fresh" }));
+    mocks.updateProfile.mockReset();
+    mocks.updateProfile.mockResolvedValue(detail({ name: "Malii Fresh" }));
   });
 
-  it("offers a rename only to the voucher's owner", () => {
+  it("offers the editor only to the voucher's owner, and only on the Info tab", () => {
     mocks.auth.session = { address: OTHER, chainId: 42220 };
-    const view = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.queryByRole("button", { name: "Rename voucher" })).toBeNull();
+    const stranger = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
+    stranger.unmount();
 
-    view.unmount();
     mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
-    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.getByRole("button", { name: "Rename voucher" })).toBeTruthy();
+    const owner = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+    owner.unmount();
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
   });
 
-  it("lets a superadmin rename a voucher they do not own", () => {
+  it("lets a superadmin edit a voucher they do not own", () => {
     mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    expect(screen.getByRole("button", { name: "Rename voucher" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
 
-  it("keeps the editor collapsed until asked, then saves the trimmed name", async () => {
+  it("opens the stored record in a sheet and saves the whole profile", async () => {
     mocks.auth.session = { address: OWNER, chainId: 42220 };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
     expect(screen.queryByLabelText("Display name")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Rename voucher" }));
-    const input = screen.getByLabelText("Display name") as HTMLInputElement;
-    expect(input.value).toBe("Priscilah Malii");
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+    const name = within(dialog).getByLabelText("Display name") as HTMLInputElement;
+    expect(name.value).toBe("Priscilah Malii");
+    expect(
+      (within(dialog).getByLabelText("Voucher Description") as HTMLTextAreaElement).value,
+    ).toBe("Fresh produce and household goods.");
+    expect((within(dialog).getByLabelText("Terms URL") as HTMLInputElement).value).toBe(
+      "https://example.org/terms",
+    );
+    expect(within(dialog).getByText("C96, KEN")).toBeTruthy();
 
-    fireEvent.change(input, { target: { value: "  Malii Fresh  " } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    fireEvent.change(name, { target: { value: "Malii Fresh" } });
+    fireEvent.change(within(dialog).getByLabelText("Contact Email"), { target: { value: "" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
 
-    await waitFor(() => expect(mocks.updateDisplayName).toHaveBeenCalledWith("Malii Fresh"));
-    await waitFor(() => expect(screen.queryByLabelText("Display name")).toBeNull());
+    await waitFor(() =>
+      expect(mocks.updateProfile).toHaveBeenCalledWith({
+        ...savedProfile,
+        displayName: "Malii Fresh",
+        email: "",
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 
-  it("does not write a blank or unchanged name", () => {
+  // The label is an override, and an ordinary metadata save must not create one.
+  it("leaves an untouched display name and logo out of the write", async () => {
     mocks.auth.session = { address: OWNER, chainId: 42220 };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
-    fireEvent.click(screen.getByRole("button", { name: "Rename voucher" }));
-    const input = screen.getByLabelText("Display name");
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
 
-    fireEvent.change(input, { target: { value: "   " } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(mocks.updateDisplayName).not.toHaveBeenCalled();
+    fireEvent.change(within(dialog).getByLabelText("Voucher Description"), {
+      target: { value: "Fresh produce, household goods and airtime." },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
 
-    fireEvent.change(input, { target: { value: "Priscilah Malii" } });
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
-    expect(mocks.updateDisplayName).not.toHaveBeenCalled();
-    expect(screen.queryByLabelText("Display name")).toBeNull();
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    const written = mocks.updateProfile.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(written.description).toBe("Fresh produce, household goods and airtime.");
+    expect("displayName" in written).toBe(false);
+    expect("iconUrl" in written).toBe(false);
+  });
+
+  it("does not write a blank display name", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Display name"), { target: { value: "   " } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    expect((await within(dialog).findByRole("alert")).textContent).toBe("Display name is required");
+    expect(mocks.updateProfile).not.toHaveBeenCalled();
   });
 });

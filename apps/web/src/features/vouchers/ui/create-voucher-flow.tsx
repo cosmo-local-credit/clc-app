@@ -62,7 +62,7 @@ import {
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
-import { UnitOfAccountCombobox } from "./unit-of-account-combobox";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
 

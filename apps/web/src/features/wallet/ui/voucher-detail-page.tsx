@@ -1,18 +1,11 @@
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -27,8 +20,6 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
-import { Field } from "#/components/ui/field";
-import { Input } from "#/components/ui/input";
 import { ReportList } from "#/components/reports/report-list";
 import { InfoRow } from "#/components/ui/info-row";
 import { MarkdownContent } from "#/components/ui/markdown-content";
@@ -45,7 +36,6 @@ import {
 } from "#/components/wallet";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
-import { useUpdateVoucherDisplayName } from "#/features/wallet/hooks/use-update-voucher-display-name";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
@@ -61,6 +51,7 @@ import {
   type VoucherOrigin,
 } from "#/lib/navigation/voucher-navigation-owner";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
@@ -184,7 +175,7 @@ export function VoucherDetailPage({
   const lng = detail?.lng ?? token.lng ?? null;
   const sendToken = contractAddress ?? token.id;
   const issuerAddress = token.owner ?? null;
-  const canEditDisplayName =
+  const canEditDetails =
     auth.isAuthenticated &&
     !!detail &&
     (auth.session?.role === "SUPERADMIN" ||
@@ -232,15 +223,6 @@ export function VoucherDetailPage({
           </p>
         </div>
       </div>
-
-      {canEditDisplayName ? (
-        // Keyed so a fresh catalog name discards a stale draft instead of syncing state.
-        <VoucherDisplayNameEditor
-          key={detail.name}
-          voucherAddress={detail.address}
-          currentName={detail.name}
-        />
-      ) : null}
 
       <div className="my-4 grid grid-cols-3 gap-2" aria-label={t`Voucher actions`}>
         {issuerAddress ? (
@@ -367,6 +349,7 @@ export function VoucherDetailPage({
           locationName={locationName}
           lat={lat}
           lng={lng}
+          editable={canEditDetails ? detail : null}
         />
       ) : null}
       {activeTab === "posts" ? (
@@ -382,92 +365,6 @@ export function VoucherDetailPage({
         </EmptyTabPanel>
       ) : null}
     </div>
-  );
-}
-
-/**
- * The catalog label is the one thing about a deployed voucher its owner can still
- * correct. Collapsed to a single control until asked for, so the hero stays the
- * hero; the ERC20 name on chain is untouched either way.
- */
-function VoucherDisplayNameEditor({
-  voucherAddress,
-  currentName,
-}: {
-  voucherAddress: string;
-  currentName: string;
-}) {
-  const { t } = useLingui();
-  const update = useUpdateVoucherDisplayName(voucherAddress);
-  const [draft, setDraft] = useState<string | null>(null);
-
-  if (draft === null) {
-    return (
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="mt-2 self-start px-0 text-muted-foreground hover:bg-transparent"
-        onClick={() => setDraft(currentName)}
-      >
-        <RiPencilLine aria-hidden="true" />
-        <Trans>Rename voucher</Trans>
-      </Button>
-    );
-  }
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const next = (draft ?? "").trim();
-    if (!next) {
-      toast.error(t`Display name cannot be blank.`);
-      return;
-    }
-    if (next === currentName) {
-      setDraft(null);
-      return;
-    }
-    void update.mutateAsync(next).then(
-      () => {
-        toast.success(t`Display name updated.`);
-        setDraft(null);
-      },
-      (error: unknown) =>
-        toast.error(error instanceof Error ? error.message : t`Could not update the display name.`),
-    );
-  }
-
-  return (
-    <form onSubmit={submit} className="mt-3 border border-border bg-card p-4">
-      <Field
-        label={t`Display name`}
-        htmlFor="voucher-display-name"
-        hint={t`Changes how the voucher is shown. The deployed contract keeps its name.`}
-      >
-        <Input
-          id="voucher-display-name"
-          value={draft}
-          maxLength={120}
-          onChange={(event) => setDraft(event.target.value)}
-          disabled={update.isPending}
-          autoFocus
-        />
-      </Field>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-11"
-          onClick={() => setDraft(null)}
-          disabled={update.isPending}
-        >
-          <Trans>Cancel</Trans>
-        </Button>
-        <Button type="submit" className="h-11" disabled={update.isPending}>
-          {update.isPending ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
-        </Button>
-      </div>
-    </form>
   );
 }
 
@@ -742,6 +639,7 @@ function VoucherInfoPanel({
   locationName,
   lat,
   lng,
+  editable,
 }: {
   rate: { value: string; unit: string } | null;
   symbol: string;
@@ -756,8 +654,11 @@ function VoucherInfoPanel({
   locationName: string | null;
   lat: number | null;
   lng: number | null;
+  /** The catalog record, when the viewer may edit it; null for everyone else. */
+  editable: MarketVoucherDetail | null;
 }) {
   const { t } = useLingui();
+  const [editing, setEditing] = useState(false);
   const hasCoordinates = typeof lat === "number" && typeof lng === "number";
   const locationLabel = locationName ?? (hasCoordinates ? `${lat}, ${lng}` : null);
 
@@ -768,6 +669,25 @@ function VoucherInfoPanel({
       aria-labelledby="voucher-tab-info"
       className="space-y-3"
     >
+      {editable ? (
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 w-full bg-card"
+            onClick={() => setEditing(true)}
+          >
+            <RiPencilLine className="size-4" aria-hidden="true" />
+            <Trans>Edit details</Trans>
+          </Button>
+          <VoucherProfileEditorSheet
+            open={editing}
+            voucher={editable}
+            onClose={() => setEditing(false)}
+          />
+        </>
+      ) : null}
+
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">
           {rate ? (
