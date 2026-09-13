@@ -408,12 +408,14 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     expect(mintMock).not.toHaveBeenCalled();
   });
 
-  it("leaves the manual mint step when the connected wallet is not the owner", () => {
+  it("shows the chosen supply as a row, not a second input, and waits for the owner", () => {
     state.walletAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
     renderReceipt({ mintAmount: "2500" });
 
     expect(mintMock).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Create vouchers")).toBeTruthy();
+    expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+    expect(screen.getByText("Supply").nextElementSibling?.textContent).toBe("2500 KHV");
+    expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
   });
 
   it("submits at most one mint while the relay request is unresolved", () => {

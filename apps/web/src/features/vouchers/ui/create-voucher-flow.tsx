@@ -739,9 +739,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         onOpenChange={setTagsOpen}
                       />
                     ) : null}
-                    <p className="mt-1.5 text-muted-foreground text-xs">
-                      <Trans>Helps buyers find and trust your offer</Trans>
-                    </p>
                   </div>
                 )}
               </form.Field>
