@@ -74,6 +74,30 @@ export function voucherExpiryDateSchema(type: VoucherType) {
   });
 }
 
+/**
+ * The opening supply is chosen while creating the voucher but minted only once
+ * the contract exists. Decimals are a form field until then and come from the
+ * deployed contract afterwards, so the schema is built per voucher.
+ */
+export function voucherMintAmountSchema(decimals: number) {
+  return z
+    .string()
+    .trim()
+    .refine((value) => /^\d+(\.\d+)?$/.test(value) && Number(value) > 0, {
+      message: "Supply must be greater than zero",
+    })
+    .refine((value) => (value.split(".")[1]?.length ?? 0) <= decimals, {
+      message: "Supply has more decimal places than this voucher supports",
+    });
+}
+
+/** Field-level variant over the form's decimals string; an unparseable decimals
+ * value already fails its own field, so supply is checked as whole units. */
+export function voucherSupplySchema(decimals: string) {
+  const parsed = tokenDecimalsSchema.safeParse(decimals);
+  return voucherMintAmountSchema(parsed.success ? Number(parsed.data) : 0);
+}
+
 const voucherDetailsSchema = z.object({
   name: voucherNameSchema,
   symbol: voucherSymbolSchema,
@@ -83,6 +107,7 @@ const voucherDetailsSchema = z.object({
   voucherType: voucherTypeSchema,
   expiryDate: z.string(),
   decimals: tokenDecimalsSchema,
+  supply: z.string(),
 });
 
 const voucherPlaceSchema = z.object({
@@ -106,6 +131,14 @@ export const voucherCreateSchema = voucherDetailsSchema
     checkExpiryDate(value.voucherType, value.expiryDate, (message) =>
       ctx.addIssue({ code: "custom", path: ["expiryDate"], message }),
     );
+    const supply = voucherSupplySchema(value.decimals).safeParse(value.supply);
+    if (!supply.success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["supply"],
+        message: supply.error.issues[0]?.message ?? "Supply must be greater than zero",
+      });
+    }
   });
 
 export type VoucherCreateInput = z.infer<typeof voucherCreateSchema>;
@@ -180,19 +213,6 @@ export const giftableTokenMintToAbi = parseAbi(["function mintTo(address to, uin
 export const giftableTokenTotalSupplyAbi = parseAbi([
   "function totalSupply() view returns (uint256)",
 ]);
-
-/** Decimals come from the deployed contract, so the schema is built per voucher. */
-export function voucherMintAmountSchema(decimals: number) {
-  return z
-    .string()
-    .trim()
-    .refine((value) => /^\d+(\.\d+)?$/.test(value) && Number(value) > 0, {
-      message: "Supply must be greater than zero",
-    })
-    .refine((value) => (value.split(".")[1]?.length ?? 0) <= decimals, {
-      message: "Supply has more decimal places than this voucher supports",
-    });
-}
 
 export type BuildVoucherMintCallInput = {
   tokenAddress: `0x${string}`;

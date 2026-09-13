@@ -18,6 +18,7 @@ const validVoucher: VoucherCreateInput = {
   voucherType: "standard",
   expiryDate: "",
   decimals: "6",
+  supply: "1000",
   location: {
     locationName: "Kilifi, Kenya",
     country: "KE",
@@ -132,6 +133,25 @@ describe("voucherCreateSchema", () => {
       voucherCreateSchema.safeParse({ ...validVoucher, iconUrl: "data:image/png;base64,abc" })
         .success,
     ).toBe(false);
+  });
+});
+
+describe("voucherCreateSchema supply", () => {
+  it("requires an opening supply that fits the voucher's decimals", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, supply: "" }).success).toBe(false);
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, supply: "0" }).success).toBe(false);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, decimals: "0", supply: "1.5" }).success,
+    ).toBe(false);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, decimals: "2", supply: "1.5" }).success,
+    ).toBe(true);
+  });
+
+  it("keeps the supply out of the deploy payload", () => {
+    expect(
+      toVoucherDeployPayload(validVoucher, "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d"),
+    ).not.toHaveProperty("supply");
   });
 });
 

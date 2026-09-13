@@ -94,6 +94,89 @@ export function VoucherDeploymentReceiptPage({
     void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
   }, [minted, queryClient]);
 
+  const decimals = contract?.decimals ?? (draft ? Number(draft.decimals) : null);
+  const walletPreparing = delegationStatus === "checking";
+
+  const submitMint = async () => {
+    if (mintSubmissionInFlight.current) return;
+    if (!confirmed || !contract.address) return;
+    if (decimals === null || !Number.isInteger(decimals)) {
+      toast.error(t`Couldn't read how many decimals this voucher uses.`);
+      return;
+    }
+    if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
+    const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
+    if (!parsed.success) {
+      setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
+      return;
+    }
+    if (!walletAddress) {
+      toast.error(t`Connect your wallet to mint.`);
+      return;
+    }
+    if (!contract.admin) {
+      toast.error(t`Couldn't verify who owns this voucher.`);
+      return;
+    }
+    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
+      toast.error(t`Reconnect the wallet that published this voucher to mint.`);
+      return;
+    }
+    if (walletPreparing) return;
+    setSupplyError(null);
+    mintSubmissionInFlight.current = true;
+
+    const result = await mint
+      .mutateAsync({
+        tokenAddress: contract.address,
+        ownerAddress: contract.admin,
+        amountRaw: parseTokenAmount(parsed.data, decimals),
+        includeAuthorization: delegationStatus === "not-delegated",
+      })
+      .catch((error: unknown) => {
+        toast.error(error instanceof Error ? error.message : t`Couldn't mint the first supply.`);
+        return null;
+      });
+    if (!result) {
+      mintSubmissionInFlight.current = false;
+      return;
+    }
+    setSubmittedMintTrackingId(result.trackingId);
+    void navigate({
+      to: "/vouchers/create/receipt",
+      search: {
+        trackingId,
+        mintTrackingId: result.trackingId,
+        mintAmount: parsed.data,
+      },
+      replace: true,
+    });
+  };
+
+  // The issuer chose the opening supply while creating the voucher, so once the
+  // contract confirms it is minted without another tap. Anything the guards
+  // below reject leaves the manual mint step in place as the recovery path.
+  const autoMintAttempted = useRef(false);
+  useEffect(() => {
+    if (autoMintAttempted.current) return;
+    if (!mintAmount || activeMintTrackingId !== null) return;
+    if (!confirmed || !contract.address || !contract.admin || !walletAddress) return;
+    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) return;
+    if (walletPreparing) return;
+    if (voucherSupply.data !== "0") return;
+    autoMintAttempted.current = true;
+    void submitMint();
+  }, [
+    activeMintTrackingId,
+    confirmed,
+    contract,
+    mintAmount,
+    submitMint,
+    voucherSupply.data,
+    walletAddress,
+    walletPreparing,
+  ]);
+
   const exit = (destination: string) => {
     clearDraft();
     exitVoucherCreateHistory({ history: router.history, destination });
@@ -153,7 +236,6 @@ export function VoucherDeploymentReceiptPage({
       .catch(() => toast.error(errorMessage));
   };
 
-  const decimals = contract.decimals ?? (draft ? Number(draft.decimals) : null);
   const voucherValue = draft?.price ?? voucherDetail.data?.voucherValue ?? null;
   const voucherUnit = draft?.unitOfAccount ?? voucherDetail.data?.voucherUoa ?? null;
   const supplyValue = formatOfferingDisplayPrice(
@@ -210,62 +292,6 @@ export function VoucherDeploymentReceiptPage({
       walletAddress &&
       contract.admin.toLowerCase() !== walletAddress.toLowerCase(),
     );
-    const walletPreparing = delegationStatus === "checking";
-    const submitMint = async () => {
-      if (mintSubmissionInFlight.current) return;
-      if (decimals === null || !Number.isInteger(decimals)) {
-        toast.error(t`Couldn't read how many decimals this voucher uses.`);
-        return;
-      }
-      if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
-      const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
-      if (!parsed.success) {
-        setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
-        return;
-      }
-      if (!walletAddress) {
-        toast.error(t`Connect your wallet to mint.`);
-        return;
-      }
-      if (!contract.admin) {
-        toast.error(t`Couldn't verify who owns this voucher.`);
-        return;
-      }
-      if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
-        toast.error(t`Reconnect the wallet that published this voucher to mint.`);
-        return;
-      }
-      if (walletPreparing) return;
-      setSupplyError(null);
-      mintSubmissionInFlight.current = true;
-
-      const result = await mint
-        .mutateAsync({
-          tokenAddress: address,
-          ownerAddress: contract.admin,
-          amountRaw: parseTokenAmount(parsed.data, decimals),
-          includeAuthorization: delegationStatus === "not-delegated",
-        })
-        .catch((error: unknown) => {
-          toast.error(error instanceof Error ? error.message : t`Couldn't mint the first supply.`);
-          return null;
-        });
-      if (!result) {
-        mintSubmissionInFlight.current = false;
-        return;
-      }
-      setSubmittedMintTrackingId(result.trackingId);
-      void navigate({
-        to: "/vouchers/create/receipt",
-        search: {
-          trackingId,
-          mintTrackingId: result.trackingId,
-          mintAmount: parsed.data,
-        },
-        replace: true,
-      });
-    };
-
     const primaryAction = () => {
       if (trackingUnavailable) {
         void mintTracking.refetch();

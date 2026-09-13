@@ -185,6 +185,7 @@ describe("VoucherDeploymentReceiptPage", () => {
       voucherType: "standard",
       expiryDate: "",
       decimals: "6",
+      supply: "1000",
       location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
       tags: ["Agriculture"],
       email: "issuer@example.org",
@@ -286,6 +287,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       voucherType: "standard",
       expiryDate: "",
       decimals: "6",
+      supply: "1000",
       location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
       tags: ["Agriculture"],
       email: "issuer@example.org",
@@ -371,6 +373,47 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     });
     await waitFor(() => expect(screen.getByRole("button", { name: "Minting…" })).toBeTruthy());
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
+  });
+
+  it("mints the supply chosen during creation as soon as the contract confirms", async () => {
+    renderReceipt({ mintAmount: "2500" });
+
+    await waitFor(() =>
+      expect(mintMock).toHaveBeenCalledWith({
+        tokenAddress: confirmedContract.address,
+        ownerAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        amountRaw: "2500000000",
+        includeAuthorization: false,
+      }),
+    );
+    expect(mintMock).toHaveBeenCalledTimes(1);
+    expect(navigateMock).toHaveBeenCalledWith({
+      to: "/vouchers/create/receipt",
+      search: { trackingId: "tracking-1", mintTrackingId: "mint-1", mintAmount: "2500" },
+      replace: true,
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Minting…" })).toBeTruthy());
+  });
+
+  it("does not auto-mint while the on-chain supply is still being read", () => {
+    state.supplyRaw = undefined;
+    renderReceipt({ mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-mint again when a mint is already being tracked", () => {
+    renderReceipt({ mintTrackingId: "mint-1", mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+  });
+
+  it("leaves the manual mint step when the connected wallet is not the owner", () => {
+    state.walletAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+    renderReceipt({ mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Create vouchers")).toBeTruthy();
   });
 
   it("submits at most one mint while the relay request is unresolved", () => {

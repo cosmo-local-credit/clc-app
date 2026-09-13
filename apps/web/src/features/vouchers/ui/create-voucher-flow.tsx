@@ -9,9 +9,11 @@ import {
   voucherNameSchema,
   voucherPathLicenseSchema,
   voucherPriceSchema,
+  voucherSupplySchema,
   voucherSymbolSchema,
   voucherTermsSchema,
 } from "@clc/core/features/vouchers/logic";
+import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
@@ -67,6 +69,7 @@ type VoucherFormValues = {
   voucherType: VoucherType;
   expiryDate: string;
   decimals: string;
+  supply: string;
   location: LocationInput | undefined;
   tags: string[];
   email: string;
@@ -74,7 +77,6 @@ type VoucherFormValues = {
   phone: string;
   terms: string;
   iconUrl: string;
-  bannerUrl: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
 };
@@ -88,6 +90,7 @@ const DEFAULT_VALUES: VoucherFormValues = {
   voucherType: "standard",
   expiryDate: "",
   decimals: "6",
+  supply: "",
   location: undefined,
   tags: [],
   email: "",
@@ -95,7 +98,6 @@ const DEFAULT_VALUES: VoucherFormValues = {
   phone: "",
   terms: "",
   iconUrl: "",
-  bannerUrl: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
 };
@@ -103,18 +105,18 @@ const DEFAULT_VALUES: VoucherFormValues = {
 /** The text fields a saved profile can seed, all of which default to "". */
 type SeedableTextField = "email" | "phone" | "website" | "description" | "iconUrl";
 
-const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
+const DETAIL_FIELDS = [
+  "name",
+  "symbol",
+  "price",
+  "supply",
+  "description",
+  "expiryDate",
+  "decimals",
+] as const;
 /** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
 const ADVANCED_FIELDS = ["symbol", "expiryDate", "decimals"] as const;
-const PLACE_FIELDS = [
-  "location",
-  "email",
-  "website",
-  "phone",
-  "terms",
-  "iconUrl",
-  "bannerUrl",
-] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "iconUrl"] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
@@ -134,8 +136,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   });
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
-  const [bannerBusy, setBannerBusy] = useState(false);
-  const imagesBusy = iconBusy || bannerBusy;
 
   const form = useForm({
     defaultValues: draft ?? DEFAULT_VALUES,
@@ -160,9 +160,11 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         const result = await deployVoucher.mutateAsync(
           toVoucherDeployPayload(parsed, getAddress(address)),
         );
+        // The opening supply rides along in the URL so the receipt can mint it
+        // as soon as the contract confirms, even after a reload loses the draft.
         exitVoucherCreateHistory({
           history: router.history,
-          destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
+          destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}&mintAmount=${encodeURIComponent(parsed.supply.trim())}`,
         });
       } catch (error) {
         toast.error(
@@ -260,7 +262,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   async function goToReview() {
-    if (imagesBusy) return;
+    if (iconBusy) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/vouchers/create/$step", params: { step: "review" } });
   }
@@ -409,6 +411,60 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                     {`1 ${symbol.trim() || "XYZ"} = ${price || "—"} ${unit}`}
                   </p>
                 )}
+              </form.Subscribe>
+
+              {/* Subscribed so the validator follows the live decimals from Advanced. */}
+              <form.Subscribe selector={(state) => state.values.decimals}>
+                {(decimals) => (
+                  <form.Field
+                    name="supply"
+                    validators={{
+                      onBlur: voucherSupplySchema(decimals),
+                      onSubmit: voucherSupplySchema(decimals),
+                    }}
+                  >
+                    {(field) => (
+                      <Field
+                        label={t`Create vouchers`}
+                        htmlFor="voucher-supply"
+                        hint={t`How many to mint once the voucher is published`}
+                        error={getFieldError(field.state.meta.errors)}
+                      >
+                        <Input
+                          id="voucher-supply"
+                          inputMode="decimal"
+                          value={field.state.value}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          onBlur={field.handleBlur}
+                          placeholder="0"
+                          aria-invalid={field.state.meta.errors.length > 0}
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+                )}
+              </form.Subscribe>
+
+              <form.Subscribe
+                selector={(state) =>
+                  [
+                    state.values.supply,
+                    state.values.price,
+                    state.values.unitOfAccount,
+                    state.values.symbol,
+                  ] as const
+                }
+              >
+                {([supply, price, unit, symbol]) => {
+                  const value = formatOfferingDisplayPrice(supply, price, unit, symbol);
+                  return value ? (
+                    <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                      <Trans>
+                        Value: {value.value} {value.unit}
+                      </Trans>
+                    </p>
+                  ) : null;
+                }}
               </form.Subscribe>
 
               <form.Field
@@ -581,7 +637,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
             <div className="mt-3.5 space-y-3.5">
               {isStorageConfigured ? (
-                <div className="space-y-5 border border-border bg-card p-4">
+                <div className="border border-border bg-card p-4">
                   <form.Field name="iconUrl">
                     {(field) => (
                       <ImageUploadField
@@ -591,20 +647,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         value={field.state.value || null}
                         onChange={(url) => field.handleChange(url ?? "")}
                         onBusyChange={setIconBusy}
-                        disabled={deployVoucher.isPending}
-                      />
-                    )}
-                  </form.Field>
-
-                  <form.Field name="bannerUrl">
-                    {(field) => (
-                      <ImageUploadField
-                        label={t`Cover photo`}
-                        hint={t`Optional`}
-                        purpose="voucher.banner"
-                        value={field.state.value || null}
-                        onChange={(url) => field.handleChange(url ?? "")}
-                        onBusyChange={setBannerBusy}
                         disabled={deployVoucher.isPending}
                       />
                     )}
@@ -774,13 +816,13 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               <Button
                 type="button"
                 className="h-11 w-full"
-                disabled={imagesBusy}
+                disabled={iconBusy}
                 onClick={() => void goToReview()}
               >
-                {imagesBusy ? (
+                {iconBusy ? (
                   <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
                 ) : null}
-                {imagesBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
+                {iconBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
           </>

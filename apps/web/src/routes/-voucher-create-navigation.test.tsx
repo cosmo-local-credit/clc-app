@@ -133,6 +133,7 @@ describe("voucher create navigation", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food from Kilifi producers." },
     });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "100" } });
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await screen.findByRole("heading", { name: "Where and what for" });
@@ -165,6 +166,7 @@ describe("voucher create navigation", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food from Kilifi producers." },
     });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "100" } });
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await screen.findByRole("heading", { name: "Where and what for" });
