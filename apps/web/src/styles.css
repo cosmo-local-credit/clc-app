@@ -158,21 +158,21 @@ body {
 }
 
 .pending-clock-indicator {
-	transform-box: fill-box;
-	transform-origin: center;
-	animation: pending-clock-orbit var(--pending-clock-duration, 5s) linear infinite;
+	animation: pending-clock-deplete var(--pending-clock-duration, 10s) linear forwards;
 }
 
-@keyframes pending-clock-orbit {
+@keyframes pending-clock-deplete {
+	from {
+		stroke-dashoffset: 0;
+	}
 	to {
-		transform: rotate(-360deg);
+		stroke-dashoffset: -100;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.pending-clock-indicator {
 		animation: none;
-		transform: rotate(-45deg);
 	}
 }
 
