@@ -20,6 +20,9 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
       <InfoRow label={t`Price`}>
         {values.price} {values.unitOfAccount}
       </InfoRow>
+      <InfoRow label={t`Supply`}>
+        {values.supply} {values.symbol}
+      </InfoRow>
       <InfoRow label={t`Type`} muted>
         {values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
       </InfoRow>

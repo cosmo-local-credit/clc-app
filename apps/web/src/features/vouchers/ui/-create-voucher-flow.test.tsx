@@ -113,7 +113,7 @@ vi.mock("#/components/ui/image-upload-field", () => ({
     onBusyChange,
   }: {
     label: string;
-    purpose: "voucher.icon" | "voucher.banner";
+    purpose: "voucher.icon";
     value: string | null;
     onChange: (url: string | null) => void;
     onBusyChange?: (busy: boolean) => void;
@@ -244,7 +244,7 @@ describe("CreateVoucherFlow", () => {
       "https://issuer.example",
     );
     expect(screen.getByRole("button", { name: "Upload Logo" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Upload Cover photo" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Upload Cover photo" })).toBeNull();
     expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search voucher tags" });
@@ -276,7 +276,6 @@ describe("CreateVoucherFlow", () => {
       ),
     );
     expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
-    expect(screen.getByTestId("voucher.banner-value").textContent).toBe("");
 
     view.rerender(<CreateVoucherFlow step="voucher" />);
     expect((screen.getByLabelText("Voucher Description") as HTMLTextAreaElement).value).toBe(
@@ -342,6 +341,7 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food from Kilifi producers." },
     });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await waitFor(() =>
@@ -360,7 +360,6 @@ describe("CreateVoucherFlow", () => {
       target: { value: "https://kilifi.example/terms" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Upload Logo" }));
-    fireEvent.click(screen.getByRole("button", { name: "Upload Cover photo" }));
     fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -403,12 +402,11 @@ describe("CreateVoucherFlow", () => {
         terms: "https://kilifi.example/terms",
         phone: "+254712345678",
         iconUrl: "https://cdn.test/voucher/icon.webp",
-        bannerUrl: "https://cdn.test/voucher/banner.webp",
       }),
     );
     expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
       history: expect.any(Object),
-      destination: "/vouchers/create/receipt?trackingId=tracking-1",
+      destination: "/vouchers/create/receipt?trackingId=tracking-1&mintAmount=10000",
     });
   });
 
@@ -419,6 +417,7 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food." },
     });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     fireEvent.click(screen.getByText("Advanced"));
 
     expect(screen.queryByLabelText("Expiration Date")).toBeNull();
@@ -455,6 +454,33 @@ describe("CreateVoucherFlow", () => {
     expect(await screen.findByText("Voucher name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
+    );
+  });
+
+  it("asks for the opening supply on the first step and previews its value", async () => {
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.change(screen.getByLabelText("Price"), { target: { value: "2.5" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(await screen.findByText("Supply must be greater than zero")).toBeTruthy();
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ params: { step: "place" } }),
+    );
+
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "12" } });
+    expect(screen.getByText("Value: 30 KES")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/vouchers/create/$step",
+        params: { step: "place" },
+      }),
     );
   });
 
@@ -504,6 +530,7 @@ describe("CreateVoucherFlow", () => {
       fireEvent.change(screen.getByLabelText("Voucher Description"), {
         target: { value: "Fresh food from Kilifi producers." },
       });
+      fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
       fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
       await waitFor(() =>
@@ -547,6 +574,7 @@ describe("CreateVoucherFlow", () => {
         voucherType: "standard",
         expiryDate: "",
         decimals: "6",
+        supply: "1000",
         location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5107, lng: 39.9093 },
         tags: [],
         email: "",
@@ -554,7 +582,6 @@ describe("CreateVoucherFlow", () => {
         phone: "",
         terms: "",
         iconUrl: "",
-        bannerUrl: "",
         acceptedTerms: true,
         acceptedPathLicense: true,
       });
@@ -580,6 +607,7 @@ describe("CreateVoucherFlow", () => {
       fireEvent.change(screen.getByLabelText("Voucher Description"), {
         target: { value: "Fresh food from Kilifi producers." },
       });
+      fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
 
       fireEvent.click(screen.getByRole("button", { name: "Next" }));
       await waitFor(() =>
