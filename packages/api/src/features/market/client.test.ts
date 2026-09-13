@@ -417,6 +417,18 @@ describe("getMarketVoucher", () => {
     expect((await api.getMarketVoucher(DETAIL_ROW.address)).contractName).toBeNull();
   });
 
+  it("honours the browser cache by default and bypasses it only when told to", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+
+    await api.getMarketVoucher(DETAIL_ROW.address);
+    expect(requestedInit().cache).toBeUndefined();
+    expect(requestedInit().credentials).toBe("omit");
+
+    await api.getMarketVoucher(DETAIL_ROW.address, undefined, { cache: "reload" });
+    expect(requestedInit(1).cache).toBe("reload");
+    expect(requestedInit(1).credentials).toBe("omit");
+  });
+
   it("reads the voucher the card and the page render", async () => {
     fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
 

@@ -5,6 +5,7 @@ import {
   RiCheckLine,
   RiCloseLine,
   RiFingerprintLine,
+  RiTimeLine,
 } from "react-icons/ri";
 
 import { Trans } from "@lingui/react/macro";
@@ -100,6 +101,13 @@ export function PendingClock({ className }: { className?: string }) {
       <ProgressTrack
         className="pending-clock-indicator size-full rounded-full"
         data-slot="pending-clock-indicator"
+      />
+      {/* The ring is a mask over a conic gradient, so its centre is empty. The
+          clock fills it the way the check and cross fill their badges. */}
+      <RiTimeLine
+        className="absolute inset-0 m-auto size-7 text-warning-foreground"
+        data-slot="pending-clock-icon"
+        aria-hidden="true"
       />
     </Progress>
   );

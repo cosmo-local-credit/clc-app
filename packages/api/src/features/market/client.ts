@@ -200,6 +200,20 @@ const MARKET_KINDS = new Set<string>(["goods", "services", "voucher"]);
 
 export type MarketClient = ReturnType<typeof createMarketClient>;
 
+/**
+ * Per-read overrides for the public voucher detail.
+ *
+ * The client-level `cache` is a property of the app; this is for the one read
+ * inside an app that needs the other policy. After the owner writes their
+ * record, `"reload"` fetches past the browser's copy of
+ * `public, max-age=60, stale-while-revalidate=300` and replaces it, so both the
+ * query cache and the HTTP cache hold the row the write produced. A guest
+ * browsing the same voucher keeps the shared cache.
+ */
+export type MarketReadOverrides = {
+  cache?: RequestCache;
+};
+
 export type CreateMarketClientOptions = {
   /**
    * How these reads treat the browser's HTTP cache.
@@ -243,10 +257,20 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
       };
     },
 
-    async getMarketVoucher(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail> {
+    async getMarketVoucher(
+      address: string,
+      signal?: AbortSignal,
+      overrides: MarketReadOverrides = {},
+    ): Promise<MarketVoucherDetail> {
       const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
         `/api/v2/vouchers/${encodeURIComponent(address)}`,
-        { method: "GET", credentials: "omit", signal, ...cachePolicy },
+        {
+          method: "GET",
+          credentials: "omit",
+          signal,
+          ...cachePolicy,
+          ...(overrides.cache ? { cache: overrides.cache } : {}),
+        },
       );
 
       const voucher = normalizeMarketVoucherDetail(result.voucher);
