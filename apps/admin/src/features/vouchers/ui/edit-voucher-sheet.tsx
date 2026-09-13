@@ -175,7 +175,10 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     onSubmit: async ({ value }) => {
       try {
         await update.mutateAsync({
-          displayName: value.displayName,
+          // `name` is the effective label, not proof that an override exists.
+          // Do not turn an ordinary metadata save into a redundant override;
+          // only send this compatibility field after the operator changes it.
+          ...(value.displayName === voucher.name ? {} : { displayName: value.displayName }),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
