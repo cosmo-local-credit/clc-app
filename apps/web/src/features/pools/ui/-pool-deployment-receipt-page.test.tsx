@@ -120,7 +120,7 @@ describe("PoolDeploymentReceiptPage", () => {
     usePoolCreateDraft.getState().setDraft({
       name: "Kilifi Growers",
       symbol: "KGP1",
-      unit: "KES",
+      unitOfAccount: "KES",
       description: "A growers pool.",
       pricing: "oracle",
       feePolicyDefault: "1",
@@ -161,7 +161,7 @@ describe("PoolDeploymentReceiptPage", () => {
     usePoolCreateDraft.getState().setDraft({
       name: "Kilifi Growers",
       symbol: "KGP1",
-      unit: "KES",
+      unitOfAccount: "KES",
       description: "A growers pool.",
       pricing: "oracle",
       feePolicyDefault: "1",

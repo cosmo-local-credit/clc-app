@@ -43,10 +43,10 @@ export const optionalTermsUrlSchema = z
   .trim()
   .refine(isOptionalHttpUrl, "Enter a valid terms URL including https://");
 
-export const VOUCHER_TERMS_TEXT_MAX = 5000;
+export const TERMS_TEXT_MAX = 5000;
 
 /** Terms written in the form itself, as Markdown, instead of linked to. */
-export const optionalTermsTextSchema = z.string().trim().max(VOUCHER_TERMS_TEXT_MAX, {
+export const optionalTermsTextSchema = z.string().trim().max(TERMS_TEXT_MAX, {
   message: "Terms must be 5000 characters or fewer",
 });
 
@@ -55,6 +55,6 @@ export const optionalTermsTextSchema = z.string().trim().max(VOUCHER_TERMS_TEXT_
  * reader tells them apart with `isHttpUrl`; a writer that has a mode switch
  * validates with the URL or text schema above instead of this one.
  */
-export const optionalTermsSchema = z.string().trim().max(VOUCHER_TERMS_TEXT_MAX, {
+export const optionalTermsSchema = z.string().trim().max(TERMS_TEXT_MAX, {
   message: "Terms must be 5000 characters or fewer",
 });

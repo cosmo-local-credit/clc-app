@@ -44,7 +44,7 @@ export function usePoolPublishDeployment() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [trackingId, setTrackingId] = useState<string | null>(null);
-  const [pricing, setPricing] = useState<PoolPricing>("oracle");
+  const [pricing, setPricing] = useState<PoolPricing>("relative");
 
   const deploy = useMutation({
     mutationFn: (payload: PoolDeployPayload) => clcApi.poolDeploy.deployPool(payload),

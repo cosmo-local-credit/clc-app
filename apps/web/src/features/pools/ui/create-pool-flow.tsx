@@ -16,10 +16,13 @@ import {
   toPoolDeployPayload,
 } from "@clc/core/features/pools/logic";
 import {
+  isHttpUrl,
   optionalEmailSchema,
   optionalPhoneSchema,
+  optionalTermsTextSchema,
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
+  TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -35,22 +38,19 @@ import { AgreementField } from "#/components/ui/agreement-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
-import { Field } from "#/components/ui/field";
+import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
-import {
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValue,
-} from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
+import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { Toggle } from "#/components/ui/toggle";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
@@ -74,6 +74,8 @@ type PoolFormValues = Omit<
   "location" | "acceptedTerms" | "acceptedSproutLicense"
 > & {
   location: LocationInput | undefined;
+  /** Form-only: whether `terms` is a link or the terms themselves. */
+  termsMode: "url" | "text";
   acceptedTerms: boolean;
   acceptedSproutLicense: boolean;
 };
@@ -81,9 +83,9 @@ type PoolFormValues = Omit<
 const DEFAULT_VALUES: PoolFormValues = {
   name: "",
   symbol: "",
-  unit: "KES",
+  unitOfAccount: "KES",
   description: "",
-  pricing: "oracle",
+  pricing: "relative",
   feePolicyDefault: "0",
   feesDecoupled: false,
   location: undefined,
@@ -92,8 +94,8 @@ const DEFAULT_VALUES: PoolFormValues = {
   website: "",
   phone: "",
   terms: "",
+  termsMode: "url",
   imageUrl: "",
-  bannerUrl: "",
   acceptedTerms: false,
   acceptedSproutLicense: false,
 };
@@ -101,18 +103,16 @@ const DEFAULT_VALUES: PoolFormValues = {
 /** The text fields a saved profile can seed, all of which default to "". */
 type SeedableTextField = "email" | "phone" | "website" | "description" | "imageUrl";
 
-const DETAIL_FIELDS = ["name", "symbol", "unit", "description", "feePolicyDefault"] as const;
+const DETAIL_FIELDS = [
+  "name",
+  "symbol",
+  "unitOfAccount",
+  "description",
+  "feePolicyDefault",
+] as const;
 /** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
 const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
-const PLACE_FIELDS = [
-  "location",
-  "email",
-  "website",
-  "phone",
-  "terms",
-  "imageUrl",
-  "bannerUrl",
-] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUrl"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const { i18n, t } = useLingui();
@@ -123,7 +123,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   // build was configured for — which is the one the wallet will connect to.
   const activeChainId = chainId ?? CHAIN_ID;
   const hasOracle = chainHasPoolOracle(activeChainId);
-  const defaultPricing: PoolPricing = hasOracle ? "oracle" : "decimal";
+  const defaultPricing: PoolPricing = "relative";
   const poolCreateSchema = poolCreateSchemaForChain(activeChainId);
   const deployPool = useDeployPool();
   const tagsQuery = useTokenTags();
@@ -135,14 +135,31 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const suggestedSymbol = useSuggestedSymbol({ kind: "pool", initialSymbol: draft?.symbol ?? "" });
   const [tagsOpen, setTagsOpen] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
-  const [bannerBusy, setBannerBusy] = useState(false);
-  const imagesBusy = logoBusy || bannerBusy;
+  const [termsPreview, setTermsPreview] = useState(false);
 
   // The store is a submitted-value retry snapshot, not live draft persistence. A fresh mount after
   // receipt failure is what causes TanStack Form to consume these defaults again.
   const form = useForm({
-    defaultValues: draft ?? { ...DEFAULT_VALUES, pricing: defaultPricing },
-    validators: { onSubmit: poolCreateSchema },
+    defaultValues: draft
+      ? {
+          ...draft,
+          termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+        }
+      : { ...DEFAULT_VALUES, pricing: defaultPricing },
+    validators: {
+      // The form-only terms mode is deliberately absent from the persisted
+      // create input, so translate the Standard Schema issues by field.
+      onSubmit: ({ value }) => {
+        const result = poolCreateSchema.safeParse(value);
+        if (result.success) return undefined;
+        const fields: Record<string, string> = {};
+        for (const issue of result.error.issues) {
+          const key = issue.path.map(String).join(".");
+          if (key !== "" && !(key in fields)) fields[key] = issue.message;
+        }
+        return { fields };
+      },
+    },
     onSubmit: async ({ value }) => {
       if (!address || chainId === undefined) {
         toast.error(t`Connect your wallet before publishing.`);
@@ -219,10 +236,10 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     ).safeParse(prefill.unitOfAccount);
     if (
       preferredUnit.success &&
-      !form.getFieldMeta("unit")?.isTouched &&
-      form.getFieldValue("unit") === DEFAULT_VALUES.unit
+      !form.getFieldMeta("unitOfAccount")?.isTouched &&
+      form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
     ) {
-      form.setFieldValue("unit", preferredUnit.data, { dontUpdateMeta: true });
+      form.setFieldValue("unitOfAccount", preferredUnit.data, { dontUpdateMeta: true });
     }
 
     if (
@@ -267,7 +284,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   }
 
   async function goToReview() {
-    if (imagesBusy) return;
+    if (logoBusy) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/pools/create/$step", params: { step: "review" } });
   }
@@ -350,7 +367,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
               <form.Subscribe selector={(state) => state.values.pricing}>
                 {(pricing) => (
                   <form.Field
-                    name="unit"
+                    name="unitOfAccount"
                     validators={{
                       onBlur: poolUnitSchemaForPricing(pricing, activeChainId),
                       onSubmit: poolUnitSchemaForPricing(pricing, activeChainId),
@@ -360,26 +377,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       <Field
                         label={t`Unit of Account`}
                         htmlFor="pool-unit"
-                        hint={t`The unit used for pricing in this pool (e.g., USD, KES, HOUR)`}
+                        hint={t`The currency used to describe value in this pool`}
                         error={getFieldError(field.state.meta.errors)}
                       >
-                        <SelectRoot
+                        <UnitOfAccountCombobox
+                          id="pool-unit"
                           value={field.state.value}
-                          onValueChange={(value) => {
-                            if (value === "KES" || value === "USD" || value === "HOUR") {
-                              field.handleChange(value);
-                            }
-                          }}
-                        >
-                          <SelectTrigger id="pool-unit" className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="KES">KES - Kenyan Shilling</SelectItem>
-                            <SelectItem value="USD">USD - US Dollar</SelectItem>
-                            <SelectItem value="HOUR">HOUR</SelectItem>
-                          </SelectContent>
-                        </SelectRoot>
+                          onValueChange={field.handleChange}
+                          placeholder={t`Search currencies`}
+                          emptyMessage={t`No currencies found.`}
+                        />
                       </Field>
                     )}
                   </form.Field>
@@ -458,27 +465,31 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         <RadioGroup
                           value={field.state.value}
                           onValueChange={(value) => {
-                            if (value === "oracle" || value === "decimal") {
+                            if (value === "relative" || value === "oracle" || value === "decimal") {
                               field.handleChange(value);
                             }
                           }}
                           aria-label={t`Pricing`}
                           className="gap-2.5"
                         >
-                          {hasOracle ? (
-                            <PricingOption
-                              value="oracle"
-                              title={t`Price feed`}
-                              description={t`Follows the selected unit's feed`}
-                              isDefault
-                            />
-                          ) : null}
+                          <PricingOption
+                            value="relative"
+                            title={t`Relative pricing`}
+                            description={t`Uses voucher rates set for this pool`}
+                            isDefault
+                          />
                           <PricingOption
                             value="decimal"
                             title={t`Equal value`}
                             description={t`Vouchers swap one for one`}
-                            isDefault={!hasOracle}
                           />
+                          {hasOracle ? (
+                            <PricingOption
+                              value="oracle"
+                              title={t`Oracle pricing`}
+                              description={t`Follows live price feeds for the selected currency`}
+                            />
+                          ) : null}
                         </RadioGroup>
                       </div>
                     )}
@@ -554,7 +565,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
 
             <div className="mt-3.5 space-y-3.5">
               {isStorageConfigured ? (
-                <div className="space-y-5 border border-border bg-card p-4">
+                <div className="border border-border bg-card p-4">
                   <form.Field name="imageUrl">
                     {(field) => (
                       <ImageUploadField
@@ -564,20 +575,6 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                         value={field.state.value || null}
                         onChange={(url) => field.handleChange(url ?? "")}
                         onBusyChange={setLogoBusy}
-                        disabled={deployPool.isPending}
-                      />
-                    )}
-                  </form.Field>
-
-                  <form.Field name="bannerUrl">
-                    {(field) => (
-                      <ImageUploadField
-                        label={t`Cover photo`}
-                        hint={t`Optional`}
-                        purpose="pool.banner"
-                        value={field.state.value || null}
-                        onChange={(url) => field.handleChange(url ?? "")}
-                        onBusyChange={setBannerBusy}
                         disabled={deployPool.isPending}
                       />
                     )}
@@ -717,29 +714,124 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <form.Field
-                name="terms"
-                validators={{ onBlur: optionalTermsUrlSchema, onSubmit: optionalTermsUrlSchema }}
-              >
-                {(field) => (
-                  <Field
-                    label={t`Terms URL`}
-                    htmlFor="pool-terms-url"
-                    hint={t`Link to the terms that apply to this pool`}
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Input
-                      id="pool-terms-url"
-                      type="url"
-                      inputMode="url"
-                      autoComplete="url"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      placeholder="https://example.com/terms"
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
-                  </Field>
+              <form.Field name="termsMode">
+                {(modeField) => (
+                  <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-sm">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <label className="flex items-center gap-2 text-muted-foreground text-xs">
+                        <Trans>Write my own</Trans>
+                        <Switch
+                          checked={modeField.state.value === "text"}
+                          onCheckedChange={(checked) => {
+                            modeField.handleChange(checked ? "text" : "url");
+                            form.setFieldValue("terms", "");
+                            setTermsPreview(false);
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {modeField.state.value === "text" ? (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsTextSchema,
+                          onSubmit: optionalTermsTextSchema,
+                        }}
+                      >
+                        {(field) => (
+                          <div className="mt-1.5">
+                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                              <label
+                                htmlFor="pool-terms-text"
+                                className="text-muted-foreground text-xs"
+                              >
+                                <Trans>Shown to anyone joining this pool</Trans>
+                              </label>
+                              <Toggle
+                                variant="outline"
+                                pressed={termsPreview}
+                                onPressedChange={setTermsPreview}
+                                aria-label={t`Preview`}
+                              >
+                                <Trans>Preview</Trans>
+                              </Toggle>
+                            </div>
+                            {termsPreview ? (
+                              <div className="min-h-24 border border-border bg-card p-3">
+                                {field.state.value.trim() === "" ? (
+                                  <p className="text-muted-foreground text-sm">
+                                    <Trans>Nothing to preview yet.</Trans>
+                                  </p>
+                                ) : (
+                                  <MarkdownContent>{field.state.value}</MarkdownContent>
+                                )}
+                              </div>
+                            ) : (
+                              <Textarea
+                                id="pool-terms-text"
+                                rows={8}
+                                maxLength={TERMS_TEXT_MAX}
+                                className="font-mono text-[0.8125rem]"
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder={t`Describe the rules for joining and using this pool...`}
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                            )}
+                            {getFieldError(field.state.meta.errors) ? (
+                              <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
+                            ) : (
+                              <p className="mt-1 text-muted-foreground text-xs">
+                                <Trans>
+                                  Markdown: **bold**, # headings, - lists, [links](https://…)
+                                </Trans>
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    ) : (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsUrlSchema,
+                          onSubmit: optionalTermsUrlSchema,
+                        }}
+                      >
+                        {(field) => {
+                          const error = getFieldError(field.state.meta.errors);
+                          return (
+                            <div className="mt-1.5">
+                              <Input
+                                id="pool-terms-url"
+                                type="url"
+                                inputMode="url"
+                                autoComplete="url"
+                                aria-label={t`Terms URL`}
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder="https://example.com/terms"
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                              {error ? (
+                                <FieldError error={error} />
+                              ) : (
+                                <p className="mt-1 text-muted-foreground text-xs">
+                                  <Trans>Link to the terms that apply to this pool</Trans>
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }}
+                      </form.Field>
+                    )}
+                  </div>
                 )}
               </form.Field>
             </div>
@@ -748,13 +840,13 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
               <Button
                 type="button"
                 className="h-11 w-full"
-                disabled={imagesBusy}
+                disabled={logoBusy}
                 onClick={() => void goToReview()}
               >
-                {imagesBusy ? (
+                {logoBusy ? (
                   <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
                 ) : null}
-                {imagesBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
+                {logoBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
           </>
@@ -768,9 +860,19 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
 
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
-                <dl className="mt-3.5 border border-border bg-card">
-                  <PoolDetailsRows values={values} />
-                </dl>
+                <>
+                  <dl className="mt-3.5 border border-border bg-card">
+                    <PoolDetailsRows values={values} />
+                  </dl>
+                  {values.terms !== "" && !isHttpUrl(values.terms) ? (
+                    <div className="mt-3.5 border border-border bg-card p-4">
+                      <p className="font-heading text-sm font-semibold leading-snug">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>
+                    </div>
+                  ) : null}
+                </>
               )}
             </form.Subscribe>
 

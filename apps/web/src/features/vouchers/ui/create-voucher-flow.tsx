@@ -21,7 +21,7 @@ import {
   optionalTermsTextSchema,
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
-  VOUCHER_TERMS_TEXT_MAX,
+  TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -874,7 +874,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                               <Textarea
                                 id="voucher-terms-text"
                                 rows={8}
-                                maxLength={VOUCHER_TERMS_TEXT_MAX}
+                                maxLength={TERMS_TEXT_MAX}
                                 className="font-mono text-[0.8125rem]"
                                 value={field.state.value}
                                 onChange={(event) => field.handleChange(event.target.value)}

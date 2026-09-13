@@ -7,6 +7,8 @@ import {
   poolSwapFeeSchema,
   poolSymbolSchema,
 } from "@clc/core/features/pools/logic";
+import { voucherUnitSchema } from "@clc/core/features/vouchers/logic";
+import { optionalTermsSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import {
   CELO_MAINNET_CEUR_ADDRESS,
@@ -24,6 +26,7 @@ import { z } from "zod";
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { PageHeader } from "#/components/admin/page-header";
 import { SectionHeading } from "#/components/admin/section-heading";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { LocationField } from "#/components/admin/location-field";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
@@ -51,8 +54,6 @@ const ORACLE_BASE_CODES = ["KES", "USD", "BAM", "BTN", "EUR", "INR", "ZAR"] as c
 
 type OracleBase = (typeof ORACLE_BASE_CODES)[number];
 
-const ORACLE_OPTIONS = ORACLE_BASE_CODES.map((value) => ({ value, label: value }));
-
 /**
  * The token an OracleQuoter prices against, per chain and per currency.
  *
@@ -74,15 +75,14 @@ const CHAIN_ORACLE_BASES = ORACLE_BASES[CHAIN_ID] ?? {};
 const HAS_ORACLE_BASES = Object.keys(CHAIN_ORACLE_BASES).length > 0;
 
 /**
- * "Managed rates" — the RelativeQuoter — is deliberately gone. It prices from
- * per-token rates somebody has to maintain by hand, and nothing in this product
- * maintains them: clc-core dropped the column that used to hold them. Equal
- * value covers the same need without the upkeep. The backend can still deploy
- * one, so pools already on it keep working and keep reading back correctly.
+ * Relative pricing is the default: every pool starts with parity rates and its
+ * steward can manage voucher-relative rates as vouchers join. Equal value and
+ * oracle pricing remain explicit alternatives.
  */
 const PRICING_OPTIONS = [
-  ...(HAS_ORACLE_BASES ? [{ value: "oracle" as const, label: "Oracle rates" }] : []),
+  { value: "relative" as const, label: "Relative pricing" },
   { value: "decimal" as const, label: "Equal value" },
+  ...(HAS_ORACLE_BASES ? [{ value: "oracle" as const, label: "Oracle pricing" }] : []),
 ];
 
 function isOracleBase(value: string): value is OracleBase {
@@ -124,12 +124,6 @@ const requiredWebsiteSchema = z
   .min(1, { message: "Website is required" })
   .refine(isHttpUrl, "Enter a valid website URL including https://");
 
-const requiredTermsUrlSchema = z
-  .string()
-  .trim()
-  .min(1, { message: "Terms URL is required" })
-  .refine(isHttpUrl, "Enter a valid terms URL including https://");
-
 const requiredCoordinateSchema = z
   .string()
   .trim()
@@ -147,8 +141,8 @@ const poolPublishSchema = z
     name: poolNameSchema,
     symbol: poolSymbolSchema,
     description: poolDescriptionSchema,
-    pricing: z.enum(["oracle", "decimal"]),
-    oracleBase: z.enum(ORACLE_BASE_CODES),
+    pricing: z.enum(["relative", "oracle", "decimal"]),
+    unitOfAccount: voucherUnitSchema,
     feePolicyDefault: poolSwapFeeSchema,
     feesDecoupled: z.boolean(),
     locationName: z
@@ -162,7 +156,7 @@ const poolPublishSchema = z
     email: requiredEmailSchema,
     website: requiredWebsiteSchema,
     phone: requiredPhoneSchema,
-    terms: requiredTermsUrlSchema,
+    terms: optionalTermsSchema,
     // Optional, and already uploaded by the time they reach the form: the field
     // uploads on selection, so these hold a stored URL or nothing. clc-core
     // validates them as http(s) before it queues the deploy, because the catalog
@@ -172,11 +166,14 @@ const poolPublishSchema = z
     bannerUrl: optionalStoredImageSchema,
   })
   .superRefine((value, ctx) => {
-    if (value.pricing === "oracle" && !oracleBaseAddress(value.oracleBase)) {
+    if (
+      value.pricing === "oracle" &&
+      (!isOracleBase(value.unitOfAccount) || !oracleBaseAddress(value.unitOfAccount))
+    ) {
       ctx.addIssue({
         code: "custom",
-        path: ["oracleBase"],
-        message: "No token is configured for this currency",
+        path: ["unitOfAccount"],
+        message: "No oracle token is configured for this currency",
       });
     }
     const latitude = Number(value.latitude);
@@ -203,8 +200,8 @@ const DEFAULT_VALUES: PoolPublishValues = {
   name: "",
   symbol: "",
   description: "",
-  pricing: HAS_ORACLE_BASES ? "oracle" : "decimal",
-  oracleBase: "KES",
+  pricing: "relative",
+  unitOfAccount: "KES",
   feePolicyDefault: "0",
   feesDecoupled: false,
   locationName: "",
@@ -242,7 +239,9 @@ export function PoolPublishPage() {
       const latitude = value.latitude.trim();
       const longitude = value.longitude.trim();
       const baseCurrency =
-        value.pricing === "oracle" ? oracleBaseAddress(value.oracleBase) : undefined;
+        value.pricing === "oracle" && isOracleBase(value.unitOfAccount)
+          ? oracleBaseAddress(value.unitOfAccount)
+          : undefined;
       if (value.pricing === "oracle" && !baseCurrency) {
         toast.error("No token is configured for this oracle base currency.");
         return;
@@ -256,6 +255,7 @@ export function PoolPublishPage() {
         feesDecoupled: Number(value.feePolicyDefault) > 0 && value.feesDecoupled,
         feePolicyDefault: value.feePolicyDefault.trim(),
         ...(baseCurrency ? { baseCurrency } : {}),
+        unitOfAccount: value.unitOfAccount,
         description: value.description.trim(),
         locationName: value.locationName.trim(),
         geoLat: Number(latitude),
@@ -410,7 +410,7 @@ export function PoolPublishPage() {
                       items={PRICING_OPTIONS}
                       value={field.state.value}
                       onValueChange={(value) => {
-                        if (value === "oracle" || value === "decimal") {
+                        if (value === "relative" || value === "oracle" || value === "decimal") {
                           field.handleChange(value);
                         }
                       }}
@@ -435,40 +435,17 @@ export function PoolPublishPage() {
                   </Field>
                 )}
               </form.Field>
-              <form.Subscribe selector={(state) => state.values.pricing}>
-                {(pricing) =>
-                  pricing === "oracle" ? (
-                    <form.Field name="oracleBase">
-                      {(field) => (
-                        <Field
-                          label="Oracle base currency"
-                          htmlFor={field.name}
-                          error={fieldError(field)}
-                        >
-                          <Select
-                            items={ORACLE_OPTIONS}
-                            value={field.state.value}
-                            onValueChange={(value) => {
-                              if (value && isOracleBase(value)) field.handleChange(value);
-                            }}
-                          >
-                            <SelectTrigger id={field.name} className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORACLE_OPTIONS.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                      )}
-                    </form.Field>
-                  ) : null
-                }
-              </form.Subscribe>
+              <form.Field name="unitOfAccount">
+                {(field) => (
+                  <Field label="Unit of account" htmlFor={field.name} error={fieldError(field)}>
+                    <UnitOfAccountCombobox
+                      id={field.name}
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                    />
+                  </Field>
+                )}
+              </form.Field>
               <form.Field name="feePolicyDefault">
                 {(field) => (
                   <Field label="Default fee (%)" htmlFor={field.name} error={fieldError(field)}>
@@ -615,10 +592,15 @@ export function PoolPublishPage() {
               </form.Field>
               <form.Field name="terms">
                 {(field) => (
-                  <Field label="Terms URL" htmlFor={field.name} error={fieldError(field)}>
-                    <Input
+                  <Field
+                    label="Terms"
+                    htmlFor={field.name}
+                    hint="A link to the terms, or the terms themselves written as Markdown."
+                    error={fieldError(field)}
+                  >
+                    <Textarea
                       id={field.name}
-                      type="url"
+                      rows={3}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}
@@ -651,8 +633,9 @@ export function PoolPublishPage() {
                     }
                   />
                   {values.pricing === "oracle" ? (
-                    <BoundRow label="Oracle base" value={values.oracleBase} />
+                    <BoundRow label="Oracle base" value={values.unitOfAccount} />
                   ) : null}
+                  <BoundRow label="Unit of account" value={values.unitOfAccount} />
                   <BoundRow label="Fee" value={`${values.feePolicyDefault}%`} />
                   {Number(values.feePolicyDefault) > 0 ? (
                     <BoundRow
@@ -753,11 +736,13 @@ function fieldError(field: {
 function Field({
   label,
   htmlFor,
+  hint,
   error,
   children,
 }: {
   label: string;
   htmlFor?: string;
+  hint?: string;
   error: string | null;
   children: ReactNode;
 }) {
@@ -769,6 +754,7 @@ function Field({
         <p className="text-xs leading-none">{label}</p>
       )}
       {children}
+      {hint && !error ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
       {error ? (
         <p role="alert" className="text-destructive text-xs">
           {error}
