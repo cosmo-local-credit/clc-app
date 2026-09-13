@@ -157,16 +157,31 @@ body {
 	color: var(--color-foreground);
 }
 
+@property --pending-clock-progress {
+	syntax: "<number>";
+	inherits: true;
+	initial-value: 100;
+}
+
 .pending-clock-indicator {
+	--pending-clock-progress: 100;
+	background: conic-gradient(
+		from -90deg,
+		color-mix(in oklch, var(--color-warning) 25%, transparent)
+			calc((100 - var(--pending-clock-progress)) * 1%),
+		var(--color-warning) 0
+	);
+	-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+	mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
 	animation: pending-clock-deplete var(--pending-clock-duration, 10s) linear forwards;
 }
 
 @keyframes pending-clock-deplete {
 	from {
-		stroke-dashoffset: 0;
+		--pending-clock-progress: 100;
 	}
 	to {
-		stroke-dashoffset: -100;
+		--pending-clock-progress: 0;
 	}
 }
 

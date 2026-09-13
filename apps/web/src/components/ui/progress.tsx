@@ -7,6 +7,7 @@ function Progress({
   className,
   value,
   max = 100,
+  children,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root>) {
   return (
@@ -14,17 +15,42 @@ function Progress({
       data-slot="progress"
       value={value}
       max={max}
-      className={cn("relative h-[3px] w-full overflow-hidden rounded-full bg-secondary", className)}
+      className={cn(
+        children ? "relative" : "relative h-[3px] w-full overflow-hidden rounded-full bg-secondary",
+        className,
+      )}
       {...props}
     >
-      <ProgressPrimitive.Track className="h-full w-full">
-        <ProgressPrimitive.Indicator
-          data-slot="progress-indicator"
-          className="h-full rounded-full bg-primary transition-[width] duration-200 ease-out"
-        />
-      </ProgressPrimitive.Track>
+      {children ?? (
+        <ProgressTrack className="h-full w-full">
+          <ProgressIndicator />
+        </ProgressTrack>
+      )}
     </ProgressPrimitive.Root>
   );
 }
 
-export { Progress };
+function ProgressTrack({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressPrimitive.Track>) {
+  return <ProgressPrimitive.Track data-slot="progress-track" className={className} {...props} />;
+}
+
+function ProgressIndicator({
+  className,
+  ...props
+}: React.ComponentProps<typeof ProgressPrimitive.Indicator>) {
+  return (
+    <ProgressPrimitive.Indicator
+      data-slot="progress-indicator"
+      className={cn(
+        "h-full rounded-full bg-primary transition-[width] duration-200 ease-out",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export { Progress, ProgressTrack };

@@ -17,19 +17,14 @@ describe("PendingClock", () => {
   it("paces a clockwise countdown ring to two Gnosis block times", () => {
     const { container } = render(<PendingClock />);
     const clock = container.querySelector<HTMLElement>('[data-slot="pending-clock"]');
-    const indicator = container.querySelector<SVGCircleElement>(
-      '[data-slot="pending-clock-indicator"]',
-    );
+    const indicator = container.querySelector<HTMLElement>('[data-slot="pending-clock-indicator"]');
 
     expect(clock?.style.getPropertyValue("--pending-clock-duration")).toBe("10000ms");
-    expect(clock?.children).toHaveLength(1);
-    expect(clock?.querySelectorAll("circle")).toHaveLength(2);
+    expect(clock?.getAttribute("data-slot")).toBe("pending-clock");
+    expect(clock?.querySelector("svg")).toBeNull();
+    expect(indicator?.getAttribute("data-slot")).toBe("pending-clock-indicator");
     expect(indicator?.classList.contains("pending-clock-indicator")).toBe(true);
-    expect(indicator?.getAttribute("pathLength")).toBe("100");
-    expect(indicator?.getAttribute("stroke-dasharray")).toBe("100");
-    expect(indicator?.getAttribute("stroke-dashoffset")).toBe("0");
-    expect(indicator?.getAttribute("stroke-linecap")).toBe("butt");
-    expect(indicator?.getAttribute("transform")).toBe("rotate(-90 32 32)");
+    expect(indicator?.classList.contains("rounded-full")).toBe(true);
   });
 });
 
