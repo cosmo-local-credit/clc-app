@@ -2,9 +2,10 @@ import { z } from "zod";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
+import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
@@ -48,22 +49,18 @@ export const poolSproutLicenseSchema = z.literal(true, {
   error: "Accept the SPROUT License to publish your pool",
 });
 
-const poolUnitSchema = z.enum(["KES", "USD", "HOUR"]);
+const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
+  message: "Choose a currency",
+});
 
 /**
  * The pricing models a new pool may be published with.
  *
- * RelativeQuoter is deliberately absent. It prices from manually maintained
- * per-token rates, which nothing in this product maintains — clc-core dropped
- * `pool_tokens.exchange_rate` in migration 007 — so a pool published on it has
- * no rate source and quotes whatever was last written by hand. DecimalQuoter
- * covers the same ground without that: it derives every pair from token
- * decimals, holds no state, and needs no per-voucher configuration.
- *
- * The backend still deploys and records relative pools, so this is a narrowing
- * of what is offered, not of what exists — see `poolQuoterTypeSchema`.
+ * Relative pricing is the product default. Its per-token rates can be managed
+ * as vouchers join the pool, while unset rates start at parity. DecimalQuoter
+ * remains the stateless equal-value option and OracleQuoter uses live feeds.
  */
-const poolPricingSchema = z.enum(["oracle", "decimal"]);
+const poolPricingSchema = z.enum(["relative", "oracle", "decimal"]);
 
 /**
  * The pricing models a pool may *be*, which is the wider set.
@@ -127,7 +124,7 @@ export function poolCreateSchemaForChain(chainId: number) {
     .object({
       name: poolNameSchema,
       symbol: poolSymbolSchema,
-      unit: poolUnitSchema,
+      unitOfAccount: poolUnitSchema,
       description: poolDescriptionSchema,
       pricing: poolPricingSchema,
       feePolicyDefault: poolSwapFeeSchema,
@@ -137,21 +134,20 @@ export function poolCreateSchemaForChain(chainId: number) {
       email: optionalEmailSchema,
       website: optionalWebsiteSchema,
       phone: optionalPhoneSchema,
-      terms: optionalTermsUrlSchema,
+      terms: optionalTermsSchema,
       // Already uploaded by the time they reach the form: the picker uploads on
       // selection, so these hold a stored URL or nothing.
       imageUrl: optionalStoredImageUrlSchema,
-      bannerUrl: optionalStoredImageUrlSchema,
       acceptedTerms: poolTermsSchema,
       acceptedSproutLicense: poolSproutLicenseSchema,
     })
     .superRefine((value, ctx) => {
-      if (value.pricing !== "oracle" || hasPoolOracleBaseCurrency(value.unit, chainId)) {
+      if (value.pricing !== "oracle" || hasPoolOracleBaseCurrency(value.unitOfAccount, chainId)) {
         return;
       }
       ctx.addIssue({
         code: "custom",
-        path: ["unit"],
+        path: ["unitOfAccount"],
         message: "Choose rates you set or equal value when the unit has no price feed",
       });
     });
@@ -168,6 +164,7 @@ export type PoolDeployPayload = {
   feesDecoupled: boolean;
   feePolicyDefault: string;
   baseCurrency?: string;
+  unitOfAccount: string;
   description: string;
   email?: string;
   website?: string;
@@ -199,11 +196,13 @@ export function toPoolDeployPayload(
   owner: string,
   chainId: number,
 ): PoolDeployPayload {
-  if (input.pricing === "oracle" && !hasPoolOracleBaseCurrency(input.unit, chainId)) {
+  if (input.pricing === "oracle" && !hasPoolOracleBaseCurrency(input.unitOfAccount, chainId)) {
     throw new PoolOracleUnavailableError();
   }
   const baseCurrency =
-    input.pricing === "oracle" ? getPoolOracleBaseCurrency(input.unit, chainId) : undefined;
+    input.pricing === "oracle"
+      ? getPoolOracleBaseCurrency(input.unitOfAccount, chainId)
+      : undefined;
 
   return {
     name: input.name.trim(),
@@ -214,13 +213,13 @@ export function toPoolDeployPayload(
     feesDecoupled: Number(input.feePolicyDefault) > 0 && input.feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
     ...(baseCurrency ? { baseCurrency } : {}),
+    unitOfAccount: input.unitOfAccount,
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
     ...(input.imageUrl?.trim() ? { imageUrl: input.imageUrl.trim() } : {}),
-    ...(input.bannerUrl?.trim() ? { bannerUrl: input.bannerUrl.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,

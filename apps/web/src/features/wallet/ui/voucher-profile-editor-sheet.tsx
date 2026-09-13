@@ -5,7 +5,7 @@ import {
   isHttpUrl,
   optionalTermsTextSchema,
   optionalTermsUrlSchema,
-  VOUCHER_TERMS_TEXT_MAX,
+  TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -436,7 +436,7 @@ function VoucherProfileForm({
                         <Textarea
                           id="voucher-terms-text"
                           rows={8}
-                          maxLength={VOUCHER_TERMS_TEXT_MAX}
+                          maxLength={TERMS_TEXT_MAX}
                           className="font-mono text-[0.8125rem]"
                           value={field.state.value}
                           onChange={(event) => field.handleChange(event.target.value)}

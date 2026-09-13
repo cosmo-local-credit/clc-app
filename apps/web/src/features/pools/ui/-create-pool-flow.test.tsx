@@ -254,13 +254,13 @@ describe("CreatePoolFlow", () => {
       ),
     );
     expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
-    expect(screen.getByTestId("pool.banner-value").textContent).toBe("");
+    expect(screen.queryByText("Cover photo")).toBeNull();
 
     view.rerender(<CreatePoolFlow step="pool" />);
     expect((screen.getByLabelText("Pool Description") as HTMLTextAreaElement).value).toBe(
       "We grow and trade around Kilifi.",
     );
-    expect(screen.getByLabelText("Unit of Account").textContent).toContain("USD");
+    expect((screen.getByLabelText("Unit of Account") as HTMLInputElement).value).toContain("USD");
   });
 
   it("does not advance while a pool image is still uploading", () => {
@@ -283,6 +283,44 @@ describe("CreatePoolFlow", () => {
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
     expect(screen.getByText("Link to the terms that apply to this pool")).toBeTruthy();
+  });
+
+  it("lets the steward write pool terms as Markdown instead of linking", () => {
+    renderFlow(<CreatePoolFlow step="place" />);
+
+    fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
+    const terms = screen.getByLabelText("Shown to anyone joining this pool");
+    fireEvent.change(terms, {
+      target: { value: "# House rules\n\nSettle every **Friday**." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+
+    expect(screen.getByRole("heading", { level: 3, name: "House rules" })).toBeTruthy();
+    expect(screen.getByText("Friday", { selector: "strong" })).toBeTruthy();
+  });
+
+  it("defaults to relative pricing and offers equal and oracle pricing in Advanced", () => {
+    renderFlow(<CreatePoolFlow step="pool" />);
+    fireEvent.click(screen.getByText("Advanced"));
+
+    expect(
+      screen.getByRole("radio", { name: /Relative pricing/ }).hasAttribute("data-checked"),
+    ).toBe(true);
+    expect(screen.getByText("Equal value")).toBeTruthy();
+    expect(screen.getByText("Oracle pricing")).toBeTruthy();
+  });
+
+  it("searches the complete unit-of-account catalog", async () => {
+    renderFlow(<CreatePoolFlow step="pool" />);
+
+    const currency = screen.getByRole("combobox", { name: "Unit of Account" });
+    fireEvent.click(currency);
+    fireEvent.change(currency, { target: { value: "Tanzanian" } });
+    fireEvent.click(await screen.findByRole("option", { name: "TZS - Tanzanian Shilling" }));
+
+    await waitFor(() =>
+      expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
+    );
   });
 
   it("requires both linked legal agreements before publishing", () => {
@@ -360,10 +398,10 @@ describe("CreatePoolFlow", () => {
         symbol: "KGP1",
         decimals: "6",
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
-        quoterType: "oracle",
+        quoterType: "relative",
         feesDecoupled: false,
         feePolicyDefault: "0",
-        baseCurrency: "0x765DE816845861e75A25fCA122bb6898B8B1282a",
+        unitOfAccount: "USD",
         description: "A pool for Kilifi growers.",
         email: "steward@example.org",
         website: "https://kilifi.example",
@@ -380,7 +418,7 @@ describe("CreatePoolFlow", () => {
       history: expect.any(Object),
       destination: "/pools/create/receipt?trackingId=tracking-1",
     });
-    expect(deployMutateAsync.mock.calls[0]?.[0]).not.toHaveProperty("unit");
+    expect(deployMutateAsync.mock.calls[0]?.[0]).toHaveProperty("unitOfAccount", "USD");
     expect(deployMutateAsync.mock.calls[0]?.[0]).not.toHaveProperty("bannerUrl");
   });
 

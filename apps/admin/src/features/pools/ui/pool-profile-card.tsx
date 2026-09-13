@@ -1,4 +1,5 @@
 import type { UserPool } from "@clc/api/features/pools/client";
+import { isHttpUrl } from "@clc/core/lib/contact";
 
 import { ContractAddress } from "#/components/admin/chain-cells";
 import {
@@ -64,7 +65,11 @@ export function PoolProfileCard({ pool }: { pool: UserPool }) {
             <RecordExternalLink href={pool.website} />
           </RecordRow>
           <RecordRow label="Terms">
-            <RecordExternalLink href={pool.terms} />
+            {pool.terms && !isHttpUrl(pool.terms) ? (
+              <RecordData>{pool.terms}</RecordData>
+            ) : (
+              <RecordExternalLink href={pool.terms} />
+            )}
           </RecordRow>
           <RecordRow label="Tags">
             {pool.tags.length > 0 ? (

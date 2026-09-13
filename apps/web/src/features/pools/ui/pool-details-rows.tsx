@@ -1,4 +1,5 @@
 import type { PoolCreateInput } from "@clc/core/features/pools/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import { useLingui } from "@lingui/react/macro";
 
 import { InfoRow } from "#/components/ui/info-row";
@@ -14,10 +15,14 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
     <>
       <InfoRow label={t`Pool`}>{values.name}</InfoRow>
       <InfoRow label={t`Shortcode`}>{values.symbol}</InfoRow>
-      <InfoRow label={t`Unit`}>{values.unit}</InfoRow>
+      <InfoRow label={t`Unit of account`}>{values.unitOfAccount}</InfoRow>
       <InfoRow label={t`Description`}>{values.description}</InfoRow>
       <InfoRow label={t`Pricing`} muted>
-        {values.pricing === "oracle" ? t`Price feed` : t`Equal value`}
+        {values.pricing === "relative"
+          ? t`Relative pricing`
+          : values.pricing === "oracle"
+            ? t`Oracle pricing`
+            : t`Equal value`}
       </InfoRow>
       <InfoRow label={t`Swap fee`} muted>
         {values.feePolicyDefault}%
@@ -42,7 +47,7 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
         {values.phone || "—"}
       </InfoRow>
       <InfoRow label={t`Terms`} muted>
-        {values.terms || "—"}
+        {values.terms === "" ? "—" : isHttpUrl(values.terms) ? values.terms : t`Written below`}
       </InfoRow>
     </>
   );

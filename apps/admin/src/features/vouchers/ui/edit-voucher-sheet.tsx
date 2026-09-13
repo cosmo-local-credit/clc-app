@@ -27,7 +27,7 @@ import { clcApi } from "#/lib/api";
 import { isStorageConfigured } from "#/lib/storage";
 
 import { useUpdateVoucherProfile } from "../use-update-voucher-profile";
-import { UnitOfAccountCombobox } from "./unit-of-account-combobox";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 
 const optionalStoredImageSchema = z
   .string()

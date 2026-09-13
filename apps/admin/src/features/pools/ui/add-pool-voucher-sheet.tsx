@@ -41,6 +41,7 @@ import { useAddPoolVoucher } from "../use-add-pool-voucher";
 const CANDIDATE_PAGE_SIZE = 50;
 
 const PRICING_LABELS: Record<PoolPricing, string> = {
+  relative: "Relative rates",
   oracle: "Oracle feed",
   decimal: "Decimals only",
 };

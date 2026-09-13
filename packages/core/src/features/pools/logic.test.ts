@@ -15,7 +15,7 @@ import {
 const validPool: PoolCreateInput = {
   name: "Kilifi Growers",
   symbol: "KGP1",
-  unit: "KES",
+  unitOfAccount: "KES",
   description: "A pool for growers in Kilifi.",
   pricing: "oracle",
   feePolicyDefault: "1",
@@ -52,13 +52,13 @@ describe("poolCreateSchema", () => {
   });
 
   it("requires a configured base currency for price-feed pools", () => {
-    const result = poolCreateSchema.safeParse({ ...validPool, unit: "HOUR" });
+    const result = poolCreateSchema.safeParse({ ...validPool, unitOfAccount: "HOUR" });
 
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues).toContainEqual(
         expect.objectContaining({
-          path: ["unit"],
+          path: ["unitOfAccount"],
           message: "Choose rates you set or equal value when the unit has no price feed",
         }),
       );
@@ -83,7 +83,27 @@ describe("poolCreateSchema", () => {
 
   it("allows HOUR for pool pricing that does not need a base currency", () => {
     expect(
-      poolCreateSchema.safeParse({ ...validPool, unit: "HOUR", pricing: "decimal" }).success,
+      poolCreateSchema.safeParse({ ...validPool, unitOfAccount: "HOUR", pricing: "decimal" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("accepts relative pricing and the full currency catalog", () => {
+    expect(
+      poolCreateSchema.safeParse({
+        ...validPool,
+        unitOfAccount: "TZS",
+        pricing: "relative",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts pool terms written as Markdown", () => {
+    expect(
+      poolCreateSchema.safeParse({
+        ...validPool,
+        terms: "# Pool rules\n\nMembers settle every Friday.",
+      }).success,
     ).toBe(true);
   });
 
@@ -113,14 +133,15 @@ describe("poolCreateSchema", () => {
     );
   });
 
-  it("accepts only blank or valid HTTP terms URLs", () => {
+  it("accepts a URL or Markdown terms up to the shared limit", () => {
     expect(poolCreateSchema.safeParse({ ...validPool, terms: "" }).success).toBe(true);
     expect(
       poolCreateSchema.safeParse({ ...validPool, terms: "https://kilifi.example/terms" }).success,
     ).toBe(true);
-    expect(
-      poolCreateSchema.safeParse({ ...validPool, terms: "kilifi.example/terms" }).success,
-    ).toBe(false);
+    expect(poolCreateSchema.safeParse({ ...validPool, terms: "Pool rules" }).success).toBe(true);
+    expect(poolCreateSchema.safeParse({ ...validPool, terms: "a".repeat(5001) }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -156,6 +177,7 @@ describe("toPoolDeployPayload", () => {
       feesDecoupled: false,
       feePolicyDefault: "1",
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
+      unitOfAccount: "KES",
       description: "A pool for growers in Kilifi.",
       email: "steward@example.org",
       website: "https://kilifi.example",
@@ -186,9 +208,19 @@ describe("toPoolDeployPayload", () => {
     ).not.toHaveProperty("baseCurrency");
   });
 
+  it("sends the unit of account for every pricing strategy", () => {
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, pricing: "relative", unitOfAccount: "TZS" },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).unitOfAccount,
+    ).toBe("TZS");
+  });
+
   it("guards the payload against an oracle unit without a feed", () => {
     expect(() =>
-      toPoolDeployPayload({ ...validPool, unit: "HOUR" }, OWNER, CELO_MAINNET_CHAIN_ID),
+      toPoolDeployPayload({ ...validPool, unitOfAccount: "HOUR" }, OWNER, CELO_MAINNET_CHAIN_ID),
     ).toThrow(PoolOracleUnavailableError);
   });
 
@@ -243,6 +275,7 @@ describe("getPoolDeploymentStages", () => {
   it("derives the decimal deployment count and omits its pricing stage", () => {
     expect(poolDeploymentContractCount("decimal")).toBe(4);
     expect(poolDeploymentContractCount("oracle")).toBe(5);
+    expect(poolDeploymentContractCount("relative")).toBe(5);
     expect(getPoolDeploymentStages([], stageLabels, statusLabels, "decimal")).toHaveLength(4);
   });
 });

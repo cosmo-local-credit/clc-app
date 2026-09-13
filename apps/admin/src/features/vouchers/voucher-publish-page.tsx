@@ -46,7 +46,7 @@ import { isStorageConfigured } from "#/lib/storage";
 import { DEFAULT_PAGE_SIZE } from "#/lib/table-search";
 
 import { useVoucherPublishDeployment } from "./use-voucher-publish-deployment";
-import { UnitOfAccountCombobox } from "./ui/unit-of-account-combobox";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 
 const TYPE_OPTIONS = [
   { value: "standard", label: "Standard" },
