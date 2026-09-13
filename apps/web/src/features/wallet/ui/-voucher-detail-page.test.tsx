@@ -648,7 +648,7 @@ describe("VoucherDetailPage", () => {
     expect(description.parentElement?.className).toContain("bg-card");
 
     const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
-    expect(labels).toEqual(["Contract address", "Email", "Website", "Phone", "Issuer"]);
+    expect(labels).toEqual(["Contract address", "Email", "Website", "Phone", "Terms", "Issuer"]);
     expect(
       Array.from(panel.querySelectorAll("dl > div")).every((row) => row.className.includes("h-12")),
     ).toBe(true);
@@ -664,6 +664,9 @@ describe("VoucherDetailPage", () => {
     const website = screen.getByText("https://example.org");
     expect(website.getAttribute("target")).toBe("_blank");
     expect(website.getAttribute("rel")).toContain("noopener");
+    const terms = screen.getByText("https://example.org/terms");
+    expect(terms.getAttribute("href")).toBe("https://example.org/terms");
+    expect(terms.getAttribute("target")).toBe("_blank");
 
     const location = screen.getByText("C96, KEN");
     expect(location.className).toContain("text-sm");
@@ -683,6 +686,20 @@ describe("VoucherDetailPage", () => {
       lat: -1.450979,
       lng: 38.235115,
     });
+  });
+
+  it("renders terms written by the issuer as Markdown in their own panel", () => {
+    mocks.detailResult.data = detail({
+      terms: "# House rules\n\nRedeemable at the **Saturday** market only.",
+    });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    const panel = screen.getByRole("tabpanel");
+    const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
+    expect(labels).not.toContain("Terms");
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+    expect(screen.getByText("Saturday").tagName).toBe("STRONG");
+    expect(screen.getByText("Terms").closest("div")?.className).toContain("bg-card");
   });
 
   it("omits absent email and phone rows", () => {

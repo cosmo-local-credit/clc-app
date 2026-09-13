@@ -96,19 +96,6 @@ describe("voucherCreateSchema", () => {
     ).toBe(false);
   });
 
-  it("accepts only blank or valid HTTP terms URLs", () => {
-    expect(voucherCreateSchema.safeParse({ ...validVoucher, terms: "" }).success).toBe(true);
-    expect(
-      voucherCreateSchema.safeParse({
-        ...validVoucher,
-        terms: "https://kilifi.example/terms",
-      }).success,
-    ).toBe(true);
-    expect(
-      voucherCreateSchema.safeParse({ ...validVoucher, terms: "kilifi.example/terms" }).success,
-    ).toBe(false);
-  });
-
   it("requires both legal agreements", () => {
     const withoutTerms = voucherCreateSchema.safeParse({ ...validVoucher, acceptedTerms: false });
     const withoutPathLicense = voucherCreateSchema.safeParse({
@@ -132,6 +119,19 @@ describe("voucherCreateSchema", () => {
     expect(
       voucherCreateSchema.safeParse({ ...validVoucher, iconUrl: "data:image/png;base64,abc" })
         .success,
+    ).toBe(false);
+  });
+});
+
+describe("voucherCreateSchema terms", () => {
+  it("accepts a link, written Markdown, or nothing", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, terms: "" }).success).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, terms: "# Rules\n\nMarket days only." })
+        .success,
+    ).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, terms: "x".repeat(5001) }).success,
     ).toBe(false);
   });
 });

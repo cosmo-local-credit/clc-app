@@ -1,6 +1,7 @@
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import {
@@ -30,6 +31,7 @@ import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { ReportList } from "#/components/reports/report-list";
 import { InfoRow } from "#/components/ui/info-row";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
@@ -176,6 +178,7 @@ export function VoucherDetailPage({
   const rate = formatVoucherRate(voucherValue, voucherUoa);
   const description = detail?.description ?? poolVoucher?.description ?? null;
   const website = detail?.website ?? null;
+  const terms = detail?.terms ?? null;
   const locationName = detail?.locationName ?? poolVoucher?.locationName ?? token.location ?? null;
   const lat = detail?.lat ?? token.lat ?? null;
   const lng = detail?.lng ?? token.lng ?? null;
@@ -359,6 +362,7 @@ export function VoucherDetailPage({
           email={token.email ?? null}
           website={website}
           phone={token.phone ?? null}
+          terms={terms}
           issuerAddress={token.owner ?? null}
           locationName={locationName}
           lat={lat}
@@ -733,6 +737,7 @@ function VoucherInfoPanel({
   email,
   website,
   phone,
+  terms,
   issuerAddress,
   locationName,
   lat,
@@ -745,6 +750,8 @@ function VoucherInfoPanel({
   email: string | null;
   website: string | null;
   phone: string | null;
+  /** Either a link to the issuer's terms or the terms themselves, as Markdown. */
+  terms: string | null;
   issuerAddress: string | null;
   locationName: string | null;
   lat: number | null;
@@ -832,10 +839,31 @@ function VoucherInfoPanel({
             </a>
           </InfoRow>
         ) : null}
+        {terms && isHttpUrl(terms) ? (
+          <InfoRow label={t`Terms`}>
+            <a
+              href={terms}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="max-w-full truncate underline underline-offset-2"
+            >
+              {terms}
+            </a>
+          </InfoRow>
+        ) : null}
         <InfoRow label={t`Issuer`}>
           {issuerAddress ? <EllipsizedAddress address={issuerAddress} /> : "—"}
         </InfoRow>
       </dl>
+
+      {terms && !isHttpUrl(terms) ? (
+        <div className="border border-border bg-card p-4">
+          <p className="font-heading text-sm font-semibold leading-snug">
+            <Trans>Terms</Trans>
+          </p>
+          <MarkdownContent className="mt-2">{terms}</MarkdownContent>
+        </div>
+      ) : null}
 
       {locationLabel ? (
         <div className="border border-border bg-card p-4">

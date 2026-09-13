@@ -4,7 +4,7 @@ import { voucherDescriptionSchema, voucherPriceSchema } from "@clc/core/features
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -71,7 +71,7 @@ const profileSchema = z
     email: optionalEmailSchema,
     website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
+    terms: optionalTermsSchema,
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
     iconUrl: optionalStoredImageSchema,
@@ -365,15 +365,17 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             {(field) => (
               <Field
                 htmlFor={field.name}
-                label="Terms URL"
+                label="Terms"
+                hint="A link to the terms, or the terms themselves written as Markdown."
                 error={getFieldError(field.state.meta.errors)}
               >
-                <Input
+                <Textarea
                   id={field.name}
-                  inputMode="url"
+                  rows={3}
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                 />
               </Field>
             )}

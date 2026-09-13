@@ -15,10 +15,13 @@ import {
 } from "@clc/core/features/vouchers/logic";
 import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import {
+  isHttpUrl,
   optionalEmailSchema,
   optionalPhoneSchema,
+  optionalTermsTextSchema,
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
+  VOUCHER_TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
 import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -33,15 +36,18 @@ import { useConnection } from "wagmi";
 
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
-import { Field } from "#/components/ui/field";
+import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
 import { StepProgress } from "#/components/ui/step-progress";
+import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { Toggle } from "#/components/ui/toggle";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
@@ -76,6 +82,8 @@ type VoucherFormValues = {
   website: string;
   phone: string;
   terms: string;
+  /** Form-only: whether `terms` is a link or the terms themselves. */
+  termsMode: "url" | "text";
   iconUrl: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
@@ -97,6 +105,7 @@ const DEFAULT_VALUES: VoucherFormValues = {
   website: "",
   phone: "",
   terms: "",
+  termsMode: "url",
   iconUrl: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
@@ -136,10 +145,31 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   });
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
+  const [termsPreview, setTermsPreview] = useState(false);
 
+  const defaultValues: VoucherFormValues = draft
+    ? {
+        ...draft,
+        iconUrl: draft.iconUrl ?? "",
+        termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+      }
+    : DEFAULT_VALUES;
   const form = useForm({
-    defaultValues: draft ?? DEFAULT_VALUES,
-    validators: { onSubmit: voucherCreateSchema },
+    defaultValues,
+    validators: {
+      // A function rather than the schema itself: the form carries `termsMode`,
+      // which the schema neither knows nor needs, so the two types differ.
+      onSubmit: ({ value }) => {
+        const result = voucherCreateSchema.safeParse(value);
+        if (result.success) return undefined;
+        const fields: Record<string, string> = {};
+        for (const issue of result.error.issues) {
+          const key = issue.path.map(String).join(".");
+          if (key !== "" && !(key in fields)) fields[key] = issue.message;
+        }
+        return { fields };
+      },
+    },
     onSubmit: async ({ value }) => {
       if (!address) {
         toast.error(t`Connect your wallet before publishing.`);
@@ -785,29 +815,126 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <form.Field
-                name="terms"
-                validators={{ onBlur: optionalTermsUrlSchema, onSubmit: optionalTermsUrlSchema }}
-              >
-                {(field) => (
-                  <Field
-                    label={t`Terms URL`}
-                    htmlFor="voucher-terms-url"
-                    hint={t`Link to the terms that apply to this voucher`}
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Input
-                      id="voucher-terms-url"
-                      type="url"
-                      inputMode="url"
-                      autoComplete="url"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      placeholder="https://example.com/terms"
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
-                  </Field>
+              <form.Field name="termsMode">
+                {(modeField) => (
+                  <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-sm">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <label className="flex items-center gap-2 text-muted-foreground text-xs">
+                        <Trans>Write my own</Trans>
+                        <Switch
+                          checked={modeField.state.value === "text"}
+                          onCheckedChange={(checked) => {
+                            modeField.handleChange(checked ? "text" : "url");
+                            // A link and a body of text are different things;
+                            // one does not become the other by flipping the switch.
+                            form.setFieldValue("terms", "");
+                            setTermsPreview(false);
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {modeField.state.value === "text" ? (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsTextSchema,
+                          onSubmit: optionalTermsTextSchema,
+                        }}
+                      >
+                        {(field) => (
+                          <div className="mt-1.5">
+                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                              <label
+                                htmlFor="voucher-terms-text"
+                                className="text-muted-foreground text-xs"
+                              >
+                                <Trans>Shown to anyone holding this voucher</Trans>
+                              </label>
+                              <Toggle
+                                variant="outline"
+                                pressed={termsPreview}
+                                onPressedChange={setTermsPreview}
+                                aria-label={t`Preview`}
+                              >
+                                <Trans>Preview</Trans>
+                              </Toggle>
+                            </div>
+                            {termsPreview ? (
+                              <div className="min-h-24 border border-border bg-card p-3">
+                                {field.state.value.trim() === "" ? (
+                                  <p className="text-muted-foreground text-sm">
+                                    <Trans>Nothing to preview yet.</Trans>
+                                  </p>
+                                ) : (
+                                  <MarkdownContent>{field.state.value}</MarkdownContent>
+                                )}
+                              </div>
+                            ) : (
+                              <Textarea
+                                id="voucher-terms-text"
+                                rows={8}
+                                maxLength={VOUCHER_TERMS_TEXT_MAX}
+                                className="font-mono text-[0.8125rem]"
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder={t`Redeemable at our stall on market days...`}
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                            )}
+                            {getFieldError(field.state.meta.errors) ? (
+                              <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
+                            ) : (
+                              <p className="mt-1 text-muted-foreground text-xs">
+                                <Trans>
+                                  Markdown: **bold**, # headings, - lists, [links](https://…)
+                                </Trans>
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    ) : (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsUrlSchema,
+                          onSubmit: optionalTermsUrlSchema,
+                        }}
+                      >
+                        {(field) => {
+                          const error = getFieldError(field.state.meta.errors);
+                          return (
+                            <div className="mt-1.5">
+                              <Input
+                                id="voucher-terms-url"
+                                type="url"
+                                inputMode="url"
+                                autoComplete="url"
+                                aria-label={t`Terms URL`}
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder="https://example.com/terms"
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                              {error ? (
+                                <FieldError error={error} />
+                              ) : (
+                                <p className="mt-1 text-muted-foreground text-xs">
+                                  <Trans>Link to the terms that apply to this voucher</Trans>
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }}
+                      </form.Field>
+                    )}
+                  </div>
                 )}
               </form.Field>
             </div>
@@ -836,9 +963,19 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
-                <dl className="mt-3.5 border border-border bg-card">
-                  <VoucherDetailsRows values={values} />
-                </dl>
+                <>
+                  <dl className="mt-3.5 border border-border bg-card">
+                    <VoucherDetailsRows values={values} />
+                  </dl>
+                  {values.terms !== "" && !isHttpUrl(values.terms) ? (
+                    <div className="mt-3.5 border border-border bg-card p-4">
+                      <p className="font-heading text-sm font-semibold leading-snug">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>
+                    </div>
+                  ) : null}
+                </>
               )}
             </form.Subscribe>
 

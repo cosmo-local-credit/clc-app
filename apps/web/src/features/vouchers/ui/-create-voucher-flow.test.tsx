@@ -292,6 +292,61 @@ describe("CreateVoucherFlow", () => {
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
     expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
+    expect(screen.queryByLabelText("Shown to anyone holding this voucher")).toBeNull();
+  });
+
+  it("lets the issuer write their own terms as Markdown instead of linking", async () => {
+    deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "place" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="place" />);
+
+    fireEvent.change(screen.getByLabelText("Terms URL"), {
+      target: { value: "https://kilifi.example/terms" },
+    });
+    fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
+
+    // Flipping the switch discards the link: a URL is not a body of terms.
+    const editor = screen.getByLabelText("Shown to anyone holding this voucher");
+    expect((editor as HTMLTextAreaElement).value).toBe("");
+    expect(screen.queryByLabelText("Terms URL")).toBeNull();
+
+    fireEvent.change(editor, {
+      target: { value: "# House rules\n\nRedeemable on **market days** only." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+    expect(screen.getByText("market days").tagName).toBe("STRONG");
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "review" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="review" />);
+    expect(screen.getByText("Written below")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
+    expect(deployMutateAsync.mock.calls[0]?.[0]).toMatchObject({
+      terms: "# House rules\n\nRedeemable on **market days** only.",
+    });
   });
 
   it("does not advance while a voucher image is still uploading", () => {
