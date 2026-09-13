@@ -9,6 +9,7 @@ import {
 
 import { Trans } from "@lingui/react/macro";
 import { Badge } from "#/components/ui/badge";
+import { Progress, ProgressTrack } from "#/components/ui/progress";
 import { cn } from "#/lib/utils";
 import { CHAIN_INFO } from "#/lib/chain";
 
@@ -89,29 +90,18 @@ export function PendingClock({ className }: { className?: string }) {
   } as CSSProperties;
 
   return (
-    <span
-      className={cn("relative block size-14 rounded-full", className)}
+    <Progress
+      value={null}
+      aria-hidden="true"
       data-slot="pending-clock"
+      className={cn("block size-14 bg-transparent", className)}
       style={animationStyle}
     >
-      <svg viewBox="0 0 64 64" className="pointer-events-none size-14" aria-hidden="true">
-        <circle cx="32" cy="32" r="28" fill="none" strokeWidth="2" className="stroke-warning/25" />
-        <circle
-          cx="32"
-          cy="32"
-          r="28"
-          fill="none"
-          pathLength="100"
-          strokeDasharray="100"
-          strokeDashoffset="0"
-          strokeLinecap="butt"
-          strokeWidth="2"
-          transform="rotate(-90 32 32)"
-          className="pending-clock-indicator stroke-warning"
-          data-slot="pending-clock-indicator"
-        />
-      </svg>
-    </span>
+      <ProgressTrack
+        className="pending-clock-indicator size-full rounded-full"
+        data-slot="pending-clock-indicator"
+      />
+    </Progress>
   );
 }
 
