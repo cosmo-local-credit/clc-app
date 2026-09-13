@@ -46,6 +46,37 @@ export const voucherPathLicenseSchema = z.literal(true, {
   error: "Accept the PATH License to publish your voucher",
 });
 
+const voucherDisplayNameSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Display name is required" })
+  .max(120, { message: "Display name must be 120 characters or fewer" });
+
+/**
+ * The text of a deployed voucher's catalog record, as its owner or a steward may
+ * correct it after the fact. Description and value reuse the publish rules so a
+ * voucher cannot be edited into a state its create form would have rejected,
+ * but both also accept "" because clearing a field is a legitimate correction
+ * and imported rows may never have had one. Terms is validated by length only;
+ * a form with a link/text switch applies the narrower schema per mode.
+ */
+export const voucherProfileTextSchema = z.object({
+  displayName: voucherDisplayNameSchema,
+  description: voucherDescriptionSchema.or(z.literal("")),
+  voucherUoa: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
+      message: "Use letters and numbers, for example KES",
+    }),
+  voucherValue: voucherPriceSchema.or(z.literal("")),
+  email: optionalEmailSchema,
+  website: optionalWebsiteSchema,
+  phone: optionalPhoneSchema,
+  terms: optionalTermsSchema,
+});
+
 export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
   message: "Choose a currency",
 });

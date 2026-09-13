@@ -336,27 +336,69 @@ function detailResponse(voucher: unknown) {
   } as Response;
 }
 
-describe("updateVoucherDisplayName", () => {
-  it("PUTs the label to the owner route and returns the fresh record", async () => {
+describe("updateVoucherProfile", () => {
+  const profile = {
+    displayName: "Malii Fresh",
+    description: "A basket of fresh food",
+    voucherUoa: "KES",
+    voucherValue: 10,
+    email: "  ",
+    website: "",
+    phone: " +254700000000 ",
+    terms: "",
+    locationName: "Kilifi",
+    geoLat: -3.5,
+    geoLng: 39.9,
+    tags: ["food"],
+  };
+
+  it("PUTs the whole record to the owner route and returns the fresh row", async () => {
     fetchMock.mockResolvedValue(
       detailResponse({ ...DETAIL_ROW, name: "Malii Fresh", contractName: "Priscilah Malii" }),
     );
 
-    const voucher = await api.updateVoucherDisplayName(DETAIL_ROW.address, "Malii Fresh");
+    const voucher = await api.updateVoucherProfile(DETAIL_ROW.address, profile);
 
-    expect(requestedUrl()).toBe(
-      `https://api.test/api/v2/vouchers/${DETAIL_ROW.address}/display-name`,
-    );
+    expect(requestedUrl()).toBe(`https://api.test/api/v2/vouchers/${DETAIL_ROW.address}/profile`);
     expect(requestedInit().method).toBe("PUT");
     expect(requestedInit().cache).toBe("no-store");
-    expect(JSON.parse(requestedInit().body as string)).toEqual({ displayName: "Malii Fresh" });
+    expect(JSON.parse(requestedInit().body as string)).toEqual({
+      displayName: "Malii Fresh",
+      description: "A basket of fresh food",
+      voucherUoa: "KES",
+      voucherValue: 10,
+      email: null,
+      website: null,
+      phone: "+254700000000",
+      terms: null,
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
     expect(voucher.name).toBe("Malii Fresh");
     expect(voucher.contractName).toBe("Priscilah Malii");
   });
 
+  // Omitting these keys is what tells clc-core to keep the stored value; a
+  // form that never touched them must not erase them.
+  it("sends the display name and images only when the caller supplied them", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    const { displayName: _displayName, ...withoutLabel } = profile;
+    await api.updateVoucherProfile(DETAIL_ROW.address, withoutLabel);
+    let body = JSON.parse(requestedInit().body as string) as Record<string, unknown>;
+    expect("displayName" in body).toBe(false);
+    expect("iconUrl" in body).toBe(false);
+
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, { ...profile, iconUrl: "" });
+    body = JSON.parse(requestedInit(1).body as string) as Record<string, unknown>;
+    expect(body.iconUrl).toBe("");
+  });
+
   it("rejects a response without a usable voucher", async () => {
     fetchMock.mockResolvedValue(detailResponse(null));
-    await expect(api.updateVoucherDisplayName(DETAIL_ROW.address, "X")).rejects.toThrow(
+    await expect(api.updateVoucherProfile(DETAIL_ROW.address, profile)).rejects.toThrow(
       /valid address/,
     );
   });

@@ -13,7 +13,8 @@ import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
 import { LocationMap } from "./location-map.lazy";
 
 type LocationPickerProps = {
-  value: LocationInput | undefined;
+  /** The country is only ever produced by the picker, so a stored place may omit it. */
+  value: (Omit<LocationInput, "country"> & { country?: string }) | undefined;
   onChange: (value: LocationInput | undefined) => void;
   error?: string;
   label?: string;

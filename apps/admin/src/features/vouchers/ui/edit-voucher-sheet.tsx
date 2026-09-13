@@ -1,12 +1,6 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { voucherDescriptionSchema, voucherPriceSchema } from "@clc/core/features/vouchers/logic";
-import {
-  optionalEmailSchema,
-  optionalPhoneSchema,
-  optionalTermsSchema,
-  optionalWebsiteSchema,
-} from "@clc/core/lib/contact";
+import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -42,36 +36,12 @@ const optionalStoredImageSchema = z
   });
 
 /**
- * Contact validation is the product's, not this screen's: the same optional
- * email, E.164 phone and URL rules apply here, in signup, on a pool's record and
- * on the voucher publish form, and clc-core validates the same shapes on the way
- * in.
- *
- * Description and value reuse the publish schemas, so a voucher cannot be edited
- * into a state its own create form would have rejected. Both accept "" as well,
- * because the endpoint does: clearing a field is a legitimate correction, and the
- * catalog holds imported rows that never had either.
+ * The text fields are the product's shared profile rules, so a voucher cannot be
+ * edited here into a state the owner's own editor or the publish form would
+ * reject. Images and the pin are this console's additions.
  */
-const profileSchema = z
-  .object({
-    displayName: z
-      .string()
-      .trim()
-      .min(1, { message: "Display name is required" })
-      .max(120, { message: "Display name must be 120 characters or fewer" }),
-    description: voucherDescriptionSchema.or(z.literal("")),
-    voucherUoa: z
-      .string()
-      .trim()
-      .toUpperCase()
-      .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
-        message: "Use letters and numbers, for example KES",
-      }),
-    voucherValue: voucherPriceSchema.or(z.literal("")),
-    email: optionalEmailSchema,
-    website: optionalWebsiteSchema,
-    phone: optionalPhoneSchema,
-    terms: optionalTermsSchema,
+const profileSchema = voucherProfileTextSchema
+  .extend({
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
     iconUrl: optionalStoredImageSchema,

@@ -38,6 +38,7 @@ import {
   type BackendMarketVoucherDetail,
   type MarketVoucherDetail,
   normalizeMarketVoucherDetail,
+  serializeVoucherProfileUpdate,
   type VoucherProfileUpdate,
 } from "../market/client";
 import {
@@ -646,31 +647,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
     async updateVoucherProfile(address, profile, signal) {
       const result = await http.request<BackendAdminVoucherEnvelope>(
         `/api/v2/admin/vouchers/${encodeURIComponent(address)}/profile`,
-        {
-          method: "PUT",
-          signal,
-          body: JSON.stringify({
-            description: emptyToNull(profile.description),
-            // Display name is a separate override rather than a replacement for
-            // the ERC20 name. Omission preserves it; "" deliberately clears it.
-            ...(profile.displayName === undefined ? {} : { displayName: profile.displayName }),
-            voucherUoa: emptyToNull(profile.voucherUoa),
-            voucherValue: profile.voucherValue,
-            email: emptyToNull(profile.email),
-            website: emptyToNull(profile.website),
-            phone: emptyToNull(profile.phone),
-            terms: emptyToNull(profile.terms),
-            locationName: emptyToNull(profile.locationName),
-            geoLat: profile.geoLat,
-            geoLng: profile.geoLng,
-            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
-            // two, so null means "leave the stored image alone" and "" is the only
-            // way to remove one. Omitted entirely when the caller has no opinion.
-            ...(profile.iconUrl === undefined ? {} : { iconUrl: profile.iconUrl }),
-            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
-            tags: profile.tags,
-          }),
-        },
+        { method: "PUT", signal, body: JSON.stringify(serializeVoucherProfileUpdate(profile)) },
       );
       const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
       if (!voucher) throw new Error("Voucher update response did not include a valid address.");

@@ -123,7 +123,7 @@ export type BackendMarketVoucherDetail = BackendMarketVoucher &
   }>;
 
 /**
- * A voucher's editable off-chain record, as the admin write accepts it.
+ * A voucher's editable off-chain record, as the owner and admin writes accept it.
  *
  * Assign-all, exactly like `PoolProfileUpdate`: the caller sends the whole record
  * and an empty string clears the field, because clc-core writes every column it
@@ -153,6 +153,38 @@ export type VoucherProfileUpdate = {
   bannerUrl?: string;
   tags: string[];
 };
+
+function emptyToNull(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/**
+ * The wire shape of a profile write, shared by the owner and admin routes.
+ *
+ * Blank text becomes null because clc-core writes every column it receives.
+ * The display name and the two images are the exceptions: omitted preserves
+ * them, and "" is the only way to clear one, so they pass through untouched and
+ * only when the caller supplied them.
+ */
+export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
+  return {
+    description: emptyToNull(profile.description),
+    ...(profile.displayName === undefined ? {} : { displayName: profile.displayName }),
+    voucherUoa: emptyToNull(profile.voucherUoa),
+    voucherValue: profile.voucherValue,
+    email: emptyToNull(profile.email),
+    website: emptyToNull(profile.website),
+    phone: emptyToNull(profile.phone),
+    terms: emptyToNull(profile.terms),
+    locationName: emptyToNull(profile.locationName),
+    geoLat: profile.geoLat,
+    geoLng: profile.geoLng,
+    ...(profile.iconUrl === undefined ? {} : { iconUrl: profile.iconUrl }),
+    ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
+    tags: profile.tags,
+  };
+}
 
 type BackendMarketVoucherPage = {
   vouchers?: BackendMarketVoucher[] | null;
@@ -222,19 +254,22 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
       return voucher;
     },
 
-    /** Updates only the owner-managed public label, never the deployed ERC20 name. */
-    async updateVoucherDisplayName(
+    /**
+     * The owner's write to their voucher's catalog record. Same payload and
+     * semantics as the admin route; only the authorization differs.
+     */
+    async updateVoucherProfile(
       address: string,
-      displayName: string,
+      profile: VoucherProfileUpdate,
       signal?: AbortSignal,
     ): Promise<MarketVoucherDetail> {
       const result = await http.request<{ voucher?: BackendMarketVoucherDetail | null }>(
-        `/api/v2/vouchers/${encodeURIComponent(address)}/display-name`,
+        `/api/v2/vouchers/${encodeURIComponent(address)}/profile`,
         {
           method: "PUT",
           cache: "no-store",
           signal,
-          body: JSON.stringify({ displayName }),
+          body: JSON.stringify(serializeVoucherProfileUpdate(profile)),
         },
       );
       const voucher = normalizeMarketVoucherDetail(result.voucher);

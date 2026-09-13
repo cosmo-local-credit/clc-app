@@ -49,6 +49,21 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Invalid location",
         message: "Invalid location",
       });
+    case "Display name is required":
+      return i18n._({
+        id: "Display name is required",
+        message: "Display name is required",
+      });
+    case "Display name must be 120 characters or fewer":
+      return i18n._({
+        id: "Display name must be 120 characters or fewer",
+        message: "Display name must be 120 characters or fewer",
+      });
+    case "Use letters and numbers, for example KES":
+      return i18n._({
+        id: "Use letters and numbers, for example KES",
+        message: "Use letters and numbers, for example KES",
+      });
     case "Voucher name is required":
       return i18n._({
         id: "Voucher name is required",
