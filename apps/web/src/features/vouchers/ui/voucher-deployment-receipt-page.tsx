@@ -359,37 +359,50 @@ export function VoucherDeploymentReceiptPage({
           </div>
         </div>
 
-        <div className="mt-6">
-          <Field label={t`Create vouchers`} htmlFor="voucher-supply" error={supplyError}>
-            <Input
-              id="voucher-supply"
-              inputMode="decimal"
-              value={supply}
-              onChange={(event) => {
-                setSupply(event.target.value);
-                setSupplyError(null);
-              }}
-              placeholder="0"
-              disabled={
-                minting ||
-                supplyChecking ||
-                supplyCheckFailed ||
-                trackingUnavailable ||
-                ownerUnavailable ||
-                ownerMismatch ||
-                walletPreparing
-              }
-              aria-invalid={supplyError !== null}
-            />
-          </Field>
-          {supplyValue ? (
-            <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
-              <Trans>
-                Value: {supplyValue.value} {supplyValue.unit}
-              </Trans>
-            </p>
-          ) : null}
-        </div>
+        {mintAmount ? (
+          // The amount was chosen while creating the voucher; asking again here
+          // would be the same question twice. The input below is the recovery
+          // path for a receipt opened without it.
+          <dl className="mt-6 border border-border bg-card">
+            <InfoRow label={t`Supply`}>
+              {supplyValue
+                ? `${supplyValue.value} ${supplyValue.unit}`
+                : `${supply} ${contract.symbol}`}
+            </InfoRow>
+          </dl>
+        ) : (
+          <div className="mt-6">
+            <Field label={t`Create vouchers`} htmlFor="voucher-supply" error={supplyError}>
+              <Input
+                id="voucher-supply"
+                inputMode="decimal"
+                value={supply}
+                onChange={(event) => {
+                  setSupply(event.target.value);
+                  setSupplyError(null);
+                }}
+                placeholder="0"
+                disabled={
+                  minting ||
+                  supplyChecking ||
+                  supplyCheckFailed ||
+                  trackingUnavailable ||
+                  ownerUnavailable ||
+                  ownerMismatch ||
+                  walletPreparing
+                }
+                aria-invalid={supplyError !== null}
+              />
+            </Field>
+            {supplyValue ? (
+              <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
+                <Trans>
+                  Value: {supplyValue.value} {supplyValue.unit}
+                </Trans>
+              </p>
+            ) : null}
+          </div>
+        )}
 
         <AdvancedDeploymentDetails className="mt-3.5">{detailRows}</AdvancedDeploymentDetails>
 
