@@ -1,3 +1,4 @@
+import { getAddress, isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 import {
   optionalEmailSchema,
@@ -34,11 +35,47 @@ export const poolDescriptionSchema = z
   .min(3, { message: "Pool description must be at least 3 characters" })
   .max(500, { message: "Pool description must be 500 characters or fewer" });
 
+/**
+ * The text of a deployed pool's catalog record, as its owner or a steward may
+ * correct it after the fact. The display name reuses the publish rule for a
+ * pool name and the description reuses its publish rule too, so a pool cannot
+ * be edited into a state its create form would have rejected; the description
+ * also accepts "" because clearing a field is a legitimate correction and
+ * imported rows may never have had one. Terms is validated by length only; a
+ * form with a link/text switch applies the narrower schema per mode.
+ */
+export const poolProfileTextSchema = z.object({
+  displayName: poolNameSchema,
+  description: poolDescriptionSchema.or(z.literal("")),
+  unitOfAccount: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
+      message: "Use letters and numbers, for example KES",
+    }),
+  email: optionalEmailSchema,
+  website: optionalWebsiteSchema,
+  phone: optionalPhoneSchema,
+  terms: optionalTermsSchema,
+});
+
 export const poolSwapFeeSchema = z
   .string()
   .trim()
   .refine((value) => Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100, {
     message: "Swap fee must be a number from 0 to 100",
+  });
+
+/**
+ * Where decoupled swap fees are paid. Blank means the pool owner, which is what
+ * the deploy defaults to; anything else has to be a real account.
+ */
+export const poolFeeAddressSchema = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || (isAddress(value) && value.toLowerCase() !== zeroAddress), {
+    message: "Enter a valid wallet address",
   });
 
 export const poolTermsSchema = z.literal(true, {
@@ -129,6 +166,7 @@ export function poolCreateSchemaForChain(chainId: number) {
       pricing: poolPricingSchema,
       feePolicyDefault: poolSwapFeeSchema,
       feesDecoupled: z.boolean(),
+      feeAddress: poolFeeAddressSchema,
       location: locationSchema,
       tags: z.array(z.string()),
       email: optionalEmailSchema,
@@ -163,6 +201,8 @@ export type PoolDeployPayload = {
   quoterType: PoolPricing;
   feesDecoupled: boolean;
   feePolicyDefault: string;
+  /** Present only when fees are decoupled: the account they are paid to. */
+  feeAddress?: string;
   baseCurrency?: string;
   unitOfAccount: string;
   description: string;
@@ -204,14 +244,20 @@ export function toPoolDeployPayload(
       ? getPoolOracleBaseCurrency(input.unitOfAccount, chainId)
       : undefined;
 
+  const feesDecoupled = Number(input.feePolicyDefault) > 0 && input.feesDecoupled;
+  // Fees held in liquidity have no recipient. Held apart, they go to the
+  // address the steward named, or to the owner when they left it blank.
+  const feeAddress = input.feeAddress.trim();
+
   return {
     name: input.name.trim(),
     symbol: input.symbol.trim(),
     decimals: "6",
     owner,
     quoterType: input.pricing,
-    feesDecoupled: Number(input.feePolicyDefault) > 0 && input.feesDecoupled,
+    feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
+    ...(feesDecoupled ? { feeAddress: feeAddress ? getAddress(feeAddress) : owner } : {}),
     ...(baseCurrency ? { baseCurrency } : {}),
     unitOfAccount: input.unitOfAccount,
     description: input.description.trim(),

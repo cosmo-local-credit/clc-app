@@ -20,6 +20,7 @@ const validPool: PoolCreateInput = {
   pricing: "oracle",
   feePolicyDefault: "1",
   feesDecoupled: false,
+  feeAddress: "",
   location: {
     locationName: "Kilifi, Kenya",
     country: "KE",
@@ -165,6 +166,25 @@ describe("toPoolDeployPayload", () => {
         CELO_MAINNET_CHAIN_ID,
       ).feesDecoupled,
     ).toBe(true);
+  });
+
+  it("names a fee recipient only for decoupled fees, defaulting to the owner", () => {
+    const OTHER = "0x9999999999999999999999999999999999999999";
+    expect(
+      "feeAddress" in
+        toPoolDeployPayload({ ...validPool, feeAddress: OTHER }, OWNER, CELO_MAINNET_CHAIN_ID),
+    ).toBe(false);
+    expect(
+      toPoolDeployPayload({ ...validPool, feesDecoupled: true }, OWNER, CELO_MAINNET_CHAIN_ID)
+        .feeAddress,
+    ).toBe(OWNER);
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, feesDecoupled: true, feeAddress: ` ${OTHER.toLowerCase()} ` },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).feeAddress,
+    ).toBe(OTHER);
   });
 
   it("maps the complete live pool request and omits blank optional fields", () => {

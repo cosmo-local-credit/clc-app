@@ -30,6 +30,15 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
       <InfoRow label={t`Fees held separately`} muted>
         {values.feesDecoupled ? t`Yes` : t`No`}
       </InfoRow>
+      {Number(values.feePolicyDefault) > 0 && values.feesDecoupled ? (
+        <InfoRow label={t`Fee recipient`} muted>
+          {values.feeAddress.trim() === "" ? (
+            t`Your wallet`
+          ) : (
+            <span className="font-mono break-all">{values.feeAddress.trim()}</span>
+          )}
+        </InfoRow>
+      ) : null}
       <InfoRow label={t`Decimals`} muted>
         6
       </InfoRow>

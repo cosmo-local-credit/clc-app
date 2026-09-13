@@ -1,13 +1,17 @@
+import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { RiPencilLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
-import type { PoolVoucher } from "@clc/api/features/pools/client";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { PoolLogo } from "./pool-logo";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
+import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 
 export type PoolDetailTab = "offerings" | "vouchers";
 
@@ -25,6 +29,17 @@ export function PoolDetailPage({
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
   const voucherTokens = usePoolVoucherTokens(vouchers);
+  const auth = useAuthStatus();
+  // The same rule the voucher screen applies: the backend session's address
+  // must be the catalog owner, or the session must be a superadmin. clc-core
+  // decides for real; this only keeps the button off everyone else's screen.
+  const canEditDetails =
+    auth.isAuthenticated &&
+    !!pool &&
+    (auth.session?.role === "SUPERADMIN" ||
+      (!!auth.session?.address &&
+        !!pool.ownerAddress &&
+        auth.session.address.toLowerCase() === pool.ownerAddress.toLowerCase()));
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -68,6 +83,8 @@ export function PoolDetailPage({
           <Trans>Swap</Trans>
         </Link>
       </Button>
+
+      {canEditDetails ? <EditPoolDetails pool={pool} /> : null}
 
       <div
         className="grid grid-cols-2 border border-border bg-card p-1"
@@ -145,6 +162,25 @@ export function PoolDetailPage({
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** The owner's way into the catalog record; a button plus the sheet it opens. */
+function EditPoolDetails({ pool }: { pool: UserPool }) {
+  const [editing, setEditing] = useState(false);
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-9 w-full bg-card"
+        onClick={() => setEditing(true)}
+      >
+        <RiPencilLine className="size-4" aria-hidden="true" />
+        <Trans>Edit details</Trans>
+      </Button>
+      <PoolProfileEditorSheet open={editing} pool={pool} onClose={() => setEditing(false)} />
+    </>
   );
 }
 

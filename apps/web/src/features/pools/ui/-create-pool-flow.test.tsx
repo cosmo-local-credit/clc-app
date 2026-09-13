@@ -219,6 +219,40 @@ describe("CreatePoolFlow", () => {
     expect(screen.queryByRole("checkbox", { name: /Take fees separately/ })).toBeNull();
   });
 
+  it("asks where decoupled fees go, starting from the connected wallet", async () => {
+    const view = renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Swap Fee (%)"), { target: { value: "0.5" } });
+    expect(screen.queryByLabelText("Fee recipient")).toBeNull();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
+    const recipient = screen.getByLabelText("Fee recipient") as HTMLInputElement;
+    expect(recipient.value).toBe("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
+
+    fireEvent.change(recipient, { target: { value: "not-an-address" } });
+    fireEvent.blur(recipient);
+    expect((await screen.findByRole("alert")).textContent).toBe("Enter a valid wallet address");
+
+    fireEvent.change(recipient, {
+      target: { value: "0x9999999999999999999999999999999999999999" },
+    });
+    fireEvent.blur(recipient);
+    await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
+
+    // Unticking hides the recipient and the payload drops it; re-ticking keeps
+    // the typed address rather than seeding the wallet over it.
+    fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
+    expect(screen.queryByLabelText("Fee recipient")).toBeNull();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
+    expect((screen.getByLabelText("Fee recipient") as HTMLInputElement).value).toBe(
+      "0x9999999999999999999999999999999999999999",
+    );
+
+    view.rerender(<CreatePoolFlow step="review" />);
+    expect(screen.getByText("0x9999999999999999999999999999999999999999")).toBeTruthy();
+  });
+
   it("keeps tags compact and prefills contact details from the profile", async () => {
     renderFlow(<CreatePoolFlow step="place" />);
 
