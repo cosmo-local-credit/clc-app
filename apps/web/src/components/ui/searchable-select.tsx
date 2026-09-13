@@ -20,9 +20,17 @@ export type SearchableOption = { value: string; label: string };
  * document flow, opened on focus and closed on an outside press, so it works
  * inside a bottom sheet with the keyboard up.
  *
- * Typing that matches nothing is not a value: the input reverts to the selected
- * option's label on close, so a half-typed search never leaves the form holding
- * something the list never offered.
+ * The input shows two different things and they are kept apart: while the list
+ * is open it shows the query being typed, and while it is closed it shows the
+ * label of whatever `value` the form holds. The closed text is derived on every
+ * render rather than copied into state, because a selection closes the list
+ * from inside an event handler where every closure still holds the previous
+ * label. Copying that stale label back into state is how the field read blank
+ * after a choice in a sheet, even though the form had the new value.
+ *
+ * Typing that matches nothing is not a value: closing discards the query, so a
+ * half-typed search never leaves the form holding something the list never
+ * offered.
  */
 export function SearchableSelect({
   id,
@@ -47,13 +55,19 @@ export function SearchableSelect({
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const labels = useMemo(() => options.map((option) => option.label), [options]);
   const selectedLabel = options.find((option) => option.value === value)?.label ?? "";
-  const [inputValue, setInputValue] = useState(selectedLabel);
+  // The label most recently chosen or received, readable from inside an event
+  // handler that fired before the parent re-rendered with the new value.
+  const latestLabel = useRef(selectedLabel);
+  latestLabel.current = selectedLabel;
 
-  useEffect(() => {
-    if (!open) setInputValue(selectedLabel);
-  }, [selectedLabel, open]);
+  const openList = () => {
+    if (open) return;
+    setQuery(latestLabel.current);
+    setOpen(true);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -73,19 +87,23 @@ export function SearchableSelect({
         inline
         open={open}
         onOpenChange={(nextOpen) => {
-          setOpen(nextOpen);
-          if (!nextOpen) setInputValue(selectedLabel);
+          if (nextOpen) openList();
+          else setOpen(false);
         }}
-        inputValue={inputValue}
-        onInputValueChange={setInputValue}
+        inputValue={open ? query : selectedLabel}
+        onInputValueChange={(next) => {
+          // Base UI also writes here when it closes, syncing the input to the
+          // selection it knew about a render ago. Closed text is not state.
+          if (open) setQuery(next);
+        }}
         items={labels}
         value={selectedLabel || null}
         onValueChange={(nextLabel, eventDetails) => {
           if (!nextLabel) return;
           const selected = options.find((option) => option.label === nextLabel);
           if (!selected) return;
+          latestLabel.current = nextLabel;
           onValueChange(selected.value);
-          setInputValue(nextLabel);
           if (eventDetails.reason === "item-press") {
             setOpen(false);
             inputRef.current?.blur();
@@ -97,8 +115,8 @@ export function SearchableSelect({
           id={id}
           aria-label={ariaLabel}
           placeholder={placeholder}
-          onFocus={() => setOpen(true)}
-          onClick={() => setOpen(true)}
+          onFocus={openList}
+          onClick={openList}
         />
         {open ? (
           <>

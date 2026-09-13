@@ -7,6 +7,7 @@ import {
   poolCreateSchemaForChain,
   poolDeploymentContractCount,
   poolDescriptionSchema,
+  poolFeeAddressSchema,
   poolNameSchema,
   poolSproutLicenseSchema,
   poolSwapFeeSchema,
@@ -88,6 +89,7 @@ const DEFAULT_VALUES: PoolFormValues = {
   pricing: "relative",
   feePolicyDefault: "0",
   feesDecoupled: false,
+  feeAddress: "",
   location: undefined,
   tags: [],
   email: "",
@@ -109,9 +111,10 @@ const DETAIL_FIELDS = [
   "unitOfAccount",
   "description",
   "feePolicyDefault",
+  "feeAddress",
 ] as const;
 /** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
-const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
+const ADVANCED_FIELDS = ["symbol", "feePolicyDefault", "feeAddress"] as const;
 const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUrl"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
@@ -537,9 +540,62 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               <Checkbox
                                 id="pool-fees-decoupled"
                                 checked={field.state.value}
-                                onCheckedChange={(checked) => field.handleChange(checked)}
+                                onCheckedChange={(checked) => {
+                                  field.handleChange(checked);
+                                  // Fees go to the owner unless told otherwise, so
+                                  // the recipient starts as the connected wallet and
+                                  // is there to be overwritten. Seeded, not bound:
+                                  // a steward who typed another address keeps it.
+                                  if (
+                                    checked &&
+                                    address &&
+                                    form.getFieldValue("feeAddress") === ""
+                                  ) {
+                                    form.setFieldValue("feeAddress", getAddress(address), {
+                                      dontUpdateMeta: true,
+                                    });
+                                  }
+                                }}
                               />
                             </label>
+                          )}
+                        </form.Field>
+                      ) : null
+                    }
+                  </form.Subscribe>
+
+                  <form.Subscribe
+                    selector={(state) =>
+                      Number(state.values.feePolicyDefault) > 0 && state.values.feesDecoupled
+                    }
+                  >
+                    {(feesDecoupled) =>
+                      feesDecoupled ? (
+                        <form.Field
+                          name="feeAddress"
+                          validators={{
+                            onBlur: poolFeeAddressSchema,
+                            onSubmit: poolFeeAddressSchema,
+                          }}
+                        >
+                          {(field) => (
+                            <Field
+                              label={t`Fee recipient`}
+                              htmlFor="pool-fee-address"
+                              hint={t`Your wallet by default. Enter another address to send the swap fees there.`}
+                              error={getFieldError(field.state.meta.errors)}
+                            >
+                              <Input
+                                id="pool-fee-address"
+                                className="font-mono text-[0.8125rem]"
+                                autoComplete="off"
+                                spellCheck={false}
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                            </Field>
                           )}
                         </form.Field>
                       ) : null

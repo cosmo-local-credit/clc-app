@@ -9,6 +9,7 @@ const submittedPool = {
   pricing: "relative" as const,
   feePolicyDefault: "1",
   feesDecoupled: false,
+  feeAddress: "",
   location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
   tags: ["Agriculture"],
   email: "",

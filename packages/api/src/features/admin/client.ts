@@ -44,6 +44,7 @@ import {
 import {
   normalizeUserPool,
   type PoolProfileUpdate,
+  serializePoolProfileUpdate,
   type UserPool,
   type UserPoolPage,
 } from "../pools/client";
@@ -511,11 +512,6 @@ type BackendAdminVoucherEnvelope = {
   voucher?: BackendMarketVoucherDetail | null;
 } & BackendMarketVoucherDetail;
 
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
-}
-
 export function createAdminClient(http: HttpClient): AdminClient {
   /**
    * Mutations answer with the updated row, which callers write straight into the
@@ -609,27 +605,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
     async updatePoolProfile(address, profile, signal) {
       const result = await http.request<BackendAdminPoolEnvelope>(
         `/api/v2/admin/pools/${encodeURIComponent(address)}/profile`,
-        {
-          method: "PUT",
-          signal,
-          body: JSON.stringify({
-            description: emptyToNull(profile.description),
-            unitOfAccount: emptyToNull(profile.unitOfAccount),
-            email: emptyToNull(profile.email),
-            website: emptyToNull(profile.website),
-            phone: emptyToNull(profile.phone),
-            terms: emptyToNull(profile.terms),
-            locationName: emptyToNull(profile.locationName),
-            geoLat: profile.geoLat,
-            geoLng: profile.geoLng,
-            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
-            // two, so null means "leave the stored image alone" and "" is the only
-            // way to remove one. Omitted entirely when the caller has no opinion.
-            ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
-            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
-            tags: profile.tags,
-          }),
-        },
+        { method: "PUT", signal, body: JSON.stringify(serializePoolProfileUpdate(profile)) },
       );
       const pool = normalizeUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool update response did not include a valid address.");
