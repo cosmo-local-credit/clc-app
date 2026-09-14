@@ -30,7 +30,7 @@ import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 
-export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
+export function PoolSwapPage({ poolAddress, toToken }: { poolAddress: string; toToken?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { address } = useConnection();
@@ -40,9 +40,10 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
   const tokens = usePoolVoucherTokens(vouchers);
+  const requestedTo = toToken?.toLowerCase();
 
   const [fromTokenId, setFromTokenId] = useState<string | undefined>(undefined);
-  const [toTokenId, setToTokenId] = useState<string | undefined>(undefined);
+  const [toTokenId, setToTokenId] = useState<string | undefined>(requestedTo);
   const [fromAmount, setFromAmount] = useState("25.00");
   const [fromMaxAmountRaw, setFromMaxAmountRaw] = useState<string | null>(null);
   const [toAmount, setToAmount] = useState("");
@@ -51,10 +52,13 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
-  const selectedFrom = tokens.find((token) => token.id === fromTokenId) ?? tokens[0];
   const selectedTo =
-    tokens.find((token) => token.id === toTokenId && token.id !== selectedFrom?.id) ??
-    tokens.find((token) => token.id !== selectedFrom?.id);
+    tokens.find((token) => token.id === (toTokenId ?? requestedTo)) ??
+    tokens.find((token) => token.id !== (fromTokenId ?? tokens[0]?.id));
+  const selectedFrom =
+    tokens.find((token) => token.id === fromTokenId && token.id !== selectedTo?.id) ??
+    tokens.find((token) => token.id !== selectedTo?.id) ??
+    tokens[0];
   const sourceAmount = quoteMode === "exact-input" ? fromAmount : toAmount;
   const quote = usePoolSwapQuote({
     mode: quoteMode,

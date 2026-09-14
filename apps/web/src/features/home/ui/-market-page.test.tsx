@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
-import type { MarketCamera } from "./market-map";
+import type { MarketCamera } from "#/components/catalog-map/market-map";
 
 type MapProps = {
   locations: MarketVoucher[];
@@ -155,7 +155,7 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 
-vi.mock("./market-map.lazy", () => ({
+vi.mock("#/components/catalog-map/market-map.lazy", () => ({
   MarketMap: (props: MapProps) => {
     lastMapProps.current = props;
     return (

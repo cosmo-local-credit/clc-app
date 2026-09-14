@@ -40,6 +40,7 @@ vi.mock("@tanstack/react-router", () => ({
   ),
   useRouter: () => ({ history: { back: vi.fn() } }),
   useCanGoBack: () => false,
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
@@ -81,8 +82,23 @@ vi.mock("#/features/images/use-image-upload", () => ({
   }),
 }));
 
-vi.mock("./pool-offerings-panel", () => ({
-  PoolOfferingsPanel: () => <div data-testid="offerings-panel" />,
+vi.mock("#/components/catalog-map/market-map.lazy", () => ({
+  MarketMap: () => <div data-testid="pool-map" />,
+}));
+
+vi.mock("#/features/home/hooks/use-market-camera", () => ({
+  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  useMarketCamera: () => ({
+    camera: null,
+    realFix: null,
+    userLocation: null,
+    locationStatus: "idle",
+    requestLocation: () => {},
+  }),
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
+  usePoolTreasury: () => ({ data: undefined, isPending: false }),
 }));
 
 // The on-chain steward surface has its own tests; here it only needs to stay out
@@ -179,29 +195,29 @@ afterEach(() => {
 describe("PoolDetailPage pool details editor", () => {
   it("offers the editor only to the pool's owner", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    const stranger = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    const stranger = render(<PoolDetailPage poolAddress={ADDRESS} />);
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
     stranger.unmount();
 
     mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
 
   it("hides the editor when the catalog does not know the owner", () => {
     mocks.poolResult.data = pool({ ownerAddress: null });
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
   });
 
   it("lets a superadmin edit a pool they do not own", () => {
     mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
 
   it("opens the stored record in a sheet and saves the whole profile", async () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     expect(screen.queryByLabelText("Display name")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
@@ -235,7 +251,7 @@ describe("PoolDetailPage pool details editor", () => {
 
   // The label is an override, and an ordinary metadata save must not create one.
   it("leaves an untouched display name and logo out of the write", async () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
     const dialog = await screen.findByRole("dialog");
 
@@ -256,7 +272,7 @@ describe("PoolDetailPage pool details editor", () => {
       name: "Kilifi Traders",
       contractName: "Kilifi Community Pool",
     });
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
     const dialog = await screen.findByRole("dialog");
 
@@ -270,7 +286,7 @@ describe("PoolDetailPage pool details editor", () => {
   });
 
   it("does not write a display name shorter than a pool name may be", async () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
     const dialog = await screen.findByRole("dialog");
 
@@ -284,7 +300,7 @@ describe("PoolDetailPage pool details editor", () => {
   });
 
   it("shows the currency it was switched to", async () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
     const dialog = await screen.findByRole("dialog");
     const currency = within(dialog).getByLabelText("Priced in") as HTMLInputElement;
@@ -305,8 +321,13 @@ describe("PoolDetailPage pool details editor", () => {
 
 describe("PoolDetailPage on-chain management", () => {
   it("offers the steward controls to the pool's owner", () => {
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    const view = render(<PoolDetailPage poolAddress={ADDRESS} />);
+    fireEvent.click(screen.getByRole("button", { name: "Manage pool" }));
     expect(screen.getByTestId("pool-controls")).toBeTruthy();
+    view.unmount();
+
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
+    fireEvent.click(screen.getByRole("button", { name: "Browse vouchers" }));
     expect(screen.getByRole("button", { name: "Approve voucher" })).toBeTruthy();
   });
 
@@ -314,16 +335,15 @@ describe("PoolDetailPage on-chain management", () => {
     // Every call behind these is `onlyOwner`, so a superadmin pressing them
     // would only be signing a revert. They keep the catalog editor.
     mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-    expect(screen.queryByTestId("pool-controls")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
+    expect(screen.queryByRole("button", { name: "Manage pool" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
 
   it("withholds them from anyone else", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
-    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-    expect(screen.queryByTestId("pool-controls")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
+    render(<PoolDetailPage poolAddress={ADDRESS} />);
+    expect(screen.queryByRole("button", { name: "Manage pool" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
   });
 });
