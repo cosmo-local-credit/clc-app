@@ -219,6 +219,32 @@ describe("creating a post", () => {
     );
   });
 
+  it("uses the first uploaded photo as the post cover", async () => {
+    mocks.upload.mockResolvedValue({
+      url: "https://content.example/first.jpg",
+      width: 1440,
+      height: 960,
+      byteSize: 245_761,
+    });
+    render(<PostEditorPage mode="create" />);
+
+    fireEvent.change(screen.getByLabelText("Add photos"), {
+      target: { files: [new File(["x"], "first.jpg", { type: "image/jpeg" })] },
+    });
+
+    expect(await screen.findByText("Cover photo")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Use as cover" })).toBeNull();
+
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      imageUrl: "https://content.example/first.jpg",
+      images: [expect.objectContaining({ url: "https://content.example/first.jpg" })],
+    });
+  });
+
   it("shows Write and Preview as one pressed control, never side by side", () => {
     render(<PostEditorPage mode="create" />);
     const toggle = screen.getByRole("button", { name: "Preview" });
@@ -488,7 +514,7 @@ describe("editing a post", () => {
     expect((screen.getByLabelText("Caption for photo 1") as HTMLInputElement).value).toBe(
       "Sorting",
     );
-    expect((screen.getByLabelText("Attachment 1 link") as HTMLInputElement).value).toBe(
+    expect((screen.getByLabelText("Link 1") as HTMLInputElement).value).toBe(
       "https://content.example/notes.pdf",
     );
   });

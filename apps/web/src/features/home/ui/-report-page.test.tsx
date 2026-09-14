@@ -65,6 +65,10 @@ const mocks = vi.hoisted(() => ({
     } as { locationName: string; country: string } | null | undefined,
   },
   useReportLocation: vi.fn(),
+  auth: {
+    isAuthenticated: false,
+    address: undefined as `0x${string}` | undefined,
+  },
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
@@ -75,6 +79,10 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
       ? mocks.location
       : { data: undefined };
   },
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => mocks.auth,
 }));
 
 vi.mock("#/lib/default-maps", () => ({
@@ -182,6 +190,7 @@ beforeEach(() => {
       country: "KE",
     },
   };
+  mocks.auth = { isAuthenticated: false, address: undefined };
   mocks.detail = { data: detail(), isPending: false, isError: false, refetch: vi.fn() };
 });
 
@@ -272,7 +281,7 @@ describe("ReportPage", () => {
     expect(screen.queryByText("What happened")).toBeNull();
   });
 
-  it("lists attachments with their kind, label and size", () => {
+  it("lists links with their kind, label and size", () => {
     mocks.detail.data = detail({
       attachments: [
         {
@@ -298,9 +307,31 @@ describe("ReportPage", () => {
     expect(embed.textContent).not.toContain("·");
   });
 
-  it("renders no attachments section when the report has none", () => {
+  it("renders no links section when the report has none", () => {
     render(<ReportPage reportId="3182" />);
-    expect(screen.queryByText("Attachments")).toBeNull();
+    expect(screen.queryByText("Links")).toBeNull();
+  });
+
+  it("offers the author an edit shortcut at the top of their post", () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: "0x1111111111111111111111111111111111111111",
+    };
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Edit" }).getAttribute("href")).toBe(
+      "/posts/3182/edit",
+    );
+  });
+
+  it("does not show the edit shortcut to another reader", () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: "0x2222222222222222222222222222222222222222",
+    };
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.queryByRole("link", { name: "Edit" })).toBeNull();
   });
 
   it("separates report details from header metadata and provenance", () => {
