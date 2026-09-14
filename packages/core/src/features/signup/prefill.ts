@@ -9,6 +9,7 @@ import { type LocationInput, locationSchema } from "../location/logic";
  * profile preferences omits them entirely.
  */
 export type ProfileDefaults = {
+  name?: string | null;
   email?: string | null;
   phone?: string | null;
   website?: string | null;
@@ -29,6 +30,8 @@ export type ProfileDefaults = {
  * says nothing about form state.
  */
 export type ProfilePrefill = {
+  /** The person's profile name, suitable as the base for a new pool or voucher. */
+  name: string;
   email: string;
   phone: string;
   website: string;
@@ -62,6 +65,7 @@ export function profilePrefill(profile: ProfileDefaults): ProfilePrefill {
   const preferredCurrency = profile.preferredCurrency?.trim().toUpperCase();
 
   return {
+    name: profile.name?.trim() ?? "",
     email: email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : email,
     phone: profile.phone?.trim() ?? "",
     website: profile.website?.trim() ?? "",

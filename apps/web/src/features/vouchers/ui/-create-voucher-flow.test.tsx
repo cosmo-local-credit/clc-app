@@ -166,7 +166,7 @@ afterEach(() => {
 });
 
 describe("CreateVoucherFlow", () => {
-  it("uses compact guidance, issuer-facing pricing fields, and the standard disclosure pattern", () => {
+  it("keeps technical pricing and token settings in Advanced", () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Create voucher" })).toBeTruthy();
@@ -179,11 +179,10 @@ describe("CreateVoucherFlow", () => {
     expect(guidanceTitle.classList).toContain("text-primary");
     expect(guidanceTitle.closest("aside")?.classList).toContain("bg-card");
 
-    const currency = screen.getByLabelText("Priced in");
-    const price = screen.getByLabelText("Price");
-    const pricingRow = document.querySelector('[data-slot="voucher-pricing-row"]');
-    expect(pricingRow?.contains(price)).toBe(true);
-    expect(pricingRow?.contains(currency)).toBe(true);
+    expect(screen.queryByLabelText("Voucher Type")).toBeNull();
+    expect(screen.queryByLabelText("Decimals")).toBeNull();
+    expect((screen.getByLabelText("Create vouchers") as HTMLInputElement).value).toBe("1000");
+    expect(screen.getByText("Value: 100 KES of offerings")).toBeTruthy();
     expect(screen.queryByLabelText("Voucher Value")).toBeNull();
     expect(screen.queryByLabelText("Currency")).toBeNull();
     expect(screen.queryByLabelText("Unit of Account")).toBeNull();
@@ -193,25 +192,37 @@ describe("CreateVoucherFlow", () => {
     expect(advancedSummary.tagName).toBe("SUMMARY");
     const advancedDetails = advancedSummary.closest("details") as HTMLDetailsElement;
     expect(advancedDetails.open).toBe(false);
+    expect(advancedDetails.contains(screen.getByLabelText("Price"))).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Priced in"))).toBe(true);
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
     expect(advancedDetails.contains(screen.getByLabelText("Voucher Symbol"))).toBe(true);
+    const currency = screen.getByLabelText("Priced in");
+    const price = screen.getByLabelText("Price");
+    const pricingRow = document.querySelector('[data-slot="voucher-pricing-row"]');
+    expect(pricingRow?.contains(price)).toBe(true);
+    expect(pricingRow?.contains(currency)).toBe(true);
+    expect(document.querySelector('[data-slot="voucher-price-unit"]')?.textContent).toBe("KES");
   });
 
   it("previews the voucher price in its selected currency or measure", () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
 
-    expect(screen.getByText("1 XYZ = 1 KES")).toBeTruthy();
+    expect(screen.getByText("1 voucher = 0.1 KES")).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "khv" } });
+    fireEvent.change(screen.getByLabelText("Voucher Name"), {
+      target: { value: "Kilifi Voucher" },
+    });
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "10" } });
 
-    expect(screen.getByText("1 KHV = 10 KES")).toBeTruthy();
+    expect(screen.getByText("1 Kilifi Voucher = 10 KES")).toBeTruthy();
   });
 
   it("searches the full currency list using code or currency name", async () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
 
     const currency = screen.getByRole("combobox", { name: "Priced in" });
     fireEvent.click(currency);
@@ -228,7 +239,7 @@ describe("CreateVoucherFlow", () => {
     await waitFor(() =>
       expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
     );
-    expect(screen.getByText("1 XYZ = 1 TZS")).toBeTruthy();
+    expect(screen.getByText("1 voucher = 0.1 TZS")).toBeTruthy();
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
@@ -281,8 +292,20 @@ describe("CreateVoucherFlow", () => {
     expect((screen.getByLabelText("Voucher Description") as HTMLTextAreaElement).value).toBe(
       "Fresh produce from Kilifi.",
     );
+    fireEvent.click(screen.getByText("Advanced"));
     expect((screen.getByLabelText("Priced in") as HTMLInputElement).value).toBe(
       "TZS - Tanzanian Shilling",
+    );
+  });
+
+  it("starts a new voucher with the profile name", async () => {
+    profile.current = { ...DEFAULT_PROFILE, name: "Amina's Bakery" };
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+
+    await waitFor(() =>
+      expect((screen.getByLabelText("Voucher Name") as HTMLInputElement).value).toBe(
+        "Amina's Bakery Voucher",
+      ),
     );
   });
 
@@ -298,6 +321,7 @@ describe("CreateVoucherFlow", () => {
   it("lets the issuer write their own terms as Markdown instead of linking", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
     const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
     fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
     fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
@@ -388,6 +412,7 @@ describe("CreateVoucherFlow", () => {
   it("keeps form state across all three routes and deploys only after confirmation", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
     const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
 
     fireEvent.change(screen.getByLabelText("Voucher Name"), {
       target: { value: "Kilifi Harvest" },
@@ -447,7 +472,7 @@ describe("CreateVoucherFlow", () => {
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
         description: "Fresh food from Kilifi producers.",
         voucherUoa: "KES",
-        voucherValue: 1,
+        voucherValue: 0.1,
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
         geoLng: 39.9093,
@@ -465,35 +490,18 @@ describe("CreateVoucherFlow", () => {
     });
   });
 
-  it("enables and requires the expiry date as soon as the voucher is marked expiring", async () => {
+  it("always sends the standard six-decimal token defaults", async () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.click(screen.getByText("Advanced"));
     fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food." },
     });
-    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
-    fireEvent.click(screen.getByText("Advanced"));
-
+    expect(screen.queryByLabelText("Voucher Type")).toBeNull();
     expect(screen.queryByLabelText("Expiration Date")).toBeNull();
-
-    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
-    const expiry = () => screen.getByLabelText("Expiration Date") as HTMLInputElement;
-    expect(expiry().disabled).toBe(false);
-
-    fireEvent.click(screen.getByRole("radio", { name: /Standard/ }));
-    expect(screen.queryByLabelText("Expiration Date")).toBeNull();
-    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
-
+    expect(screen.queryByLabelText("Decimals")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(await screen.findByText("Choose an expiration date")).toBeTruthy();
-    expect(navigateMock).not.toHaveBeenCalledWith(
-      expect.objectContaining({ params: { step: "place" } }),
-    );
-
-    fireEvent.change(expiry(), { target: { value: "2099-12-31" } });
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith({
         to: "/vouchers/create/$step",
@@ -515,11 +523,13 @@ describe("CreateVoucherFlow", () => {
   it("asks for the opening supply on the first step and previews its value", async () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.click(screen.getByText("Advanced"));
     fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food." },
     });
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "2.5" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "0" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     expect(await screen.findByText("Supply must be greater than zero")).toBeTruthy();
@@ -528,7 +538,7 @@ describe("CreateVoucherFlow", () => {
     );
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "12" } });
-    expect(screen.getByText("Value: 30 KES")).toBeTruthy();
+    expect(screen.getByText("Value: 30 KES of offerings")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
     await waitFor(() =>
@@ -540,10 +550,14 @@ describe("CreateVoucherFlow", () => {
   });
 
   describe("symbol suggestion", () => {
-    const symbolInput = () => screen.getByLabelText("Voucher Symbol") as HTMLInputElement;
+    const symbolInput = () => {
+      if (!screen.queryByLabelText("Voucher Symbol")) fireEvent.click(screen.getByText("Advanced"));
+      return screen.getByLabelText("Voucher Symbol") as HTMLInputElement;
+    };
 
     it("fills the symbol from the name once the name blurs", async () => {
       renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
 
       const name = screen.getByLabelText("Voucher Name");
       fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
@@ -551,12 +565,13 @@ describe("CreateVoucherFlow", () => {
 
       await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
       expect(getTakenSymbols).toHaveBeenCalledWith("voucher", "KVKS", expect.anything());
-      expect(screen.getByText("1 KVKS = 1 KES")).toBeTruthy();
+      expect(screen.getByText("1 Kivukoni School Voucher = 0.1 KES")).toBeTruthy();
     });
 
     it("skips to the first free numbered candidate when the stem is taken", async () => {
       getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KVKS", taken: ["KVKS"] });
       renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
 
       const name = screen.getByLabelText("Voucher Name");
       fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
@@ -568,6 +583,7 @@ describe("CreateVoucherFlow", () => {
     it("still suggests the bare stem when the occupancy lookup fails", async () => {
       getTakenSymbols.mockRejectedValue(new Error("Not Found"));
       renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
 
       const name = screen.getByLabelText("Voucher Name");
       fireEvent.change(name, { target: { value: "Kilifi Harvest" } });

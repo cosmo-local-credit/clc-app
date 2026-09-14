@@ -99,12 +99,6 @@ function checkExpiryDate(
   if (expiry <= Date.now()) addIssue("Expiration date must be in the future");
 }
 
-export function voucherExpiryDateSchema(type: VoucherType) {
-  return z.string().superRefine((value, ctx) => {
-    checkExpiryDate(type, value, (message) => ctx.addIssue({ code: "custom", message }));
-  });
-}
-
 /**
  * The opening supply is chosen while creating the voucher but minted only once
  * the contract exists. Decimals are a form field until then and come from the
