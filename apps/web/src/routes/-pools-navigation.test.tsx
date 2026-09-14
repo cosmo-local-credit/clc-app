@@ -99,8 +99,22 @@ function createTestRouter(initialEntry: string) {
       return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
     },
   });
+  // Stubbed: this asserts where Deposit goes and that Back comes home, not what
+  // the send flow renders once it arrives.
+  const sendAmountRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/wallet/send/amount",
+    validateSearch: (search): { recipient?: string; recipientLabel?: string } => ({
+      recipient: typeof search.recipient === "string" ? search.recipient : undefined,
+      recipientLabel: typeof search.recipientLabel === "string" ? search.recipientLabel : undefined,
+    }),
+    component: () => {
+      const { recipientLabel } = sendAmountRoute.useSearch();
+      return <h1>Amount for {recipientLabel}</h1>;
+    },
+  });
   return createRouter({
-    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute]),
+    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute, sendAmountRoute]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
 }
@@ -130,6 +144,32 @@ describe("pools navigation", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe("/");
       expect(router.state.location.search).toMatchObject({ tab: "wallet" });
+    });
+  });
+
+  it("deposits into a pool through the send flow and Back returns to the pool", async () => {
+    const router = createTestRouter(`/pools/${POOL_ADDRESS}`);
+    render(withQueryClient(<RouterProvider router={router} />));
+
+    const deposit = await screen.findByRole("link", { name: "Deposit" });
+    fireEvent.click(deposit);
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/wallet/send/amount");
+      // The pool is carried as the recipient, so the send flow opens on the
+      // amount step rather than asking who to send to.
+      expect(router.state.location.search).toMatchObject({
+        recipient: POOL_ADDRESS,
+        recipientLabel: "Trade Pool",
+      });
+    });
+
+    await act(async () => {
+      router.history.back();
+    });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
     });
   });
 

@@ -72,7 +72,7 @@ msgstr "{count, plural, one {# chapisho} other {# machapisho}}"
 
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:223
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:235
 msgid "{0} approved for {1}."
 msgstr "{0} imeidhinishwa kwa {1}."
 
@@ -142,7 +142,7 @@ msgid "{0} of {max}"
 msgstr "{0} kati ya {max}"
 
 #. placeholder {0}: voucher.offerCount
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:299
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:312
 msgid "{0} offers"
 msgstr "ofa {0}"
 
@@ -158,12 +158,12 @@ msgstr "ofa {0}"
 
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: pool.name
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:242
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:254
 msgid "{0} removed from {1}."
 msgstr "{0} imeondolewa kutoka {1}."
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:222
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:234
 msgid "{0} updated."
 msgstr "{0} imesasishwa."
 
@@ -258,7 +258,7 @@ msgstr "1 {0} = {1} {2}"
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:297
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:310
 msgid "1 offer"
 msgstr "ofa 1"
 
@@ -536,9 +536,9 @@ msgstr "Yoyote iliyochaguliwa"
 msgid "Apply filters"
 msgstr "Tumia vichujio"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:173
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:100
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:407
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:186
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:101
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:433
 msgid "Approve voucher"
 msgstr "Idhinisha vocha"
 
@@ -685,7 +685,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 #: apps/web/src/components/auth/sign-in-panel.tsx:372
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:491
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:417
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:443
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:366
@@ -730,7 +730,7 @@ msgstr "Kategoria"
 #~ msgid "Celo network"
 #~ msgstr "Mtandao wa Celo"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:552
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:578
 msgid "Change"
 msgstr "Badilisha"
 
@@ -770,7 +770,7 @@ msgstr "Angalia usambazaji tena"
 msgid "Checking availability..."
 msgstr "Inakagua upatikanaji..."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:286
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:303
 msgid "Checking how this pool prices vouchers…"
 msgstr "Inaangalia jinsi puli hii inavyopanga bei za vocha…"
 
@@ -1323,7 +1323,7 @@ msgstr "Imeshindikana kuchapisha vocha yako."
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Imeshindikana kusoma idadi ya desimali zinazotumiwa na vocha hii."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:256
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:268
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
 msgstr "Hatukuweza kusoma kiwango cha sasa cha vocha hii, hivyo hakiwezi "
@@ -1358,7 +1358,7 @@ msgid "Couldn't save your profile."
 msgstr "Imeshindwa kuhifadhi wasifu wako."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:367
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:609
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:635
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 msgid "Couldn't search vouchers."
 msgstr "Haikuwezekana kutafuta vocha."
@@ -1443,7 +1443,7 @@ msgstr "Iliundwa"
 msgid "Creating account..."
 msgstr "Inafungua akaunti..."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:328
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:354
 msgid "Credit limit"
 msgstr "Kikomo cha mkopo"
 
@@ -1508,6 +1508,10 @@ msgstr "Muamala wa kuunda mkataba"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:491
 msgid "Deployment transaction hash copied"
 msgstr "Hashi ya muamala wa kuunda mkataba imenakiliwa"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:108
+msgid "Deposit"
+msgstr "Weka amana"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:838
 msgid "Describe the rules for joining and using this pool..."
@@ -1657,7 +1661,7 @@ msgstr "Vocha moja inaweza kuunganishwa mara moja tu"
 msgid "Edit"
 msgstr "Hariri"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:239
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:252
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:690
 msgid "Edit details"
 msgstr "Hariri maelezo"
@@ -1819,11 +1823,11 @@ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 msgstr "Kila akaunti inapata pochi ya karatasi. Kuunganisha {providerLabel} "
 "huongeza njia nyingine ya kuingia."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:308
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:334
 msgid "Exchange rate"
 msgstr "Kiwango cha ubadilishaji"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:315
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:341
 msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 msgstr "Kiwango cha ubadilishaji ikilinganishwa na vocha chaguo-msingi "
 "({unitSymbol})"
@@ -2038,7 +2042,7 @@ msgid "How many to mint once the voucher is published"
 msgstr "Ni ngapi zitatengenezwa vocha ikishachapishwa"
 
 #. placeholder {0}: configuring.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:335
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:361
 msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 "vouchers?"
 msgstr "Ni thamani kiasi gani ya {unitSymbol} inaweza kubadilishwa kutoka "
@@ -2149,7 +2153,7 @@ msgstr "Kipande"
 #~ msgid "Join CLC"
 #~ msgstr "Jiunge na CLC"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:379
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:405
 msgid "Keep"
 msgstr "Bakiza"
 
@@ -2391,11 +2395,11 @@ msgid "Longitude must be between -180 and 180"
 msgstr "Longitudo iwe kati ya -180 na 180"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:307
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:320
 msgid "Manage {0}"
 msgstr "Simamia {0}"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:100
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:101
 msgid "Manage voucher"
 msgstr "Simamia vocha"
 
@@ -2617,7 +2621,7 @@ msgid "Name, location, and preferred currency are required. Provide an email "
 msgstr "Jina, eneo na sarafu unayopendelea vinahitajika. Toa anwani ya barua "
 "pepe au nambari ya simu. Wasifu na tovuti ni za hiari."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:587
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:613
 msgid "Name, symbol or address"
 msgstr "Jina, alama au anwani"
 
@@ -2789,11 +2793,11 @@ msgstr "Hakuna salio la USDm, USDT, au USDC linalopatikana kwa kutoa pesa."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "Hakuna vocha katika kikundi hiki inayotoa kitu bado."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:179
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:192
 msgid "No vouchers in this pool yet."
 msgstr "Bado hakuna vocha katika puli hii."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:625
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:651
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:232
 msgid "No vouchers match that search."
 msgstr "Hakuna vocha inayolingana na utafutaji huo."
@@ -2842,7 +2846,7 @@ msgstr "Haijatumwa"
 msgid "Not set"
 msgstr "Haijawekwa"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:201
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:213
 msgid "Nothing has changed."
 msgstr "Hakuna kilichobadilika."
 
@@ -2914,7 +2918,7 @@ msgstr "Bidhaa au huduma imeondolewa."
 msgid "Offering updated."
 msgstr "Bidhaa au huduma imesasishwa."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:123
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:268
 msgid "Offerings"
 msgstr "Matoleo"
@@ -3156,7 +3160,7 @@ msgstr "Eneo"
 msgid "Pool"
 msgstr "Kikundi"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:120
 msgid "Pool contents"
 msgstr "Yaliyomo kwenye kikundi"
 
@@ -3242,7 +3246,7 @@ msgstr "Maelezo ya kufuatilia puli hayapo."
 #: apps/web/src/features/home/ui/wallet-page.tsx:33
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:302
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:69
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:250
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:263
 #: apps/web/src/features/pools/ui/pools-page.tsx:83
 msgid "Pools"
 msgstr "Vikundi"
@@ -3550,7 +3554,7 @@ msgstr "Bei"
 #~ msgid "Re-authenticating..."
 #~ msgstr "Inathibitisha tena..."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:292
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:309
 msgid "Reading the current rate…"
 msgstr "Inasoma kiwango cha sasa…"
 
@@ -3657,7 +3661,7 @@ msgstr "Upangaji bei linganishi"
 #: apps/web/src/components/offerings/offerings-panel.tsx:312
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/ui/image-upload-field.tsx:180
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:370
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:396
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:118
 msgid "Remove"
 msgstr "Ondoa"
@@ -3685,7 +3689,7 @@ msgstr "Ondoa {tag}"
 msgid "Remove attachment {0}"
 msgstr "Ondoa kiambatisho {0}"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:392
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:418
 msgid "Remove from pool"
 msgstr "Ondoa kwenye puli"
 
@@ -3695,7 +3699,7 @@ msgid "Remove photo {0}"
 msgstr "Ondoa picha {0}"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:357
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:383
 msgid "Removing {0} stops it being swapped in or out of this pool. Its rate and "
 "limit are kept."
 msgstr "Kuondoa {0} kunazuia kubadilishwa ndani au nje ya puli hii. Kiwango "
@@ -3751,7 +3755,7 @@ msgstr "Inatafuta mpokeaji…"
 #: apps/web/src/features/home/ui/report-page.tsx:53
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:678
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:618
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:644
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:208
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:585
@@ -3806,7 +3810,7 @@ msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:481
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:405
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:431
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:662
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:354
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:512
@@ -3902,7 +3906,7 @@ msgid "Search voucher tags"
 msgstr "Tafuta lebo za vocha"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:340
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:586
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:612
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
 msgid "Search vouchers"
@@ -3924,7 +3928,7 @@ msgstr "Inatafuta maeneo…"
 msgid "Searching vouchers…"
 msgstr "Inatafuta vocha…"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:602
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:628
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:206
 msgid "Searching…"
 msgstr "Inatafuta…"
@@ -4271,7 +4275,7 @@ msgstr "Usambazaji lazima uwe zaidi ya sifuri"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:96
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:97
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:119
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
 msgid "Swap"
@@ -4453,12 +4457,6 @@ msgstr "Sarafu inayotumika kueleza thamani katika bwawa hili"
 msgid "The end of the period must not be before its start"
 msgstr "Mwisho wa kipindi usiwe kabla ya mwanzo wake"
 
-msgid "The map could not be loaded."
-msgstr "Imeshindwa kupakia ramani."
-
-msgid "The map is not supported on this device."
-msgstr "Ramani haitumiki kwenye kifaa hiki."
-
 #: apps/web/src/features/home/ui/market-map.tsx:666
 #~ msgid "The map is unavailable on this device. Browse vouchers as a list "
 #~ "instead."
@@ -4490,8 +4488,8 @@ msgstr "Kipimo kilichochaguliwa hakina chanzo cha bei kilichosanidiwa."
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:233
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:408
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:228
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:245
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:257
 msgid "The transaction failed."
 msgstr "Muamala umeshindikana."
 
@@ -4563,6 +4561,12 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 msgstr "Orodha hii iliingizwa na kipimo “{legacyUnit}”. Chagua kimoja hapa "
 "chini ili kuhifadhi mabadiliko yako."
 
+#. placeholder {0}: selected?.symbol
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:315
+msgid "This pool already allows {0}. Saving updates its rate and limit instead "
+"of adding it again."
+msgstr "Puli hii tayari inaruhusu {0}. Kuhifadhi kutasasisha kiwango na kikomo chake badala ya kuiongeza tena."
+
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
 #~ msgid "This pool doesn't have enough {0} liquidity for this swap."
@@ -4573,7 +4577,7 @@ msgstr "Orodha hii iliingizwa na kipimo “{legacyUnit}”. Chagua kimoja hapa "
 msgid "This pool has no {0} available to swap."
 msgstr "Kikundi hiki hakina {0} inayopatikana kwa kubadilisha."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:370
 msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 "can be set."
 msgstr "Puli hii haina kidhibiti, hivyo amana hazina kikomo na hakuna kikomo "
@@ -4589,13 +4593,13 @@ msgstr "Puli hii bado haina vocha."
 msgid "This pool only has {0} {1} available to swap."
 msgstr "Kikundi hiki kina {0} {1} pekee inayopatikana kwa kubadilisha."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:443
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:469
 msgid "This pool prices from a live feed. Feed settings aren't editable here "
 "yet."
 msgstr "Puli hii hupanga bei kutoka kwa mlisho wa moja kwa moja. Mipangilio ya "
 "mlisho haiwezi kuhaririwa hapa bado."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:448
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:474
 msgid "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
 msgstr "Puli hii huthamini kila vocha sawa, hivyo hakuna kiwango cha kuweka. "
@@ -4617,7 +4621,7 @@ msgstr "Chapisho hili ni kubwa mno kuhifadhiwa. Fupisha maandishi au ondoa "
 msgid "This QR code does not contain a valid private key."
 msgstr "Msimbo huu wa QR hauna ufunguo binafsi sahihi."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:186
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:198
 msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "Desimali za vocha hii hazijulikani, hivyo kikomo hakiwezi kuwekwa."
 
@@ -4752,7 +4756,7 @@ msgstr "Aina"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Andika angalau herufi {VOUCHER_SEARCH_MIN_CHARS} kutafuta vocha."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:596
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:622
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:200
 msgid "Type at least two characters."
 msgstr "Andika herufi mbili kwa uchache."
@@ -5060,7 +5064,7 @@ msgstr "Aina ya Vocha"
 #~ msgstr "Thamani ya Vocha"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:123
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:311
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:95
@@ -5097,7 +5101,7 @@ msgstr "Inasubiri uthibitisho kwenye mnyororo"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:295
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:382
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:442
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:403
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:429
 msgid "Waiting for the chain…"
 msgstr "Inasubiri mnyororo…"
 
@@ -5149,7 +5153,7 @@ msgstr "Hatukuweza kupakia wasifu wako."
 msgid "We couldn't save your photo. You can add it from Settings."
 msgstr "Hatukuweza kuhifadhi picha yako. Unaweza kuiongeza kutoka Mipangilio."
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:455
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:481
 msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "
 "here."
 msgstr "Hatukuweza kubaini jinsi puli hii inavyopanga bei za vocha, hivyo "
