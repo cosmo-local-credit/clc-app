@@ -112,7 +112,7 @@ function MarketNavLink({
           active && "ring-2 ring-foreground/10",
         )}
       >
-        <CLCLogo className="size-8 rounded-full" />
+        <CLCLogo className="size-8" />
       </span>
       <span
         className={cn("font-medium text-[0.6875rem]", active && "font-semibold text-foreground")}

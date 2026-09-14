@@ -6,8 +6,23 @@ import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
-  Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
-    <a href={to} {...props}>
+  Link: ({
+    to,
+    params,
+    children,
+    ...props
+  }: {
+    to: string;
+    params?: Record<string, string>;
+    children: React.ReactNode;
+  }) => (
+    <a
+      href={Object.entries(params ?? {}).reduce(
+        (value, [key, replacement]) => value.replace(`$${key}`, replacement),
+        to,
+      )}
+      {...props}
+    >
       {children}
     </a>
   ),
@@ -49,6 +64,18 @@ function mockLatestTokens() {
             },
           }),
         ),
+    }),
+  );
+}
+
+function mockNoTokens() {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "",
+      text: () => Promise.resolve(JSON.stringify({ ok: true, result: { tokens: [] } })),
     }),
   );
 }
@@ -100,6 +127,16 @@ describe("WalletPage", () => {
       'img[src="https://content.sarafu.network/voucher/icon.jpg"]',
     );
     expect(logo?.getAttribute("loading")).toBe("lazy");
+  });
+
+  it("offers voucher creation when the wallet is empty", async () => {
+    mockNoTokens();
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("No vouchers yet.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Create voucher" }).getAttribute("href")).toBe(
+      "/vouchers/create/voucher",
+    );
   });
 
   it("does not show the old placeholder pool section", () => {

@@ -99,8 +99,6 @@ export function MarketPage({
         />
       </Suspense>
 
-      {onboardingBanner}
-
       {selectedVoucher ? (
         <MarketPreview
           voucher={selectedVoucher}
@@ -147,6 +145,7 @@ export function MarketPage({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
         <MarketFilterSummary filter={filter} />
+        {onboardingBanner}
         <div className="flex items-center gap-2">
           <Button asChild className="pointer-events-auto h-11 flex-1">
             <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
