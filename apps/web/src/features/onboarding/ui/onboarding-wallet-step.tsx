@@ -70,11 +70,13 @@ export function OnboardingWalletStep({
     isEncrypting: paperWalletEncrypting,
   } = usePaperWalletProtection({ privateKey: pk });
 
+  const [paperWalletDownloaded, setPaperWalletDownloaded] = useState(false);
   const { card, controls, downloadButton } = usePaperWalletSetup({
     address,
     qrUrl,
     defaultName: profileData.name,
     downloadDisabled: !paperWalletReady || paperWalletEncrypting,
+    onDownloaded: () => setPaperWalletDownloaded(true),
   });
 
   const [acked, setAcked] = useState(false);
@@ -146,6 +148,7 @@ export function OnboardingWalletStep({
   useEffect(() => {
     if (!paperWalletReady || paperWalletEncrypting) {
       setAcked(false);
+      setPaperWalletDownloaded(false);
     }
   }, [paperWalletReady, paperWalletEncrypting]);
 
@@ -345,7 +348,8 @@ export function OnboardingWalletStep({
     }
   }
 
-  const formBlocked = !acked || !paperWalletReady || paperWalletEncrypting;
+  const formBlocked =
+    !acked || !paperWalletDownloaded || !paperWalletReady || paperWalletEncrypting;
   const workInProgress =
     isRegistering || isUpgrading || connecting || isDelegating || caliburPending;
   const linkBusy =
@@ -411,6 +415,11 @@ export function OnboardingWalletStep({
             <Trans>I have saved this key. If lost, my wallet cannot be recovered.</Trans>
           </span>
         </label>
+        {!paperWalletDownloaded ? (
+          <p className="mt-2 text-muted-foreground text-xs">
+            <Trans>Download your paper wallet before continuing.</Trans>
+          </p>
+        ) : null}
 
         <div className="mt-4 space-y-3">
           {backendSignup.error ? (
