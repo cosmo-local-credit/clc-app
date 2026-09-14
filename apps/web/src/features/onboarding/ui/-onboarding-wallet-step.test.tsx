@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { forwardRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { PasskeyProvider } from "#/features/webauthn/hooks/use-platform-passkey-label";
 
@@ -61,9 +62,11 @@ vi.mock("viem/accounts", () => ({
 }));
 
 vi.mock("#/features/onboarding/ui/paper-wallet-card", () => ({
-  PaperWalletCard: ({ address }: { address: string }) => (
-    <div data-testid="paper-wallet-card">{address}</div>
-  ),
+  PaperWalletCard: forwardRef<HTMLDivElement, { address: string }>(({ address }, ref) => (
+    <div ref={ref} data-testid="paper-wallet-card">
+      {address}
+    </div>
+  )),
 }));
 
 vi.mock("html-to-image", () => ({
@@ -189,6 +192,13 @@ function renderWalletStep(overrides: { linkPasskey?: boolean } = {}) {
   return render(<WalletStepFixture linkPasskey={overrides.linkPasskey} />);
 }
 
+async function acknowledgeSavedWallet() {
+  await act(async () => {
+    fireEvent.click(screen.getByRole("button", { name: /download card/i }));
+  });
+  fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+}
+
 beforeEach(() => {
   mockUpgradeAndLinkMutate.mockClear();
   mockBackendSignupMutateAsync.mockReset();
@@ -288,7 +298,7 @@ describe("OnboardingWalletStep rendering", () => {
     });
 
     // Paper path available after connector failure.
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -319,7 +329,7 @@ describe("OnboardingWalletStep rendering", () => {
     });
     expect(mockOnDone).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     expect(screen.getByRole("button", { name: /continue with paper wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -341,7 +351,7 @@ describe("OnboardingWalletStep rendering", () => {
       chainId: 42220,
     });
     const { rerender } = renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
@@ -381,9 +391,15 @@ describe("OnboardingWalletStep continue flow", () => {
     );
   });
 
-  it("Continue button is enabled after checking the ack checkbox", () => {
+  it("requires a paper-wallet download before the acknowledgement unlocks Continue", async () => {
     renderWalletStep({ linkPasskey: false });
     fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      true,
+    );
+    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -392,7 +408,7 @@ describe("OnboardingWalletStep continue flow", () => {
 
   it("requires applying QR protection before continuing when protection is enabled", async () => {
     renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -421,7 +437,7 @@ describe("OnboardingWalletStep continue flow", () => {
       true,
     );
 
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
       "disabled",
       false,
@@ -430,7 +446,7 @@ describe("OnboardingWalletStep continue flow", () => {
 
   it("shows a pending view and opens the wallet only after smart-wallet activation confirms", async () => {
     const { rerender } = renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
@@ -464,7 +480,7 @@ describe("OnboardingWalletStep continue flow", () => {
   it("returns to the wallet step when smart-wallet activation fails", async () => {
     mockDelegateMutateAsync.mockRejectedValue(new Error("delegate failed"));
     const { rerender } = renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
@@ -484,7 +500,7 @@ describe("OnboardingWalletStep continue flow", () => {
   it("does NOT call storePrivateKey when backendSignup throws", async () => {
     mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
     renderWalletStep({ linkPasskey: false });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
     });
@@ -510,7 +526,7 @@ describe("OnboardingWalletStep link flow", () => {
 
   it("clicking Link wallet to Google after acknowledging calls upgradeAndLink.mutate", async () => {
     renderWalletStep({ linkPasskey: true });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /link wallet to google/i }));
     });
@@ -528,7 +544,7 @@ describe("OnboardingWalletStep link flow", () => {
   it("does NOT call upgradeAndLink when backendSignup throws", async () => {
     mockBackendSignupMutateAsync.mockRejectedValue(new Error("signup failed"));
     renderWalletStep({ linkPasskey: true });
-    fireEvent.click(screen.getByLabelText(/i have saved this key/i));
+    await acknowledgeSavedWallet();
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /link wallet to google/i }));
     });
