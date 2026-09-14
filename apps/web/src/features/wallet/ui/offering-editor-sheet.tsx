@@ -7,7 +7,7 @@ import {
 } from "@clc/core/features/offerings/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -92,12 +92,16 @@ function useUnitLabel(): (unit: OfferingUnit) => string {
 export function OfferingEditorSheet({
   editor,
   voucherAddress,
-  voucherSymbol,
+  priceCurrency,
+  defaultImageUrl,
   onClose,
 }: {
   editor: OfferingEditor | null;
   voucherAddress: string;
-  voucherSymbol: string;
+  /** The voucher's unit of account, such as KES — never its token symbol. */
+  priceCurrency: string;
+  /** The issuer's profile photo, used only for a new offering. */
+  defaultImageUrl: string | null;
   onClose: () => void;
 }) {
   const offering = editor?.kind === "edit" ? editor.offering : null;
@@ -124,7 +128,8 @@ export function OfferingEditorSheet({
               key={offering?.id ?? "create"}
               offering={offering}
               voucherAddress={voucherAddress}
-              voucherSymbol={voucherSymbol}
+              priceCurrency={priceCurrency}
+              defaultImageUrl={defaultImageUrl}
               onClose={onClose}
             />
           ) : null}
@@ -137,12 +142,14 @@ export function OfferingEditorSheet({
 function OfferingForm({
   offering,
   voucherAddress,
-  voucherSymbol,
+  priceCurrency,
+  defaultImageUrl,
   onClose,
 }: {
   offering: Offering | null;
   voucherAddress: string;
-  voucherSymbol: string;
+  priceCurrency: string;
+  defaultImageUrl: string | null;
   onClose: () => void;
 }) {
   const { t } = useLingui();
@@ -150,6 +157,7 @@ function OfferingForm({
   const unitOptions = OFFERING_UNITS.map((unit) => ({ value: unit, label: unitLabel(unit) }));
   const create = useCreateVoucherOffering(voucherAddress);
   const update = useUpdateVoucherOffering(voucherAddress);
+  const hasSeededDefaultImage = useRef(false);
 
   /**
    * Whether the photo field is mid-upload.
@@ -168,7 +176,10 @@ function OfferingForm({
       description: offering?.description ?? "",
       unit: (offering?.unit ?? "") as OfferingUnit | "",
       pricePerUnit: offering?.pricePerUnit ?? "",
-      imageUrl: offering?.imageUrl ?? null,
+      // A new offering starts with the issuer's profile photo, just like a
+      // voucher deployment. Editing preserves the offering's own saved photo
+      // (including an intentionally removed one).
+      imageUrl: offering ? offering.imageUrl : defaultImageUrl,
     },
     validators: { onSubmit: offeringWriteSchema },
     onSubmit: async ({ value }) => {
@@ -190,6 +201,16 @@ function OfferingForm({
       }
     },
   });
+
+  // Profiles can arrive after this sheet mounts. Like the deployment forms,
+  // seed only a pristine new record so a photo the issuer chose or removed is
+  // never replaced by a late profile response.
+  useEffect(() => {
+    if (offering || hasSeededDefaultImage.current || !defaultImageUrl) return;
+    hasSeededDefaultImage.current = true;
+    if (form.getFieldMeta("imageUrl")?.isTouched || form.getFieldValue("imageUrl") !== null) return;
+    form.setFieldValue("imageUrl", defaultImageUrl, { dontUpdateMeta: true });
+  }, [defaultImageUrl, form, offering]);
 
   const legacyUnit = offering?.unitLabel && !offering.unit ? offering.unitLabel : null;
 
@@ -286,7 +307,7 @@ function OfferingForm({
               {(unitField) => (
                 <Field
                   htmlFor={priceField.name}
-                  label={t`Price per unit in ${voucherSymbol}`}
+                  label={t`Price per unit in ${priceCurrency}`}
                   // The row's first complaint. Both cannot be shown without
                   // stacking two alerts under a single label.
                   error={

@@ -17,6 +17,11 @@ const mocks = vi.hoisted(() => ({
       | null
       | undefined,
   },
+  profile: {
+    data: { avatarUrl: "https://cdn.test/profile/avatar.webp" } as
+      | { avatarUrl: string }
+      | undefined,
+  },
   updateProfile: vi.fn(),
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
@@ -94,6 +99,14 @@ vi.mock("sonner", () => ({
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => mocks.profile,
+}));
+
+vi.mock("#/lib/api/storage", () => ({
+  isStorageConfigured: true,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -1002,8 +1015,24 @@ describe("VoucherOfferingsPanel ownership", () => {
     expect(screen.getByRole("button", { name: "A service", pressed: false })).toBeTruthy();
     // Price and unit share a line under one label, so the unit control carries
     // its own name.
-    expect(screen.getByLabelText("Price per unit in MALII")).toBeTruthy();
+    expect(screen.getByLabelText("Price per unit in KSH")).toBeTruthy();
     expect(screen.getByRole("combobox", { name: "Unit" })).toBeTruthy();
+  });
+
+  it("uses the voucher's chosen currency and the issuer's profile photo by default", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    mocks.detailResult.data = detail({ voucherUoa: "KES" });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    expect(screen.getByLabelText("Price per unit in KES")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Update photo" })).toBeTruthy();
+    expect(
+      document.body.querySelector('img[src="https://cdn.test/profile/avatar.webp"]'),
+    ).toBeTruthy();
   });
 
   it("searches the units instead of listing fifteen chips", async () => {
