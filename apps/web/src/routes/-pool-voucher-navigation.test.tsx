@@ -9,7 +9,8 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("wagmi", () => ({
@@ -22,6 +23,35 @@ vi.mock("wagmi", () => ({
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("#/components/catalog-map/market-map.lazy", () => ({
+  MarketMap: () => <div data-testid="pool-map" />,
+}));
+
+vi.mock("#/features/home/hooks/use-market-camera", () => ({
+  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  useMarketCamera: () => ({
+    camera: null,
+    realFix: null,
+    userLocation: null,
+    locationStatus: "idle",
+    requestLocation: () => {},
+  }),
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
+  usePoolTreasury: () => ({ data: undefined, isPending: false }),
+}));
+
+vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
+  useVoucherOfferingsInfinite: () => ({
+    data: { pages: [{ offerings: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    refetch: vi.fn(),
+  }),
 }));
 
 import { PoolDetailPage } from "#/features/pools/ui";
@@ -42,15 +72,22 @@ describe("pool voucher navigation", () => {
   it("opens a pool voucher the account does not hold and Back returns to the pool", async () => {
     mockRequests();
     const rootRoute = createRootRoute({ component: Outlet });
+    function PoolTestPage() {
+      const { poolAddress } = useParams({ strict: false });
+      const [selected, setSelected] = useState<string>();
+      return poolAddress ? (
+        <PoolDetailPage
+          poolAddress={poolAddress}
+          selectedVoucherAddress={selected}
+          onSelectVoucher={setSelected}
+          onClearVoucher={() => setSelected(undefined)}
+        />
+      ) : null;
+    }
     const poolRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/pools/$poolAddress",
-      component: () => {
-        const { poolAddress } = useParams({ strict: false });
-        return poolAddress ? (
-          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
-        ) : null;
-      },
+      component: PoolTestPage,
     });
     const voucherRoute = createRoute({
       getParentRoute: () => rootRoute,
@@ -84,23 +121,14 @@ describe("pool voucher navigation", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.click(await screen.findByRole("link", { name: /trade token/i }));
-
-    await waitFor(() => {
-      expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
-      expect(history.location.search).toBe(`?poolAddress=${POOL_ADDRESS}`);
-    });
-    expect(await screen.findByText("Trade Token")).toBeTruthy();
-    expect(screen.getByLabelText("Balance").textContent).toMatch(/0\s*TTX/);
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole("link", { name: "Pool" }));
-    });
+    fireEvent.click(await screen.findByRole("button", { name: "Browse vouchers" }));
+    fireEvent.click(await screen.findByRole("button", { name: /trade token/i }));
 
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
-      expect(screen.getByRole("heading", { name: "Trade Pool" })).toBeTruthy();
     });
+    expect(await screen.findByRole("region", { name: "Trade Token" })).toBeTruthy();
+    expect(screen.queryByLabelText("Balance")).toBeNull();
   });
 });
 
@@ -119,6 +147,8 @@ function mockRequests() {
                 name: "Trade Token",
                 symbol: "TTX",
                 decimals: 6,
+                geoLat: -3.51,
+                geoLng: 39.91,
                 iconUrl: "https://pool.example/ttx.png",
               },
             ],

@@ -138,6 +138,9 @@ describe("pools client", () => {
             decimals: 6,
             description: "Accepted by market sellers",
             iconUrl: "https://example.com/mkt.png",
+            locationName: "Kilifi Market",
+            geoLat: -3.5107,
+            geoLng: 39.9093,
             offerCount: 7,
             availableOfferCount: 5,
             tokenLimit: "1000000000",
@@ -162,6 +165,8 @@ describe("pools client", () => {
       offerCount: 7,
       availableOfferCount: 5,
       oracleName: "KES",
+      geoLat: -3.5107,
+      geoLng: 39.9093,
     });
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(

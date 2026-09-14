@@ -762,6 +762,48 @@ describe("MarketMap spiderfy", () => {
     expect(spiderData(map).features).toEqual([]);
   });
 
+  it("clears the selection when the background is tapped with no spider open", () => {
+    const onClearSelection = vi.fn();
+    renderMap(LOCATIONS, { onClearSelection });
+    const map = loadedMap();
+
+    clickEmptyMap(map);
+
+    expect(onClearSelection).toHaveBeenCalledTimes(1);
+  });
+
+  it("frames a selected marker with padding so it sits above a sheet", () => {
+    const { rerender } = render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        focusPadding={{ top: 96, bottom: 240, left: 48, right: 48 }}
+      />,
+    );
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId="1"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        focusPadding={{ top: 96, bottom: 240, left: 48, right: 48 }}
+      />,
+    );
+
+    expect(map.easeTo).toHaveBeenCalledWith(
+      expect.objectContaining({
+        center: [36.82, -1.28],
+        padding: { top: 96, bottom: 240, left: 48, right: 48 },
+      }),
+    );
+  });
+
   it("stays open when the tap lands on another marker", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();

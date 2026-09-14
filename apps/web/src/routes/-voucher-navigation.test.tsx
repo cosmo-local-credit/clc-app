@@ -116,7 +116,7 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
   }),
 }));
 
-vi.mock("#/features/home/ui/market-map.lazy", () => ({
+vi.mock("#/components/catalog-map/market-map.lazy", () => ({
   MarketMap: (props: {
     locations: { id: string; name: string }[];
     onSelectLocation: (id: string) => void;

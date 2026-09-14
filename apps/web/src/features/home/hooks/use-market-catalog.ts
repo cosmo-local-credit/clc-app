@@ -9,7 +9,7 @@ import {
 } from "#/features/home/hooks/use-filtered-market-vouchers";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
-import type { MarketViewport } from "#/features/home/ui/market-map";
+import type { MarketViewport } from "#/components/catalog-map/market-map";
 
 export type MarketCatalog = {
   vouchers: MarketVoucher[];
