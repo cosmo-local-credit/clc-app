@@ -12,7 +12,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 
 /**
- * Attachments as URL records.
+ * Links as URL records.
  *
  * There is no file picker: storage-server uploads images only, so a local
  * document has nowhere to go. What this does support is what the backend can
@@ -83,7 +83,7 @@ export function PostAttachmentFields({
 
               <Input
                 className="bg-card font-mono text-xs"
-                aria-label={t`Attachment ${index + 1} link`}
+                aria-label={t`Link ${index + 1}`}
                 value={attachment.url}
                 disabled={disabled}
                 onChange={(event) => replaceAt(index, { ...attachment, url: event.target.value })}
@@ -94,7 +94,7 @@ export function PostAttachmentFields({
               {attachment.kind === "FILE" ? (
                 <Input
                   className="bg-card"
-                  aria-label={t`Attachment ${index + 1} file name`}
+                  aria-label={t`Link ${index + 1} file name`}
                   placeholder={t`File name (optional)`}
                   maxLength={REPORT_ATTACHMENT_FILENAME_MAX}
                   value={attachment.filename ?? ""}
@@ -111,7 +111,7 @@ export function PostAttachmentFields({
                 size="sm"
                 className="h-9 bg-card text-destructive"
                 disabled={disabled}
-                aria-label={t`Remove attachment ${index + 1}`}
+                aria-label={t`Remove link ${index + 1}`}
                 onClick={() => onChange(attachments.filter((_, position) => position !== index))}
               >
                 <FaTrash aria-hidden className="mr-2 size-3" />

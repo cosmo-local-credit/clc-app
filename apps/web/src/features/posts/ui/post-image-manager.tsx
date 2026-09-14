@@ -18,7 +18,8 @@ import { useImageUpload } from "#/features/images/use-image-upload";
  * A post's gallery, on top of the existing `report.image` upload transport.
  *
  * `ImageUploadField` beside it holds one URL and is right for a single photo;
- * a post holds up to 50 in document order, with captions and a cover choice. So
+ * a post holds up to 50 in document order, with captions. Its first photo is
+ * always the cover, so the author never has to make that extra choice. So
  * this is new UI over the same `useImageUpload` mutation and `uploadInOrder`
  * fan-out — not a new upload path.
  *
@@ -100,7 +101,13 @@ export function PostImageManager({
         });
       }
 
-      if (added.length > 0) onChange([...images, ...added]);
+      if (added.length > 0) {
+        onChange([...images, ...added]);
+        // The first image added to a new post is its cover. Existing posts
+        // retain their saved cover; an imported post without one uses its
+        // earliest gallery image as soon as the author adds another.
+        if (!coverUrl) onCoverChange(images[0]?.url ?? added[0]!.url);
+      }
       if (failed) setError(t`Some photos didn't upload. Try adding them again.`);
     } finally {
       setUploading(0);
@@ -124,9 +131,11 @@ export function PostImageManager({
   function remove(index: number) {
     const removed = images[index];
     onChange(images.filter((_, position) => position !== index));
-    // The cover is a copy of a gallery URL, so removing that row leaves the
-    // post with a cover pointing at an image it no longer shows.
-    if (removed && coverUrl === removed.url) onCoverChange(null);
+    // The cover is a copy of a gallery URL, so keep it on an image that is
+    // still present when its current row is removed.
+    if (removed && coverUrl === removed.url) {
+      onCoverChange(images.find((_, position) => position !== index)?.url ?? null);
+    }
   }
 
   return (
@@ -237,16 +246,6 @@ export function PostImageManager({
                     onClick={() => move(index, 1)}
                   >
                     <FaChevronDown aria-hidden className="size-3" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-9 bg-card"
-                    disabled={disabled || isCover}
-                    onClick={() => onCoverChange(image.url)}
-                  >
-                    <Trans>Use as cover</Trans>
                   </Button>
                   <Button
                     type="button"

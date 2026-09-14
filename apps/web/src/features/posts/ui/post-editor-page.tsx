@@ -640,7 +640,7 @@ function PostEditorForm({
           </form.Field>
         </Section>
 
-        <Section title={t`Attachments`}>
+        <Section title={t`Links`}>
           <form.Field name="attachments">
             {(field) => (
               <PostAttachmentFields
