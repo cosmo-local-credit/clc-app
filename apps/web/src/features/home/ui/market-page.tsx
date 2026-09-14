@@ -107,6 +107,12 @@ export function MarketPage({
         />
       ) : null}
 
+      {onboardingBanner ? (
+        <div className="pointer-events-none absolute inset-x-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 px-4">
+          {onboardingBanner}
+        </div>
+      ) : null}
+
       {notice ? (
         <div
           className="absolute inset-x-4 z-20 flex items-center justify-between gap-3 border border-border bg-card px-4 py-3"
@@ -145,7 +151,6 @@ export function MarketPage({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+1.25rem)] z-20 flex flex-col gap-2 px-4">
         <MarketFilterSummary filter={filter} />
-        {onboardingBanner}
         <div className="flex items-center gap-2">
           <Button asChild className="pointer-events-auto h-11 flex-1">
             <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
@@ -194,7 +199,7 @@ function MarketPreview({
       className={[
         "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
         offsetForBanner
-          ? "top-[calc(env(safe-area-inset-top)+3rem)]"
+          ? "top-[calc(env(safe-area-inset-top)+4.75rem)]"
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
       ].join(" ")}
     >
