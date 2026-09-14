@@ -10,8 +10,10 @@ import { poolsClient } from "#/lib/api/pools";
  * A write to the catalog, not the chain, so there is no indexer to wait for:
  * the response carries the saved row and seeds the detail query directly. The
  * pool reads are `no-store`, so unlike the voucher profile there is no browser
- * copy to refresh. The rest of the pool keys are invalidated because a renamed,
- * re-tagged or relocated pool reads differently in the directory and the facets.
+ * copy to refresh. The seeded detail is left out of invalidation so it cannot be
+ * replaced while the mutation settles. The rest of the pool keys are invalidated
+ * because a renamed, re-tagged or relocated pool reads differently in the
+ * directory and the facets.
  */
 export function useUpdatePoolProfile(address: string) {
   const queryClient = useQueryClient();
@@ -20,7 +22,10 @@ export function useUpdatePoolProfile(address: string) {
     mutationFn: (profile: PoolProfileUpdate) => poolsClient.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
-      return queryClient.invalidateQueries({ queryKey: poolKeys.all });
+      return queryClient.invalidateQueries({
+        queryKey: poolKeys.all,
+        predicate: (query) => query.queryKey[2] !== "detail",
+      });
     },
   });
 }

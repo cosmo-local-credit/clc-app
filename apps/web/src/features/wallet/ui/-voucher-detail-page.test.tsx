@@ -1127,6 +1127,25 @@ describe("VoucherDetailPage voucher details editor", () => {
     expect("iconUrl" in written).toBe(false);
   });
 
+  it("clears an override when the owner restores the immutable contract name", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    mocks.detailResult.data = detail({
+      name: "Malii Fresh",
+      contractName: "Priscilah Malii",
+    });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Display name"), {
+      target: { value: "Priscilah Malii" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({ displayName: "" });
+  });
+
   it("does not write a blank display name", async () => {
     mocks.auth.session = { address: OWNER, chainId: 42220 };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);

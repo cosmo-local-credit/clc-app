@@ -190,7 +190,14 @@ describe("updatePoolProfile", () => {
   it("PUTs the whole record to the owner route and returns the saved row", async () => {
     const fetcher = mockFetch({
       ok: true,
-      result: { pool: { address: ADDRESS, name: "Kilifi Pool", symbol: "KLF" } },
+      result: {
+        pool: {
+          address: ADDRESS,
+          name: "Kilifi Traders",
+          contractName: "Kilifi Pool",
+          symbol: "KLF",
+        },
+      },
     });
     vi.stubGlobal("fetch", fetcher);
 
@@ -213,7 +220,8 @@ describe("updatePoolProfile", () => {
       geoLng: 39.9,
       tags: ["food"],
     });
-    expect(pool.name).toBe("Kilifi Pool");
+    expect(pool.name).toBe("Kilifi Traders");
+    expect(pool.contractName).toBe("Kilifi Pool");
   });
 
   // The label is an override, and an ordinary metadata save must not create one.

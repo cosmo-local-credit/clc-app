@@ -132,8 +132,17 @@ function VoucherProfileForm({
       try {
         await update.mutateAsync({
           // `name` is the effective label, not proof that an override exists, so
-          // it is sent only once the owner has changed it.
-          ...(value.displayName === voucher.name ? {} : { displayName: value.displayName }),
+          // it is sent only once the owner has changed it. Entering the immutable
+          // contract name clears an existing override instead of storing a
+          // redundant copy of that name.
+          ...(value.displayName === voucher.name
+            ? {}
+            : {
+                displayName:
+                  voucher.contractName && value.displayName === voucher.contractName
+                    ? ""
+                    : value.displayName,
+              }),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),

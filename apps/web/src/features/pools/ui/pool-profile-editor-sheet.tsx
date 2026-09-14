@@ -125,8 +125,17 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
       try {
         await update.mutateAsync({
           // `name` is the effective label, not proof that an override exists, so
-          // it is sent only once the owner has changed it.
-          ...(value.displayName === pool.name ? {} : { displayName: value.displayName }),
+          // it is sent only once the owner has changed it. Entering the immutable
+          // contract name clears an existing override instead of storing a
+          // redundant copy of that name.
+          ...(value.displayName === pool.name
+            ? {}
+            : {
+                displayName:
+                  pool.contractName && value.displayName === pool.contractName
+                    ? ""
+                    : value.displayName,
+              }),
           description: value.description,
           unitOfAccount: value.unitOfAccount,
           email: value.email,

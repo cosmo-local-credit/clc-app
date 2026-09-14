@@ -236,6 +236,24 @@ describe("PoolDetailPage pool details editor", () => {
     expect("imageUrl" in written).toBe(false);
   });
 
+  it("clears an override when the owner restores the immutable contract name", async () => {
+    mocks.poolResult.data = pool({
+      name: "Kilifi Traders",
+      contractName: "Kilifi Community Pool",
+    });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Display name"), {
+      target: { value: "Kilifi Community Pool" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({ displayName: "" });
+  });
+
   it("does not write a display name shorter than a pool name may be", async () => {
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
     fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
