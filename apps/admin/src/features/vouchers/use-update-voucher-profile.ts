@@ -10,7 +10,8 @@ import { clcApi } from "#/lib/api";
  * A write to the catalog rather than to the chain, so unlike a deploy there is no
  * indexer to wait for: the response carries the saved row and the cache can take
  * it directly. The detail query is seeded with it so the screen shows the saved
- * record without a refetch, and the rest of the voucher keys are invalidated
+ * record without a refetch and left out of invalidation so no follow-up read can
+ * replace the authoritative result. The rest of the voucher keys are invalidated
  * because a re-tagged or relocated voucher reads differently in the market list,
  * the viewport reads and the facets.
  */
@@ -22,7 +23,10 @@ export function useUpdateVoucherProfile(address: string) {
       clcApi.admin.updateVoucherProfile(address, profile),
     onSuccess: (voucher: MarketVoucherDetail) => {
       queryClient.setQueryData(voucherKeys.detail(address), voucher);
-      return queryClient.invalidateQueries({ queryKey: voucherKeys.all });
+      return queryClient.invalidateQueries({
+        queryKey: voucherKeys.all,
+        predicate: (query) => query.queryKey[2] !== "detail",
+      });
     },
   });
 }

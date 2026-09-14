@@ -9,10 +9,10 @@ import { clcApi } from "#/lib/api";
  *
  * Unlike adding a voucher, this is a write to the catalog itself rather than to
  * the chain, so there is no indexer to wait for: the response carries the saved
- * row and the cache can take it directly. The detail query is seeded with it so
- * the screen shows the saved record without a refetch, and the rest of the pool
- * keys are invalidated because a renamed or re-tagged pool reads differently in
- * the directory and the facets.
+ * row and the cache can take it directly. The detail query is seeded with it and
+ * left out of invalidation so no follow-up read can replace the authoritative
+ * result. The rest of the pool keys are invalidated because a renamed or
+ * re-tagged pool reads differently in the directory and the facets.
  */
 export function useUpdatePoolProfile(address: string) {
   const queryClient = useQueryClient();
@@ -21,7 +21,10 @@ export function useUpdatePoolProfile(address: string) {
     mutationFn: (profile: PoolProfileUpdate) => clcApi.admin.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
-      return queryClient.invalidateQueries({ queryKey: poolKeys.all });
+      return queryClient.invalidateQueries({
+        queryKey: poolKeys.all,
+        predicate: (query) => query.queryKey[2] !== "detail",
+      });
     },
   });
 }

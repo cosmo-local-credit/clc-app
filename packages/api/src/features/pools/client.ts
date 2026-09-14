@@ -50,6 +50,8 @@ export type UserPool = {
   chainId: number | null;
   address: HexAddress;
   name: string;
+  /** Immutable SwapPool name; `name` is the effective catalog label. */
+  contractName?: string | null;
   symbol: string;
   ownerAddress: HexAddress | null;
   feePpm: number | null;
@@ -207,6 +209,7 @@ type BackendPool = Partial<{
   chainId: string | number;
   address: string;
   name: string;
+  contractName: string | null;
   symbol: string;
   ownerAddress: string | null;
   feePpm: string | number | null;
@@ -444,6 +447,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
     chainId: normalizeNumber(pool.chainId),
     address,
     name,
+    contractName: normalizeText(pool.contractName),
     symbol,
     ownerAddress: normalizeHex(pool.ownerAddress),
     feePpm: normalizeNumber(pool.feePpm),

@@ -41,6 +41,8 @@ describe("useUpdatePoolProfile", () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     // What the page is already showing: a pool with no image, hence initials.
     client.setQueryData(poolKeys.detail(ADDRESS), saved({ imageUrl: null }));
+    const listKey = poolKeys.list({ perPage: 20 });
+    client.setQueryData(listKey, { pools: [] });
 
     const wrapper = ({ children }: { children: ReactNode }) => (
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
@@ -68,6 +70,8 @@ describe("useUpdatePoolProfile", () => {
         "https://cdn.test/pool/new_400_ab.webp",
       ),
     );
+    expect(client.getQueryState(poolKeys.detail(ADDRESS))?.isInvalidated).toBe(false);
+    expect(client.getQueryState(listKey)?.isInvalidated).toBe(true);
   });
 
   it("seeds the same entry whatever casing the caller used", async () => {
