@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
     isPending: boolean;
   },
   searchResults: [] as { id: string; address: string; name: string; symbol: string }[],
+  membership: { data: false as boolean | undefined, isPending: false },
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
 }));
@@ -37,6 +38,10 @@ vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
   usePoolQuoterKind: () => mocks.quoterKind,
   usePoolVoucherRates: () => ({ data: undefined }),
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-registry", () => ({
+  usePoolTokenMembership: () => mocks.membership,
 }));
 
 vi.mock("#/features/home/hooks/use-voucher-search", () => ({
@@ -142,6 +147,7 @@ beforeEach(() => {
   mocks.relay.mockReset();
   mocks.relay.mockResolvedValue({ trackingId: "t1", txHash: `0x${"ab".repeat(32)}` });
   mocks.quoterKind = { kind: "relative", isPending: false };
+  mocks.membership = { data: false, isPending: false };
   mocks.searchResults = [];
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
@@ -245,6 +251,10 @@ describe("PoolVoucherSheet approving", () => {
 });
 
 describe("PoolVoucherSheet managing", () => {
+  beforeEach(() => {
+    mocks.membership = { data: true, isPending: false };
+  });
+
   it("seeds the fields from the stored rate and cap", async () => {
     renderSheet(
       <PoolVoucherSheet
@@ -335,5 +345,62 @@ describe("PoolVoucherSheet managing", () => {
       functionName: "remove",
       args: [TOKEN],
     });
+  });
+});
+
+describe("PoolVoucherSheet registration", () => {
+  it("omits add for a token the registry already holds", async () => {
+    // The catalog can miss a member — one seeded when the pool was published, or
+    // one the indexer has not projected — so the picker will offer it. Sending
+    // `add` anyway reverts TokenAlreadyExists and, with revertOnFailure, takes
+    // the rate and the limit down with it.
+    mocks.membership = { data: true, isPending: false };
+    mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[]}
+        voucher={null}
+        currentRatePpm={undefined}
+        rateIsPending={false}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
+    expect(within(dialog).getByText(/already allows PLKD/)).toBeTruthy();
+
+    fireEvent.change(within(dialog).getByLabelText("Exchange rate"), { target: { value: "500" } });
+    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "100" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([LIMITER, QUOTER]);
+  });
+
+  it("waits for the registry before letting an approval be signed", async () => {
+    mocks.membership = { data: undefined, isPending: true };
+    mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[]}
+        voucher={null}
+        currentRatePpm={undefined}
+        rateIsPending={false}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
+    expect(
+      (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
   });
 });

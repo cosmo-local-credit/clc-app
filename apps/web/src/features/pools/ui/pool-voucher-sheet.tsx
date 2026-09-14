@@ -37,6 +37,7 @@ import {
 } from "#/features/home/hooks/use-voucher-search";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import { usePoolQuoterKind, type PoolQuoterKind } from "#/features/pools/hooks/use-pool-quoter";
+import { usePoolTokenMembership } from "#/features/pools/hooks/use-pool-registry";
 
 /**
  * The voucher a steward is configuring, whichever screen they came from.
@@ -161,6 +162,17 @@ function PoolVoucherForm({
         }
       : null;
 
+  // Whether to send `add` is the registry's answer, not the catalog's. A token
+  // seeded when the pool was published, or one the indexer has not projected,
+  // is already a member the catalog does not list — and `add` on a member
+  // reverts `TokenAlreadyExists`, taking the rate and the limit with it.
+  const membership = usePoolTokenMembership(pool, selected?.address);
+  const alreadyRegistered = membership.data === true;
+  // Only register on a positive "not a member". An unread membership defaults to
+  // not registering, because a redundant `add` reverts the whole batch while a
+  // missing one merely leaves the voucher unlisted and re-approvable.
+  const register = !voucher && membership.data === false;
+  const registrationUnknown = !voucher && membership.data === undefined;
   const hasLimiter = pool.limiterAddress !== null;
   const unitSymbol = pool.unitOfAccount ?? pool.symbol;
   // Only meaningful when a rate was actually read. Defaulting an unread rate to
@@ -210,7 +222,7 @@ function PoolVoucherForm({
             registryAddress: pool.tokenRegistryAddress,
             limiterAddress: pool.limiterAddress,
             quoterAddress: pool.quoterAddress,
-            register: !voucher,
+            register,
             ...(capChanged && config.depositCapRaw !== undefined
               ? { depositCapRaw: config.depositCapRaw }
               : {}),
@@ -260,7 +272,12 @@ function PoolVoucherForm({
   // reads its symbol and decimals off the same value that decided to render it.
   const configuring: SheetVoucher | null =
     selected && canConfigure && !rateUnread && !(voucher && rateIsPending) ? selected : null;
-  const canSubmit = !!configuring && !quoter.isPending && !decimalsPending && !relay.isPending;
+  const canSubmit =
+    !!configuring &&
+    !quoter.isPending &&
+    !decimalsPending &&
+    !registrationUnknown &&
+    !relay.isPending;
 
   return (
     <form
@@ -290,6 +307,15 @@ function PoolVoucherForm({
         {voucher && canConfigure && rateIsPending ? (
           <p className="text-muted-foreground text-xs">
             <Trans>Reading the current rate…</Trans>
+          </p>
+        ) : null}
+
+        {!voucher && alreadyRegistered ? (
+          <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+            <Trans>
+              This pool already allows {selected?.symbol}. Saving updates its rate and limit instead
+              of adding it again.
+            </Trans>
           </p>
         ) : null}
 
