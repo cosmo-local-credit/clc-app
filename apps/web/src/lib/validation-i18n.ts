@@ -346,6 +346,16 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Each attachment can only be added once",
         message: "Each attachment can only be added once",
       });
+    case "Enter an exchange rate greater than zero":
+      return i18n._({
+        id: "Enter an exchange rate greater than zero",
+        message: "Enter an exchange rate greater than zero",
+      });
+    case "Enter a credit limit greater than zero":
+      return i18n._({
+        id: "Enter a credit limit greater than zero",
+        message: "Enter a credit limit greater than zero",
+      });
     default:
       return error;
   }

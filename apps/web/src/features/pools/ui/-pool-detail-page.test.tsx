@@ -85,6 +85,21 @@ vi.mock("./pool-offerings-panel", () => ({
   PoolOfferingsPanel: () => <div data-testid="offerings-panel" />,
 }));
 
+// The on-chain steward surface has its own tests; here it only needs to stay out
+// of the way of the catalog editor, and its chain reads out of this render.
+vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
+  usePoolVoucherRates: () => ({ data: undefined }),
+  usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
+}));
+
+vi.mock("./pool-controls-panel", () => ({
+  PoolControlsPanel: () => <div data-testid="pool-controls" />,
+}));
+
+vi.mock("./pool-voucher-sheet", () => ({
+  PoolVoucherSheet: () => null,
+}));
+
 // The picker geocodes and renders a map; the editor only needs it to hold a place.
 vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
@@ -285,5 +300,30 @@ describe("PoolDetailPage pool details editor", () => {
     await waitFor(() =>
       expect(mocks.updateProfile).toHaveBeenCalledWith({ ...savedProfile, unitOfAccount: "TZS" }),
     );
+  });
+});
+
+describe("PoolDetailPage on-chain management", () => {
+  it("offers the steward controls to the pool's owner", () => {
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    expect(screen.getByTestId("pool-controls")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Approve voucher" })).toBeTruthy();
+  });
+
+  it("withholds them from a superadmin who does not own the pool", () => {
+    // Every call behind these is `onlyOwner`, so a superadmin pressing them
+    // would only be signing a revert. They keep the catalog editor.
+    mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    expect(screen.queryByTestId("pool-controls")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+  });
+
+  it("withholds them from anyone else", () => {
+    mocks.auth.session = { address: OTHER, chainId: 100 };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
+    expect(screen.queryByTestId("pool-controls")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
   });
 });

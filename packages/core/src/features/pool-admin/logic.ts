@@ -1,4 +1,6 @@
 import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
+import { z } from "zod";
+import { formatTokenAmount, parseTokenAmount } from "../wallet/logic";
 import type { CaliburCall } from "../webauthn/index";
 
 /**
@@ -7,7 +9,7 @@ import type { CaliburCall } from "../webauthn/index";
  *
  * Separate from `pool-swaps/logic` on purpose. That module is what a holder does
  * with a pool — deposit, swap, collect. This one is what an owner does *to* a
- * pool, and every call here lands on a different contract than SwapPool itself:
+ * pool, and most calls here land on a different contract than SwapPool itself:
  * membership is the token registry's, the deposit cap is the limiter's, and the
  * price is the quoter's. SwapPool only holds the pointers.
  *
@@ -16,9 +18,13 @@ import type { CaliburCall } from "../webauthn/index";
  */
 
 export const tokenIndexAddAbi = parseAbi(["function add(address token) returns (bool)"]);
+export const tokenIndexRemoveAbi = parseAbi(["function remove(address token) returns (bool)"]);
 
 export const limiterSetLimitForAbi = parseAbi([
   "function setLimitFor(address token, address holder, uint256 value)",
+]);
+export const limiterLimitOfAbi = parseAbi([
+  "function limitOf(address token, address holder) view returns (uint256)",
 ]);
 
 /**
@@ -32,20 +38,50 @@ export const oracleQuoterSetOracleWithStalenessAbi = parseAbi([
   "function setOracle(address token, address oracle, uint256 maxStaleness)",
 ]);
 
+export const relativeQuoterSetPriceIndexValueAbi = parseAbi([
+  "function setPriceIndexValue(address token, uint256 exchangeRate) returns (uint256)",
+]);
 /**
- * How the pool's quoter should price the new voucher.
+ * Read-side counterpart, and the one selector that tells the three quoters
+ * apart: neither OracleQuoter nor DecimalQuoter exposes `priceIndex`, so a call
+ * that returns rather than reverts identifies a RelativeQuoter.
+ */
+export const relativeQuoterPriceIndexAbi = parseAbi([
+  "function priceIndex(address token) view returns (uint256)",
+]);
+
+export const swapPoolWithdrawLiquidityAbi = parseAbi([
+  "function withdrawLiquidity(address token, address to, uint256 amount)",
+]);
+export const swapPoolSetFeeAddressAbi = parseAbi(["function setFeeAddress(address feeAddress)"]);
+
+/**
+ * RelativeQuoter stores rates in PPM, so a rate is a decimal with six places.
+ * The quoter reads an unset token as PPM exactly — parity — which is why a rate
+ * of zero is refused rather than encoded.
+ */
+export const POOL_PRICE_INDEX_DECIMALS = 6;
+
+const PRICE_INDEX_SCALE = 10n ** BigInt(POOL_PRICE_INDEX_DECIMALS);
+
+/**
+ * How the pool's quoter should price the voucher.
  *
- * One variant per quoter this product publishes, because the two take different
- * calls and are not interchangeable: an OracleQuoter maps the token to a
- * Chainlink aggregator, while a DecimalQuoter derives everything from token
- * decimals and has no per-token configuration at all.
+ * One variant per quoter the protocol publishes, because the three take
+ * different calls and are not interchangeable: a RelativeQuoter holds a
+ * hand-set rate per token, an OracleQuoter maps the token to a Chainlink
+ * aggregator, and a DecimalQuoter derives everything from token decimals and
+ * has no per-token configuration at all.
  *
- * RelativeQuoter has no variant. It is not offered for new pools, and a pool
- * already running one cannot be configured from here — `setPriceIndexValue`
- * takes a manually maintained rate that nothing in this product tracks, so the
- * caller refuses the pool rather than writing a number nobody chose.
+ * A caller that adds a fourth quoter adds a variant here and a branch in
+ * `buildPricingCall`; nothing else in the batch changes.
  */
 export type PoolVoucherPricing =
+  | {
+      kind: "relative";
+      /** The token's value in the pool's unit of account, in PPM. */
+      exchangeRatePpm: string;
+    }
   | {
       kind: "oracle";
       aggregatorAddress: `0x${string}`;
@@ -56,6 +92,8 @@ export type PoolVoucherPricing =
       maxStalenessSeconds?: string;
     }
   | { kind: "decimal" };
+
+export type RelativePoolVoucherPricing = Extract<PoolVoucherPricing, { kind: "relative" }>;
 
 export type BuildAddPoolVoucherCallsInput = {
   poolAddress: `0x${string}`;
@@ -74,7 +112,8 @@ export type BuildAddPoolVoucherCallsInput = {
   register: boolean;
   /** Deposit cap in raw base units. Omitted leaves the limiter untouched. */
   depositCapRaw?: string;
-  pricing: PoolVoucherPricing;
+  /** Omitted leaves the quoter untouched, which is what an unchanged rate means. */
+  pricing?: PoolVoucherPricing;
 };
 
 /**
@@ -87,8 +126,11 @@ export type BuildAddPoolVoucherCallsInput = {
  *
  * Returned as one batch on purpose. The three calls are separately owned
  * contracts but a single operator decision, and relaying them together means a
- * voucher is never left registered but unpriced, quoting a revert to anyone who
- * tries to swap it.
+ * voucher is never left registered but unpriced, quoting a revert — or, on a
+ * RelativeQuoter, a parity nobody chose — to anyone who tries to swap it.
+ *
+ * The same builder covers an edit: pass `register: false` and only the fields
+ * that changed.
  */
 export function buildAddPoolVoucherCalls(input: BuildAddPoolVoucherCallsInput): CaliburCall[] {
   assertContractAddress(input.poolAddress, "pool");
@@ -133,10 +175,143 @@ export function buildAddPoolVoucherCalls(input: BuildAddPoolVoucherCallsInput): 
   return calls;
 }
 
+/**
+ * Takes the voucher out of the pool's registry.
+ *
+ * One call, and the registry's rather than the pool's: `SwapPool` checks both
+ * sides of a swap against `have()`, so de-listing closes entry and exit
+ * together. The cap and the rate are left where they are — they address a token
+ * the pool no longer admits, and re-registering later should restore the
+ * configuration the steward last chose rather than silently start from nothing.
+ */
+export function buildRemovePoolVoucherCalls(input: {
+  tokenAddress: `0x${string}`;
+  registryAddress: `0x${string}` | null;
+}): CaliburCall[] {
+  assertContractAddress(input.tokenAddress, "voucher");
+  const registry = requireDependency(input.registryAddress, "token registry");
+  return [
+    {
+      to: registry,
+      value: "0",
+      data: encodeFunctionData({
+        abi: tokenIndexRemoveAbi,
+        functionName: "remove",
+        args: [input.tokenAddress],
+      }),
+    },
+  ];
+}
+
+/**
+ * The owner's emergency withdrawal of pool liquidity.
+ *
+ * In decoupled mode `fees[token]` is reserved and cannot leave through this
+ * path, so a caller asking for the whole balance of such a pool gets
+ * `InsufficientBalance`; quote the withdrawable figure before offering it.
+ */
+export function buildWithdrawPoolLiquidityCalls(input: {
+  poolAddress: `0x${string}`;
+  tokenAddress: `0x${string}`;
+  recipientAddress: `0x${string}`;
+  amountRaw: string;
+}): CaliburCall[] {
+  assertContractAddress(input.poolAddress, "pool");
+  assertContractAddress(input.tokenAddress, "voucher");
+  assertContractAddress(input.recipientAddress, "recipient");
+  return [
+    {
+      to: input.poolAddress,
+      value: "0",
+      data: encodeFunctionData({
+        abi: swapPoolWithdrawLiquidityAbi,
+        functionName: "withdrawLiquidity",
+        args: [input.tokenAddress, input.recipientAddress, parsePositiveAmount(input.amountRaw)],
+      }),
+    },
+  ];
+}
+
+/**
+ * Re-points where collected pool fees are paid.
+ *
+ * Reverts `Sealed` if the pool's `FEEADDRESS_STATE` bit is set, which is not
+ * something the catalog records, so the failure surfaces at relay rather than
+ * at validation.
+ */
+export function buildSetPoolFeeAddressCalls(input: {
+  poolAddress: `0x${string}`;
+  feeAddress: `0x${string}`;
+}): CaliburCall[] {
+  assertContractAddress(input.poolAddress, "pool");
+  assertContractAddress(input.feeAddress, "fee recipient");
+  return [
+    {
+      to: input.poolAddress,
+      value: "0",
+      data: encodeFunctionData({
+        abi: swapPoolSetFeeAddressAbi,
+        functionName: "setFeeAddress",
+        args: [input.feeAddress],
+      }),
+    },
+  ];
+}
+
+/**
+ * The deposit cap, in the voucher's own base units, that holds a given amount of
+ * the pool's unit of account.
+ *
+ * The steward thinks in the unit the pool is priced in — "this voucher may bring
+ * 50,000 KES into the pool" — while `Limiter.setLimitFor` counts tokens. The two
+ * are related by the rate being set in the same batch, so the conversion belongs
+ * here beside the call that consumes it.
+ *
+ * Floor division: a cap rounded up would admit more value than the steward
+ * named.
+ */
+export function poolVoucherCapFromUnitValue(
+  unitValueRaw: string,
+  exchangeRatePpm: string,
+  decimals: number,
+): string {
+  const rate = parsePositiveAmount(exchangeRatePpm);
+  assertTokenDecimals(decimals);
+  return ((parseAmount(unitValueRaw) * 10n ** BigInt(decimals)) / rate).toString();
+}
+
+/** The inverse, for reading an existing cap back into the steward's unit. */
+export function poolVoucherUnitValueFromCap(
+  capRaw: string,
+  exchangeRatePpm: string,
+  decimals: number,
+): string {
+  const rate = parsePositiveAmount(exchangeRatePpm);
+  assertTokenDecimals(decimals);
+  return ((parseAmount(capRaw) * rate) / 10n ** BigInt(decimals)).toString();
+}
+
+/** Parity — what the quoter reads for a token whose rate was never set. */
+export function poolParityPriceIndex(): string {
+  return PRICE_INDEX_SCALE.toString();
+}
+
 function buildPricingCall(input: BuildAddPoolVoucherCallsInput): CaliburCall | null {
-  if (input.pricing.kind === "decimal") return null;
+  if (!input.pricing || input.pricing.kind === "decimal") return null;
 
   const quoter = requireDependency(input.quoterAddress, "quoter");
+
+  if (input.pricing.kind === "relative") {
+    return {
+      to: quoter,
+      value: "0",
+      data: encodeFunctionData({
+        abi: relativeQuoterSetPriceIndexValueAbi,
+        functionName: "setPriceIndexValue",
+        args: [input.tokenAddress, parsePositiveAmount(input.pricing.exchangeRatePpm)],
+      }),
+    };
+  }
 
   const { aggregatorAddress, maxStalenessSeconds } = input.pricing;
   assertContractAddress(aggregatorAddress, "aggregator");
@@ -164,14 +339,24 @@ function buildPricingCall(input: BuildAddPoolVoucherCallsInput): CaliburCall | n
   };
 }
 
+function parseAmount(value: string): bigint {
+  if (!/^\d+$/.test(value)) throw new Error("Pool value must be a non-negative integer string.");
+  return BigInt(value);
+}
+
 function parsePositiveAmount(value: string): bigint {
-  if (!/^\d+$/.test(value)) throw new Error("Pool value must be a positive integer string.");
-  const amount = BigInt(value);
+  const amount = parseAmount(value);
   // Zero is a real setting on both contracts and means the opposite of unset: a
-  // zero cap rejects every deposit, and a zero rate prices the token at nothing.
+  // zero cap rejects every deposit, and a zero rate is read back as parity.
   // Neither belongs in a flow whose purpose is to make a voucher usable.
   if (amount <= 0n) throw new Error("Pool value must be greater than zero.");
   return amount;
+}
+
+function assertTokenDecimals(decimals: number): void {
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error("Token decimals must be a non-negative integer.");
+  }
 }
 
 function assertContractAddress(address: `0x${string}`, label: string): void {
@@ -184,4 +369,103 @@ function requireDependency(address: `0x${string}` | null, label: string): `0x${s
   if (!address) throw new Error(`This pool has no ${label} address on record.`);
   assertContractAddress(address, label);
   return address;
+}
+
+/**
+ * The two numbers a steward types when a RelativeQuoter prices a pool.
+ *
+ * Both are expressed in the pool's unit of account, because that is the only
+ * unit a steward has an opinion in: the rate says what one voucher is worth, and
+ * the credit limit says how much of that worth the pool will take. The cap the
+ * limiter actually stores is derived from the pair — see
+ * `poolVoucherCapFromUnitValue` — so the two fields cannot be validated apart.
+ */
+export type PoolVoucherRateInput = {
+  exchangeRate: string;
+  creditLimit: string;
+};
+
+const UNIT_VALUE_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${POOL_PRICE_INDEX_DECIMALS}})?$`);
+
+function isPositiveUnitValue(value: string): boolean {
+  const trimmed = value.trim();
+  return UNIT_VALUE_PATTERN.test(trimmed) && Number(trimmed) > 0;
+}
+
+/**
+ * Validates a rate, and a credit limit only where the pool has a limiter to
+ * write one to. A pool published without one takes uncapped deposits and there
+ * is no contract to reject, so requiring the field would block a legitimate
+ * submission.
+ */
+export function poolVoucherRateSchema(options: { requireCreditLimit: boolean }) {
+  return z
+    .object({ exchangeRate: z.string(), creditLimit: z.string() })
+    .superRefine((value, ctx) => {
+      if (!isPositiveUnitValue(value.exchangeRate)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["exchangeRate"],
+          message: "Enter an exchange rate greater than zero",
+        });
+      }
+      if (options.requireCreditLimit && !isPositiveUnitValue(value.creditLimit)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["creditLimit"],
+          message: "Enter a credit limit greater than zero",
+        });
+      }
+    });
+}
+
+/**
+ * Turns what the steward typed into the arguments the batch builder takes.
+ *
+ * The cap is omitted rather than zeroed when the pool has no limiter: passing
+ * `0` would be the limiter's "reject every deposit", which is the opposite of
+ * the uncapped pool the steward is looking at.
+ */
+export function toPoolVoucherRateConfig(input: {
+  values: PoolVoucherRateInput;
+  decimals: number;
+  hasLimiter: boolean;
+}): { pricing: RelativePoolVoucherPricing; depositCapRaw?: string } {
+  const exchangeRatePpm = parseTokenAmount(
+    input.values.exchangeRate.trim(),
+    POOL_PRICE_INDEX_DECIMALS,
+  );
+  const pricing: RelativePoolVoucherPricing = { kind: "relative", exchangeRatePpm };
+  if (!input.hasLimiter) return { pricing };
+
+  const unitValueRaw = parseTokenAmount(input.values.creditLimit.trim(), POOL_PRICE_INDEX_DECIMALS);
+  return {
+    pricing,
+    depositCapRaw: poolVoucherCapFromUnitValue(unitValueRaw, exchangeRatePpm, input.decimals),
+  };
+}
+
+/** Reads a configured voucher back into the fields that produced it. */
+export function seedPoolVoucherRateInput(input: {
+  exchangeRatePpm: string;
+  capRaw: string | null;
+  decimals: number | null;
+}): PoolVoucherRateInput {
+  const exchangeRate = formatTokenAmount(
+    input.exchangeRatePpm,
+    POOL_PRICE_INDEX_DECIMALS,
+    POOL_PRICE_INDEX_DECIMALS,
+  );
+  if (input.capRaw === null || input.decimals === null || BigInt(input.capRaw) === 0n) {
+    return { exchangeRate, creditLimit: "" };
+  }
+  const unitValueRaw = poolVoucherUnitValueFromCap(
+    input.capRaw,
+    input.exchangeRatePpm,
+    input.decimals,
+  );
+  return {
+    exchangeRate,
+    creditLimit: formatTokenAmount(unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2),
+  };
 }
