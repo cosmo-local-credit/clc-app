@@ -65,8 +65,6 @@ function voucher(overrides: Partial<PoolVoucher> = {}): PoolVoucher {
     voucherUoa: null,
     voucherValue: null,
     locationName: null,
-    geoLat: null,
-    geoLng: null,
     iconUrl: null,
     bannerUrl: null,
     active: true,

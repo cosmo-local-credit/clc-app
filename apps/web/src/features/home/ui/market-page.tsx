@@ -14,8 +14,8 @@ import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catal
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
-import type { MarketViewport } from "#/components/catalog-map/market-map";
-import { MarketMap } from "#/components/catalog-map/market-map.lazy";
+import type { MarketViewport } from "./market-map";
+import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
 

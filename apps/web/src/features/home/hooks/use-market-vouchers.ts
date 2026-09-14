@@ -12,7 +12,7 @@ import {
   voucherKeys,
   voucherViewportQueryOptions,
 } from "@clc/api/features/market/queries";
-import type { MarketViewport } from "#/components/catalog-map/market-map";
+import type { MarketViewport } from "#/features/home/ui/market-map";
 import { marketClient } from "#/lib/api/market";
 
 export const MARKET_MAP_PAGE_SIZE = 500;

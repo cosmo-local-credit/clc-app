@@ -81,13 +81,6 @@ const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
 
-export type MapFocusPadding = {
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
@@ -96,13 +89,6 @@ type MarketMapProps = {
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
-  /** Fired when the map background is tapped and no spider is open. */
-  onClearSelection?: () => void;
-  /**
-   * Padding applied when framing a selected marker. Read from a ref at the
-   * moment of selection so sheet-height changes do not re-animate the camera.
-   */
-  focusPadding?: MapFocusPadding;
   onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
@@ -336,8 +322,6 @@ export function MarketMap({
   cameraScope,
   userLocation,
   onSelectLocation,
-  onClearSelection,
-  focusPadding,
   onViewportSettled,
   className,
 }: MarketMapProps) {
@@ -364,12 +348,6 @@ export function MarketMap({
   stacksRef.current = stacks;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
-  const onClearSelectionRef = useRef(onClearSelection);
-  onClearSelectionRef.current = onClearSelection;
-  const focusPaddingRef = useRef(focusPadding);
-  focusPaddingRef.current = focusPadding;
-  const locationsRef = useRef(locations);
-  locationsRef.current = locations;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
 
@@ -418,10 +396,7 @@ export function MarketMap({
       });
 
       if (!feature) {
-        setSpider((current) => {
-          if (!current) onClearSelectionRef.current?.();
-          return null;
-        });
+        setSpider(null);
         return;
       }
 
@@ -587,24 +562,6 @@ export function MarketMap({
       kindMatchExpression(true),
       kindMatchExpression(false),
     ]);
-  }, [loaded, selectedLocationId]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !loaded || !selectedLocationId) return;
-    const padding = focusPaddingRef.current;
-    if (!padding) return;
-    const location = locationsRef.current.find((item) => item.id === selectedLocationId);
-    if (!location) return;
-    map.easeTo({
-      center: [location.lng, location.lat],
-      padding: {
-        top: padding?.top ?? 96,
-        bottom: padding?.bottom ?? FILTER_FIT_PADDING.bottom,
-        left: padding?.left ?? FILTER_FIT_PADDING.left,
-        right: padding?.right ?? FILTER_FIT_PADDING.right,
-      },
-    });
   }, [loaded, selectedLocationId]);
 
   useEffect(() => {

@@ -57,30 +57,6 @@ vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
   usePoolVoucherTokens: () => [],
 }));
 
-vi.mock("#/components/catalog-map/market-map.lazy", () => ({
-  MarketMap: () => <div data-testid="pool-map" />,
-}));
-
-vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
-  useMarketCamera: () => ({
-    camera: null,
-    realFix: null,
-    userLocation: null,
-    locationStatus: "idle",
-    requestLocation: () => {},
-  }),
-}));
-
-vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
-  usePoolTreasury: () => ({ data: undefined, isPending: false }),
-}));
-
-vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
-  usePoolVoucherRates: () => ({ data: undefined, isPending: false, isEnabled: false }),
-  usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
-}));
-
 import {
   canonicalRedirectSearch,
   type CatalogRouteSearch,
@@ -120,7 +96,7 @@ function createTestRouter(initialEntry: string) {
     path: "/pools/$poolAddress",
     component: () => {
       const { poolAddress } = poolDetailRoute.useParams();
-      return <PoolDetailPage poolAddress={poolAddress} />;
+      return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
     },
   });
   // Stubbed: this asserts where Deposit goes and that Back comes home, not what

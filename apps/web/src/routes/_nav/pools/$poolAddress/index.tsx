@@ -5,7 +5,7 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { PoolDetailPage } from "#/features/pools/ui";
 
 const searchSchema = z.object({
-  voucher: z.string().optional().catch(undefined),
+  tab: z.enum(["offerings", "vouchers"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
@@ -16,24 +16,14 @@ export const Route = createFileRoute("/_nav/pools/$poolAddress/")({
 
 function PoolDetailRoute() {
   const { poolAddress } = Route.useParams();
-  const { voucher } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { tab } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <PoolDetailPage
-        poolAddress={poolAddress}
-        selectedVoucherAddress={voucher}
-        onSelectVoucher={(address) => {
-          void navigate({
-            search: { voucher: address },
-            replace: true,
-            resetScroll: false,
-          });
-        }}
-        onClearVoucher={() => {
-          void navigate({ search: {}, replace: true, resetScroll: false });
-        }}
-      />
+      <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
+        <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
+          <PoolDetailPage poolAddress={poolAddress} activeTab={tab ?? "offerings"} />
+        </main>
+      </div>
     </AuthenticatedRoute>
   );
 }

@@ -5,7 +5,7 @@ import {
   readPersistedLocation,
   writePersistedLocation,
 } from "#/features/home/api/last-location-storage";
-import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/components/catalog-map/market-map";
+import { EXPLICIT_CAMERA_RANK, type MarketCamera } from "#/features/home/ui/market-map";
 import { useBrowserGeolocation } from "#/lib/use-browser-geolocation";
 import { useIPCamera } from "./use-ip-camera";
 

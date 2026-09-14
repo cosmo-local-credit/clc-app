@@ -1,5 +1,6 @@
 import {
   managedVoucherOfferingsInfiniteQueryOptions,
+  poolOfferingsInfiniteQueryOptions,
   voucherOfferingsInfiniteQueryOptions,
 } from "@clc/api/features/offerings/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -37,4 +38,21 @@ export function useManagedVoucherOfferingsInfinite(
   return useInfiniteQuery(
     managedVoucherOfferingsInfiniteQueryOptions(offeringsClient, voucherAddress, perPage),
   );
+}
+
+/**
+ * Every offering the pool's allowed vouchers publish, in one paginated query.
+ *
+ * Deliberately not a fan-out over `usePoolVouchers`: a pool may allow many
+ * vouchers, and one request each would multiply into a request storm on a screen
+ * that only ever renders 20 tiles at a time.
+ */
+export function usePoolOfferingsInfinite(
+  poolAddress: string | undefined,
+  perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
+) {
+  return useInfiniteQuery({
+    ...poolOfferingsInfiniteQueryOptions(offeringsClient, poolAddress, perPage),
+    ...MARKET_QUERY_FRESHNESS,
+  });
 }
