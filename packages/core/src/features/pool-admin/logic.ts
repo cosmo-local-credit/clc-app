@@ -19,6 +19,16 @@ import type { CaliburCall } from "../webauthn/index";
 
 export const tokenIndexAddAbi = parseAbi(["function add(address token) returns (bool)"]);
 export const tokenIndexRemoveAbi = parseAbi(["function remove(address token) returns (bool)"]);
+/**
+ * Membership, read straight from the registry.
+ *
+ * The authority on whether `add` may be sent. The catalog's pool voucher list is
+ * not: it answers for rows clc-core has projected and enriched, so a token
+ * seeded at `initialize` — or one the indexer has not caught up with — is
+ * registered on chain while absent there. Sending `add` for such a token reverts
+ * `TokenAlreadyExists`, and the batch is relayed `revertOnFailure`.
+ */
+export const tokenIndexHaveAbi = parseAbi(["function have(address token) view returns (bool)"]);
 
 export const limiterSetLimitForAbi = parseAbi([
   "function setLimitFor(address token, address holder, uint256 value)",
