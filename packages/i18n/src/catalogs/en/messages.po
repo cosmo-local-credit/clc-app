@@ -70,6 +70,12 @@ msgstr "{count, plural, one {# post} other {# posts}}"
 #~ msgid "{0} {voucherSymbol} per {1}"
 #~ msgstr "{0} {voucherSymbol} per {1}"
 
+#. placeholder {0}: selected.symbol
+#. placeholder {1}: pool.name
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:223
+msgid "{0} approved for {1}."
+msgstr "{0} approved for {1}."
+
 #. placeholder {0}: contract.name
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:464
 msgid "{0} can be held, sent and redeemed."
@@ -79,6 +85,11 @@ msgstr "{0} can be held, sent and redeemed."
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:98
 msgid "{0} failed on-chain. The pool was not created."
 msgstr "{0} failed on-chain. The pool was not created."
+
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:340
+msgid "{0} fees sent to the fee recipient."
+msgstr "{0} fees sent to the fee recipient."
 
 #. placeholder {0}: contract.name
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:210
@@ -130,7 +141,7 @@ msgid "{0} of {max}"
 msgstr "{0} of {max}"
 
 #. placeholder {0}: voucher.offerCount
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:224
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:299
 msgid "{0} offers"
 msgstr "{0} offers"
 
@@ -143,6 +154,17 @@ msgstr "{0} offers"
 #: apps/web/src/features/home/ui/posts-page.tsx:84
 #~ msgid "{0} posts"
 #~ msgstr "{0} posts"
+
+#. placeholder {0}: voucher.symbol
+#. placeholder {1}: pool.name
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:242
+msgid "{0} removed from {1}."
+msgstr "{0} removed from {1}."
+
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:222
+msgid "{0} updated."
+msgstr "{0} updated."
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/pools/ui/pools-page.tsx:178
@@ -159,6 +181,11 @@ msgstr "{0} vouchers"
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:165
 #~ msgid "{0}{1}"
 #~ msgstr "{0}{1}"
+
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:230
+msgid "{amount} {0} withdrawn."
+msgstr "{amount} {0} withdrawn."
 
 #: apps/web/src/components/wallet/wallet-status.tsx:26
 msgid "{chainName} network"
@@ -197,6 +224,12 @@ msgstr "{current} / {0}"
 #~ msgid "{unit} worth of goods & services"
 #~ msgstr "{unit} worth of goods & services"
 
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:260
+msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
+msgstr "{withdrawable} {0} available. Fees held for collection stay in the "
+"pool."
+
 #. placeholder {0}: token.symbol
 #. placeholder {1}: rate.value
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:178
@@ -223,7 +256,7 @@ msgstr "1 {0} = {1} {2}"
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:222
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:297
 msgid "1 offer"
 msgstr "1 offer"
 
@@ -463,6 +496,7 @@ msgid "Already have an account?"
 msgstr "Already have an account?"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:78
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:256
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:114
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:190
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:323
@@ -500,6 +534,12 @@ msgstr "Any selected"
 #: apps/web/src/components/catalog-filter-controls.tsx:566
 msgid "Apply filters"
 msgstr "Apply filters"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:173
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:100
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:407
+msgid "Approve voucher"
+msgstr "Approve voucher"
 
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:20
 msgid "Approved"
@@ -642,14 +682,15 @@ msgid "Camera access denied."
 msgstr "Camera access denied."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:372
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:482
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:491
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:417
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:69
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:366
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:513
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:522
 #: apps/web/src/routes/__root.tsx:248
 msgid "Cancel"
 msgstr "Cancel"
@@ -688,6 +729,10 @@ msgstr "Categories"
 #~ msgid "Celo network"
 #~ msgstr "Celo network"
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:552
+msgid "Change"
+msgstr "Change"
+
 #: apps/web/src/components/ui/avatar-picker.tsx:110
 msgid "Change photo"
 msgstr "Change photo"
@@ -698,11 +743,11 @@ msgstr "Change photo"
 #~ msgstr "Change the name people see without changing the deployed voucher "
 #~ "contract."
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:166
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:175
 msgid "Changes how the pool is shown. The deployed contract keeps its name."
 msgstr "Changes how the pool is shown. The deployed contract keeps its name."
 
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:174
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:183
 msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "Changes how the voucher is shown. The deployed contract keeps its name."
 
@@ -721,6 +766,10 @@ msgstr "Check supply again"
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
 msgstr "Checking availability..."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:286
+msgid "Checking how this pool prices vouchers…"
+msgstr "Checking how this pool prices vouchers…"
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:236
 msgid "Checking message availability…"
@@ -878,6 +927,14 @@ msgstr "Close private key form"
 #~ msgid "Close protected wallet import"
 #~ msgstr "Close protected wallet import"
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:382
+msgid "Collect fees"
+msgstr "Collect fees"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:418
+msgid "Collected swap fees are paid here."
+msgstr "Collected swap fees are paid here."
+
 #: apps/web/src/features/home/ui/posts-page.tsx:20
 #~ msgid "Coming next"
 #~ msgstr "Coming next"
@@ -987,16 +1044,16 @@ msgid "Connection failed."
 msgstr "Connection failed."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:710
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:294
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:303
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:752
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:322
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:331
 msgid "Contact Email"
 msgstr "Contact Email"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:759
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:337
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:346
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:801
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:365
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:374
 msgid "Contact Phone"
 msgstr "Contact Phone"
 
@@ -1005,9 +1062,9 @@ msgstr "Contact Phone"
 #~ msgstr "Contact Phone (optional)"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:734
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:315
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:324
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:776
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:343
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:352
 msgid "Contact Website"
 msgstr "Contact Website"
 
@@ -1181,7 +1238,7 @@ msgid "Couldn't load offerings."
 msgstr "Couldn't load offerings."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:669
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:262
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
 msgid "Couldn't load pool tags."
 msgstr "Couldn't load pool tags."
 
@@ -1206,7 +1263,7 @@ msgstr "Couldn't load tags."
 msgid "Couldn't load the private attachment."
 msgstr "Couldn't load the private attachment."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:48
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:61
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:108
 msgid "Couldn't load this pool."
 msgstr "Couldn't load this pool."
@@ -1232,7 +1289,7 @@ msgstr "Couldn't load tokens"
 #~ msgstr "Couldn't load voucher filters."
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:714
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:290
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:299
 msgid "Couldn't load voucher tags."
 msgstr "Couldn't load voucher tags."
 
@@ -1261,6 +1318,12 @@ msgstr "Couldn't publish your voucher."
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Couldn't read how many decimals this voucher uses."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:256
+msgid "Couldn't read this voucher's current rate, so it can't be changed right "
+"now."
+msgstr "Couldn't read this voucher's current rate, so it can't be changed right "
+"now."
+
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:80
 msgid "Couldn't remove the offering."
 msgstr "Couldn't remove the offering."
@@ -1273,11 +1336,11 @@ msgstr "Couldn't resolve that recipient."
 msgid "Couldn't save the offering."
 msgstr "Couldn't save the offering."
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:147
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:156
 msgid "Couldn't save the pool details."
 msgstr "Couldn't save the pool details."
 
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:155
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:164
 msgid "Couldn't save the voucher details."
 msgstr "Couldn't save the voucher details."
 
@@ -1290,6 +1353,7 @@ msgid "Couldn't save your profile."
 msgstr "Couldn't save your profile."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:367
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:609
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 msgid "Couldn't search vouchers."
 msgstr "Couldn't search vouchers."
@@ -1373,6 +1437,10 @@ msgstr "Created"
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:129
 msgid "Creating account..."
 msgstr "Creating account..."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:328
+msgid "Credit limit"
+msgstr "Credit limit"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
@@ -1463,8 +1531,8 @@ msgstr "Description"
 msgid "Discard changes"
 msgstr "Discard changes"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:164
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:172
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:173
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:181
 msgid "Display name"
 msgstr "Display name"
 
@@ -1584,7 +1652,7 @@ msgstr "Each voucher can only be linked once"
 msgid "Edit"
 msgstr "Edit"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:180
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:239
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:690
 msgid "Edit details"
 msgstr "Edit details"
@@ -1642,6 +1710,11 @@ msgstr "Enabling notifications..."
 msgid "Ends"
 msgstr "Ends"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:355
+msgid "Enter a credit limit greater than zero"
+msgstr "Enter a credit limit greater than zero"
+
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:47
 msgid "Enter a link starting with http:// or https://"
 msgstr "Enter a link starting with http:// or https://"
@@ -1660,6 +1733,10 @@ msgstr "Enter a valid date and time"
 msgid "Enter a valid private key or paper wallet."
 msgstr "Enter a valid private key or paper wallet."
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:419
+msgid "Enter a valid wallet address"
+msgstr "Enter a valid wallet address"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:43
 msgid "Enter a valid website URL including https://"
@@ -1669,13 +1746,23 @@ msgstr "Enter a valid website URL including https://"
 #~ msgid "Enter an address, ENS or phone number."
 #~ msgstr "Enter an address, ENS or phone number."
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:213
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:216
 msgid "Enter an amount greater than zero."
 msgstr "Enter an amount greater than zero."
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:209
+msgid "Enter an amount this voucher supports."
+msgstr "Enter an amount this voucher supports."
+
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:138
 msgid "Enter an ENS, phone number or address."
 msgstr "Enter an ENS, phone number or address."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:350
+msgid "Enter an exchange rate greater than zero"
+msgstr "Enter an exchange rate greater than zero"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:101
 #~ msgid "Enter and apply a passphrase before downloading this card."
@@ -1727,6 +1814,14 @@ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 msgstr "Every account gets a paper wallet. Linking {providerLabel} adds another "
 "way to sign in."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:308
+msgid "Exchange rate"
+msgstr "Exchange rate"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:315
+msgid "Exchange rate relative to the default voucher ({unitSymbol})"
+msgstr "Exchange rate relative to the default voucher ({unitSymbol})"
+
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:31
 msgid "Expiration"
 msgstr "Expiration"
@@ -1775,9 +1870,15 @@ msgid "Fee policy"
 msgstr "Fee policy"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:583
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:62
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:34
 msgid "Fee recipient"
 msgstr "Fee recipient"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:405
+msgid "Fee recipient updated."
+msgstr "Fee recipient updated."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:180
 msgid "Fees"
@@ -1786,6 +1887,11 @@ msgstr "Fees"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:537
 msgid "Fees are held apart from pool liquidity"
 msgstr "Fees are held apart from pool liquidity"
+
+#. placeholder {0}: formatVoucherAddress(pool.feeAddress as `0x${string}`)
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:352
+msgid "Fees are paid to {0}."
+msgstr "Fees are paid to {0}."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
 msgid "Fees held separately"
@@ -1925,6 +2031,13 @@ msgstr "Hour"
 msgid "How many to mint once the voucher is published"
 msgstr "How many to mint once the voucher is published"
 
+#. placeholder {0}: configuring.symbol
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:335
+msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
+"vouchers?"
+msgstr "How much value in {unitSymbol} can be swapped from the pool using {0} "
+"vouchers?"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:526
 msgid "How should categories match?"
 msgstr "How should categories match?"
@@ -2030,6 +2143,10 @@ msgstr "Item"
 #~ msgid "Join CLC"
 #~ msgstr "Join CLC"
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:379
+msgid "Keep"
+msgstr "Keep"
+
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:348
 #~ msgid "KES — Kenyan shilling"
 #~ msgstr "KES — Kenyan shilling"
@@ -2092,12 +2209,12 @@ msgid "Link at most 12 vouchers"
 msgstr "Link at most 12 vouchers"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:882
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:452
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:461
 msgid "Link to the terms that apply to this pool"
 msgstr "Link to the terms that apply to this pool"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:926
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:483
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:492
 msgid "Link to the terms that apply to this voucher"
 msgstr "Link to the terms that apply to this voucher"
 
@@ -2168,7 +2285,7 @@ msgstr "Loading more…"
 msgid "Loading offerings…"
 msgstr "Loading offerings…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:45
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:58
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:105
 msgid "Loading pool…"
 msgstr "Loading pool…"
@@ -2196,9 +2313,9 @@ msgid "Loading private attachment…"
 msgstr "Loading private attachment…"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:663
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:256
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:265
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:708
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:284
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:293
 msgid "Loading tags…"
 msgstr "Loading tags…"
 
@@ -2256,9 +2373,9 @@ msgstr "Location unavailable"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:628
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:222
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:231
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:674
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:251
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:260
 msgid "Logo"
 msgstr "Logo"
 
@@ -2266,6 +2383,15 @@ msgstr "Logo"
 #: apps/web/src/lib/validation-i18n.ts:240
 msgid "Longitude must be between -180 and 180"
 msgstr "Longitude must be between -180 and 180"
+
+#. placeholder {0}: voucher.symbol
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:307
+msgid "Manage {0}"
+msgstr "Manage {0}"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:100
+msgid "Manage voucher"
+msgstr "Manage voucher"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:45
 msgid "Manage vouchers, pools, and local payments."
@@ -2280,10 +2406,10 @@ msgid "Map"
 msgstr "Map"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:846
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:421
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:430
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:435
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:890
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:452
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:461
 msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 msgstr "Markdown: **bold**, # headings, - lists, [links](https://…)"
 
@@ -2304,6 +2430,7 @@ msgstr "Marketplace vouchers"
 msgid "Match"
 msgstr "Match"
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:280
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:299
 msgid "Max"
 msgstr "Max"
@@ -2483,6 +2610,10 @@ msgid "Name, location, and preferred currency are required. Provide an email "
 msgstr "Name, location, and preferred currency are required. Provide an email "
 "address or phone number. Bio and website are optional."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:587
+msgid "Name, symbol or address"
+msgstr "Name, symbol or address"
+
 #: apps/web/src/features/pools/ui/pools-page.tsx:63
 #~ msgid "Near me"
 #~ msgstr "Near me"
@@ -2527,6 +2658,11 @@ msgstr "Next image"
 msgid "No"
 msgstr "No"
 
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:330
+msgid "No {0} fees have accrued yet."
+msgstr "No {0} fees have accrued yet."
+
 #: apps/web/src/features/home/ui/activity-page.tsx:66
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:574
 msgid "No activity yet."
@@ -2562,9 +2698,9 @@ msgid "No currencies found"
 msgstr "No currencies found"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:391
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:212
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:221
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:425
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:240
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:249
 msgid "No currencies found."
 msgstr "No currencies found."
 
@@ -2645,10 +2781,11 @@ msgstr "No USDm, USDT, or USDC balance available to withdraw."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "No voucher in this pool is offering anything yet."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:147
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:179
 msgid "No vouchers in this pool yet."
 msgstr "No vouchers in this pool yet."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:625
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:232
 msgid "No vouchers match that search."
 msgstr "No vouchers match that search."
@@ -2693,15 +2830,23 @@ msgstr "Not approved"
 msgid "Not sent"
 msgstr "Not sent"
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:63
+msgid "Not set"
+msgstr "Not set"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:201
+msgid "Nothing has changed."
+msgstr "Nothing has changed."
+
 #: apps/web/src/components/catalog-filter-controls.tsx:501
 msgid "Nothing matching “{searchTerm}” carries a category."
 msgstr "Nothing matching “{searchTerm}” carries a category."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:823
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:398
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:407
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:410
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:867
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:429
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:438
 msgid "Nothing to preview yet."
 msgstr "Nothing to preview yet."
 
@@ -2761,7 +2906,7 @@ msgstr "Offering removed."
 msgid "Offering updated."
 msgstr "Offering updated."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:95
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:268
 msgid "Offerings"
 msgstr "Offerings"
@@ -2820,10 +2965,10 @@ msgstr "Opening paper wallet..."
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:282
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:313
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:629
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:223
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:232
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:675
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:333
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:252
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:261
 msgid "Optional"
 msgstr "Optional"
 
@@ -3003,12 +3148,12 @@ msgstr "Place"
 msgid "Pool"
 msgstr "Pool"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:92
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:107
 msgid "Pool contents"
 msgstr "Pool contents"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:408
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:184
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:193
 msgid "Pool Description"
 msgstr "Pool Description"
 
@@ -3022,7 +3167,7 @@ msgstr "Pool description is required"
 msgid "Pool description must be 500 characters or fewer"
 msgstr "Pool description must be 500 characters or fewer"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:144
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:153
 msgid "Pool details updated."
 msgstr "Pool details updated."
 
@@ -3031,7 +3176,7 @@ msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "Pool liquidity changed. Review the updated quote and try again."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:646
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:239
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:248
 msgid "Pool Location"
 msgstr "Pool Location"
 
@@ -3053,7 +3198,7 @@ msgstr "Pool name is required"
 msgid "Pool name must be 80 characters or fewer"
 msgstr "Pool name must be 80 characters or fewer"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:51
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:64
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:111
 msgid "Pool not found."
 msgstr "Pool not found."
@@ -3073,7 +3218,7 @@ msgid "Pool shortcode must be 6 characters or fewer"
 msgstr "Pool shortcode must be 6 characters or fewer"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:689
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
 msgid "Pool tags"
 msgstr "Pool tags"
 
@@ -3087,8 +3232,8 @@ msgstr "Pool tracking details are missing."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:33
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:302
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:56
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:191
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:69
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:250
 #: apps/web/src/features/pools/ui/pools-page.tsx:83
 msgid "Pools"
 msgstr "Pools"
@@ -3196,14 +3341,14 @@ msgstr "Pretium ID copied"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:814
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:816
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:389
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:391
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:398
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:400
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:400
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:402
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:858
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:860
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:420
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:422
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:429
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:431
 msgid "Preview"
 msgstr "Preview"
 
@@ -3214,7 +3359,7 @@ msgstr "Previous image"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:391
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:21
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:212
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:221
 msgid "Price"
 msgstr "Price"
 
@@ -3237,9 +3382,9 @@ msgstr "Price on request"
 msgid "Price per unit in {voucherSymbol}"
 msgstr "Price per unit in {voucherSymbol}"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:203
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:212
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:419
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:231
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:240
 msgid "Priced in"
 msgstr "Priced in"
 
@@ -3396,6 +3541,14 @@ msgstr "Rate"
 #~ msgid "Re-authenticating..."
 #~ msgstr "Re-authenticating..."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:292
+msgid "Reading the current rate…"
+msgstr "Reading the current rate…"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:261
+msgid "Reading the pool's balance…"
+msgstr "Reading the pool's balance…"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:168
 #~ msgid "Reading the voucher from the network..."
 #~ msgstr "Reading the voucher from the network..."
@@ -3472,7 +3625,7 @@ msgid "Redeem"
 msgstr "Redeem"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:882
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:444
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:453
 msgid "Redeemable at our stall on market days..."
 msgstr "Redeemable at our stall on market days..."
 
@@ -3493,6 +3646,7 @@ msgstr "Relative pricing"
 #: apps/web/src/components/offerings/offerings-panel.tsx:312
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/ui/image-upload-field.tsx:180
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:370
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:118
 msgid "Remove"
 msgstr "Remove"
@@ -3508,10 +3662,10 @@ msgid "Remove {0}"
 msgstr "Remove {0}"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:691
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:284
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:293
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:571
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:736
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:312
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:321
 msgid "Remove {tag}"
 msgstr "Remove {tag}"
 
@@ -3520,10 +3674,21 @@ msgstr "Remove {tag}"
 msgid "Remove attachment {0}"
 msgstr "Remove attachment {0}"
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:392
+msgid "Remove from pool"
+msgstr "Remove from pool"
+
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:257
 msgid "Remove photo {0}"
 msgstr "Remove photo {0}"
+
+#. placeholder {0}: voucher.symbol
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:357
+msgid "Removing {0} stops it being swapped in or out of this pool. Its rate and "
+"limit are kept."
+msgstr "Removing {0} stops it being swapped in or out of this pool. Its rate "
+"and limit are kept."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:310
 msgid "Removing…"
@@ -3572,10 +3737,10 @@ msgid "Resolving recipient…"
 msgstr "Resolving recipient…"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
-#: apps/web/src/features/home/ui/market-map.tsx:655
 #: apps/web/src/features/home/ui/report-page.tsx:53
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:678
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:271
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:618
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:208
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:585
@@ -3583,7 +3748,7 @@ msgstr "Resolving recipient…"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:723
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:254
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:138
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:299
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:308
 msgid "Retry"
 msgstr "Retry"
 
@@ -3628,12 +3793,17 @@ msgstr "Route redeemable claims across curated markets with shared standards."
 #~ msgstr "Save and resubmit"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:472
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:481
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:405
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:662
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:354
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:503
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:512
 msgid "Save changes"
 msgstr "Save changes"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:442
+msgid "Save recipient"
+msgstr "Save recipient"
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:286
 msgid "Saved. Your post is awaiting approval again."
@@ -3641,10 +3811,10 @@ msgstr "Saved. Your post is awaiting approval again."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:388
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:470
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:479
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:660
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:352
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:501
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:510
 msgid "Saving…"
 msgstr "Saving…"
 
@@ -3671,9 +3841,9 @@ msgstr "Search by name or symbol"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:268
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:260
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:390
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:211
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:220
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:424
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:239
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:248
 msgid "Search currencies"
 msgstr "Search currencies"
 
@@ -3686,7 +3856,7 @@ msgid "Search or enter"
 msgstr "Search or enter"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:687
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:289
 msgid "Search pool tags"
 msgstr "Search pool tags"
 
@@ -3703,10 +3873,10 @@ msgid "Search posts by title or description"
 msgstr "Search posts by title or description"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:690
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:283
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:292
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:570
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:735
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:311
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:320
 msgid "Search tags"
 msgstr "Search tags"
 
@@ -3715,11 +3885,12 @@ msgid "Search voucher filters"
 msgstr "Search voucher filters"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:732
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:308
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:317
 msgid "Search voucher tags"
 msgstr "Search voucher tags"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:340
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:586
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
 msgid "Search vouchers"
@@ -3741,6 +3912,7 @@ msgstr "Searching places…"
 msgid "Searching vouchers…"
 msgstr "Searching vouchers…"
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:602
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:206
 msgid "Searching…"
 msgstr "Searching…"
@@ -3754,7 +3926,7 @@ msgstr "Select a token"
 #~ msgstr "Selected pool"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:688
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:281
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:290
 msgid "Selected pool tags"
 msgstr "Selected pool tags"
 
@@ -3763,7 +3935,7 @@ msgid "Selected post tags"
 msgstr "Selected post tags"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:733
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:309
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:318
 msgid "Selected voucher tags"
 msgstr "Selected voucher tags"
 
@@ -3845,6 +4017,10 @@ msgstr "Session check failed"
 msgid "Session could not be verified. Try again."
 msgstr "Session could not be verified. Try again."
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:358
+msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
+msgstr "Set a fee recipient before collecting, or the pool has nowhere to pay."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:481
 msgid "Setting up your wallet..."
 msgstr "Setting up your wallet..."
@@ -3899,7 +4075,7 @@ msgid "Shown on your voucher page"
 msgstr "Shown on your voucher page"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:852
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:414
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:423
 msgid "Shown to anyone holding this voucher"
 msgstr "Shown to anyone holding this voucher"
 
@@ -3907,7 +4083,7 @@ msgstr "Shown to anyone holding this voucher"
 msgid "Shown to anyone joining this pool"
 msgstr "Shown to anyone joining this pool"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:383
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:392
 msgid "Shown to anyone using this pool"
 msgstr "Shown to anyone using this pool"
 
@@ -4082,7 +4258,7 @@ msgstr "Supply must be greater than zero"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:83
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:119
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
 msgid "Swap"
@@ -4147,7 +4323,7 @@ msgstr "Swapping"
 msgid "Swapping…"
 msgstr "Swapping…"
 
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:413
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:422
 msgid "Swaps settle within the market association..."
 msgstr "Swaps settle within the market association..."
 
@@ -4175,11 +4351,11 @@ msgid "Symbol was taken, using {0} instead."
 msgstr "Symbol was taken, using {0} instead."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:46
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:252
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:261
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:560
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:704
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:38
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:280
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:289
 msgid "Tags"
 msgstr "Tags"
 
@@ -4213,13 +4389,13 @@ msgstr "Tell people about your business..."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:778
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:926
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:58
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:356
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:365
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:820
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:970
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:50
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:772
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:791
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:384
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:393
 msgid "Terms"
 msgstr "Terms"
 
@@ -4229,9 +4405,9 @@ msgid "Terms and Conditions"
 msgstr "Terms and Conditions"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:871
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:441
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:450
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:915
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:472
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:481
 msgid "Terms URL"
 msgstr "Terms URL"
 
@@ -4262,11 +4438,9 @@ msgstr "The currency used to describe value in this pool"
 msgid "The end of the period must not be before its start"
 msgstr "The end of the period must not be before its start"
 
-#: apps/web/src/features/home/ui/market-map.tsx:643
 msgid "The map could not be loaded."
 msgstr "The map could not be loaded."
 
-#: apps/web/src/features/home/ui/market-map.tsx:645
 msgid "The map is not supported on this device."
 msgstr "The map is not supported on this device."
 
@@ -4284,6 +4458,11 @@ msgstr "The pool"
 msgid "The pool could not be published."
 msgstr "The pool could not be published."
 
+#. placeholder {0}: selected.symbol
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:217
+msgid "The pool doesn't hold that much {0}."
+msgstr "The pool doesn't hold that much {0}."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "The quote changed. Review the updated amounts before confirming."
@@ -4291,6 +4470,14 @@ msgstr "The quote changed. Review the updated amounts before confirming."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:195
 msgid "The selected unit does not have a configured price feed."
 msgstr "The selected unit does not have a configured price feed."
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:233
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:343
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:408
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:228
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:245
+msgid "The transaction failed."
+msgstr "The transaction failed."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:363
 #~ msgid "The unit used for pricing in this pool (e.g., USD, KES, HOUR)"
@@ -4370,11 +4557,33 @@ msgstr "This listing was imported with the unit “{legacyUnit}”. Pick one bel
 msgid "This pool has no {0} available to swap."
 msgstr "This pool has no {0} available to swap."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
+msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
+"can be set."
+msgstr "This pool has no limiter, so deposits are uncapped and no credit limit "
+"can be set."
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:464
+msgid "This pool holds no vouchers yet."
+msgstr "This pool holds no vouchers yet."
+
 #. placeholder {0}: quote.data.availableAmountOut
 #. placeholder {1}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:208
 msgid "This pool only has {0} {1} available to swap."
 msgstr "This pool only has {0} {1} available to swap."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:443
+msgid "This pool prices from a live feed. Feed settings aren't editable here "
+"yet."
+msgstr "This pool prices from a live feed. Feed settings aren't editable here "
+"yet."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:448
+msgid "This pool values every voucher equally, so there is no rate to set. "
+"Adding vouchers to it isn't available here yet."
+msgstr "This pool values every voucher equally, so there is no rate to set. "
+"Adding vouchers to it isn't available here yet."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:362
 #~ msgid "This post is published. Saving changes sends it back for approval, so it "
@@ -4389,6 +4598,10 @@ msgstr "This post is too large to save. Shorten the text or remove some media."
 #: apps/web/src/components/auth/sign-in-panel.tsx:221
 msgid "This QR code does not contain a valid private key."
 msgstr "This QR code does not contain a valid private key."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:186
+msgid "This voucher's decimals are unknown, so a limit can't be set."
+msgstr "This voucher's decimals are unknown, so a limit can't be set."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:371
 msgid "Title"
@@ -4521,6 +4734,7 @@ msgstr "Type"
 msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:596
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:200
 msgid "Type at least two characters."
 msgstr "Type at least two characters."
@@ -4619,10 +4833,10 @@ msgstr "Uploading photos…"
 
 #: apps/web/src/components/ui/image-upload-field.tsx:164
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:905
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:468
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:477
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:157
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:949
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:499
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:508
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -4747,7 +4961,7 @@ msgid "Voucher contract"
 msgstr "Voucher contract"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:509
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:192
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:201
 msgid "Voucher Description"
 msgstr "Voucher Description"
 
@@ -4765,7 +4979,7 @@ msgstr "Voucher description must be 500 characters or fewer"
 msgid "Voucher details"
 msgstr "Voucher details"
 
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:152
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:161
 msgid "Voucher details updated."
 msgstr "Voucher details updated."
 
@@ -4810,7 +5024,7 @@ msgid "Voucher symbol must be 6 characters or fewer"
 msgstr "Voucher symbol must be 6 characters or fewer"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:734
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:310
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:319
 msgid "Voucher tags"
 msgstr "Voucher tags"
 
@@ -4828,7 +5042,7 @@ msgstr "Voucher Type"
 #~ msgstr "Voucher Value"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:95
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:110
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:311
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:95
@@ -4862,6 +5076,13 @@ msgstr "Waiting for blockchain confirmation..."
 msgid "Waiting for on-chain confirmation"
 msgstr "Waiting for on-chain confirmation"
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:295
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:382
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:442
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:403
+msgid "Waiting for the chain…"
+msgstr "Waiting for the chain…"
+
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/features/home/ui/wallet-page.tsx:42
 #: apps/web/src/features/pools/ui/pools-page.tsx:80
@@ -4880,6 +5101,10 @@ msgstr "Wallet actions"
 #: apps/web/src/components/auth/authenticated-route.tsx:59
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Wallet actions are available after you sign up or sign in."
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:416
+msgid "Wallet address"
+msgstr "Wallet address"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:217
 #~ msgid "Wallet connected"
@@ -4904,6 +5129,12 @@ msgstr "We couldn't load your profile."
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:105
 msgid "We couldn't save your photo. You can add it from Settings."
 msgstr "We couldn't save your photo. You can add it from Settings."
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:455
+msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "
+"here."
+msgstr "We couldn't tell how this pool prices vouchers, so it can't be changed "
+"here."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:341
 msgid "We couldn't verify whether this voucher already has supply."
@@ -4957,11 +5188,22 @@ msgstr "Where and what for"
 msgid "Where did this happen?"
 msgstr "Where did this happen?"
 
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:295
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:149
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:194
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:334
 msgid "Withdraw"
 msgstr "Withdraw"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:57
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:84
+msgid "Withdraw fees"
+msgstr "Withdraw fees"
+
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:52
+#: apps/web/src/features/pools/ui/pool-controls-panel.tsx:71
+msgid "Withdraw liquidity"
+msgstr "Withdraw liquidity"
 
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:166
 msgid "Withdrawal submitted"
@@ -4972,9 +5214,9 @@ msgid "Write a post"
 msgstr "Write a post"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:781
-#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:359
+#: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:368
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:823
-#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:387
+#: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:396
 msgid "Write my own"
 msgstr "Write my own"
 
