@@ -91,11 +91,24 @@ export function PoolDetailPage({
         </div>
       </section>
 
-      <Button asChild className="h-11 w-full">
-        <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
-          <Trans>Swap</Trans>
-        </Link>
-      </Button>
+      <div className="grid grid-cols-2 gap-2">
+        <Button asChild className="h-11 w-full">
+          <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+            <Trans>Swap</Trans>
+          </Link>
+        </Button>
+        {/* A shortcut into the ordinary send flow with the pool as the
+            recipient, rather than a flow of its own. Back returns here on its
+            own: BackChevron prefers real history over its deep-link fallback. */}
+        <Button asChild variant="outline" className="h-11 w-full bg-card">
+          <Link
+            to="/wallet/send/amount"
+            search={{ recipient: pool.address, recipientLabel: pool.name }}
+          >
+            <Trans>Deposit</Trans>
+          </Link>
+        </Button>
+      </div>
 
       {canEditDetails ? <EditPoolDetails pool={pool} /> : null}
 
