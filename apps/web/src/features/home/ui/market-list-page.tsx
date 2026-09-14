@@ -103,14 +103,7 @@ export function MarketListPage({
 
   return (
     <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
-      {onboardingBanner}
-      <div
-        className={
-          onboardingBanner
-            ? "pt-[calc(env(safe-area-inset-top)+4.25rem)]"
-            : "pt-[calc(env(safe-area-inset-top)+1rem)]"
-        }
-      >
+      <div className="pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-start justify-between gap-3">
           <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Marketplace</Trans>
@@ -141,6 +134,8 @@ export function MarketListPage({
             </Button>
           </div>
         </div>
+
+        {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
 
         <div className="mt-4">
           <CatalogSearchField filter={filter} label={t`Search by name or symbol`} />

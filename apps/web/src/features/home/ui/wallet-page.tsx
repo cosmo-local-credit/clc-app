@@ -117,8 +117,15 @@ export function WalletPage({ address }: { address?: string }) {
             </div>
           ) : null}
           {vouchersQuery.isSuccess && vouchers.length === 0 ? (
-            <div className="p-3 text-muted-foreground text-sm">
-              <Trans>No vouchers yet.</Trans>
+            <div className="space-y-3 p-3">
+              <p className="text-muted-foreground text-sm">
+                <Trans>No vouchers yet.</Trans>
+              </p>
+              <Button asChild variant="outline" className="h-11 w-full bg-card">
+                <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
+                  <Trans>Create voucher</Trans>
+                </Link>
+              </Button>
             </div>
           ) : null}
           {vouchers.map((token, index, list) => (
