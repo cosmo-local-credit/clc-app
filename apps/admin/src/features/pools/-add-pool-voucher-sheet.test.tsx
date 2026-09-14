@@ -84,8 +84,6 @@ function member(address: string): PoolVoucher {
     voucherUoa: null,
     voucherValue: null,
     locationName: null,
-    geoLat: null,
-    geoLng: null,
     iconUrl: null,
     bannerUrl: null,
     active: true,

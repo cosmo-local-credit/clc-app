@@ -168,8 +168,6 @@ export type PoolVoucher = {
   voucherUoa: string | null;
   voucherValue: string | null;
   locationName: string | null;
-  geoLat: number | null;
-  geoLng: number | null;
   iconUrl: string | null;
   bannerUrl: string | null;
   active: boolean;
@@ -257,8 +255,6 @@ type BackendPoolVoucher = Partial<{
   voucherUoa: string | null;
   voucherValue: string | number | null;
   locationName: string | null;
-  geoLat: string | number | null;
-  geoLng: string | number | null;
   iconUrl: string | null;
   bannerUrl: string | null;
   active: boolean;
@@ -483,25 +479,6 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
   };
 }
 
-function locatedCoordinates(
-  lat: unknown,
-  lng: unknown,
-): { geoLat: number; geoLng: number } | { geoLat: null; geoLng: null } {
-  const geoLat = normalizeNumber(lat);
-  const geoLng = normalizeNumber(lng);
-  if (
-    geoLat === null ||
-    geoLng === null ||
-    geoLat < -90 ||
-    geoLat > 90 ||
-    geoLng < -180 ||
-    geoLng > 180
-  ) {
-    return { geoLat: null, geoLng: null };
-  }
-  return { geoLat, geoLng };
-}
-
 function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
   const tokenAddress = normalizeHex(voucher.address);
   if (!tokenAddress) return null;
@@ -520,7 +497,6 @@ function normalizePoolVoucher(voucher: BackendPoolVoucher): PoolVoucher | null {
     voucherUoa: normalizeText(voucher.voucherUoa),
     voucherValue: normalizeNumericText(voucher.voucherValue),
     locationName: normalizeText(voucher.locationName),
-    ...locatedCoordinates(voucher.geoLat, voucher.geoLng),
     iconUrl: normalizeText(voucher.iconUrl),
     bannerUrl: normalizeText(voucher.bannerUrl),
     active: voucher.active !== false,
