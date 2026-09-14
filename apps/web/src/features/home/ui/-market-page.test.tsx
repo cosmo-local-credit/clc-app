@@ -250,6 +250,16 @@ describe("MarketPage location button", () => {
   });
 });
 
+describe("MarketPage guest entry", () => {
+  it("floats the sign-in action at the top of the map", () => {
+    renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
+
+    expect(
+      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
+    ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+  });
+});
+
 describe("MarketPage data states", () => {
   it("contains no placeholder eatery, shop, or service data", () => {
     renderPage();
