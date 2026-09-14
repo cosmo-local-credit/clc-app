@@ -357,6 +357,7 @@ export function VoucherDetailPage({
           voucher={reportVoucher}
           voucherName={token.name}
           voucherDataPending={detailQuery.isPending || supportingDataPending}
+          canWritePost={canEditDetails}
         />
       ) : null}
       {activeTab === "reviews" ? (
@@ -385,10 +386,17 @@ function VoucherPostsPanel({
   voucher,
   voucherName,
   voucherDataPending,
+  canWritePost,
 }: {
   voucher: VoucherRef | undefined;
   voucherName: string;
   voucherDataPending: boolean;
+  /**
+   * Whether the viewer may link this voucher to a post: its owner or a
+   * superadmin. clc-core refuses the write for anyone else, so the button that
+   * seeds it is not offered to them.
+   */
+  canWritePost: boolean;
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
@@ -471,8 +479,9 @@ function VoucherPostsPanel({
     >
       {/* Writing about this voucher starts here as well as on the Posts screen.
           The editor is the same one either way — the voucher travels in the URL
-          and arrives already linked. */}
-      {auth.isAuthenticated && voucher ? (
+          and arrives already linked. Only the issuer (or a superadmin) sees it:
+          a post may only link vouchers its author owns. */}
+      {canWritePost && voucher ? (
         <Button asChild size="sm" className="h-9 w-full">
           <Link
             to="/posts/new"

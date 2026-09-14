@@ -233,7 +233,7 @@ describe("post authoring routes", () => {
     await screen.findByRole("heading", { name: "New post" });
 
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "August harvest" } });
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(router.state.location.pathname).toBe("/posts/mine"));
   });

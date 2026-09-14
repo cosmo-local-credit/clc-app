@@ -31,13 +31,22 @@ export type VoucherSearchControls = {
 };
 
 /**
- * Server-backed voucher lookup for the filter sheet.
+ * Server-backed voucher lookup for the filter sheet and the post editor.
  *
  * `GET /api/v2/vouchers` is public, per-IP rate limited, and cursor paginated, so the sheet never
  * holds a catalog in memory. Two consequences the caller must design around: results carry no
  * per-voucher match count, and the endpoint only sees active, geolocated vouchers.
+ *
+ * `owner` restricts the lookup to vouchers one address owns — the post editor's rule for anyone
+ * who is not a superadmin. The backend enforces the same rule on the write; this keeps the picker
+ * from offering what the write would refuse.
  */
-export function useVoucherSearch(query: string, setQuery: (next: string) => void, active: boolean) {
+export function useVoucherSearch(
+  query: string,
+  setQuery: (next: string) => void,
+  active: boolean,
+  owner?: string,
+) {
   const queryClient = useQueryClient();
   const { settled } = useDebouncedValue(query);
   const term = settled.trim();
@@ -48,11 +57,14 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
 
   useEffect(() => {
     if (enabled || term.length < VOUCHER_SEARCH_MIN_CHARS) return;
-    void queryClient.cancelQueries({ queryKey: voucherSearchQueryKeys.term(term), exact: true });
-  }, [enabled, queryClient, term]);
+    void queryClient.cancelQueries({
+      queryKey: voucherSearchQueryKeys.term(term, owner),
+      exact: true,
+    });
+  }, [enabled, owner, queryClient, term]);
 
   const search = useQuery({
-    queryKey: voucherSearchQueryKeys.term(term),
+    queryKey: voucherSearchQueryKeys.term(term, owner),
     queryFn: async ({ signal }) => {
       const filter: CatalogFilter = {
         term,
@@ -62,7 +74,7 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
         voucherMatch: "any",
       };
       const page = await marketClient.getFilteredMarketVouchers(
-        { perPage: VOUCHER_SEARCH_LIMIT, filter },
+        { perPage: VOUCHER_SEARCH_LIMIT, filter, owner },
         signal,
       );
       return page.vouchers;

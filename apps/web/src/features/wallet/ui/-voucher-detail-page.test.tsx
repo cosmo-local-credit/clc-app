@@ -769,7 +769,20 @@ describe("VoucherDetailPage", () => {
     ).toBe("/posts/3182");
   });
 
+  // A post may only link vouchers its author owns, so the button that seeds
+  // one is for the issuer and superadmins; a visitor reads the tab without it.
+  it("offers Write a post to the issuer and to a superadmin, not to a visitor", () => {
+    const asVisitor = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+    expect(screen.queryByRole("link", { name: "Write a post" })).toBeNull();
+    asVisitor.unmount();
+
+    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+    expect(screen.getByRole("link", { name: "Write a post" })).toBeTruthy();
+  });
+
   it("opens the post editor with this voucher already linked", () => {
+    mocks.auth.session = { address: "0xDeF0000000000000000000000000000000000456", chainId: 42220 };
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
 
     const href = screen.getByRole("link", { name: "Write a post" }).getAttribute("href");

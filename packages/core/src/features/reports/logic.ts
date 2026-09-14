@@ -161,6 +161,11 @@ const reportWriteObjectSchema = z.object({
     .string()
     .trim()
     .max(REPORT_HOST_NAME_MAX, { message: "Host must be 200 characters or fewer" }),
+  /**
+   * A head count, carried as text because the wire column is text and older
+   * posts hold prose there. New writes must be a whole number — see the
+   * refinement below — so an edit of a legacy post asks for one.
+   */
   participants: z
     .string()
     .trim()
@@ -195,6 +200,11 @@ export const reportWriteSchema = reportWriteObjectSchema
   .refine((value) => (value.geoLat === null) === (value.geoLng === null), {
     message: "Choose a place on the map or clear it",
     path: ["geoLat"],
+  })
+  // Already trimmed by the field schema, so blank is `""` here.
+  .refine((value) => value.participants === "" || /^\d+$/.test(value.participants), {
+    message: "Enter the number of participants as a whole number",
+    path: ["participants"],
   })
   .refine(
     (value) =>
@@ -255,19 +265,22 @@ function attachmentKey(attachment: ReportAttachmentWrite): string {
 }
 
 /**
- * Today, as the period a new post starts with.
+ * Now, as the period a new post starts with: both ends at the current minute.
  *
- * Local wall-clock rather than UTC, and to the minute rather than the second:
- * the pair is bound to two `datetime-local` inputs, so a value they cannot
- * represent would be silently rewritten the first time either is touched.
+ * Most posts are written as the thing happens, so the moment of writing is the
+ * closest default; the author widens it when it was longer. To the minute rather
+ * than the second because the pair is bound to two `datetime-local` inputs, and a
+ * value they cannot represent would be silently rewritten the first time either
+ * is touched.
  */
-export function todayReportPeriod(now: Date = new Date()): {
+export function nowReportPeriod(now: Date = new Date()): {
   periodFrom: string;
   periodTo: string;
 } {
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 0, 0);
-  return { periodFrom: start.toISOString(), periodTo: end.toISOString() };
+  const minute = new Date(now);
+  minute.setSeconds(0, 0);
+  const iso = minute.toISOString();
+  return { periodFrom: iso, periodTo: iso };
 }
 
 /** A blank post. Everything optional starts empty rather than defaulted. */
