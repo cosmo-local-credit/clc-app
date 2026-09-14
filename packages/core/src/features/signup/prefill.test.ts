@@ -6,6 +6,7 @@ describe("profilePrefill", () => {
   it("carries the saved contact details, bio, avatar and location across", () => {
     expect(
       profilePrefill({
+        name: " Steward Group ",
         email: " steward@example.org ",
         phone: "+254712345678",
         website: "https://steward.example",
@@ -18,6 +19,7 @@ describe("profilePrefill", () => {
         avatarUrl: "https://cdn.test/profile/avatar.webp",
       }),
     ).toEqual({
+      name: "Steward Group",
       email: "steward@example.org",
       phone: "+254712345678",
       website: "https://steward.example",
@@ -49,6 +51,7 @@ describe("profilePrefill", () => {
 
   it("reads a profile from a backend that predates preferences as empty", () => {
     expect(profilePrefill({})).toEqual({
+      name: "",
       email: "",
       phone: "",
       website: "",

@@ -103,7 +103,7 @@ const DEFAULT_VALUES: PoolFormValues = {
 };
 
 /** The text fields a saved profile can seed, all of which default to "". */
-type SeedableTextField = "email" | "phone" | "website" | "description" | "imageUrl";
+type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "imageUrl";
 
 const DETAIL_FIELDS = [
   "name",
@@ -111,10 +111,9 @@ const DETAIL_FIELDS = [
   "unitOfAccount",
   "description",
   "feePolicyDefault",
-  "feeAddress",
 ] as const;
 /** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
-const ADVANCED_FIELDS = ["symbol", "feePolicyDefault", "feeAddress"] as const;
+const ADVANCED_FIELDS = ["symbol", "feePolicyDefault"] as const;
 const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "imageUrl"] as const;
 
 export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
@@ -221,6 +220,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     seedText("email", prefill.email);
     seedText("phone", prefill.phone);
     seedText("website", prefill.website);
+    seedText("name", prefill.name ? `${prefill.name} Pool` : "");
     // The bio is free text with no minimum, so it only becomes a description
     // when it would pass as one.
     if (poolDescriptionSchema.safeParse(prefill.description).success) {
@@ -512,7 +512,16 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                           id="pool-swap-fee"
                           inputMode="decimal"
                           value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
+                          onChange={(event) => {
+                            const fee = event.target.value;
+                            field.handleChange(fee);
+                            if (Number(fee) <= 0) {
+                              form.setFieldValue("feesDecoupled", false, {
+                                dontUpdateMeta: true,
+                              });
+                              form.setFieldValue("feeAddress", "", { dontUpdateMeta: true });
+                            }
+                          }}
                           onBlur={field.handleBlur}
                           aria-invalid={field.state.meta.errors.length > 0}
                         />
