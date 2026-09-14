@@ -11,14 +11,13 @@ import {
   REPORT_MAX_TAGS,
   REPORT_MAX_VOUCHERS,
   REPORT_PARTICIPANTS_MAX,
-  REPORT_TIME_TAKEN_MAX,
   REPORT_TITLE_MAX,
   emptyReportWrite,
   fromDateTimeLocalValue,
+  nowReportPeriod,
   reportToFormValues,
   reportWriteSchema,
   toDateTimeLocalValue,
-  todayReportPeriod,
   voucherRefKey,
   type ReportVoucherRef,
   type ReportWrite,
@@ -82,9 +81,10 @@ export function PostEditorPage(target: PostEditorTarget) {
 /**
  * What a new post starts with.
  *
- * Nothing here is asked for twice. The place is the one the author gave at
- * signup, the period is today, and a voucher a screen carried in arrives
- * linked — all of it editable, and none of it a field to fill before writing.
+ * Nothing here is asked for twice. The host and the place are the name and
+ * location the author gave at signup, the period is the moment of writing, and
+ * a voucher a screen carried in arrives linked — all of it editable, and none
+ * of it a field to fill before writing.
  *
  * A draft this device parked wins over all of it: it is what the author
  * actually typed. The profile read is awaited rather than merged in later
@@ -135,7 +135,8 @@ function PostEditorCreate({ voucher }: { voucher: SeedVoucher | null }) {
     typeof profile?.geoLat === "number" && typeof profile?.geoLng === "number";
   const fresh: ReportWrite = {
     ...emptyReportWrite,
-    ...todayReportPeriod(),
+    ...nowReportPeriod(),
+    hostName: profile?.name ?? "",
     geoLat: hasProfileLocation ? (profile?.geoLat ?? null) : null,
     geoLng: hasProfileLocation ? (profile?.geoLng ?? null) : null,
     vouchers: seededRef ? [seededRef] : [],
@@ -255,6 +256,7 @@ function PostEditorForm({
   const { t } = useLingui();
   const navigate = useNavigate();
   const router = useRouter();
+  const auth = useAuthStatus();
   const tagsQuery = useTokenTags();
   const create = useCreatePost();
   const update = useUpdatePost(previousStatus);
@@ -262,11 +264,14 @@ function PostEditorForm({
   /** Bytes in flight. Save would otherwise persist the list from before them. */
   const [imagesBusy, setImagesBusy] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [confirmApprovedEdit, setConfirmApprovedEdit] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   const saving = create.isPending || update.isPending;
-  const wasApproved = previousStatus === "APPROVED";
+  // A post may only link vouchers its author owns, unless the author is a
+  // superadmin. A session with no role is treated as unprivileged: the picker
+  // then offers less than the backend might allow, never more than it accepts.
+  const voucherOwner =
+    auth.session?.role === "SUPERADMIN" ? undefined : (auth.session?.address ?? auth.address);
 
   const form = useForm({
     defaultValues: initial,
@@ -283,7 +288,7 @@ function PostEditorForm({
         } else {
           await create.mutateAsync(value);
           clearPostDraft();
-          toast.success(t`Submitted for approval.`);
+          toast.success(t`Post published.`);
         }
         await navigate({ to: "/posts/mine" });
       } catch (error) {
@@ -329,11 +334,6 @@ function PostEditorForm({
     return () => window.removeEventListener("beforeunload", warn);
   }, [isDirty]);
 
-  function submit() {
-    setConfirmApprovedEdit(false);
-    void form.handleSubmit();
-  }
-
   return (
     <EditorShell back={back} onBack={isDirty ? () => setConfirmLeave(true) : undefined}>
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
@@ -357,23 +357,10 @@ function PostEditorForm({
         </div>
       ) : null}
 
-      {wasApproved ? (
-        <p className="border border-border bg-card p-3 text-muted-foreground text-sm">
-          <Trans>
-            This post is published. Saving changes sends it back for approval, so it leaves the
-            Posts feed until it is approved again.
-          </Trans>
-        </p>
-      ) : null}
-
       <form
         className="space-y-5"
         onSubmit={(event) => {
           event.preventDefault();
-          if (wasApproved) {
-            setConfirmApprovedEdit(true);
-            return;
-          }
           void form.handleSubmit();
         }}
       >
@@ -515,36 +502,24 @@ function PostEditorForm({
               )}
             </form.Field>
 
+            {/* A head count. The wire field is text — older posts hold prose
+                there — so the value stays a string and the schema insists on
+                digits for anything new. */}
             <form.Field name="participants">
               {(field) => (
                 <Field
                   htmlFor={field.name}
-                  label={t`Participants`}
+                  label={t`No. of participants`}
                   error={getFieldError(field.state.meta.errors)}
                 >
                   <Input
                     id={field.name}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={1}
                     className="bg-card"
                     maxLength={REPORT_PARTICIPANTS_MAX}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                  />
-                </Field>
-              )}
-            </form.Field>
-
-            <form.Field name="timeTaken">
-              {(field) => (
-                <Field
-                  htmlFor={field.name}
-                  label={t`Duration`}
-                  error={getFieldError(field.state.meta.errors)}
-                >
-                  <Input
-                    id={field.name}
-                    className="bg-card"
-                    maxLength={REPORT_TIME_TAKEN_MAX}
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
@@ -632,6 +607,7 @@ function PostEditorForm({
                     onChange={field.handleChange}
                     disabled={saving}
                     max={REPORT_MAX_VOUCHERS}
+                    owner={voucherOwner}
                   />
                   {getFieldError(field.state.meta.errors) ? (
                     <p role="alert" className="mt-1 text-destructive text-xs">
@@ -685,23 +661,10 @@ function PostEditorForm({
           ) : post ? (
             <Trans>Save changes</Trans>
           ) : (
-            <Trans>Submit for approval</Trans>
+            <Trans>Publish</Trans>
           )}
         </Button>
       </form>
-
-      <PostConfirmDialog
-        open={confirmApprovedEdit}
-        title={t`Send this post back for approval?`}
-        confirmLabel={t`Save and resubmit`}
-        onConfirm={submit}
-        onCancel={() => setConfirmApprovedEdit(false)}
-      >
-        <Trans>
-          Your changes leave the Posts feed until a steward approves them again. Approval cannot be
-          undone once given.
-        </Trans>
-      </PostConfirmDialog>
 
       <PostConfirmDialog
         open={confirmLeave}

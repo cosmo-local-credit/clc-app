@@ -41,6 +41,10 @@ type VoucherOption = { value: string; label: string; ref: ReportVoucherRef };
  * vouchers, and a voucher already linked to an imported post may not come back —
  * which is why linked chips are labelled from the post and stay removable
  * regardless of the search.
+ *
+ * With `owner` set the search only returns that address's vouchers: an author
+ * who is not a superadmin may only write about vouchers they issue, and clc-core
+ * refuses the write otherwise.
  */
 export function PostVoucherPicker({
   vouchers,
@@ -48,6 +52,7 @@ export function PostVoucherPicker({
   onChange,
   disabled,
   max,
+  owner,
 }: {
   vouchers: ReportVoucherRef[];
   /** Names for already-linked chips, keyed by `voucherRefKey`. */
@@ -55,6 +60,8 @@ export function PostVoucherPicker({
   onChange: (vouchers: ReportVoucherRef[]) => void;
   disabled?: boolean;
   max: number;
+  /** Restrict the search to vouchers this address owns. Unset searches the catalog. */
+  owner?: string;
 }) {
   const { t } = useLingui();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -62,7 +69,7 @@ export function PostVoucherPicker({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const atMax = vouchers.length >= max;
-  const search = useVoucherSearch(query, setQuery, !disabled && !atMax);
+  const search = useVoucherSearch(query, setQuery, !disabled && !atMax, owner);
   /**
    * Names learned from the search that found each voucher.
    *
@@ -153,7 +160,7 @@ export function PostVoucherPicker({
               <ComboboxInput
                 ref={inputRef}
                 aria-label={t`Search vouchers`}
-                placeholder={t`Search vouchers`}
+                placeholder={owner ? t`Search your vouchers` : t`Search vouchers`}
                 disabled={disabled}
                 onFocus={() => setOpen(true)}
                 onClick={() => setOpen(true)}
@@ -219,7 +226,11 @@ export function PostVoucherPicker({
 
       {search.status === "ready" && results.length === 0 ? (
         <p className="text-muted-foreground text-xs">
-          <Trans>No vouchers match that search.</Trans>
+          {owner ? (
+            <Trans>None of your vouchers match that search.</Trans>
+          ) : (
+            <Trans>No vouchers match that search.</Trans>
+          )}
         </p>
       ) : null}
     </div>

@@ -17,10 +17,20 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   profile: {
-    data: undefined as { geoLat?: number | null; geoLng?: number | null } | undefined,
+    data: undefined as
+      | { name?: string; geoLat?: number | null; geoLng?: number | null }
+      | undefined,
     isPending: false,
   },
+  auth: {
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0xAbC0000000000000000000000000000000000123",
+    session: undefined as { address: string; chainId: number; role?: string } | undefined,
+  },
   voucherResults: [] as { chainId: number; address: string; name: string; symbol: string }[],
+  /** The owner the picker last asked the search to restrict itself to. */
+  searchOwner: undefined as string | undefined,
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
   upload: vi.fn(),
@@ -38,11 +48,7 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
-  useAuthStatus: () => ({
-    isAuthenticated: true,
-    isLoading: false,
-    address: "0xAbC0000000000000000000000000000000000123",
-  }),
+  useAuthStatus: () => mocks.auth,
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
@@ -65,13 +71,16 @@ vi.mock("#/hooks/use-deployment", () => ({
 
 vi.mock("#/features/home/hooks/use-voucher-search", () => ({
   VOUCHER_SEARCH_MIN_CHARS: 2,
-  useVoucherSearch: (query: string) => ({
-    query,
-    setQuery: vi.fn(),
-    results: mocks.voucherResults,
-    status: mocks.voucherResults.length > 0 ? "ready" : "idle",
-    retry: vi.fn(),
-  }),
+  useVoucherSearch: (query: string, _setQuery: unknown, _active: boolean, owner?: string) => {
+    mocks.searchOwner = owner;
+    return {
+      query,
+      setQuery: vi.fn(),
+      results: mocks.voucherResults,
+      status: mocks.voucherResults.length > 0 ? "ready" : "idle",
+      retry: vi.fn(),
+    };
+  },
 }));
 
 vi.mock("#/features/images/use-image-upload", () => ({
@@ -123,7 +132,14 @@ beforeEach(() => {
   mocks.updating = false;
   mocks.detail = { data: undefined, isPending: false, isError: false, refetch: vi.fn() };
   mocks.profile = { data: undefined, isPending: false };
+  mocks.auth = {
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0xAbC0000000000000000000000000000000000123",
+    session: undefined,
+  };
   mocks.voucherResults = [];
+  mocks.searchOwner = undefined;
   window.localStorage.clear();
 });
 
@@ -140,7 +156,7 @@ describe("creating a post", () => {
   it("submits with nothing but a title", async () => {
     render(<PostEditorPage mode="create" />);
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
@@ -154,18 +170,20 @@ describe("creating a post", () => {
 
   it("refuses a blank title rather than sending it", async () => {
     render(<PostEditorPage mode="create" />);
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(screen.getByRole("alert").textContent).toBeTruthy());
     expect(mocks.createPost).not.toHaveBeenCalled();
   });
 
-  it("says the post is awaiting approval and lands on My posts", async () => {
+  // Posts are auto-approved, so the button and the toast say publish, not
+  // submit.
+  it("says the post is published and lands on My posts", async () => {
     render(<PostEditorPage mode="create" />);
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
-    await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalledWith("Submitted for approval."));
+    await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalledWith("Post published."));
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/posts/mine" });
   });
 
@@ -175,7 +193,7 @@ describe("creating a post", () => {
     mocks.createPost.mockRejectedValue(new Error("Network is down"));
     render(<PostEditorPage mode="create" />);
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(mocks.toastError).toHaveBeenCalledWith("Network is down"));
     expect(mocks.navigate).not.toHaveBeenCalled();
@@ -255,7 +273,7 @@ describe("creating a post", () => {
     );
 
     typeTitle("Harvest at the shop");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
@@ -264,28 +282,74 @@ describe("creating a post", () => {
     });
   });
 
-  it("starts on today and at the place the author gave at signup", async () => {
-    mocks.profile = { data: { geoLat: -1.2864, geoLng: 36.8172 }, isPending: false };
+  // The host, the place and the moment are what the author already told us:
+  // their profile name and location, and now.
+  it("starts now, hosted by the author, at the place they gave at signup", async () => {
+    mocks.profile = {
+      data: { name: "Wendo Group", geoLat: -1.2864, geoLng: 36.8172 },
+      isPending: false,
+    };
+    const before = Date.now();
     render(<PostEditorPage mode="create" />);
+
+    expect((screen.getByLabelText("Host") as HTMLInputElement).value).toBe("Wendo Group");
+
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     const sent = mocks.createPost.mock.calls[0]?.[0] as {
+      hostName: string;
       geoLat: number | null;
       geoLng: number | null;
       periodFrom: string;
       periodTo: string;
     };
+    expect(sent.hostName).toBe("Wendo Group");
     expect(sent.geoLat).toBe(-1.2864);
     expect(sent.geoLng).toBe(36.8172);
-    const from = new Date(sent.periodFrom);
-    const to = new Date(sent.periodTo);
-    const today = new Date();
-    expect(from.getDate()).toBe(today.getDate());
-    expect([from.getHours(), from.getMinutes()]).toEqual([0, 0]);
-    expect(to.getDate()).toBe(today.getDate());
-    expect([to.getHours(), to.getMinutes()]).toEqual([23, 59]);
+    // Both ends at the current minute, not the start and end of the day.
+    expect(sent.periodTo).toBe(sent.periodFrom);
+    const from = Date.parse(sent.periodFrom);
+    expect(from).toBeGreaterThanOrEqual(before - 60_000);
+    expect(from).toBeLessThanOrEqual(Date.now());
+  });
+
+  it("asks for a head count as a number and no longer asks for a duration", async () => {
+    render(<PostEditorPage mode="create" />);
+
+    const participants = screen.getByLabelText("No. of participants") as HTMLInputElement;
+    expect(participants.type).toBe("number");
+    expect(screen.queryByLabelText("Duration")).toBeNull();
+    expect(screen.queryByLabelText("Participants")).toBeNull();
+
+    fireEvent.change(participants, { target: { value: "20" } });
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
+      participants: "20",
+      timeTaken: "",
+    });
+  });
+
+  // clc-core refuses a post that links a voucher its author does not own, so
+  // the picker only searches the author's own vouchers — unless the author is
+  // a superadmin, who may link any voucher.
+  it("searches only the author's own vouchers unless they are a superadmin", () => {
+    mocks.auth.session = { address: "0xAbC0000000000000000000000000000000000123", chainId: 42220 };
+    const asAuthor = render(<PostEditorPage mode="create" />);
+    expect(mocks.searchOwner).toBe("0xAbC0000000000000000000000000000000000123");
+    asAuthor.unmount();
+
+    mocks.auth.session = {
+      address: "0xAbC0000000000000000000000000000000000123",
+      chainId: 42220,
+      role: "SUPERADMIN",
+    };
+    render(<PostEditorPage mode="create" />);
+    expect(mocks.searchOwner).toBeUndefined();
   });
 
   // clc-core rejects a half coordinate, and one half of a profile's place is
@@ -294,7 +358,7 @@ describe("creating a post", () => {
     mocks.profile = { data: { geoLat: -1.2864, geoLng: null }, isPending: false };
     render(<PostEditorPage mode="create" />);
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ geoLat: null, geoLng: null });
@@ -306,7 +370,7 @@ describe("creating a post", () => {
     expect(screen.queryByLabelText("Summary")).toBeNull();
 
     typeTitle("August community harvest");
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     // The client turns this into the wire's null.
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ description: "" });
@@ -339,7 +403,7 @@ describe("creating a post", () => {
       timeout: 2000,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(window.localStorage.getItem("clc_post_draft_v1")).toBeNull();
   });
@@ -361,7 +425,7 @@ describe("creating a post", () => {
     expect(screen.getByRole("button", { name: "Unlink Priscilah Malii" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Unlink Wendo Group" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Submit for approval" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
     await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
     expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({
       vouchers: [
@@ -474,36 +538,36 @@ describe("editing a post", () => {
     await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
   });
 
-  // Editing an approved post resubmits it, so it leaves the public feed. The
-  // author has to be told before it happens, not after.
-  it("warns an approved author before resubmitting", async () => {
-    mocks.detail.data = saved({ status: "APPROVED" });
-    mocks.updatePost.mockResolvedValue(saved({ status: "SUBMITTED" }));
-    render(<PostEditorPage mode="edit" reportId="4633" />);
-
-    expect(screen.getByText(/Saving changes sends it back for approval/)).toBeTruthy();
-
-    typeTitle("Edited title");
-    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-
-    expect(mocks.updatePost).not.toHaveBeenCalled();
-    expect(screen.getByText("Send this post back for approval?")).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("button", { name: "Save and resubmit" }));
-
-    await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
-    expect(mocks.toastSuccess).toHaveBeenCalledWith("Saved. Your post is awaiting approval again.");
-  });
-
-  it("says nothing about approval when an admin edit stays approved", async () => {
+  // An edit stays published — posts are auto-approved — so there is nothing to
+  // warn about and no confirmation in the way.
+  it("saves an approved post without a warning or a confirmation", async () => {
     mocks.detail.data = saved({ status: "APPROVED" });
     mocks.updatePost.mockResolvedValue(saved({ status: "APPROVED" }));
     render(<PostEditorPage mode="edit" reportId="4633" />);
+
+    expect(screen.queryByText(/back for approval/)).toBeNull();
+
     typeTitle("Edited title");
     fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
-    fireEvent.click(screen.getByRole("button", { name: "Save and resubmit" }));
 
-    await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalledWith("Post updated."));
+    await waitFor(() => expect(mocks.updatePost).toHaveBeenCalledTimes(1));
+    expect(mocks.toastSuccess).toHaveBeenCalledWith("Post updated.");
+  });
+
+  // A backend that still queues an edit is reported as it answers, not as the
+  // editor assumed.
+  it("says so when the server answers with a post awaiting approval", async () => {
+    mocks.detail.data = saved({ status: "APPROVED" });
+    mocks.updatePost.mockResolvedValue(saved({ status: "SUBMITTED" }));
+    render(<PostEditorPage mode="edit" reportId="4633" />);
+    typeTitle("Edited title");
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(mocks.toastSuccess).toHaveBeenCalledWith(
+        "Saved. Your post is awaiting approval again.",
+      ),
+    );
   });
 
   it("explains that only your own posts can be edited when the read fails", () => {

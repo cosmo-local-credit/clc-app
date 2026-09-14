@@ -14,7 +14,7 @@ import {
   reportToFormValues,
   reportWriteSchema,
   toDateTimeLocalValue,
-  todayReportPeriod,
+  nowReportPeriod,
   type ReportWrite,
 } from "./logic";
 
@@ -106,6 +106,19 @@ describe("reportWriteSchema", () => {
     );
     expect(firstError(write({ timeTaken: "x".repeat(101) }))).toBe(
       "Duration must be 100 characters or fewer",
+    );
+  });
+
+  // The column is text and older posts hold prose there, but a new write is a
+  // head count: a number input is what the editors bind to it.
+  it("takes participants as a whole number or nothing", () => {
+    expect(reportWriteSchema.safeParse(write({ participants: "" })).success).toBe(true);
+    expect(reportWriteSchema.safeParse(write({ participants: " 20 " })).success).toBe(true);
+    expect(firstError(write({ participants: "about 20" }))).toBe(
+      "Enter the number of participants as a whole number",
+    );
+    expect(firstError(write({ participants: "2.5" }))).toBe(
+      "Enter the number of participants as a whole number",
     );
   });
 
@@ -491,16 +504,16 @@ describe("an unfinished draft", () => {
   });
 });
 
-describe("todayReportPeriod", () => {
-  it("spans the local day, to the minute a datetime-local input can hold", () => {
-    const period = todayReportPeriod(new Date(2026, 7, 20, 14, 32, 17));
+describe("nowReportPeriod", () => {
+  it("starts and ends at the current minute, as a datetime-local input can hold it", () => {
+    const period = nowReportPeriod(new Date(2026, 7, 20, 14, 32, 17));
     const from = new Date(period.periodFrom);
     const to = new Date(period.periodTo);
 
     expect([from.getFullYear(), from.getMonth(), from.getDate()]).toEqual([2026, 7, 20]);
-    expect([from.getHours(), from.getMinutes(), from.getSeconds()]).toEqual([0, 0, 0]);
-    expect([to.getFullYear(), to.getMonth(), to.getDate()]).toEqual([2026, 7, 20]);
-    expect([to.getHours(), to.getMinutes(), to.getSeconds()]).toEqual([23, 59, 0]);
+    expect([from.getHours(), from.getMinutes(), from.getSeconds()]).toEqual([14, 32, 0]);
+    expect(period.periodTo).toBe(period.periodFrom);
+    expect([to.getHours(), to.getMinutes(), to.getSeconds()]).toEqual([14, 32, 0]);
     // The pair a new post starts with must pass the write schema unchanged.
     expect(reportWriteSchema.safeParse(write(period)).success).toBe(true);
     // And survive the round trip through the inputs it is bound to.

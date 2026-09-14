@@ -59,8 +59,12 @@ describe("voucherKeys", () => {
     expect(voucherKeys.viewport([BOX], 500)).not.toEqual(voucherKeys.viewport([BOX], 100));
   });
 
-  it("varies search by term", () => {
+  it("varies search by term and by owner, sharing an entry across address casings", () => {
     expect(voucherKeys.search("maize")).not.toEqual(voucherKeys.search("beans"));
+    expect(voucherKeys.search("maize")).not.toEqual(voucherKeys.search("maize", ADDRESS));
+    expect(voucherKeys.search("maize", ADDRESS)).toEqual(
+      voucherKeys.search("maize", ADDRESS.toLowerCase()),
+    );
   });
 
   it("varies the filtered page with everything the backend filters on", () => {

@@ -272,9 +272,13 @@ function PostEditorForm({
             <form.Field name="participants">
               {(field) => (
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor={field.name}>Participants</Label>
+                  <Label htmlFor={field.name}>No. of participants</Label>
                   <Input
                     id={field.name}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={1}
                     maxLength={REPORT_PARTICIPANTS_MAX}
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}

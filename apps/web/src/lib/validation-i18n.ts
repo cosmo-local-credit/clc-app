@@ -276,6 +276,11 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Participants must be 100 characters or fewer",
         message: "Participants must be 100 characters or fewer",
       });
+    case "Enter the number of participants as a whole number":
+      return i18n._({
+        id: "Enter the number of participants as a whole number",
+        message: "Enter the number of participants as a whole number",
+      });
     case "Duration must be 100 characters or fewer":
       return i18n._({
         id: "Duration must be 100 characters or fewer",
