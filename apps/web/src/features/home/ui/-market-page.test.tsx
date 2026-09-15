@@ -84,6 +84,10 @@ function scalar(key: string, value: unknown): string {
   throw new Error(`search value for ${key} is not a URL scalar`);
 }
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
   useMarketCamera: () => cameraResult.current,

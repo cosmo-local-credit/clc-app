@@ -23,6 +23,7 @@ import {
 } from "#/components/ui/sheet";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
@@ -150,6 +151,12 @@ export function SignInPanel({
     try {
       await backendSignin.mutateAsync({ privateKey: key });
       await dropActiveConnection();
+      // After the disconnect, before the store. `dropActiveConnection` clears
+      // only the outgoing connector's own slot, so this is what removes the
+      // other kind — a passkey the previous user registered during a
+      // paper-wallet session, which would otherwise let the next person sign in
+      // as them. Must precede `storePrivateKey`, which writes the slot we keep.
+      clearIdentitySecrets("none");
       storePrivateKey(key);
       await connectAction(wagmiConfig, { connector: pkConnector });
       setPkInput("");
@@ -176,6 +183,12 @@ export function SignInPanel({
     };
     try {
       await signin.mutateAsync();
+      // After the mutation, not before: `useCaliburSignin` writes the credential
+      // inside it, so clearing earlier would delete the one just minted. Outside
+      // the branch below, because the already-on-Calibur path never disconnects
+      // and would otherwise leave a previous user's `clc_pk_raw` untouched. Only
+      // on success, so a failed assertion never destroys the incumbent's key.
+      clearIdentitySecrets("webauthn");
       // Already on the passkey connector (e.g. expired-cookie re-auth): the
       // fresh assertion refreshed the session, no reconnect needed. Otherwise
       // drop any other active connector and connect Calibur.
