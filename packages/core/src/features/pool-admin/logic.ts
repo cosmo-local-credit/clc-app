@@ -33,9 +33,6 @@ export const tokenIndexHaveAbi = parseAbi(["function have(address token) view re
 export const limiterSetLimitForAbi = parseAbi([
   "function setLimitFor(address token, address holder, uint256 value)",
 ]);
-export const limiterLimitOfAbi = parseAbi([
-  "function limitOf(address token, address holder) view returns (uint256)",
-]);
 
 /**
  * OracleQuoter overloads `setOracle`, so each arity needs its own ABI —

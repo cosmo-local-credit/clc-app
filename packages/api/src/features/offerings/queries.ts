@@ -105,32 +105,6 @@ export function voucherOfferingsInfiniteQueryOptions(
   });
 }
 
-/**
- * A voucher owner's own view of their offerings.
- *
- * The same public URL, read with `cache: "no-store"`. Without that an owner can
- * delete a listing, watch the refetch, and be handed the pre-mutation body the
- * browser is entitled to keep for 60 seconds — and up to 300 more through
- * `stale-while-revalidate`. Guests keep the shared cache, which is the whole
- * reason this is a second query rather than a change to the first.
- */
-export function managedVoucherOfferingsQueryOptions(
-  offerings: OfferingsClient,
-  address: string | undefined,
-  perPage: number,
-  enabled = true,
-) {
-  return queryOptions({
-    queryKey: offeringKeys.byVoucherManaged(address ?? "none", perPage),
-    queryFn: ({ signal }) =>
-      offerings.getVoucherOfferings(requireAddress(address), { perPage }, signal, {
-        cache: "no-store",
-      }),
-    enabled: Boolean(address) && enabled,
-    placeholderData: keepPreviousData,
-  });
-}
-
 export function managedVoucherOfferingsInfiniteQueryOptions(
   offerings: OfferingsClient,
   address: string | undefined,
@@ -149,28 +123,6 @@ export function managedVoucherOfferingsInfiniteQueryOptions(
     enabled: Boolean(address) && enabled,
     initialPageParam: undefined as number | undefined,
     getNextPageParam: nextOfferingCursor(perPage),
-  });
-}
-
-/**
- * One offering.
- *
- * Mostly written rather than fetched: a create or update seeds this key with the
- * row the server saved, so an edit form reopened straight afterwards shows what
- * was stored rather than what was typed.
- */
-export function voucherOfferingQueryOptions(
-  offerings: OfferingsClient,
-  address: string | undefined,
-  id: string | undefined,
-) {
-  return queryOptions({
-    queryKey: offeringKeys.detail(address ?? "none", id ?? "none"),
-    queryFn: ({ signal }) =>
-      offerings.getVoucherOffering(requireAddress(address), requireOfferingID(id), signal, {
-        cache: "no-store",
-      }),
-    enabled: Boolean(address) && Boolean(id),
   });
 }
 
@@ -217,9 +169,4 @@ export function poolOfferingsInfiniteQueryOptions(
 function requireAddress(address: string | undefined): string {
   if (!address) throw new Error("Address is required.");
   return address;
-}
-
-function requireOfferingID(id: string | undefined): string {
-  if (!id) throw new Error("Offering id is required.");
-  return id;
 }

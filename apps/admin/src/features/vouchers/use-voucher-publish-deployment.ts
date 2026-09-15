@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { clcApi } from "#/lib/api";
 
 /** One stage per thing the operator is waiting on, in the order they resolve. */
-export type VoucherDeploymentStage = {
+type VoucherDeploymentStage = {
   label: string;
   state: "idle" | "active" | "done" | "failed";
   status: string;

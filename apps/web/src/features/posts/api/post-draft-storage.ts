@@ -21,7 +21,7 @@ import { readStorageItem, removeStorageItem, writeStorageItem } from "#/lib/stor
  * with the server's copy of that post, and the copy that wins would depend on
  * which screen was opened last.
  */
-export type PersistedPostDraft = {
+type PersistedPostDraft = {
   /** Lowercased wallet address of the author. */
   owner: string;
   savedAt: string;
