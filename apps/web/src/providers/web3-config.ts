@@ -1,7 +1,8 @@
-import { createConfig, createStorage, http } from "wagmi";
+import { createConfig, createStorage } from "wagmi";
 import { caliburWebAuthnConnector } from "#/connectors/calibur-webauthn";
 import { privateKeyConnector } from "#/connectors/privateKey";
-import { CHAIN, PUBLIC_RPC_URL } from "#/lib/chain";
+import { CHAIN, PUBLIC_RPC_URLS } from "#/lib/chain";
+import { createRpcTransport } from "#/lib/rpc-transport";
 
 const storage =
   typeof window !== "undefined" ? createStorage({ storage: window.localStorage }) : undefined;
@@ -16,7 +17,9 @@ export const caliburConnector = caliburWebAuthnConnector();
 export const wagmiConfig = createConfig({
   chains: [CHAIN],
   transports: {
-    [CHAIN.id]: http(PUBLIC_RPC_URL),
+    [CHAIN.id]: createRpcTransport(PUBLIC_RPC_URLS, {
+      rank: typeof window !== "undefined",
+    }),
   },
   // Defer wagmi's onMount() to useEffect so it never fires during SSR render,
   // preventing the synchronous store mutation that causes React 19 to throw.
