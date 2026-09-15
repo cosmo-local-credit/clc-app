@@ -492,6 +492,9 @@ describe("pool voucher UI", () => {
         sendSymbol: "USDC",
         receiveAmount: "2.00",
         receiveSymbol: "TTX",
+        // Carried so the receipt can prefill a send of what was swapped out; a
+        // symbol alone would not identify the token to send.
+        receiveToken: TTX_ADDRESS,
         poolName: "Trade Pool",
       },
     });

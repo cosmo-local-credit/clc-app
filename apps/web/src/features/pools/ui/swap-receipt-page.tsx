@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
-import { RiFileCopyLine } from "react-icons/ri";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -26,6 +26,7 @@ export type SwapReceiptSearch = {
   sendSymbol?: string;
   receiveAmount?: string;
   receiveSymbol?: string;
+  receiveToken?: string;
   poolName?: string;
 };
 
@@ -55,6 +56,15 @@ export function SwapReceiptPage({
       replace: true,
     });
   };
+  // Sending what was just swapped out is the common next step, so the receipt
+  // hands the send flow its token and amount already chosen and the user only
+  // picks a recipient. Offered only once the swap confirmed and only when the
+  // received token is known — a prefill missing either half would silently open
+  // the flow on some other voucher.
+  const sendReceived =
+    details.receiveToken && details.receiveAmount
+      ? { token: details.receiveToken, amount: details.receiveAmount }
+      : null;
 
   if (!details.trackingId) {
     return (
@@ -161,8 +171,20 @@ export function SwapReceiptPage({
         <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
       </div>
       <div className="flex-1" />
+      {sendReceived ? (
+        <Button asChild className="mb-2.5 h-11 w-full">
+          <Link to="/wallet/send" search={sendReceived}>
+            <RiSendPlane2Line className="size-4" aria-hidden="true" />
+            <Trans>Send {details.receiveSymbol}</Trans>
+          </Link>
+        </Button>
+      ) : null}
       <div className="flex gap-3">
-        <Button className="h-11 flex-1" onClick={exitReceipt}>
+        <Button
+          className="h-11 flex-1"
+          variant={sendReceived ? "outline" : "default"}
+          onClick={exitReceipt}
+        >
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (

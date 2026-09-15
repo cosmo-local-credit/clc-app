@@ -11,6 +11,14 @@ const searchSchema = z.object({
   recipient: z.string().optional().catch(undefined),
   /** Human-readable recipient label from lookup or address book. */
   recipientLabel: z.string().optional().catch(undefined),
+  /** Amount to seed the field with, carried in from a shortcut such as post-swap send. */
+  amount: z.string().optional().catch(undefined),
+  /**
+   * Pool to return to once the send completes, set by that pool's Deposit
+   * shortcut. An address rather than a path so nothing can steer the receipt's
+   * exit at an arbitrary route.
+   */
+  returnPool: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/wallet/send/amount")({
@@ -19,10 +27,16 @@ export const Route = createFileRoute("/wallet/send/amount")({
 });
 
 function SendAmountRoute() {
-  const { token, recipient, recipientLabel } = Route.useSearch();
+  const { token, recipient, recipientLabel, amount, returnPool } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <SendAmountPage token={token} recipient={recipient} recipientLabel={recipientLabel} />
+      <SendAmountPage
+        token={token}
+        recipient={recipient}
+        recipientLabel={recipientLabel}
+        amount={amount}
+        returnPool={returnPool}
+      />
     </AuthenticatedRoute>
   );
 }

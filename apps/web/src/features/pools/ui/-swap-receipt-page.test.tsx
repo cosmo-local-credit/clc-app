@@ -9,6 +9,20 @@ const { navigate, trackRelay, useOtxTracking } = vi.hoisted(() => ({
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
+  Link: ({
+    to,
+    search,
+    children,
+    ...props
+  }: {
+    to: string;
+    search?: Record<string, string>;
+    children: React.ReactNode;
+  }) => (
+    <a href={`${to}?${new URLSearchParams(search ?? {}).toString()}`} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({ useOtxTracking }));
@@ -22,6 +36,8 @@ import { SwapReceiptPage } from "./swap-receipt-page";
 const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
+const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
+
 const details = {
   trackingId: "swap-tracking-1",
   sendAmount: "1.00",
@@ -29,6 +45,22 @@ const details = {
   receiveAmount: "2.00",
   receiveSymbol: "TTX",
   poolName: "Trade Pool",
+};
+
+const confirmed = {
+  outcome: {
+    kind: "success",
+    otx: {
+      id: 1,
+      trackingId: "swap-tracking-1",
+      otxType: "RELAY_EXEC",
+      txHash: TX_HASH,
+      nonce: 1,
+      replaced: false,
+      createdAt: "2026-07-02T10:00:00Z",
+      status: "SUCCESS",
+    },
+  },
 };
 
 afterEach(() => {
@@ -153,5 +185,34 @@ describe("SwapReceiptPage", () => {
       params: { poolAddress: POOL_ADDRESS },
       replace: true,
     });
+  });
+
+  it("offers to send what was swapped out, with the token and amount already chosen", () => {
+    // Sending after a swap is the common next step, so the receipt hands the
+    // send flow both halves and the user only picks a recipient.
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    const send = screen.getByRole("link", { name: /send ttx/i });
+    const target = new URL(send.getAttribute("href") ?? "", "https://example.test");
+    expect(target.pathname).toBe("/wallet/send");
+    expect(target.searchParams.get("token")).toBe(TTX_ADDRESS);
+    expect(target.searchParams.get("amount")).toBe("2.00");
+  });
+
+  it("withholds the send shortcut when the received token is unknown", () => {
+    // A receipt deep-linked from an older URL carries a symbol but no address,
+    // and a prefill missing that half would open the flow on another voucher.
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+
+    expect(screen.queryByRole("link", { name: /send ttx/i })).toBeNull();
   });
 });

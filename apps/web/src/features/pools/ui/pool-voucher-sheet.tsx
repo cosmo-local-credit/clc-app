@@ -186,7 +186,7 @@ function PoolVoucherForm({
           capRaw: voucher.tokenLimit,
           decimals: voucher.decimals,
         })
-      : { exchangeRate: "", creditLimit: "" };
+      : APPROVAL_DEFAULTS;
 
   const form = useForm({
     defaultValues: seed,
@@ -358,8 +358,8 @@ function PoolVoucherForm({
                         onChange={field.handleChange}
                         onBlur={field.handleBlur}
                         error={getFieldError(field.state.meta.errors)}
-                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers?`}
-                        placeholder="100"
+                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers? Zero accepts no deposits yet.`}
+                        placeholder="0"
                       />
                     )}
                   </form.Field>
@@ -456,6 +456,17 @@ function PoolVoucherForm({
  * branch threaded through the form. `false` is a quoter the protocol supports
  * and this screen does not yet.
  */
+/**
+ * What a new voucher starts at: parity, and a limit of nothing.
+ *
+ * Parity because it is the only rate that asserts nothing about the voucher, and
+ * zero because the limiter takes it and it is the cautious half of the pair —
+ * approving a voucher is a separate decision from deciding how much of it the
+ * pool will hold, and the steward makes the second one deliberately rather than
+ * by leaving a suggested number in place.
+ */
+const APPROVAL_DEFAULTS: PoolVoucherRateInput = { exchangeRate: "1", creditLimit: "0" };
+
 const POOL_QUOTER_SUPPORT: Record<PoolQuoterKind, boolean> = {
   relative: true,
   oracle: false,

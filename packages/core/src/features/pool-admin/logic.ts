@@ -117,7 +117,13 @@ export type BuildAddPoolVoucherCallsInput = {
    * the cap and price changes with it.
    */
   register: boolean;
-  /** Deposit cap in raw base units. Omitted leaves the limiter untouched. */
+  /**
+   * Deposit cap in raw base units. Omitted leaves the limiter untouched.
+   *
+   * Zero is a value, not an omission: `Limiter.setLimitFor(token, pool, 0)` is
+   * how a steward admits a voucher while accepting no deposits of it yet, and
+   * the contract takes it. Only `undefined` means "don't write a limit".
+   */
   depositCapRaw?: string;
   /** Omitted leaves the quoter untouched, which is what an unchanged rate means. */
   pricing?: PoolVoucherPricing;
@@ -168,7 +174,7 @@ export function buildAddPoolVoucherCalls(input: BuildAddPoolVoucherCallsInput): 
         functionName: "setLimitFor",
         // The holder is the pool: the limiter caps what any one holder may hold
         // of a token, and `mustWithinLimit` reads `limitOf(token, address(this))`.
-        args: [input.tokenAddress, input.poolAddress, parsePositiveAmount(input.depositCapRaw)],
+        args: [input.tokenAddress, input.poolAddress, parseAmount(input.depositCapRaw)],
       }),
     });
   }
@@ -353,9 +359,10 @@ function parseAmount(value: string): bigint {
 
 function parsePositiveAmount(value: string): bigint {
   const amount = parseAmount(value);
-  // Zero is a real setting on both contracts and means the opposite of unset: a
-  // zero cap rejects every deposit, and a zero rate is read back as parity.
-  // Neither belongs in a flow whose purpose is to make a voucher usable.
+  // A zero rate is read back by the quoter as parity, so it cannot express what
+  // a steward typing zero would mean. The deposit cap is the opposite case and
+  // deliberately uses `parseAmount`: zero there is the limiter accepting no
+  // deposits, which is a setting the contract takes and a steward may want.
   if (amount <= 0n) throw new Error("Pool value must be greater than zero.");
   return amount;
 }
@@ -400,6 +407,17 @@ function isPositiveUnitValue(value: string): boolean {
 }
 
 /**
+ * The credit limit's rule, which differs from the rate's: `setLimitFor` accepts
+ * zero and stores it as "this pool may hold none of this voucher", so a steward
+ * approving a voucher before deciding its limit has a valid number to submit.
+ * The field still has to hold one — blank is not zero.
+ */
+function isNonNegativeUnitValue(value: string): boolean {
+  const trimmed = value.trim();
+  return UNIT_VALUE_PATTERN.test(trimmed) && Number(trimmed) >= 0;
+}
+
+/**
  * Validates a rate, and a credit limit only where the pool has a limiter to
  * write one to. A pool published without one takes uncapped deposits and there
  * is no contract to reject, so requiring the field would block a legitimate
@@ -416,11 +434,11 @@ export function poolVoucherRateSchema(options: { requireCreditLimit: boolean }) 
           message: "Enter an exchange rate greater than zero",
         });
       }
-      if (options.requireCreditLimit && !isPositiveUnitValue(value.creditLimit)) {
+      if (options.requireCreditLimit && !isNonNegativeUnitValue(value.creditLimit)) {
         ctx.addIssue({
           code: "custom",
           path: ["creditLimit"],
-          message: "Enter a credit limit greater than zero",
+          message: "Enter a credit limit of zero or more",
         });
       }
     });
@@ -463,7 +481,11 @@ export function seedPoolVoucherRateInput(input: {
     POOL_PRICE_INDEX_DECIMALS,
     POOL_PRICE_INDEX_DECIMALS,
   );
-  if (input.capRaw === null || input.decimals === null || BigInt(input.capRaw) === 0n) {
+  // A stored zero reads back as "0", not as an empty field: it is a limit the
+  // steward set, and blanking it would offer to re-submit a different value.
+  // Only a cap the catalog never recorded, or one no conversion can be done for,
+  // leaves the field empty.
+  if (input.capRaw === null || input.decimals === null) {
     return { exchangeRate, creditLimit: "" };
   }
   const unitValueRaw = poolVoucherUnitValueFromCap(

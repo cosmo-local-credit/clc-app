@@ -1,7 +1,7 @@
-import { hueFromSeed } from "#/components/wallet/wallet-data";
+import { hueFromSeed } from "./wallet-data";
 import { cn } from "#/lib/utils";
 
-export type PoolLogoProps = {
+type PoolLogoProps = {
   imageUrl: string | null | undefined;
   name: string;
   seed: string;

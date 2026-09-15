@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { RiAddLine, RiPencilLine, RiQrCodeLine, RiSettings3Line } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
-import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
+import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
@@ -13,7 +13,6 @@ import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { PoolControlsPanel } from "./pool-controls-panel";
-import { PoolLogo } from "./pool-logo";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
@@ -101,11 +100,17 @@ export function PoolDetailPage({
         </Button>
         {/* A shortcut into the ordinary send flow with the pool as the
             recipient, rather than a flow of its own. Back returns here on its
-            own: BackChevron prefers real history over its deep-link fallback. */}
+            own: BackChevron prefers real history over its deep-link fallback.
+            `returnPool` rides along to the receipt so finishing the send lands
+            back on this pool rather than on the wallet. */}
         <Button asChild variant="outline" className="h-11 w-full bg-card">
           <Link
             to="/wallet/send/amount"
-            search={{ recipient: pool.address, recipientLabel: pool.name }}
+            search={{
+              recipient: pool.address,
+              recipientLabel: pool.name,
+              returnPool: pool.address,
+            }}
           >
             <Trans>Deposit</Trans>
           </Link>

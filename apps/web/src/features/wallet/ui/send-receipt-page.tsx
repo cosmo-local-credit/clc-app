@@ -68,11 +68,21 @@ export function SendReceiptPage({
   recipient,
   amount,
   symbol,
+  returnPool,
 }: {
   trackingId?: string;
   recipient?: string;
   amount?: string;
   symbol?: string;
+  /**
+   * The pool a Deposit shortcut started this send from.
+   *
+   * Carried as an address rather than a path so this screen can only ever exit
+   * to a pool, and resolved here rather than with `router.history.back()`: the
+   * flow pushed two entries between the pool and this receipt, and one of them
+   * is a form that Back must not reopen behind a signed transaction.
+   */
+  returnPool?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -83,7 +93,15 @@ export function SendReceiptPage({
   const toAddress = recipient ?? null;
   const amountLabel = amount && symbol ? `${amount} ${symbol}` : null;
   const outcome = tracking.outcome;
-  const goToWallet = () => {
+  const exitReceipt = () => {
+    if (returnPool) {
+      void navigate({
+        to: "/pools/$poolAddress",
+        params: { poolAddress: returnPool },
+        replace: true,
+      });
+      return;
+    }
     void navigate({ to: "/", search: { tab: "wallet" }, replace: true });
   };
 
@@ -107,7 +125,7 @@ export function SendReceiptPage({
         message={<Trans>Waiting for on-chain confirmation</Trans>}
         toAddress={toAddress}
         status={<StatusPill tone="pending" label={<Trans>Pending</Trans>} />}
-        onDone={goToWallet}
+        onDone={exitReceipt}
       />
     );
   }
@@ -121,7 +139,7 @@ export function SendReceiptPage({
         message={outcome.error}
         toAddress={toAddress}
         status={<StatusPill tone="error" label={<Trans>Reverted</Trans>} />}
-        onDone={goToWallet}
+        onDone={exitReceipt}
       />
     );
   }
@@ -178,8 +196,8 @@ export function SendReceiptPage({
       <div className="flex-1" />
 
       <div className="flex gap-3">
-        <Button className="h-11 flex-1" onClick={goToWallet}>
-          {t`Done`}
+        <Button className="h-11 flex-1" onClick={exitReceipt}>
+          {returnPool ? t`Back to pool` : t`Done`}
         </Button>
         {explorerUrl ? (
           <Button asChild className="h-11 flex-1" variant="outline">

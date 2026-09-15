@@ -1,4 +1,4 @@
-import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import { type CatalogFilter, EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
 import type { PoolsClient, UserPoolPage } from "./client";
 
@@ -80,6 +80,16 @@ export const poolKeys = {
         next: params.next,
       },
     ] as const,
+  /**
+   * The pools one address owns, as an infinite list.
+   *
+   * Distinct from `account`: that key holds one page of the pools an account is a
+   * *member* of, which is a different set — an address can hold a pool's vouchers
+   * without having deployed it, and can own a pool it holds nothing of.
+   */
+  ownedInfinite: (owner: string, perPage: number) =>
+    ["clc", "pools", "owned", "infinite", owner.toLowerCase(), perPage] as const,
+
   /** One page of the pools an account belongs to. */
   account: (address: string, params: PoolListParams) =>
     [
@@ -105,6 +115,41 @@ export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number
         { perPage, cursor: pageParam, next: pageParam === undefined ? undefined : true },
         signal,
       ),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => nextPoolCursor(lastPage, perPage),
+  });
+}
+
+/**
+ * The pools an address owns.
+ *
+ * Goes through the filtered endpoint because `owner` is a server predicate
+ * there: filtering a fetched page client-side would show "your pools" as
+ * whatever of them happened to land in the first page of a catalog that grows
+ * without bound.
+ *
+ * The filter is otherwise empty — this list carries no search box — so `owner`
+ * is the only narrowing the request sends.
+ */
+export function poolsByOwnerInfiniteQueryOptions(
+  pools: PoolsClient,
+  owner: string | undefined,
+  perPage: number,
+) {
+  return infiniteQueryOptions({
+    queryKey: poolKeys.ownedInfinite(owner ?? "none", perPage),
+    queryFn: ({ pageParam, signal }) =>
+      pools.getFilteredPools(
+        {
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+          filter: EMPTY_CATALOG_FILTER,
+          owner: requireAddress(owner),
+        },
+        signal,
+      ),
+    enabled: Boolean(owner),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => nextPoolCursor(lastPage, perPage),
   });
