@@ -2,8 +2,9 @@ import type { AdminPoolTransaction } from "@clc/api/features/admin/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { describe, expect, it } from "vite-plus/test";
 
+import { poolDepositCap } from "@clc/core/features/pools/logic";
+
 import {
-  depositCap,
   groupPoolFeeds,
   poolActivitySeries,
   poolAdvisories,
@@ -81,21 +82,21 @@ function voucher(overrides: Partial<PoolVoucher> = {}): PoolVoucher {
   };
 }
 
-describe("depositCap", () => {
+describe("poolDepositCap", () => {
   it("reads a recorded cap as an amount", () => {
-    expect(depositCap(pool(), voucher())).toEqual({ kind: "capped", raw: "300000000" });
+    expect(poolDepositCap(pool(), voucher())).toEqual({ kind: "capped", raw: "300000000" });
   });
 
   it("separates a zero cap from a missing one", () => {
     // Both render as no headroom, but only the first is a decision someone made.
-    expect(depositCap(pool(), voucher({ tokenLimit: "0" }))).toEqual({ kind: "blocked" });
-    expect(depositCap(pool(), voucher({ tokenLimit: null }))).toEqual({ kind: "unrecorded" });
+    expect(poolDepositCap(pool(), voucher({ tokenLimit: "0" }))).toEqual({ kind: "blocked" });
+    expect(poolDepositCap(pool(), voucher({ tokenLimit: null }))).toEqual({ kind: "unrecorded" });
   });
 
   it("caps nothing when the pool has no limiter", () => {
     // SwapPool.mustWithinLimit returns early, so even a zero row is uncapped.
     const noLimiter = pool({ limiterAddress: null });
-    expect(depositCap(noLimiter, voucher({ tokenLimit: "0" }))).toEqual({ kind: "uncapped" });
+    expect(poolDepositCap(noLimiter, voucher({ tokenLimit: "0" }))).toEqual({ kind: "uncapped" });
   });
 });
 

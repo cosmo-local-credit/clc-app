@@ -2,7 +2,7 @@ import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { RiAddLine, RiPencilLine, RiQrCodeLine, RiSettings3Line } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
@@ -12,15 +12,24 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
+import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
+import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
-export type PoolDetailTab = "offerings" | "vouchers";
+export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "activity";
 
-const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers"];
+const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "activity"];
+
+const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
+  offerings: <Trans>Offerings</Trans>,
+  vouchers: <Trans>Vouchers</Trans>,
+  holdings: <Trans>Holdings</Trans>,
+  activity: <Trans>Activity</Trans>,
+};
 
 export function PoolDetailPage({
   poolAddress,
@@ -132,12 +141,12 @@ export function PoolDetailPage({
       {canManageOnChain ? <PoolControlsPanel pool={pool} vouchers={vouchers} /> : null}
 
       <div
-        className="grid grid-cols-2 border border-border bg-card p-1"
+        className="grid grid-cols-4 border border-border bg-card p-1"
         role="tablist"
         aria-label={t`Pool contents`}
       >
         {POOL_TABS.map((tab) => {
-          const label = tab === "offerings" ? <Trans>Offerings</Trans> : <Trans>Vouchers</Trans>;
+          const label = TAB_LABELS[tab];
           const className = [
             "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
             activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
@@ -226,6 +235,10 @@ export function PoolDetailPage({
           )}
         </div>
       ) : null}
+
+      {activeTab === "holdings" ? <PoolHoldingsPanel pool={pool} vouchers={vouchers} /> : null}
+
+      {activeTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
 
       {canManageOnChain ? (
         <PoolVoucherSheet
