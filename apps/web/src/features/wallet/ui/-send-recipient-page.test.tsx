@@ -27,7 +27,13 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
   ),
 }));
 
+import {
+  renameAddressBookEntry,
+  saveAddressBookEntry,
+} from "#/features/wallet/api/address-book-storage";
 import { SendRecipientPage } from "./send-recipient-page";
+
+const OWNER = "0xabc0000000000000000000000000000000000123";
 
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -173,5 +179,73 @@ describe("SendRecipientPage", () => {
         }) as HTMLInputElement
       ).value,
     ).toBe("0xa316408425cF17F1827483dee621c6C3A9B5fad4");
+  });
+  // The reverse-lookup gateway validates its parameter as `eth_addr_checksum`,
+  // so a lowercase paste — how most explorers render an address — used to come
+  // back 400 and the screen showed no name at all.
+  it("checksums a lowercase pasted address before the reverse lookup", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      description: "Name reverse resolved",
+      result: { name: "admin.sarafu.eth" },
+    });
+    renderWithQueryClient(<SendRecipientPage />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
+      target: { value: "0x5523058cdffe5f3c1eadadd5015e55c6e00fb439" },
+    });
+
+    expect(await screen.findByText("admin.sarafu.eth")).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledWith(
+      "https://resolver.v3.grassecon.net/api/v1/resolve/reverse/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it("leaves the screen nameless rather than erroring when the resolver rejects the address", async () => {
+    mockFetch({ ok: false, description: "Address validation failed" }, 400);
+    renderWithQueryClient(<SendRecipientPage />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
+      target: { value: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
+    });
+
+    expect(await screen.findByText("Address")).toBeTruthy();
+    expect(screen.queryByText(/couldn't resolve that recipient/i)).toBeNull();
+  });
+
+  it("prefers a saved nickname over the resolved name when continuing", async () => {
+    saveAddressBookEntry(OWNER, {
+      address: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+      ensName: "admin.sarafu.eth",
+      phone: null,
+      source: "reverse-ens",
+    });
+    renameAddressBookEntry(OWNER, "0x5523058cdffe5f3c1eadadd5015e55c6e00fb439", "Mom");
+    mockFetch({
+      ok: true,
+      description: "Name reverse resolved",
+      result: { name: "admin.sarafu.eth" },
+    });
+    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /recipient ens, phone or address/i }), {
+      target: { value: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439" },
+    });
+
+    expect(await screen.findByText("Mom")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/wallet/send/amount",
+        search: {
+          token: "0xtoken",
+          recipient: "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+          recipientLabel: "Mom",
+        },
+      });
+    });
   });
 });

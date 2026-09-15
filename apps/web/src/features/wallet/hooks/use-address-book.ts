@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
-  readAddressBookRecipients,
-  upsertAddressBookRecipient,
-  type UpsertAddressBookRecipientInput,
+  readAddressBookEntries,
+  removeAddressBookEntry,
+  renameAddressBookEntry,
+  saveAddressBookEntry,
+  type SaveAddressBookEntryInput,
 } from "#/features/wallet/api/address-book-storage";
 import type { StorageOwner } from "#/lib/storage/owner-tier-key";
 
@@ -18,13 +20,13 @@ import type { StorageOwner } from "#/lib/storage/owner-tier-key";
  */
 const addressBookQueryKeys = {
   all: ["address-book"] as const,
-  recipients: (owner: StorageOwner) => [...addressBookQueryKeys.all, owner, "recipients"] as const,
+  entries: (owner: StorageOwner) => [...addressBookQueryKeys.all, owner, "entries"] as const,
 };
 
-export function useAddressBookRecipients(owner: StorageOwner | null) {
+export function useAddressBookEntries(owner: StorageOwner | null) {
   return useQuery({
-    queryKey: addressBookQueryKeys.recipients(owner ?? "unresolved"),
-    queryFn: () => readAddressBookRecipients(owner as StorageOwner),
+    queryKey: addressBookQueryKeys.entries(owner ?? "unresolved"),
+    queryFn: () => readAddressBookEntries(owner as StorageOwner),
     // A null owner means the session is still being decided. Reading the wrong
     // tier would show one person's contacts under another's session.
     enabled: owner !== null,
@@ -32,19 +34,48 @@ export function useAddressBookRecipients(owner: StorageOwner | null) {
   });
 }
 
-export function useUpsertAddressBookRecipient(owner: StorageOwner | null) {
+export function useSaveAddressBookEntry(owner: StorageOwner | null) {
+  return useAddressBookMutation(owner, (resolvedOwner, input: SaveAddressBookEntryInput) =>
+    saveAddressBookEntry(resolvedOwner, input),
+  );
+}
+
+export function useRenameAddressBookEntry(owner: StorageOwner | null) {
+  return useAddressBookMutation(
+    owner,
+    (resolvedOwner, input: { id: string; nickname: string | null }) => {
+      renameAddressBookEntry(resolvedOwner, input.id, input.nickname);
+      return null;
+    },
+  );
+}
+
+export function useRemoveAddressBookEntry(owner: StorageOwner | null) {
+  return useAddressBookMutation(owner, (resolvedOwner, input: { id: string }) => {
+    removeAddressBookEntry(resolvedOwner, input.id);
+    return null;
+  });
+}
+
+/**
+ * The three writes share one shape, and the part worth sharing is the null-owner
+ * branch: writing under an undecided owner would file the change in the guest
+ * tier and leave it there after the session resolves. Dropping the write is
+ * recoverable; misfiling it is not.
+ */
+function useAddressBookMutation<TInput, TResult>(
+  owner: StorageOwner | null,
+  write: (owner: StorageOwner, input: TInput) => TResult,
+) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: UpsertAddressBookRecipientInput) => {
-      // Writing under an undecided owner would file this recipient in the guest
-      // tier and leave it there after the session resolves. Dropping the save is
-      // recoverable; misfiling it is not.
+    mutationFn: async (input: TInput) => {
       if (owner === null) return null;
-      return upsertAddressBookRecipient(owner, input);
+      return write(owner, input);
     },
     onSuccess: () => {
       if (owner === null) return;
-      void queryClient.invalidateQueries({ queryKey: addressBookQueryKeys.recipients(owner) });
+      void queryClient.invalidateQueries({ queryKey: addressBookQueryKeys.entries(owner) });
     },
   });
 }

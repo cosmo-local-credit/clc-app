@@ -26,6 +26,12 @@ compatibility_flags = ["nodejs_compat"]
 VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
+# Recipient name lookup — the Grassroots Economics v3 stack. Names are keyed by
+# address, not by chain, so this Gnosis deploy resolves any address already
+# registered there; a separate deployment is only needed for a separate
+# namespace. Reverse resolution is what fills an address book entry's name.
+VITE_ENS_RESOLVER_URL = "https://resolver.v3.grassecon.net/api/v1/resolve"
+VITE_PHONE_LOOKUP_URL = "https://kvviseru.v3.grassecon.net/api/v1/lookup/address"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"
@@ -73,6 +79,8 @@ VITE_RELYING_PARTY_NAME = "CLC"
 VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
+VITE_ENS_RESOLVER_URL = "https://resolver.v3.grassecon.net/api/v1/resolve"
+VITE_PHONE_LOOKUP_URL = "https://kvviseru.v3.grassecon.net/api/v1/lookup/address"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"

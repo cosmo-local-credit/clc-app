@@ -85,7 +85,7 @@ quota failure).
 
 | Data                | Name                           | Owner from        |
 | ------------------- | ------------------------------ | ----------------- |
-| Address book        | `address-book.v1`              | `useStorageOwner` |
+| Address book        | `address-book.v2`              | `useStorageOwner` |
 | Market facet filter | `market.filter-preferences.v1` | `useStorageOwner` |
 | Pools facet filter  | `pools.filter-preferences.v1`  | `useStorageOwner` |
 | Posts facet filter  | `posts.filter-preferences.v1`  | `useStorageOwner` |

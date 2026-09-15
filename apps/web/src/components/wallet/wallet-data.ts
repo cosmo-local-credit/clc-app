@@ -3,9 +3,12 @@ import { CELO_MAINNET_CUSD_ADDRESS } from "@clc/core/lib/constants/celo";
 /**
  * Static placeholder data for wallet screens.
  *
- * The real balances, vouchers, pools and address book will be sourced from
- * the backend / chain in later wiring. These keep the screens visually
- * complete while the data layer is built out.
+ * The real balances, vouchers and pools will be sourced from the backend /
+ * chain in later wiring. These keep the screens visually complete while the
+ * data layer is built out. The address book is no longer among them: it has a
+ * real store in `features/wallet/api/address-book-storage.ts`, with its own
+ * type, because a saved contact holds a resolved name and a nickname
+ * separately and this mock shape had one `label` for both.
  */
 
 type TokenKind = "stable" | "voucher";
@@ -132,17 +135,6 @@ const WALLET_TOKENS: WalletToken[] = [
 export const WALLET_TOKEN_BY_ID: Record<string, WalletToken> = Object.fromEntries(
   WALLET_TOKENS.map((token) => [token.id, token]),
 );
-
-export type Recipient = {
-  id: string;
-  label: string;
-  /** Sub-label when there is no resolved on-chain address. */
-  sub?: string;
-  /** Hex address when the recipient has been resolved. */
-  address?: string;
-  /** Avatar hue seed (usually the label). */
-  seed: string;
-};
 
 /**
  * Deterministic hue angle from a seed string. Callers pick their own lightness
