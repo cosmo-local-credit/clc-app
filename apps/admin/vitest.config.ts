@@ -9,6 +9,12 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
+    // The console's heaviest screens — the map-backed pool publish flow, the
+    // data tables — drive several query-backed steps per test, and under a full
+    // four-project run they contend for workers. The publish flow measured
+    // ~5.6s that way against Vitest's 5s default while passing on its own, so
+    // the suite was failing on scheduling rather than on behaviour.
+    testTimeout: 20_000,
     coverage: {
       provider: "v8",
       reporter: ["lcov", "text", "json-summary"],

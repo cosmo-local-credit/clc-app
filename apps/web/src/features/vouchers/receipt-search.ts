@@ -20,5 +20,3 @@ export const voucherReceiptSearchSchema = z.object({
     .optional()
     .catch(undefined),
 });
-
-export type VoucherReceiptSearch = z.infer<typeof voucherReceiptSearchSchema>;

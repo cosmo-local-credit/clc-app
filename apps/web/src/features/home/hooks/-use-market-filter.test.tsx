@@ -19,9 +19,13 @@ vi.mock("#/lib/navigation/use-catalog-filter", () => ({
 }));
 
 import {
-  MARKET_FILTER_PREFERENCES_KEY,
+  MARKET_FILTER_PREFERENCES_NAME,
   useMarketFilter,
 } from "#/features/home/hooks/use-market-filter";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+const OWNER = "0xabc0000000000000000000000000000000000123";
+const MARKET_FILTER_PREFERENCES_KEY = ownerScopedKey(OWNER, MARKET_FILTER_PREFERENCES_NAME);
 
 function controls(filter: CatalogFilter | null): CatalogFilterControls {
   const effective = filter ?? {
@@ -67,7 +71,7 @@ describe("useMarketFilter preferences", () => {
       JSON.stringify({ tags: ["Culture", "Art"], tagMatch: "all" }),
     );
 
-    const { result, rerender } = renderHook(() => useMarketFilter());
+    const { result, rerender } = renderHook(() => useMarketFilter(OWNER));
 
     expect(mocks.setFacets).toHaveBeenCalledWith(["Art", "Culture"], "all", [], "any", {
       replace: true,
@@ -99,7 +103,7 @@ describe("useMarketFilter preferences", () => {
       voucherMatch: "any",
     });
 
-    const { result } = renderHook(() => useMarketFilter());
+    const { result } = renderHook(() => useMarketFilter(OWNER));
 
     expect(mocks.setFacets).not.toHaveBeenCalled();
     expect(result.current.isRestoringPreference).toBe(false);
@@ -116,7 +120,7 @@ describe("useMarketFilter preferences", () => {
       }),
     );
 
-    const { result } = renderHook(() => useMarketFilter());
+    const { result } = renderHook(() => useMarketFilter(OWNER));
 
     expect(mocks.setFacets).not.toHaveBeenCalled();
     expect(result.current.isRestoringPreference).toBe(false);
@@ -134,7 +138,7 @@ describe("useMarketFilter preferences", () => {
       }),
     );
 
-    renderHook(() => useMarketFilter());
+    renderHook(() => useMarketFilter(OWNER));
 
     expect(mocks.setFacets).toHaveBeenCalledWith(["Art"], "any", [], "any", { replace: true });
     expect(
@@ -143,7 +147,7 @@ describe("useMarketFilter preferences", () => {
   });
 
   it("saves an applied draft and clears storage with the visible clear action", () => {
-    const { result } = renderHook(() => useMarketFilter());
+    const { result } = renderHook(() => useMarketFilter(OWNER));
 
     act(() => result.current.applyFacetFilters(["Culture", "Art"], "all", [], "any"));
 

@@ -6,7 +6,17 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
-import { MARKET_FILTER_PREFERENCES_KEY } from "#/features/home/hooks/use-market-filter";
+import { MARKET_FILTER_PREFERENCES_NAME } from "#/features/home/hooks/use-market-filter";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
+const MARKET_FILTER_PREFERENCES_KEY = ownerScopedKey(
+  "0xabc0000000000000000000000000000000000123",
+  MARKET_FILTER_PREFERENCES_NAME,
+);
 
 const mocks = vi.hoisted(() => ({
   camera: {

@@ -209,21 +209,82 @@ export async function saveNotificationInboxMessage(
     ...current,
     ...message,
     receivedAt: message.receivedAt || current?.receivedAt || nowISO(),
+    // Normalized here because this is the only write path into `inbox` (reached
+    // from `recovery.ts` and `sw/register-handlers.ts`) and because the schema
+    // that validates it, `logic/payload-schema.ts`, accepts either casing. A
+    // mixed-case target would not match the address an owner is compared
+    // against, so one person's notification could be filed under nobody.
+    ...(message.walletAddressTarget
+      ? { walletAddressTarget: message.walletAddressTarget.toLowerCase() }
+      : {}),
   };
 
   await db.put("inbox", next);
   return next;
 }
 
+/**
+ * One wallet's inbox, newest first, plus the messages addressed to the device.
+ *
+ * This database is device-scoped and outlives the session that filled it, so on
+ * a shared phone a plain `getAll` hands the current user every previous user's
+ * notifications. `walletAddress` is what bounds that.
+ *
+ * Deliberately a scan and filter rather than a lookup through
+ * `by-wallet-address`, even though that index exists. IndexedDB omits a record
+ * whose indexed key path is `undefined`, and a device-level notification has no
+ * `walletAddressTarget` at all — such rows are absent from the index entirely,
+ * so an index lookup cannot return them and would silently drop every
+ * device-wide message. Two passes over one store is not worth the false economy;
+ * the index stays declared because removing it would need a version bump.
+ */
 export async function listNotificationInboxMessages(
+  walletAddress: string,
   limit = 50,
 ): Promise<NotificationInboxMessage[]> {
   const db = await openNotificationDatabase();
   const messages = await db.getAll("inbox");
+  const owner = walletAddress.toLowerCase();
 
   return messages
+    .filter((message) => {
+      const target = message.walletAddressTarget?.toLowerCase();
+      return target === undefined || target === owner;
+    })
     .sort((left, right) => right.receivedAt.localeCompare(left.receivedAt))
     .slice(0, limit);
+}
+
+/**
+ * Drops everything here that belongs to a person rather than to the device, for
+ * use at an identity boundary.
+ *
+ * `device` and `subscriptionDiagnostics` survive deliberately, which is why this
+ * is not a `deleteDB`. The `deviceId` is what the backend's device record is
+ * keyed on: deleting it would orphan that record and mint a new device on every
+ * account switch, so the push subscription would multiply rather than move.
+ *
+ * `config` survives but its `syncCursor` is reset. The cursor says how far the
+ * inbox has been synced; keeping it while emptying the inbox would make the
+ * backend treat the incoming user's backlog as already delivered.
+ */
+export async function clearNotificationIdentityStores(): Promise<void> {
+  const db = await openNotificationDatabase();
+  const transaction = db.transaction(
+    ["inbox", "ackQueue", "pendingClickEvents", "config"],
+    "readwrite",
+  );
+
+  const configStore = transaction.objectStore("config");
+  const config = await configStore.get(SINGLETON_KEY);
+
+  await Promise.all([
+    transaction.objectStore("inbox").clear(),
+    transaction.objectStore("ackQueue").clear(),
+    transaction.objectStore("pendingClickEvents").clear(),
+    ...(config ? [configStore.put({ ...config, syncCursor: undefined, updatedAt: nowISO() })] : []),
+    transaction.done,
+  ]);
 }
 
 export async function getNotificationInboxMessage(

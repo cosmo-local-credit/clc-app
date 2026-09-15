@@ -7,10 +7,11 @@ import { RiArrowRightSLine, RiMap2Line } from "react-icons/ri";
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
-import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
@@ -19,14 +20,14 @@ const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
   onboardingBanner,
-  locationOwner = GUEST_LOCATION_OWNER,
+  locationOwner = GUEST_STORAGE_OWNER,
 }: {
   onboardingBanner?: ReactNode;
   locationOwner?: string;
 }) {
   const { t, i18n } = useLingui();
   const { realFix } = useMarketCamera(locationOwner);
-  const filter = useMarketFilter();
+  const filter = useMarketFilter(useStorageOwner());
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
