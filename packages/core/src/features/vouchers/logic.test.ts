@@ -2,7 +2,9 @@ import { decodeFunctionData } from "viem";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
   buildVoucherMintCall,
+  buildVoucherOwnershipTransferCall,
   giftableTokenMintToAbi,
+  giftableTokenOwnershipAbi,
   toVoucherDeployPayload,
   voucherCreateSchema,
   voucherMintAmountSchema,
@@ -257,5 +259,21 @@ describe("buildVoucherMintCall", () => {
     for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
       expect(() => buildVoucherMintCall({ tokenAddress, ownerAddress, amountRaw })).toThrow();
     }
+  });
+});
+
+describe("buildVoucherOwnershipTransferCall", () => {
+  const tokenAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
+  const newOwnerAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as const;
+
+  it("uses GiftableToken's inherited transferOwnership selector", () => {
+    const call = buildVoucherOwnershipTransferCall({ tokenAddress, newOwnerAddress });
+
+    expect(call.to).toBe(tokenAddress);
+    expect(call.value).toBe("0");
+    expect(decodeFunctionData({ abi: giftableTokenOwnershipAbi, data: call.data })).toEqual({
+      functionName: "transferOwnership",
+      args: [newOwnerAddress],
+    });
   });
 });

@@ -5,7 +5,15 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -51,6 +59,7 @@ import {
   type VoucherOrigin,
 } from "#/lib/navigation/voucher-navigation-owner";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
@@ -350,6 +359,13 @@ export function VoucherDetailPage({
           lat={lat}
           lng={lng}
           editable={canEditDetails ? detail : null}
+          contractActions={{
+            tokenAddress: contractAddress,
+            tokenSymbol: token.symbol,
+            tokenDecimals: token.tokenDecimals,
+            ownerAddress: token.owner ?? null,
+            walletAddress: address,
+          }}
         />
       ) : null}
       {activeTab === "posts" ? (
@@ -649,6 +665,7 @@ function VoucherInfoPanel({
   lat,
   lng,
   editable,
+  contractActions,
 }: {
   rate: { value: string; unit: string } | null;
   symbol: string;
@@ -665,6 +682,7 @@ function VoucherInfoPanel({
   lng: number | null;
   /** The catalog record, when the viewer may edit it; null for everyone else. */
   editable: MarketVoucherDetail | null;
+  contractActions: ComponentProps<typeof VoucherContractActionsPanel>;
 }) {
   const { t } = useLingui();
   const [editing, setEditing] = useState(false);
@@ -696,6 +714,8 @@ function VoucherInfoPanel({
           />
         </>
       ) : null}
+
+      <VoucherContractActionsPanel {...contractActions} />
 
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">

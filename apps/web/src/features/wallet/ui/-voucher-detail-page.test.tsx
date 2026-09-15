@@ -23,6 +23,10 @@ const mocks = vi.hoisted(() => ({
       | undefined,
   },
   updateProfile: vi.fn(),
+  createVouchers: vi.fn(),
+  transferOwnership: vi.fn(),
+  delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
+  queryClient: { invalidateQueries: vi.fn() },
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -95,6 +99,11 @@ vi.mock("wagmi", () => ({
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => mocks.queryClient,
 }));
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
@@ -222,6 +231,18 @@ vi.mock("#/features/wallet/hooks/use-update-voucher-profile", () => ({
   }),
 }));
 
+vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
+  useVoucherMint: () => ({ mutateAsync: mocks.createVouchers, isPending: false }),
+}));
+
+vi.mock("#/features/vouchers/hooks/use-voucher-ownership-transfer", () => ({
+  useVoucherOwnershipTransfer: () => ({ mutateAsync: mocks.transferOwnership, isPending: false }),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
+  useCaliburDelegation: () => mocks.delegationStatus,
+}));
+
 vi.mock("#/hooks/use-deployment", () => ({
   useTokenTags: () => ({
     data: ["Agriculture", "Food"],
@@ -334,6 +355,12 @@ beforeEach(() => {
     session: { address: OTHER, chainId: 42220 },
   };
   mocks.openDefaultMaps.mockReset();
+  mocks.createVouchers.mockReset();
+  mocks.createVouchers.mockResolvedValue({ trackingId: "mint-1" });
+  mocks.transferOwnership.mockReset();
+  mocks.transferOwnership.mockResolvedValue({ trackingId: "owner-1" });
+  mocks.delegationStatus = "delegated";
+  mocks.queryClient.invalidateQueries.mockReset();
   mocks.detailResult = {
     data: detail(),
     isPending: false,
@@ -1186,5 +1213,65 @@ describe("VoucherDetailPage voucher details editor", () => {
 
     expect((await within(dialog).findByRole("alert")).textContent).toBe("Display name is required");
     expect(mocks.updateProfile).not.toHaveBeenCalled();
+  });
+});
+
+describe("VoucherDetailPage contract controls", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  it("shows signed contract controls only to the connected voucher owner", () => {
+    const visitor = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByLabelText("Voucher controls")).toBeNull();
+    visitor.unmount();
+
+    mocks.address = OWNER.toUpperCase();
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    const controls = screen.getByLabelText("Voucher controls");
+    expect(within(controls).getByRole("button", { name: "Create vouchers" })).toBeTruthy();
+    expect(within(controls).getByRole("button", { name: "Transfer ownership" })).toBeTruthy();
+  });
+
+  it("converts the entered amount and relays a mint through the active owner", async () => {
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+      target: { value: "12.34" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+    await waitFor(() =>
+      expect(mocks.createVouchers).toHaveBeenCalledWith({
+        tokenAddress: ADDRESS,
+        ownerAddress: OWNER,
+        amountRaw: "1234",
+        includeAuthorization: false,
+      }),
+    );
+  });
+
+  it("relays ownership transfer with the authorization when delegation is needed", async () => {
+    mocks.address = OWNER;
+    mocks.delegationStatus = "not-delegated";
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Transfer ownership" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("New owner address"), {
+      target: { value: OTHER },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Transfer ownership" }));
+
+    await waitFor(() =>
+      expect(mocks.transferOwnership).toHaveBeenCalledWith({
+        tokenAddress: ADDRESS,
+        ownerAddress: OWNER,
+        newOwnerAddress: OTHER,
+        includeAuthorization: true,
+      }),
+    );
   });
 });

@@ -235,6 +235,7 @@ export function toVoucherDeployPayload(
  * tx onward, so they mint their own opening supply through the relayer.
  */
 export const giftableTokenMintToAbi = parseAbi(["function mintTo(address to, uint256 amount)"]);
+export const giftableTokenOwnershipAbi = parseAbi(["function transferOwnership(address newOwner)"]);
 export const giftableTokenTotalSupplyAbi = parseAbi([
   "function totalSupply() view returns (uint256)",
 ]);
@@ -260,6 +261,30 @@ export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburC
       abi: giftableTokenMintToAbi,
       functionName: "mintTo",
       args: [input.ownerAddress, amount],
+    }),
+  };
+}
+
+export type BuildVoucherOwnershipTransferCallInput = {
+  tokenAddress: `0x${string}`;
+  newOwnerAddress: `0x${string}`;
+};
+
+/**
+ * GiftableToken inherits Solady's `transferOwnership(address)`. Ownership is
+ * deliberately transferred by the current owner through Calibur, rather than
+ * trusting a catalog-profile edit to change an on-chain authority.
+ */
+export function buildVoucherOwnershipTransferCall(
+  input: BuildVoucherOwnershipTransferCallInput,
+): CaliburCall {
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenOwnershipAbi,
+      functionName: "transferOwnership",
+      args: [input.newOwnerAddress],
     }),
   };
 }
