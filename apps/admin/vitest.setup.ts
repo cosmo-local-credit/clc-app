@@ -1,5 +1,11 @@
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vite-plus/test";
+
+// Same reason as apps/web: query-backed screens can cross Testing Library's 1s
+// default while the full multi-project suite is contending for workers, which is
+// why the pool publish flow passed on its own and failed in a full run. Still
+// well under Vitest's 5s per-test limit.
+configure({ asyncUtilTimeout: 3_000 });
 
 // jsdom has no localStorage that survives between files; the theme store reads
 // and writes it on every setTheme.

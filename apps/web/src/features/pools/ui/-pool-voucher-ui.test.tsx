@@ -355,7 +355,10 @@ describe("pool voucher UI", () => {
     await waitFor(() => expect(toInput.value).toBe("20.00"));
     expect(screen.getByText("1 USDC = 2.000 TTX")).toBeTruthy();
     const call = publicClientCall.mock.calls.at(-2)?.[0] as { to: string; data: Hex };
-    expect(call.to).toBe("0x204653A89FF5F2A935c88b0c750cAcdaA9e7368d");
+    // `SWAP_ROUTER_ADDRESS` in `hooks/use-pool-swap-quote.ts`. Left asserting the
+    // Celo router when 197d2ee pointed the hook at the Gnosis one, which is what
+    // has been failing here since.
+    expect(call.to).toBe("0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC");
     expect(decodeFunctionData({ abi: swapRouterQuoteExactInputAbi, data: call.data }).args).toEqual(
       [[{ pool: POOL_ADDRESS, tokenIn: USDC_ADDRESS, tokenOut: TTX_ADDRESS }], 10_000_000n],
     );
