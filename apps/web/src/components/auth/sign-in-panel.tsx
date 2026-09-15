@@ -150,13 +150,23 @@ export function SignInPanel({
     };
     try {
       await backendSignin.mutateAsync({ privateKey: key });
-      await dropActiveConnection();
-      // After the disconnect, before the store. `dropActiveConnection` clears
-      // only the outgoing connector's own slot, so this is what removes the
-      // other kind — a passkey the previous user registered during a
-      // paper-wallet session, which would otherwise let the next person sign in
-      // as them. Must precede `storePrivateKey`, which writes the slot we keep.
+      // Before the disconnect, matching the passkey branch below and sign-out.
+      // `dropActiveConnection` clears only the outgoing connector's own slot, so
+      // this is what removes the other kind — a passkey the previous user
+      // registered during a paper-wallet session, which would otherwise let the
+      // next person sign in as them. Sequenced after the await, a rejecting
+      // connector skipped it entirely and the catch below clears only the
+      // private key, so the leak survived exactly when teardown mattered most.
       clearIdentitySecrets("none");
+      try {
+        await dropActiveConnection();
+      } catch {
+        // Swallowed so it cannot skip the clear above. wagmi may still hold the
+        // old connector, in which case `connectAction` rejects with
+        // ConnectorAlreadyConnected and the catch surfaces that to the user —
+        // a visible failed sign-in, not a silently inherited credential.
+      }
+      // After the clear, which would otherwise wipe the slot being written.
       storePrivateKey(key);
       await connectAction(wagmiConfig, { connector: pkConnector });
       setPkInput("");
