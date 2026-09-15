@@ -29,6 +29,9 @@ VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"
+# PublicNode is independent of our node and Gnosis's starter RPC. The client
+# appends the chain default last and ranks all three by stability and latency.
+VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 # Our own Gnosis full node, the same endpoint clc-core, eth-tracker and
 # eth-indexer use. Left unset, viem would fall back to the chain's own default and
 # the client could read a different node's view of the head than the backend writes
@@ -73,6 +76,7 @@ VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.gnosis.cosmolocal.credit"
+VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"

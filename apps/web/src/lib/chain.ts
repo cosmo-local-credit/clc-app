@@ -10,6 +10,7 @@
 import { chainMetadata } from "@clc/core/lib/constants/chains";
 import type { Chain } from "viem";
 import { celo, celoAlfajores, gnosis } from "wagmi/chains";
+import { resolveRpcUrls } from "#/lib/rpc-transport";
 
 const SUPPORTED_CHAINS: readonly Chain[] = [celo, celoAlfajores, gnosis];
 
@@ -36,8 +37,12 @@ export const CHAIN_INFO = metadata;
 export const CHAIN_ID_BIGINT = BigInt(CHAIN_ID);
 
 /**
- * Overrides the chain's own default RPC. Left undefined, viem falls back to the
- * definition in `wagmi/chains`, so a deploy only sets this to move off the
- * public endpoint.
+ * The primary node, explicit public fallbacks, then the chain's built-in
+ * default. Keeping resolution here preserves the rule that no other module
+ * reads chain-related deployment variables independently.
  */
-export const PUBLIC_RPC_URL = import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined;
+export const PUBLIC_RPC_URLS = resolveRpcUrls({
+  primary: import.meta.env.VITE_PUBLIC_RPC_URL as string | undefined,
+  fallbacks: import.meta.env.VITE_PUBLIC_RPC_FALLBACK_URLS as string | undefined,
+  defaults: CHAIN.rpcUrls.default.http,
+});
