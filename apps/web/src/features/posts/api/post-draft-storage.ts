@@ -1,4 +1,5 @@
 import { reportDraftSchema, type ReportWrite } from "@clc/core/features/reports/logic";
+import { readStorageItem, removeStorageItem, writeStorageItem } from "#/lib/storage/local-storage";
 
 /**
  * The one unsent post an author has in progress, kept across reloads.
@@ -20,7 +21,7 @@ import { reportDraftSchema, type ReportWrite } from "@clc/core/features/reports/
  * with the server's copy of that post, and the copy that wins would depend on
  * which screen was opened last.
  */
-export type PersistedPostDraft = {
+type PersistedPostDraft = {
   /** Lowercased wallet address of the author. */
   owner: string;
   savedAt: string;
@@ -32,7 +33,7 @@ export const MAX_POST_DRAFT_AGE_MS = 7 * 24 * 60 * 60_000;
 const STORAGE_KEY = "clc_post_draft_v1";
 
 export function readPostDraft(owner: string): ReportWrite | null {
-  const raw = getStorage()?.getItem(STORAGE_KEY);
+  const raw = readStorageItem(STORAGE_KEY);
   if (!raw) return null;
 
   let parsed: unknown;
@@ -60,26 +61,10 @@ export function readPostDraft(owner: string): ReportWrite | null {
 
 export function writePostDraft(owner: string, values: ReportWrite): void {
   const draft: PersistedPostDraft = { owner, savedAt: new Date().toISOString(), values };
-  try {
-    getStorage()?.setItem(STORAGE_KEY, JSON.stringify(draft));
-  } catch {
-    // A full or blocked store must never break the editor being typed into.
-  }
+  // A full or blocked store must never break the editor being typed into.
+  writeStorageItem(STORAGE_KEY, JSON.stringify(draft));
 }
 
 export function clearPostDraft(): void {
-  try {
-    getStorage()?.removeItem(STORAGE_KEY);
-  } catch {
-    // Nothing to do; the caller is already past the point the draft mattered.
-  }
-}
-
-function getStorage(): Storage | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
+  removeStorageItem(STORAGE_KEY);
 }

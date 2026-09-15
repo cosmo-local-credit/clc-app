@@ -368,7 +368,12 @@ describe("OnboardingWalletStep rendering", () => {
     });
     expect(mockStorePrivateKey).toHaveBeenCalled();
     // Key must not be cleared after a successful connector + failed session.
-    expect(mockClearPrivateKey).not.toHaveBeenCalled();
+    // Asserted as ordering rather than "never called", because this flow now
+    // clears any *previous* user's credentials immediately before storing this
+    // key — a device the app is shared on may hold someone else's. What must
+    // never happen is a clear landing after the store.
+    const lastStore = Math.max(...mockStorePrivateKey.mock.invocationCallOrder);
+    expect(mockClearPrivateKey.mock.invocationCallOrder.filter((at) => at > lastStore)).toEqual([]);
     expect(mockOnDone).not.toHaveBeenCalled();
 
     const connectCalls = mockConnect.mock.calls.length;

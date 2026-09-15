@@ -5,6 +5,10 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const navigate = vi.fn();
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...props }: { children: ReactNode }) => <a {...props}>{children}</a>,
   useRouter: () => ({ history: { back: vi.fn() } }),

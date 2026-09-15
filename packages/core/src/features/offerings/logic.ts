@@ -73,7 +73,7 @@ export function isOfferingCommodityType(value: unknown): value is OfferingCommod
  * without becoming unreadable. The comparison is textual for the same reason the
  * value is: parsing it to check would reintroduce the rounding.
  */
-export const offeringPricePerUnitSchema = z
+const offeringPricePerUnitSchema = z
   .string()
   .trim()
   .min(1, { message: "Enter a price per unit" })
@@ -84,13 +84,13 @@ export const offeringPricePerUnitSchema = z
     message: "Price must be greater than zero",
   });
 
-export const offeringNameSchema = z
+const offeringNameSchema = z
   .string()
   .trim()
   .min(1, { message: "Enter what you are offering" })
   .max(120, { message: "Name must be 120 characters or fewer" });
 
-export const offeringDescriptionSchema = z
+const offeringDescriptionSchema = z
   .string()
   .trim()
   .min(1, { message: "Describe what you are offering" })
@@ -104,7 +104,7 @@ export const offeringDescriptionSchema = z
  * already happened. The scheme check mirrors the column's own constraint: a data
  * URI is not a durable reference and clc-core will refuse it.
  */
-export const offeringImageUrlSchema = z
+const offeringImageUrlSchema = z
   .string()
   .trim()
   .refine((value) => /^https?:\/\//i.test(value), {
@@ -112,11 +112,11 @@ export const offeringImageUrlSchema = z
   })
   .nullable();
 
-export const offeringUnitSchema = z.enum(OFFERING_UNITS, {
+const offeringUnitSchema = z.enum(OFFERING_UNITS, {
   error: "Choose a unit",
 });
 
-export const offeringCommodityTypeSchema = z.enum(OFFERING_COMMODITY_TYPES, {
+const offeringCommodityTypeSchema = z.enum(OFFERING_COMMODITY_TYPES, {
   error: "Choose whether this is a good or a service",
 });
 

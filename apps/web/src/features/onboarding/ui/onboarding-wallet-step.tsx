@@ -14,6 +14,7 @@ import { PendingClock, StatusPill } from "#/components/wallet/wallet-status";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 
+import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendSignup } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
@@ -193,6 +194,10 @@ export function OnboardingWalletStep({
 
   async function ensurePkConnected(): Promise<void> {
     if (connectorReadyRef.current === "pk") return;
+    // A new account brings no credentials of its own, but the device may still
+    // hold the previous user's — and this flow never calls `disconnect()`, so it
+    // is the one path where nothing is inherited from a connector's teardown.
+    clearIdentitySecrets("none");
     storePrivateKey(pk);
     try {
       await connect(wagmiConfig, { connector: pkConnector });
@@ -209,6 +214,10 @@ export function OnboardingWalletStep({
 
   async function connectCaliburAndFinish() {
     if (finishingRef.current) return;
+    // The passkey has already been registered by `useCaliburFromPk` at this
+    // point, so the credential to keep is the webauthn one; anything else on the
+    // device belongs to someone else.
+    clearIdentitySecrets("webauthn");
     setCaliburConnecting(true);
     setLinkConnectError(null);
     setSessionError(null);

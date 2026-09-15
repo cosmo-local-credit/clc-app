@@ -12,6 +12,7 @@ import {
 } from "#/components/ui/sheet";
 import { type Recipient } from "#/components/wallet/wallet-data";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
+import type { StorageOwner } from "#/lib/storage/owner-tier-key";
 import { cn } from "#/lib/utils";
 import { RecentRecipientRow } from "./recent-recipient-row";
 
@@ -19,13 +20,16 @@ export function AddressBookSheet({
   open,
   onOpenChange,
   onSelect,
+  owner,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (recipient: Recipient) => void;
+  /** Whose address book to show. Null while the session is still resolving. */
+  owner: StorageOwner | null;
 }) {
   const { t } = useLingui();
-  const recipientsQuery = useAddressBookRecipients();
+  const recipientsQuery = useAddressBookRecipients(owner);
   const recipients = recipientsQuery.data ?? [];
 
   return (
