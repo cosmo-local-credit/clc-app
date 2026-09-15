@@ -21,6 +21,7 @@ import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { whenNotificationIdentitySettled } from "#/features/notifications/recovery/identity-reset";
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
 import { initializeServiceWorkerUpdatePolicy } from "#/features/notifications/sw/update-policy";
@@ -101,8 +102,9 @@ function AppInner() {
     [pendingKey],
   );
 
-  // Declared above the recovery effect below so an identity change empties the
-  // notification stores and resets the sync cursor before the resync reads it.
+  // Declared above the recovery effect below, which only orders the two effect
+  // *bodies* — enough to arm the barrier the recovery pass then awaits, since
+  // the teardown assigns it synchronously.
   useIdentityTransitionTeardown();
 
   useEffect(() => {
@@ -110,10 +112,16 @@ function AppInner() {
       return;
     }
 
-    void runNotificationRecovery({
-      currentWalletAddress: auth.isAuthenticated ? address : undefined,
-      linkedWalletAddresses: auth.isAuthenticated && address ? [address] : undefined,
-    });
+    // Awaited, not merely declared second: the teardown empties the notification
+    // stores and clears `syncCursor` asynchronously, and a concurrent recovery
+    // pass would read that cursor before it is cleared, write it back, and
+    // re-sync the outgoing user's messages into the store just emptied.
+    void whenNotificationIdentitySettled().then(() =>
+      runNotificationRecovery({
+        currentWalletAddress: auth.isAuthenticated ? address : undefined,
+        linkedWalletAddresses: auth.isAuthenticated && address ? [address] : undefined,
+      }),
+    );
   }, [address, auth.isAuthenticated]);
 
   async function handleConfirmSwitch() {
@@ -128,13 +136,21 @@ function AppInner() {
       storePrivateKey(pendingKey);
       await connect(wagmiConfig, { connector: pkConnector });
       if (signal.aborted) {
-        // Sign-out (or a newer switch) won. Undo this connect so the session
-        // does not silently switch to the imported wallet after disconnect.
-        await disconnect(wagmiConfig);
-        // Unconditionally, because `disconnect` throwing here would otherwise
-        // leave the imported key on a device the UI shows as signed out. Sign-out
-        // won, so no credential should survive.
+        // Sign-out (or a newer switch) won, so no credential may survive — and
+        // the clear goes *before* the await, for the same reason sign-out's
+        // does. Sign-out already cleared once, but `storePrivateKey` above ran
+        // after that, so the imported key is back on disk and only this path can
+        // remove it. Sequenced after `await disconnect`, a throwing connector
+        // would strand it on a device the UI shows as signed out.
         clearIdentitySecrets("none");
+        try {
+          // Undo this connect so the session does not silently switch to the
+          // imported wallet after disconnect.
+          await disconnect(wagmiConfig);
+        } catch {
+          // Credentials are already gone; a dead connector must not also leave
+          // the pending import queued against a session that no longer exists.
+        }
         clearPendingKey();
         return;
       }
@@ -145,7 +161,15 @@ function AppInner() {
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
       clearPendingKey();
     } catch (err) {
-      if (signal.aborted) return; // sign-out already tore the session down
+      if (signal.aborted) {
+        // Sign-out tore the session down, but it cleared before its own await
+        // and `storePrivateKey` above ran after that — so reaching here via a
+        // rejected `connect` leaves the imported key on disk unless this does
+        // it. Deliberately not the rollback below: sign-out won, so the
+        // previous credentials must not come back either.
+        clearIdentitySecrets("none");
+        return;
+      }
       if (previousPrivateKey) {
         storePrivateKey(previousPrivateKey);
       } else {

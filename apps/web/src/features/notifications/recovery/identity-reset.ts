@@ -33,9 +33,38 @@ export type ResetNotificationIdentityOptions = {
  * an identity boundary that has already happened; it can neither undo it nor be
  * allowed to block it.
  */
-export async function resetNotificationIdentity(
+export function resetNotificationIdentity(
   options: ResetNotificationIdentityOptions = {},
 ): Promise<void> {
+  pendingReset = runReset(options);
+  return pendingReset;
+}
+
+/**
+ * Resolves once any in-flight identity reset has finished.
+ *
+ * The recovery pass has to wait on this. Both run from effects in `AppInner`,
+ * and declaring the teardown hook first orders only the *starts* — two async
+ * IndexedDB and network sequences then interleave. Left unserialized, the
+ * health check reads the outgoing user's `syncCursor` before teardown clears it
+ * and writes it straight back, after which the inbox sync re-saves that user's
+ * messages into the store teardown had just emptied.
+ *
+ * The assignment in {@link resetNotificationIdentity} is synchronous, so the
+ * barrier is in place before the sibling effect's body runs; only the
+ * completion is deferred.
+ */
+export function whenNotificationIdentitySettled(): Promise<void> {
+  return pendingReset;
+}
+
+export function resetNotificationIdentityBarrierForTests(): void {
+  pendingReset = Promise.resolve();
+}
+
+let pendingReset: Promise<void> = Promise.resolve();
+
+async function runReset(options: ResetNotificationIdentityOptions): Promise<void> {
   if (!isNotificationStorageAvailable()) return;
 
   // Read before clearing: the device record survives the clear, but ordering it
