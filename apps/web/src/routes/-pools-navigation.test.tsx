@@ -47,6 +47,15 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
     isPending: false,
     isError: false,
   }),
+  // The wallet screen's own pool section. Empty: this file asserts navigation,
+  // and a populated list would only add rows for the queries below to match.
+  useOwnedPoolsInfinite: () => ({
+    data: { pages: [{ pools: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
@@ -104,9 +113,12 @@ function createTestRouter(initialEntry: string) {
   const sendAmountRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/wallet/send/amount",
-    validateSearch: (search): { recipient?: string; recipientLabel?: string } => ({
+    validateSearch: (
+      search,
+    ): { recipient?: string; recipientLabel?: string; returnPool?: string } => ({
       recipient: typeof search.recipient === "string" ? search.recipient : undefined,
       recipientLabel: typeof search.recipientLabel === "string" ? search.recipientLabel : undefined,
+      returnPool: typeof search.returnPool === "string" ? search.returnPool : undefined,
     }),
     component: () => {
       const { recipientLabel } = sendAmountRoute.useSearch();
@@ -128,7 +140,8 @@ describe("pools navigation", () => {
     const router = createTestRouter("/?tab=wallet");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const poolsAction = await screen.findByRole("link", { name: /pools/i });
+    // Exact: the wallet's Your Pools header links out to "All pools" as well.
+    const poolsAction = await screen.findByRole("link", { name: "Pools" });
     expect(poolsAction.getAttribute("href")).toBe("/pools");
     fireEvent.click(poolsAction);
 
@@ -161,6 +174,9 @@ describe("pools navigation", () => {
       expect(router.state.location.search).toMatchObject({
         recipient: POOL_ADDRESS,
         recipientLabel: "Trade Pool",
+        // Rides through to the receipt so finishing the deposit lands back on
+        // the pool rather than on the wallet.
+        returnPool: POOL_ADDRESS,
       });
     });
 

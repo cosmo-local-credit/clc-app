@@ -326,6 +326,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
               sendSymbol: selectedFrom.symbol,
               receiveAmount: displayedToAmount,
               receiveSymbol: selectedTo.symbol,
+              receiveToken: selectedTo.contractAddress,
               poolName: pool.name,
             },
           });

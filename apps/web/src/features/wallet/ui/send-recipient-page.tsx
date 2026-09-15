@@ -38,7 +38,7 @@ type ResolvedRecipient = {
   source: AddressBookRecipientSource;
 };
 
-export function SendRecipientPage({ token }: { token?: string }) {
+export function SendRecipientPage({ token, amount }: { token?: string; amount?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -125,6 +125,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
       to: "/wallet/send/amount",
       search: {
         token,
+        amount,
         recipient: resolvedRecipient.address,
         recipientLabel: resolvedRecipient.name ?? undefined,
       },

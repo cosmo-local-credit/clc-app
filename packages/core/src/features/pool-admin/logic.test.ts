@@ -149,12 +149,20 @@ describe("buildAddPoolVoucherCalls", () => {
     ).toThrow(/no quoter address/);
   });
 
-  it("rejects a zero cap rather than encoding one", () => {
-    // Zero is a real setting that means the opposite of unset: the limiter then
-    // rejects every deposit.
-    expect(() =>
-      buildAddPoolVoucherCalls({ ...base(), depositCapRaw: "0", pricing: { kind: "decimal" } }),
-    ).toThrow(/greater than zero/);
+  it("encodes a zero cap, which the limiter takes as accepting no deposits", () => {
+    // Zero is a setting, not an omission: a steward may admit a voucher and
+    // leave the pool holding none of it until they choose a limit. Only an
+    // absent `depositCapRaw` means "don't touch the limiter".
+    const [call] = buildAddPoolVoucherCalls({
+      ...base(),
+      register: false,
+      depositCapRaw: "0",
+      pricing: { kind: "decimal" },
+    });
+    expect(call?.to).toBe(LIMITER);
+    expect(
+      decodeFunctionData({ abi: limiterSetLimitForAbi, data: call?.data as `0x${string}` }).args,
+    ).toEqual([TOKEN, POOL, 0n]);
   });
 
   it("rejects a zero staleness bound rather than encoding one", () => {
@@ -335,6 +343,14 @@ describe("poolVoucherRateSchema", () => {
     expect(schema.safeParse({ exchangeRate: "2.5", creditLimit: "100" }).success).toBe(true);
   });
 
+  it("accepts a zero credit limit but not a blank one", () => {
+    // The rate and the limit have different rules: the quoter reads a zero rate
+    // back as parity, while the limiter stores a zero limit as written.
+    const schema = poolVoucherRateSchema({ requireCreditLimit: true });
+    expect(schema.safeParse({ exchangeRate: "1", creditLimit: "0" }).success).toBe(true);
+    expect(schema.safeParse({ exchangeRate: "1", creditLimit: "" }).success).toBe(false);
+  });
+
   it("caps a rate at the quoter's six places", () => {
     const schema = poolVoucherRateSchema({ requireCreditLimit: false });
     expect(schema.safeParse({ exchangeRate: "1.1234567", creditLimit: "" }).success).toBe(false);
@@ -359,6 +375,19 @@ describe("toPoolVoucherRateConfig", () => {
     ).toEqual({
       pricing: { kind: "relative", exchangeRatePpm: "2500000" },
       depositCapRaw: "200000000",
+    });
+  });
+
+  it("keeps a zero limit as a zero cap rather than dropping it", () => {
+    expect(
+      toPoolVoucherRateConfig({
+        values: { exchangeRate: "1", creditLimit: "0" },
+        decimals: 6,
+        hasLimiter: true,
+      }),
+    ).toEqual({
+      pricing: { kind: "relative", exchangeRatePpm: "1000000" },
+      depositCapRaw: "0",
     });
   });
 
@@ -388,5 +417,13 @@ describe("seedPoolVoucherRateInput", () => {
     expect(
       seedPoolVoucherRateInput({ exchangeRatePpm: "1000000", capRaw: null, decimals: 6 }),
     ).toEqual({ exchangeRate: "1", creditLimit: "" });
+  });
+
+  it("reads a recorded zero back as zero, not as an unset field", () => {
+    // Blanking it would offer to re-submit some other number in place of a
+    // limit the steward chose.
+    expect(
+      seedPoolVoucherRateInput({ exchangeRatePpm: "1000000", capRaw: "0", decimals: 6 }),
+    ).toEqual({ exchangeRate: "1", creditLimit: "0" });
   });
 });

@@ -7,6 +7,8 @@ import { SendRecipientPage } from "#/features/wallet/ui";
 const searchSchema = z.object({
   /** Contract address of the token to preselect on the amount step. */
   token: z.string().optional().catch(undefined),
+  /** Amount to seed the amount step with, carried through the recipient step. */
+  amount: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/wallet/send/")({
@@ -15,10 +17,10 @@ export const Route = createFileRoute("/wallet/send/")({
 });
 
 function SendRecipientRoute() {
-  const { token } = Route.useSearch();
+  const { token, amount } = Route.useSearch();
   return (
     <AuthenticatedRoute>
-      <SendRecipientPage token={token} />
+      <SendRecipientPage token={token} amount={amount} />
     </AuthenticatedRoute>
   );
 }

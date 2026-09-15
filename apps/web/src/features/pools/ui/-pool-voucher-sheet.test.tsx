@@ -200,6 +200,47 @@ describe("PoolVoucherSheet approving", () => {
     ).toEqual({ functionName: "setPriceIndexValue", args: [CANDIDATE, 2500000n] });
   });
 
+  it("opens at parity with no credit limit, and submits that pair unchanged", async () => {
+    // Parity asserts nothing about the voucher, and a zero limit approves it
+    // without committing the pool to hold any of it yet. Both are the steward's
+    // to change; neither is a number this screen invented for them.
+    mocks.searchResults = [
+      { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
+    ];
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[]}
+        voucher={null}
+        currentRatePpm={undefined}
+        rateIsPending={false}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
+
+    expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("1");
+    expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("0");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([REGISTRY, LIMITER, QUOTER]);
+    // Zero reaches the limiter rather than being rejected as invalid — the
+    // contract stores it, and it is what the steward was shown.
+    expect(decodeFunctionData({ abi: limiterSetLimitForAbi, data: calls[1]!.data })).toEqual({
+      functionName: "setLimitFor",
+      args: [CANDIDATE, POOL, 0n],
+    });
+    expect(
+      decodeFunctionData({ abi: relativeQuoterSetPriceIndexValueAbi, data: calls[2]!.data }),
+    ).toEqual({ functionName: "setPriceIndexValue", args: [CANDIDATE, 1000000n] });
+  });
+
   it("refuses a quoter this screen cannot configure", async () => {
     mocks.quoterKind = { kind: "oracle", isPending: false };
     mocks.searchResults = [

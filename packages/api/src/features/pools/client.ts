@@ -38,6 +38,8 @@ export type PoolVoucherFacet = VoucherRef & {
 export type FilteredPoolsParams = CursorParams & {
   filter: CatalogFilter;
   facets?: boolean;
+  /** Only pools whose `ownerAddress` is this address. Compared case-insensitively. */
+  owner?: string;
 };
 
 export type FilteredPoolPage = UserPoolPage & {
@@ -321,7 +323,7 @@ export function createPoolsClient(http: HttpClient) {
     },
 
     async getFilteredPools(
-      { filter, facets, ...cursor }: FilteredPoolsParams,
+      { filter, facets, owner, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,
     ): Promise<FilteredPoolPage> {
       const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -334,6 +336,7 @@ export function createPoolsClient(http: HttpClient) {
       if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
         search.set("voucherMatch", "all");
       }
+      if (owner) search.set("owner", owner);
       if (facets) search.set("facets", "true");
 
       const result = await http.request<BackendFilteredPoolPage>(

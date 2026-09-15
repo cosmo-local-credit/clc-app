@@ -5,7 +5,7 @@ import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackChevron } from "#/components/wallet";
+import { BackChevron, PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -16,7 +16,6 @@ import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
-import { PoolLogo } from "./pool-logo";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
