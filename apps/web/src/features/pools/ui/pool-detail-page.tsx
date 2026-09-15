@@ -3,7 +3,7 @@ import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { RiAddLine, RiPencilLine, RiSettings3Line } from "react-icons/ri";
+import { RiAddLine, RiPencilLine, RiQrCodeLine, RiSettings3Line } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -16,6 +16,7 @@ import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolLogo } from "./pool-logo";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
+import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
 export type PoolDetailTab = "offerings" | "vouchers";
@@ -53,6 +54,7 @@ export function PoolDetailPage({
   const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain);
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   const [approving, setApproving] = useState(false);
+  const [receiving, setReceiving] = useState(false);
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -108,7 +110,17 @@ export function PoolDetailPage({
             <Trans>Deposit</Trans>
           </Link>
         </Button>
+        <Button
+          variant="outline"
+          className="col-span-2 h-11 w-full bg-card"
+          onClick={() => setReceiving(true)}
+        >
+          <RiQrCodeLine className="size-4" aria-hidden="true" />
+          <Trans>Receive vouchers</Trans>
+        </Button>
       </div>
+
+      <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
 
       {canEditDetails ? <EditPoolDetails pool={pool} /> : null}
 

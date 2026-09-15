@@ -304,6 +304,13 @@ describe("PoolDetailPage pool details editor", () => {
 });
 
 describe("PoolDetailPage on-chain management", () => {
+  it("offers every pool viewer a receive vouchers action", () => {
+    mocks.auth.session = { address: OTHER, chainId: 100 };
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByRole("button", { name: "Receive vouchers" })).toBeTruthy();
+  });
+
   it("offers the steward controls to the pool's owner", () => {
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
     expect(screen.getByTestId("pool-controls")).toBeTruthy();
