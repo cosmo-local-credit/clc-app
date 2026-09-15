@@ -6,12 +6,13 @@ import { useConnection } from "wagmi";
 import { Button } from "#/components/ui/button";
 import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { CHAIN_INFO } from "#/lib/chain";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 export function ReceivePage() {
   const chainName = CHAIN_INFO.name;
   const { t } = useLingui();
   const { address } = useConnection();
+  const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
 
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -50,9 +51,9 @@ export function ReceivePage() {
           <Trans>Receive</Trans>
         </h1>
         <NetworkBadge className="my-3.5" />
-        {address ? (
+        {address && receiveQrValue ? (
           <>
-            <AddressQRCode value={address} size={156} />
+            <AddressQRCode value={receiveQrValue} />
             <p className="mt-3.5 mb-1.5 text-muted-foreground text-xs">
               <Trans>Receive details</Trans>
             </p>
