@@ -2,12 +2,22 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+const POOLS_FILTER_KEY = ownerScopedKey(
+  "0xabc0000000000000000000000000000000000123",
+  CATALOG_FILTER_PREFERENCE_NAMES.pools,
+);
 
 const { getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
   getPoolVouchers: vi.fn(),
   routeSearch: { current: {} as Record<string, unknown> },
   navigate: vi.fn(),
+}));
+
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -173,9 +183,12 @@ describe("pools list", () => {
 
     fireEvent.click(within(sheet).getByRole("button", { name: "Apply filters" }));
     expect(navigate).toHaveBeenCalledTimes(1);
-    expect(
-      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.pools) ?? "null"),
-    ).toEqual({ tags: ["Food"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    expect(JSON.parse(window.localStorage.getItem(POOLS_FILTER_KEY) ?? "null")).toEqual({
+      tags: ["Food"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    });
   });
 
   it("offers no filter controls it cannot honour", async () => {

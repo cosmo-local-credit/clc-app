@@ -17,7 +17,9 @@ import {
 } from "#/components/ui/dialog";
 import { clearPrivateKey, getStoredKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
+import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
 import { initializeNotificationWorkerProtocol } from "#/features/notifications/sw/page-protocol";
@@ -99,6 +101,10 @@ function AppInner() {
     [pendingKey],
   );
 
+  // Declared above the recovery effect below so an identity change empties the
+  // notification stores and resets the sync cursor before the resync reads it.
+  useIdentityTransitionTeardown();
+
   useEffect(() => {
     if (import.meta.env.DEV) {
       return;
@@ -125,10 +131,17 @@ function AppInner() {
         // Sign-out (or a newer switch) won. Undo this connect so the session
         // does not silently switch to the imported wallet after disconnect.
         await disconnect(wagmiConfig);
+        // Unconditionally, because `disconnect` throwing here would otherwise
+        // leave the imported key on a device the UI shows as signed out. Sign-out
+        // won, so no credential should survive.
+        clearIdentitySecrets("none");
         clearPendingKey();
         return;
       }
-      clearWebAuthnCredential();
+      // Stays on the success edge, after the abort check: the catch below
+      // restores `previousWebAuthnCredential`, so clearing any earlier — or in
+      // the catch — would destroy the rollback.
+      clearIdentitySecrets("private-key");
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });
       clearPendingKey();
     } catch (err) {
@@ -170,6 +183,11 @@ function AppInner() {
 
     try {
       await backendSignin.mutateAsync({ privateKey: key });
+      // This path had no credential clearing at all. It only runs with no wallet
+      // connected, but a previous user's passkey can still be on disk: their
+      // sign-out ran the private-key connector's disconnect, which clears
+      // `clc_pk_*` and nothing else.
+      clearIdentitySecrets("none");
       storePrivateKey(key);
       await connect(wagmiConfig, { connector: pkConnector });
       await queryClient.invalidateQueries({ queryKey: authSessionQueryKey });

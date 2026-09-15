@@ -9,6 +9,7 @@ import { Input } from "#/components/ui/input";
 import { type Recipient } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useUpsertAddressBookRecipient } from "#/features/wallet/hooks/use-address-book";
 import {
   useEnsRecipientResolution,
@@ -44,7 +45,10 @@ export function SendRecipientPage({ token }: { token?: string }) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipient | null>(null);
-  const upsertRecipient = useUpsertAddressBookRecipient();
+  // One source of the owner per screen, threaded down — the same shape
+  // `home-page.tsx` uses for `locationOwner`.
+  const owner = useStorageOwner();
+  const upsertRecipient = useUpsertAddressBookRecipient(owner);
   const trimmedQuery = query.trim();
   const normalizedPhone = isPhone(query) ? normalizePhone(query) : null;
   const ensName = isEns(trimmedQuery) ? trimmedQuery : null;
@@ -228,6 +232,7 @@ export function SendRecipientPage({ token }: { token?: string }) {
         open={addressBookOpen}
         onOpenChange={setAddressBookOpen}
         onSelect={handleSelectRecipient}
+        owner={owner}
       />
     </div>
   );

@@ -1,4 +1,24 @@
 import type { Recipient } from "#/components/wallet/wallet-data";
+import {
+  readOwnerScoped,
+  removeOwnerScoped,
+  writeOwnerScoped,
+} from "#/lib/storage/owner-scoped-storage";
+import type { StorageOwner } from "#/lib/storage/owner-tier-key";
+
+/**
+ * The saved recipients one account can send to.
+ *
+ * Scoped to an owner, and this is the store that most needed it. It was a single
+ * global list, so on a shared phone the next person to sign in opened the send
+ * flow and saw the previous person's contacts — their labels and their wallet
+ * addresses — and could send to them. Names plus a payment graph, which is the
+ * most sensitive thing in client storage after the key itself.
+ *
+ * The owner is part of the key rather than a field in the list, because a list
+ * merges: with one slot, two people's contacts would have to either overwrite
+ * each other or live in the same array, and neither is what anyone wants.
+ */
 
 export type AddressBookRecipientSource = "manual" | "phone" | "ens" | "reverse-ens" | "qr";
 
@@ -13,10 +33,10 @@ export type UpsertAddressBookRecipientInput = {
   source: AddressBookRecipientSource;
 };
 
-const STORAGE_KEY = "clc_address_book_v1";
+const ADDRESS_BOOK_STORAGE_NAME = "address-book.v1";
 
-export function readAddressBookRecipients(): AddressBookRecipient[] {
-  const raw = getStorage()?.getItem(STORAGE_KEY);
+export function readAddressBookRecipients(owner: StorageOwner): AddressBookRecipient[] {
+  const raw = readOwnerScoped(owner, ADDRESS_BOOK_STORAGE_NAME);
   if (!raw) return [];
 
   try {
@@ -29,6 +49,7 @@ export function readAddressBookRecipients(): AddressBookRecipient[] {
 }
 
 export function upsertAddressBookRecipient(
+  owner: StorageOwner,
   input: UpsertAddressBookRecipientInput,
 ): AddressBookRecipient {
   const normalizedAddress = input.address.toLowerCase();
@@ -41,27 +62,14 @@ export function upsertAddressBookRecipient(
   };
   const next = [
     recipient,
-    ...readAddressBookRecipients().filter((item) => item.id !== normalizedAddress),
+    ...readAddressBookRecipients(owner).filter((item) => item.id !== normalizedAddress),
   ];
-  writeAddressBookRecipients(next);
+  writeOwnerScoped(owner, ADDRESS_BOOK_STORAGE_NAME, JSON.stringify(next));
   return recipient;
 }
 
-export function clearAddressBookRecipients(): void {
-  getStorage()?.removeItem(STORAGE_KEY);
-}
-
-function writeAddressBookRecipients(recipients: AddressBookRecipient[]): void {
-  getStorage()?.setItem(STORAGE_KEY, JSON.stringify(recipients));
-}
-
-function getStorage(): Storage | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
+export function clearAddressBookRecipients(owner: StorageOwner): void {
+  removeOwnerScoped(owner, ADDRESS_BOOK_STORAGE_NAME);
 }
 
 function isAddressBookRecipient(value: unknown): value is AddressBookRecipient {

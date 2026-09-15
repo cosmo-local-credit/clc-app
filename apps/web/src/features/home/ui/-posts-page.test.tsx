@@ -6,7 +6,17 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { BackendApiError } from "@clc/api/client/errors";
 import type { ReportSummary, ReportVoucherFacet } from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
+const POSTS_FILTER_KEY = ownerScopedKey(
+  "0xabc0000000000000000000000000000000000123",
+  CATALOG_FILTER_PREFERENCE_NAMES.posts,
+);
 
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
@@ -459,9 +469,12 @@ describe("PostsPage filtering", () => {
     expect(call?.replace).toBeUndefined();
     const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
     expect(search({})).toMatchObject({ tags: "Harvest" });
-    expect(
-      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({ tags: ["Harvest"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    expect(JSON.parse(window.localStorage.getItem(POSTS_FILTER_KEY) ?? "null")).toEqual({
+      tags: ["Harvest"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    });
   });
 
   it("applies voucher relationships with all-match in one canonical navigation", () => {
@@ -490,9 +503,7 @@ describe("PostsPage filtering", () => {
         "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       voucherMatch: "all",
     });
-    expect(
-      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({
+    expect(JSON.parse(window.localStorage.getItem(POSTS_FILTER_KEY) ?? "null")).toEqual({
       tags: [],
       tagMatch: "any",
       vouchers: [
@@ -630,7 +641,7 @@ describe("PostsPage filtering", () => {
     mocks.search = { q: "zzzz" };
     mocks.filtered = { ...mocks.filtered, data: { reports: [], tagFacets: null } };
     window.localStorage.setItem(
-      CATALOG_FILTER_PREFERENCE_KEYS.posts,
+      POSTS_FILTER_KEY,
       JSON.stringify({ tags: ["Harvest"], tagMatch: "any" }),
     );
     render(<PostsPage />);
@@ -638,7 +649,7 @@ describe("PostsPage filtering", () => {
     expect(screen.getByText("No posts match this search.")).toBeTruthy();
     expect(screen.queryByText("No posts yet.")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts)).toBeNull();
+    expect(window.localStorage.getItem(POSTS_FILTER_KEY)).toBeNull();
   });
 
   it("says nothing about matches while a cold filtered load is pending", () => {

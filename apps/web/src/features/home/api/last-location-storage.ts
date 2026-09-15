@@ -7,18 +7,23 @@
  *
  * A precise location is sensitive, so it is bounded two ways:
  *
- * - **Scoped to an owner.** The signed-in address, or `"guest"`. A different
- *   account — or a session that expired back to guest — never inherits the
- *   previous person's position, even though sign-out also clears it. Sign-out
- *   alone is not enough: a guest never signs out, and a session can lapse
- *   without one.
+ * - **Scoped to an owner.** The signed-in address, or `GUEST_STORAGE_OWNER`. A
+ *   different account — or a session that expired back to guest — never inherits
+ *   the previous person's position, even though sign-out also clears it.
+ *   Sign-out alone is not enough: a guest never signs out, and a session can
+ *   lapse without one.
  * - **Expired after {@link MAX_PERSISTED_LOCATION_AGE_MS}.** Otherwise a
  *   guest's exact position would sit on a shared device indefinitely.
  *
  * This is bootstrap state, not reactive cross-route state — it does not belong
  * in Zustand, and it must be read only after the client-only/effect boundary
  * so server and hydration renders start from the same camera.
+ *
+ * Storage access goes through `lib/storage/local-storage.ts`, which four modules
+ * had each reimplemented identically.
  */
+import { readStorageItem, removeStorageItem, writeStorageItem } from "#/lib/storage/local-storage";
+
 export type PersistedLocation = {
   /** Lowercased wallet address, or `"guest"` when nobody is signed in. */
   owner: string;
@@ -38,12 +43,10 @@ export type PersistedLocation = {
  */
 export const MAX_PERSISTED_LOCATION_AGE_MS = 24 * 60 * 60_000;
 
-export const GUEST_LOCATION_OWNER = "guest";
-
 const STORAGE_KEY = "clc_last_location_v2";
 
 export function readPersistedLocation(owner: string): PersistedLocation | null {
-  const raw = getStorage()?.getItem(STORAGE_KEY);
+  const raw = readStorageItem(STORAGE_KEY);
   if (!raw) return null;
 
   let parsed: unknown;
@@ -65,28 +68,12 @@ export function readPersistedLocation(owner: string): PersistedLocation | null {
 }
 
 export function writePersistedLocation(location: PersistedLocation): void {
-  try {
-    getStorage()?.setItem(STORAGE_KEY, JSON.stringify(location));
-  } catch {
-    // A full or blocked store must never break the camera.
-  }
+  // A full or blocked store must never break the camera; the write is best-effort.
+  writeStorageItem(STORAGE_KEY, JSON.stringify(location));
 }
 
 export function clearPersistedLocation(): void {
-  try {
-    getStorage()?.removeItem(STORAGE_KEY);
-  } catch {
-    // Nothing to do; the caller is already on a teardown path.
-  }
-}
-
-function getStorage(): Storage | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
+  removeStorageItem(STORAGE_KEY);
 }
 
 function isPersistedLocation(value: unknown): value is PersistedLocation {

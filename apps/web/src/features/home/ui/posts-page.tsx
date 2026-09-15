@@ -7,15 +7,18 @@ import { ReportList } from "#/components/reports/report-list";
 import { Button } from "#/components/ui/button";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.posts, {
-    voucherRelationships: true,
-  });
+  const filter = usePersistedCatalogFilter(
+    CATALOG_FILTER_PREFERENCE_NAMES.posts,
+    useStorageOwner(),
+    { voucherRelationships: true },
+  );
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
