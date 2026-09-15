@@ -361,3 +361,36 @@ export function getPoolDeploymentStages(
     };
   });
 }
+
+/**
+ * Deposit headroom for one voucher, as its recorded limiter cap decides it.
+ *
+ * Every conclusion is a statement about the **catalog**, which mirrors the chain
+ * and can lag it or miss a field entirely — pools imported from federation carry
+ * no dependency addresses at all. An absent value is reported as unrecorded
+ * rather than as a zero, because the two have opposite consequences on SwapPool.
+ */
+export type PoolDepositCap =
+  /** No limiter on the pool: `mustWithinLimit` returns early and nothing is capped. */
+  | { kind: "uncapped" }
+  /** A limiter is recorded but the catalog holds no cap for this voucher. */
+  | { kind: "unrecorded" }
+  /** A recorded cap of zero. `balance + value > 0` for any deposit, so all revert. */
+  | { kind: "blocked" }
+  | { kind: "capped"; raw: string };
+
+/**
+ * Structural rather than typed against `UserPool` / `PoolVoucher`: those live in
+ * `@clc/api`, which core cannot import, and the rule needs one field from each.
+ */
+export function poolDepositCap(
+  pool: { limiterAddress: string | null },
+  voucher: { tokenLimit: string | null },
+): PoolDepositCap {
+  if (!pool.limiterAddress) return { kind: "uncapped" };
+  if (voucher.tokenLimit === null) return { kind: "unrecorded" };
+  // Normalized upstream to a run of digits, so a leading-zero string is still
+  // zero and must not be read as a cap.
+  if (/^0+$/.test(voucher.tokenLimit)) return { kind: "blocked" };
+  return { kind: "capped", raw: voucher.tokenLimit };
+}

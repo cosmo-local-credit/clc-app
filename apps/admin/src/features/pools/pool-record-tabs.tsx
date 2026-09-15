@@ -39,7 +39,8 @@ import { isModifiedClick } from "#/lib/tab-navigation";
 import { useDataState } from "#/lib/use-data-state";
 import { cn } from "#/lib/utils";
 import { POOL_DETAIL_TABS, type PoolDetailSearch, type PoolDetailTab } from "./pool-detail-search";
-import { depositCap, groupPoolFeeds } from "./pool-posture";
+import { poolDepositCap } from "@clc/core/features/pools/logic";
+import { groupPoolFeeds } from "./pool-posture";
 import { hasVoucher, type SettlingVoucher } from "./use-pool-vouchers";
 
 const RECORD_PAGE_SIZE = 25;
@@ -233,7 +234,7 @@ function VouchersPanel({
  * rejects every deposit, and no record at all is neither.
  */
 function DepositCapCell({ pool, voucher }: { pool: UserPool; voucher: PoolVoucher }) {
-  const cap = depositCap(pool, voucher);
+  const cap = poolDepositCap(pool, voucher);
 
   if (cap.kind === "capped") {
     // No symbol: the voucher column two cells to the left already carries it,
