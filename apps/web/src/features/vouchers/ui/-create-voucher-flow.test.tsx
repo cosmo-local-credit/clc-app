@@ -182,7 +182,7 @@ describe("CreateVoucherFlow", () => {
     expect(screen.queryByLabelText("Voucher Type")).toBeNull();
     expect(screen.queryByLabelText("Decimals")).toBeNull();
     expect((screen.getByLabelText("Create vouchers") as HTMLInputElement).value).toBe("1000");
-    expect(screen.getByText("Value: 100 KES of offerings")).toBeTruthy();
+    expect(screen.getByText("Value: 1000 KES of offerings")).toBeTruthy();
     expect(screen.queryByLabelText("Voucher Value")).toBeNull();
     expect(screen.queryByLabelText("Currency")).toBeNull();
     expect(screen.queryByLabelText("Unit of Account")).toBeNull();
@@ -210,7 +210,7 @@ describe("CreateVoucherFlow", () => {
     renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.click(screen.getByText("Advanced"));
 
-    expect(screen.getByText("1 voucher = 0.1 KES")).toBeTruthy();
+    expect(screen.getByText("1 voucher = 1 KES")).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("Voucher Name"), {
       target: { value: "Kilifi Voucher" },
@@ -239,7 +239,7 @@ describe("CreateVoucherFlow", () => {
     await waitFor(() =>
       expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
     );
-    expect(screen.getByText("1 voucher = 0.1 TZS")).toBeTruthy();
+    expect(screen.getByText("1 voucher = 1 TZS")).toBeTruthy();
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
@@ -472,7 +472,7 @@ describe("CreateVoucherFlow", () => {
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
         description: "Fresh food from Kilifi producers.",
         voucherUoa: "KES",
-        voucherValue: 0.1,
+        voucherValue: 1,
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
         geoLng: 39.9093,
@@ -565,7 +565,7 @@ describe("CreateVoucherFlow", () => {
 
       await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
       expect(getTakenSymbols).toHaveBeenCalledWith("voucher", "KVKS", expect.anything());
-      expect(screen.getByText("1 Kivukoni School Voucher = 0.1 KES")).toBeTruthy();
+      expect(screen.getByText("1 Kivukoni School Voucher = 1 KES")).toBeTruthy();
     });
 
     it("skips to the first free numbered candidate when the stem is taken", async () => {
@@ -577,7 +577,7 @@ describe("CreateVoucherFlow", () => {
       fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
       fireEvent.blur(name);
 
-      await waitFor(() => expect(symbolInput().value).toBe("KVKS1"));
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS2"));
     });
 
     it("still suggests the bare stem when the occupancy lookup fails", async () => {
@@ -700,7 +700,7 @@ describe("CreateVoucherFlow", () => {
 
       await waitFor(() =>
         expect(deployMutateAsync).toHaveBeenCalledWith(
-          expect.objectContaining({ symbol: "KLFH1" }),
+          expect.objectContaining({ symbol: "KLFH2" }),
         ),
       );
     });

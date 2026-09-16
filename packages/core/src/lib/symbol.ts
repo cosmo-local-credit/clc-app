@@ -86,15 +86,16 @@ export function symbolStemFromName(name: string): string {
 }
 
 /**
- * The stem followed by `stem1` … `stem99`. A stem shorter than three characters
- * fails the symbol schema on its own, so its list starts at `stem1`. Empty when
- * the name yields no stem.
+ * The bare stem is issuance one, so a legal stem is followed by `stem2` …
+ * `stem99`. A stem shorter than three characters fails the symbol schema on its
+ * own and therefore starts at `stem1`. Empty when the name yields no stem.
  */
 export function candidatesFromName(name: string): string[] {
   const stem = symbolStemFromName(name);
   if (!stem) return [];
   const candidates = stem.length >= 3 ? [stem] : [];
-  for (let suffix = 1; suffix <= SUFFIX_BUDGET; suffix += 1) {
+  const firstSuffix = candidates.length > 0 ? 2 : 1;
+  for (let suffix = firstSuffix; suffix <= SUFFIX_BUDGET; suffix += 1) {
     const candidate = `${stem}${suffix}`;
     if (candidate.length <= SYMBOL_MAX_LENGTH) candidates.push(candidate);
   }

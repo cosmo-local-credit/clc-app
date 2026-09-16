@@ -88,7 +88,7 @@ type VoucherFormValues = {
 const DEFAULT_VALUES: VoucherFormValues = {
   name: "",
   symbol: "",
-  price: "0.1",
+  price: "1",
   unitOfAccount: "KES",
   description: "",
   voucherType: "standard",

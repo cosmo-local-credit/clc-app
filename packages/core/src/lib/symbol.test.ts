@@ -29,11 +29,11 @@ describe("symbolStemFromName", () => {
 });
 
 describe("candidatesFromName", () => {
-  it("starts with the bare stem and counts up to 99", () => {
+  it("treats the bare stem as issuance one and numbers the next one two", () => {
     const candidates = candidatesFromName("Kivukoni School Voucher");
-    expect(candidates.slice(0, 3)).toEqual(["KVKS", "KVKS1", "KVKS2"]);
+    expect(candidates.slice(0, 3)).toEqual(["KVKS", "KVKS2", "KVKS3"]);
     expect(candidates.at(-1)).toBe("KVKS99");
-    expect(candidates).toHaveLength(100);
+    expect(candidates).toHaveLength(99);
   });
 
   it("skips a bare stem too short for the schema", () => {
@@ -59,8 +59,8 @@ describe("pickAvailableSymbol", () => {
 
   it.each([
     [[], "KVKS"],
-    [["KVKS"], "KVKS1"],
-    [["KVKS", "KVKS1", "KVKS2", "KVKS3"], "KVKS4"],
+    [["KVKS"], "KVKS2"],
+    [["KVKS", "KVKS2", "KVKS3", "KVKS4"], "KVKS5"],
   ])("with %j taken picks %s", (taken, expected) => {
     expect(pickAvailableSymbol(candidates, new Set(taken))).toBe(expected);
   });
