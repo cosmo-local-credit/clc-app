@@ -477,7 +477,7 @@ msgid "Add your contact details"
 msgstr "Add your contact details"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
 msgid "Address"
 msgstr "Address"
 
@@ -547,7 +547,7 @@ msgstr "Amount"
 #~ msgid "Amount (KSh)"
 #~ msgstr "Amount (KSh)"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:198
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:276
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:255
 msgid "Amount exceeds your balance"
 msgstr "Amount exceeds your balance"
@@ -726,7 +726,7 @@ msgstr "Camera access denied."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:395
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:491
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:400
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:491
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:443
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
@@ -833,6 +833,10 @@ msgstr "Checking supply…"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:167
 #~ msgid "Checking voucher supply..."
 #~ msgstr "Checking voucher supply..."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:239
+msgid "Checking which vouchers this pool takes…"
+msgstr "Checking which vouchers this pool takes…"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Checking…"
@@ -1024,8 +1028,8 @@ msgstr "Confirm password"
 msgid "Confirm send"
 msgstr "Confirm send"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:369
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:460
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:483
 msgid "Confirm swap"
 msgstr "Confirm swap"
 
@@ -1113,7 +1117,7 @@ msgstr "Contact Website"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:121
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:118
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:415
 msgid "Continue"
 msgstr "Continue"
@@ -1231,6 +1235,10 @@ msgstr "Couldn't check message availability."
 #~ msgid "Couldn't check the voucher supply"
 #~ msgstr "Couldn't check the voucher supply"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:244
+msgid "Couldn't check which vouchers this pool takes."
+msgstr "Couldn't check which vouchers this pool takes."
+
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:40
 #: apps/web/src/features/wallet/ui/receive-page.tsx:19
@@ -1272,8 +1280,8 @@ msgstr "Couldn't copy transaction hash"
 msgid "Couldn't create vouchers."
 msgstr "Couldn't create vouchers."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:191
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:194
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:269
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:272
 msgid "Couldn't estimate this swap."
 msgstr "Couldn't estimate this swap."
 
@@ -1322,9 +1330,13 @@ msgid "Couldn't load the private attachment."
 msgstr "Couldn't load the private attachment."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:76
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:108
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:154
 msgid "Couldn't load this pool."
 msgstr "Couldn't load this pool."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:643
+msgid "Couldn't load this pool's vouchers."
+msgstr "Couldn't load this pool's vouchers."
 
 #: apps/web/src/features/home/ui/report-page.tsx:48
 msgid "Couldn't load this post."
@@ -1440,8 +1452,8 @@ msgstr "Couldn't transfer ownership."
 msgid "Couldn't upload that photo. Try again."
 msgstr "Couldn't upload that photo. Try again."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:372
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:398
 msgid "Couldn't verify this swap. Try again."
 msgstr "Couldn't verify this swap. Try again."
 
@@ -1845,7 +1857,7 @@ msgstr "Enter a valid website URL including https://"
 #~ msgstr "Enter an address, ENS or phone number."
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:216
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:216
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:305
 msgid "Enter an amount greater than zero."
 msgstr "Enter an amount greater than zero."
 
@@ -1962,7 +1974,7 @@ msgstr "Failed to start camera."
 msgid "fee"
 msgstr "fee"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:183
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
 msgid "Fee calculated at confirmation"
 msgstr "Fee calculated at confirmation"
 
@@ -1982,7 +1994,7 @@ msgstr "Fee recipient"
 msgid "Fee recipient updated."
 msgstr "Fee recipient updated."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:180
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:229
 msgid "Fees"
 msgstr "Fees"
 
@@ -2072,9 +2084,9 @@ msgstr "Frame your photo"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:205
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:124
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:240
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:374
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:170
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:330
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:465
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:130
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:617
 msgid "From"
@@ -2433,7 +2445,7 @@ msgid "Loading offerings…"
 msgstr "Loading offerings…"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:73
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:105
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:151
 msgid "Loading pool…"
 msgstr "Loading pool…"
 
@@ -2476,6 +2488,7 @@ msgid "Loading voucher…"
 msgstr "Loading voucher…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:120
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:639
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:120
 msgid "Loading vouchers…"
 msgstr "Loading vouchers…"
@@ -2588,7 +2601,7 @@ msgstr "Match"
 msgid "Max"
 msgstr "Max"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:467
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:558
 msgid "Max {max}"
 msgstr "Max {max}"
 
@@ -2936,8 +2949,8 @@ msgid "No tokens available"
 msgstr "No tokens available"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
-msgid "No tokens available."
-msgstr "No tokens available."
+#~ msgid "No tokens available."
+#~ msgstr "No tokens available."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:87
 #~ msgid "No tracking data"
@@ -2996,6 +3009,10 @@ msgstr "No wallet address available."
 msgid "No. of participants"
 msgstr "No. of participants"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:751
+msgid "None left to swap for"
+msgstr "None left to swap for"
+
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:230
 msgid "None of your vouchers match that search."
 msgstr "None of your vouchers match that search."
@@ -3011,6 +3028,10 @@ msgstr "Not accepting deposits"
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
 msgstr "Not approved"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:654
+msgid "Not held"
+msgstr "Not held"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 msgid "Not sent"
@@ -3337,9 +3358,9 @@ msgstr "Place"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:181
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:16
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:116
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:573
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:162
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:471
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:762
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:224
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:98
@@ -3389,7 +3410,7 @@ msgstr "Pool description must be 500 characters or fewer"
 msgid "Pool details updated."
 msgstr "Pool details updated."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "Pool liquidity changed. Review the updated quote and try again."
 
@@ -3417,7 +3438,7 @@ msgid "Pool name must be 80 characters or fewer"
 msgstr "Pool name must be 80 characters or fewer"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:79
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:111
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:157
 msgid "Pool not found."
 msgstr "Pool not found."
 
@@ -3740,7 +3761,7 @@ msgstr "Quantity"
 msgid "Queued"
 msgstr "Queued"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:172
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:221
 msgid "Rate"
 msgstr "Rate"
 
@@ -3991,7 +4012,7 @@ msgstr "Retry"
 msgid "Retry {providerLabel} connection"
 msgstr "Retry {providerLabel} connection"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:155
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:201
 msgid "Reverse swap direction"
 msgstr "Reverse swap direction"
 
@@ -4510,8 +4531,8 @@ msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:115
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:119
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:165
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:321
 msgid "Swap"
 msgstr "Swap"
 
@@ -4581,7 +4602,7 @@ msgstr "Swapping"
 #~ msgid "Swapping in {0}. Estimate uses temporary placeholder pool voucher data."
 #~ msgstr "Swapping in {0}. Estimate uses temporary placeholder pool voucher data."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:483
 msgid "Swapping…"
 msgstr "Swapping…"
 
@@ -4731,7 +4752,7 @@ msgstr "The pool could not be published."
 msgid "The pool doesn't hold that much {0}."
 msgstr "The pool doesn't hold that much {0}."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:386
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "The quote changed. Review the updated amounts before confirming."
 
@@ -4822,13 +4843,29 @@ msgid "This pool already allows {0}. Saving updates its rate and limit instead "
 msgstr "This pool already allows {0}. Saving updates its rate and limit instead "
 "of adding it again."
 
+#. placeholder {0}: quote.data?.depositHeadroom
+#. placeholder {1}: selectedFrom?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
+msgid "This pool can only take {0} more {1} right now."
+msgstr "This pool can only take {0} more {1} right now."
+
+#. placeholder {0}: selectedFrom?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:281
+msgid "This pool can't take any more {0} right now."
+msgstr "This pool can't take any more {0} right now."
+
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
 #~ msgid "This pool doesn't have enough {0} liquidity for this swap."
 #~ msgstr "This pool doesn't have enough {0} liquidity for this swap."
 
-#. placeholder {0}: selectedTo?.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:206
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:260
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:647
+msgid "This pool doesn't take any vouchers yet."
+msgstr "This pool doesn't take any vouchers yet."
+
+#. placeholder {0}: selectedTo?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
 msgid "This pool has no {0} available to swap."
 msgstr "This pool has no {0} available to swap."
 
@@ -4846,9 +4883,13 @@ msgstr "This pool holds no vouchers yet."
 msgid "This pool holds nothing yet."
 msgstr "This pool holds nothing yet."
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
+msgid "This pool is full of it"
+msgstr "This pool is full of it"
+
 #. placeholder {0}: quote.data.availableAmountOut
-#. placeholder {1}: selectedTo?.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:208
+#. placeholder {1}: selectedTo?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:297
 msgid "This pool only has {0} {1} available to swap."
 msgstr "This pool only has {0} {1} available to swap."
 
@@ -4863,6 +4904,12 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
 msgstr "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
+msgid "This pool's deposit limit changed. Review the updated amounts and try "
+"again."
+msgstr "This pool's deposit limit changed. Review the updated amounts and try "
+"again."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:88
 msgid "This pool's quoter doesn't publish rates, so its holdings can't be "
@@ -4899,9 +4946,9 @@ msgstr "Title must be 200 characters or fewer"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:205
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:143
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:254
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:377
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:189
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:347
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:135
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -5019,6 +5066,7 @@ msgstr "Trip"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:122
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:255
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:437
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:456
@@ -5297,6 +5345,10 @@ msgstr "Voucher description must be 500 characters or fewer"
 msgid "Voucher details"
 msgstr "Voucher details"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
+msgid "Voucher details unavailable"
+msgstr "Voucher details unavailable"
+
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:161
 msgid "Voucher details updated."
 msgstr "Voucher details updated."
@@ -5567,6 +5619,10 @@ msgstr "Yes"
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:194
 msgid "You can link up to {max} vouchers."
 msgstr "You can link up to {max} vouchers."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:264
+msgid "You don't hold any voucher this pool takes."
+msgstr "You don't hold any voucher this pool takes."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:47
 #: apps/web/src/features/pools/ui/review-swap-page.tsx:47

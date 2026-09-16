@@ -3,7 +3,11 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { usePoolVouchers, usePoolVouchersInfinite } from "./use-pool-vouchers";
+import {
+  usePoolVouchers,
+  usePoolVouchersInfinite,
+  usePoolVouchersWithStatus,
+} from "./use-pool-vouchers";
 
 const POOL_ADDRESS = "0xAa00000000000000000000000000000000000001";
 
@@ -80,6 +84,53 @@ describe("pool voucher queries", () => {
 
     expect(result.current.isPending).toBe(true);
     expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("walks every page before reporting the list complete, when asked to", async () => {
+    // A picker cannot page. A partial list reads as "this pool doesn't take my
+    // voucher", and nothing on screen corrects that.
+    const page = (ids: number[], last: number) =>
+      response({ vouchers: ids.map(voucher), first: ids[0], last });
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        page(
+          Array.from({ length: 100 }, (_, i) => i + 1),
+          100,
+        ),
+      )
+      .mockResolvedValueOnce(page([101, 102], 102));
+    vi.stubGlobal("fetch", fetcher);
+
+    const { result } = renderHook(
+      () => usePoolVouchersWithStatus({ address: POOL_ADDRESS } as never, { all: true }),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+    expect(result.current.vouchers).toHaveLength(102);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    // clc-core clamps `perPage` to this; asking for more silently returns this
+    // many and `getNextPageParam` then reads the short page as the last one.
+    expect(fetcher.mock.calls[0]?.[0]).toContain("perPage=100");
+  });
+
+  it("stops at the first page by default", async () => {
+    const fetcher = vi.fn().mockResolvedValue(
+      response({
+        vouchers: Array.from({ length: 20 }, (_, i) => voucher(i + 1)),
+        first: 1,
+        last: 20,
+      }),
+    );
+    vi.stubGlobal("fetch", fetcher);
+
+    const { result } = renderHook(() => usePoolVouchers({ address: POOL_ADDRESS } as never), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current).toHaveLength(20));
+    expect(fetcher).toHaveBeenCalledOnce();
   });
 
   it("returns an empty list rather than undefined before data arrives", async () => {

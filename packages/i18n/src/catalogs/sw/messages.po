@@ -478,7 +478,7 @@ msgid "Add your contact details"
 msgstr "Ongeza maelezo yako ya mawasiliano"
 
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:20
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
 msgid "Address"
 msgstr "Anwani"
 
@@ -548,7 +548,7 @@ msgstr "Kiasi"
 #~ msgid "Amount (KSh)"
 #~ msgstr "Kiasi (KSh)"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:198
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:276
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:255
 msgid "Amount exceeds your balance"
 msgstr "Kiasi kinazidi salio lako"
@@ -727,7 +727,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:395
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:491
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:400
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:491
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:443
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
@@ -836,6 +836,10 @@ msgstr "Inaangalia usambazaji…"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:167
 #~ msgid "Checking voucher supply..."
 #~ msgstr "Inakagua usambazaji wa vocha..."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:239
+msgid "Checking which vouchers this pool takes…"
+msgstr "Inaangalia vocha ambazo kikundi hiki kinakubali…"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:116
 msgid "Checking…"
@@ -1028,8 +1032,8 @@ msgstr "Thibitisha nenosiri"
 msgid "Confirm send"
 msgstr "Thibitisha kutuma"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:369
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:460
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:483
 msgid "Confirm swap"
 msgstr "Thibitisha kubadilisha"
 
@@ -1117,7 +1121,7 @@ msgstr "Tovuti ya mawasiliano"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:109
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
-#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:121
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:118
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:415
 msgid "Continue"
 msgstr "Endelea"
@@ -1235,6 +1239,10 @@ msgstr "Haikuweza kukagua upatikanaji wa ujumbe."
 #~ msgid "Couldn't check the voucher supply"
 #~ msgstr "Haikuwezekana kukagua usambazaji wa vocha"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:244
+msgid "Couldn't check which vouchers this pool takes."
+msgstr "Imeshindwa kuangalia vocha ambazo kikundi hiki kinakubali."
+
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:40
 #: apps/web/src/features/wallet/ui/receive-page.tsx:19
@@ -1276,8 +1284,8 @@ msgstr "Haikuwezekana kunakili heshi ya muamala"
 msgid "Couldn't create vouchers."
 msgstr "Hatukuweza kuunda vocha."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:191
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:194
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:269
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:272
 msgid "Couldn't estimate this swap."
 msgstr "Imeshindikana kukadiria ubadilishaji huu."
 
@@ -1326,9 +1334,13 @@ msgid "Couldn't load the private attachment."
 msgstr "Haikuwezekana kupakia kiambatisho cha faragha."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:76
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:108
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:154
 msgid "Couldn't load this pool."
 msgstr "Haikuwezekana kupakia puli hii."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:643
+msgid "Couldn't load this pool's vouchers."
+msgstr "Imeshindwa kupakia vocha za kikundi hiki."
 
 #: apps/web/src/features/home/ui/report-page.tsx:48
 msgid "Couldn't load this post."
@@ -1445,8 +1457,8 @@ msgstr "Hatukuweza kuhamisha umiliki."
 msgid "Couldn't upload that photo. Try again."
 msgstr "Haikuwezekana kutuma picha hiyo. Jaribu tena."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:372
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:398
 msgid "Couldn't verify this swap. Try again."
 msgstr "Imeshindikana kuthibitisha ubadilishaji huu. Jaribu tena."
 
@@ -1850,7 +1862,7 @@ msgstr "Weka anwani sahihi ya tovuti ikijumuisha https://"
 #~ msgstr "Weka anwani, ENS au nambari ya simu."
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:216
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:216
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:305
 msgid "Enter an amount greater than zero."
 msgstr "Weka kiasi kikubwa kuliko sifuri."
 
@@ -1968,7 +1980,7 @@ msgstr "Imeshindikana kuwasha kamera."
 msgid "fee"
 msgstr "ada"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:183
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
 msgid "Fee calculated at confirmation"
 msgstr "Ada huhesabiwa wakati wa uthibitisho"
 
@@ -1988,7 +2000,7 @@ msgstr "Mpokeaji wa ada"
 msgid "Fee recipient updated."
 msgstr "Mpokeaji wa ada amesasishwa."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:180
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:229
 msgid "Fees"
 msgstr "Ada"
 
@@ -2078,9 +2090,9 @@ msgstr "Panga picha yako"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:205
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:124
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:240
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:374
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:170
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:330
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:465
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:130
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:617
 msgid "From"
@@ -2439,7 +2451,7 @@ msgid "Loading offerings…"
 msgstr "Inapakia matoleo…"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:73
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:105
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:151
 msgid "Loading pool…"
 msgstr "Inapakia puli…"
 
@@ -2482,6 +2494,7 @@ msgid "Loading voucher…"
 msgstr "Inapakia vocha…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:120
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:639
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:120
 msgid "Loading vouchers…"
 msgstr "Inapakia hati…"
@@ -2594,7 +2607,7 @@ msgstr "Linganisha"
 msgid "Max"
 msgstr "Kiwango cha juu"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:467
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:558
 msgid "Max {max}"
 msgstr "Kiwango cha juu {max}"
 
@@ -2944,8 +2957,8 @@ msgid "No tokens available"
 msgstr "Hakuna tokeni zinazopatikana"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
-msgid "No tokens available."
-msgstr "Hakuna tokeni zinazopatikana."
+#~ msgid "No tokens available."
+#~ msgstr "Hakuna tokeni zinazopatikana."
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:87
 #~ msgid "No tracking data"
@@ -3004,6 +3017,10 @@ msgstr "Hakuna anwani ya mkoba inayopatikana."
 msgid "No. of participants"
 msgstr "Idadi ya washiriki"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:751
+msgid "None left to swap for"
+msgstr "Hakuna iliyobaki ya kubadilisha"
+
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:230
 msgid "None of your vouchers match that search."
 msgstr "Hakuna vocha yako inayolingana na utafutaji huo."
@@ -3019,6 +3036,10 @@ msgstr "Haipokei amana"
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
 msgstr "Haikuidhinishwa"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:654
+msgid "Not held"
+msgstr "Huna"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:56
 msgid "Not sent"
@@ -3345,9 +3366,9 @@ msgstr "Eneo"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:181
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:16
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:116
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:573
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:162
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:471
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:762
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:224
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:98
@@ -3397,7 +3418,7 @@ msgstr "Maelezo ya puli lazima yawe na alama 500 au chache"
 msgid "Pool details updated."
 msgstr "Maelezo ya bwawa yamesasishwa."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "Ukwasi wa kikundi umebadilika. Kagua makadirio yaliyosasishwa kisha "
 "ujaribu tena."
@@ -3426,7 +3447,7 @@ msgid "Pool name must be 80 characters or fewer"
 msgstr "Jina la puli lazima liwe na alama 80 au chache"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:79
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:111
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:157
 msgid "Pool not found."
 msgstr "Puli haikupatikana."
 
@@ -3749,7 +3770,7 @@ msgstr "Kiasi"
 msgid "Queued"
 msgstr "Kwenye foleni"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:172
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:221
 msgid "Rate"
 msgstr "Bei"
 
@@ -4002,7 +4023,7 @@ msgstr "Jaribu tena"
 msgid "Retry {providerLabel} connection"
 msgstr "Jaribu tena muunganisho wa {providerLabel}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:155
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:201
 msgid "Reverse swap direction"
 msgstr "Geuza mwelekeo wa ubadilishaji"
 
@@ -4523,8 +4544,8 @@ msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Faili za SVG hazitumiki. Tumia PNG, JPEG, au WebP."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:115
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:119
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:232
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:165
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:321
 msgid "Swap"
 msgstr "Badilisha"
 
@@ -4596,7 +4617,7 @@ msgstr "Inabadilisha"
 #~ msgstr "Inabadilisha katika {0}. Makadirio yanatumia data ya muda ya vocha za "
 #~ "puli."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:483
 msgid "Swapping…"
 msgstr "Inabadilisha…"
 
@@ -4746,7 +4767,7 @@ msgstr "Puli haikuweza kuchapishwa."
 msgid "The pool doesn't hold that much {0}."
 msgstr "Puli haina {0} kiasi hicho."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:291
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:386
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Makadirio yamebadilika. Kagua kiasi kilichosasishwa kabla ya "
 "kuthibitisha."
@@ -4838,13 +4859,29 @@ msgid "This pool already allows {0}. Saving updates its rate and limit instead "
 msgstr "Puli hii tayari inaruhusu {0}. Kuhifadhi kutasasisha kiwango na kikomo "
 "chake badala ya kuiongeza tena."
 
+#. placeholder {0}: quote.data?.depositHeadroom
+#. placeholder {1}: selectedFrom?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:283
+msgid "This pool can only take {0} more {1} right now."
+msgstr "Kwa sasa kikundi hiki kinaweza kupokea {0} {1} zaidi pekee."
+
+#. placeholder {0}: selectedFrom?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:281
+msgid "This pool can't take any more {0} right now."
+msgstr "Kwa sasa kikundi hiki hakiwezi kupokea {0} zaidi."
+
 #. placeholder {0}: selectedTo?.symbol
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:197
 #~ msgid "This pool doesn't have enough {0} liquidity for this swap."
 #~ msgstr "Kikundi hiki hakina ukwasi wa kutosha wa {0} kwa ubadilishaji huu."
 
-#. placeholder {0}: selectedTo?.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:206
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:260
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:647
+msgid "This pool doesn't take any vouchers yet."
+msgstr "Kikundi hiki hakikubali vocha yoyote bado."
+
+#. placeholder {0}: selectedTo?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
 msgid "This pool has no {0} available to swap."
 msgstr "Kikundi hiki hakina {0} inayopatikana kwa kubadilisha."
 
@@ -4862,9 +4899,13 @@ msgstr "Puli hii bado haina vocha."
 msgid "This pool holds nothing yet."
 msgstr "Kikundi hiki hakina chochote bado."
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:744
+msgid "This pool is full of it"
+msgstr "Kikundi hiki kimejaa vocha hii"
+
 #. placeholder {0}: quote.data.availableAmountOut
-#. placeholder {1}: selectedTo?.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:208
+#. placeholder {1}: selectedTo?.token.symbol
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:297
 msgid "This pool only has {0} {1} available to swap."
 msgstr "Kikundi hiki kina {0} {1} pekee inayopatikana kwa kubadilisha."
 
@@ -4879,6 +4920,12 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
 msgstr "Puli hii huthamini kila vocha sawa, hivyo hakuna kiwango cha kuweka. "
 "Kuongeza vocha ndani yake hakupatikani hapa bado."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
+msgid "This pool's deposit limit changed. Review the updated amounts and try "
+"again."
+msgstr "Kikomo cha amana cha kikundi hiki kimebadilika. Kagua viasi "
+"vilivyosasishwa kisha ujaribu tena."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:88
 msgid "This pool's quoter doesn't publish rates, so its holdings can't be "
@@ -4917,9 +4964,9 @@ msgstr "Kichwa kisizidi herufi 200"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:96
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:205
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:143
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:254
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:377
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:189
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:347
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:135
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:167
@@ -5037,6 +5084,7 @@ msgstr "Safari"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:122
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:255
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:437
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:134
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:456
@@ -5315,6 +5363,10 @@ msgstr "Maelezo ya vocha lazima yawe na herufi 500 au chini"
 msgid "Voucher details"
 msgstr "Maelezo ya vocha"
 
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:737
+msgid "Voucher details unavailable"
+msgstr "Maelezo ya vocha hayapatikani"
+
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:161
 msgid "Voucher details updated."
 msgstr "Maelezo ya vocha yamesasishwa."
@@ -5586,6 +5638,10 @@ msgstr "Ndiyo"
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:194
 msgid "You can link up to {max} vouchers."
 msgstr "Unaweza kuunganisha vocha hadi {max}."
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:264
+msgid "You don't hold any voucher this pool takes."
+msgstr "Huna vocha yoyote ambayo kikundi hiki kinakubali."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:47
 #: apps/web/src/features/pools/ui/review-swap-page.tsx:47

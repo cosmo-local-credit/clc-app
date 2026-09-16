@@ -33,6 +33,18 @@ export const tokenIndexHaveAbi = parseAbi(["function have(address token) view re
 export const limiterSetLimitForAbi = parseAbi([
   "function setLimitFor(address token, address holder, uint256 value)",
 ]);
+/**
+ * The cap read back, and the one `SwapPool.mustWithinLimit` actually enforces:
+ * `limitOf(token, address(this)) >= balanceOf(this) + value`. The holder is
+ * therefore the pool, never the person swapping.
+ *
+ * Preferred over the catalog's `tokenLimit`, which is the indexer's projection
+ * of `LimitSet` and can lag a steward who has just raised the cap — or, for a
+ * limiter the indexer never saw configured, be absent entirely.
+ */
+export const limiterLimitOfAbi = parseAbi([
+  "function limitOf(address token, address holder) view returns (uint256)",
+]);
 
 /**
  * OracleQuoter overloads `setOracle`, so each arity needs its own ABI —

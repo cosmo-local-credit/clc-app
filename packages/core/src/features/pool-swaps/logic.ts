@@ -45,6 +45,35 @@ export const swapRouterQuoteExactOutputAbi = parseAbi([
   "function quoteExactOutput(Hop[] path, uint256 amountOut) returns (uint256)",
 ]);
 
+/**
+ * What the pool can actually pay out of a voucher.
+ *
+ * Under decoupled fees the pool holds its accrued fees in the same balance but
+ * `_swap` reserves them, so the whole balance is not liquidity — quoting against
+ * it promises an amount the swap reverts `InsufficientBalance` on. Coupled fees
+ * stay part of liquidity, which is what the contract itself checks.
+ *
+ * Both arguments are raw on-chain integers; a malformed one is read as zero
+ * rather than throwing, because every caller is a display path that would
+ * otherwise take a whole picker down with it.
+ */
+export function poolAvailableLiquidityRaw(input: {
+  balanceRaw: string;
+  feesRaw: string;
+  feesDecoupled: boolean;
+}): string {
+  let balance: bigint;
+  let fees: bigint;
+  try {
+    balance = BigInt(input.balanceRaw);
+    fees = BigInt(input.feesRaw);
+  } catch {
+    return "0";
+  }
+  if (!input.feesDecoupled) return balance.toString();
+  return (balance > fees ? balance - fees : 0n).toString();
+}
+
 const RELAYER_CALL_LIMIT = 16;
 
 export type BuildPoolDepositCallsInput = {

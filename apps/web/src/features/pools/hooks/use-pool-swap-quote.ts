@@ -1,5 +1,7 @@
+import { limiterLimitOfAbi } from "@clc/core/features/pool-admin/logic";
 import {
   erc20BalanceOfAbi,
+  poolAvailableLiquidityRaw,
   swapPoolFeesAbi,
   swapPoolFeesDecoupledAbi,
 } from "@clc/core/features/pool-swaps/logic";
@@ -35,6 +37,13 @@ const poolSwapQuoteQueryKeys = {
 export function usePoolSwapQuote(input: {
   mode: PoolSwapQuoteMode;
   poolAddress: string | undefined;
+  /**
+   * The pool's limiter, when it has one. Present, the quote also answers whether
+   * the pool has room left for `tokenIn` — `SwapPool._deposit` reverts
+   * `LimitExceeded` on an amount that would put the pool over its cap, and
+   * finding that out at relay time costs the holder a signature.
+   */
+  limiterAddress: string | undefined;
   tokenIn: string | undefined;
   tokenOut: string | undefined;
   amount: string;
@@ -78,6 +87,8 @@ export function usePoolSwapQuote(input: {
     input.poolAddress && isAddress(input.poolAddress) ? input.poolAddress : undefined;
   const tokenIn = input.tokenIn && isAddress(input.tokenIn) ? input.tokenIn : undefined;
   const tokenOut = input.tokenOut && isAddress(input.tokenOut) ? input.tokenOut : undefined;
+  const limiterAddress =
+    input.limiterAddress && isAddress(input.limiterAddress) ? input.limiterAddress : undefined;
 
   const query = useQuery({
     queryKey: poolSwapQuoteQueryKeys.quote({
@@ -116,7 +127,7 @@ export function usePoolSwapQuote(input: {
             );
       const amountInRaw = input.mode === "exact-input" ? amountRaw : quotedAmountRaw;
       const amountOutRaw = input.mode === "exact-input" ? quotedAmountRaw : amountRaw;
-      const [grossAmountOutRaw, poolState] = await Promise.all([
+      const [grossAmountOutRaw, poolState, depositState] = await Promise.all([
         quotePoolGrossAmountOut(
           { call: (args) => call(client, args) },
           { poolAddress, tokenIn, tokenOut, amountInRaw, blockNumber },
@@ -144,14 +155,50 @@ export function usePoolSwapQuote(input: {
             },
           ],
         }),
+        // The deposit half's own two reads, issued alongside the rest at the same
+        // pinned block rather than after them, so the cap check adds no latency.
+        // `allowFailure` because an unreadable limiter must degrade to "no cap
+        // known" rather than take the whole quote down; a pool without one
+        // contributes no reads at all, which is what `mustWithinLimit` does with
+        // it.
+        limiterAddress
+          ? multicall(client, {
+              allowFailure: true,
+              blockNumber,
+              contracts: [
+                {
+                  address: tokenIn,
+                  abi: erc20BalanceOfAbi,
+                  functionName: "balanceOf",
+                  args: [poolAddress],
+                },
+                {
+                  address: limiterAddress,
+                  abi: limiterLimitOfAbi,
+                  functionName: "limitOf",
+                  args: [tokenIn, poolAddress],
+                },
+              ],
+            })
+          : undefined,
       ]);
       const [outputBalanceRaw, feesDecoupled, outputFeesRaw] = poolState;
-      const availableAmountOutRaw =
-        feesDecoupled && outputBalanceRaw > outputFeesRaw
-          ? outputBalanceRaw - outputFeesRaw
-          : feesDecoupled
-            ? 0n
-            : outputBalanceRaw;
+      const availableAmountOutRaw = poolAvailableLiquidityRaw({
+        balanceRaw: outputBalanceRaw.toString(),
+        feesRaw: outputFeesRaw.toString(),
+        feesDecoupled,
+      });
+      // `mustWithinLimit` is `limitOf(token, pool) >= balanceOf(pool) + value`,
+      // so this is the largest input the deposit half of the swap may carry.
+      const inputBalance = depositState?.[0];
+      const inputLimit = depositState?.[1];
+      const depositHeadroomRaw =
+        inputBalance?.status !== "success" || inputLimit?.status !== "success"
+          ? null
+          : (inputLimit.result > inputBalance.result
+              ? inputLimit.result - inputBalance.result
+              : 0n
+            ).toString();
       const quotedDecimals =
         input.mode === "exact-input" ? input.tokenOutDecimals : input.tokenInDecimals;
       return {
@@ -160,13 +207,20 @@ export function usePoolSwapQuote(input: {
         amountInRaw,
         amountOutRaw,
         grossAmountOutRaw,
-        availableAmountOutRaw: availableAmountOutRaw.toString(),
+        availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
-          availableAmountOutRaw.toString(),
+          availableAmountOutRaw,
           input.tokenOutDecimals,
           2,
         ),
-        hasLiquidity: availableAmountOutRaw >= BigInt(grossAmountOutRaw),
+        hasLiquidity: BigInt(availableAmountOutRaw) >= BigInt(grossAmountOutRaw),
+        depositHeadroomRaw,
+        depositHeadroom:
+          depositHeadroomRaw === null
+            ? null
+            : formatTokenAmountFixed(depositHeadroomRaw, input.tokenInDecimals, 2),
+        exceedsDepositCap:
+          depositHeadroomRaw !== null && BigInt(amountInRaw) > BigInt(depositHeadroomRaw),
         blockNumber,
       };
     },

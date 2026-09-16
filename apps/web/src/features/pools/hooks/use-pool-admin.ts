@@ -10,6 +10,7 @@ import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
 import { poolRegistryQueryKeys } from "./use-pool-registry";
+import { poolSwapTokenQueryKeys } from "./use-pool-swap-tokens";
 import { poolTreasuryQueryKeys } from "./use-pool-treasury";
 import { poolQuoterQueryKeys } from "./use-pool-quoter";
 
@@ -76,6 +77,9 @@ export function usePoolAdminRelay() {
         queryClient.invalidateQueries({ queryKey: poolQuoterQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolTreasuryQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolRegistryQueryKeys.all }),
+        // The same batch writes the limiter, and the swap screen reads that cap
+        // to decide whether a voucher can still be deposited.
+        queryClient.invalidateQueries({ queryKey: poolSwapTokenQueryKeys.all }),
       ]);
     },
   });
