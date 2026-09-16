@@ -13,7 +13,34 @@ export function updateInstallState(update: Partial<InstallSnapshot>) {
   useInstallStore.setState(update);
 }
 
-// React only subscribes to the early capture; it never owns native prompting.
+let installAttempt = 0;
+
+// Called directly by the dialog's button: no import or await may precede
+// prompt(), which requires a fresh browser user gesture.
+export async function requestInstall() {
+  const { promptEvent, installed, status } = useInstallStore.getState();
+  if (!promptEvent || installed || status === "prompting") return;
+  const attempt = ++installAttempt;
+  updateInstallState({ promptEvent: null, status: "prompting" });
+  const stillCurrent = () => {
+    const state = useInstallStore.getState();
+    return (
+      attempt === installAttempt &&
+      !state.installed &&
+      state.status === "prompting" &&
+      state.promptEvent === null
+    );
+  };
+  try {
+    await promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
+    if (stillCurrent()) updateInstallState({ status: outcome });
+  } catch {
+    if (stillCurrent()) updateInstallState({ status: "error" });
+  }
+}
+
+// Subscribe to the early capture without registering another browser prompt listener.
 export function initializeInstallEvents() {
   const media = window.matchMedia?.("(display-mode: standalone)");
   const sync = () => {
