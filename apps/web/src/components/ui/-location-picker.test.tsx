@@ -218,6 +218,29 @@ describe("LocationPicker", () => {
     rerender(<LocationPicker onChange={vi.fn()} value={undefined} />);
 
     expect(screen.getByTestId("map-pin").textContent).toBe(",");
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty("value", "");
+  });
+
+  it("fills the visible input when the parent loads a saved location", () => {
+    const { rerender } = render(<LocationPicker onChange={vi.fn()} value={undefined} />);
+
+    rerender(
+      <LocationPicker
+        onChange={vi.fn()}
+        value={{
+          lat: -4.9098,
+          lng: 38.8784,
+          locationName: "Muheza, Tanga, Tanzania",
+          country: "TZ",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+      "value",
+      "Muheza, Tanga, Tanzania",
+    );
+    expect(mockSearchLocations).not.toHaveBeenCalled();
   });
 
   it("reverse-geocodes map taps and fills the location input", async () => {
@@ -457,5 +480,54 @@ describe("LocationPicker", () => {
       "value",
       "Nairobi, Kenya",
     );
+  });
+
+  it("does not search for the pre-populated value, so no suggestions open on mount", async () => {
+    mockSearchLocations.mockResolvedValue([
+      { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
+    ]);
+
+    render(
+      <LocationPicker
+        onChange={vi.fn()}
+        value={{
+          lat: -1.2921,
+          lng: 36.8219,
+          locationName: "Nairobi, Kenya",
+          country: "KE",
+        }}
+      />,
+    );
+
+    expect(screen.queryByText(/searching places/i)).toBeNull();
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    });
+    expect(mockSearchLocations).not.toHaveBeenCalled();
+    expect(screen.queryByRole("option")).toBeNull();
+  });
+
+  it("still searches once the user edits a pre-populated value", async () => {
+    mockSearchLocations.mockResolvedValue([
+      { address: "Mombasa, Kenya", lat: -4.0435, lng: 39.6682, score: 99 },
+    ]);
+
+    render(
+      <LocationPicker
+        onChange={vi.fn()}
+        value={{
+          lat: -1.2921,
+          lng: 36.8219,
+          locationName: "Nairobi, Kenya",
+          country: "KE",
+        }}
+      />,
+    );
+
+    fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
+      target: { value: "Mombasa" },
+    });
+
+    expect(await screen.findByRole("option", { name: /mombasa/i })).toBeTruthy();
   });
 });

@@ -1,6 +1,6 @@
 import type { WalletToken } from "#/components/wallet";
-import type { PoolVoucher } from "#/features/pools/api/pools-client";
-import type { AccountToken } from "#/features/wallet/api/account-client";
+import type { PoolVoucher } from "@clc/api/features/pools/client";
+import type { AccountToken } from "@clc/api/features/accounts/client";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 
 export function poolVoucherToWalletToken(

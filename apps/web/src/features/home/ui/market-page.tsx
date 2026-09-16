@@ -6,11 +6,12 @@ import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri
 
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
-import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
@@ -21,7 +22,7 @@ type Coordinates = { lat: number; lng: number };
 
 export function MarketPage({
   onboardingBanner,
-  locationOwner = GUEST_LOCATION_OWNER,
+  locationOwner = GUEST_STORAGE_OWNER,
 }: {
   onboardingBanner?: ReactNode;
   locationOwner?: string;
@@ -32,7 +33,7 @@ export function MarketPage({
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
-  const filter = useMarketFilter();
+  const filter = useMarketFilter(useStorageOwner());
   const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
   const { vouchers, isCatalogComplete, error, retry } = catalog;
 
@@ -99,14 +100,18 @@ export function MarketPage({
         />
       </Suspense>
 
-      {onboardingBanner}
-
       {selectedVoucher ? (
         <MarketPreview
           voucher={selectedVoucher}
           realFix={realFix}
           offsetForBanner={!!onboardingBanner}
         />
+      ) : null}
+
+      {onboardingBanner ? (
+        <div className="pointer-events-none absolute inset-x-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 px-4">
+          {onboardingBanner}
+        </div>
       ) : null}
 
       {notice ? (
@@ -195,7 +200,7 @@ function MarketPreview({
       className={[
         "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
         offsetForBanner
-          ? "top-[calc(env(safe-area-inset-top)+3rem)]"
+          ? "top-[calc(env(safe-area-inset-top)+4.75rem)]"
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
       ].join(" ")}
     >

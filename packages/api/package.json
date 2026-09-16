@@ -1,0 +1,56 @@
+{
+  "name": "@clc/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client/create-clc-api": "./src/client/create-clc-api.ts",
+    "./client/cursor-page": "./src/client/cursor-page.ts",
+    "./client/errors": "./src/client/errors.ts",
+    "./client/http-client": "./src/client/http-client.ts",
+    "./features/accounts/client": "./src/features/accounts/client.ts",
+    "./features/accounts/queries": "./src/features/accounts/queries.ts",
+    "./features/admin/client": "./src/features/admin/client.ts",
+    "./features/admin/queries": "./src/features/admin/queries.ts",
+    "./features/auth/client": "./src/features/auth/client.ts",
+    "./features/auth/otx-queries": "./src/features/auth/otx-queries.ts",
+    "./features/auth/queries": "./src/features/auth/queries.ts",
+    "./features/auth/siwe": "./src/features/auth/siwe.ts",
+    "./features/deployments/client": "./src/features/deployments/client.ts",
+    "./features/deployments/queries": "./src/features/deployments/queries.ts",
+    "./features/images/batch": "./src/features/images/batch.ts",
+    "./features/images/client": "./src/features/images/client.ts",
+    "./features/images/policy": "./src/features/images/policy.ts",
+    "./features/images/queries": "./src/features/images/queries.ts",
+    "./features/market/client": "./src/features/market/client.ts",
+    "./features/market/queries": "./src/features/market/queries.ts",
+    "./features/offerings/cache": "./src/features/offerings/cache.ts",
+    "./features/offerings/client": "./src/features/offerings/client.ts",
+    "./features/offerings/queries": "./src/features/offerings/queries.ts",
+    "./features/pools/client": "./src/features/pools/client.ts",
+    "./features/pools/deploy-client": "./src/features/pools/deploy-client.ts",
+    "./features/pools/queries": "./src/features/pools/queries.ts",
+    "./features/pretium/client": "./src/features/pretium/client.ts",
+    "./features/relayer/client": "./src/features/relayer/client.ts",
+    "./features/reports/cache": "./src/features/reports/cache.ts",
+    "./features/reports/client": "./src/features/reports/client.ts",
+    "./features/reports/queries": "./src/features/reports/queries.ts",
+    "./features/symbols/client": "./src/features/symbols/client.ts",
+    "./features/symbols/queries": "./src/features/symbols/queries.ts",
+    "./features/vouchers/deploy-client": "./src/features/vouchers/deploy-client.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vp test run"
+  },
+  "dependencies": {
+    "@clc/core": "workspace:*",
+    "@tanstack/react-query": "^5.101.0",
+    "viem": "^2.52.2"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.10",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  }
+}

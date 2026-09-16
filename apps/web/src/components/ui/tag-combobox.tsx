@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import type { RouterHistory } from "@tanstack/react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Combobox,
@@ -19,6 +20,9 @@ export function TagCombobox({
   listLabel,
   placeholder,
   removeLabel,
+  navigationHistory,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   items: string[];
   value: string[];
@@ -28,22 +32,49 @@ export function TagCombobox({
   listLabel: string;
   placeholder: string;
   removeLabel: (tag: string) => string;
+  /** While the list is open, browser/device Back dismisses it instead of leaving the screen. */
+  navigationHistory?: Pick<RouterHistory, "block">;
+  /** Optional control for screens whose visible Back button also dismisses the list. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlledOpen ?? uncontrolledOpen;
+  const changeOpen = useCallback(
+    (nextOpen: boolean) => {
+      if (controlledOpen === undefined) setUncontrolledOpen(nextOpen);
+      onOpenChange?.(nextOpen);
+      if (!nextOpen) inputRef.current?.blur();
+    },
+    [controlledOpen, onOpenChange],
+  );
 
   useEffect(() => {
     if (!open) return;
 
     const closeOnOutsidePress = (event: PointerEvent) => {
-      const target = event.target;
-      if (target instanceof Node && !rootRef.current?.contains(target)) setOpen(false);
+      const root = rootRef.current;
+      if (root && !event.composedPath().includes(root)) changeOpen(false);
     };
 
     document.addEventListener("pointerdown", closeOnOutsidePress, true);
     return () => document.removeEventListener("pointerdown", closeOnOutsidePress, true);
-  }, [open]);
+  }, [changeOpen, open]);
+
+  useEffect(() => {
+    if (!open || !navigationHistory) return;
+
+    return navigationHistory.block({
+      enableBeforeUnload: false,
+      blockerFn: ({ action }) => {
+        if (action !== "BACK") return false;
+        changeOpen(false);
+        return true;
+      },
+    });
+  }, [changeOpen, navigationHistory, open]);
 
   return (
     <div ref={rootRef}>
@@ -51,7 +82,7 @@ export function TagCombobox({
         multiple
         inline
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={changeOpen}
         items={items}
         value={value}
         onValueChange={(nextValue, eventDetails) => {
@@ -76,8 +107,8 @@ export function TagCombobox({
               ref={inputRef}
               placeholder={placeholder}
               aria-label={searchLabel}
-              onFocus={() => setOpen(true)}
-              onClick={() => setOpen(true)}
+              onFocus={() => changeOpen(true)}
+              onClick={() => changeOpen(true)}
             />
           </div>
         </ComboboxChips>

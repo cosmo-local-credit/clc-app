@@ -2,12 +2,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useConnection, useDisconnect } from "wagmi";
 
+import { clearIdentitySecrets, clearScopedQueries } from "#/features/auth/api/identity-reset";
 import { useBackendLogout } from "#/features/auth/hooks/use-auth-session";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
-import {
-  GUEST_LOCATION_OWNER,
-  clearPersistedLocation,
-} from "#/features/home/api/last-location-storage";
+import { clearPersistedLocation } from "#/features/home/api/last-location-storage";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { ActivityPage } from "./activity-page";
@@ -39,15 +38,27 @@ export function HomePage({
   const currentTab = !isAuthenticated && isPrivateHomeTab(activeTab) ? "market" : activeTab;
   // A connected wallet without a backend session is still a guest
   // (docs/AUTH.md), so an expired session must not keep that wallet's scope.
-  const locationOwner = isAuthenticated && address ? address.toLowerCase() : GUEST_LOCATION_OWNER;
+  const locationOwner = isAuthenticated && address ? address.toLowerCase() : GUEST_STORAGE_OWNER;
 
   async function handleSignOut() {
+    // Everything that must happen regardless of what fails runs first, before
+    // the first `await`. The three awaits below are each wrapped in a catch that
+    // swallows the failure, so anything sequenced after them is not guaranteed to
+    // run at all — and a throwing `disconnect()` used to leave a raw private key
+    // on disk while the UI dropped to guest.
+
     // Cancel any in-flight wallet switch first so a pending ?w= import can't
-    // land after disconnect and silently take over the session.
+    // land after disconnect and silently take over the session. Before the
+    // credential clear, too: a switch sitting inside its own `await` would
+    // otherwise store the imported key afterwards and strand it.
     abortWalletSwitch();
-    // Drop the precise location before any awaits so every failure path below
-    // still leaves it cleared. It must not survive on a shared device.
+    // Both credentials, not just this connector's. Each connector's `disconnect`
+    // only ever cleaned up after itself, so a paper-wallet sign-out left a
+    // passkey registered during the session behind for the next person to use.
+    clearIdentitySecrets("none");
+    // Drop the precise location too. It must not survive on a shared device.
     clearPersistedLocation();
+    clearScopedQueries(queryClient);
     setIsSigningOut(true);
     try {
       await backendLogout.mutateAsync();

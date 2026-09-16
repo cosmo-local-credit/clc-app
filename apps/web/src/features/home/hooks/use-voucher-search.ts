@@ -2,9 +2,11 @@ import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import { type MarketVoucher, getFilteredMarketVouchers } from "#/features/home/api/market-client";
+import { isRetryableBackendError } from "@clc/api/client/errors";
+import { voucherKeys } from "@clc/api/features/market/queries";
+import { type MarketVoucher } from "@clc/api/features/market/client";
 import { useDebouncedValue } from "#/lib/use-debounced-value";
+import { marketClient } from "#/lib/api/market";
 
 /** Below this the list stays closed — a one-character query matches most of the catalog. */
 export const VOUCHER_SEARCH_MIN_CHARS = 2;
@@ -14,10 +16,9 @@ const VOUCHER_SEARCH_LIMIT = 10;
 
 const VOUCHER_SEARCH_STALE_TIME = 5 * 60_000;
 
-const voucherSearchQueryKeys = {
-  all: ["market-vouchers", "search"] as const,
-  term: (term: string) => [...voucherSearchQueryKeys.all, term] as const,
-};
+// Identity is canonical in @clc/api so a voucher deploy invalidation reaches
+// search results too; the debounce and eligibility rules stay app-specific.
+const voucherSearchQueryKeys = { term: voucherKeys.search };
 
 type VoucherSearchStatus = "idle" | "searching" | "ready" | "error";
 
@@ -30,13 +31,22 @@ export type VoucherSearchControls = {
 };
 
 /**
- * Server-backed voucher lookup for the filter sheet.
+ * Server-backed voucher lookup for the filter sheet and the post editor.
  *
  * `GET /api/v2/vouchers` is public, per-IP rate limited, and cursor paginated, so the sheet never
  * holds a catalog in memory. Two consequences the caller must design around: results carry no
  * per-voucher match count, and the endpoint only sees active, geolocated vouchers.
+ *
+ * `owner` restricts the lookup to vouchers one address owns — the post editor's rule for anyone
+ * who is not a superadmin. The backend enforces the same rule on the write; this keeps the picker
+ * from offering what the write would refuse.
  */
-export function useVoucherSearch(query: string, setQuery: (next: string) => void, active: boolean) {
+export function useVoucherSearch(
+  query: string,
+  setQuery: (next: string) => void,
+  active: boolean,
+  owner?: string,
+) {
   const queryClient = useQueryClient();
   const { settled } = useDebouncedValue(query);
   const term = settled.trim();
@@ -47,11 +57,14 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
 
   useEffect(() => {
     if (enabled || term.length < VOUCHER_SEARCH_MIN_CHARS) return;
-    void queryClient.cancelQueries({ queryKey: voucherSearchQueryKeys.term(term), exact: true });
-  }, [enabled, queryClient, term]);
+    void queryClient.cancelQueries({
+      queryKey: voucherSearchQueryKeys.term(term, owner),
+      exact: true,
+    });
+  }, [enabled, owner, queryClient, term]);
 
   const search = useQuery({
-    queryKey: voucherSearchQueryKeys.term(term),
+    queryKey: voucherSearchQueryKeys.term(term, owner),
     queryFn: async ({ signal }) => {
       const filter: CatalogFilter = {
         term,
@@ -60,8 +73,8 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
         vouchers: [],
         voucherMatch: "any",
       };
-      const page = await getFilteredMarketVouchers(
-        { perPage: VOUCHER_SEARCH_LIMIT, filter },
+      const page = await marketClient.getFilteredMarketVouchers(
+        { perPage: VOUCHER_SEARCH_LIMIT, filter, owner },
         signal,
       );
       return page.vouchers;
@@ -69,10 +82,7 @@ export function useVoucherSearch(query: string, setQuery: (next: string) => void
     enabled,
     staleTime: VOUCHER_SEARCH_STALE_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
   return useMemo((): VoucherSearchControls => {

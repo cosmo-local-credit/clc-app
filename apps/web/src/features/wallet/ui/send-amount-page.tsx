@@ -1,7 +1,7 @@
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -41,10 +41,16 @@ export function SendAmountPage({
   token,
   recipient,
   recipientLabel,
+  amount: seededAmount,
+  returnPool,
 }: {
   token?: string;
   recipient?: string;
   recipientLabel?: string;
+  /** Prefilled amount from a shortcut into this screen, such as send-after-swap. */
+  amount?: string;
+  /** Pool whose Deposit shortcut opened this screen; carried on to the receipt. */
+  returnPool?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -63,8 +69,11 @@ export function SendAmountPage({
   // Preserve the current token selection when editing the recipient.
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
 
-  const [amount, setAmount] = useState("");
+  // Seeded once. The param is a starting point a shortcut chose, not a
+  // controlled value — typing over it must not be undone by a re-render.
+  const [amount, setAmount] = useState(() => sanitizeAmount(seededAmount ?? ""));
   const [amountFocused, setAmountFocused] = useState(false);
+  const amountInputRef = useRef<HTMLInputElement | null>(null);
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -126,6 +135,9 @@ export function SendAmountPage({
               <EllipsizedAddress address={recipientAddress} />
             )}
           </div>
+          {/* Changing the recipient leaves the deposit: `returnPool` is not
+              carried, because a send to someone else should end on the wallet
+              rather than on a pool it never reached. */}
           <button
             type="button"
             className="font-semibold text-primary text-xs hover:underline"
@@ -170,10 +182,27 @@ export function SendAmountPage({
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </button>
 
-      <div className="mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5">
+      {/* The whole tile is the hit target. `field-sizing:content` shrinks the
+          input to the width of what has been typed, so an empty field is a few
+          pixels wide and nobody finds it — pressing anywhere on the card puts
+          the caret at the end of the amount instead. Pointer-down rather than
+          click so the caret lands before the browser's own focus handling, and
+          only for presses that did not land on the card's own controls. */}
+      <div
+        className="mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5"
+        onPointerDown={(event) => {
+          if (event.target instanceof Element && event.target.closest("button, input")) return;
+          event.preventDefault();
+          const input = amountInputRef.current;
+          if (!input) return;
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }}
+      >
         <div className="flex items-baseline justify-center gap-1.5">
           <div className="relative flex items-baseline">
             <input
+              ref={amountInputRef}
               type="text"
               inputMode="decimal"
               autoFocus
@@ -278,6 +307,7 @@ export function SendAmountPage({
               recipient: recipientAddress,
               amount,
               symbol: selectedToken.symbol,
+              returnPool,
             },
           });
         }}

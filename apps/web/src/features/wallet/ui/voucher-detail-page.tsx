@@ -1,9 +1,19 @@
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
-import { Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -19,6 +29,7 @@ import { useConnection } from "wagmi";
 import { Button } from "#/components/ui/button";
 import { ReportList } from "#/components/reports/report-list";
 import { InfoRow } from "#/components/ui/info-row";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
@@ -47,6 +58,7 @@ import {
   type VoucherOrigin,
 } from "#/lib/navigation/voucher-navigation-owner";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
+import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
@@ -78,6 +90,7 @@ export function VoucherDetailPage({
 }) {
   const { t } = useLingui();
   const { address } = useConnection();
+  const auth = useAuthStatus();
   const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress });
   const back = {
     label:
@@ -158,17 +171,24 @@ export function VoucherDetailPage({
     lng: detail?.lng ?? baseToken?.lng,
   };
   const contractAddress = token.contractAddress;
-  const rate = formatVoucherRate(
-    detail?.voucherValue ?? poolVoucher?.voucherValue ?? null,
-    detail?.voucherUoa ?? poolVoucher?.voucherUoa ?? null,
-  );
+  const voucherValue = detail?.voucherValue ?? poolVoucher?.voucherValue ?? null;
+  const voucherUoa = detail?.voucherUoa ?? poolVoucher?.voucherUoa ?? null;
+  const rate = formatVoucherRate(voucherValue, voucherUoa);
   const description = detail?.description ?? poolVoucher?.description ?? null;
   const website = detail?.website ?? null;
+  const terms = detail?.terms ?? null;
   const locationName = detail?.locationName ?? poolVoucher?.locationName ?? token.location ?? null;
   const lat = detail?.lat ?? token.lat ?? null;
   const lng = detail?.lng ?? token.lng ?? null;
   const sendToken = contractAddress ?? token.id;
   const issuerAddress = token.owner ?? null;
+  const canEditDetails =
+    auth.isAuthenticated &&
+    !!detail &&
+    (auth.session?.role === "SUPERADMIN" ||
+      (!!auth.session?.address &&
+        !!detail.ownerAddress &&
+        auth.session.address.toLowerCase() === detail.ownerAddress.toLowerCase()));
   const reportChainId = detail?.chainId ?? poolVoucher?.chainId ?? null;
   const reportVoucher: VoucherRef | undefined =
     reportChainId && contractAddress
@@ -313,6 +333,9 @@ export function VoucherDetailPage({
         <VoucherOfferingsPanel
           voucherAddress={contractAddress}
           voucherSymbol={token.symbol}
+          voucherValue={voucherValue}
+          voucherUoa={voucherUoa}
+          ownerAddress={detail?.ownerAddress ?? null}
           isKnownEmpty={detail?.kind === "voucher"}
         />
       ) : null}
@@ -328,16 +351,27 @@ export function VoucherDetailPage({
           email={token.email ?? null}
           website={website}
           phone={token.phone ?? null}
+          terms={terms}
           issuerAddress={token.owner ?? null}
           locationName={locationName}
           lat={lat}
           lng={lng}
+          editable={canEditDetails ? detail : null}
+          contractActions={{
+            tokenAddress: contractAddress,
+            tokenSymbol: token.symbol,
+            tokenDecimals: token.tokenDecimals,
+            ownerAddress: token.owner ?? null,
+            walletAddress: address,
+          }}
         />
       ) : null}
       {activeTab === "posts" ? (
         <VoucherPostsPanel
           voucher={reportVoucher}
+          voucherName={token.name}
           voucherDataPending={detailQuery.isPending || supportingDataPending}
+          canWritePost={canEditDetails}
         />
       ) : null}
       {activeTab === "reviews" ? (
@@ -364,10 +398,19 @@ function EmptyTabPanel({ tab, children }: { tab: "reviews"; children: ReactNode 
 
 function VoucherPostsPanel({
   voucher,
+  voucherName,
   voucherDataPending,
+  canWritePost,
 }: {
   voucher: VoucherRef | undefined;
+  voucherName: string;
   voucherDataPending: boolean;
+  /**
+   * Whether the viewer may link this voucher to a post: its owner or a
+   * superadmin. clc-core refuses the write for anyone else, so the button that
+   * seeds it is not offered to them.
+   */
+  canWritePost: boolean;
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
@@ -448,6 +491,20 @@ function VoucherPostsPanel({
       aria-labelledby="voucher-tab-posts"
       className="space-y-2"
     >
+      {/* Writing about this voucher starts here as well as on the Posts screen.
+          The editor is the same one either way — the voucher travels in the URL
+          and arrives already linked. Only the issuer (or a superadmin) sees it:
+          a post may only link vouchers its author owns. */}
+      {canWritePost && voucher ? (
+        <Button asChild className="h-9 w-full">
+          <Link
+            to="/posts/new"
+            search={{ voucher: voucher.address, chainId: voucher.chainId, voucherName }}
+          >
+            <Trans>Write a post</Trans>
+          </Link>
+        </Button>
+      ) : null}
       {content}
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
       {reportsQuery.isFetchingNextPage ? (
@@ -600,10 +657,13 @@ function VoucherInfoPanel({
   email,
   website,
   phone,
+  terms,
   issuerAddress,
   locationName,
   lat,
   lng,
+  editable,
+  contractActions,
 }: {
   rate: { value: string; unit: string } | null;
   symbol: string;
@@ -612,10 +672,15 @@ function VoucherInfoPanel({
   email: string | null;
   website: string | null;
   phone: string | null;
+  /** Either a link to the issuer's terms or the terms themselves, as Markdown. */
+  terms: string | null;
   issuerAddress: string | null;
   locationName: string | null;
   lat: number | null;
   lng: number | null;
+  /** The catalog record, when the viewer may edit it; null for everyone else. */
+  editable: MarketVoucherDetail | null;
+  contractActions: Omit<ComponentProps<typeof VoucherContractActionsPanel>, "editable">;
 }) {
   const { t } = useLingui();
   const hasCoordinates = typeof lat === "number" && typeof lng === "number";
@@ -628,6 +693,8 @@ function VoucherInfoPanel({
       aria-labelledby="voucher-tab-info"
       className="space-y-3"
     >
+      <VoucherContractActionsPanel {...contractActions} editable={editable} />
+
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">
           {rate ? (
@@ -699,10 +766,31 @@ function VoucherInfoPanel({
             </a>
           </InfoRow>
         ) : null}
+        {terms && isHttpUrl(terms) ? (
+          <InfoRow label={t`Terms`}>
+            <a
+              href={terms}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="max-w-full truncate underline underline-offset-2"
+            >
+              {terms}
+            </a>
+          </InfoRow>
+        ) : null}
         <InfoRow label={t`Issuer`}>
           {issuerAddress ? <EllipsizedAddress address={issuerAddress} /> : "—"}
         </InfoRow>
       </dl>
+
+      {terms && !isHttpUrl(terms) ? (
+        <div className="border border-border bg-card p-4">
+          <p className="font-heading text-sm font-semibold leading-snug">
+            <Trans>Terms</Trans>
+          </p>
+          <MarkdownContent className="mt-2">{terms}</MarkdownContent>
+        </div>
+      ) : null}
 
       {locationLabel ? (
         <div className="border border-border bg-card p-4">

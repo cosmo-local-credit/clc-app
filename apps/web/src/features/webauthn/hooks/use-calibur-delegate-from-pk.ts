@@ -5,10 +5,10 @@ import { parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
-import { CALIBUR_ADDRESS } from "#/lib/backend-config";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
+import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 
-const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
 export const DELEGATION_POLL_MS = 2_000;
 
 export type DelegationStep = "idle" | "authorizing" | "confirming" | "done" | "error";
@@ -50,7 +50,7 @@ export function useCaliburDelegateFromPk(client: RelayerClient) {
         result: { nonce: nonceStr },
       } = await client.getEOANonce(account.address);
       const authMsg = eip7702AuthMessage({
-        chainId: CHAIN_ID,
+        chainId: CHAIN_ID_BIGINT,
         contractAddress: CALIBUR_ADDRESS,
         nonce: BigInt(nonceStr),
       });

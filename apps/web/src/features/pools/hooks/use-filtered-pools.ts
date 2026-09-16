@@ -7,15 +7,16 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { isRetryableBackendError } from "@clc/api/client/errors";
+import { poolKeys } from "@clc/api/features/pools/queries";
 import {
   type FilteredPoolPage,
   type PoolTagFacet,
   type PoolVoucherFacet,
   type UserPool,
-  getFilteredPools,
-} from "#/features/pools/api/pools-client";
+} from "@clc/api/features/pools/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { poolsClient } from "#/lib/api/pools";
 
 const POOLS_FILTER_PAGE_SIZE = 100;
 
@@ -32,11 +33,11 @@ const EMPTY_CATALOG_FILTER: CatalogFilter = {
   voucherMatch: "any",
 };
 
+// Identity is canonical in @clc/api so a pool invalidation reaches these too;
+// the multi-page assembly and page budget below stay app-specific.
 const filteredPoolQueryKeys = {
-  all: ["pools"] as const,
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    [...filteredPoolQueryKeys.all, "filtered", { filter, perPage }] as const,
-  facetVocabulary: () => [...filteredPoolQueryKeys.all, "facet-vocabulary"] as const,
+  filtered: poolKeys.filtered,
+  facetVocabulary: poolKeys.facetVocabulary,
 };
 
 export class FilteredPoolsTooLargeError extends Error {
@@ -79,7 +80,7 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
       let cursor: number | undefined;
 
       for (let index = 0; index < MAX_FILTERED_POOL_PAGES; index++) {
-        const page = await getFilteredPools(
+        const page = await poolsClient.getFilteredPools(
           {
             perPage,
             cursor,
@@ -112,13 +113,10 @@ function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_P
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) => {
-      if (error instanceof FilteredPoolsTooLargeError) return false;
-      if (error instanceof BackendApiError && error.status >= 400 && error.status < 500) {
-        return false;
-      }
-      return failureCount < 1;
-    },
+    // Only a transport failure or server fault is worth replaying; a rejected
+    // filter, an exhausted page budget, or a bug in our own query function
+    // will fail identically. See isRetryableBackendError.
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 
@@ -126,7 +124,7 @@ function usePoolFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredPoolQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredPools(
+      const page = await poolsClient.getFilteredPools(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );
@@ -139,10 +137,7 @@ function usePoolFacetVocabulary(enabled: boolean) {
     staleTime: POOLS_STALE_TIME,
     gcTime: FILTERED_POOLS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 

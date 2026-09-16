@@ -6,15 +6,17 @@ import {
   normalizeS,
   parseDERSignature,
 } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { encodeAbiParameters } from "viem";
-import { waitForTrackingCompletion } from "#/features/auth/api/client";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
-import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
-import { getWebAuthnCredential } from "#/lib/webauthn-storage";
 
-const CALIBUR_ADDRESS = (import.meta.env.VITE_CALIBUR_ADDRESS ??
-  "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85") as `0x${string}`;
-const CHAIN_ID = BigInt(import.meta.env.VITE_CHAIN_ID ?? "42220");
+import type { RelayerClient } from "@clc/api/features/relayer/client";
+import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
+import { CHAIN_ID_BIGINT } from "#/lib/chain";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
+import { getWebAuthnCredential } from "#/lib/webauthn-storage";
+import { authClient } from "#/lib/api/auth";
+
+const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID);
 
 export type CaliburCall = {
   to: `0x${string}`;
@@ -54,11 +56,17 @@ export async function sendCaliburTransaction(
     deadline: deadline.toString(),
   };
 
-  const digestBytes = computeEIP712Digest(signedBatch, cred.address, CALIBUR_ADDRESS, CHAIN_ID);
+  const digestBytes = computeEIP712Digest(
+    signedBatch,
+    cred.address,
+    CALIBUR_ADDRESS,
+    CHAIN_ID_BIGINT,
+  );
 
   const assertion = await requestWebAuthnAssertion({
     publicKey: {
       challenge: toArrayBuffer(digestBytes),
+      rpId: RELYING_PARTY_ID,
       allowCredentials: [
         {
           id: toArrayBuffer(base64UrlToBytes(cred.credentialId)),
@@ -100,7 +108,7 @@ export async function sendCaliburTransaction(
     signatureType: "webauthn",
   });
 
-  const completed = await waitForTrackingCompletion(result.trackingId);
+  const completed = await authClient.waitForTrackingCompletion(result.trackingId);
   return {
     trackingId: result.trackingId,
     txHash: completed.txHash,

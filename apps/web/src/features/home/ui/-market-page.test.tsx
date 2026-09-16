@@ -3,8 +3,8 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { MarketVoucher, MarketVoucherDetail } from "#/features/home/api/market-client";
+import { BackendApiError } from "@clc/api/client/errors";
+import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MarketCamera } from "./market-map";
 
 type MapProps = {
@@ -83,6 +83,10 @@ function scalar(key: string, value: unknown): string {
   if (typeof value === "number" || typeof value === "boolean") return String(value);
   throw new Error(`search value for ${key} is not a URL scalar`);
 }
+
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
@@ -250,6 +254,16 @@ describe("MarketPage location button", () => {
   });
 });
 
+describe("MarketPage guest entry", () => {
+  it("floats the sign-in action at the top of the map", () => {
+    renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
+
+    expect(
+      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
+    ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+  });
+});
+
 describe("MarketPage data states", () => {
   it("contains no placeholder eatery, shop, or service data", () => {
     renderPage();
@@ -391,8 +405,10 @@ describe("MarketPage preview", () => {
         email: null,
         website: null,
         phone: null,
+        terms: null,
         iconUrl: "https://content.example/icon.jpg",
         bannerUrl: null,
+        tags: [],
         kind: "goods",
       },
     } as typeof detailResult.current;

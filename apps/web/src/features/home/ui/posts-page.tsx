@@ -1,4 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
@@ -6,15 +7,18 @@ import { ReportList } from "#/components/reports/report-list";
 import { Button } from "#/components/ui/button";
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { ReportFilterFeedback, ReportFilterSheet } from "./report-filter-ui";
 
 export function PostsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.posts, {
-    voucherRelationships: true,
-  });
+  const filter = usePersistedCatalogFilter(
+    CATALOG_FILTER_PREFERENCE_NAMES.posts,
+    useStorageOwner(),
+    { voucherRelationships: true },
+  );
   const reportsQuery = useReportsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
@@ -75,6 +79,22 @@ export function PostsPage() {
             setFiltersOpen(next);
           }}
         />
+      </div>
+
+      {/* Two compact actions rather than a floating button: the feed is
+          approved-only, so an author needs somewhere to write and somewhere to
+          find what they have already submitted. */}
+      <div className="flex gap-2">
+        <Button asChild className="h-9 flex-1">
+          <Link to="/posts/new">
+            <Trans>New post</Trans>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-9 flex-1">
+          <Link to="/posts/mine">
+            <Trans>My posts</Trans>
+          </Link>
+        </Button>
       </div>
 
       <CatalogSearchField filter={filter} label={t`Search posts by title or description`} />

@@ -7,10 +7,11 @@ import { RiArrowRightSLine, RiMap2Line } from "react-icons/ri";
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
-import { GUEST_LOCATION_OWNER } from "#/features/home/api/last-location-storage";
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilteredEmpty, MarketFilterFeedback, MarketFilterSheet } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
@@ -19,14 +20,14 @@ const MARKET_LIST_BATCH_SIZE = 20;
 
 export function MarketListPage({
   onboardingBanner,
-  locationOwner = GUEST_LOCATION_OWNER,
+  locationOwner = GUEST_STORAGE_OWNER,
 }: {
   onboardingBanner?: ReactNode;
   locationOwner?: string;
 }) {
   const { t, i18n } = useLingui();
   const { realFix } = useMarketCamera(locationOwner);
-  const filter = useMarketFilter();
+  const filter = useMarketFilter(useStorageOwner());
   const [filtersOpen, setFiltersOpen] = useState(false);
   // Latched rather than tracking `filtersOpen`, so reopening the sheet reuses the cached vocabulary
   // instead of flashing an empty facet list on every open.
@@ -103,14 +104,7 @@ export function MarketListPage({
 
   return (
     <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
-      {onboardingBanner}
-      <div
-        className={
-          onboardingBanner
-            ? "pt-[calc(env(safe-area-inset-top)+4.25rem)]"
-            : "pt-[calc(env(safe-area-inset-top)+1rem)]"
-        }
-      >
+      <div className="pt-[calc(env(safe-area-inset-top)+1rem)]">
         <div className="flex items-start justify-between gap-3">
           <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Marketplace</Trans>
@@ -141,6 +135,8 @@ export function MarketListPage({
             </Button>
           </div>
         </div>
+
+        {onboardingBanner ? <div className="mt-3">{onboardingBanner}</div> : null}
 
         <div className="mt-4">
           <CatalogSearchField filter={filter} label={t`Search by name or symbol`} />

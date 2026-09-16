@@ -48,15 +48,93 @@ state from `/auth/session`.
 
 ## Storage
 
-| Data                        | Storage         | Key                | Written by                                                         | Cleared by                                              |
-| --------------------------- | --------------- | ------------------ | ------------------------------------------------------------------ | ------------------------------------------------------- |
-| Paper-wallet private key    | `localStorage`  | `clc_pk_raw`       | `storePrivateKey`                                                  | `clearPrivateKey`, private-key connector disconnect     |
-| Paper-wallet connected flag | `localStorage`  | `clc_pk_connected` | `storePrivateKey`                                                  | `clearPrivateKey`                                       |
-| Paper-wallet address        | `localStorage`  | `clc_pk_address`   | `storePrivateKey`                                                  | `clearPrivateKey`                                       |
-| WebAuthn credential         | `localStorage`  | `clc_webauthn`     | `storeWebAuthnCredential`                                          | `clearWebAuthnCredential`, Calibur connector disconnect |
-| Backend session             | HttpOnly cookie | `__clc_auth`       | backend `/auth/signin` (SIWE) or `/auth/webauthn/verify` (passkey) | backend `/auth/logout`, expiry                          |
+`apps/web` is a shared-device app: one phone serves several village users, each
+signing in with their own paper wallet. Client state therefore falls into three
+kinds, and which kind a store belongs to decides how it is keyed and when it is
+cleared.
 
-The old `sessionStorage` token store was removed; requests use the HttpOnly cookie.
+### Credentials — single slot, deleted at every identity boundary
+
+Never tiered by owner. Tiering these would leave every past user's raw private
+key on the device permanently.
+
+| Data                        | Storage         | Key                       | Written by                                                         | Cleared by                                                                  |
+| --------------------------- | --------------- | ------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Paper-wallet private key    | `localStorage`  | `clc_pk_raw`              | `storePrivateKey`                                                  | `clearIdentitySecrets`, `clearPrivateKey`, private-key connector disconnect |
+| Paper-wallet connected flag | `localStorage`  | `clc_pk_connected`        | `storePrivateKey`                                                  | as above                                                                    |
+| Paper-wallet address        | `localStorage`  | `clc_pk_address`          | `storePrivateKey`                                                  | as above                                                                    |
+| WebAuthn credential         | `localStorage`  | `clc_webauthn`            | `storeWebAuthnCredential`                                          | `clearIdentitySecrets`, `clearWebAuthnCredential`, Calibur disconnect       |
+| Backend session             | HttpOnly cookie | `__clc_auth`              | backend `/auth/signin` (SIWE) or `/auth/webauthn/verify` (passkey) | backend `/auth/logout`, expiry                                              |
+| wagmi connection state      | `localStorage`  | `wagmi.store`             | wagmi                                                              | wagmi on full disconnect                                                    |
+| Last connector id           | `localStorage`  | `wagmi.recentConnectorId` | wagmi                                                              | never (connector id only, no address)                                       |
+
+`clearIdentitySecrets(retain)` in `features/auth/api/identity-reset.ts` is the
+one entry point. It takes the slot the caller is about to own, so a sign-in can
+remove the _other_ kind of credential without destroying the one it just wrote.
+Each connector's `disconnect()` only ever cleaned up after itself, which is why a
+paper-wallet sign-out used to leave a mid-session passkey behind for the next
+person to sign in with.
+
+### Owner-tiered app data — `clc.t.<owner>.<name>`
+
+Keyed by owner, so isolation is structural: a store that forgets to scope itself
+reads a key nobody wrote. `<owner>` is a lowercased address or `guest`. Every
+owner's tier is retained so a returning user finds their data, bounded by
+`lib/storage/owner-tier-registry.ts` (least-recently-used cap, plus eviction on a
+quota failure).
+
+| Data                | Name                           | Owner from        |
+| ------------------- | ------------------------------ | ----------------- |
+| Address book        | `address-book.v1`              | `useStorageOwner` |
+| Market facet filter | `market.filter-preferences.v1` | `useStorageOwner` |
+| Pools facet filter  | `pools.filter-preferences.v1`  | `useStorageOwner` |
+| Posts facet filter  | `posts.filter-preferences.v1`  | `useStorageOwner` |
+
+### Single slot with an `owner` field — only one person's row can exist
+
+Stronger than tiering for these two, because only one copy is ever on the device.
+
+| Data         | Key                    | Bound by                                    |
+| ------------ | ---------------------- | ------------------------------------------- |
+| Last GPS fix | `clc_last_location_v2` | `owner` field, 24h TTL, cleared on sign-out |
+| Unsent post  | `clc_post_draft_v1`    | `owner` field, 7d TTL                       |
+
+### Device-scoped, not per user
+
+| Data                      | Storage                 | Key / name                 | Notes                                                                                                                                                                                                                                      |
+| ------------------------- | ----------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Notifications             | IndexedDB               | `clc-notifications`        | `inbox`/`ackQueue`/`pendingClickEvents` are per user and cleared at an identity boundary; `device` and `config` survive because the backend keys its device record on `deviceId`. See `features/notifications/recovery/identity-reset.ts`. |
+| Theme                     | `localStorage`          | `clc.theme`                | Not identity data                                                                                                                                                                                                                          |
+| Locale                    | `localStorage` + cookie | `clc.locale`, `clc_locale` | Not identity data                                                                                                                                                                                                                          |
+| Stale-chunk reload marker | `sessionStorage`        | `clc:stale-chunk-reload:*` | Chunk error messages; falls back to `window.name`. Never cleared                                                                                                                                                                           |
+| Precached assets          | Cache API               | `serwist-precache-v2-*`    | Build output only. No API response is cached                                                                                                                                                                                               |
+
+The old `sessionStorage` token store was removed; requests use the HttpOnly
+cookie. The storage-server session token copy lives only in the in-memory Query
+cache under `imageKeys.token` and is dropped with the rest of `["clc", …]`.
+
+### Identity boundaries
+
+Three, because a session that expires and a different person signing in are the
+same hazard, and only one of them involves anyone pressing "Sign out":
+
+| Boundary                  | Where                                                                                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Explicit sign-out         | `features/home/ui/home-page.tsx` — clears secrets and the cache _before_ its first `await`, since the logout and disconnect failures are both swallowed   |
+| Session expiry (any 401)  | `apps/web/src/router.tsx` — one handler on both `QueryCache` and `MutationCache`. Does **not** clear credentials: the cookie lapsed, not the device owner |
+| A different user signs in | The sign-in panel's two branches, the `?w=` switch, onboarding                                                                                            |
+
+Wagmi's auto-reconnect changes the identity with no flow code running, so it is
+covered by derivation rather than by an event:
+`features/auth/hooks/use-storage-owner.ts` recomputes the owner, and
+`use-identity-transition.ts` reacts to a _resolved_ change. That hook must never
+touch a credential — it observes an identity already established, so clearing
+there would delete the key of the wallet that just connected.
+
+`useStorageOwner` returns `null` while the session is undecided (in flight, or
+failed). Not `guest`: writing a signed-in user's data into the guest tier during a
+blip splits it across two tiers, and `null` also makes `A → null → A` a non-event,
+so a flaky session check fires no teardown.
 
 ## Overall UI Flow
 

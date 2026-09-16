@@ -1,10 +1,11 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-
 import {
-  getAccountTokens,
-  getAccountTransfers,
-  getLatestAccountTokens,
-} from "#/features/wallet/api/account-client";
+  accountKeys,
+  accountTokensInfiniteQueryOptions,
+  accountTransfersInfiniteQueryOptions,
+  latestAccountTokensQueryOptions,
+} from "@clc/api/features/accounts/queries";
+import { accountsClient } from "#/lib/api/accounts";
 
 const DEFAULT_PAGE_SIZE = 20;
 const WALLET_ACCOUNT_STALE_TIME_MS = 4_000;
@@ -35,22 +36,24 @@ function pollOptions(poll: boolean) {
   };
 }
 
+/**
+ * Re-exported so wallet callers keep one import for account identity. The keys
+ * are canonical in @clc/api; only the polling policy above is app-specific.
+ */
 export const accountWalletQueryKeys = {
-  all: ["account-wallet"] as const,
+  all: accountKeys.all,
   latestTokens: (address: string | undefined) =>
-    [...accountWalletQueryKeys.all, normalizeAddress(address), "tokens", "latest"] as const,
+    accountKeys.latestTokens(normalizeAddress(address)),
   tokens: (address: string | undefined, perPage: number) =>
-    [...accountWalletQueryKeys.all, normalizeAddress(address), "tokens", { perPage }] as const,
+    accountKeys.tokensInfinite(normalizeAddress(address), perPage),
   transfers: (address: string | undefined, perPage: number) =>
-    [...accountWalletQueryKeys.all, normalizeAddress(address), "transfers", { perPage }] as const,
+    accountKeys.transfersInfinite(normalizeAddress(address), perPage),
 };
 
 /** Backs the wallet screen's "Your Vouchers" list — the one live balance poll. */
 export function useLatestAccountTokens(address: string | undefined) {
   return useQuery({
-    queryKey: accountWalletQueryKeys.latestTokens(address),
-    queryFn: () => getLatestAccountTokens(requireAddress(address)),
-    enabled: !!address,
+    ...latestAccountTokensQueryOptions(accountsClient, address),
     ...walletAccountQueryFreshness,
     ...pollOptions(true),
   });
@@ -61,18 +64,7 @@ export function useAccountTokensInfinite(
   { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
 ) {
   return useInfiniteQuery({
-    queryKey: accountWalletQueryKeys.tokens(address, perPage),
-    queryFn: ({ pageParam }) =>
-      getAccountTokens({
-        address: requireAddress(address),
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
-    enabled: !!address,
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.tokens.length < perPage || lastPage.last === undefined ? undefined : lastPage.last,
+    ...accountTokensInfiniteQueryOptions(accountsClient, address, perPage),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
   });
@@ -83,20 +75,7 @@ export function useAccountTransfersInfinite(
   { perPage = DEFAULT_PAGE_SIZE, poll = false }: AccountPageQueryOptions = {},
 ) {
   return useInfiniteQuery({
-    queryKey: accountWalletQueryKeys.transfers(address, perPage),
-    queryFn: ({ pageParam }) =>
-      getAccountTransfers({
-        address: requireAddress(address),
-        perPage,
-        cursor: pageParam,
-        next: pageParam === undefined ? undefined : true,
-      }),
-    enabled: !!address,
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.transfers.length < perPage || lastPage.last === undefined
-        ? undefined
-        : lastPage.last,
+    ...accountTransfersInfiniteQueryOptions(accountsClient, address, perPage),
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
   });
@@ -104,9 +83,4 @@ export function useAccountTransfersInfinite(
 
 function normalizeAddress(address: string | undefined): string {
   return address?.toLowerCase() ?? "none";
-}
-
-function requireAddress(address: string | undefined): string {
-  if (!address) throw new Error("Wallet address is required.");
-  return address;
 }

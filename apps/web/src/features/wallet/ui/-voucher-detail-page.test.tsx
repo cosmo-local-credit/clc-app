@@ -1,13 +1,32 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketVoucherDetail } from "#/features/home/api/market-client";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import type { ReportSummary } from "@clc/api/features/reports/client";
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,
-  auth: { isAuthenticated: true, isLoading: false },
+  auth: {
+    isAuthenticated: true,
+    isLoading: false,
+    // The backend session, which is what authorizes an offering write. Distinct
+    // from the wagmi connector address on purpose: the two can diverge.
+    session: { address: "0x1111111111111111111111111111111111111111", chainId: 42220 } as
+      | { address: string; chainId: number; role?: string }
+      | null
+      | undefined,
+  },
+  profile: {
+    data: { avatarUrl: "https://cdn.test/profile/avatar.webp" } as
+      | { avatarUrl: string }
+      | undefined,
+  },
+  updateProfile: vi.fn(),
+  createVouchers: vi.fn(),
+  transferOwnership: vi.fn(),
+  delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
+  queryClient: { invalidateQueries: vi.fn() },
   detailResult: {
     data: undefined as MarketVoucherDetail | undefined,
     isPending: false,
@@ -16,6 +35,11 @@ const mocks = vi.hoisted(() => ({
   },
   openDefaultMaps: vi.fn(),
   offeringAddress: undefined as string | undefined,
+  managedOfferingAddress: undefined as string | undefined,
+  createOffering: vi.fn(),
+  updateOffering: vi.fn(),
+  deleteOffering: vi.fn(),
+  uploadImage: vi.fn(),
   offeringsResult: {
     data: undefined as
       | {
@@ -29,13 +53,14 @@ const mocks = vi.hoisted(() => ({
               voucherName: string | null;
               voucherSymbol: string | null;
               voucherDecimals: number | null;
-              commodityName: string;
-              commodityType: string;
+              name: string;
+              commodityType: "GOOD" | "SERVICE" | null;
               description: string;
               quantity: string;
               unit: string | null;
+              unitLabel: string | null;
               frequency: "day" | "week" | "month" | "year" | null;
-              price: string | null;
+              pricePerUnit: string | null;
               available: boolean;
               locationName: string | null;
               geoLat: number | null;
@@ -76,8 +101,27 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useEnsRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  usePhoneRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  useReverseEnsResolution: () => ({ data: null, error: null, isPending: false }),
+}));
+
+vi.mock("@tanstack/react-query", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+  useQueryClient: () => mocks.queryClient,
+}));
+
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => mocks.profile,
+}));
+
+vi.mock("#/lib/api/storage", () => ({
+  isStorageConfigured: true,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -167,6 +211,72 @@ vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
     mocks.offeringAddress = address;
     return mocks.offeringsResult;
   },
+  // The owner's read. Recorded separately so a test can prove which query ran:
+  // a visitor must not issue this one and an owner must not issue the cached one.
+  useManagedVoucherOfferingsInfinite: (address: string | undefined) => {
+    mocks.managedOfferingAddress = address;
+    return mocks.offeringsResult;
+  },
+}));
+
+// The photo field is the shared one now, so its upload hook is what needs
+// stubbing rather than an offering-specific wrapper.
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: mocks.uploadImage,
+    reset: () => {},
+    isPending: false,
+    isError: false,
+  }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-update-voucher-profile", () => ({
+  useUpdateVoucherProfile: () => ({
+    mutateAsync: mocks.updateProfile,
+    isPending: false,
+  }),
+}));
+
+vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
+  useVoucherMint: () => ({ mutateAsync: mocks.createVouchers, isPending: false }),
+}));
+
+vi.mock("#/features/vouchers/hooks/use-voucher-ownership-transfer", () => ({
+  useVoucherOwnershipTransfer: () => ({ mutateAsync: mocks.transferOwnership, isPending: false }),
+}));
+
+vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
+  useCaliburDelegation: () => mocks.delegationStatus,
+}));
+
+vi.mock("#/hooks/use-deployment", () => ({
+  useTokenTags: () => ({
+    data: ["Agriculture", "Food"],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+}));
+
+// The picker geocodes and renders a map; the editor only needs it to hold a place.
+vi.mock("#/components/ui/location-picker", () => ({
+  LocationPicker: ({
+    value,
+    onChange,
+  }: {
+    value?: { locationName: string };
+    onChange: (value: undefined) => void;
+  }) => (
+    <button type="button" onClick={() => onChange(undefined)}>
+      {value?.locationName ?? "Choose a location"}
+    </button>
+  ),
+}));
+
+vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+  useCreateVoucherOffering: () => ({ mutateAsync: mocks.createOffering, isPending: false }),
+  useUpdateVoucherOffering: () => ({ mutateAsync: mocks.updateOffering, isPending: false }),
+  useDeleteVoucherOffering: () => ({ mutateAsync: mocks.deleteOffering, isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
@@ -190,6 +300,7 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 import { VoucherDetailPage } from "./voucher-detail-page";
 
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
+const OTHER = "0x9999999999999999999999999999999999999999";
 
 function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDetail {
   return {
@@ -209,8 +320,10 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     email: "issuer@example.org",
     website: "https://example.org",
     phone: "+254700000000",
+    terms: "https://example.org/terms",
     iconUrl: "https://content.example/icon.jpg",
     bannerUrl: "https://content.example/banner.jpg",
+    tags: ["Agriculture"],
     kind: "goods",
     ...overrides,
   };
@@ -231,15 +344,29 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     createdAt: null,
     updatedAt: "2026-07-19T08:14:02.311Z",
     tags: ["Food production"],
-    vouchers: [{ address: ADDRESS, name: "Priscilah Malii", symbol: "MALII" }],
+    vouchers: [
+      { id: "7", chainId: 42220, address: ADDRESS, name: "Priscilah Malii", symbol: "MALII" },
+    ],
     ...overrides,
   };
 }
 
 beforeEach(() => {
   mocks.address = "0x1111111111111111111111111111111111111111";
-  mocks.auth = { isAuthenticated: true, isLoading: false };
+  // A signed-in visitor who is not the issuer. Ownership tests override the
+  // session; everything else reads the panel as a visitor would.
+  mocks.auth = {
+    isAuthenticated: true,
+    isLoading: false,
+    session: { address: OTHER, chainId: 42220 },
+  };
   mocks.openDefaultMaps.mockReset();
+  mocks.createVouchers.mockReset();
+  mocks.createVouchers.mockResolvedValue({ trackingId: "mint-1" });
+  mocks.transferOwnership.mockReset();
+  mocks.transferOwnership.mockResolvedValue({ trackingId: "owner-1" });
+  mocks.delegationStatus = "delegated";
+  mocks.queryClient.invalidateQueries.mockReset();
   mocks.detailResult = {
     data: detail(),
     isPending: false,
@@ -261,13 +388,14 @@ beforeEach(() => {
               voucherSymbol: "MALII",
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
-              commodityName: "Vegetables",
+              name: "Vegetables",
               commodityType: "GOOD",
               description: "Fresh produce",
               quantity: "5",
               unit: "kg",
+              unitLabel: "kg",
               frequency: "week",
-              price: "10",
+              pricePerUnit: "10",
               available: true,
               locationName: "Kangemi Market",
               geoLat: null,
@@ -284,13 +412,14 @@ beforeEach(() => {
               voucherSymbol: "MALII",
               voucherDecimals: 2,
               sellerAddress: "0x1111111111111111111111111111111111111111",
-              commodityName: "Farm training",
+              name: "Farm training",
               commodityType: "SERVICE",
               description: "",
               quantity: "1000000000",
               unit: null,
+              unitLabel: null,
               frequency: null,
-              price: null,
+              pricePerUnit: null,
               available: true,
               locationName: null,
               geoLat: null,
@@ -357,7 +486,8 @@ describe("VoucherDetailPage", () => {
     );
     const offerings = screen.getByRole("tabpanel");
     expect(within(offerings).getByText("Vegetables")).toBeTruthy();
-    expect(within(offerings).getByText("10 MALII")).toBeTruthy();
+    // Price per unit, as one message: the unit is part of what the figure means.
+    expect(within(offerings).getByText("100 KSH / kg")).toBeTruthy();
     expect(within(offerings).getByText("Price on request")).toBeTruthy();
     expect(
       within(offerings).getByText(
@@ -442,21 +572,42 @@ describe("VoucherDetailPage", () => {
       name: "Decrease quantity",
     }) as HTMLButtonElement;
 
-    expect(within(dialog).getByText("10 MALII each")).toBeTruthy();
-    expect(totalRow()).toContain("10 MALII");
+    expect(within(dialog).getByText("100 KSH / kg")).toBeTruthy();
+    expect(totalRow()).toContain("100 KSH");
     // One is the floor, so the minus is inert until the quantity leaves it.
     expect(decrease.disabled).toBe(true);
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
 
-    expect(totalRow()).toContain("30 MALII");
+    expect(totalRow()).toContain("300 KSH");
     expect(decrease.disabled).toBe(false);
 
     fireEvent.click(decrease);
 
-    expect(totalRow()).toContain("20 MALII");
+    expect(totalRow()).toContain("200 KSH");
     expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
+  });
+
+  it("shows the unit-of-account price and hides a new offering's synthetic quantity", () => {
+    mocks.detailResult.data = detail({ voucherUoa: "KES", voucherValue: "1" });
+    const offering = mocks.offeringsResult.data?.pages[0]?.offerings[0];
+    if (!offering) throw new Error("expected offering fixture");
+    offering.pricePerUnit = "600";
+    offering.quantity = "1";
+    offering.unit = "hour";
+    offering.unitLabel = "hour";
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByText("600 KES / hour")).toBeTruthy();
+    expect(within(panel).queryByText("1 hour")).toBeNull();
+
+    fireEvent.click(
+      within(panel).getByRole("button", { name: "View offering details: Vegetables" }),
+    );
+    expect(within(screen.getByRole("dialog")).getByText("600 KES / hour")).toBeTruthy();
   });
 
   it("shows no total for an offering the issuer never priced", () => {
@@ -567,7 +718,7 @@ describe("VoucherDetailPage", () => {
     expect(description.parentElement?.className).toContain("bg-card");
 
     const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
-    expect(labels).toEqual(["Contract address", "Email", "Website", "Phone", "Issuer"]);
+    expect(labels).toEqual(["Contract address", "Email", "Website", "Phone", "Terms", "Issuer"]);
     expect(
       Array.from(panel.querySelectorAll("dl > div")).every((row) => row.className.includes("h-12")),
     ).toBe(true);
@@ -583,6 +734,9 @@ describe("VoucherDetailPage", () => {
     const website = screen.getByText("https://example.org");
     expect(website.getAttribute("target")).toBe("_blank");
     expect(website.getAttribute("rel")).toContain("noopener");
+    const terms = screen.getByText("https://example.org/terms");
+    expect(terms.getAttribute("href")).toBe("https://example.org/terms");
+    expect(terms.getAttribute("target")).toBe("_blank");
 
     const location = screen.getByText("C96, KEN");
     expect(location.className).toContain("text-sm");
@@ -602,6 +756,20 @@ describe("VoucherDetailPage", () => {
       lat: -1.450979,
       lng: 38.235115,
     });
+  });
+
+  it("renders terms written by the issuer as Markdown in their own panel", () => {
+    mocks.detailResult.data = detail({
+      terms: "# House rules\n\nRedeemable at the **Saturday** market only.",
+    });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    const panel = screen.getByRole("tabpanel");
+    const labels = Array.from(panel.querySelectorAll("dt"), (node) => node.textContent);
+    expect(labels).not.toContain("Terms");
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+    expect(screen.getByText("Saturday").tagName).toBe("STRONG");
+    expect(screen.getByText("Terms").closest("div")?.className).toContain("bg-card");
   });
 
   it("omits absent email and phone rows", () => {
@@ -640,7 +808,35 @@ describe("VoucherDetailPage", () => {
     const panel = screen.getByRole("tabpanel");
     expect(panel.getAttribute("aria-labelledby")).toBe("voucher-tab-posts");
     expect(within(panel).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
-    expect(within(panel).getByRole("link").getAttribute("href")).toBe("/posts/3182");
+    expect(
+      within(panel)
+        .getByRole("link", { name: /Harvesting greengrams/ })
+        .getAttribute("href"),
+    ).toBe("/posts/3182");
+  });
+
+  // A post may only link vouchers its author owns, so the button that seeds
+  // one is for the issuer and superadmins; a visitor reads the tab without it.
+  it("offers Write a post to the issuer and to a superadmin, not to a visitor", () => {
+    const asVisitor = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+    expect(screen.queryByRole("link", { name: "Write a post" })).toBeNull();
+    asVisitor.unmount();
+
+    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+    expect(screen.getByRole("link", { name: "Write a post" })).toBeTruthy();
+  });
+
+  it("opens the post editor with this voucher already linked", () => {
+    mocks.auth.session = { address: "0xDeF0000000000000000000000000000000000456", chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
+
+    const href = screen.getByRole("link", { name: "Write a post" }).getAttribute("href");
+    expect(href?.startsWith("/posts/new?")).toBe(true);
+    const search = new URLSearchParams(href?.slice(href.indexOf("?")));
+    expect(search.get("voucher")).toBe(ADDRESS);
+    expect(search.get("chainId")).toBe("42220");
+    expect(search.get("voucherName")).toBe("Priscilah Malii");
   });
 
   it("shows an empty state when the voucher has no related posts", () => {
@@ -706,7 +902,7 @@ describe("VoucherDetailPage", () => {
   });
 
   it("does not request related posts for a guest", () => {
-    mocks.auth = { isAuthenticated: false, isLoading: false };
+    mocks.auth = { isAuthenticated: false, isLoading: false, session: null };
 
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="posts" />);
 
@@ -722,5 +918,366 @@ describe("VoucherDetailPage", () => {
     expect(mocks.reportVoucher).toBeUndefined();
     expect(mocks.reportsEnabled).toBe(false);
     expect(screen.getByText("Posts aren't available for this voucher.")).toBeTruthy();
+  });
+});
+
+/**
+ * The owner's view of their own offerings.
+ *
+ * Two things separate it from a visitor's, and each has a reason that is not
+ * cosmetic: the controls, and which query runs. The cached public read is right
+ * for browsing and wrong for the person editing the list, because the endpoint
+ * lets the browser keep the pre-mutation body for up to a minute.
+ */
+describe("VoucherOfferingsPanel ownership", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  beforeEach(() => {
+    mocks.offeringAddress = undefined;
+    mocks.managedOfferingAddress = undefined;
+    mocks.deleteOffering.mockReset();
+    mocks.deleteOffering.mockResolvedValue("1");
+  });
+
+  it("gives the voucher's owner add, edit and remove controls", () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const offerings = screen.getByRole("tabpanel");
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+    expect(within(offerings).getAllByRole("button", { name: "Edit" }).length).toBeGreaterThan(0);
+    expect(within(offerings).getAllByRole("button", { name: "Remove" }).length).toBeGreaterThan(0);
+  });
+
+  it("reads through the uncached query for an owner and the cached one for a visitor", () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    expect(mocks.managedOfferingAddress).toBe(ADDRESS);
+    // Not both: the owner must not also hold a cached copy that a write cannot
+    // reliably refresh.
+    expect(mocks.offeringAddress).toBeUndefined();
+  });
+
+  it.each([
+    [
+      "another signed-in user",
+      { isAuthenticated: true, isLoading: false, session: { address: OTHER, chainId: 42220 } },
+    ],
+    ["a guest", { isAuthenticated: false, isLoading: false, session: null }],
+    // A session cookie is what the write is authorized against, so a connected
+    // wallet with no session is a visitor here.
+    [
+      "a connected wallet with no session",
+      { isAuthenticated: false, isLoading: false, session: undefined },
+    ],
+  ])("keeps the panel read-only for %s", (_label, auth) => {
+    Object.assign(mocks.auth, auth);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.queryByRole("button", { name: "Add offering" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Remove" })).toBeNull();
+    expect(mocks.managedOfferingAddress).toBeUndefined();
+  });
+
+  // A voucher with no recorded owner has nobody to authorize, so nobody gets
+  // controls — the two nulls must not compare equal.
+  it("gives nobody controls when the catalog records no owner", () => {
+    mocks.detailResult.data = detail({ ownerAddress: null });
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.queryByRole("button", { name: "Add offering" })).toBeNull();
+  });
+
+  // Case-folded: the catalog stores the address lower-cased while a session
+  // claim is checksummed.
+  it("matches the owner regardless of address casing", () => {
+    mocks.detailResult.data = detail({
+      ownerAddress: OWNER.toLowerCase() as MarketVoucherDetail["ownerAddress"],
+    });
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+  });
+
+  // The owner needs somewhere to add the first offering, so the shortcut that is
+  // sound for a visitor must not suppress their query.
+  it("still queries for an owner when the market marker says the tab is empty", () => {
+    mocks.detailResult.data = detail({
+      ownerAddress: OWNER as MarketVoucherDetail["ownerAddress"],
+      kind: "voucher",
+    });
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(mocks.managedOfferingAddress).toBe(ADDRESS);
+    expect(screen.getByRole("button", { name: "Add offering" })).toBeTruthy();
+  });
+
+  it("asks before removing, and calls the mutation once confirmed", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    const remove = within(screen.getByRole("tabpanel")).getAllByRole("button", {
+      name: "Remove",
+    })[0];
+    fireEvent.click(remove as HTMLElement);
+    expect(confirm).toHaveBeenCalled();
+    expect(mocks.deleteOffering).not.toHaveBeenCalled();
+
+    confirm.mockReturnValue(true);
+    await act(async () => {
+      fireEvent.click(remove as HTMLElement);
+    });
+    expect(mocks.deleteOffering).toHaveBeenCalledWith("1");
+  });
+
+  it("opens the editor sheet on Add", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    expect(screen.getByRole("heading", { name: "Add offering" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "A good", pressed: false })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "A service", pressed: false })).toBeTruthy();
+    // Price and unit share a line under one label, so the unit control carries
+    // its own name.
+    expect(screen.getByLabelText("Price per unit in KSH")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Unit" })).toBeTruthy();
+  });
+
+  it("uses the voucher's chosen currency and the issuer's profile photo by default", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    mocks.detailResult.data = detail({ voucherUoa: "KES" });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    expect(screen.getByLabelText("Price per unit in KES")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Update photo" })).toBeTruthy();
+    expect(
+      document.body.querySelector('img[src="https://cdn.test/profile/avatar.webp"]'),
+    ).toBeTruthy();
+  });
+
+  it("searches the units instead of listing fifteen chips", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    // Closed, the list offers nothing — the fifteen units are behind a search.
+    expect(screen.queryByRole("option", { name: "Kilogram" })).toBeNull();
+
+    const unit = screen.getByRole("combobox", { name: "Unit" });
+    await act(async () => {
+      fireEvent.focus(unit);
+    });
+    await act(async () => {
+      fireEvent.change(unit, { target: { value: "kilo" } });
+    });
+
+    const option = screen.getByRole("option", { name: "Kilogram" });
+    expect(screen.queryByRole("option", { name: "Session" })).toBeNull();
+
+    await act(async () => {
+      fireEvent.click(option);
+    });
+    expect((unit as HTMLInputElement).value).toBe("Kilogram");
+  });
+});
+
+describe("VoucherDetailPage voucher details editor", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+  const savedProfile = {
+    description: "Fresh produce and household goods.",
+    voucherUoa: "KSH",
+    voucherValue: 10,
+    email: "issuer@example.org",
+    website: "https://example.org",
+    phone: "+254700000000",
+    terms: "https://example.org/terms",
+    locationName: "C96, KEN",
+    geoLat: -1.450979,
+    geoLng: 38.235115,
+    tags: ["Agriculture"],
+  };
+
+  beforeEach(() => {
+    mocks.updateProfile.mockReset();
+    mocks.updateProfile.mockResolvedValue(detail({ name: "Malii Fresh" }));
+  });
+
+  it("offers the editor only to the voucher's owner, and only on the Info tab", () => {
+    mocks.auth.session = { address: OTHER, chainId: 42220 };
+    const stranger = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
+    stranger.unmount();
+
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    const owner = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+    owner.unmount();
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
+  });
+
+  it("lets a superadmin edit a voucher they do not own", () => {
+    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
+  });
+
+  it("opens the stored record in a sheet and saves the whole profile", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByLabelText("Display name")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+    const name = within(dialog).getByLabelText("Display name") as HTMLInputElement;
+    expect(name.value).toBe("Priscilah Malii");
+    expect(
+      (within(dialog).getByLabelText("Voucher Description") as HTMLTextAreaElement).value,
+    ).toBe("Fresh produce and household goods.");
+    expect((within(dialog).getByLabelText("Terms URL") as HTMLInputElement).value).toBe(
+      "https://example.org/terms",
+    );
+    expect(within(dialog).getByText("C96, KEN")).toBeTruthy();
+
+    fireEvent.change(name, { target: { value: "Malii Fresh" } });
+    fireEvent.change(within(dialog).getByLabelText("Contact Email"), { target: { value: "" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() =>
+      expect(mocks.updateProfile).toHaveBeenCalledWith({
+        ...savedProfile,
+        displayName: "Malii Fresh",
+        email: "",
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  // The label is an override, and an ordinary metadata save must not create one.
+  it("leaves an untouched display name and logo out of the write", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Voucher Description"), {
+      target: { value: "Fresh produce, household goods and airtime." },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    const written = mocks.updateProfile.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(written.description).toBe("Fresh produce, household goods and airtime.");
+    expect("displayName" in written).toBe(false);
+    expect("iconUrl" in written).toBe(false);
+  });
+
+  it("clears an override when the owner restores the immutable contract name", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    mocks.detailResult.data = detail({
+      name: "Malii Fresh",
+      contractName: "Priscilah Malii",
+    });
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Display name"), {
+      target: { value: "Priscilah Malii" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({ displayName: "" });
+  });
+
+  it("does not write a blank display name", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    fireEvent.change(within(dialog).getByLabelText("Display name"), { target: { value: "   " } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    expect((await within(dialog).findByRole("alert")).textContent).toBe("Display name is required");
+    expect(mocks.updateProfile).not.toHaveBeenCalled();
+  });
+});
+
+describe("VoucherDetailPage contract controls", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  it("shows signed contract controls only to the connected voucher owner", () => {
+    const visitor = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByLabelText("Voucher controls")).toBeNull();
+    visitor.unmount();
+
+    mocks.address = OWNER.toUpperCase();
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    const controls = screen.getByLabelText("Voucher controls");
+    expect(within(controls).getByRole("button", { name: "Create vouchers" })).toBeTruthy();
+    expect(within(controls).getByRole("button", { name: "Transfer ownership" })).toBeTruthy();
+  });
+
+  it("converts the entered amount and relays a mint through the active owner", async () => {
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Create vouchers" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Create vouchers"), {
+      target: { value: "12.34" },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create vouchers" }));
+
+    await waitFor(() =>
+      expect(mocks.createVouchers).toHaveBeenCalledWith({
+        tokenAddress: ADDRESS,
+        ownerAddress: OWNER,
+        amountRaw: "1234",
+        includeAuthorization: false,
+      }),
+    );
+  });
+
+  it("relays ownership transfer with the authorization when delegation is needed", async () => {
+    mocks.address = OWNER;
+    mocks.delegationStatus = "not-delegated";
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Transfer ownership" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("New owner address"), {
+      target: { value: OTHER },
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Transfer ownership" }));
+
+    await waitFor(() =>
+      expect(mocks.transferOwnership).toHaveBeenCalledWith({
+        tokenAddress: ADDRESS,
+        ownerAddress: OWNER,
+        newOwnerAddress: OTHER,
+        includeAuthorization: true,
+      }),
+    );
   });
 });

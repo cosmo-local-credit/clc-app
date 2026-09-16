@@ -2,7 +2,9 @@ import { decodeFunctionData } from "viem";
 import { describe, expect, it, vi } from "vite-plus/test";
 import {
   buildVoucherMintCall,
+  buildVoucherOwnershipTransferCall,
   giftableTokenMintToAbi,
+  giftableTokenOwnershipAbi,
   toVoucherDeployPayload,
   voucherCreateSchema,
   voucherMintAmountSchema,
@@ -18,6 +20,7 @@ const validVoucher: VoucherCreateInput = {
   voucherType: "standard",
   expiryDate: "",
   decimals: "6",
+  supply: "1000",
   location: {
     locationName: "Kilifi, Kenya",
     country: "KE",
@@ -29,6 +32,8 @@ const validVoucher: VoucherCreateInput = {
   website: "https://kilifi.example",
   phone: "+254712345678",
   terms: "https://kilifi.example/terms",
+  iconUrl: "",
+  bannerUrl: "",
   acceptedTerms: true,
   acceptedPathLicense: true,
 };
@@ -36,6 +41,15 @@ const validVoucher: VoucherCreateInput = {
 describe("voucherCreateSchema", () => {
   it("accepts the standard voucher defaults without an expiration date", () => {
     expect(voucherCreateSchema.safeParse(validVoucher).success).toBe(true);
+  });
+
+  it("accepts currencies beyond the former three-option list", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, unitOfAccount: "TZS" }).success).toBe(
+      true,
+    );
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, unitOfAccount: "EUR" }).success).toBe(
+      true,
+    );
   });
 
   it("requires an expiration date for an expiring voucher", () => {
@@ -84,19 +98,6 @@ describe("voucherCreateSchema", () => {
     ).toBe(false);
   });
 
-  it("accepts only blank or valid HTTP terms URLs", () => {
-    expect(voucherCreateSchema.safeParse({ ...validVoucher, terms: "" }).success).toBe(true);
-    expect(
-      voucherCreateSchema.safeParse({
-        ...validVoucher,
-        terms: "https://kilifi.example/terms",
-      }).success,
-    ).toBe(true);
-    expect(
-      voucherCreateSchema.safeParse({ ...validVoucher, terms: "kilifi.example/terms" }).success,
-    ).toBe(false);
-  });
-
   it("requires both legal agreements", () => {
     const withoutTerms = voucherCreateSchema.safeParse({ ...validVoucher, acceptedTerms: false });
     const withoutPathLicense = voucherCreateSchema.safeParse({
@@ -106,6 +107,53 @@ describe("voucherCreateSchema", () => {
 
     expect(withoutTerms.success).toBe(false);
     expect(withoutPathLicense.success).toBe(false);
+  });
+
+  it("accepts blank or HTTP voucher image URLs", () => {
+    expect(voucherCreateSchema.safeParse(validVoucher).success).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({
+        ...validVoucher,
+        iconUrl: "https://cdn.example/voucher/icon.webp",
+        bannerUrl: "http://cdn.example/voucher/banner.webp",
+      }).success,
+    ).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, iconUrl: "data:image/png;base64,abc" })
+        .success,
+    ).toBe(false);
+  });
+});
+
+describe("voucherCreateSchema terms", () => {
+  it("accepts a link, written Markdown, or nothing", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, terms: "" }).success).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, terms: "# Rules\n\nMarket days only." })
+        .success,
+    ).toBe(true);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, terms: "x".repeat(5001) }).success,
+    ).toBe(false);
+  });
+});
+
+describe("voucherCreateSchema supply", () => {
+  it("requires an opening supply that fits the voucher's decimals", () => {
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, supply: "" }).success).toBe(false);
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, supply: "0" }).success).toBe(false);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, decimals: "0", supply: "1.5" }).success,
+    ).toBe(false);
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, decimals: "2", supply: "1.5" }).success,
+    ).toBe(true);
+  });
+
+  it("keeps the supply out of the deploy payload", () => {
+    expect(
+      toVoucherDeployPayload(validVoucher, "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d"),
+    ).not.toHaveProperty("supply");
   });
 });
 
@@ -135,6 +183,22 @@ describe("toVoucherDeployPayload", () => {
     expect(
       toVoucherDeployPayload(validVoucher, "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d").terms,
     ).toBe("https://kilifi.example/terms");
+  });
+
+  it("maps uploaded voucher images into the deploy payload", () => {
+    const payload = toVoucherDeployPayload(
+      {
+        ...validVoucher,
+        iconUrl: "https://cdn.example/voucher/icon.webp",
+        bannerUrl: "https://cdn.example/voucher/banner.webp",
+      },
+      "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+    );
+
+    expect(payload).toMatchObject({
+      iconUrl: "https://cdn.example/voucher/icon.webp",
+      bannerUrl: "https://cdn.example/voucher/banner.webp",
+    });
   });
 
   it("sends the live deploy worker a Unix expiry timestamp", () => {
@@ -195,5 +259,21 @@ describe("buildVoucherMintCall", () => {
     for (const amountRaw of ["0", "-1", "1.5", "", "1e6"]) {
       expect(() => buildVoucherMintCall({ tokenAddress, ownerAddress, amountRaw })).toThrow();
     }
+  });
+});
+
+describe("buildVoucherOwnershipTransferCall", () => {
+  const tokenAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
+  const newOwnerAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as const;
+
+  it("uses GiftableToken's inherited transferOwnership selector", () => {
+    const call = buildVoucherOwnershipTransferCall({ tokenAddress, newOwnerAddress });
+
+    expect(call.to).toBe(tokenAddress);
+    expect(call.value).toBe("0");
+    expect(decodeFunctionData({ abi: giftableTokenOwnershipAbi, data: call.data })).toEqual({
+      functionName: "transferOwnership",
+      args: [newOwnerAddress],
+    });
   });
 });

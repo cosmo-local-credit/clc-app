@@ -10,6 +10,7 @@ const submittedVoucher = {
   voucherType: "standard" as const,
   expiryDate: "",
   decimals: "6",
+  supply: "1000",
   location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
   tags: ["Agriculture"],
   email: "issuer@example.org",

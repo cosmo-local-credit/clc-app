@@ -1,22 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
-import { getProfile } from "#/features/auth/api/client";
+import { profileQueryOptions } from "@clc/api/features/auth/queries";
+import { authClient } from "#/lib/api/auth";
 
-export const authProfileQueryKeys = {
-  all: ["auth", "profile"] as const,
-  current: (address: string | undefined) =>
-    [...authProfileQueryKeys.all, address?.toLowerCase() ?? "none"] as const,
-};
-
+/**
+ * This app's profile read.
+ *
+ * Key and fetcher come from `@clc/api` so the console shares them; the two options
+ * added here are web-only. `enabled` because a profile cannot be requested before a
+ * wallet is connected, and `retry: false` because the failure that matters is a 404
+ * for an address with no profile yet — replaying it just delays the signup prompt.
+ */
 export function useAuthProfile() {
   const { address } = useConnection();
 
   return useQuery({
-    queryKey: authProfileQueryKeys.current(address),
-    queryFn: getProfile,
+    ...profileQueryOptions(authClient, address),
     enabled: !!address,
-    staleTime: 60_000,
     retry: false,
   });
 }

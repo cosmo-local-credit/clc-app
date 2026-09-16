@@ -34,7 +34,7 @@ import {
 } from "#/components/ui/sheet";
 import { SelectableTagBadge } from "#/components/ui/tag-badge";
 import { Toggle } from "#/components/ui/toggle";
-import type { MarketVoucher } from "#/features/home/api/market-client";
+import type { MarketVoucher } from "@clc/api/features/market/client";
 import {
   VOUCHER_SEARCH_MIN_CHARS,
   type VoucherSearchControls,

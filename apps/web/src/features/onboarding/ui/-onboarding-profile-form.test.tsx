@@ -1,9 +1,22 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate } = vi.hoisted(() => ({
+const { mockNavigate, mockResolvePreferredCurrency } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
+  mockResolvePreferredCurrency: vi.fn(),
 }));
+
+// Uploads are offered only where the service is configured, and the test env has
+// no VITE_STORAGE_URL, so the photo control is switched on explicitly here.
+vi.mock("#/lib/api/storage", () => ({
+  isStorageConfigured: true,
+  storageClient: () => ({ upload: vi.fn() }),
+}));
+
+vi.mock("#/lib/profile-currency", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/lib/profile-currency")>();
+  return { ...actual, resolvePreferredCurrency: mockResolvePreferredCurrency };
+});
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
@@ -101,7 +114,10 @@ vi.mock("#/components/ui/location-picker", () => ({
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
-function renderForm(onNext: (data: ProfileInput) => void = vi.fn(), initialValues?: ProfileInput) {
+function renderForm(
+  onNext: (data: ProfileInput, avatarFile: File | null) => void = vi.fn(),
+  initialValues?: ProfileInput,
+) {
   return render(
     <OnboardingProfileForm
       onNext={onNext}
@@ -114,14 +130,19 @@ function renderForm(onNext: (data: ProfileInput) => void = vi.fn(), initialValue
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockResolvePreferredCurrency.mockReset();
+  mockResolvePreferredCurrency.mockResolvedValue("USD");
 });
 
 describe("OnboardingProfileForm rendering", () => {
-  it("renders name, email, phone, and location fields", () => {
+  it("renders contact, profile, currency, and location fields", () => {
     renderForm();
     expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(screen.getByTestId("phone-input")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     expect(screen.getByTestId("location-picker")).toBeTruthy();
     expect(screen.queryByTestId("country-select")).toBeNull();
   });
@@ -179,6 +200,9 @@ describe("OnboardingProfileForm submission", () => {
       expect.objectContaining<Partial<ProfileInput>>({
         name: "Alice",
         email: "alice@example.com",
+        preferredCurrency: "KES",
+        bio: "",
+        website: "",
         location: {
           lat: -1.2921,
           lng: 36.8219,
@@ -186,6 +210,41 @@ describe("OnboardingProfileForm submission", () => {
           country: "KE",
         },
       }),
+      // The photo travels beside the validated profile: it cannot be part of it,
+      // because profileSchema lives in @clc/core and cannot name a File.
+      null,
+    );
+  });
+
+  it("keeps a location currency when the network suggestion arrives later", async () => {
+    let resolveNetworkCurrency: (currency: string) => void = () => undefined;
+    mockResolvePreferredCurrency.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveNetworkCurrency = resolve;
+        }),
+    );
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      resolveNetworkCurrency("USD");
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
+      null,
     );
   });
 
@@ -259,6 +318,9 @@ describe("OnboardingProfileForm value restoration", () => {
       name: "Alice",
       email: "alice@example.com",
       phone: "",
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://alice.example",
       location: {
         lat: -1.2921,
         lng: 36.8219,
@@ -280,5 +342,55 @@ describe("OnboardingProfileForm value restoration", () => {
     renderForm();
     expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe("");
     expect(screen.getByText("No location")).toBeTruthy();
+  });
+});
+
+describe("OnboardingProfileForm photo", () => {
+  beforeEach(() => {
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: vi.fn(() => "blob:preview"),
+      revokeObjectURL: vi.fn(),
+    });
+  });
+
+  it("offers a photo alongside the identity fields", () => {
+    renderForm();
+
+    expect(screen.getByRole("button", { name: /add a photo/i })).toBeTruthy();
+  });
+
+  it("carries the chosen photo out with the validated profile", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext);
+
+    // The identity fields first: the frame is modal, so nothing behind it is
+    // reachable while a photo is being positioned.
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    const photo = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
+    fireEvent.change(screen.getByLabelText("Choose a profile photo"), {
+      target: { files: [photo] },
+    });
+    // Selection opens the frame; the photo reaches the form only once framed.
+    await waitFor(() => expect(document.querySelector('[role="group"] img')).toBeTruthy());
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Use photo" }));
+    });
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    // Beside the profile, not inside it: the schema is shared with @clc/core and
+    // cannot name a File. jsdom has no createImageBitmap, so the encode falls
+    // back to the original file — which is the same object identity here.
+    expect(mockOnNext).toHaveBeenCalledWith(expect.objectContaining({ name: "Alice" }), photo);
   });
 });

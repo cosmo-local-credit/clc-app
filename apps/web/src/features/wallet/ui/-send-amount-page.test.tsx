@@ -112,6 +112,78 @@ describe("SendAmountPage", () => {
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("seeds the amount from a shortcut that already chose one", async () => {
+    // What the post-swap "Send" button hands this screen: token and amount both
+    // decided, leaving only the recipient.
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" amount="12.50" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    const input = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    expect(input.value).toBe("12.50");
+    expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(false);
+
+    // Seeded, not controlled: typing over it must stick.
+    fireEvent.change(input, { target: { value: "3" } });
+    expect(input.value).toBe("3");
+  });
+
+  it("focuses the amount when the tile around it is pressed", async () => {
+    // `field-sizing:content` leaves an empty input a few pixels wide, so the
+    // card has to be the hit target or the field is unfindable.
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    const maxButton = await screen.findByRole("button", { name: /use max · 245/i });
+    const input = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    const tile = maxButton.parentElement as HTMLElement;
+
+    input.blur();
+    expect(document.activeElement).not.toBe(input);
+
+    fireEvent.pointerDown(tile);
+    expect(document.activeElement).toBe(input);
+
+    // A press that lands on the tile's own button is left alone.
+    input.blur();
+    fireEvent.pointerDown(maxButton);
+    expect(document.activeElement).not.toBe(input);
+  });
+
+  it("carries the originating pool through to the receipt", async () => {
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage
+        token={USDC}
+        recipient={RECIPIENT}
+        recipientLabel="Trade Pool"
+        returnPool={RECIPIENT}
+      />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), { target: { value: "5" } });
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and send/i }));
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/wallet/send/receipt",
+        search: {
+          trackingId: "tracking-1",
+          recipient: RECIPIENT,
+          amount: "5",
+          symbol: "USDC",
+          returnPool: RECIPIENT,
+        },
+      });
+    });
+  });
+
   it("preselects the token passed via the search param", async () => {
     mockTokens();
     renderWithQueryClient(<SendAmountPage token={BABAS} />);

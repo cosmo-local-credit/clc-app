@@ -1,44 +1,43 @@
+import {
+  managedVoucherOfferingsInfiniteQueryOptions,
+  poolOfferingsInfiniteQueryOptions,
+  voucherOfferingsInfiniteQueryOptions,
+} from "@clc/api/features/offerings/queries";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import {
-  type OfferingPage,
-  getPoolOfferings,
-  getVoucherOfferings,
-} from "#/features/home/api/offerings-client";
 import { MARKET_QUERY_FRESHNESS } from "#/features/home/hooks/use-market-vouchers";
+import { offeringsClient } from "#/lib/api/offerings";
 
 /** The imported catalog's largest single-voucher offering count is 19. */
 const VOUCHER_OFFERINGS_PAGE_SIZE = 20;
-
-const voucherOfferingQueryKeys = {
-  all: ["voucher-offerings"] as const,
-  byVoucher: (voucherAddress: string | undefined) =>
-    [...voucherOfferingQueryKeys.all, voucherAddress?.toLowerCase() ?? "none"] as const,
-  byPool: (poolAddress: string | undefined) =>
-    [...voucherOfferingQueryKeys.all, "pool", poolAddress?.toLowerCase() ?? "none"] as const,
-};
 
 export function useVoucherOfferingsInfinite(
   voucherAddress: string | undefined,
   perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
 ) {
   return useInfiniteQuery({
-    queryKey: voucherOfferingQueryKeys.byVoucher(voucherAddress),
-    queryFn: ({ pageParam, signal }) =>
-      getVoucherOfferings(
-        requireAddress(voucherAddress),
-        {
-          perPage,
-          cursor: pageParam,
-          next: pageParam === undefined ? undefined : true,
-        },
-        signal,
-      ),
-    enabled: !!voucherAddress,
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: nextCursor(perPage),
+    ...voucherOfferingsInfiniteQueryOptions(offeringsClient, voucherAddress, perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
+}
+
+/**
+ * The same rows, read by the voucher's own issuer.
+ *
+ * A separate query with `cache: "no-store"`, not a flag on the one above. The
+ * public endpoint is cached `public, max-age=60, stale-while-revalidate=300`,
+ * which is correct for browsing and wrong for the person editing the list: a
+ * refetch after a write can be answered from the browser's HTTP cache with the
+ * body from before it. `MARKET_QUERY_FRESHNESS` is deliberately not applied —
+ * that staleness budget is for a market screen, and this one is authoritative.
+ */
+export function useManagedVoucherOfferingsInfinite(
+  voucherAddress: string | undefined,
+  perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
+) {
+  return useInfiniteQuery(
+    managedVoucherOfferingsInfiniteQueryOptions(offeringsClient, voucherAddress, perPage),
+  );
 }
 
 /**
@@ -53,39 +52,7 @@ export function usePoolOfferingsInfinite(
   perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
 ) {
   return useInfiniteQuery({
-    queryKey: voucherOfferingQueryKeys.byPool(poolAddress),
-    queryFn: ({ pageParam, signal }) =>
-      getPoolOfferings(
-        requireAddress(poolAddress),
-        {
-          perPage,
-          cursor: pageParam,
-          next: pageParam === undefined ? undefined : true,
-        },
-        signal,
-      ),
-    enabled: !!poolAddress,
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: nextCursor(perPage),
+    ...poolOfferingsInfiniteQueryOptions(offeringsClient, poolAddress, perPage),
     ...MARKET_QUERY_FRESHNESS,
   });
-}
-
-/**
- * Stop on a short page measured by rows the backend sent, on an empty-page zero
- * cursor, and on a cursor that failed to strictly decrease — the last of which
- * would otherwise page forever against a misbehaving backend.
- */
-function nextCursor(perPage: number) {
-  return (lastPage: OfferingPage, allPages: OfferingPage[]): number | undefined => {
-    if (lastPage.receivedCount < perPage || lastPage.last === 0) return undefined;
-    const previous = allPages.at(-2);
-    if (previous && lastPage.last >= previous.last) return undefined;
-    return lastPage.last;
-  };
-}
-
-function requireAddress(address: string | undefined): string {
-  if (!address) throw new Error("Address is required.");
-  return address;
 }

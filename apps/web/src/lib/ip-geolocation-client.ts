@@ -18,6 +18,11 @@ export type IPCamera = {
   source: IPCameraSource;
 };
 
+type MapTilerIPLocation = {
+  camera: IPCamera | null;
+  country: string | null;
+};
+
 /** An IP city is coarse, so it gets a slightly wider camera than a real fix. */
 const IP_CITY_ZOOM = 11;
 const COUNTRY_DEFAULT_ZOOM = 12;
@@ -41,33 +46,53 @@ export const NAIROBI_DEFAULT_CAMERA: IPCamera = {
 };
 
 export async function resolveIPCamera(signal?: AbortSignal): Promise<IPCamera> {
-  const city = await fetchMapTilerCity(signal);
-  if (city) return city;
+  const mapTiler = await fetchMapTilerLocation(signal);
+  if (mapTiler.camera) return mapTiler.camera;
 
-  const country = (await fetchCloudflareCountry(signal)) ?? readDefaultCountry();
+  const country =
+    mapTiler.country ?? (await fetchCloudflareCountry(signal)) ?? readDefaultCountry();
   return countryCamera(country);
 }
 
-async function fetchMapTilerCity(signal?: AbortSignal): Promise<IPCamera | null> {
+/**
+ * Resolves the ISO country supplied by the same IP sources as the map camera.
+ *
+ * This is deliberately a coarse suggestion, never a claim about where a person
+ * lives. Consumers must keep the resulting choice editable.
+ */
+export async function resolveIPCountry(signal?: AbortSignal): Promise<string | null> {
+  const mapTiler = await fetchMapTilerLocation(signal);
+  return mapTiler.country ?? (await fetchCloudflareCountry(signal)) ?? readDefaultCountry();
+}
+
+async function fetchMapTilerLocation(signal?: AbortSignal): Promise<MapTilerIPLocation> {
   const key = readEnv("VITE_MAPTILER_KEY");
-  if (!key) return null;
+  if (!key) return { camera: null, country: null };
 
   try {
     const response = await fetch(
       `https://api.maptiler.com/geolocation/ip.json?key=${encodeURIComponent(key)}`,
       { signal },
     );
-    if (!response.ok) return null;
+    if (!response.ok) return { camera: null, country: null };
 
     const body = (await response.json()) as unknown;
-    if (typeof body !== "object" || body === null || Array.isArray(body)) return null;
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return { camera: null, country: null };
+    }
 
-    const { latitude, longitude } = body as Record<string, unknown>;
-    if (!isCoordinate(latitude, 90) || !isCoordinate(longitude, 180)) return null;
+    const { latitude, longitude, country_code: countryCode } = body as Record<string, unknown>;
+    const country = normalizeCountryCode(countryCode);
+    if (!isCoordinate(latitude, 90) || !isCoordinate(longitude, 180)) {
+      return { camera: null, country };
+    }
 
-    return { lat: latitude, lng: longitude, zoom: IP_CITY_ZOOM, source: "ip-city" };
+    return {
+      camera: { lat: latitude, lng: longitude, zoom: IP_CITY_ZOOM, source: "ip-city" },
+      country,
+    };
   } catch {
-    return null;
+    return { camera: null, country: null };
   }
 }
 
@@ -80,7 +105,7 @@ async function fetchCloudflareCountry(signal?: AbortSignal): Promise<string | nu
     for (const line of trace.split("\n")) {
       const [field, value] = line.split("=");
       if (field?.trim() !== "loc") continue;
-      const code = value?.trim().toUpperCase();
+      const code = normalizeCountryCode(value);
       // Cloudflare emits XX / T1 when it cannot determine a country.
       if (!code || code === "XX" || code === "T1") return null;
       return code;
@@ -98,7 +123,7 @@ function countryCamera(country: string | null): IPCamera {
 }
 
 function readDefaultCountry(): string | null {
-  return readEnv("VITE_DEFAULT_COUNTRY")?.toUpperCase() ?? null;
+  return normalizeCountryCode(readEnv("VITE_DEFAULT_COUNTRY"));
 }
 
 function readEnv(name: "VITE_MAPTILER_KEY" | "VITE_DEFAULT_COUNTRY"): string | null {
@@ -108,4 +133,10 @@ function readEnv(name: "VITE_MAPTILER_KEY" | "VITE_DEFAULT_COUNTRY"): string | n
 
 function isCoordinate(value: unknown, bound: number): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= -bound && value <= bound;
+}
+
+function normalizeCountryCode(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const country = value.trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(country) ? country : null;
 }

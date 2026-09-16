@@ -3,9 +3,9 @@ import { useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
-import type { PoolTagFacet, PoolVoucherFacet } from "#/features/pools/api/pools-client";
+import type { PoolTagFacet, PoolVoucherFacet } from "@clc/api/features/pools/client";
 import { FilteredPoolsTooLargeError } from "#/features/pools/hooks/use-filtered-pools";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 
@@ -72,11 +72,11 @@ export function PoolFilterFeedback({
         onAction: filter.clear,
       };
     }
-    if (error instanceof BackendApiError && error.status === 429) {
+    if (error instanceof BackendApiError && error.kind === "rate-limited") {
       return { message: t`Too many searches. Try again in a moment.` };
     }
 
-    if (error instanceof BackendApiError && error.status === 400) {
+    if (error instanceof BackendApiError && error.kind === "validation") {
       return {
         message: t`These filters aren't valid.`,
         actionLabel: t`Clear filters`,

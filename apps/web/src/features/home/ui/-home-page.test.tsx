@@ -3,6 +3,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { getStoredKey, storePrivateKey } from "#/connectors/privateKey";
+import { getWebAuthnCredential, storeWebAuthnCredential } from "#/lib/webauthn-storage";
+
+const PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" as const;
+
 const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
   vi.hoisted(() => ({
     mockAbortWalletSwitch: vi.fn(),
@@ -21,7 +26,6 @@ vi.mock("#/features/auth/hooks/use-auth-session", () => ({
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
-  GUEST_LOCATION_OWNER: "guest",
   clearPersistedLocation: mockClearPersistedLocation,
 }));
 
@@ -95,6 +99,7 @@ function renderHome(ui: ReactNode) {
 }
 
 beforeEach(() => {
+  localStorage.clear();
   mockAbortWalletSwitch.mockClear();
   mockClearPersistedLocation.mockClear();
   mockBackendLogout.mockReset();
@@ -196,6 +201,49 @@ describe("HomePage sign-out", () => {
     await waitFor(() => {
       expect(mockClearPersistedLocation).toHaveBeenCalledTimes(1);
     });
+  });
+
+  // The credential clear used to be a side effect of the connector's
+  // `disconnect()`, which sign-out swallows — so a dead connector dropped the
+  // user to guest while leaving a raw private key on a shared device.
+  it("clears both credentials even when logout and disconnect both reject", async () => {
+    storePrivateKey(PRIVATE_KEY);
+    storeWebAuthnCredential({
+      credentialId: "credential-1",
+      keyHash: "0xhash" as const,
+      publicKeyX: "0x1",
+      publicKeyY: "0x2",
+      address: "0xa316408425cf17f1827483dee621c6c3a9b5fad4" as const,
+    });
+    mockBackendLogout.mockRejectedValueOnce(new Error("network down"));
+    mockDisconnect.mockRejectedValueOnce(new Error("connector gone"));
+
+    renderHome(<HomePage activeTab="settings" />);
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(getStoredKey()).toBeNull();
+    });
+    expect(getWebAuthnCredential()).toBeNull();
+  });
+
+  it("clears the credentials before awaiting the backend, not after", async () => {
+    storePrivateKey(PRIVATE_KEY);
+    let keyAtLogout: string | null = "not-observed";
+    mockBackendLogout.mockImplementationOnce(() => {
+      keyAtLogout = getStoredKey();
+      return Promise.resolve();
+    });
+
+    renderHome(<HomePage activeTab="settings" />);
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+
+    await waitFor(() => {
+      expect(mockBackendLogout).toHaveBeenCalled();
+    });
+    // Already gone by the time the first `await` runs, so no later failure can
+    // leave it behind.
+    expect(keyAtLogout).toBeNull();
   });
 });
 

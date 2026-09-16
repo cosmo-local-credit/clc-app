@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "@tanstack/react-router";
-import { RiFileCopyLine } from "react-icons/ri";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -13,8 +13,10 @@ import {
   SuccessCheck,
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
-import { RELAYER_URL } from "#/lib/backend-config";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
+import { RELAYER_URL } from "#/lib/relayer-config";
+import { CHAIN_INFO } from "#/lib/chain";
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
@@ -24,6 +26,7 @@ export type SwapReceiptSearch = {
   sendSymbol?: string;
   receiveAmount?: string;
   receiveSymbol?: string;
+  receiveToken?: string;
   poolName?: string;
 };
 
@@ -53,6 +56,15 @@ export function SwapReceiptPage({
       replace: true,
     });
   };
+  // Sending what was just swapped out is the common next step, so the receipt
+  // hands the send flow its token and amount already chosen and the user only
+  // picks a recipient. Offered only once the swap confirmed and only when the
+  // received token is known — a prefill missing either half would silently open
+  // the flow on some other voucher.
+  const sendReceived =
+    details.receiveToken && details.receiveAmount
+      ? { token: details.receiveToken, amount: details.receiveAmount }
+      : null;
 
   if (!details.trackingId) {
     return (
@@ -97,7 +109,7 @@ export function SwapReceiptPage({
   }
 
   const txHash = outcome.otx.txHash || null;
-  const explorerUrl = txHash ? `https://celoscan.io/tx/${txHash}` : null;
+  const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
   const submittedAt = outcome.otx.createdAt || null;
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -147,7 +159,7 @@ export function SwapReceiptPage({
           </ReceiptRow>
         ) : null}
         <ReceiptRow label={<Trans>Network</Trans>}>
-          <span className="text-xs font-semibold">Celo</span>
+          <span className="text-xs font-semibold">{CHAIN_INFO.name}</span>
         </ReceiptRow>
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
@@ -159,14 +171,26 @@ export function SwapReceiptPage({
         <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
       </div>
       <div className="flex-1" />
+      {sendReceived ? (
+        <Button asChild className="mb-2.5 h-11 w-full">
+          <Link to="/wallet/send" search={sendReceived}>
+            <RiSendPlane2Line className="size-4" aria-hidden="true" />
+            <Trans>Send {details.receiveSymbol}</Trans>
+          </Link>
+        </Button>
+      ) : null}
       <div className="flex gap-3">
-        <Button className="h-11 flex-1" onClick={exitReceipt}>
+        <Button
+          className="h-11 flex-1"
+          variant={sendReceived ? "outline" : "default"}
+          onClick={exitReceipt}
+        >
           <Trans>Done</Trans>
         </Button>
         {explorerUrl ? (
           <Button asChild className="h-11 flex-1" variant="outline">
             <a href={explorerUrl} rel="noopener noreferrer" target="_blank">
-              Celoscan
+              {CHAIN_INFO.explorerName}
             </a>
           </Button>
         ) : null}

@@ -22,15 +22,16 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
-import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
+import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { authSessionQueryKey } from "#/features/auth/hooks/use-auth-status";
 import { onboardingSearch } from "#/lib/onboarding-search";
-import { createRelayerClient } from "#/features/webauthn/api/relayer-client";
+import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
-import { RELAYER_URL } from "#/lib/backend-config";
-import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
+import { RELAYER_URL } from "#/lib/relayer-config";
+import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { ApprovalPending, ApprovalRejected } from "./auth-states";
 import { sanitizeInternalRedirect } from "./redirect";
@@ -105,11 +106,11 @@ export function SignInPanel({
 
   function handleBackendError(err: unknown, retry?: () => void) {
     if (err instanceof BackendApiError) {
-      if (err.status === 404) {
+      if (err.kind === "not-found") {
         setAccountNotFoundOpen(true);
         return;
       }
-      if (err.status === 403) {
+      if (err.kind === "forbidden") {
         setRetryAction(() => retry ?? null);
         if (/reject/i.test(err.description) || err.code === "REJECTED") {
           setPanelState("approvalRejected");
@@ -149,7 +150,23 @@ export function SignInPanel({
     };
     try {
       await backendSignin.mutateAsync({ privateKey: key });
-      await dropActiveConnection();
+      // Before the disconnect, matching the passkey branch below and sign-out.
+      // `dropActiveConnection` clears only the outgoing connector's own slot, so
+      // this is what removes the other kind — a passkey the previous user
+      // registered during a paper-wallet session, which would otherwise let the
+      // next person sign in as them. Sequenced after the await, a rejecting
+      // connector skipped it entirely and the catch below clears only the
+      // private key, so the leak survived exactly when teardown mattered most.
+      clearIdentitySecrets("none");
+      try {
+        await dropActiveConnection();
+      } catch {
+        // Swallowed so it cannot skip the clear above. wagmi may still hold the
+        // old connector, in which case `connectAction` rejects with
+        // ConnectorAlreadyConnected and the catch surfaces that to the user —
+        // a visible failed sign-in, not a silently inherited credential.
+      }
+      // After the clear, which would otherwise wipe the slot being written.
       storePrivateKey(key);
       await connectAction(wagmiConfig, { connector: pkConnector });
       setPkInput("");
@@ -176,6 +193,12 @@ export function SignInPanel({
     };
     try {
       await signin.mutateAsync();
+      // After the mutation, not before: `useCaliburSignin` writes the credential
+      // inside it, so clearing earlier would delete the one just minted. Outside
+      // the branch below, because the already-on-Calibur path never disconnects
+      // and would otherwise leave a previous user's `clc_pk_raw` untouched. Only
+      // on success, so a failed assertion never destroys the incumbent's key.
+      clearIdentitySecrets("webauthn");
       // Already on the passkey connector (e.g. expired-cookie re-auth): the
       // fresh assertion refreshed the session, no reconnect needed. Otherwise
       // drop any other active connector and connect Calibur.

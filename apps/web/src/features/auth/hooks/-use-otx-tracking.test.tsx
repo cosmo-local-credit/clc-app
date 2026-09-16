@@ -3,8 +3,9 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import type { OtxTrackingOutcome, OtxTrackResult } from "#/features/auth/api/client";
-import { RelayerError } from "#/features/webauthn/api/relayer-client";
+import type { OtxTrackingOutcome, OtxTrackResult } from "@clc/api/features/auth/client";
+import { BackendApiError } from "@clc/api/client/errors";
+import { RelayerError } from "@clc/api/features/relayer/client";
 import { useOtxTracking } from "./use-otx-tracking";
 
 function createWrapper() {
@@ -84,5 +85,33 @@ describe("useOtxTracking", () => {
     });
 
     await waitFor(() => expect(result.current.outcome.kind).toBe("error"));
+  });
+
+  it("keeps a persistent relayer 404 pending instead of surfacing it as an error", async () => {
+    // The calibur flows poll the relayer, whose 404 is its own RelayerError, not a
+    // BackendApiError. Matching only the backend's error type would turn a row
+    // that has not been written yet into a failed delegation.
+    const queryFn = vi
+      .fn()
+      .mockRejectedValue(new RelayerError("not_found", "tracking id not found", 404));
+
+    const { result } = renderHook(() => useOtxTracking("tracking-1", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(queryFn).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.outcome).toEqual({ kind: "pending" });
+  });
+
+  it("keeps a persistent backend 404 pending, via the error taxonomy", async () => {
+    const queryFn = vi.fn().mockRejectedValue(new BackendApiError(404, "not written yet"));
+
+    const { result } = renderHook(() => useOtxTracking("tracking-2", { pollMs: 10, queryFn }), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.outcome).toEqual({ kind: "pending" });
   });
 });

@@ -1,8 +1,9 @@
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { storePrivateKey } from "#/connectors/privateKey";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import type { RelayerClient } from "./relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 const { requestWebAuthnAssertion } = vi.hoisted(() => ({
   requestWebAuthnAssertion: vi.fn(),
@@ -116,6 +117,11 @@ describe("relayCaliburBatch", () => {
       keyHash: `0x${"aa".repeat(32)}`,
       executor: RELAYER,
       deadline: "0",
+    });
+    expect(requestWebAuthnAssertion).toHaveBeenCalledWith({
+      publicKey: expect.objectContaining({
+        rpId: resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID),
+      }),
     });
     expect(client.relay).toHaveBeenCalledWith(
       expect.objectContaining({

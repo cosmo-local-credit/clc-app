@@ -2,7 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { ReportDetail } from "#/features/home/api/reports-client";
+import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 
 /**
  * Embla reads breakpoints and observes slide visibility and size on mount, and
@@ -65,6 +65,10 @@ const mocks = vi.hoisted(() => ({
     } as { locationName: string; country: string } | null | undefined,
   },
   useReportLocation: vi.fn(),
+  auth: {
+    isAuthenticated: false,
+    address: undefined as `0x${string}` | undefined,
+  },
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
@@ -75,6 +79,10 @@ vi.mock("#/features/home/hooks/use-reports", () => ({
       ? mocks.location
       : { data: undefined };
   },
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => mocks.auth,
 }));
 
 vi.mock("#/lib/default-maps", () => ({
@@ -115,6 +123,25 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { ReportPage } from "./report-page";
 
+/**
+ * One image row. The display box (`width`/`height`) is optional because uploads
+ * only ever record the intrinsic pair, so most rows carry nulls there.
+ */
+function reportImage(
+  url: string,
+  box: { width: number; height: number } | null = null,
+): ReportImage {
+  return {
+    url,
+    width: box?.width ?? null,
+    height: box?.height ?? null,
+    maxWidth: box?.width ?? null,
+    maxHeight: box?.height ?? null,
+    byteSize: null,
+    caption: null,
+  };
+}
+
 function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
   return {
     id: "3182",
@@ -132,19 +159,24 @@ function detail(overrides: Partial<ReportDetail> = {}): ReportDetail {
     tags: ["Food production"],
     vouchers: [
       {
+        id: "22",
+        chainId: 42220,
         address: "0x2222222222222222222222222222222222222222",
         name: "Kiriba",
         symbol: "KCH",
       },
     ],
     images: [
-      { url: "https://content.example/one.jpg", width: 800, height: 600 },
-      { url: "https://content.example/two.jpg", width: null, height: null },
-      { url: "https://content.example/three.jpg", width: null, height: null },
+      reportImage("https://content.example/one.jpg", { width: 800, height: 600 }),
+      reportImage("https://content.example/two.jpg"),
+      reportImage("https://content.example/three.jpg"),
     ],
+    attachments: [],
+    body: "",
     hostName: "Patricia Makau",
     participants: "7",
     timeTaken: "1 Hour",
+    status: null,
     ...overrides,
   };
 }
@@ -158,6 +190,7 @@ beforeEach(() => {
       country: "KE",
     },
   };
+  mocks.auth = { isAuthenticated: false, address: undefined };
   mocks.detail = { data: detail(), isPending: false, isError: false, refetch: vi.fn() };
 });
 
@@ -192,7 +225,7 @@ describe("ReportPage", () => {
 
   it("renders a single image as a plain frame with no inert controls", () => {
     mocks.detail.data = detail({
-      images: [{ url: "https://content.example/only.jpg", width: null, height: null }],
+      images: [reportImage("https://content.example/only.jpg")],
     });
     const { container } = render(<ReportPage reportId="3182" />);
 
@@ -226,6 +259,79 @@ describe("ReportPage", () => {
     expect(description.tagName).toBe("P");
     expect(description.className).toContain("text-[0.9375rem]");
     expect(description.className).not.toContain("bg-card");
+  });
+
+  // Description is feed copy, so it stays a plain paragraph; only `body` is
+  // markdown, and only 310 of the imported reports have one.
+  it("renders the markdown body after the description", () => {
+    mocks.detail.data = detail({
+      body: "## What happened\n\nSee the [ledger](https://ledger.example/august).",
+    });
+    render(<ReportPage reportId="3182" />);
+
+    const heading = screen.getByText("What happened");
+    expect(heading.tagName).toBe("H3");
+    expect(screen.getByRole("link", { name: "ledger" }).getAttribute("rel")).toBe(
+      "noopener noreferrer",
+    );
+  });
+
+  it("renders no body section when the report has no prose", () => {
+    render(<ReportPage reportId="3182" />);
+    expect(screen.queryByText("What happened")).toBeNull();
+  });
+
+  it("lists links with their kind, label and size", () => {
+    mocks.detail.data = detail({
+      attachments: [
+        {
+          kind: "FILE",
+          url: "https://content.example/harvest-notes.pdf",
+          filename: "harvest-notes.pdf",
+          byteSize: 81_920,
+        },
+        // No filename, so the host is the label: a bare CDN path says nothing
+        // and would not fit at 360px.
+        { kind: "EMBED", url: "https://player.example/clip/9", filename: null, byteSize: null },
+      ],
+    });
+    render(<ReportPage reportId="3182" />);
+
+    const file = screen.getByRole("link", { name: /harvest-notes\.pdf/ });
+    expect(file.getAttribute("href")).toBe("https://content.example/harvest-notes.pdf");
+    expect(file.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(file.textContent).toContain("File · 80 KB");
+
+    const embed = screen.getByRole("link", { name: /player\.example/ });
+    expect(embed.textContent).toContain("Link");
+    expect(embed.textContent).not.toContain("·");
+  });
+
+  it("renders no links section when the report has none", () => {
+    render(<ReportPage reportId="3182" />);
+    expect(screen.queryByText("Links")).toBeNull();
+  });
+
+  it("offers the author an edit shortcut at the top of their post", () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: "0x1111111111111111111111111111111111111111",
+    };
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.getByRole("link", { name: "Edit" }).getAttribute("href")).toBe(
+      "/posts/3182/edit",
+    );
+  });
+
+  it("does not show the edit shortcut to another reader", () => {
+    mocks.auth = {
+      isAuthenticated: true,
+      address: "0x2222222222222222222222222222222222222222",
+    };
+    render(<ReportPage reportId="3182" />);
+
+    expect(screen.queryByRole("link", { name: "Edit" })).toBeNull();
   });
 
   it("separates report details from header metadata and provenance", () => {

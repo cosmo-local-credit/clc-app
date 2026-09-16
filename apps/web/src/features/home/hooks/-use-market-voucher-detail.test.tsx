@@ -3,15 +3,22 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { MarketVoucherDetail } from "#/features/home/api/market-client";
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { voucherKeys } from "@clc/api/features/market/queries";
 import { marketVoucherDetailQuery, useMarketVoucherDetail } from "./use-market-voucher-detail";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/market-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
+vi.mock("@clc/api/features/market/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getMarketVoucher };
 });
+
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/market", async () => ({
+  marketClient: await import("@clc/api/features/market/client"),
+}));
 
 const CHECKSUMMED = "0xAbC0000000000000000000000000000000000123";
 
@@ -33,8 +40,10 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     email: "issuer@example.org",
     website: null,
     phone: null,
+    terms: null,
     iconUrl: null,
     bannerUrl: null,
+    tags: [],
     kind: "goods",
     ...overrides,
   };
@@ -134,6 +143,8 @@ describe("useMarketVoucherDetail", () => {
 
     expect(options.staleTime).toBe(10 * 60_000);
     expect(options.gcTime).toBe(30 * 60_000);
-    expect(options.queryKey).toEqual(["market-voucher-detail", CHECKSUMMED.toLowerCase()]);
+    // Asserted through the canonical factory, not a literal: the key belongs to
+    // @clc/api, and duplicating its shape here would drift from it.
+    expect(options.queryKey).toEqual(voucherKeys.detail(CHECKSUMMED));
   });
 });

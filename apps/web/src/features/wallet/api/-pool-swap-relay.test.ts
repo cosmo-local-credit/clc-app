@@ -5,7 +5,7 @@ import {
 import { storePrivateKey } from "#/connectors/privateKey";
 import { decodeFunctionData } from "viem";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import {
   relayPoolDeposit,
   relayPoolSwapExactInput,

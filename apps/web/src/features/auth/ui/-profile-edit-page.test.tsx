@@ -10,6 +10,9 @@ const { account, historyBack, navigate, toastSuccess } = vi.hoisted(() => ({
   toastSuccess: vi.fn(),
 }));
 
+const STORED_AVATAR_URL = "https://images.example/profile/old.webp";
+const NEW_AVATAR_URL = "https://images.example/profile/new.webp";
+
 const PICKED_LOCATION: LocationInput = {
   lat: -1.2921,
   lng: 36.8219,
@@ -52,6 +55,36 @@ vi.mock("#/components/ui/location-picker", () => ({
   ),
 }));
 
+// Uploading is the field's own job and is covered by -image-upload-field.test.tsx;
+// here it is stubbed to a control that yields a URL so this file can focus on
+// what the profile payload carries.
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
+
+vi.mock("#/components/ui/image-upload-field", () => ({
+  ImageUploadField: ({
+    value,
+    onChange,
+    onBusyChange,
+  }: {
+    value: string | null;
+    onChange: (url: string | null) => void;
+    onBusyChange?: (busy: boolean) => void;
+  }) => (
+    <div>
+      <span data-testid="avatar-value">{value ?? ""}</span>
+      <button type="button" onClick={() => onChange(NEW_AVATAR_URL)}>
+        set photo
+      </button>
+      <button type="button" onClick={() => onChange(null)}>
+        remove photo
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(true)}>
+        start upload
+      </button>
+    </div>
+  ),
+}));
+
 import { ProfileEditPage } from "./profile-edit-page";
 
 function renderWithQueryClient(ui: React.ReactElement) {
@@ -86,6 +119,14 @@ function mockBackend(profile: Record<string, unknown> = {}) {
   return fetchMock;
 }
 
+/** The body of the one POST /auth/profile the form made. */
+function postBody(fetchMock: ReturnType<typeof mockBackend>) {
+  const call = fetchMock.mock.calls.find(
+    ([input, init]) => requestUrl(input).includes("/auth/profile") && init?.method === "POST",
+  );
+  return call?.[1]?.body as string;
+}
+
 function requestUrl(input: RequestInfo | URL) {
   if (typeof input === "string") return input;
   if (input instanceof URL) return input.href;
@@ -117,6 +158,9 @@ describe("ProfileEditPage", () => {
 
     expect(await screen.findByDisplayValue("Alice")).toBeTruthy();
     expect(screen.getByDisplayValue("alice@example.com")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     const phone = screen.getByLabelText(/phone number/i) as HTMLInputElement;
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
@@ -181,6 +225,9 @@ describe("ProfileEditPage", () => {
       email: "alice@example.com",
       phone: "+254712345678",
       country: PICKED_LOCATION.country,
+      preferredCurrency: "KES",
+      bio: "",
+      website: "",
       locationName: PICKED_LOCATION.locationName,
       geoLat: PICKED_LOCATION.lat,
       geoLng: PICKED_LOCATION.lng,
@@ -216,5 +263,83 @@ describe("ProfileEditPage", () => {
     expect(body).not.toHaveProperty("locationName");
     expect(body).not.toHaveProperty("geoLat");
     expect(body).not.toHaveProperty("geoLng");
+  });
+
+  it("prefills and persists the saved profile details", async () => {
+    const fetchMock = mockBackend({
+      preferredCurrency: "TZS",
+      bio: "Tanzanian grower",
+      website: "https://grow.example",
+    });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    expect(await screen.findByDisplayValue("Tanzanian grower")).toBeTruthy();
+    expect(screen.getByDisplayValue("https://grow.example")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({
+      preferredCurrency: "TZS",
+      bio: "Tanzanian grower",
+      website: "https://grow.example",
+    });
+  });
+
+  it("saves a newly chosen profile photo", async () => {
+    const fetchMock = mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /set photo/i }));
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    const body = JSON.parse(postBody(fetchMock)) as Record<string, unknown>;
+    expect(body.avatarUrl).toBe(NEW_AVATAR_URL);
+  });
+
+  it("omits avatarUrl when the photo was not touched, so a stored one is preserved", async () => {
+    const fetchMock = mockBackend({ avatarUrl: STORED_AVATAR_URL });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const name = (await screen.findByLabelText(/^name$/i)) as HTMLInputElement;
+    fireEvent.change(name, { target: { value: "Alice Cooper" } });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    expect(screen.getByTestId("avatar-value").textContent).toBe(STORED_AVATAR_URL);
+    expect(JSON.parse(postBody(fetchMock))).not.toHaveProperty("avatarUrl");
+  });
+
+  it("clears a stored photo with the backend's clearAvatar flag", async () => {
+    const fetchMock = mockBackend({ avatarUrl: STORED_AVATAR_URL });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /remove photo/i }));
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+
+    const body = JSON.parse(postBody(fetchMock)) as Record<string, unknown>;
+    expect(body.clearAvatar).toBe(true);
+    expect(body).not.toHaveProperty("avatarUrl");
+  });
+
+  it("blocks saving while the photo is still uploading", async () => {
+    mockBackend();
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /start upload/i }));
+
+    expect(screen.getByRole("button", { name: /uploading photo/i }).hasAttribute("disabled")).toBe(
+      true,
+    );
   });
 });

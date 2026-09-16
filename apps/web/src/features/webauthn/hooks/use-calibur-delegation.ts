@@ -1,7 +1,7 @@
 import { isEip7702Delegated } from "@clc/core/features/webauthn";
 import { useBytecode } from "wagmi";
 
-import { CALIBUR_ADDRESS } from "#/lib/backend-config";
+import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
 
 export type CaliburDelegationStatus = "checking" | "delegated" | "not-delegated";
 

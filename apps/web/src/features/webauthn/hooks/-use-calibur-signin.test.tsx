@@ -3,8 +3,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import { BackendApiError } from "@clc/api/client/errors";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 const { collectWebAuthnAssertion, signinWithWebAuthn, storeWebAuthnCredential } = vi.hoisted(
   () => ({
@@ -16,10 +16,16 @@ const { collectWebAuthnAssertion, signinWithWebAuthn, storeWebAuthnCredential } 
 
 vi.mock("#/features/webauthn/hooks/assertion", () => ({ collectWebAuthnAssertion }));
 vi.mock("#/lib/webauthn-storage", () => ({ storeWebAuthnCredential }));
-vi.mock("#/features/auth/api/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/auth/api/client")>();
+vi.mock("@clc/api/features/auth/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/auth/client")>();
   return { ...actual, signinWithWebAuthn };
 });
+
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/auth", async () => ({
+  authClient: await import("@clc/api/features/auth/client"),
+}));
 
 import { useCaliburSignin } from "./use-calibur-signin";
 

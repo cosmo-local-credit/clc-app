@@ -5,9 +5,17 @@ import { Badge } from "#/components/ui/badge";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { ReportSummary } from "#/features/home/api/reports-client";
+import type { ReportSummary } from "@clc/api/features/reports/client";
 import { formatReportDate } from "#/lib/report-display";
 
+/**
+ * One row per post: thumbnail, title, tags, date and voucher symbols.
+ *
+ * No summary line. A new post has no `description` — the editor stopped asking
+ * for one — so the row would be a title over a blank for everything written
+ * from here on, and reserving the space for imported posts alone left every
+ * other row taller than it needed to be.
+ */
 const VISIBLE_TAGS = 2;
 const VISIBLE_VOUCHERS = 1;
 
@@ -41,12 +49,12 @@ export function ReportList({
             to="/posts/$reportId"
             params={{ reportId: report.id }}
             className={[
-              "flex gap-3 p-3 active:bg-muted",
+              "flex gap-3 px-3 py-2 active:bg-muted",
               index === reports.length - 1 ? "" : "border-b border-border",
             ].join(" ")}
           >
             {report.imageUrl ? (
-              <span className="relative block min-h-16 w-16 shrink-0 self-stretch overflow-hidden bg-muted">
+              <span className="relative block min-h-14 w-14 shrink-0 self-stretch overflow-hidden bg-muted">
                 <ProgressiveImage
                   src={report.imageUrl}
                   alt=""
@@ -57,7 +65,7 @@ export function ReportList({
             ) : (
               <span
                 aria-hidden="true"
-                className="flex min-h-16 w-16 shrink-0 self-stretch items-center justify-center font-heading text-xl font-bold text-white"
+                className="flex min-h-14 w-14 shrink-0 self-stretch items-center justify-center font-heading text-lg font-bold text-white"
                 style={{ background: hueFromSeed(report.id) }}
               >
                 {report.title.trim().slice(0, 1).toLocaleUpperCase() || "R"}
@@ -69,14 +77,8 @@ export function ReportList({
                 {report.title}
               </span>
 
-              {report.description ? (
-                <span className="mt-0.5 line-clamp-1 text-muted-foreground text-xs leading-snug [overflow-wrap:anywhere]">
-                  {report.description}
-                </span>
-              ) : null}
-
               {report.tags.length > 0 ? (
-                <span className="mt-1.5 flex min-w-0 items-center gap-1 overflow-hidden">
+                <span className="mt-1 flex min-w-0 items-center gap-1 overflow-hidden">
                   {report.tags.slice(0, VISIBLE_TAGS).map((tag) => (
                     <TagBadge
                       key={tag}
@@ -93,7 +95,7 @@ export function ReportList({
                 </span>
               ) : null}
 
-              <span className="mt-1 flex h-5 min-w-0 items-center justify-between gap-2">
+              <span className="mt-0.5 flex h-5 min-w-0 items-center justify-between gap-2">
                 {updated && report.updatedAt ? (
                   <time
                     dateTime={report.updatedAt}
