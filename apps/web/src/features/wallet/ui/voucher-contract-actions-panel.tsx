@@ -1,14 +1,16 @@
+import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { RiLoader4Line } from "react-icons/ri";
+import { RiLoader4Line, RiPencilLine, RiSparkling2Line, RiUserSharedLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -27,6 +29,8 @@ import { useVoucherOwnershipTransfer } from "#/features/vouchers/hooks/use-vouch
 import { accountWalletQueryKeys } from "#/features/wallet/hooks/use-account-balances";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 
+import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
+
 const addressSchema = z
   .string()
   .trim()
@@ -34,9 +38,17 @@ const addressSchema = z
     message: "Enter a valid wallet address",
   });
 
+type VoucherControlSheet = "details" | "mint" | "ownership";
+
 /**
- * Contract controls intentionally live apart from catalog-profile editing:
- * these calls are signed by the active owner and submitted through Calibur.
+ * Everything the issuer can change about one voucher, in a single group.
+ *
+ * Contract calls and the catalog record are gated differently — a superadmin may
+ * correct any voucher's record, while `mint` and `transferOwnership` are signed
+ * by the active owner and submitted through Calibur — but they read as one list
+ * of settings, so they share one group rather than a button above a titled card.
+ * Each row's label already names the action; a heading and a sentence restating
+ * it only push the controls down the screen.
  */
 export function VoucherContractActionsPanel({
   tokenAddress,
@@ -44,58 +56,106 @@ export function VoucherContractActionsPanel({
   tokenDecimals,
   ownerAddress,
   walletAddress,
+  editable,
 }: {
   tokenAddress: string | undefined;
   tokenSymbol: string;
   tokenDecimals: number | undefined;
   ownerAddress: string | null;
   walletAddress: string | undefined;
+  /** The catalog record, when the viewer may edit it; null for everyone else. */
+  editable: MarketVoucherDetail | null;
 }) {
-  if (
-    !tokenAddress ||
-    !ownerAddress ||
-    !walletAddress ||
-    ownerAddress.toLowerCase() !== walletAddress.toLowerCase() ||
-    tokenDecimals === undefined ||
-    !Number.isInteger(tokenDecimals) ||
-    tokenDecimals < 0
-  ) {
+  const { t } = useLingui();
+  const [sheet, setSheet] = useState<VoucherControlSheet | null>(null);
+
+  const contract =
+    tokenAddress &&
+    ownerAddress &&
+    walletAddress &&
+    ownerAddress.toLowerCase() === walletAddress.toLowerCase() &&
+    tokenDecimals !== undefined &&
+    Number.isInteger(tokenDecimals) &&
+    tokenDecimals >= 0
+      ? {
+          tokenAddress,
+          tokenDecimals,
+          ownerAddress: ownerAddress as `0x${string}`,
+          walletAddress: walletAddress as `0x${string}`,
+        }
+      : null;
+
+  if (!editable && !contract) {
     return null;
   }
 
   return (
-    <section className="space-y-3 border border-border bg-card p-4" aria-label="Voucher controls">
-      <div>
-        <h2 className="font-heading text-[1.125rem] font-semibold leading-tight">
-          <Trans>Manage voucher</Trans>
-        </h2>
-        <p className="mt-1 text-muted-foreground text-sm">
-          <Trans>Signed contract actions for this voucher.</Trans>
-        </p>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <VoucherMintSheet
-          tokenAddress={tokenAddress}
-          tokenSymbol={tokenSymbol}
-          tokenDecimals={tokenDecimals}
-          walletAddress={walletAddress as `0x${string}`}
+    <>
+      <section className="border border-border bg-card" aria-label={t`Voucher controls`}>
+        {editable ? (
+          <ActionRow
+            icon={<RiPencilLine className="size-4" aria-hidden="true" />}
+            label={t`Edit details`}
+            onClick={() => setSheet("details")}
+          />
+        ) : null}
+        {contract ? (
+          <>
+            <ActionRow
+              icon={<RiSparkling2Line className="size-4" aria-hidden="true" />}
+              label={t`Create vouchers`}
+              onClick={() => setSheet("mint")}
+            />
+            <ActionRow
+              icon={<RiUserSharedLine className="size-4" aria-hidden="true" />}
+              label={t`Transfer ownership`}
+              onClick={() => setSheet("ownership")}
+            />
+          </>
+        ) : null}
+      </section>
+
+      {editable ? (
+        <VoucherProfileEditorSheet
+          open={sheet === "details"}
+          voucher={editable}
+          onClose={() => setSheet(null)}
         />
-        <VoucherOwnershipTransferSheet
-          tokenAddress={tokenAddress}
-          ownerAddress={ownerAddress as `0x${string}`}
-          walletAddress={walletAddress as `0x${string}`}
-        />
-      </div>
-    </section>
+      ) : null}
+
+      {contract ? (
+        <>
+          <VoucherMintSheet
+            open={sheet === "mint"}
+            onClose={() => setSheet(null)}
+            tokenAddress={contract.tokenAddress}
+            tokenSymbol={tokenSymbol}
+            tokenDecimals={contract.tokenDecimals}
+            walletAddress={contract.walletAddress}
+          />
+          <VoucherOwnershipTransferSheet
+            open={sheet === "ownership"}
+            onClose={() => setSheet(null)}
+            tokenAddress={contract.tokenAddress}
+            ownerAddress={contract.ownerAddress}
+            walletAddress={contract.walletAddress}
+          />
+        </>
+      ) : null}
+    </>
   );
 }
 
 function VoucherMintSheet({
+  open,
+  onClose,
   tokenAddress,
   tokenSymbol,
   tokenDecimals,
   walletAddress,
 }: {
+  open: boolean;
+  onClose: () => void;
   tokenAddress: string;
   tokenSymbol: string;
   tokenDecimals: number;
@@ -103,7 +163,6 @@ function VoucherMintSheet({
 }) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
   const delegationStatus = useCaliburDelegation(walletAddress);
   const mint = useVoucherMint();
   const form = useForm({
@@ -120,7 +179,7 @@ function VoucherMintSheet({
         void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
         void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
         toast.success(t`Voucher creation submitted.`);
-        setOpen(false);
+        onClose();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : t`Couldn't create vouchers.`);
       }
@@ -130,10 +189,12 @@ function VoucherMintSheet({
   const pending = mint.isPending || delegationStatus === "checking";
 
   return (
-    <SheetRoot open={open} onOpenChange={setOpen}>
-      <Button type="button" className="h-11" onClick={() => setOpen(true)}>
-        <Trans>Create vouchers</Trans>
-      </Button>
+    <SheetRoot
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
       <SheetPortal>
         <SheetBackdrop />
         <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
@@ -197,17 +258,20 @@ function VoucherMintSheet({
 }
 
 function VoucherOwnershipTransferSheet({
+  open,
+  onClose,
   tokenAddress,
   ownerAddress,
   walletAddress,
 }: {
+  open: boolean;
+  onClose: () => void;
   tokenAddress: string;
   ownerAddress: `0x${string}`;
   walletAddress: `0x${string}`;
 }) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
   const delegationStatus = useCaliburDelegation(walletAddress);
   const transferOwnership = useVoucherOwnershipTransfer();
   const form = useForm({
@@ -231,7 +295,7 @@ function VoucherOwnershipTransferSheet({
         void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
         void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
         toast.success(t`Ownership transfer submitted.`);
-        setOpen(false);
+        onClose();
       } catch (error) {
         toast.error(error instanceof Error ? error.message : t`Couldn't transfer ownership.`);
       }
@@ -241,15 +305,12 @@ function VoucherOwnershipTransferSheet({
   const pending = transferOwnership.isPending || delegationStatus === "checking";
 
   return (
-    <SheetRoot open={open} onOpenChange={setOpen}>
-      <Button
-        type="button"
-        variant="outline"
-        className="h-11 bg-card"
-        onClick={() => setOpen(true)}
-      >
-        <Trans>Transfer ownership</Trans>
-      </Button>
+    <SheetRoot
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
       <SheetPortal>
         <SheetBackdrop />
         <SheetContent className="rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">

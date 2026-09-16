@@ -8,11 +8,12 @@ import { buildCollectPoolFeesCalls } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { type ReactNode, useState } from "react";
-import { RiArrowRightSLine, RiHandCoinLine, RiSafe2Line, RiWalletLine } from "react-icons/ri";
+import { RiHandCoinLine, RiPencilLine, RiSafe2Line, RiWalletLine } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress, zeroAddress } from "viem";
 import { useConnection } from "wagmi";
 
+import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
@@ -29,42 +30,75 @@ import { SignHint } from "#/components/wallet";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 
-type ControlSheet = "liquidity" | "fees" | "feeAddress";
+import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
+
+type ControlSheet = "details" | "liquidity" | "fees" | "feeAddress";
 
 /**
- * The pool-level calls, as opposed to the per-voucher ones.
+ * Everything a steward can change about one pool, in a single group.
  *
- * These three land on SwapPool itself and are the same whichever quoter the pool
- * runs, so they sit apart from the voucher sheet rather than inside it: nothing
- * here changes when a pool is repriced, and nothing here is affected by adding a
- * quoter the app does not yet configure.
+ * The three on-chain rows land on SwapPool itself and are the same whichever
+ * quoter the pool runs, so they sit apart from the voucher sheet rather than
+ * inside it: nothing here changes when a pool is repriced, and nothing here is
+ * affected by adding a quoter the app does not yet configure.
+ *
+ * Editing the catalog record rides along rather than sitting above as a button
+ * of its own — it is the same kind of settings row, and a lone full-width
+ * control stranded over a row group reads as a different class of action than
+ * it is. The two are separately gated: a superadmin may correct any pool's
+ * record, while every on-chain call below is `onlyOwner` on a contract the
+ * pool's owner deployed, so a superadmin would only be signing a revert.
  */
-export function PoolControlsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
+export function PoolControlsPanel({
+  pool,
+  vouchers,
+  canManageOnChain,
+}: {
+  pool: UserPool;
+  vouchers: PoolVoucher[];
+  canManageOnChain: boolean;
+}) {
   const { t } = useLingui();
   const [sheet, setSheet] = useState<ControlSheet | null>(null);
-  const treasury = usePoolTreasury(pool, vouchers, true);
+  // Balances are read for the withdraw sheets alone, so a superadmin who can
+  // only edit the record never pays for the calls.
+  const treasury = usePoolTreasury(pool, vouchers, canManageOnChain);
 
   return (
     <>
-      <section className="border border-border bg-card">
-        <ControlRow
-          icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
-          label={t`Withdraw liquidity`}
-          onClick={() => setSheet("liquidity")}
+      <section className="border border-border bg-card" aria-label={t`Pool controls`}>
+        <ActionRow
+          icon={<RiPencilLine className="size-4" aria-hidden="true" />}
+          label={t`Edit details`}
+          onClick={() => setSheet("details")}
         />
-        <ControlRow
-          icon={<RiHandCoinLine className="size-4" aria-hidden="true" />}
-          label={t`Withdraw fees`}
-          onClick={() => setSheet("fees")}
-        />
-        <ControlRow
-          icon={<RiWalletLine className="size-4" aria-hidden="true" />}
-          label={t`Fee recipient`}
-          value={pool.feeAddress ? formatVoucherAddress(pool.feeAddress) : t`Not set`}
-          onClick={() => setSheet("feeAddress")}
-          last
-        />
+        {canManageOnChain ? (
+          <>
+            <ActionRow
+              icon={<RiSafe2Line className="size-4" aria-hidden="true" />}
+              label={t`Withdraw liquidity`}
+              onClick={() => setSheet("liquidity")}
+            />
+            <ActionRow
+              icon={<RiHandCoinLine className="size-4" aria-hidden="true" />}
+              label={t`Withdraw fees`}
+              onClick={() => setSheet("fees")}
+            />
+            <ActionRow
+              icon={<RiWalletLine className="size-4" aria-hidden="true" />}
+              label={t`Fee recipient`}
+              value={pool.feeAddress ? formatVoucherAddress(pool.feeAddress) : t`Not set`}
+              onClick={() => setSheet("feeAddress")}
+            />
+          </>
+        ) : null}
       </section>
+
+      <PoolProfileEditorSheet
+        open={sheet === "details"}
+        pool={pool}
+        onClose={() => setSheet(null)}
+      />
 
       <ControlSheetShell
         open={sheet === "liquidity"}
@@ -100,38 +134,6 @@ export function PoolControlsPanel({ pool, vouchers }: { pool: UserPool; vouchers
         <FeeAddressForm pool={pool} onDone={() => setSheet(null)} />
       </ControlSheetShell>
     </>
-  );
-}
-
-function ControlRow({
-  icon,
-  label,
-  value,
-  onClick,
-  last,
-}: {
-  icon: ReactNode;
-  label: string;
-  value?: string;
-  onClick: () => void;
-  last?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "flex w-full items-center gap-3 p-3 text-left",
-        last ? "" : "border-b border-border",
-      ].join(" ")}
-    >
-      <span className="text-muted-foreground">{icon}</span>
-      <span className="min-w-0 flex-1 truncate font-medium text-sm">{label}</span>
-      {value ? (
-        <span className="shrink-0 font-mono text-muted-foreground text-xs">{value}</span>
-      ) : null}
-      <RiArrowRightSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-    </button>
   );
 }
 

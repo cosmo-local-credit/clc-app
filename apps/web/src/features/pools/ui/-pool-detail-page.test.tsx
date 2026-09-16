@@ -92,8 +92,20 @@ vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
   usePoolQuoterKind: () => ({ kind: "unknown", isPending: false }),
 }));
 
-vi.mock("./pool-controls-panel", () => ({
-  PoolControlsPanel: () => <div data-testid="pool-controls" />,
+// The controls panel renders for real — it owns the catalog editor now, so a
+// stub here would assert against the test's own copy of the gating. Only its
+// chain reads are mocked out.
+vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
+  usePoolTreasury: () => ({ data: undefined }),
+  poolTreasuryQueryKeys: { all: ["pool-treasury"] },
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
+  usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: OWNER }),
 }));
 
 vi.mock("./pool-voucher-sheet", () => ({
@@ -304,16 +316,16 @@ describe("PoolDetailPage pool details editor", () => {
 });
 
 describe("PoolDetailPage on-chain management", () => {
-  it("offers every pool viewer a receive vouchers action", () => {
+  it("offers every pool viewer a receive action", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
 
-    expect(screen.getByRole("button", { name: "Receive vouchers" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Receive" })).toBeTruthy();
   });
 
   it("offers the steward controls to the pool's owner", () => {
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-    expect(screen.getByTestId("pool-controls")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Withdraw liquidity" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Approve voucher" })).toBeTruthy();
   });
 
@@ -322,7 +334,7 @@ describe("PoolDetailPage on-chain management", () => {
     // would only be signing a revert. They keep the catalog editor.
     mocks.auth.session = { address: OTHER, chainId: 100, role: "SUPERADMIN" };
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-    expect(screen.queryByTestId("pool-controls")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
     expect(screen.getByRole("button", { name: "Edit details" })).toBeTruthy();
   });
@@ -330,7 +342,8 @@ describe("PoolDetailPage on-chain management", () => {
   it("withholds them from anyone else", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     render(<PoolDetailPage poolAddress={ADDRESS} activeTab="vouchers" />);
-    expect(screen.queryByTestId("pool-controls")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Withdraw liquidity" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Approve voucher" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit details" })).toBeNull();
   });
 });
