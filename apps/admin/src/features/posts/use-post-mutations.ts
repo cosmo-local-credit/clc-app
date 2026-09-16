@@ -5,6 +5,7 @@ import {
   settleReportUpdate,
 } from "@clc/api/features/reports/cache";
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
+import { deploymentKeys } from "@clc/api/features/deployments/queries";
 import type { ReportStatus, ReportWrite } from "@clc/core/features/reports/logic";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -27,7 +28,10 @@ export function useCreatePost() {
 
   return useMutation({
     mutationFn: (input: ReportWrite) => clcApi.reports.createReport(input),
-    onSuccess: (report: ManagedReportDetail) => settleReportCreate(queryClient, report),
+    onSuccess: async (report: ManagedReportDetail) => {
+      await settleReportCreate(queryClient, report);
+      return queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() });
+    },
   });
 }
 
@@ -37,8 +41,10 @@ export function useUpdatePost(previousStatus: ReportStatus | null | undefined) {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReportWrite }) =>
       clcApi.reports.updateReport(id, input),
-    onSuccess: (report: ManagedReportDetail) =>
-      settleReportUpdate(queryClient, report, previousStatus),
+    onSuccess: async (report: ManagedReportDetail) => {
+      await settleReportUpdate(queryClient, report, previousStatus);
+      return queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() });
+    },
   });
 }
 

@@ -1,10 +1,13 @@
 import type { RouterHistory } from "@tanstack/react-router";
+import { toVocabularyTitleCase, validateCustomTag } from "@clc/core/features/vocabulary/logic";
+import { useLingui } from "@lingui/react/macro";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Combobox,
   ComboboxChip,
   ComboboxChips,
+  ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxItemIndicator,
@@ -38,18 +41,39 @@ export function TagCombobox({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const { t } = useLingui();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
   const open = controlledOpen ?? uncontrolledOpen;
   const changeOpen = useCallback(
     (nextOpen: boolean) => {
       if (controlledOpen === undefined) setUncontrolledOpen(nextOpen);
       onOpenChange?.(nextOpen);
-      if (!nextOpen) inputRef.current?.blur();
+      if (!nextOpen) {
+        setInputValue("");
+        inputRef.current?.blur();
+      }
     },
     [controlledOpen, onOpenChange],
   );
+
+  const addCustomValue = useCallback(() => {
+    const custom = toVocabularyTitleCase(inputValue);
+    if (validateCustomTag(custom)) return;
+    const existing = items.find((item) => item.toLowerCase() === custom.toLowerCase());
+    const next = existing ?? custom;
+    if (!value.some((item) => item.toLowerCase() === next.toLowerCase())) {
+      onValueChange([...value, next]);
+    }
+    changeOpen(false);
+  }, [changeOpen, inputValue, items, onValueChange, value]);
+
+  const customValue = toVocabularyTitleCase(inputValue);
+  const canAddCustom =
+    !validateCustomTag(customValue) &&
+    !items.some((item) => item.toLowerCase() === customValue.toLowerCase());
 
   useEffect(() => {
     if (!open) return;
@@ -84,6 +108,8 @@ export function TagCombobox({
         open={open}
         onOpenChange={changeOpen}
         items={items}
+        inputValue={inputValue}
+        onInputValueChange={setInputValue}
         value={value}
         onValueChange={(nextValue, eventDetails) => {
           onValueChange(nextValue);
@@ -109,18 +135,38 @@ export function TagCombobox({
               aria-label={searchLabel}
               onFocus={() => changeOpen(true)}
               onClick={() => changeOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && canAddCustom) {
+                  event.preventDefault();
+                  addCustomValue();
+                }
+              }}
             />
           </div>
         </ComboboxChips>
         {open ? (
-          <ComboboxList className="mt-2" aria-label={listLabel}>
-            {(tag: string) => (
-              <ComboboxItem key={tag} value={tag}>
-                <span className="flex-1 text-sm">{tag}</span>
-                <ComboboxItemIndicator />
-              </ComboboxItem>
-            )}
-          </ComboboxList>
+          <>
+            <ComboboxList className="mt-2" aria-label={listLabel}>
+              {(tag: string) => (
+                <ComboboxItem key={tag} value={tag}>
+                  <span className="flex-1 text-sm">{tag}</span>
+                  <ComboboxItemIndicator />
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+            {canAddCustom ? (
+              <button
+                type="button"
+                className="mt-1 w-full border border-border bg-card px-3 py-3 text-left text-sm"
+                onClick={addCustomValue}
+              >
+                {t`Add “${customValue}”`}
+              </button>
+            ) : null}
+            <ComboboxEmpty>
+              <p className="px-3 py-3 text-muted-foreground text-sm">{t`No tags found.`}</p>
+            </ComboboxEmpty>
+          </>
         ) : null}
       </Combobox>
     </div>

@@ -92,4 +92,52 @@ describe("TagCombobox", () => {
     expect(blocked).toBe(true);
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
   });
+
+  it("adds a title-cased tag the vocabulary does not have yet", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "urban   FARMING" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add “Urban Farming”" }));
+
+    expect(screen.getByRole("button", { name: "Remove Urban Farming" })).toBeTruthy();
+    expect((search as HTMLInputElement).value).toBe("");
+  });
+
+  it("adds a new tag on Enter", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "beekeeping" } });
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    expect(screen.getByRole("button", { name: "Remove Beekeeping" })).toBeTruthy();
+  });
+
+  // The value is already in the list. Offering to add it would make one concept
+  // into two vocabulary rows that differ only in case.
+  it("does not offer to add a tag the vocabulary already spells", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "AGRICULTURE" } });
+
+    expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+  });
+
+  it("does not offer to add a tag the backend would reject", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+
+    for (const rejected of ["Food, Water", "   ", "a".repeat(101)]) {
+      fireEvent.change(search, { target: { value: rejected } });
+      expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+    }
+  });
 });

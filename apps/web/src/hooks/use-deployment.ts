@@ -12,6 +12,8 @@ const deploymentQueryKeys = {
     [...deploymentQueryKeys.all, "contract", type, trackingId ?? "none"] as const,
 };
 
+export const tokenTagsQueryKey = deploymentQueryKeys.tags();
+
 export function useTokenTags() {
   return useQuery({
     queryKey: deploymentQueryKeys.tags(),

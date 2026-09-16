@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { reportsClient } from "#/lib/api/reports";
+import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 /**
  * The author's own post writes.
@@ -20,8 +21,10 @@ export function useCreatePost() {
 
   return useMutation({
     mutationFn: (input: ReportWrite) => reportsClient.createReport(input),
-    onSuccess: (report: ManagedReportDetail) =>
-      settleReportCreate(queryClient, report, session?.address),
+    onSuccess: async (report: ManagedReportDetail) => {
+      await settleReportCreate(queryClient, report, session?.address);
+      return queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey });
+    },
   });
 }
 
@@ -39,7 +42,9 @@ export function useUpdatePost(previousStatus: ReportStatus | null | undefined) {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: ReportWrite }) =>
       reportsClient.updateReport(id, input),
-    onSuccess: (report: ManagedReportDetail) =>
-      settleReportUpdate(queryClient, report, previousStatus, session?.address),
+    onSuccess: async (report: ManagedReportDetail) => {
+      await settleReportUpdate(queryClient, report, previousStatus, session?.address);
+      return queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey });
+    },
   });
 }

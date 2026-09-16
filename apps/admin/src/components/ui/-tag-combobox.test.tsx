@@ -50,4 +50,52 @@ describe("TagCombobox", () => {
     expect(screen.getByRole("button", { name: "Remove Agriculture" })).toBeTruthy();
     expect(document.activeElement).toBe(search);
   });
+
+  it("adds a title-cased tag the vocabulary does not have yet", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "urban   FARMING" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add “Urban Farming”" }));
+
+    expect(screen.getByRole("button", { name: "Remove Urban Farming" })).toBeTruthy();
+    expect((search as HTMLInputElement).value).toBe("");
+  });
+
+  it("adds a new tag on Enter", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "beekeeping" } });
+    fireEvent.keyDown(search, { key: "Enter" });
+
+    expect(screen.getByRole("button", { name: "Remove Beekeeping" })).toBeTruthy();
+  });
+
+  // The existing value is already in the list, so offering to add it would
+  // create a second row for one concept.
+  it("does not offer to add a tag the vocabulary already spells", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+    fireEvent.change(search, { target: { value: "AGRICULTURE" } });
+
+    expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+  });
+
+  it("does not offer to add a tag the backend would reject", () => {
+    render(<TestTagCombobox />);
+
+    const search = screen.getByRole("combobox", { name: "Search tags" });
+    fireEvent.focus(search);
+
+    for (const rejected of ["Food, Water", "   ", "a".repeat(101)]) {
+      fireEvent.change(search, { target: { value: rejected } });
+      expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+    }
+  });
 });

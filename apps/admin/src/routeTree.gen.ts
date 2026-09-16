@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
+import { Route as ShellVocabularyRouteImport } from './routes/_shell/vocabulary'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
@@ -37,6 +38,11 @@ const ShellRoute = ShellRouteImport.update({
 const ShellIndexRoute = ShellIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellVocabularyRoute = ShellVocabularyRouteImport.update({
+  id: '/vocabulary',
+  path: '/vocabulary',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellSettingsRoute = ShellSettingsRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/$': typeof ShellSplatRoute
   '/settings': typeof ShellSettingsRoute
+  '/vocabulary': typeof ShellVocabularyRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
   '/posts/new': typeof ShellPostsNewRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
   '/settings': typeof ShellSettingsRoute
+  '/vocabulary': typeof ShellVocabularyRoute
   '/': typeof ShellIndexRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
   '/pools/publish': typeof ShellPoolsPublishRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/$': typeof ShellSplatRoute
   '/_shell/settings': typeof ShellSettingsRoute
+  '/_shell/vocabulary': typeof ShellVocabularyRoute
   '/_shell/': typeof ShellIndexRoute
   '/_shell/pools/$address': typeof ShellPoolsAddressRoute
   '/_shell/pools/publish': typeof ShellPoolsPublishRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/settings'
+    | '/vocabulary'
     | '/pools/$address'
     | '/pools/publish'
     | '/posts/new'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
   to:
     | '/$'
     | '/settings'
+    | '/vocabulary'
     | '/'
     | '/pools/$address'
     | '/pools/publish'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/_shell'
     | '/_shell/$'
     | '/_shell/settings'
+    | '/_shell/vocabulary'
     | '/_shell/'
     | '/_shell/pools/$address'
     | '/_shell/pools/publish'
@@ -281,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof ShellIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/vocabulary': {
+      id: '/_shell/vocabulary'
+      path: '/vocabulary'
+      fullPath: '/vocabulary'
+      preLoaderRoute: typeof ShellVocabularyRouteImport
       parentRoute: typeof ShellRoute
     }
     '/_shell/settings': {
@@ -415,6 +434,7 @@ declare module '@tanstack/react-router' {
 interface ShellRouteChildren {
   ShellSplatRoute: typeof ShellSplatRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
+  ShellVocabularyRoute: typeof ShellVocabularyRoute
   ShellIndexRoute: typeof ShellIndexRoute
   ShellPoolsAddressRoute: typeof ShellPoolsAddressRoute
   ShellPoolsPublishRoute: typeof ShellPoolsPublishRoute
@@ -437,6 +457,7 @@ interface ShellRouteChildren {
 const ShellRouteChildren: ShellRouteChildren = {
   ShellSplatRoute: ShellSplatRoute,
   ShellSettingsRoute: ShellSettingsRoute,
+  ShellVocabularyRoute: ShellVocabularyRoute,
   ShellIndexRoute: ShellIndexRoute,
   ShellPoolsAddressRoute: ShellPoolsAddressRoute,
   ShellPoolsPublishRoute: ShellPoolsPublishRoute,

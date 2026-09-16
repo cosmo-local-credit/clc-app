@@ -1,5 +1,6 @@
 import type { PoolProfileUpdate, UserPool } from "@clc/api/features/pools/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { deploymentKeys } from "@clc/api/features/deployments/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { clcApi } from "#/lib/api";
@@ -21,10 +22,13 @@ export function useUpdatePoolProfile(address: string) {
     mutationFn: (profile: PoolProfileUpdate) => clcApi.admin.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
-      return queryClient.invalidateQueries({
-        queryKey: poolKeys.all,
-        predicate: (query) => query.queryKey[2] !== "detail",
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: poolKeys.all,
+          predicate: (query) => query.queryKey[2] !== "detail",
+        }),
+        queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
+      ]);
     },
   });
 }

@@ -120,6 +120,28 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => mocks.profile,
 }));
 
+vi.mock("#/hooks/use-vocabulary", () => ({
+  useOfferingUnits: () => ({
+    data: [
+      "kg",
+      "g",
+      "litre",
+      "item",
+      "hour",
+      "day",
+      "bag",
+      "unit",
+      "bundle",
+      "piece",
+      "dozen",
+      "serving",
+      "trip",
+      "session",
+      "metre",
+    ],
+  }),
+}));
+
 vi.mock("#/lib/api/storage", () => ({
   isStorageConfigured: true,
 }));
@@ -1094,6 +1116,54 @@ describe("VoucherOfferingsPanel ownership", () => {
       fireEvent.click(option);
     });
     expect((unit as HTMLInputElement).value).toBe("Kilogram");
+  });
+
+  // The fifteen units are a starting point, not the whole world. A seller whose
+  // measure nobody seeded types it and keeps it.
+  it("lets the seller keep a measure the list does not have", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    const unit = screen.getByRole("combobox", { name: "Unit" });
+    await act(async () => {
+      fireEvent.focus(unit);
+    });
+    await act(async () => {
+      fireEvent.change(unit, { target: { value: "produce   crate" } });
+    });
+
+    // Title Case is the one spelling the backend stores, so it is the one the
+    // seller is offered.
+    const create = screen.getByRole("button", { name: /Produce Crate/ });
+    await act(async () => {
+      fireEvent.click(create);
+    });
+
+    // The value is not in the option list, and the closed field still shows it.
+    expect((unit as HTMLInputElement).value).toBe("Produce Crate");
+  });
+
+  it("does not offer to create a unit the list already spells", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Add offering" }));
+    });
+
+    const unit = screen.getByRole("combobox", { name: "Unit" });
+    await act(async () => {
+      fireEvent.focus(unit);
+    });
+    await act(async () => {
+      fireEvent.change(unit, { target: { value: "Kilogram" } });
+    });
+
+    expect(screen.queryByRole("button", { name: /^Use/ })).toBeNull();
   });
 });
 

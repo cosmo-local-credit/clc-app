@@ -1,9 +1,7 @@
 import {
   type OfferingCommodityType,
-  type OfferingUnit,
   type OfferingWrite,
   isOfferingCommodityType,
-  isOfferingUnit,
   offeringWriteSchema,
 } from "@clc/core/features/offerings/logic";
 
@@ -66,10 +64,10 @@ export type Offering = {
    */
   quantity: string;
   /**
-   * The unit as a value a write may reuse, or `null` when the imported text is
-   * outside the canonical set.
+   * The stored unit as a value a write may reuse. Custom units are first-class,
+   * so every nonblank stored value is editable.
    */
-  unit: OfferingUnit | null;
+  unit: string | null;
   /**
    * The unit exactly as stored, for display.
    *
@@ -345,10 +343,7 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     commodityType: isOfferingCommodityType(offering.commodityType) ? offering.commodityType : null,
     description: normalizeText(offering.description) ?? "",
     quantity: normalizeNumericText(offering.quantity) ?? "0",
-    // The canonical value and the stored text are computed from the same field
-    // and diverge only for imported free text. Doing it here, once, is what keeps
-    // "displayable" and "resubmittable" from being confused at a call site.
-    unit: isOfferingUnit(unitLabel) ? unitLabel : null,
+    unit: unitLabel,
     unitLabel,
     frequency: normalizeOfferingFrequency(offering.frequency),
     pricePerUnit: normalizeNumericText(offering.price),

@@ -22,6 +22,26 @@ vi.mock("#/lib/api", () => ({
       updateVoucherOffering: (...args: unknown[]) => updateVoucherOffering(...args),
       deleteVoucherOffering: (...args: unknown[]) => deleteVoucherOffering(...args),
     },
+    vocabulary: {
+      getOfferingUnits: () =>
+        Promise.resolve([
+          "kg",
+          "g",
+          "litre",
+          "item",
+          "hour",
+          "day",
+          "bag",
+          "unit",
+          "bundle",
+          "piece",
+          "dozen",
+          "serving",
+          "trip",
+          "session",
+          "metre",
+        ]),
+    },
   },
 }));
 
@@ -180,7 +200,7 @@ describe("creating", () => {
     // Neither select is defaulted: publishing a classification nobody chose is
     // the failure this avoids.
     expect(screen.getByText("Choose one")).toBeTruthy();
-    expect(screen.getByText("Choose a unit")).toBeTruthy();
+    expect((screen.getByLabelText("Unit") as HTMLInputElement).value).toBe("");
     // Nothing to unlist yet.
     expect(screen.queryByRole("button", { name: "Unlist" })).toBeNull();
   });
@@ -210,6 +230,29 @@ describe("creating", () => {
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(toastSuccess).toHaveBeenCalledWith("Offering published.");
+  });
+
+  // The picker is a suggestion, not a closed set. A seller whose measure nobody
+  // seeded types it, and the value the backend adopts is the Title Case one.
+  it("creates a custom unit from free text", async () => {
+    renderSheet({ kind: "create" });
+
+    await waitFor(() => screen.getByLabelText("Name"));
+    type("Name", "Seedling tray");
+    type("Description", "Twenty cells, ready to plant.");
+    type("Price per unit", "350");
+    await choose("Good or service", "Good");
+
+    const unit = screen.getByLabelText("Unit") as HTMLInputElement;
+    fireEvent.focus(unit);
+    fireEvent.change(unit, { target: { value: "produce   crate" } });
+    fireEvent.click(await waitFor(() => screen.getByRole("button", { name: /Produce Crate/ })));
+    expect(unit.value).toBe("Produce Crate");
+
+    fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
+
+    await waitFor(() => expect(createVoucherOffering).toHaveBeenCalled());
+    expect(createVoucherOffering.mock.calls[0]?.[1].unit).toBe("Produce Crate");
   });
 
   // A decimal wider than float64. It must reach the client as typed, because from
@@ -294,7 +337,7 @@ describe("editing", () => {
       "Stone-ground, 2kg.",
     );
     expect((screen.getByLabelText("Price per unit") as HTMLInputElement).value).toBe("120");
-    expect(screen.getByText("Kilogram")).toBeTruthy();
+    expect((screen.getByLabelText("Unit") as HTMLInputElement).value).toBe("Kilogram");
     expect(screen.getByText("Good")).toBeTruthy();
   });
 
@@ -311,27 +354,18 @@ describe("editing", () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 
-  // The imported value stays visible on the card, but it cannot be written back —
-  // clc-core validates the unit against a closed set — so the form must not
-  // pre-fill it and must not save until one is chosen.
-  it("forces a canonical unit on a row imported with free text", async () => {
+  it("allows an imported free-text unit to become a custom unit", async () => {
     renderSheet({
       kind: "edit",
       offering: offering({ unit: null, unitLabel: "50kg sack" }),
     });
 
     await waitFor(() => screen.getByLabelText("Name"));
-    expect(screen.getByText(/50kg sack/)).toBeTruthy();
-    expect(screen.getByText("Choose a unit")).toBeTruthy();
+    expect((screen.getByLabelText("Unit") as HTMLInputElement).value).toBe("50kg sack");
 
-    fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
-    await waitFor(() => expect(screen.getAllByRole("alert").length).toBeGreaterThan(0));
-    expect(updateVoucherOffering).not.toHaveBeenCalled();
-
-    await choose("Unit", "Bag");
     fireEvent.click(screen.getByRole("button", { name: "Save offering" }));
     await waitFor(() => expect(updateVoucherOffering).toHaveBeenCalled());
-    expect(updateVoucherOffering.mock.calls[0]?.[2].unit).toBe("bag");
+    expect(updateVoucherOffering.mock.calls[0]?.[2].unit).toBe("50kg sack");
   });
 
   it("forces a classification on a row imported without one", async () => {

@@ -39,6 +39,9 @@ export function SearchableSelect({
   onValueChange,
   placeholder,
   emptyMessage,
+  createLabel,
+  normalizeCustomValue,
+  validateCustomValue,
   ariaLabel,
   className,
 }: {
@@ -48,6 +51,10 @@ export function SearchableSelect({
   onValueChange: (value: string) => void;
   placeholder: string;
   emptyMessage: string;
+  /** Enables a free-text value when all three custom-value callbacks are supplied. */
+  createLabel?: (value: string) => string;
+  normalizeCustomValue?: (value: string) => string;
+  validateCustomValue?: (value: string) => string | null;
   /** Names the control when the visible label belongs to a wider row. */
   ariaLabel?: string;
   className?: string;
@@ -57,7 +64,24 @@ export function SearchableSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const labels = useMemo(() => options.map((option) => option.label), [options]);
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? "";
+  // A value the user created is not in `options` until the list refetches, and a
+  // value imported before the list existed may never be. Falling back to the
+  // value itself is what keeps the closed field from rendering blank.
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? value;
+  const customValue = normalizeCustomValue?.(query) ?? "";
+  const matchingOption = options.find(
+    (option) =>
+      option.value.toLowerCase() === customValue.toLowerCase() ||
+      option.label.toLowerCase() === customValue.toLowerCase(),
+  );
+  const canCreate = Boolean(
+    createLabel &&
+    normalizeCustomValue &&
+    validateCustomValue &&
+    customValue &&
+    !matchingOption &&
+    !validateCustomValue(customValue),
+  );
   // The label most recently chosen or received, readable from inside an event
   // handler that fired before the parent re-rendered with the new value.
   const latestLabel = useRef(selectedLabel);
@@ -67,6 +91,14 @@ export function SearchableSelect({
     if (open) return;
     setQuery(latestLabel.current);
     setOpen(true);
+  };
+
+  const commitCustomValue = () => {
+    if (!canCreate) return;
+    latestLabel.current = customValue;
+    onValueChange(customValue);
+    setOpen(false);
+    inputRef.current?.blur();
   };
 
   useEffect(() => {
@@ -117,6 +149,12 @@ export function SearchableSelect({
           placeholder={placeholder}
           onFocus={openList}
           onClick={openList}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && canCreate) {
+              event.preventDefault();
+              commitCustomValue();
+            }
+          }}
         />
         {open ? (
           <>
@@ -128,6 +166,15 @@ export function SearchableSelect({
                 </ComboboxItem>
               )}
             </ComboboxList>
+            {canCreate ? (
+              <button
+                type="button"
+                className="mt-1 w-full border border-border bg-card px-3 py-3 text-left text-sm"
+                onClick={commitCustomValue}
+              >
+                {createLabel?.(customValue)}
+              </button>
+            ) : null}
             <ComboboxEmpty>
               <p className="px-3 py-3 text-muted-foreground text-sm">{emptyMessage}</p>
             </ComboboxEmpty>
