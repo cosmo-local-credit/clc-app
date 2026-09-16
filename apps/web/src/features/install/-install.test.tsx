@@ -6,7 +6,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { InstallAppLink } from "#/components/install-app-link";
@@ -14,7 +14,6 @@ import { Route as InstallRoute } from "#/routes/install";
 import { initializeInstallEvents, useInstallStore } from "./install-store";
 
 import { installBootstrapScript, type InstallPromptEvent } from "./install-bootstrap";
-import { createInstallDialog } from "./install-dialog";
 import { InstallAppButton } from "#/components/install-app-button";
 
 vi.mock("#/components/language-selector", () => ({ LanguageSelector: () => null }));
@@ -23,65 +22,11 @@ vi.mock("#/components/language-selector", () => ({ LanguageSelector: () => null 
 // this document, then reset its snapshot between tests without adding listeners.
 window.eval(installBootstrapScript);
 
-const fake = vi.hoisted(() => ({ ready: Promise.resolve(true), available: true, show: vi.fn() }));
-vi.mock("@khmyznikov/pwa-install", () => {
-  class FakeInstallElement extends HTMLElement {
-    externalPromptEvent: InstallPromptEvent | null = null;
-    manualApple = false;
-    manualChrome = false;
-    manifestUrl = "";
-    isDialogHidden = true;
-    isInstallAvailable = fake.available;
-    isAppleMobilePlatform = false;
-    isAppleDesktopPlatform = false;
-    isAndroid = false;
-    updateComplete = fake.ready;
-    showDialog() {
-      fake.show();
-      this.isDialogHidden = false;
-      const button = document.createElement("button");
-      button.textContent = "Confirm installation";
-      button.onclick = async () => {
-        const event = this.externalPromptEvent;
-        if (!event || button.disabled) return;
-        button.disabled = true;
-        this.hideDialog();
-        this.dispatchEvent(
-          new CustomEvent("pwa-install-backend-event", {
-            detail: { backend: "beforeinstallprompt" },
-          }),
-        );
-        try {
-          await event.prompt();
-          const { outcome } = await event.userChoice;
-          this.dispatchEvent(
-            new CustomEvent("pwa-user-choice-result-event", { detail: { message: outcome } }),
-          );
-        } catch {
-          this.dispatchEvent(
-            new CustomEvent("pwa-install-fail-event", { detail: { fallbackAvailable: false } }),
-          );
-        }
-      };
-      this.replaceChildren(button);
-    }
-    hideDialog() {
-      this.isDialogHidden = true;
-      this.replaceChildren();
-    }
-  }
-  customElements.define("pwa-install", FakeInstallElement);
-  return { PWAInstallElement: FakeInstallElement };
-});
-
 let dispose: (() => void) | undefined;
 
 beforeEach(() => {
   useInstallStore.setState(useInstallStore.getInitialState(), true);
   Object.assign(window.__clcInstall!, useInstallStore.getInitialState());
-  fake.ready = Promise.resolve(true);
-  fake.available = true;
-  fake.show.mockClear();
   Object.defineProperties(navigator, {
     clipboard: { configurable: true, get: () => undefined },
     share: { configurable: true, get: () => undefined },
@@ -146,16 +91,16 @@ async function renderPage(initialEntries = ["/install"]) {
 }
 
 describe("CLC installation", () => {
-  it("keeps translated help and browser navigation available without a native event", async () => {
+  it("keeps instructions and browser navigation available without a native event", async () => {
     startBrowser();
     await renderPage();
-    expect(screen.getByText(/Use your browser's menu/)).toBeTruthy();
+    expect(screen.getByText("Open this page in Chrome.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Install CLC" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Continue in browser" })).toBeTruthy();
-    expect(document.querySelector("pwa-install")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("captures before hydration and passes the event as a property only after a tap", async () => {
+  it("captures before hydration and prompts only once from the dialog button", async () => {
     const { event, prompt, choose } = offerInstall();
     expect(event.defaultPrevented).toBe(true);
     expect(useInstallStore.getState().promptEvent).toBeNull();
@@ -163,12 +108,7 @@ describe("CLC installation", () => {
     expect(useInstallStore.getState().promptEvent).toBe(event);
     await renderPage(["/?tab=settings", "/install"]);
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    const confirm = await screen.findByRole("button", { name: "Confirm installation" });
-    const dialog = document.querySelector("pwa-install")!;
-    expect(dialog).toHaveProperty("externalPromptEvent", event);
-    expect(dialog.getAttribute("externalPromptEvent")).toBeNull();
-    expect(dialog).toHaveProperty("manualApple", true);
-    expect(dialog).toHaveProperty("manualChrome", true);
+    const confirm = await screen.findByRole("button", { name: "Install now" });
     expect(prompt).not.toHaveBeenCalled();
     fireEvent.click(confirm);
     fireEvent.click(confirm);
@@ -186,37 +126,29 @@ describe("CLC installation", () => {
     expect(screen.getByText(/CLC is installed/)).toBeTruthy();
   });
 
-  it("forwards events arriving after dialog loading and prevents duplicate sheets", async () => {
+  it("offers a newly available prompt without opening duplicate sheets", async () => {
     startBrowser();
     await renderPage();
     const button = screen.getByRole("button", { name: "Install CLC" });
     fireEvent.click(button);
     fireEvent.click(button);
-    await screen.findByRole("button", { name: "Confirm installation" });
-    const { event } = offerInstall();
-    expect(document.querySelector("pwa-install")).toHaveProperty("externalPromptEvent", event);
-    fireEvent.click(button);
-    expect(fake.show).toHaveBeenCalledTimes(1);
+    await screen.findByRole("dialog");
+    expect(screen.queryByRole("button", { name: "Install now" })).toBeNull();
+    const { prompt } = offerInstall();
+    fireEvent.click(await screen.findByRole("button", { name: "Install now" }));
+    expect(prompt).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
   });
 
-  it("waits for initialization before opening and disposes on navigation", async () => {
-    let ready!: (value: boolean) => void;
-    fake.ready = new Promise((resolve) => {
-      ready = resolve;
-    });
+  it("removes the sheet on navigation", async () => {
     startBrowser();
     const router = await renderPage();
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    await waitFor(() => expect(document.querySelector("pwa-install")).not.toBeNull());
-    expect(fake.show).not.toHaveBeenCalled();
+    await screen.findByRole("dialog");
     await act(async () => {
       await router.navigate({ to: "/" });
     });
-    await act(async () => {
-      ready(true);
-    });
-    expect(fake.show).not.toHaveBeenCalled();
-    expect(document.querySelector("pwa-install")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("clears a dismissed native event and accepts a fresh event", async () => {
@@ -224,54 +156,40 @@ describe("CLC installation", () => {
     const first = offerInstall();
     await renderPage();
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm installation" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Install now" }));
     await act(async () => {
       first.choose({ outcome: "dismissed" });
     });
-    expect(screen.getByText(/Installation cancelled/)).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).getByText(/Installation cancelled/)).toBeTruthy();
     expect(window.__clcInstall!.promptEvent).toBeNull();
+    expect(screen.queryByRole("button", { name: "Install now" })).toBeNull();
     const second = offerInstall();
-    fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm installation" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Install now" }));
     expect(second.prompt).toHaveBeenCalledTimes(1);
     expect(first.prompt).toHaveBeenCalledTimes(1);
   });
 
-  it("does not consume the native event when merely closing the custom sheet", async () => {
+  it("keeps the native event when only the custom sheet is closed", async () => {
     startBrowser();
     const { event, prompt } = offerInstall();
     await renderPage();
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    await screen.findByRole("button", { name: "Confirm installation" });
-    act(() => {
-      document
-        .querySelector("pwa-install")!
-        .dispatchEvent(
-          new CustomEvent("pwa-user-choice-result-event", { detail: { message: "dismissed" } }),
-        );
-    });
+    await screen.findByRole("dialog");
+    fireEvent.click(screen.getByRole("button", { name: "Continue in browser" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(useInstallStore.getState().promptEvent).toBe(event);
     expect(prompt).not.toHaveBeenCalled();
   });
 
-  it("keeps fallback help usable if the dialog cannot initialize", async () => {
-    fake.available = false;
-    startBrowser();
-    await renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    expect(await screen.findByRole("alert")).toBeTruthy();
-    expect(screen.getByText(/Use your browser's menu/)).toBeTruthy();
-    expect(document.querySelector("pwa-install")).toBeNull();
-  });
-
-  it("clears a failed native prompt and shows fallback help", async () => {
+  it("clears a failed native prompt and shows instructions in the sheet", async () => {
     startBrowser();
     const { prompt } = offerInstall();
     prompt.mockRejectedValue(new Error("Prompt unavailable"));
     await renderPage();
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Confirm installation" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Install now" }));
     expect(await screen.findByRole("alert")).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).getByText("Open this page in Chrome.")).toBeTruthy();
     expect(window.__clcInstall!.promptEvent).toBeNull();
   });
 
@@ -279,8 +197,7 @@ describe("CLC installation", () => {
     startBrowser();
     render(<InstallAppButton />);
     fireEvent.click(screen.getByRole("button", { name: "Install CLC" }));
-    await screen.findByRole("button", { name: "Confirm installation" });
-    expect(fake.show).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("dialog")).toBeTruthy();
   });
 
   it("stops React synchronization on cleanup but keeps capturing for the document", () => {
@@ -291,15 +208,13 @@ describe("CLC installation", () => {
     expect(window.__clcInstall!.promptEvent).toBe(event);
   });
 
-  it("does not open when already installed", async () => {
+  it("does not offer installation when already installed", () => {
     startBrowser();
     act(() => {
       window.dispatchEvent(new Event("appinstalled"));
     });
-    const controller = createInstallDialog();
-    await controller.open();
-    expect(document.querySelector("pwa-install")).toBeNull();
-    controller.dispose();
+    render(<InstallAppButton />);
+    expect(screen.queryByRole("button", { name: "Install CLC" })).toBeNull();
   });
 
   it("preserves the originating tab when going Back", async () => {

@@ -79,7 +79,7 @@ async function buildServiceWorker(rootDir: string, production: boolean) {
         // connections; the browser cache will keep what the user actually visits.
         // Keep the install dialog genuinely on demand, even when small enough
         // to fit under the precache limit. Installed users rarely need it.
-        globIgnores: ["_worker.js/**", "**/pwa-install.es-*.js"],
+        globIgnores: ["_worker.js/**", "**/install-app-dialog-*.js"],
         maximumFileSizeToCacheInBytes: 300 * 1024,
         injectionPoint: "self.__SW_MANIFEST",
       });

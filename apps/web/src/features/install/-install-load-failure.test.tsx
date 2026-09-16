@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, it, vi } from "vite-plus/test";
 import { InstallAppButton } from "#/components/install-app-button";
 
-vi.mock("@khmyznikov/pwa-install", () => {
+vi.mock("#/components/install-app-dialog", () => {
   throw new Error("Chunk unavailable");
 });
 

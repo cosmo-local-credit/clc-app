@@ -3,6 +3,7 @@ import { Link, useCanGoBack, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RiArrowLeftLine, RiShareLine } from "react-icons/ri";
 
+import { InstallInstructions } from "#/components/install-instructions";
 import { InstallAppButton } from "#/components/install-app-button";
 import { LanguageSelector } from "#/components/language-selector";
 import { Button } from "#/components/ui/button";
@@ -97,12 +98,7 @@ export function InstallPage() {
               <h2>
                 <Trans>Add CLC to your phone</Trans>
               </h2>
-              <p className="text-sm">
-                <Trans>
-                  Use your browser's menu to install CLC. On iPhone, tap Share, then Add to Home
-                  Screen. In an embedded browser, open this link in Safari or Chrome first.
-                </Trans>
-              </p>
+              <InstallInstructions />
             </div>
           </>
         )}

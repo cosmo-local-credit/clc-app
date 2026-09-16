@@ -347,8 +347,8 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
 "iliyosakinishwa, kisha washa arifa."
 
-#: apps/web/src/components/install-app-button.tsx:63
-#: apps/web/src/features/install/ui/install-page.tsx:98
+#: apps/web/src/components/install-app-button.tsx:70
+#: apps/web/src/features/install/ui/install-page.tsx:99
 msgid "Add CLC to your phone"
 msgstr "Ongeza CLC kwenye simu yako"
 
@@ -462,7 +462,7 @@ msgstr "Yoyote iliyochaguliwa"
 #~ msgid "Any tag"
 #~ msgstr "Lebo yoyote"
 
-#: apps/web/src/features/install/ui/install-page.tsx:76
+#: apps/web/src/features/install/ui/install-page.tsx:77
 msgid "App installation"
 msgstr "Usakinishaji wa programu"
 
@@ -484,7 +484,7 @@ msgstr "Mwandishi"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
-#: apps/web/src/features/install/ui/install-page.tsx:61
+#: apps/web/src/features/install/ui/install-page.tsx:62
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:336
@@ -668,9 +668,9 @@ msgstr "Chagua picha ya wasifu"
 #~ msgid "Choose a wallet to continue."
 #~ msgstr "Chagua mkoba ili kuendelea."
 
-#: apps/web/src/features/install/ui/install-page.tsx:134
-#~ msgid "Choose Add to Home Screen."
-#~ msgstr "Chagua Add to Home Screen (Ongeza kwenye skrini ya kwanza)."
+#: apps/web/src/components/install-instructions.tsx:30
+msgid "Choose Add to Home Screen."
+msgstr "Chagua Add to Home Screen (Ongeza kwenye skrini ya kwanza)."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:83
@@ -707,11 +707,11 @@ msgstr "Chagua lugha ya programu."
 msgid "Circulates forever"
 msgstr "Inazunguka bila kuisha"
 
-#: apps/web/src/features/install/ui/install-page.tsx:79
+#: apps/web/src/features/install/ui/install-page.tsx:80
 msgid "CLC is installed. Find it on your home screen."
 msgstr "CLC imesakinishwa. Itafute kwenye skrini yako ya kwanza."
 
-#: apps/web/src/features/install/ui/install-page.tsx:69
+#: apps/web/src/features/install/ui/install-page.tsx:70
 msgid "CLC on your home screen"
 msgstr "CLC kwenye skrini yako ya kwanza"
 
@@ -804,9 +804,9 @@ msgstr "Thibitisha na Uchapishe"
 msgid "Confirm and send"
 msgstr "Thibitisha na utume"
 
-#: apps/web/src/features/install/ui/install-page.tsx:149
-#~ msgid "Confirm Install or Add when asked."
-#~ msgstr "Thibitisha Install (Sakinisha) au Add (Ongeza) unapoombwa."
+#: apps/web/src/components/install-instructions.tsx:45
+msgid "Confirm Install or Add when asked."
+msgstr "Thibitisha Install (Sakinisha) au Add (Ongeza) unapoombwa."
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
 #~ msgid "Confirm passphrase"
@@ -908,11 +908,12 @@ msgstr "Tovuti ya mawasiliano"
 msgid "Continue"
 msgstr "Endelea"
 
-#: apps/web/src/features/install/ui/install-page.tsx:111
+#: apps/web/src/components/install-app-dialog.tsx:64
+#: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Continue in browser"
 msgstr "Endelea kwenye kivinjari"
 
-#: apps/web/src/features/install/ui/install-page.tsx:111
+#: apps/web/src/features/install/ui/install-page.tsx:107
 msgid "Continue to CLC"
 msgstr "Endelea kwenda CLC"
 
@@ -1129,9 +1130,15 @@ msgstr "Haikuwezekana kupakia hati."
 msgid "Couldn't mint the first supply."
 msgstr "Imeshindikana kutengeneza usambazaji wa kwanza."
 
-#: apps/web/src/components/install-app-button.tsx:58
+#: apps/web/src/components/install-app-button.tsx:65
 msgid "Couldn't open installation. Follow the steps below or try again later."
 msgstr "Imeshindikana kufungua usakinishaji. Fuata hatua hapa chini au ujaribu "
+"tena baadaye."
+
+#: apps/web/src/components/install-app-dialog.tsx:58
+msgid "Couldn't open installation. Follow these instructions or try again "
+"later."
+msgstr "Imeshindikana kufungua usakinishaji. Fuata maelekezo haya au ujaribu "
 "tena baadaye."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:137
@@ -1666,10 +1673,10 @@ msgstr "Nimehifadhi ufunguo huu. Ukipotea, mkoba wangu hauwezi kurejeshwa."
 msgid "Identifying location…"
 msgstr "Inatambua eneo…"
 
-#: apps/web/src/features/install/ui/install-page.tsx:137
-#~ msgid "If shown, keep Open as Web App switched on, then tap Add."
-#~ msgstr "Ikiwa inaonekana, acha Open as Web App ikiwa imewashwa, kisha gusa Add "
-#~ "(Ongeza)."
+#: apps/web/src/components/install-instructions.tsx:33
+msgid "If shown, keep Open as Web App switched on, then tap Add."
+msgstr "Ikiwa chaguo la Fungua kama programu ya wavuti (Open as Web App) "
+"linaonekana, liache likiwa limewashwa, kisha gusa Ongeza (Add)."
 
 #: apps/web/src/features/home/ui/posts-page.tsx:23
 #~ msgid "Impact reports from pools, service providers, and stewards will appear "
@@ -1706,27 +1713,34 @@ msgstr "Ongeza kiasi"
 msgid "Info"
 msgstr "Maelezo"
 
-#: apps/web/src/components/install-app-button.tsx:53
+#: apps/web/src/components/install-app-button.tsx:60
+#: apps/web/src/components/install-app-dialog.tsx:29
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/install/ui/install-page.tsx:29
+#: apps/web/src/features/install/ui/install-page.tsx:30
 msgid "Install CLC"
 msgstr "Sakinisha CLC"
+
+#: apps/web/src/components/install-app-dialog.tsx:43
+msgid "Install now"
+msgstr "Sakinisha sasa"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:201
 msgid "Install the app first"
 msgstr "Sakinisha programu kwanza"
 
-#: apps/web/src/features/install/ui/install-page.tsx:90
+#: apps/web/src/components/install-app-dialog.tsx:51
+#: apps/web/src/features/install/ui/install-page.tsx:91
 msgid "Installation cancelled. You can keep using CLC in your browser or "
 "install it later."
 msgstr "Usakinishaji umeghairiwa. Unaweza kuendelea kutumia CLC kwenye "
 "kivinjari au kuisakinisha baadaye."
 
-#: apps/web/src/features/install/ui/install-page.tsx:127
+#: apps/web/src/features/install/ui/install-page.tsx:123
 msgid "Installation link"
 msgstr "Kiungo cha usakinishaji"
 
-#: apps/web/src/features/install/ui/install-page.tsx:83
+#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/features/install/ui/install-page.tsx:84
 msgid "Installation requested. Follow your browser's instructions to finish."
 msgstr "Usakinishaji umeombwa. Fuata maelekezo ya kivinjari chako ili kumaliza."
 
@@ -1809,7 +1823,7 @@ msgstr "Unganisha {providerLabel}"
 msgid "Link {providerLabel}?"
 msgstr "Unganisha {providerLabel}?"
 
-#: apps/web/src/features/install/ui/install-page.tsx:142
+#: apps/web/src/features/install/ui/install-page.tsx:138
 msgid "Link copied. Paste it into a message."
 msgstr "Kiungo kimenakiliwa. Kibandike kwenye ujumbe."
 
@@ -1958,6 +1972,13 @@ msgstr "Eneo halipatikani"
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:125
 msgid "Logo"
 msgstr "Nembo"
+
+#: apps/web/src/components/install-instructions.tsx:50
+msgid "Look for Install app in your browser's menu. On a Mac with Safari, "
+"choose File, then Add to Dock."
+msgstr "Tafuta Sakinisha programu (Install app) kwenye menyu ya kivinjari "
+"chako. Kwenye Mac ukitumia Safari, chagua Faili (File), kisha Ongeza "
+"kwenye Dock (Add to Dock)."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:35
 msgid "Manage vouchers, pools, and local payments."
@@ -2409,11 +2430,11 @@ msgstr "Fungua kwenye Ramani"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Fungua Soko ili kuvinjari ofa binafsi za kila vocha."
 
-#: apps/web/src/features/install/ui/install-page.tsx:122
-#~ msgid "Open this link in your phone's browser first. Use Chrome on Android or "
-#~ "Safari on iPhone."
-#~ msgstr "Fungua kiungo hiki kwenye kivinjari cha simu yako kwanza. Tumia Chrome "
-#~ "kwenye Android au Safari kwenye iPhone."
+#: apps/web/src/components/install-instructions.tsx:19
+msgid "Open this link in your phone's browser first. Use Chrome on Android or "
+"Safari on iPhone."
+msgstr "Fungua kiungo hiki kwenye kivinjari cha simu yako kwanza. Tumia Chrome "
+"kwenye Android au Safari kwenye iPhone."
 
 #: apps/web/src/features/install/ui/install-page.tsx:154
 #~ msgid "Open this link on your phone in Chrome on Android or Safari on iPhone. "
@@ -2422,15 +2443,16 @@ msgstr "Fungua kwenye Ramani"
 #~ "kwenye iPhone. Unaweza pia kutafuta Install app kwenye menyu ya "
 #~ "kivinjari."
 
-#: apps/web/src/features/install/ui/install-page.tsx:143
-#~ msgid "Open this page in Chrome."
-#~ msgstr "Fungua ukurasa huu kwenye Chrome."
+#: apps/web/src/components/install-instructions.tsx:39
+msgid "Open this page in Chrome."
+msgstr "Fungua ukurasa huu kwenye Chrome."
 
-#: apps/web/src/features/install/ui/install-page.tsx:131
-#~ msgid "Open this page in Safari or Chrome and tap Share."
-#~ msgstr "Fungua ukurasa huu kwenye Safari au Chrome na uguse Share (Shiriki)."
+#: apps/web/src/components/install-instructions.tsx:27
+msgid "Open this page in Safari or Chrome and tap Share."
+msgstr "Fungua ukurasa huu kwenye Safari au Chrome na uguse Share (Shiriki)."
 
-#: apps/web/src/features/install/ui/install-page.tsx:72
+#: apps/web/src/components/install-app-dialog.tsx:32
+#: apps/web/src/features/install/ui/install-page.tsx:73
 msgid "Open your wallet and community market with one tap from your phone."
 msgstr "Fungua pochi yako na soko la jamii kwa mguso mmoja kwenye simu yako."
 
@@ -3201,7 +3223,7 @@ msgstr "Inatafuta vocha…"
 msgid "Select a token"
 msgstr "Chagua tokeni"
 
-#: apps/web/src/features/install/ui/install-page.tsx:144
+#: apps/web/src/features/install/ui/install-page.tsx:140
 msgid "Select and copy the link above to share it."
 msgstr "Chagua na unakili kiungo hapo juu ili kukishiriki."
 
@@ -3240,7 +3262,7 @@ msgstr "Tuma"
 #~ msgid "Send failed."
 #~ msgstr "Kutuma kumeshindikana."
 
-#: apps/web/src/features/install/ui/install-page.tsx:124
+#: apps/web/src/features/install/ui/install-page.tsx:120
 msgid "Send this link to help someone add CLC to their phone."
 msgstr "Tuma kiungo hiki kumsaidia mtu kuongeza CLC kwenye simu yake."
 
@@ -3307,11 +3329,11 @@ msgid "Share"
 msgstr "Shiriki"
 
 #: apps/web/src/components/install-app-link.tsx:17
-#: apps/web/src/features/install/ui/install-page.tsx:121
+#: apps/web/src/features/install/ui/install-page.tsx:117
 msgid "Share CLC"
 msgstr "Shiriki CLC"
 
-#: apps/web/src/features/install/ui/install-page.tsx:139
+#: apps/web/src/features/install/ui/install-page.tsx:135
 msgid "Share installation link"
 msgstr "Shiriki kiungo cha usakinishaji"
 
@@ -3574,9 +3596,10 @@ msgstr "Lebo"
 msgid "Take fees separately"
 msgstr "Tenga ada"
 
-#: apps/web/src/features/install/ui/install-page.tsx:146
-#~ msgid "Tap the three-dot menu, then Add to home screen or Install app."
-#~ msgstr "Gusa menyu ya nukta tatu, kisha Add to home screen au Install app."
+#: apps/web/src/components/install-instructions.tsx:42
+msgid "Tap the three-dot menu, then Add to home screen or Install app."
+msgstr "Gusa menyu ya nukta tatu, kisha Ongeza kwenye skrini ya kwanza (Add to "
+"home screen) au Sakinisha programu (Install app)."
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:396
 msgid "Tell people about your business..."
@@ -3975,13 +3998,13 @@ msgid "Use photo"
 msgstr "Tumia picha"
 
 #: apps/web/src/features/install/ui/install-page.tsx:101
-msgid "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
-"to Home Screen. In an embedded browser, open this link in Safari or "
-"Chrome first."
-msgstr "Tumia menyu ya kivinjari chako kusakinisha CLC. Kwenye iPhone, gusa "
-"Shiriki, kisha Ongeza kwenye Skrini ya Nyumbani. Ukiwa kwenye kivinjari "
-"cha ndani ya programu nyingine, fungua kiungo hiki kwenye Safari au "
-"Chrome kwanza."
+#~ msgid "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
+#~ "to Home Screen. In an embedded browser, open this link in Safari or "
+#~ "Chrome first."
+#~ msgstr "Tumia menyu ya kivinjari chako kusakinisha CLC. Kwenye iPhone, gusa "
+#~ "Shiriki, kisha Ongeza kwenye Skrini ya Nyumbani. Ukiwa kwenye kivinjari "
+#~ "cha ndani ya programu nyingine, fungua kiungo hiki kwenye Safari au "
+#~ "Chrome kwanza."
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:281
 #~ msgid "Use your location to order vouchers by distance."
@@ -4134,7 +4157,8 @@ msgstr "Vocha hubadilishwa moja kwa moja"
 msgid "Waiting for blockchain confirmation..."
 msgstr "Inasubiri uthibitisho wa blockchain..."
 
-#: apps/web/src/components/install-app-button.tsx:51
+#: apps/web/src/components/install-app-button.tsx:58
+#: apps/web/src/components/install-app-dialog.tsx:41
 msgid "Waiting for confirmation…"
 msgstr "Inasubiri uthibitisho…"
 
