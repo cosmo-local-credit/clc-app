@@ -481,14 +481,14 @@ describe("CreatePoolFlow", () => {
     });
 
     it("skips to the first free numbered candidate when the stem is taken", async () => {
-      getTakenSymbols.mockResolvedValue({ kind: "pool", prefix: "KWNG", taken: ["KWNG", "KWNG1"] });
+      getTakenSymbols.mockResolvedValue({ kind: "pool", prefix: "KWNG", taken: ["KWNG", "KWNG2"] });
       renderFlow(<CreatePoolFlow step="pool" />);
 
       const name = screen.getByLabelText("Pool Name");
       fireEvent.change(name, { target: { value: "Kawangware Community Pool" } });
       fireEvent.blur(name);
 
-      await waitFor(() => expect(symbolInput().value).toBe("KWNG2"));
+      await waitFor(() => expect(symbolInput().value).toBe("KWNG3"));
     });
 
     it("leaves a shortcode the steward typed alone when the name changes", async () => {
