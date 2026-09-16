@@ -29,9 +29,11 @@ export function useCreateSendShare(txHash: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateSendShareInput) => createSendShare(txHash, input),
-    onSuccess: (share) => {
-      queryClient.setQueryData(sendShareQueryKeys.detail(txHash), share);
-    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: sendShareQueryKeys.detail(txHash),
+        exact: true,
+      }),
   });
 }
 
