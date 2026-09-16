@@ -102,6 +102,19 @@ describe("SendReceiptPage", () => {
     expect(trackRelay).toHaveBeenCalledWith("tracking-1");
   });
 
+  it("offers no way out while the transfer is still settling", () => {
+    // The screen replaces itself with the outcome the moment the chain answers.
+    // A Done button meanwhile is a way to leave before ever seeing whether the
+    // transfer landed — and an easy one to hit by accident.
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+
+    render(
+      <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
+    );
+
+    expect(screen.queryByRole("button", { name: /done/i })).toBeNull();
+  });
+
   it("shows the sent receipt with a copyable transaction hash once confirmed", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {
