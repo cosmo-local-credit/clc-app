@@ -92,12 +92,16 @@ function accountToken(overrides: Partial<AccountToken> = {}): AccountToken {
   };
 }
 
+function treasury(balanceRaw: string, feesRaw = "0", withdrawableRaw = balanceRaw) {
+  return { balanceRaw, feesRaw, withdrawableRaw };
+}
+
 describe("buildPoolHoldings", () => {
   it("prices a catalog voucher from the chain balance and the quoter's rate", () => {
     const [holding] = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "250000" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000", "250000")]]),
       // 2 units of account per token.
       rates: new Map([[KAW.toLowerCase(), 2_000_000n]]),
     });
@@ -106,6 +110,7 @@ describe("buildPoolHoldings", () => {
       tokenAddress: KAW.toLowerCase(),
       symbol: "KAW",
       balanceRaw: "100000000",
+      liquidityRaw: "100000000",
       ratePpm: "2000000",
       feesRaw: "250000",
       uncatalogued: false,
@@ -122,7 +127,7 @@ describe("buildPoolHoldings", () => {
     const [holding] = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
     });
 
     expect(holding?.ratePpm).toBeNull();
@@ -135,7 +140,7 @@ describe("buildPoolHoldings", () => {
     const holdings = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "10000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("10000000")]]),
       indexedTokens: [accountToken()],
       rates: new Map([[KAW.toLowerCase(), PARITY]]),
     });
@@ -156,11 +161,30 @@ describe("buildPoolHoldings", () => {
     const [holding] = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
       indexedTokens: [accountToken({ tokenAddress: KAW, balance: "999000000" })],
     });
 
     expect(holding?.balanceRaw).toBe("100000000");
+  });
+
+  it("values available liquidity while keeping gross balance for the deposit cap", () => {
+    const [holding] = buildPoolHoldings({
+      pool: pool({ feesDecoupled: true }),
+      vouchers: [voucher({ tokenLimit: "10000000" })],
+      treasury: new Map([[KAW.toLowerCase(), treasury("7430000", "3930000", "3500000")]]),
+      rates: new Map([[KAW.toLowerCase(), PARITY]]),
+    });
+
+    expect(holding).toMatchObject({
+      balanceRaw: "7430000",
+      liquidityRaw: "3500000",
+      feesRaw: "3930000",
+      unitValueRaw: "3500000",
+      // The limiter checks the gross 7.43 balance, leaving 2.57 under a cap of 10.
+      headroomRaw: "2570000",
+      fillPercent: 74.3,
+    });
   });
 
   it("falls back to the indexer's balance when the chain read did not cover the token", () => {
@@ -173,18 +197,21 @@ describe("buildPoolHoldings", () => {
     });
 
     expect(holding?.balanceRaw).toBe("70000000");
-    expect(holding?.unitValueRaw).toBe("70000000");
+    // The indexer can recover the gross balance, but cannot know how much a
+    // decoupled pool reserved. Unknown liquidity must not be shown as available.
+    expect(holding?.liquidityRaw).toBeNull();
+    expect(holding?.unitValueRaw).toBeNull();
     // Recomputed against the new balance, not left at the zero it was built with.
     expect(holding?.fillPercent).toBe(35);
   });
 
   it("separates the four deposit-cap outcomes", () => {
-    const treasury = new Map([[KAW.toLowerCase(), { balanceRaw: "0", feesRaw: "0" }]]);
+    const treasuryByToken = new Map([[KAW.toLowerCase(), treasury("0")]]);
     const capOf = (poolOverrides: Partial<UserPool>, voucherOverrides: Partial<PoolVoucher>) =>
       buildPoolHoldings({
         pool: pool(poolOverrides),
         vouchers: [voucher(voucherOverrides)],
-        treasury,
+        treasury: treasuryByToken,
       })[0];
 
     expect(capOf({}, {})?.cap).toEqual({ kind: "capped", raw: "200000000" });
@@ -197,7 +224,7 @@ describe("buildPoolHoldings", () => {
     const uncapped = buildPoolHoldings({
       pool: pool({ limiterAddress: null }),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
     })[0];
     expect(uncapped?.fillPercent).toBeNull();
 
@@ -205,7 +232,7 @@ describe("buildPoolHoldings", () => {
     const blocked = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher({ tokenLimit: "0" })],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "0", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("0")]]),
     })[0];
     expect(blocked?.fillPercent).toBe(100);
   });
@@ -216,7 +243,7 @@ describe("buildPoolHoldings", () => {
     const [holding] = buildPoolHoldings({
       pool: pool(),
       vouchers: [voucher({ decimals: null })],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
     });
 
     expect(holding?.unitValueRaw).toBeNull();
@@ -229,7 +256,7 @@ describe("buildPoolHoldings", () => {
     const holdings = buildPoolHoldings({
       pool: pool({ quoterType: "oracle" }),
       vouchers: [voucher()],
-      treasury: new Map([[KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }]]),
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
       priced: false,
     });
 
@@ -253,9 +280,9 @@ describe("buildPoolHoldings", () => {
         voucher({ id: "c", symbol: "CCC", tokenAddress: LIMITER, decimals: null }),
       ],
       treasury: new Map([
-        [KAW.toLowerCase(), { balanceRaw: "1000000", feesRaw: "0" }],
-        [SAR.toLowerCase(), { balanceRaw: "9000000", feesRaw: "0" }],
-        [LIMITER.toLowerCase(), { balanceRaw: "9999000000", feesRaw: "0" }],
+        [KAW.toLowerCase(), treasury("1000000")],
+        [SAR.toLowerCase(), treasury("9000000")],
+        [LIMITER.toLowerCase(), treasury("9999000000")],
       ]),
     });
 

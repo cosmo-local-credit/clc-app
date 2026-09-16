@@ -68,7 +68,11 @@ export function PoolControlsPanel({
   const [sheet, setSheet] = useState<ControlSheet | null>(null);
   // Balances are read for the withdraw sheets alone, so a superadmin who can
   // only edit the record never pays for the calls.
-  const treasury = usePoolTreasury(pool, vouchers, canManageOnChain);
+  const treasury = usePoolTreasury(
+    pool,
+    vouchers.map((voucher) => voucher.tokenAddress),
+    canManageOnChain,
+  );
   const feeSettings = usePoolFeeSettings(pool, canManageOnChain);
   const fee = feeSettings.data;
 
