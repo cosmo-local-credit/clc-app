@@ -53,6 +53,7 @@ import { Textarea } from "#/components/ui/textarea";
 import { Toggle } from "#/components/ui/toggle";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
@@ -594,14 +595,15 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               hint={t`Your wallet by default. Enter another address to send the swap fees there.`}
                               error={getFieldError(field.state.meta.errors)}
                             >
-                              <Input
+                              <RecipientAddressInput
                                 id="pool-fee-address"
-                                className="font-mono text-[0.8125rem]"
-                                autoComplete="off"
-                                spellCheck={false}
-                                value={field.state.value}
-                                onChange={(event) => field.handleChange(event.target.value)}
+                                defaultValue={field.state.value}
+                                onValueChange={field.handleChange}
+                                onRecipientChange={(recipient) => {
+                                  if (recipient) field.handleChange(recipient.address);
+                                }}
                                 onBlur={field.handleBlur}
+                                ariaLabel={t`Fee recipient`}
                                 aria-invalid={field.state.meta.errors.length > 0}
                               />
                             </Field>
