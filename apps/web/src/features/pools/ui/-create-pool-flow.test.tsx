@@ -219,14 +219,15 @@ describe("CreatePoolFlow", () => {
     expect(screen.queryByRole("checkbox", { name: /Take fees separately/ })).toBeNull();
   });
 
-  it("asks where decoupled fees go, starting from the connected wallet", async () => {
+  it("asks where fees go as soon as one is charged, whatever decoupling says", async () => {
     const view = renderFlow(<CreatePoolFlow step="pool" />);
 
     fireEvent.click(screen.getByText("Advanced"));
-    fireEvent.change(screen.getByLabelText("Swap Fee (%)"), { target: { value: "0.5" } });
     expect(screen.queryByLabelText("Fee recipient")).toBeNull();
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
+    // The recipient follows the fee, not the "take fees separately" checkbox:
+    // SwapPool settles `withdraw` to `feeAddress` in both modes.
+    fireEvent.change(screen.getByLabelText("Swap Fee (%)"), { target: { value: "0.5" } });
     const recipient = screen.getByLabelText("Fee recipient") as HTMLInputElement;
     expect(recipient.value).toBe("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
 
@@ -240,17 +241,28 @@ describe("CreatePoolFlow", () => {
     fireEvent.blur(recipient);
     await waitFor(() => expect(screen.queryByRole("alert")).toBeNull());
 
-    // Unticking hides the recipient and the payload drops it; re-ticking keeps
-    // the typed address rather than seeding the wallet over it.
+    // Ticking and unticking the checkbox leaves the typed address alone.
     fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
-    expect(screen.queryByLabelText("Fee recipient")).toBeNull();
     fireEvent.click(screen.getByRole("checkbox", { name: /Take fees separately/ }));
     expect((screen.getByLabelText("Fee recipient") as HTMLInputElement).value).toBe(
       "0x9999999999999999999999999999999999999999",
     );
 
     view.rerender(<CreatePoolFlow step="review" />);
-    expect(screen.getByText("0x9999999999999999999999999999999999999999")).toBeTruthy();
+    // Shown in the app's ellipsis format rather than as forty raw hex digits.
+    expect(screen.queryByText("0x9999999999999999999999999999999999999999")).toBeNull();
+    expect(screen.getByText("9999")).toBeTruthy();
+  });
+
+  it("drops the recipient when the fee goes back to zero", () => {
+    renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Swap Fee (%)"), { target: { value: "0.5" } });
+    expect(screen.getByLabelText("Fee recipient")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Swap Fee (%)"), { target: { value: "0" } });
+    expect(screen.queryByLabelText("Fee recipient")).toBeNull();
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
@@ -478,6 +490,17 @@ describe("CreatePoolFlow", () => {
 
       await waitFor(() => expect(symbolInput().value).toBe("KWNG"));
       expect(getTakenSymbols).toHaveBeenCalledWith("pool", "KWNG", expect.anything());
+    });
+
+    it("suggests as soon as Advanced unfolds, without waiting for Next", async () => {
+      renderFlow(<CreatePoolFlow step="pool" />);
+
+      fireEvent.change(screen.getByLabelText("Pool Name"), {
+        target: { value: "Kilifi Growers" },
+      });
+      fireEvent.click(screen.getByText("Advanced"));
+
+      await waitFor(() => expect(symbolInput().value).toBe("KLFG"));
     });
 
     it("skips to the first free numbered candidate when the stem is taken", async () => {

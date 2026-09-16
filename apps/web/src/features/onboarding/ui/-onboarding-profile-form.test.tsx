@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate, mockResolvePreferredCurrency } = vi.hoisted(() => ({
+const { mockNavigate, mockResolveProfileCountry } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
-  mockResolvePreferredCurrency: vi.fn(),
+  mockResolveProfileCountry: vi.fn(),
 }));
 
 // Uploads are offered only where the service is configured, and the test env has
@@ -15,7 +15,7 @@ vi.mock("#/lib/api/storage", () => ({
 
 vi.mock("#/lib/profile-currency", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/lib/profile-currency")>();
-  return { ...actual, resolvePreferredCurrency: mockResolvePreferredCurrency };
+  return { ...actual, resolveProfileCountry: mockResolveProfileCountry };
 });
 
 vi.mock("@tanstack/react-router", () => ({
@@ -50,13 +50,16 @@ vi.mock("#/components/ui/phone-input", () => ({
     value,
     onChange,
     id,
+    defaultCountry,
   }: {
     value: string;
     onChange: (v: string) => void;
     id?: string;
+    defaultCountry?: string | null;
   }) => (
     <input
       data-testid="phone-input"
+      data-default-country={defaultCountry ?? ""}
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -130,8 +133,8 @@ function renderForm(
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  mockResolvePreferredCurrency.mockReset();
-  mockResolvePreferredCurrency.mockResolvedValue("USD");
+  mockResolveProfileCountry.mockReset();
+  mockResolveProfileCountry.mockResolvedValue("US");
 });
 
 describe("OnboardingProfileForm rendering", () => {
@@ -217,11 +220,11 @@ describe("OnboardingProfileForm submission", () => {
   });
 
   it("keeps a location currency when the network suggestion arrives later", async () => {
-    let resolveNetworkCurrency: (currency: string) => void = () => undefined;
-    mockResolvePreferredCurrency.mockImplementation(
+    let resolveNetworkCountry: (country: string) => void = () => undefined;
+    mockResolveProfileCountry.mockImplementation(
       () =>
         new Promise<string>((resolve) => {
-          resolveNetworkCurrency = resolve;
+          resolveNetworkCountry = resolve;
         }),
     );
     const mockOnNext = vi.fn();
@@ -236,7 +239,7 @@ describe("OnboardingProfileForm submission", () => {
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
 
     await act(async () => {
-      resolveNetworkCurrency("USD");
+      resolveNetworkCountry("US");
     });
     await act(async () => {
       fireEvent.submit(screen.getByRole("form"));
@@ -244,6 +247,54 @@ describe("OnboardingProfileForm submission", () => {
 
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
+      null,
+    );
+  });
+
+  it("seeds the phone dialling code from the same country as the currency", async () => {
+    renderForm();
+
+    await waitFor(() =>
+      expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
+    );
+
+    // A chosen location beats the network hint for both fields.
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("KE");
+  });
+
+  it("still seeds the dialling code when a currency was already chosen", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, {
+      name: "",
+      email: "",
+      phone: "",
+      location: undefined,
+      preferredCurrency: "EUR",
+      bio: "",
+      website: "",
+    } as unknown as ProfileInput);
+
+    // A saved currency preference says nothing about which dialling code to
+    // start on, so the network hint still reaches the phone field.
+    await waitFor(() =>
+      expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    // A location picked afterwards does not override the chosen currency either.
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "EUR" }),
       null,
     );
   });

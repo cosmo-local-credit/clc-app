@@ -22,7 +22,7 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import {
   DEFAULT_PREFERRED_CURRENCY,
   preferredCurrencyForCountry,
-  resolvePreferredCurrency,
+  resolveProfileCountry,
 } from "#/lib/profile-currency";
 import { translateValidationError } from "#/lib/validation-i18n";
 
@@ -74,6 +74,11 @@ export function OnboardingProfileForm({
   const currencyWasSuggestedByLocationRef = useRef(
     Boolean(initialValues?.location && !initialValues?.preferredCurrency),
   );
+  // The phone field's dialling code follows the same country the currency does.
+  // It is state rather than a ref because PhoneInputField renders from it.
+  const [suggestedCountry, setSuggestedCountry] = useState<string | null>(
+    initialValues?.location?.country ?? null,
+  );
 
   const form = useForm({
     defaultValues: initialValues ?? DEFAULT_VALUES,
@@ -88,29 +93,35 @@ export function OnboardingProfileForm({
   // or a shared connection. Until the person chooses a currency themselves, a
   // selected profile location can refine the initial network/locale suggestion.
   useEffect(() => {
-    if (initialValues?.preferredCurrency) return;
-
     const initialLocation = form.getFieldValue("location");
     if (initialLocation) {
-      suggestCurrencyForCountry(initialLocation.country);
+      suggestForCountry(initialLocation.country);
       return;
     }
 
     const controller = new AbortController();
-    void resolvePreferredCurrency(controller.signal).then((currency) => {
+    void resolveProfileCountry(controller.signal).then((country) => {
+      if (controller.signal.aborted || !country) return;
+      // The phone prefix is seeded whatever the currency did: a saved currency
+      // preference says nothing about which dialling code to start on.
+      setSuggestedCountry((current) => current ?? country);
       if (
-        controller.signal.aborted ||
+        initialValues?.preferredCurrency ||
         currencyWasChosenRef.current ||
         currencyWasSuggestedByLocationRef.current
       ) {
         return;
       }
-      form.setFieldValue("preferredCurrency", currency, { dontUpdateMeta: true });
+      form.setFieldValue("preferredCurrency", preferredCurrencyForCountry(country), {
+        dontUpdateMeta: true,
+      });
     });
     return () => controller.abort();
   }, [form, initialValues?.preferredCurrency]);
 
-  function suggestCurrencyForCountry(country: string) {
+  /** A chosen location is a better hint than the network, for both fields. */
+  function suggestForCountry(country: string) {
+    setSuggestedCountry(country);
     if (currencyWasChosenRef.current) return;
     currencyWasSuggestedByLocationRef.current = true;
     form.setFieldValue("preferredCurrency", preferredCurrencyForCountry(country), {
@@ -227,6 +238,7 @@ export function OnboardingProfileForm({
                     </label>
                     <PhoneInputField
                       id="onb-phone"
+                      defaultCountry={suggestedCountry}
                       value={field.state.value}
                       onChange={(val) => field.handleChange(val)}
                       aria-invalid={!!err}
@@ -346,7 +358,7 @@ export function OnboardingProfileForm({
                       value={field.state.value}
                       onChange={(next) => {
                         field.handleChange(next);
-                        if (next) suggestCurrencyForCountry(next.country);
+                        if (next) suggestForCountry(next.country);
                       }}
                       error={
                         field.state.meta.isTouched || submissionAttempts > 0

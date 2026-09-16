@@ -66,10 +66,17 @@ export function regionFromLocale(languages: readonly string[] | undefined): stri
   return null;
 }
 
-/** Uses IP country first, then the device's regional locale when offline/local. */
-export async function resolvePreferredCurrency(signal?: AbortSignal): Promise<IsoCurrency> {
+/**
+ * The ISO country to start a profile from: IP first, then the device's regional
+ * locale when offline or on a local network.
+ *
+ * Returned as a country rather than as one derived setting, because the same
+ * answer seeds both the preferred currency and the phone field's dialling code.
+ * Both stay editable — this is a convenience, never a claim about where a
+ * person lives.
+ */
+export async function resolveProfileCountry(signal?: AbortSignal): Promise<string | null> {
   const country = await resolveIPCountry(signal);
-  const localeRegion =
-    typeof navigator === "undefined" ? null : regionFromLocale(navigator.languages);
-  return preferredCurrencyForCountry(country ?? localeRegion);
+  if (country) return country;
+  return typeof navigator === "undefined" ? null : regionFromLocale(navigator.languages);
 }

@@ -9,6 +9,7 @@ import { relayCaliburBatch } from "#/features/webauthn/api/relay-calibur-batch";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 
+import { poolFeeSettingsQueryKeys } from "./use-pool-fee-settings";
 import { poolRegistryQueryKeys } from "./use-pool-registry";
 import { poolSwapTokenQueryKeys } from "./use-pool-swap-tokens";
 import { poolTreasuryQueryKeys } from "./use-pool-treasury";
@@ -33,10 +34,11 @@ const relayerClient = createRelayerClient(RELAYER_URL);
  * serve; invalidating on acceptance would refetch the old state and present it
  * as the new one.
  *
- * The quoter, treasury and registry reads are invalidated alongside the catalog
- * because a repriced voucher changes what `priceIndex` answers, a withdrawal
- * changes what the pool holds, and an approval changes what the registry admits.
- * None of those reads goes through clc-core at all.
+ * The quoter, treasury, registry and fee reads are invalidated alongside the
+ * catalog because a repriced voucher changes what `priceIndex` answers, a
+ * withdrawal changes what the pool holds, an approval changes what the registry
+ * admits, and a fee change moves both `defaultFee` and `feeAddress`. None of
+ * those reads goes through clc-core at all.
  *
  * Settlement is watched on the *relayer's* tracker, not clc-core's
  * `/api/v2/otx/track`. The latter answers only for deployments the signed-in
@@ -77,6 +79,7 @@ export function usePoolAdminRelay() {
         queryClient.invalidateQueries({ queryKey: poolQuoterQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolTreasuryQueryKeys.all }),
         queryClient.invalidateQueries({ queryKey: poolRegistryQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: poolFeeSettingsQueryKeys.all }),
         // The same batch writes the limiter, and the swap screen reads that cap
         // to decide whether a voucher can still be deposited.
         queryClient.invalidateQueries({ queryKey: poolSwapTokenQueryKeys.all }),

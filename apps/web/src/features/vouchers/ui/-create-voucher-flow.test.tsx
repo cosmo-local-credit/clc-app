@@ -568,6 +568,19 @@ describe("CreateVoucherFlow", () => {
       expect(screen.getByText("1 Kivukoni School Voucher = 1 KES")).toBeTruthy();
     });
 
+    it("suggests as soon as Advanced unfolds, without waiting for Next", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      // The field lives inside the disclosure, so a suggestion made only on the
+      // way out of the step is one the issuer never sees being made.
+      fireEvent.change(screen.getByLabelText("Voucher Name"), {
+        target: { value: "Kilifi Harvest" },
+      });
+      fireEvent.click(screen.getByText("Advanced"));
+
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+    });
+
     it("skips to the first free numbered candidate when the stem is taken", async () => {
       getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KVKS", taken: ["KVKS"] });
       renderFlow(<CreateVoucherFlow step="voucher" />);

@@ -140,7 +140,7 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>No vouchers yet.</Trans>
               </p>
-              <Button asChild variant="outline" className="h-11 w-full bg-card">
+              <Button asChild variant="outline" className="h-9 w-full bg-card">
                 <Link to="/vouchers/create/$step" params={{ step: "voucher" }}>
                   <Trans>Create voucher</Trans>
                 </Link>
@@ -209,7 +209,7 @@ export function WalletPage({ address }: { address?: string }) {
               <p className="text-muted-foreground text-sm">
                 <Trans>You haven't created a pool yet.</Trans>
               </p>
-              <Button asChild variant="outline" className="h-11 w-full bg-card">
+              <Button asChild variant="outline" className="h-9 w-full bg-card">
                 <Link to="/pools/create/$step" params={{ step: "pool" }}>
                   <Trans>Create pool</Trans>
                 </Link>

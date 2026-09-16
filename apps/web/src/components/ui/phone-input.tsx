@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Country } from "react-phone-number-input";
-import { getCountryCallingCode } from "react-phone-number-input";
+import { getCountryCallingCode, isSupportedCountry } from "react-phone-number-input";
 import PhoneInput from "react-phone-number-input/input";
 import { CountrySheet } from "#/components/ui/country-sheet";
 import { getFlagEmoji } from "#/components/ui/country-utils";
@@ -11,24 +11,46 @@ type PhoneInputFieldProps = {
   id?: string;
   value: string;
   onChange: (value: string) => void;
+  /**
+   * ISO country the dialling code starts on, e.g. the one detected for the
+   * profile. Adopted only while the field is empty and the person has not
+   * picked a country themselves, so a late-arriving detection never rewrites a
+   * number already being typed. Unsupported or absent falls back to the build's
+   * default country.
+   */
+  defaultCountry?: string | null;
   className?: string;
   "aria-invalid"?: boolean;
   "aria-label"?: string;
 };
 
-const DEFAULT_COUNTRY: Country = ((import.meta.env.VITE_DEFAULT_COUNTRY as string | undefined) ??
+const FALLBACK_COUNTRY: Country = ((import.meta.env.VITE_DEFAULT_COUNTRY as string | undefined) ??
   "KE") as Country;
+
+function toCountry(code: string | null | undefined): Country | null {
+  if (!code) return null;
+  const normalized = code.trim().toUpperCase();
+  return isSupportedCountry(normalized) ? (normalized as Country) : null;
+}
 
 export function PhoneInputField({
   id,
   value,
   onChange,
+  defaultCountry,
   className,
   "aria-invalid": ariaInvalid,
   "aria-label": ariaLabel,
 }: PhoneInputFieldProps) {
-  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const [country, setCountry] = useState<Country>(toCountry(defaultCountry) ?? FALLBACK_COUNTRY);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const countryWasChosen = useRef(false);
+
+  const detected = toCountry(defaultCountry);
+  useEffect(() => {
+    if (!detected || countryWasChosen.current || value !== "") return;
+    setCountry(detected);
+  }, [detected, value]);
 
   const callingCode = getCountryCallingCode(country);
 
@@ -78,6 +100,7 @@ export function PhoneInputField({
         mode="phone-country"
         value={country}
         onChange={(code) => {
+          countryWasChosen.current = true;
           setCountry(code as Country);
           setSheetOpen(false);
         }}

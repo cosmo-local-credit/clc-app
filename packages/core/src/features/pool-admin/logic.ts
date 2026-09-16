@@ -73,6 +73,28 @@ export const swapPoolWithdrawLiquidityAbi = parseAbi([
   "function withdrawLiquidity(address token, address to, uint256 amount)",
 ]);
 export const swapPoolSetFeeAddressAbi = parseAbi(["function setFeeAddress(address feeAddress)"]);
+/**
+ * The recipient read back from the pool itself.
+ *
+ * The catalog does not carry it: clc-core records the dependency addresses a
+ * deploy created but never `feeAddress`, so every pool reads back "not set"
+ * there whatever was configured. The chain is the only place the current value
+ * exists, and it is also where a later `setFeeAddress` lands.
+ */
+export const swapPoolFeeAddressAbi = parseAbi(["function feeAddress() view returns (address)"]);
+
+export const feePolicyDefaultFeeAbi = parseAbi(["function getDefaultFee() view returns (uint256)"]);
+export const feePolicySetDefaultFeeAbi = parseAbi(["function setDefaultFee(uint256 defaultFee)"]);
+
+/**
+ * FeePolicy stores fees in PPM against a 1,000,000 scale, so a percentage is a
+ * decimal with four places: 1% is 10,000 PPM, and 0.0001% is the smallest fee
+ * the contract can express.
+ */
+export const POOL_FEE_PERCENT_DECIMALS = 4;
+
+/** `FeePolicy.PPM` — the contract refuses a default fee above it. */
+const POOL_FEE_PPM_MAX = 1_000_000;
 
 /**
  * RelativeQuoter stores rates in PPM, so a rate is a decimal with six places.
@@ -258,20 +280,52 @@ export function buildWithdrawPoolLiquidityCalls(input: {
 }
 
 /**
- * Re-points where collected pool fees are paid.
+ * What a pool charges for a swap and who it is paid to.
  *
- * Reverts `Sealed` if the pool's `FEEADDRESS_STATE` bit is set, which is not
- * something the catalog records, so the failure surfaces at relay rather than
- * at validation.
+ * Two contracts, one steward decision, so one batch: the rate lives on the
+ * pool's FeePolicy and the recipient on SwapPool itself, and relaying them
+ * apart would leave a pool charging a fee it has nowhere to pay — or paying an
+ * address a rate change was meant to accompany.
+ *
+ * Either field may be omitted, which leaves that contract untouched; a batch
+ * that would change nothing is refused rather than relayed.
+ *
+ * `setFeeAddress` reverts `Sealed` if the pool's `FEEADDRESS_STATE` bit is set,
+ * which is not something the catalog records, so that failure surfaces at relay
+ * rather than at validation.
  */
-export function buildSetPoolFeeAddressCalls(input: {
+export function buildSetPoolFeeCalls(input: {
   poolAddress: `0x${string}`;
-  feeAddress: `0x${string}`;
+  /** Required only when changing the rate — the fee policy is a separate contract. */
+  feePolicyAddress: `0x${string}` | null;
+  /** The new default fee in PPM. Omitted leaves the current rate. */
+  feePpm?: string;
+  /** The new recipient. Omitted leaves the current one. */
+  feeAddress?: `0x${string}`;
 }): CaliburCall[] {
   assertContractAddress(input.poolAddress, "pool");
-  assertContractAddress(input.feeAddress, "fee recipient");
-  return [
-    {
+  const calls: CaliburCall[] = [];
+
+  if (input.feePpm !== undefined) {
+    const feePolicy = requireDependency(input.feePolicyAddress, "fee policy");
+    const feePpm = parseAmount(input.feePpm);
+    if (feePpm > BigInt(POOL_FEE_PPM_MAX)) {
+      throw new Error("A swap fee cannot be more than 100%.");
+    }
+    calls.push({
+      to: feePolicy,
+      value: "0",
+      data: encodeFunctionData({
+        abi: feePolicySetDefaultFeeAbi,
+        functionName: "setDefaultFee",
+        args: [feePpm],
+      }),
+    });
+  }
+
+  if (input.feeAddress !== undefined) {
+    assertContractAddress(input.feeAddress, "fee recipient");
+    calls.push({
       to: input.poolAddress,
       value: "0",
       data: encodeFunctionData({
@@ -279,8 +333,13 @@ export function buildSetPoolFeeAddressCalls(input: {
         functionName: "setFeeAddress",
         args: [input.feeAddress],
       }),
-    },
-  ];
+    });
+  }
+
+  if (calls.length === 0) {
+    throw new Error("Changing a pool's fee needs a new rate, a new recipient, or both.");
+  }
+  return calls;
 }
 
 /**

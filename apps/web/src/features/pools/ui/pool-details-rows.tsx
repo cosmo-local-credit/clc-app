@@ -2,14 +2,28 @@ import type { PoolCreateInput } from "@clc/core/features/pools/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useLingui } from "@lingui/react/macro";
 
+import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { InfoRow } from "#/components/ui/info-row";
+import { EllipsizedAddress } from "#/components/wallet";
 
 type PoolDetails = Omit<PoolCreateInput, "location" | "acceptedTerms" | "acceptedSproutLicense"> & {
   location?: PoolCreateInput["location"];
 };
 
-export function PoolDetailsRows({ values }: { values: PoolDetails }) {
+export function PoolDetailsRows({
+  values,
+  onCopyFeeAddress,
+}: {
+  values: PoolDetails;
+  /**
+   * Makes the fee recipient copyable, the way the published screen treats the
+   * contract address and the transaction hash. Omitted on the review step,
+   * where nothing on chain exists yet to copy a reference to.
+   */
+  onCopyFeeAddress?: (value: string) => void;
+}) {
   const { t } = useLingui();
+  const feeAddress = values.feeAddress.trim();
 
   return (
     <>
@@ -30,12 +44,18 @@ export function PoolDetailsRows({ values }: { values: PoolDetails }) {
       <InfoRow label={t`Fees held separately`} muted>
         {values.feesDecoupled ? t`Yes` : t`No`}
       </InfoRow>
-      {Number(values.feePolicyDefault) > 0 && values.feesDecoupled ? (
+      {Number(values.feePolicyDefault) > 0 ? (
         <InfoRow label={t`Fee recipient`} muted>
-          {values.feeAddress.trim() === "" ? (
+          {feeAddress === "" ? (
             t`Your wallet`
+          ) : onCopyFeeAddress ? (
+            <CopyableInfoValue
+              value={feeAddress}
+              label={t`Copy fee recipient`}
+              onCopy={onCopyFeeAddress}
+            />
           ) : (
-            <span className="font-mono break-all">{values.feeAddress.trim()}</span>
+            <EllipsizedAddress address={feeAddress} />
           )}
         </InfoRow>
       ) : null}

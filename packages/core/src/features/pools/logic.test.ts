@@ -168,12 +168,15 @@ describe("toPoolDeployPayload", () => {
     ).toBe(true);
   });
 
-  it("names a fee recipient only for decoupled fees, defaulting to the owner", () => {
+  it("names a fee recipient whenever a fee is charged, defaulting to the owner", () => {
     const OTHER = "0x9999999999999999999999999999999999999999";
+    // Decoupling only reserves accrued fees from withdrawable liquidity; the
+    // pool pays `withdraw` to `feeAddress` either way, so the recipient follows
+    // the fee rather than the checkbox.
     expect(
-      "feeAddress" in
-        toPoolDeployPayload({ ...validPool, feeAddress: OTHER }, OWNER, CELO_MAINNET_CHAIN_ID),
-    ).toBe(false);
+      toPoolDeployPayload({ ...validPool, feeAddress: OTHER }, OWNER, CELO_MAINNET_CHAIN_ID)
+        .feeAddress,
+    ).toBe(OTHER);
     expect(
       toPoolDeployPayload({ ...validPool, feesDecoupled: true }, OWNER, CELO_MAINNET_CHAIN_ID)
         .feeAddress,
@@ -187,6 +190,17 @@ describe("toPoolDeployPayload", () => {
     ).toBe(OTHER);
   });
 
+  it("leaves the recipient out of a pool that charges nothing", () => {
+    expect(
+      "feeAddress" in
+        toPoolDeployPayload(
+          { ...validPool, feePolicyDefault: "0", feeAddress: "" },
+          OWNER,
+          CELO_MAINNET_CHAIN_ID,
+        ),
+    ).toBe(false);
+  });
+
   it("maps the complete live pool request and omits blank optional fields", () => {
     expect(toPoolDeployPayload({ ...validPool, phone: "" }, OWNER, CELO_MAINNET_CHAIN_ID)).toEqual({
       name: "Kilifi Growers",
@@ -196,6 +210,7 @@ describe("toPoolDeployPayload", () => {
       quoterType: "oracle",
       feesDecoupled: false,
       feePolicyDefault: "1",
+      feeAddress: OWNER,
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
       unitOfAccount: "KES",
       description: "A pool for growers in Kilifi.",

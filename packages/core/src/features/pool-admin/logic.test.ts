@@ -1,11 +1,14 @@
 import { decodeFunctionData } from "viem";
 import { describe, expect, it } from "vite-plus/test";
 
+import { parseTokenAmount } from "../wallet/logic";
+
 import {
   buildAddPoolVoucherCalls,
   buildRemovePoolVoucherCalls,
-  buildSetPoolFeeAddressCalls,
+  buildSetPoolFeeCalls,
   buildWithdrawPoolLiquidityCalls,
+  feePolicySetDefaultFeeAbi,
   limiterSetLimitForAbi,
   oracleQuoterSetOracleAbi,
   oracleQuoterSetOracleWithStalenessAbi,
@@ -14,6 +17,7 @@ import {
   poolVoucherUnitValueFromCap,
   seedPoolVoucherRateInput,
   toPoolVoucherRateConfig,
+  POOL_FEE_PERCENT_DECIMALS,
   relativeQuoterSetPriceIndexValueAbi,
   swapPoolSetFeeAddressAbi,
   swapPoolWithdrawLiquidityAbi,
@@ -28,6 +32,7 @@ const LIMITER = "0x4d90000000000000000000000000000000000a1c" as const;
 const QUOTER = "0xb91c000000000000000000000000000000007d20" as const;
 const AGGREGATOR = "0x0826000000000000000000000000000000005e9d" as const;
 const RECIPIENT = "0x9911000000000000000000000000000000002244" as const;
+const FEE_POLICY = "0x70c1000000000000000000000000000000003b55" as const;
 
 function base() {
   return {
@@ -291,24 +296,93 @@ describe("buildWithdrawPoolLiquidityCalls", () => {
   });
 });
 
-describe("buildSetPoolFeeAddressCalls", () => {
-  it("re-points the pool's fee recipient", () => {
-    const calls = buildSetPoolFeeAddressCalls({ poolAddress: POOL, feeAddress: RECIPIENT });
+describe("buildSetPoolFeeCalls", () => {
+  it("batches the rate and the recipient, policy first", () => {
+    const calls = buildSetPoolFeeCalls({
+      poolAddress: POOL,
+      feePolicyAddress: FEE_POLICY,
+      feePpm: "15000",
+      feeAddress: RECIPIENT,
+    });
 
-    expect(calls.map((call) => call.to)).toEqual([POOL]);
-    expect(decodeFunctionData({ abi: swapPoolSetFeeAddressAbi, data: calls[0]!.data })).toEqual({
+    expect(calls.map((call) => call.to)).toEqual([FEE_POLICY, POOL]);
+    expect(decodeFunctionData({ abi: feePolicySetDefaultFeeAbi, data: calls[0]!.data })).toEqual({
+      functionName: "setDefaultFee",
+      args: [15_000n],
+    });
+    expect(decodeFunctionData({ abi: swapPoolSetFeeAddressAbi, data: calls[1]!.data })).toEqual({
       functionName: "setFeeAddress",
       args: [RECIPIENT],
     });
   });
 
+  it("leaves out the contract whose value did not change", () => {
+    expect(
+      buildSetPoolFeeCalls({
+        poolAddress: POOL,
+        feePolicyAddress: FEE_POLICY,
+        feeAddress: RECIPIENT,
+      }).map((call) => call.to),
+    ).toEqual([POOL]);
+
+    expect(
+      buildSetPoolFeeCalls({
+        poolAddress: POOL,
+        feePolicyAddress: FEE_POLICY,
+        feePpm: "0",
+      }).map((call) => call.to),
+    ).toEqual([FEE_POLICY]);
+  });
+
+  it("takes a zero fee, which is a pool that stops charging", () => {
+    expect(
+      decodeFunctionData({
+        abi: feePolicySetDefaultFeeAbi,
+        data: buildSetPoolFeeCalls({
+          poolAddress: POOL,
+          feePolicyAddress: FEE_POLICY,
+          feePpm: "0",
+        })[0]!.data,
+      }),
+    ).toEqual({ functionName: "setDefaultFee", args: [0n] });
+  });
+
+  it("refuses a fee above the contract's PPM ceiling", () => {
+    expect(() =>
+      buildSetPoolFeeCalls({
+        poolAddress: POOL,
+        feePolicyAddress: FEE_POLICY,
+        feePpm: "1000001",
+      }),
+    ).toThrow(/cannot be more than 100%/);
+  });
+
+  it("needs a fee policy address before it can change the rate", () => {
+    expect(() =>
+      buildSetPoolFeeCalls({ poolAddress: POOL, feePolicyAddress: null, feePpm: "10000" }),
+    ).toThrow(/no fee policy address on record/);
+  });
+
   it("rejects the zero address, which would make accrued fees uncollectible", () => {
     expect(() =>
-      buildSetPoolFeeAddressCalls({
+      buildSetPoolFeeCalls({
         poolAddress: POOL,
+        feePolicyAddress: FEE_POLICY,
         feeAddress: "0x0000000000000000000000000000000000000000",
       }),
     ).toThrow(/fee recipient must be a non-zero address/);
+  });
+
+  it("refuses a batch that would change nothing", () => {
+    expect(() => buildSetPoolFeeCalls({ poolAddress: POOL, feePolicyAddress: FEE_POLICY })).toThrow(
+      /needs a new rate, a new recipient, or both/,
+    );
+  });
+
+  it("reads a percentage into PPM at the scale the contract stores", () => {
+    expect(parseTokenAmount("1", POOL_FEE_PERCENT_DECIMALS)).toBe("10000");
+    expect(parseTokenAmount("0.5", POOL_FEE_PERCENT_DECIMALS)).toBe("5000");
+    expect(parseTokenAmount("100", POOL_FEE_PERCENT_DECIMALS)).toBe("1000000");
   });
 });
 
