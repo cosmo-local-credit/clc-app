@@ -23,7 +23,19 @@ import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-ba
  */
 export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const { t } = useLingui();
-  const treasury = usePoolTreasury(pool, vouchers, true);
+  // The account page discovers tokens the catalog has not projected. Feed the
+  // union into the same-block treasury multicall so those rows do not fall back
+  // to a gross balance that may include reserved fees.
+  const indexed = useAccountTokensInfinite(pool.address);
+  const treasury = usePoolTreasury(
+    pool,
+    [
+      ...vouchers.map((voucher) => voucher.tokenAddress),
+      ...(indexed.data?.pages.flatMap((page) => page.tokens.map((token) => token.tokenAddress)) ??
+        []),
+    ],
+    true,
+  );
   // `priceIndex` exists only on RelativeQuoter, and the rate read normalizes a
   // reverted call to parity — so on an oracle- or decimal-quoted pool every
   // voucher would come back at 1:1 and the screen would state a valuation
@@ -35,8 +47,6 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
   // catalog has not projected — a pool seeded at `initialize` holds tokens no
   // catalog row mentions, and a holdings screen that dropped them would report
   // a pool as emptier than it is.
-  const indexed = useAccountTokensInfinite(pool.address);
-
   const holdings = buildPoolHoldings({
     pool,
     vouchers,
@@ -120,10 +130,14 @@ function HoldingRow({
     tokenSymbol: holding.symbol,
     tokenName: holding.name,
     tokenDecimals: decimals ?? 18,
-    balance: holding.balanceRaw,
+    balance: holding.liquidityRaw ?? "0",
     iconUrl: holding.iconUrl,
     lastDateBlock: "",
   });
+  const liquidity =
+    decimals === null || holding.liquidityRaw === null
+      ? null
+      : formatTokenAmount(holding.liquidityRaw, decimals, 2);
 
   return (
     <Link
@@ -156,8 +170,7 @@ function HoldingRow({
               the limiter applies — so it carries no approximation sign. */}
           {holding.unitValueRaw === null ? (
             <p className="font-mono text-sm font-semibold tabular-nums">
-              {decimals === null ? "—" : formatTokenAmount(holding.balanceRaw, decimals, 2)}{" "}
-              {holding.symbol}
+              {liquidity === null ? "—" : `${liquidity} ${holding.symbol}`}
             </p>
           ) : (
             <>
@@ -165,8 +178,7 @@ function HoldingRow({
                 {formatTokenAmountFixed(holding.unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)} {unit}
               </p>
               <p className="font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
-                {decimals === null ? "—" : formatTokenAmount(holding.balanceRaw, decimals, 2)}{" "}
-                {holding.symbol}
+                {liquidity === null ? "—" : `${liquidity} ${holding.symbol}`}
               </p>
             </>
           )}

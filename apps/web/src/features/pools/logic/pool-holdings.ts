@@ -14,12 +14,19 @@ export type PoolHolding = {
   symbol: string;
   decimals: number | null;
   iconUrl: string | null;
-  /** Raw on-chain integer. */
+  /** Gross on-chain balance. The limiter checks this figure. */
   balanceRaw: string;
   /**
-   * The balance restated in the pool's unit of account, scaled to
+   * Liquidity the pool can actually release, after reserving fees where the
+   * contract decouples them. Null when the same-block treasury read failed —
+   * an indexed gross balance alone cannot prove how much is reserved.
+   */
+  liquidityRaw: string | null;
+  /**
+   * Available liquidity restated in the pool's unit of account, scaled to
    * `POOL_PRICE_INDEX_DECIMALS`. Null when nothing can price it — an unknown
-   * decimals leaves the conversion undefined rather than approximate.
+   * treasury snapshot or decimals leaves the conversion undefined rather than
+   * approximate.
    */
   unitValueRaw: string | null;
   /** The quoter's price index for the voucher, or null when it was not read. */
@@ -66,7 +73,7 @@ export type BuildPoolHoldingsInput = {
   /** The catalog's view: names, decimals and the recorded deposit cap. */
   vouchers: PoolVoucher[];
   /** On-chain balances, keyed by lowercased token address. */
-  treasury?: Map<string, { balanceRaw: string; feesRaw: string }>;
+  treasury?: Map<string, { balanceRaw: string; feesRaw: string; withdrawableRaw: string }>;
   /** The indexer's view of what the pool address holds. Catches what the catalog misses. */
   indexedTokens?: AccountToken[];
   /** Quoter price indexes, keyed by lowercased token address. */
@@ -105,6 +112,7 @@ export function buildPoolHoldings({
 
   for (const voucher of vouchers) {
     const tokenAddress = voucher.tokenAddress.toLowerCase();
+    const tokenTreasury = treasury?.get(tokenAddress);
     byAddress.set(
       tokenAddress,
       holding({
@@ -113,8 +121,9 @@ export function buildPoolHoldings({
         symbol: voucher.symbol,
         decimals: voucher.decimals,
         iconUrl: voucher.iconUrl,
-        balanceRaw: treasury?.get(tokenAddress)?.balanceRaw ?? null,
-        feesRaw: treasury?.get(tokenAddress)?.feesRaw ?? null,
+        balanceRaw: tokenTreasury?.balanceRaw ?? null,
+        liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
+        feesRaw: tokenTreasury?.feesRaw ?? null,
         cap: poolDepositCap(pool, voucher),
         ratePpm: rates?.get(tokenAddress),
         priced,
@@ -130,10 +139,14 @@ export function buildPoolHoldings({
       // The chain is preferred when it answered; the indexer fills the gap for a
       // voucher the treasury read did not cover.
       if (existing.balanceRaw === "0" && !treasury?.has(tokenAddress)) {
-        byAddress.set(tokenAddress, { ...existing, ...valued(existing, token.balance) });
+        byAddress.set(tokenAddress, {
+          ...existing,
+          ...valued(existing, token.balance, existing.liquidityRaw),
+        });
       }
       continue;
     }
+    const tokenTreasury = treasury?.get(tokenAddress);
     byAddress.set(
       tokenAddress,
       holding({
@@ -142,8 +155,9 @@ export function buildPoolHoldings({
         symbol: token.tokenSymbol,
         decimals: token.tokenDecimals,
         iconUrl: token.iconUrl,
-        balanceRaw: treasury?.get(tokenAddress)?.balanceRaw ?? token.balance,
-        feesRaw: treasury?.get(tokenAddress)?.feesRaw ?? null,
+        balanceRaw: tokenTreasury?.balanceRaw ?? token.balance,
+        liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
+        feesRaw: tokenTreasury?.feesRaw ?? null,
         // Nothing in the catalog describes it, so nothing records a cap either.
         cap: pool.limiterAddress ? { kind: "unrecorded" } : { kind: "uncapped" },
         ratePpm: rates?.get(tokenAddress),
@@ -163,6 +177,7 @@ function holding(input: {
   decimals: number | null;
   iconUrl: string | null;
   balanceRaw: string | null;
+  liquidityRaw: string | null;
   feesRaw: string | null;
   cap: PoolDepositCap;
   ratePpm: bigint | undefined;
@@ -181,6 +196,7 @@ function holding(input: {
     decimals: input.decimals,
     iconUrl: input.iconUrl,
     balanceRaw,
+    liquidityRaw: input.liquidityRaw,
     unitValueRaw: null,
     ratePpm,
     cap: input.cap,
@@ -192,16 +208,18 @@ function holding(input: {
     priced: input.priced,
     uncatalogued: input.uncatalogued,
   };
-  return { ...base, ...valued(base, balanceRaw) };
+  return { ...base, ...valued(base, balanceRaw, input.liquidityRaw) };
 }
 
 /** Everything that moves with the balance, recomputed for a new one. */
 function valued(
   holding: PoolHolding,
   balanceRaw: string,
+  liquidityRaw: string | null,
 ): Pick<
   PoolHolding,
   | "balanceRaw"
+  | "liquidityRaw"
   | "unitValueRaw"
   | "fillPercent"
   | "headroomRaw"
@@ -215,7 +233,11 @@ function valued(
 
   return {
     balanceRaw,
-    unitValueRaw: holding.priced ? unitValue(balanceRaw, holding.ratePpm, holding.decimals) : null,
+    liquidityRaw,
+    unitValueRaw:
+      holding.priced && liquidityRaw !== null
+        ? unitValue(liquidityRaw, holding.ratePpm, holding.decimals)
+        : null,
     fillPercent: capFill(balanceRaw, holding.cap),
     headroomRaw,
     capUnitValueRaw: priceIn(capRaw),

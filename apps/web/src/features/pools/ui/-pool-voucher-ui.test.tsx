@@ -12,6 +12,7 @@ const {
   holderBalances,
   navigate,
   poolLiquidityBalance,
+  poolTreasuryState,
   poolTokenLimit,
   poolTransfers,
   publicClientCall,
@@ -25,6 +26,11 @@ const {
   holderBalances: { value: {} as Record<string, bigint> },
   navigate: vi.fn(),
   poolLiquidityBalance: { value: 1_000_000_000n },
+  poolTreasuryState: {
+    balances: {} as Record<string, bigint>,
+    fees: {} as Record<string, bigint>,
+    feesDecoupled: false,
+  },
   /**
    * `limitOf(token, pool)` per token, over a default high enough to leave every
    * swap room. The pool holds 30 of each voucher, so a cap of 30_000_000n is a
@@ -267,6 +273,12 @@ function tokenLimitOf(token: unknown): bigint {
 
 beforeEach(() => {
   poolLiquidityBalance.value = 1_000_000_000n;
+  poolTreasuryState.balances = {
+    [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
+    [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
+  };
+  poolTreasuryState.fees = {};
+  poolTreasuryState.feesDecoupled = false;
   poolTokenLimit.overrides = {};
   swapTransferState.error = null;
   swapTransferState.isPending = false;
@@ -305,14 +317,29 @@ beforeEach(() => {
           { status: "success", result: tokenLimitOf(contracts[1].args?.[0]) },
         ]);
       }
+      // The holdings/admin treasury reads the immutable fee mode once, then
+      // alternates balanceOf/fees per voucher in the same Multicall3 snapshot.
+      // The swap quote's own three reads put feesDecoupled second instead.
+      if (contracts[0]?.functionName === "feesDecoupled" && contracts[2]?.functionName === "fees") {
+        return Promise.resolve(
+          contracts.map((contract, index) => {
+            if (index === 0) {
+              return { status: "success", result: poolTreasuryState.feesDecoupled };
+            }
+            if (index % 2 === 1) {
+              return {
+                status: "success",
+                result: poolTreasuryState.balances[contract.address.toLowerCase()] ?? 0n,
+              };
+            }
+            const tokenAddress = String(contract.args?.[0]).toLowerCase();
+            return { status: "success", result: poolTreasuryState.fees[tokenAddress] ?? 0n };
+          }),
+        );
+      }
       // The holdings panel's quoter rates, which tolerate a reverted read.
       if (allowFailure) {
         return Promise.resolve(contracts.map(() => ({ status: "success", result: 2_000_000n })));
-      }
-      // The treasury read alternates balanceOf/fees per voucher; the swap
-      // quote's own read puts feesDecoupled second.
-      if (contracts[1]?.functionName === "fees") {
-        return Promise.resolve(contracts.map((_, index) => (index % 2 === 0 ? 30_000_000n : 0n)));
       }
       return Promise.resolve([poolLiquidityBalance.value, false, 0n]);
     },
@@ -479,6 +506,25 @@ describe("pool voucher UI", () => {
     });
     // 30 of 40 held, so a quarter of the cap is left.
     expect(bar.getAttribute("aria-valuenow")).toBe("25");
+  });
+
+  it("shows only withdrawable liquidity when the pool holds fees separately", async () => {
+    poolTreasuryState.feesDecoupled = true;
+    poolTreasuryState.balances[USDC_ADDRESS.toLowerCase()] = 7_430_000n;
+    poolTreasuryState.fees[USDC_ADDRESS.toLowerCase()] = 3_930_000n;
+    mockPoolRequests({ usdcBalance: "7430000" });
+
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    // 7.43 is the gross ERC-20 balance, but 3.93 is reserved for collection.
+    // The row values the 3.50 the pool can release: 3.50 x 2 USD = 7.00 USD.
+    await waitFor(() => expect(within(panel).getByText("7.00 USD")).toBeTruthy());
+    expect(within(panel).getByText("3.5 USDC")).toBeTruthy();
+    expect(within(panel).queryByText("7.43 USDC")).toBeNull();
+    // Deposit caps still use the gross balance, exactly like mustWithinLimit:
+    // (40 - 7.43) x 2 USD leaves 65.14 USD of credit.
+    expect(within(panel).getByText("65.14 of 80.00 USD available credit")).toBeTruthy();
   });
 
   it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
