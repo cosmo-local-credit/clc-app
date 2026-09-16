@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { normalizeScannedRecipient } from "./recipient-validation";
+import { normalizeScannedRecipient } from "#/components/wallet/recipient-validation";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 

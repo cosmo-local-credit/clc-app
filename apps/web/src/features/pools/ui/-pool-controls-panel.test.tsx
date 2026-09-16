@@ -43,6 +43,12 @@ vi.mock("#/components/wallet", () => ({
   SignHint: () => <p>Sign hint</p>,
 }));
 
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useEnsRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  usePhoneRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  useReverseEnsResolution: () => ({ data: null, error: null, isPending: false }),
+}));
+
 import { PoolControlsPanel } from "./pool-controls-panel";
 
 function pool(overrides: Partial<UserPool> = {}): UserPool {

@@ -14,6 +14,7 @@ import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
+import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -337,15 +338,15 @@ function VoucherOwnershipTransferSheet({
                     htmlFor="voucher-new-owner"
                     error={getFieldError(field.state.meta.errors)}
                   >
-                    <Input
+                    <RecipientAddressInput
                       id="voucher-new-owner"
-                      autoCapitalize="none"
-                      autoCorrect="off"
-                      spellCheck={false}
-                      placeholder="0x…"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
+                      defaultValue={field.state.value}
+                      onValueChange={field.handleChange}
+                      onRecipientChange={(recipient) => {
+                        if (recipient) field.handleChange(recipient.address);
+                      }}
                       onBlur={field.handleBlur}
+                      ariaLabel={t`New owner address`}
                       disabled={pending}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />

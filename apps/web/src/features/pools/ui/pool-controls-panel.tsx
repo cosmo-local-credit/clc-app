@@ -17,6 +17,7 @@ import { ActionRow } from "#/components/ui/action-row";
 import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
+import { RecipientAddressInput } from "#/components/wallet/recipient-address-input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -420,15 +421,15 @@ function FeeAddressForm({ pool, onDone }: { pool: UserPool; onDone: () => void }
           hint={t`Collected swap fees are paid here.`}
           error={trimmed && !isValid ? t`Enter a valid wallet address` : null}
         >
-          <Input
+          <RecipientAddressInput
             id="pool-fee-address"
-            value={value}
-            placeholder="0x…"
-            autoComplete="off"
-            spellCheck={false}
-            onChange={(event) => setValue(event.target.value)}
-            aria-invalid={!!trimmed && !isValid}
-            className="font-mono text-sm"
+            defaultValue={value}
+            onValueChange={setValue}
+            onRecipientChange={(recipient) => {
+              if (recipient) setValue(recipient.address);
+            }}
+            ariaLabel={t`Wallet address`}
+            ariaInvalid={!!trimmed && !isValid}
           />
         </Field>
       </div>
