@@ -8,7 +8,7 @@ import { cn } from "#/lib/utils";
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
-const MARKER_COLOR = "#166534";
+const MARKER_COLOR = "#1762b8";
 
 type LocationMapProps = {
   lat?: number | null;

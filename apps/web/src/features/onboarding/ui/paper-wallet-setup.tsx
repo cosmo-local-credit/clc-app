@@ -21,6 +21,8 @@ export type UsePaperWalletSetupProps = {
   qrUrl: string;
   defaultName: string;
   downloadDisabled?: boolean;
+  /** Called only after the image has been rendered and its browser download opened. */
+  onDownloaded?: () => void;
 };
 
 export type PaperWalletSetupSlots = {
@@ -42,6 +44,7 @@ export function usePaperWalletSetup({
   qrUrl,
   defaultName,
   downloadDisabled = false,
+  onDownloaded,
 }: UsePaperWalletSetupProps): PaperWalletSetupSlots {
   const { t } = useLingui();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -105,6 +108,7 @@ export function usePaperWalletSetup({
       a.href = dataUrl;
       a.download = `clc-wallet-${address.slice(2, 10)}.png`;
       a.click();
+      onDownloaded?.();
     } catch {
       setDownloadError(t`Download failed. Try a screenshot instead.`);
     } finally {

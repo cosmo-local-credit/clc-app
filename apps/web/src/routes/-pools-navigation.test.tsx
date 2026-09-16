@@ -15,6 +15,10 @@ const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
+  // The pool screen's steward reads take a viem client off wagmi; without one
+  // they stay disabled, which is what a non-owner sees anyway.
+  useClient: () => undefined,
+  useBytecode: () => ({ data: undefined, isPending: false }),
 }));
 
 vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
@@ -42,6 +46,15 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
     data: { address: POOL_ADDRESS, name: "Trade Pool", symbol: "TRD", tags: [] },
     isPending: false,
     isError: false,
+  }),
+  // The wallet screen's own pool section. Empty: this file asserts navigation,
+  // and a populated list would only add rows for the queries below to match.
+  useOwnedPoolsInfinite: () => ({
+    data: { pages: [{ pools: [] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    refetch: vi.fn(),
   }),
 }));
 
@@ -95,8 +108,25 @@ function createTestRouter(initialEntry: string) {
       return <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />;
     },
   });
+  // Stubbed: this asserts where Deposit goes and that Back comes home, not what
+  // the send flow renders once it arrives.
+  const sendAmountRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/wallet/send/amount",
+    validateSearch: (
+      search,
+    ): { recipient?: string; recipientLabel?: string; returnPool?: string } => ({
+      recipient: typeof search.recipient === "string" ? search.recipient : undefined,
+      recipientLabel: typeof search.recipientLabel === "string" ? search.recipientLabel : undefined,
+      returnPool: typeof search.returnPool === "string" ? search.returnPool : undefined,
+    }),
+    component: () => {
+      const { recipientLabel } = sendAmountRoute.useSearch();
+      return <h1>Amount for {recipientLabel}</h1>;
+    },
+  });
   return createRouter({
-    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute]),
+    routeTree: rootRoute.addChildren([indexRoute, poolsRoute, poolDetailRoute, sendAmountRoute]),
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
 }
@@ -110,7 +140,8 @@ describe("pools navigation", () => {
     const router = createTestRouter("/?tab=wallet");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const poolsAction = await screen.findByRole("link", { name: /pools/i });
+    // Exact: the wallet's Your Pools header links out to "All pools" as well.
+    const poolsAction = await screen.findByRole("link", { name: "Pools" });
     expect(poolsAction.getAttribute("href")).toBe("/pools");
     fireEvent.click(poolsAction);
 
@@ -126,6 +157,35 @@ describe("pools navigation", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe("/");
       expect(router.state.location.search).toMatchObject({ tab: "wallet" });
+    });
+  });
+
+  it("deposits into a pool through the send flow and Back returns to the pool", async () => {
+    const router = createTestRouter(`/pools/${POOL_ADDRESS}`);
+    render(withQueryClient(<RouterProvider router={router} />));
+
+    const deposit = await screen.findByRole("link", { name: "Deposit" });
+    fireEvent.click(deposit);
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/wallet/send/amount");
+      // The pool is carried as the recipient, so the send flow opens on the
+      // amount step rather than asking who to send to.
+      expect(router.state.location.search).toMatchObject({
+        recipient: POOL_ADDRESS,
+        recipientLabel: "Trade Pool",
+        // Rides through to the receipt so finishing the deposit lands back on
+        // the pool rather than on the wallet.
+        returnPool: POOL_ADDRESS,
+      });
+    });
+
+    await act(async () => {
+      router.history.back();
+    });
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
     });
   });
 

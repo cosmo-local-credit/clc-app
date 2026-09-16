@@ -1,40 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getTrackingOutcome,
-  trackOtx,
+  isTrackingNotFound,
   TRACKING_POLL_MS,
   type OtxTrackingOutcome,
-} from "#/features/auth/api/client";
+} from "@clc/api/features/auth/client";
+import { authClient } from "#/lib/api/auth";
 
 /**
- * A trackingId is issued as soon as a job is enqueued, before the async
- * relayer worker has written the corresponding OTX row. Polling in that
- * window gets a 404 from the backend that's "not written yet", not a
- * tracking failure, so treat it the same as a pending outcome.
+ * A trackingId is issued as soon as a job is enqueued, before the async relayer
+ * worker has written the corresponding OTX row. Polling in that window gets a
+ * 404 that's "not written yet", not a tracking failure, so treat it the same as
+ * a pending outcome. The predicate lives in @clc/api because the poller behind
+ * the one-shot waits needs the same rule.
  */
-function isNotFoundError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    (error as { status: unknown }).status === 404
-  );
-}
-
 export function useOtxTracking(
   trackingId: string | null,
   options: {
     enabled?: boolean;
     pollMs?: number;
     queryKey?: string;
-    queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof trackOtx>>>;
+    queryFn?: (trackingId: string) => Promise<Awaited<ReturnType<typeof authClient.trackOtx>>>;
     getOutcome?: typeof getTrackingOutcome;
   } = {},
 ) {
   const enabled = options.enabled ?? true;
   const pollMs = options.pollMs ?? TRACKING_POLL_MS;
   const queryKey = options.queryKey ?? "otx-track";
-  const queryFn = options.queryFn ?? trackOtx;
+  const queryFn = options.queryFn ?? ((trackingId: string) => authClient.trackOtx(trackingId));
   const getOutcome = options.getOutcome ?? getTrackingOutcome;
 
   const query = useQuery({
@@ -45,14 +38,14 @@ export function useOtxTracking(
     refetchIntervalInBackground: true,
     refetchInterval: (currentQuery) => {
       if (!trackingId || !enabled) return false;
-      if (isNotFoundError(currentQuery.state.error)) return pollMs;
+      if (isTrackingNotFound(currentQuery.state.error)) return pollMs;
       const outcome = getOutcome(currentQuery.state.data);
       return outcome.kind === "pending" ? pollMs : false;
     },
   });
 
   const outcome: OtxTrackingOutcome = query.isError
-    ? isNotFoundError(query.error)
+    ? isTrackingNotFound(query.error)
       ? { kind: "pending" }
       : {
           kind: "error",

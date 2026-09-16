@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
@@ -10,16 +10,20 @@ import {
 
 import { Trans } from "@lingui/react/macro";
 import { Badge } from "#/components/ui/badge";
+import { Progress, ProgressTrack } from "#/components/ui/progress";
 import { cn } from "#/lib/utils";
+import { CHAIN_INFO } from "#/lib/chain";
 
 export function NetworkBadge({ className }: { className?: string }) {
+  const chainName = CHAIN_INFO.name;
+
   return (
     <Badge
       variant="muted"
       className={cn("h-auto gap-1.5 bg-card px-2 py-0.5 text-xs normal-case", className)}
     >
       <span className="size-2 rounded-full bg-primary" />
-      <Trans>Celo network</Trans>
+      <Trans>{chainName} network</Trans>
     </Badge>
   );
 }
@@ -79,15 +83,33 @@ export function SuccessCheck({ className }: { className?: string }) {
 }
 
 export function PendingClock({ className }: { className?: string }) {
+  const animationStyle = {
+    // Pace the countdown to a conservative two-block confirmation window.
+    // Gnosis targets five-second blocks, so the ring depletes over 10s. The
+    // wait may finish sooner; the ring holds empty if it runs long.
+    "--pending-clock-duration": `${CHAIN_INFO.blockTimeMs * 2}ms`,
+  } as CSSProperties;
+
   return (
-    <span
-      className={cn(
-        "flex size-14 items-center justify-center rounded-full border border-warning/40 bg-warning/10 text-warning-foreground",
-        className,
-      )}
+    <Progress
+      value={null}
+      aria-hidden="true"
+      data-slot="pending-clock"
+      className={cn("block size-14 bg-transparent", className)}
+      style={animationStyle}
     >
-      <RiTimeLine className="size-7" aria-hidden="true" />
-    </span>
+      <ProgressTrack
+        className="pending-clock-indicator size-full rounded-full"
+        data-slot="pending-clock-indicator"
+      />
+      {/* The ring is a mask over a conic gradient, so its centre is empty. The
+          clock fills it the way the check and cross fill their badges. */}
+      <RiTimeLine
+        className="absolute inset-0 m-auto size-7 text-warning-foreground"
+        data-slot="pending-clock-icon"
+        aria-hidden="true"
+      />
+    </Progress>
   );
 }
 

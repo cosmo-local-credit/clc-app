@@ -1,0 +1,246 @@
+import { describe, expect, it, vi } from "vite-plus/test";
+import { BackendApiError, NO_HTTP_STATUS } from "./errors";
+import { createHttpClient } from "./http-client";
+
+function response(
+  status: number,
+  body: string,
+  statusText = "",
+  headers: Record<string, string> = {},
+): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText,
+    headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+    text: () => Promise.resolve(body),
+  } as unknown as Response;
+}
+
+function clientWith(fetchImpl: typeof globalThis.fetch, baseUrl = "https://api.example.test") {
+  return createHttpClient({ baseUrl, fetch: fetchImpl });
+}
+
+describe("createHttpClient base URL validation", () => {
+  it("rejects a missing base URL at construction, not on first request", () => {
+    // Failing at startup is the point: a deployment with no backend URL should
+    // not get as far as issuing requests.
+    expect(() => createHttpClient({ baseUrl: "" })).toThrow(/base URL is missing/);
+    expect(() => createHttpClient({ baseUrl: "   " })).toThrow(/base URL is missing/);
+  });
+
+  it("accepts a same-origin path prefix, which is a real deployment shape", async () => {
+    // "/api" behind a reverse proxy resolves against the page's origin. The apps
+    // supported this before this client existed, so rejecting it would break a
+    // deployment at module load rather than at request time.
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    const client = clientWith(fetchImpl, "/api/");
+    expect(client.baseUrl).toBe("/api");
+
+    await client.request("/v2/pools");
+    expect(fetchImpl).toHaveBeenCalledWith("/api/v2/pools", expect.anything());
+  });
+
+  it("rejects an unparseable base URL that is not a path", () => {
+    expect(() => createHttpClient({ baseUrl: "not a url" })).toThrow(/not a valid absolute URL/);
+  });
+
+  it("rejects a non-http protocol", () => {
+    expect(() => createHttpClient({ baseUrl: "ftp://example.test" })).toThrow(/must be http/);
+  });
+
+  it("strips trailing slashes so resource paths do not double up", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    const client = clientWith(fetchImpl, "https://api.example.test/");
+    expect(client.baseUrl).toBe("https://api.example.test");
+
+    await client.request("/api/v2/pools");
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://api.example.test/api/v2/pools",
+      expect.anything(),
+    );
+  });
+});
+
+describe("createHttpClient requests", () => {
+  it("uses the injected fetch rather than the global", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, '{"ok":true,"result":{"a":1}}'));
+    await clientWith(fetchImpl).request("/x");
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it("unwraps the ok envelope", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, '{"ok":true,"result":{"a":1}}'));
+    await expect(clientWith(fetchImpl).request("/x")).resolves.toEqual({ a: 1 });
+  });
+
+  it("returns an unenveloped body unchanged", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, '{"a":1}'));
+    await expect(clientWith(fetchImpl).request("/x")).resolves.toEqual({ a: 1 });
+  });
+
+  it("sends credentials and a JSON content type only when there is a body", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    const client = clientWith(fetchImpl);
+
+    await client.request("/x", { method: "POST", body: "{}" });
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    await client.request("/y");
+    expect(fetchImpl.mock.calls[1]?.[1]?.headers).toEqual({});
+  });
+
+  it("lets a caller override credentials for a public resource", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    await clientWith(fetchImpl).request("/x", { credentials: "omit" });
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ credentials: "omit" });
+  });
+
+  it("preserves an abort signal", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(200, "{}"));
+    const signal = new AbortController().signal;
+    await clientWith(fetchImpl).request("/x", { signal });
+    expect(fetchImpl.mock.calls[0]?.[1]?.signal).toBe(signal);
+  });
+
+  it("throws BackendApiError with the backend description and code on an HTTP error", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(response(403, '{"ok":false,"description":"pending","code":"E10"}'));
+
+    const err = await clientWith(fetchImpl)
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(BackendApiError);
+    expect(err).toMatchObject({ status: 403, description: "pending", code: "E10" });
+  });
+
+  it("throws for a non-JSON body such as an HTML gateway page", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(502, "<html>oops</html>", "Bad Gateway"));
+    const err = await clientWith(fetchImpl)
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(BackendApiError);
+    expect(err).toMatchObject({ status: 502, description: "Bad Gateway" });
+  });
+
+  it("throws for an application-layer ok:false envelope returned with HTTP 200", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(response(200, '{"ok":false,"description":"nonce used","code":"E22"}'));
+    const err = await clientWith(fetchImpl)
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ status: 200, description: "nonce used", code: "E22" });
+  });
+
+  it("treats an empty body as a null result rather than a parse failure", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(response(204, ""));
+    await expect(clientWith(fetchImpl).request("/x")).resolves.toBeNull();
+  });
+});
+
+describe("platform fetch resolution", () => {
+  it("resolves the global fetch per request, so a later replacement is honoured", async () => {
+    // Constructed before any stub exists. Capturing globalThis.fetch here would
+    // pin the wrong implementation for environments that patch fetch after
+    // startup, and would silently bypass test doubles.
+    const client = createHttpClient({ baseUrl: "https://api.example.test" });
+
+    const first = vi.fn().mockResolvedValue(response(200, '{"n":1}'));
+    vi.stubGlobal("fetch", first);
+    await expect(client.request("/x")).resolves.toEqual({ n: 1 });
+
+    const second = vi.fn().mockResolvedValue(response(200, '{"n":2}'));
+    vi.stubGlobal("fetch", second);
+    await expect(client.request("/x")).resolves.toEqual({ n: 2 });
+
+    expect(first).toHaveBeenCalledOnce();
+    expect(second).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+  });
+
+  it("prefers an explicitly injected fetch over the global", async () => {
+    const injected = vi.fn().mockResolvedValue(response(200, '{"n":"injected"}'));
+    const global = vi.fn().mockResolvedValue(response(200, '{"n":"global"}'));
+    vi.stubGlobal("fetch", global);
+
+    const client = createHttpClient({ baseUrl: "https://api.example.test", fetch: injected });
+    await expect(client.request("/x")).resolves.toEqual({ n: "injected" });
+    expect(global).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+});
+
+describe("failure classification", () => {
+  it("wraps a rejected fetch as a network failure rather than leaking a TypeError", async () => {
+    const cause = new TypeError("Failed to fetch");
+    const err = await clientWith(vi.fn().mockRejectedValue(cause))
+      .request("/x")
+      .catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(BackendApiError);
+    expect(err).toMatchObject({ kind: "network", status: NO_HTTP_STATUS });
+    expect((err as BackendApiError).cause).toBe(cause);
+  });
+
+  it("lets an AbortError through unchanged, because a cancelled request is not a failure", async () => {
+    // React Query cancels superseded queries; converting that to a surfaced
+    // error would make every filter change look like a backend fault.
+    const abort = Object.assign(new Error("aborted"), { name: "AbortError" });
+    const err = await clientWith(vi.fn().mockRejectedValue(abort))
+      .request("/x")
+      .catch((e: unknown) => e);
+
+    expect(err).toBe(abort);
+    expect(err).not.toBeInstanceOf(BackendApiError);
+  });
+
+  it("classifies an unintelligible body on an error status by that status, so a 502 stays retryable", async () => {
+    const err = await clientWith(vi.fn().mockResolvedValue(response(502, "<html>", "Bad Gateway")))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "server", status: 502 });
+  });
+
+  it("classifies an unintelligible body on a success status as protocol", async () => {
+    const err = await clientWith(vi.fn().mockResolvedValue(response(200, "not json")))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "protocol", status: 200 });
+  });
+
+  it("maps a backend code over the status", async () => {
+    const err = await clientWith(
+      vi.fn().mockResolvedValue(response(500, '{"ok":false,"description":"expired","code":"E06"}')),
+    )
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "unauthenticated" });
+  });
+
+  it("propagates Retry-After onto a rate-limited failure", async () => {
+    const err = await clientWith(
+      vi
+        .fn()
+        .mockResolvedValue(
+          response(429, '{"ok":false,"description":"slow"}', "", { "retry-after": "42" }),
+        ),
+    )
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "rate-limited", retryAfterMs: 42_000 });
+  });
+
+  it("tolerates a response with no headers object", async () => {
+    // Not all fetch doubles provide `headers`; a missing one must not throw.
+    const bare = { ok: false, status: 500, statusText: "boom", text: () => Promise.resolve("") };
+    const err = await clientWith(vi.fn().mockResolvedValue(bare as unknown as Response))
+      .request("/x")
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ kind: "server", retryAfterMs: undefined });
+  });
+});

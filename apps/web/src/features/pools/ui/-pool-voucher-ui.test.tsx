@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const {
   navigate,
   poolLiquidityBalance,
+  poolTransfers,
   publicClientCall,
   publicClientMulticall,
   swapMutateAsync,
@@ -20,6 +21,7 @@ const {
   poolLiquidityBalance: { value: 1_000_000_000n },
   publicClientCall: vi.fn(),
   publicClientMulticall: vi.fn(),
+  poolTransfers: { value: [] as Array<Record<string, unknown>> },
   swapMutateAsync: vi.fn(),
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
@@ -73,6 +75,8 @@ import { PoolSwapPage } from "./pool-swap-page";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const USDC_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
+const LIMITER_ADDRESS = "0x3333333333333333333333333333333333333333";
+const QUOTER_ADDRESS = "0x4444444444444444444444444444444444444444";
 
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -94,6 +98,9 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
                 name: "USD Coin",
                 symbol: "USDC",
                 decimals: 6,
+                voucherUoa: "USD",
+                voucherValue: "1",
+                tokenLimit: "40000000",
                 iconUrl: "https://pool.example/usdc.png",
               },
               {
@@ -102,11 +109,16 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
                 name: "Trade Token",
                 symbol: "TTX",
                 decimals: 6,
+                voucherUoa: "KES",
+                voucherValue: "2",
                 iconUrl: "https://pool.example/ttx.png",
               },
             ],
           }),
         );
+      }
+      if (url.includes(`/api/v2/accounts/`) && url.includes("/transfers")) {
+        return Promise.resolve(response({ transfers: poolTransfers.value }));
       }
       if (url.includes(`/api/v2/accounts/`) && url.includes("/tokens?")) {
         return Promise.resolve(
@@ -186,6 +198,13 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
             address: POOL_ADDRESS,
             name: "Trade Pool",
             symbol: "TRD",
+            unitOfAccount: "USD",
+            limiterAddress: LIMITER_ADDRESS,
+            quoterAddress: QUOTER_ADDRESS,
+            // Recorded, so the holdings panel does not have to probe for it.
+            // Only a RelativeQuoter exposes a readable rate, and without one
+            // the panel declines to value the pool rather than assume parity.
+            quoterType: "relative",
           }),
         );
       }
@@ -208,8 +227,28 @@ beforeEach(() => {
   swapTransferState.error = null;
   swapTransferState.isPending = false;
   swapMutateAsync.mockResolvedValue({ trackingId: "swap-tracking-1", signatureType: "secp256k1" });
-  publicClientMulticall.mockImplementation(() =>
-    Promise.resolve([poolLiquidityBalance.value, false, 0n]),
+  poolTransfers.value = [];
+  publicClientMulticall.mockImplementation(
+    ({
+      allowFailure,
+      contracts,
+    }: {
+      allowFailure: boolean;
+      contracts: Array<{ functionName: string }>;
+    }) => {
+      // The holdings panel issues two multicalls of its own. The rate read
+      // tolerates failures; the treasury read does not, and asks for a
+      // balance/fees pair per voucher.
+      if (allowFailure) {
+        return Promise.resolve(contracts.map(() => ({ status: "success", result: 2_000_000n })));
+      }
+      // The treasury read alternates balanceOf/fees per voucher; the swap
+      // quote's own read puts feesDecoupled second.
+      if (contracts[1]?.functionName === "fees") {
+        return Promise.resolve(contracts.map((_, index) => (index % 2 === 0 ? 30_000_000n : 0n)));
+      }
+      return Promise.resolve([poolLiquidityBalance.value, false, 0n]);
+    },
   );
   publicClientCall.mockImplementation(({ data }: { data: Hex }) => {
     try {
@@ -280,8 +319,16 @@ describe("pool voucher UI", () => {
     // The same blue the wallet's Pools action uses.
     expect(attributions.every((element) => element.className.includes("text-info"))).toBe(true);
 
-    expect(within(panel).getByText("25 USDC")).toBeTruthy();
-    expect(within(panel).getByText("8 TTX")).toBeTruthy();
+    // The unit rides with the price now, so the tile says what the amount buys.
+    expect(within(panel).getByText("25 USD / bag")).toBeTruthy();
+    // An offering with no unit keeps the bare price rather than reading "per null".
+    expect(within(panel).getByText("16 KES")).toBeTruthy();
+    // The pool view is read-only for everyone. `OfferingsPanel` takes management
+    // actions as a prop rather than deriving ownership, precisely so this screen
+    // — which lists offerings from vouchers the viewer does not own — cannot
+    // acquire write controls by accident.
+    expect(within(panel).queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(within(panel).queryByRole("button", { name: "Remove" })).toBeNull();
     expect(panel.querySelector(".grid")?.className).toContain("grid-cols-2");
   });
 
@@ -293,12 +340,12 @@ describe("pool voucher UI", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
-    expect(within(dialog).getByText("25 USDC each")).toBeTruthy();
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USDC");
+    expect(within(dialog).getByText("25 USD / bag")).toBeTruthy();
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USD");
     expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USDC");
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USD");
   });
 
   it("puts offerings first and links the vouchers tab without stacking history", async () => {
@@ -306,11 +353,87 @@ describe("pool voucher UI", () => {
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
 
     const tabs = await screen.findAllByRole("tab");
-    expect(tabs.map((tab) => tab.textContent)).toEqual(["Offerings", "Vouchers"]);
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      "Offerings",
+      "Vouchers",
+      "Holdings",
+      "Activity",
+    ]);
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
-    expect(tabs[0]?.getAttribute("aria-controls")).toBe("pool-panel-offerings");
-    expect(tabs[1]?.getAttribute("aria-controls")).toBe("pool-panel-vouchers");
+    expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
+      "pool-panel-offerings",
+      "pool-panel-vouchers",
+      "pool-panel-holdings",
+      "pool-panel-activity",
+    ]);
+    // Only the selected panel is mounted, so every tab's target exists but one
+    // panel is on screen.
     expect(screen.getByRole("tabpanel").id).toBe("pool-panel-offerings");
+  });
+
+  it("prices the pool's holdings and shows what each voucher has left before its cap", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(panel.id).toBe("pool-panel-holdings");
+
+    // 30 of each voucher on chain, each priced at 2 USD: 120 USD in total.
+    await waitFor(() => expect(within(panel).getByText("120.00")).toBeTruthy());
+    expect(within(panel).getAllByText("≈ 60.00 USD")).toHaveLength(2);
+
+    // USDC carries a recorded cap of 40, so 10 is still depositable. TTX has no
+    // cap on record, which is not the same as having none.
+    expect(within(panel).getByText("10 of 40 USDC left")).toBeTruthy();
+    expect(within(panel).getByText("Limit not set")).toBeTruthy();
+  });
+
+  it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
+    // clc-core exposes swaps to non-superadmins only as their ERC-20 legs, so
+    // the panel that does not rejoin them reports one trade as two movements.
+    poolTransfers.value = [
+      {
+        id: 2,
+        txHash: "0xswap",
+        dateBlock: "2026-09-01T10:00:00Z",
+        direction: "IN",
+        counterpartyAddress: "0x9999999999999999999999999999999999999999",
+        senderAddress: "0x9999999999999999999999999999999999999999",
+        recipientAddress: POOL_ADDRESS,
+        tokenAddress: USDC_ADDRESS,
+        tokenSymbol: "USDC",
+        tokenName: "USD Coin",
+        tokenDecimals: 6,
+        amount: "5000000",
+        success: true,
+      },
+      {
+        id: 1,
+        txHash: "0xswap",
+        dateBlock: "2026-09-01T10:00:00Z",
+        direction: "OUT",
+        counterpartyAddress: "0x9999999999999999999999999999999999999999",
+        senderAddress: POOL_ADDRESS,
+        recipientAddress: "0x9999999999999999999999999999999999999999",
+        tokenAddress: TTX_ADDRESS,
+        tokenSymbol: "TTX",
+        tokenName: "Trade Token",
+        tokenDecimals: 6,
+        amount: "2500000",
+        success: true,
+      },
+    ];
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="activity" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(panel.id).toBe("pool-panel-activity");
+
+    const rows = await within(panel).findAllByRole("button");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.textContent).toContain("Swapped USDC for TTX");
+    expect(rows[0]?.textContent).toContain("5 USDC");
+    expect(rows[0]?.textContent).toContain("2.5 TTX");
   });
 
   it("uses pool vouchers, wallet logos, and selected voucher balances in both swap fields", async () => {
@@ -343,7 +466,10 @@ describe("pool voucher UI", () => {
     await waitFor(() => expect(toInput.value).toBe("20.00"));
     expect(screen.getByText("1 USDC = 2.000 TTX")).toBeTruthy();
     const call = publicClientCall.mock.calls.at(-2)?.[0] as { to: string; data: Hex };
-    expect(call.to).toBe("0x204653A89FF5F2A935c88b0c750cAcdaA9e7368d");
+    // `SWAP_ROUTER_ADDRESS` in `hooks/use-pool-swap-quote.ts`. Left asserting the
+    // Celo router when 197d2ee pointed the hook at the Gnosis one, which is what
+    // has been failing here since.
+    expect(call.to).toBe("0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC");
     expect(decodeFunctionData({ abi: swapRouterQuoteExactInputAbi, data: call.data }).args).toEqual(
       [[{ pool: POOL_ADDRESS, tokenIn: USDC_ADDRESS, tokenOut: TTX_ADDRESS }], 10_000_000n],
     );
@@ -477,6 +603,9 @@ describe("pool voucher UI", () => {
         sendSymbol: "USDC",
         receiveAmount: "2.00",
         receiveSymbol: "TTX",
+        // Carried so the receipt can prefill a send of what was swapped out; a
+        // symbol alone would not identify the token to send.
+        receiveToken: TTX_ADDRESS,
         poolName: "Trade Pool",
       },
     });

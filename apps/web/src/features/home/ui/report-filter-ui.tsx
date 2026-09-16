@@ -3,9 +3,9 @@ import { useState } from "react";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/client/errors";
 import { useVoucherSearch } from "#/features/home/hooks/use-voucher-search";
-import type { ReportTagFacet, ReportVoucherFacet } from "#/features/home/api/reports-client";
+import type { ReportTagFacet, ReportVoucherFacet } from "@clc/api/features/reports/client";
 import { FilteredReportsTooLargeError } from "#/features/home/hooks/use-filtered-reports";
 import type { PersistedCatalogFilterControls } from "#/lib/navigation/use-persisted-catalog-filter";
 
@@ -72,10 +72,10 @@ export function ReportFilterFeedback({
         onAction: filter.clear,
       };
     }
-    if (error instanceof BackendApiError && error.status === 429) {
+    if (error instanceof BackendApiError && error.kind === "rate-limited") {
       return { message: t`Too many searches. Try again in a moment.` };
     }
-    if (error instanceof BackendApiError && error.status === 400) {
+    if (error instanceof BackendApiError && error.kind === "validation") {
       return {
         message: t`These filters aren't valid.`,
         actionLabel: t`Clear filters`,

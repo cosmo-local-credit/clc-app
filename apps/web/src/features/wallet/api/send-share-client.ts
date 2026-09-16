@@ -1,4 +1,6 @@
-import { apiFetch, BackendApiError } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/client/errors";
+
+import { clcHttp } from "#/lib/api/http";
 
 type SendShareLocation = {
   locationName: string;
@@ -31,7 +33,7 @@ export type CreateSendShareResult = {
 };
 
 export async function getSendShareEligibility(address: string): Promise<boolean> {
-  const result = await apiFetch<{ eligible: boolean }>(
+  const result = await clcHttp.request<{ eligible: boolean }>(
     `/api/v2/users/me/shares/eligibility/${encodeURIComponent(address)}`,
     { method: "GET", cache: "no-store" },
   );
@@ -42,15 +44,18 @@ export function createSendShare(
   txHash: string,
   input: CreateSendShareInput,
 ): Promise<CreateSendShareResult> {
-  return apiFetch<CreateSendShareResult>(`/api/v2/users/me/shares/${encodeURIComponent(txHash)}`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
+  return clcHttp.request<CreateSendShareResult>(
+    `/api/v2/users/me/shares/${encodeURIComponent(txHash)}`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
 }
 
 export async function getSendShare(txHash: string): Promise<SendShareAttachment | null> {
   try {
-    return await apiFetch<SendShareAttachment>(`/api/v2/users/me/shares/${txHash}`, {
+    return await clcHttp.request<SendShareAttachment>(`/api/v2/users/me/shares/${txHash}`, {
       method: "GET",
       cache: "no-store",
     });

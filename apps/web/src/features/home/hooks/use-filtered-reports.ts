@@ -7,16 +7,17 @@ import {
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { isRetryableBackendError } from "@clc/api/client/errors";
+import { reportKeys } from "@clc/api/features/reports/queries";
 import {
   type FilteredReportPage,
   type ReportCursor,
   type ReportSummary,
   type ReportTagFacet,
   type ReportVoucherFacet,
-  getFilteredReports,
-} from "#/features/home/api/reports-client";
+} from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { reportsClient } from "#/lib/api/reports";
 
 const REPORTS_FILTER_PAGE_SIZE = 100;
 
@@ -33,11 +34,11 @@ const EMPTY_CATALOG_FILTER: CatalogFilter = {
   voucherMatch: "any",
 };
 
+// Identity is canonical in @clc/api; the multi-page assembly and page budget
+// below stay app-specific.
 const filteredReportQueryKeys = {
-  all: ["reports"] as const,
-  filtered: (filter: CatalogFilter | null, perPage: number) =>
-    [...filteredReportQueryKeys.all, "filtered", { filter, perPage }] as const,
-  facetVocabulary: () => [...filteredReportQueryKeys.all, "facet-vocabulary"] as const,
+  filtered: reportKeys.filtered,
+  facetVocabulary: reportKeys.facetVocabulary,
 };
 
 export class FilteredReportsTooLargeError extends Error {
@@ -70,7 +71,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
       let cursor: ReportCursor | undefined;
 
       for (let index = 0; index < MAX_FILTERED_REPORT_PAGES; index++) {
-        const page = await getFilteredReports(
+        const page = await reportsClient.getFilteredReports(
           { perPage, cursor, filter, facets: index === 0 },
           signal,
         );
@@ -105,13 +106,10 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) => {
-      if (error instanceof FilteredReportsTooLargeError) return false;
-      if (error instanceof BackendApiError && error.status >= 400 && error.status < 500) {
-        return false;
-      }
-      return failureCount < 1;
-    },
+    // Only a transport failure or server fault is worth replaying; a rejected
+    // filter, an exhausted page budget, or a bug in our own query function
+    // will fail identically. See isRetryableBackendError.
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 
@@ -119,7 +117,7 @@ function useReportFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: filteredReportQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredReports(
+      const page = await reportsClient.getFilteredReports(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );
@@ -132,10 +130,7 @@ function useReportFacetVocabulary(enabled: boolean) {
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
     refetchOnReconnect: false,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 

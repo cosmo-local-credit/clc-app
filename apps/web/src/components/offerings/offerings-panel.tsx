@@ -1,7 +1,7 @@
 import {
-  formatOfferingPrice,
+  formatOfferingDisplayPrice,
+  formatOfferingDisplayTotal,
   formatOfferingQuantity,
-  formatOfferingTotal,
 } from "@clc/core/features/market/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
@@ -22,7 +22,7 @@ import {
 } from "#/components/ui/sheet";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { hueFromSeed } from "#/components/wallet/wallet-data";
-import type { Offering, OfferingFrequency } from "#/features/home/api/offerings-client";
+import type { Offering, OfferingFrequency } from "@clc/api/features/offerings/client";
 import { cn } from "#/lib/utils";
 
 /**
@@ -50,12 +50,35 @@ type OfferingsQueryLike = {
  * Callers supply their own query and empty-state copy, which is all that
  * legitimately differs between them.
  */
+/**
+ * What a voucher owner can do to a row, when the caller is a screen that knows
+ * who is looking.
+ *
+ * Passed in rather than derived here, so this stays a read component. The pool
+ * offerings view renders the same tiles for vouchers it does not own, and pulling
+ * a voucher-owner hook in here would make ownership a concern of every screen
+ * that lists an offering.
+ */
+export type OfferingManagement = {
+  onEdit: (offering: Offering) => void;
+  onDelete: (offering: Offering) => void;
+  /** The row currently being unlisted, if any. */
+  deletingID?: string | null;
+};
+
+export type OfferingVoucherRate = {
+  value: string | null;
+  unit: string | null;
+};
+
 export function OfferingsPanel({
   query,
   emptyState,
   showVoucher = false,
   fallbackSymbol,
   suppressed = false,
+  management,
+  resolveVoucherRate,
   ...props
 }: ComponentProps<"div"> & {
   query: OfferingsQueryLike;
@@ -67,6 +90,10 @@ export function OfferingsPanel({
   fallbackSymbol?: string;
   /** The caller already knows the result is empty and issued no request. */
   suppressed?: boolean;
+  /** Present only for a voucher's own owner. Absent means read-only. */
+  management?: OfferingManagement;
+  /** Resolves the voucher conversion attached to this row's parent voucher. */
+  resolveVoucherRate?: (offering: Offering) => OfferingVoucherRate | null;
 }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
@@ -132,6 +159,8 @@ export function OfferingsPanel({
               offering={offering}
               voucherSymbol={offering.voucherSymbol ?? fallbackSymbol ?? "VOUCHER"}
               showVoucher={showVoucher}
+              management={management}
+              voucherRate={resolveVoucherRate?.(offering) ?? null}
             />
           ))}
         </div>
@@ -162,18 +191,31 @@ function OfferingTile({
   offering,
   voucherSymbol,
   showVoucher,
+  management,
+  voucherRate,
 }: {
   offering: Offering;
   voucherSymbol: string;
   showVoucher: boolean;
+  management?: OfferingManagement;
+  voucherRate: OfferingVoucherRate | null;
 }) {
   const { i18n, t } = useLingui();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const imageUrl =
     offering.imageUrl && failedImage !== offering.imageUrl ? offering.imageUrl : null;
-  const price = formatOfferingPrice(offering.price);
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unit);
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+  );
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
   const quantityNumber = quantity ? Number(quantity.value) : 0;
   const quantityValue =
     quantity && quantity.value.length > 6 && Number.isFinite(quantityNumber)
@@ -183,14 +225,14 @@ function OfferingTile({
         }).format(quantityNumber)
       : quantity?.value;
   const frequency = useOfferingFrequencyLabel(offering.frequency);
-  const initials = offeringInitials(offering.commodityName);
+  const initials = offeringInitials(offering.name);
 
   return (
-    <>
+    <div className="flex flex-col">
       <button
         type="button"
         className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-left active:bg-muted"
-        aria-label={t`View offering details: ${offering.commodityName}`}
+        aria-label={t`View offering details: ${offering.name}`}
         onClick={() => setDetailsOpen(true)}
       >
         {/* One fixed height for every offering's image, whatever the tile around
@@ -224,13 +266,14 @@ function OfferingTile({
             </span>
           ) : null}
           <span className="line-clamp-2 font-heading text-xs font-semibold leading-tight [overflow-wrap:anywhere]">
-            {offering.commodityName}
+            {offering.name}
           </span>
+          {/* Currency code, slash and issuer-authored unit are all data. The
+              amount is converted through the voucher's recorded rate; a legacy
+              voucher without one falls back to its own symbol. */}
           <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
             {price ? (
-              <Trans>
-                {price.value} {voucherSymbol}
-              </Trans>
+              `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
             ) : (
               <Trans>Price on request</Trans>
             )}
@@ -246,6 +289,32 @@ function OfferingTile({
         </span>
       </button>
 
+      {/* Outside the tile's button, not inside it: nesting a button in a button is
+          invalid, and a tap meant for Edit must not also open the buying sheet. */}
+      {management ? (
+        <span data-slot="offering-actions" className="flex border-x border-b border-border">
+          <button
+            type="button"
+            className="flex-1 border-r border-border bg-card py-2 text-[0.6875rem] font-semibold"
+            onClick={() => management.onEdit(offering)}
+          >
+            <Trans>Edit</Trans>
+          </button>
+          <button
+            type="button"
+            className="flex-1 bg-card py-2 text-[0.6875rem] font-semibold text-destructive"
+            disabled={management.deletingID === offering.id}
+            onClick={() => management.onDelete(offering)}
+          >
+            {management.deletingID === offering.id ? (
+              <Trans>Removing…</Trans>
+            ) : (
+              <Trans>Remove</Trans>
+            )}
+          </button>
+        </span>
+      ) : null}
+
       <OfferingDetailsSheet
         offering={offering}
         voucherSymbol={voucherSymbol}
@@ -254,8 +323,9 @@ function OfferingTile({
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onImageError={() => setFailedImage(imageUrl)}
+        voucherRate={voucherRate}
       />
-    </>
+    </div>
   );
 }
 
@@ -275,6 +345,7 @@ function OfferingDetailsSheet({
   open,
   onOpenChange,
   onImageError,
+  voucherRate,
 }: {
   offering: Offering;
   voucherSymbol: string;
@@ -283,11 +354,23 @@ function OfferingDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImageError: () => void;
+  voucherRate: OfferingVoucherRate | null;
 }) {
   const { t } = useLingui();
   const [count, setCount] = useState(1);
-  const price = formatOfferingPrice(offering.price);
-  const total = formatOfferingTotal(offering.price, count);
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+  );
+  const total = formatOfferingDisplayTotal(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+    count,
+  );
 
   return (
     <SheetRoot
@@ -324,13 +407,11 @@ function OfferingDetailsSheet({
           <div className="min-h-0 flex-1 overflow-y-auto">
             <SheetHeader className="px-6 pt-4 pb-0">
               <SheetTitle className="font-heading text-xl font-semibold leading-tight [overflow-wrap:anywhere]">
-                {offering.commodityName}
+                {offering.name}
               </SheetTitle>
               <p className="font-mono text-sm font-semibold text-primary">
                 {price ? (
-                  <Trans>
-                    {price.value} {voucherSymbol} each
-                  </Trans>
+                  `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
                 ) : (
                   <Trans>Price on request</Trans>
                 )}
@@ -395,9 +476,7 @@ function OfferingDetailsSheet({
                     <Trans>Total</Trans>
                   </span>
                   <span className="font-mono text-lg font-semibold text-primary">
-                    <Trans>
-                      {total.value} {voucherSymbol}
-                    </Trans>
+                    {total.value} {total.unit}
                   </span>
                 </div>
               ) : null}

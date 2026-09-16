@@ -6,6 +6,7 @@ dist-ssr
 .env*
 !.env.example
 !apps/web/.env.example
+!apps/admin/.env.example
 .nitro
 .tanstack
 .wrangler
@@ -32,11 +33,25 @@ coverage
 .vscode/mcp.json
 .pi
 .claude
-scripts
+# Anchored to the repo root on purpose. As a bare pattern this also matched
+# apps/*/scripts, which silently kept committed npm scripts' targets out of the
+# repo — apps/admin/scripts/check-bundle.mjs among them.
+/scripts
 AI.md
 dev/webpush/data/
 .codex/config.toml
 .agents
+
+# One-off QA, audit, and design-study artefacts. Anchored to the repo root,
+# where no HTML is ever tracked — the apps' own HTML lives under apps/*.
+# Ignored rather than merely left uncommitted because a stray `git add -A`,
+# or lint-staged restoring its stash, will otherwise sweep them into an
+# unrelated commit.
+/*.html
+/qa-audit-*/
+/tokens.css
+/ACCOUNTS.md
+.hallmark/
 
 # scratch canvases from AI tooling
 *_canvas.html

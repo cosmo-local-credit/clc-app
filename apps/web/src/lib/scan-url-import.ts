@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { parsePaperWalletImportPayload } from "#/lib/paper-wallet-import";
+import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { abortWalletSwitch } from "#/lib/wallet-session";
 
 export type PendingScanUrlImport =

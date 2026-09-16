@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 
 import { CatalogFilterSheet } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackendApiError } from "#/features/auth/api/client";
-import type { MarketTagFacet } from "#/features/home/api/market-client";
+import { BackendApiError } from "@clc/api/client/errors";
+import type { MarketTagFacet } from "@clc/api/features/market/client";
 import { FilteredCatalogTooLargeError } from "#/features/home/hooks/use-filtered-market-vouchers";
 import type { MarketFilterControls } from "#/features/home/hooks/use-market-filter";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
@@ -41,11 +41,11 @@ export function useMarketFilterNotice(
     };
   }
 
-  if (error instanceof BackendApiError && error.status === 429) {
+  if (error instanceof BackendApiError && error.kind === "rate-limited") {
     return { message: t`Too many searches. Try again in a moment.` };
   }
 
-  if (error instanceof BackendApiError && error.status === 400) {
+  if (error instanceof BackendApiError && error.kind === "validation") {
     return {
       message: t`These filters aren't valid.`,
       actionLabel: t`Clear filters`,

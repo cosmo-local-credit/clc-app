@@ -9,6 +9,9 @@ const knownErrors = [
   "Invalid phone number",
   "Provide an email or phone number",
   "Choose a location",
+  "Choose a preferred currency",
+  "Bio must be 500 characters or fewer",
+  "Enter a valid website URL including https://",
   "Invalid location",
   "Voucher name is required",
   "Voucher name must be 80 characters or fewer",
@@ -36,6 +39,34 @@ const knownErrors = [
   "Choose rates you set or equal value when the unit has no price feed",
   "Message must be 500 characters or fewer",
   "Add a message or choose profile details",
+  // Post authoring. Every message the report write schema can produce.
+  "Enter a title for your post",
+  "Title must be 200 characters or fewer",
+  "Post text is too long",
+  "Summary must be 10,000 characters or fewer",
+  "Media must be an uploaded http(s) URL",
+  "Latitude must be between -90 and 90",
+  "Longitude must be between -180 and 180",
+  "Enter a valid date and time",
+  "Choose a voucher",
+  "Caption must be 500 characters or fewer",
+  "Choose a file or an embed",
+  "File name must be 255 characters or fewer",
+  "Host must be 200 characters or fewer",
+  "Participants must be 100 characters or fewer",
+  "Duration must be 100 characters or fewer",
+  "Tags must not be blank",
+  "Tags must be 100 characters or fewer",
+  "Choose at most 12 tags",
+  "Link at most 12 vouchers",
+  "Add at most 50 images",
+  "Add at most 20 attachments",
+  "Choose a place on the map or clear it",
+  "The end of the period must not be before its start",
+  "Each tag can only be added once",
+  "Each voucher can only be linked once",
+  "Each image can only be added once",
+  "Each attachment can only be added once",
 ] as const;
 
 describe("translateValidationError", () => {
@@ -81,6 +112,24 @@ describe("translateValidationError", () => {
     for (const error of knownErrors) {
       expect(translateValidationError(error, i18n)).not.toBe(error);
     }
+  });
+
+  it("translates the post schema's own messages", async () => {
+    await activateLocale("sw");
+    expect(translateValidationError("Enter a title for your post", i18n)).toBe(
+      "Weka kichwa cha chapisho lako",
+    );
+    expect(translateValidationError("Each tag can only be added once", i18n)).toBe(
+      "Lebo moja inaweza kuongezwa mara moja tu",
+    );
+
+    await activateLocale("sr");
+    expect(translateValidationError("Enter a title for your post", i18n)).toBe(
+      "Унесите наслов објаве",
+    );
+    expect(translateValidationError("Choose a place on the map or clear it", i18n)).toBe(
+      "Изаберите мјесто на карти или га уклоните",
+    );
   });
 
   it("returns unknown errors unchanged", async () => {

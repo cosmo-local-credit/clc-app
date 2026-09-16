@@ -29,10 +29,40 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Choose a location",
         message: "Choose a location",
       });
+    case "Choose a preferred currency":
+      return i18n._({
+        id: "Choose a preferred currency",
+        message: "Choose a preferred currency",
+      });
+    case "Bio must be 500 characters or fewer":
+      return i18n._({
+        id: "Bio must be 500 characters or fewer",
+        message: "Bio must be 500 characters or fewer",
+      });
+    case "Enter a valid website URL including https://":
+      return i18n._({
+        id: "Enter a valid website URL including https://",
+        message: "Enter a valid website URL including https://",
+      });
     case "Invalid location":
       return i18n._({
         id: "Invalid location",
         message: "Invalid location",
+      });
+    case "Display name is required":
+      return i18n._({
+        id: "Display name is required",
+        message: "Display name is required",
+      });
+    case "Display name must be 120 characters or fewer":
+      return i18n._({
+        id: "Display name must be 120 characters or fewer",
+        message: "Display name must be 120 characters or fewer",
+      });
+    case "Use letters and numbers, for example KES":
+      return i18n._({
+        id: "Use letters and numbers, for example KES",
+        message: "Use letters and numbers, for example KES",
       });
     case "Voucher name is required":
       return i18n._({
@@ -173,6 +203,158 @@ export function translateValidationError(error: string, i18n: I18n) {
       return i18n._({
         id: "Add a message or choose profile details",
         message: "Add a message or choose profile details",
+      });
+    // Post authoring. Every message the report write schema can produce; a
+    // missing case falls through to English for every locale.
+    case "Enter a title for your post":
+      return i18n._({
+        id: "Enter a title for your post",
+        message: "Enter a title for your post",
+      });
+    case "Title must be 200 characters or fewer":
+      return i18n._({
+        id: "Title must be 200 characters or fewer",
+        message: "Title must be 200 characters or fewer",
+      });
+    case "Post text is too long":
+      return i18n._({
+        id: "Post text is too long",
+        message: "Post text is too long",
+      });
+    case "Summary must be 10,000 characters or fewer":
+      return i18n._({
+        id: "Summary must be 10,000 characters or fewer",
+        message: "Summary must be 10,000 characters or fewer",
+      });
+    case "Media must be an uploaded http(s) URL":
+      return i18n._({
+        id: "Media must be an uploaded http(s) URL",
+        message: "Media must be an uploaded http(s) URL",
+      });
+    case "Latitude must be between -90 and 90":
+      return i18n._({
+        id: "Latitude must be between -90 and 90",
+        message: "Latitude must be between -90 and 90",
+      });
+    case "Longitude must be between -180 and 180":
+      return i18n._({
+        id: "Longitude must be between -180 and 180",
+        message: "Longitude must be between -180 and 180",
+      });
+    case "Enter a valid date and time":
+      return i18n._({
+        id: "Enter a valid date and time",
+        message: "Enter a valid date and time",
+      });
+    case "Choose a voucher":
+      return i18n._({
+        id: "Choose a voucher",
+        message: "Choose a voucher",
+      });
+    case "Caption must be 500 characters or fewer":
+      return i18n._({
+        id: "Caption must be 500 characters or fewer",
+        message: "Caption must be 500 characters or fewer",
+      });
+    case "Choose a file or an embed":
+      return i18n._({
+        id: "Choose a file or an embed",
+        message: "Choose a file or an embed",
+      });
+    case "File name must be 255 characters or fewer":
+      return i18n._({
+        id: "File name must be 255 characters or fewer",
+        message: "File name must be 255 characters or fewer",
+      });
+    case "Host must be 200 characters or fewer":
+      return i18n._({
+        id: "Host must be 200 characters or fewer",
+        message: "Host must be 200 characters or fewer",
+      });
+    case "Participants must be 100 characters or fewer":
+      return i18n._({
+        id: "Participants must be 100 characters or fewer",
+        message: "Participants must be 100 characters or fewer",
+      });
+    case "Enter the number of participants as a whole number":
+      return i18n._({
+        id: "Enter the number of participants as a whole number",
+        message: "Enter the number of participants as a whole number",
+      });
+    case "Duration must be 100 characters or fewer":
+      return i18n._({
+        id: "Duration must be 100 characters or fewer",
+        message: "Duration must be 100 characters or fewer",
+      });
+    case "Tags must not be blank":
+      return i18n._({
+        id: "Tags must not be blank",
+        message: "Tags must not be blank",
+      });
+    case "Tags must be 100 characters or fewer":
+      return i18n._({
+        id: "Tags must be 100 characters or fewer",
+        message: "Tags must be 100 characters or fewer",
+      });
+    case "Choose at most 12 tags":
+      return i18n._({
+        id: "Choose at most 12 tags",
+        message: "Choose at most 12 tags",
+      });
+    case "Link at most 12 vouchers":
+      return i18n._({
+        id: "Link at most 12 vouchers",
+        message: "Link at most 12 vouchers",
+      });
+    case "Add at most 50 images":
+      return i18n._({
+        id: "Add at most 50 images",
+        message: "Add at most 50 images",
+      });
+    case "Add at most 20 attachments":
+      return i18n._({
+        id: "Add at most 20 attachments",
+        message: "Add at most 20 attachments",
+      });
+    case "Choose a place on the map or clear it":
+      return i18n._({
+        id: "Choose a place on the map or clear it",
+        message: "Choose a place on the map or clear it",
+      });
+    case "The end of the period must not be before its start":
+      return i18n._({
+        id: "The end of the period must not be before its start",
+        message: "The end of the period must not be before its start",
+      });
+    case "Each tag can only be added once":
+      return i18n._({
+        id: "Each tag can only be added once",
+        message: "Each tag can only be added once",
+      });
+    case "Each voucher can only be linked once":
+      return i18n._({
+        id: "Each voucher can only be linked once",
+        message: "Each voucher can only be linked once",
+      });
+    case "Each image can only be added once":
+      return i18n._({
+        id: "Each image can only be added once",
+        message: "Each image can only be added once",
+      });
+    case "Each attachment can only be added once":
+      return i18n._({
+        id: "Each attachment can only be added once",
+        message: "Each attachment can only be added once",
+      });
+    case "Enter an exchange rate greater than zero":
+      return i18n._({
+        id: "Enter an exchange rate greater than zero",
+        message: "Enter an exchange rate greater than zero",
+      });
+    case "Enter a credit limit greater than zero":
+      return i18n._({
+        id: "Enter a credit limit greater than zero",
+        message: "Enter a credit limit greater than zero",
       });
     default:
       return error;

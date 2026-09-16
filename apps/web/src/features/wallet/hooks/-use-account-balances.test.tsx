@@ -9,7 +9,13 @@ const mocks = vi.hoisted(() => ({
   getLatestAccountTokens: vi.fn(),
 }));
 
-vi.mock("#/features/wallet/api/account-client", () => mocks);
+vi.mock("@clc/api/features/accounts/client", () => mocks);
+
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/accounts", async () => ({
+  accountsClient: await import("@clc/api/features/accounts/client"),
+}));
 
 import { useAccountTokensInfinite, useAccountTransfersInfinite } from "./use-account-balances";
 

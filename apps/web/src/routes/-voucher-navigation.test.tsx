@@ -14,8 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/market-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
+vi.mock("@clc/api/features/market/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getMarketVoucher };
 });
 
@@ -72,17 +72,35 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
   };
 });
 
+const emptyOfferings = vi.hoisted(() => () => ({
+  data: { pages: [{ offerings: [] }] },
+  isPending: false,
+  isError: false,
+  isSuccess: true,
+  hasNextPage: false,
+  isFetchingNextPage: false,
+  fetchNextPage: () => {},
+  refetch: () => {},
+}));
+
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
-  useVoucherOfferingsInfinite: () => ({
-    data: { pages: [{ offerings: [] }] },
+  useVoucherOfferingsInfinite: emptyOfferings,
+  useManagedVoucherOfferingsInfinite: emptyOfferings,
+}));
+
+vi.mock("#/features/images/use-image-upload", () => ({
+  useImageUpload: () => ({
+    mutateAsync: () => Promise.resolve({ url: "https://cdn.test/offering/a_800_b.webp" }),
+    reset: () => {},
     isPending: false,
     isError: false,
-    isSuccess: true,
-    hasNextPage: false,
-    isFetchingNextPage: false,
-    fetchNextPage: vi.fn(),
-    refetch: vi.fn(),
   }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-offering-mutations", () => ({
+  useCreateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useUpdateVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteVoucherOffering: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-reports", () => ({
@@ -116,6 +134,12 @@ vi.mock("#/features/home/ui/market-map.lazy", () => ({
       ))}
     </div>
   ),
+}));
+
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/market", async () => ({
+  marketClient: await import("@clc/api/features/market/client"),
 }));
 
 import { MarketPage } from "#/features/home/ui/market-page";

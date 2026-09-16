@@ -63,7 +63,15 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
 
   const plugins: import("vite-plus").PluginOption[] = [
     ...(command === "serve" ? [devtools()] : []),
-    nitro(),
+    // `plugins/` is Nitro's runtime-plugin convention, but this file is a Vite
+    // build plugin. Keep it out of Nitro's server scan without moving the path
+    // used by the web build and repository tooling.
+    //
+    // Flat, not nested under `config`: the pinned nightly declares
+    // `NitroPluginConfig extends NitroConfig`, so its options sit at the top
+    // level. A later nightly moves them back under `config` — if this line stops
+    // type-checking after a bump, that is which shape changed, not what it means.
+    nitro({ ignore: ["plugins/serwist.ts"] }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),

@@ -77,9 +77,14 @@ export async function runNotificationRecovery(
     currentWalletAddress: options.currentWalletAddress,
   }).catch(() => undefined);
 
+  // Acks are device-scoped and always safe to drain. The inbox sync is not:
+  // with no wallet to scope it to it pulls whatever the device is still linked
+  // to and writes it into the store, which on a sign-out is the outgoing user's
+  // messages landing back in an inbox that was just emptied. It also advances
+  // `syncCursor`, so the next signed-in user's backlog would be skipped.
   await Promise.allSettled([
     flushQueuedNotificationAcks({ client: options.client }),
-    syncNotificationInboxState(options),
+    ...(options.currentWalletAddress ? [syncNotificationInboxState(options)] : []),
   ]);
 }
 

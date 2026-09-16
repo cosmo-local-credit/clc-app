@@ -4,15 +4,16 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import type { FilteredReportPage, ReportSummary } from "#/features/home/api/reports-client";
+import type { FilteredReportPage, ReportSummary } from "@clc/api/features/reports/client";
 import { useVoucherReportsInfinite } from "./use-reports";
 
 const getFilteredReports = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/reports-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/reports-client")>();
-  return { ...actual, getFilteredReports };
-});
+vi.mock("#/lib/api/reports", () => ({
+  reportsClient: {
+    getFilteredReports: (...args: unknown[]) => getFilteredReports(...args),
+  },
+}));
 
 vi.mock("#/lib/geo-client", () => ({
   reverseLocation: vi.fn(),

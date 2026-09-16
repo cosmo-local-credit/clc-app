@@ -16,7 +16,7 @@ import {
   quoteRouteExactOutput,
 } from "#/features/wallet/api/pool-swap-quotes";
 
-const SWAP_ROUTER_ADDRESS = "0x204653A89FF5F2A935c88b0c750cAcdaA9e7368d" as const;
+const SWAP_ROUTER_ADDRESS = "0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC" as const;
 
 export type PoolSwapQuoteMode = "exact-input" | "exact-output";
 

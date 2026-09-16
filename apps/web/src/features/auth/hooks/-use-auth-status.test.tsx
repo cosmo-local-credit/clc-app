@@ -22,9 +22,9 @@ vi.mock("#/providers/auth-bootstrap", () => ({
   useReconnectAttempted: () => mockReconnectAttempted.value,
 }));
 
-vi.mock("#/features/auth/api/client", async () => {
-  const actual = await vi.importActual<typeof import("#/features/auth/api/client")>(
-    "#/features/auth/api/client",
+vi.mock("@clc/api/features/auth/client", async () => {
+  const actual = await vi.importActual<typeof import("@clc/api/features/auth/client")>(
+    "@clc/api/features/auth/client",
   );
   return {
     ...actual,
@@ -32,7 +32,13 @@ vi.mock("#/features/auth/api/client", async () => {
   };
 });
 
-import { BackendApiError } from "#/features/auth/api/client";
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/auth", async () => ({
+  authClient: await import("@clc/api/features/auth/client"),
+}));
+
+import { BackendApiError } from "@clc/api/client/errors";
 import { useAuthStatus } from "./use-auth-status";
 
 function createWrapper() {

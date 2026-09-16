@@ -1,6 +1,6 @@
 import type { StandardSchemaV1Issue } from "@tanstack/react-form";
 
-export { useForm } from "@tanstack/react-form";
+export { useForm, useStore } from "@tanstack/react-form";
 
 /**
  * Extracts a display string from a TanStack Form field's `meta.errors` array.

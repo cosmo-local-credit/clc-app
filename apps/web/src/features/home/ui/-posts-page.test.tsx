@@ -3,10 +3,20 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { ReportSummary, ReportVoucherFacet } from "#/features/home/api/reports-client";
+import { BackendApiError } from "@clc/api/client/errors";
+import type { ReportSummary, ReportVoucherFacet } from "@clc/api/features/reports/client";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
+
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
+const POSTS_FILTER_KEY = ownerScopedKey(
+  "0xabc0000000000000000000000000000000000123",
+  CATALOG_FILTER_PREFERENCE_NAMES.posts,
+);
 
 const mocks = vi.hoisted(() => ({
   search: {} as Record<string, unknown>,
@@ -173,6 +183,8 @@ function report(overrides: Partial<ReportSummary> = {}): ReportSummary {
     tags: ["Food production"],
     vouchers: [
       {
+        id: "22",
+        chainId: 42220,
         address: "0x2222222222222222222222222222222222222222",
         name: "Kiriba",
         symbol: "KCH",
@@ -213,6 +225,16 @@ beforeEach(() => {
   };
 });
 
+/**
+ * The report feed, scoped away from the header.
+ *
+ * The header carries New post and My posts links of its own, so a bare
+ * `getByRole("link")` no longer names the row.
+ */
+function feed() {
+  return screen.getByRole("region", { name: "Field reports" });
+}
+
 describe("PostsPage", () => {
   it("renders a report as a list row linking to its own page", () => {
     render(<PostsPage />);
@@ -222,10 +244,12 @@ describe("PostsPage", () => {
       screen.queryByText("Field reports from pools, service providers, and stewards."),
     ).toBeNull();
     expect(screen.getByRole("button", { name: "Filters" }).className).toContain("h-8");
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     expect(row.getAttribute("href")).toBe("/posts/3182");
     expect(within(row).getByText("Harvesting greengrams with Wendo group")).toBeTruthy();
-    expect(within(row).getByText(/7 members from Wendo group/)).toBeTruthy();
+    // No summary line: a post written in this app has no description, so the
+    // row is title, tags, date and voucher symbols.
+    expect(within(row).queryByText(/7 members from Wendo group/)).toBeNull();
     expect(within(row).getByText("Food production")).toBeTruthy();
     expect(within(row).getByText("KCH")).toBeTruthy();
     expect(screen.getByRole("region", { name: "Field reports" }).className).not.toMatch(/rounded-/);
@@ -235,7 +259,7 @@ describe("PostsPage", () => {
   it("shows the updated date instead of the author address", () => {
     render(<PostsPage />);
 
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     const time = row.querySelector("time");
     expect(time?.getAttribute("datetime")).toBe("2026-07-19T08:14:02.311Z");
     expect(time?.textContent).toContain("2026");
@@ -243,13 +267,12 @@ describe("PostsPage", () => {
     expect(screen.queryByText(/Jul 3, 2026/)).toBeNull();
   });
 
-  it("limits the title and description to one line", () => {
+  it("limits the title to one line", () => {
     render(<PostsPage />);
 
     expect(screen.getByText("Harvesting greengrams with Wendo group").className).toContain(
       "line-clamp-1",
     );
-    expect(screen.getByText(/7 members from Wendo group/).className).toContain("line-clamp-1");
   });
 
   it("contains long tag labels and vertically aligns the date metadata", () => {
@@ -263,7 +286,7 @@ describe("PostsPage", () => {
     expect(tagLabel.className).toContain("truncate");
     expect(tagLabel.parentElement?.className).toContain("overflow-hidden");
 
-    const time = screen.getByRole("link").querySelector("time");
+    const time = within(feed()).getByRole("link").querySelector("time");
     const metadataRow = time?.parentElement;
     const voucher = screen.getByText("KCH");
     expect(metadataRow?.className).toContain("h-5");
@@ -286,7 +309,7 @@ describe("PostsPage", () => {
     const { container } = render(<PostsPage />);
 
     expect(container.querySelector("img")).toBeNull();
-    expect(screen.getByRole("link").textContent).toContain("H");
+    expect(within(feed()).getByRole("link").textContent).toContain("H");
   });
 
   it("caps tags and vouchers so a row cannot grow unbounded", () => {
@@ -297,9 +320,9 @@ describe("PostsPage", () => {
             report({
               tags: ["Education", "Care", "Culture", "Art"],
               vouchers: [
-                { address: "0x1", name: "One", symbol: "ONE" },
-                { address: "0x2", name: "Two", symbol: "TWO" },
-                { address: "0x3", name: "Three", symbol: "THREE" },
+                { id: "1", chainId: 42220, address: "0x1", name: "One", symbol: "ONE" },
+                { id: "2", chainId: 42220, address: "0x2", name: "Two", symbol: "TWO" },
+                { id: "3", chainId: 42220, address: "0x3", name: "Three", symbol: "THREE" },
               ],
             }),
           ],
@@ -308,7 +331,7 @@ describe("PostsPage", () => {
     };
     render(<PostsPage />);
 
-    const row = screen.getByRole("link");
+    const row = within(feed()).getByRole("link");
     expect(within(row).getByText("Education")).toBeTruthy();
     expect(within(row).getByText("Care")).toBeTruthy();
     expect(within(row).queryByText("Culture")).toBeNull();
@@ -342,7 +365,11 @@ describe("PostsPage", () => {
     render(<PostsPage />);
 
     expect(screen.getByText("No posts yet.")).toBeTruthy();
-    expect(screen.queryByRole("link")).toBeNull();
+    // The header's own actions stay: an empty feed is exactly when an author
+    // needs somewhere to write.
+    expect(screen.queryByRole("region", { name: "Field reports" })).toBeNull();
+    expect(screen.getByRole("link", { name: "New post" }).getAttribute("href")).toBe("/posts/new");
+    expect(screen.getByRole("link", { name: "My posts" }).getAttribute("href")).toBe("/posts/mine");
   });
 });
 
@@ -442,9 +469,12 @@ describe("PostsPage filtering", () => {
     expect(call?.replace).toBeUndefined();
     const search = call?.search as (previous: Record<string, unknown>) => Record<string, unknown>;
     expect(search({})).toMatchObject({ tags: "Harvest" });
-    expect(
-      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({ tags: ["Harvest"], tagMatch: "any", vouchers: [], voucherMatch: "any" });
+    expect(JSON.parse(window.localStorage.getItem(POSTS_FILTER_KEY) ?? "null")).toEqual({
+      tags: ["Harvest"],
+      tagMatch: "any",
+      vouchers: [],
+      voucherMatch: "any",
+    });
   });
 
   it("applies voucher relationships with all-match in one canonical navigation", () => {
@@ -473,9 +503,7 @@ describe("PostsPage filtering", () => {
         "1:0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,42220:0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       voucherMatch: "all",
     });
-    expect(
-      JSON.parse(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts) ?? "null"),
-    ).toEqual({
+    expect(JSON.parse(window.localStorage.getItem(POSTS_FILTER_KEY) ?? "null")).toEqual({
       tags: [],
       tagMatch: "any",
       vouchers: [
@@ -613,7 +641,7 @@ describe("PostsPage filtering", () => {
     mocks.search = { q: "zzzz" };
     mocks.filtered = { ...mocks.filtered, data: { reports: [], tagFacets: null } };
     window.localStorage.setItem(
-      CATALOG_FILTER_PREFERENCE_KEYS.posts,
+      POSTS_FILTER_KEY,
       JSON.stringify({ tags: ["Harvest"], tagMatch: "any" }),
     );
     render(<PostsPage />);
@@ -621,7 +649,7 @@ describe("PostsPage filtering", () => {
     expect(screen.getByText("No posts match this search.")).toBeTruthy();
     expect(screen.queryByText("No posts yet.")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
-    expect(window.localStorage.getItem(CATALOG_FILTER_PREFERENCE_KEYS.posts)).toBeNull();
+    expect(window.localStorage.getItem(POSTS_FILTER_KEY)).toBeNull();
   });
 
   it("says nothing about matches while a cold filtered load is pending", () => {

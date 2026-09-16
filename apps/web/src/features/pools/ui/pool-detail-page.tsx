@@ -1,17 +1,40 @@
+import type { PoolVoucher } from "@clc/api/features/pools/client";
+import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { type ReactNode, useState } from "react";
+import {
+  RiAddLine,
+  RiArrowLeftRightLine,
+  RiArrowRightUpLine,
+  RiQrCodeLine,
+  RiSettings3Line,
+} from "react-icons/ri";
 import { Button } from "#/components/ui/button";
-import { BackChevron, TokenLogo, type WalletToken } from "#/components/wallet";
-import type { PoolVoucher } from "#/features/pools/api/pools-client";
+import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
-import { PoolLogo } from "./pool-logo";
+import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
+import { PoolActivityPanel } from "./pool-activity-panel";
+import { PoolControlsPanel } from "./pool-controls-panel";
+import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
+import { PoolReceiveSheet } from "./pool-receive-sheet";
+import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
-export type PoolDetailTab = "offerings" | "vouchers";
+export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "activity";
 
-const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers"];
+const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "activity"];
+
+const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
+  offerings: <Trans>Offerings</Trans>,
+  vouchers: <Trans>Vouchers</Trans>,
+  holdings: <Trans>Holdings</Trans>,
+  activity: <Trans>Activity</Trans>,
+};
 
 export function PoolDetailPage({
   poolAddress,
@@ -25,6 +48,26 @@ export function PoolDetailPage({
   const pool = poolQuery.data;
   const vouchers = usePoolVouchers(pool);
   const voucherTokens = usePoolVoucherTokens(vouchers);
+  const auth = useAuthStatus();
+  // The same rule the voucher screen applies: the backend session's address
+  // must be the catalog owner, or the session must be a superadmin. clc-core
+  // decides for real; this only keeps the button off everyone else's screen.
+  const isPoolOwner =
+    auth.isAuthenticated &&
+    !!pool &&
+    !!auth.session?.address &&
+    !!pool.ownerAddress &&
+    auth.session.address.toLowerCase() === pool.ownerAddress.toLowerCase();
+  const canEditDetails =
+    auth.isAuthenticated && !!pool && (auth.session?.role === "SUPERADMIN" || isPoolOwner);
+  // On-chain management is narrower than editing the record. Every call behind
+  // it is `onlyOwner` on a contract the pool's owner deployed, so a superadmin —
+  // who may correct the catalog for anyone — would only be signing a revert.
+  const canManageOnChain = isPoolOwner;
+  const rates = usePoolVoucherRates(pool, vouchers, canManageOnChain);
+  const [managing, setManaging] = useState<PoolVoucher | null>(null);
+  const [approving, setApproving] = useState(false);
+  const [receiving, setReceiving] = useState(false);
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -63,19 +106,58 @@ export function PoolDetailPage({
         </div>
       </section>
 
-      <Button asChild className="h-11 w-full">
-        <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
-          <Trans>Swap</Trans>
-        </Link>
-      </Button>
+      {/* The three-up icon grid the wallet and voucher screens already use, so
+          a pool's actions are read the same way as every other screen's. */}
+      <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
+        <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+          <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+            <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
+            <Trans>Swap</Trans>
+          </Link>
+        </Button>
+        {/* A shortcut into the ordinary send flow with the pool as the
+            recipient, rather than a flow of its own. Back returns here on its
+            own: BackChevron prefers real history over its deep-link fallback.
+            `returnPool` rides along to the receipt so finishing the send lands
+            back on this pool rather than on the wallet. */}
+        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+          <Link
+            to="/wallet/send/amount"
+            search={{
+              recipient: pool.address,
+              recipientLabel: pool.name,
+              returnPool: pool.address,
+            }}
+          >
+            <RiArrowRightUpLine className="size-4" aria-hidden="true" />
+            <Trans>Deposit</Trans>
+          </Link>
+        </Button>
+        {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
+            one-word label so all three fit a 360px row. */}
+        <Button
+          variant="info"
+          className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+          onClick={() => setReceiving(true)}
+        >
+          <RiQrCodeLine className="size-4" aria-hidden="true" />
+          <Trans>Receive</Trans>
+        </Button>
+      </section>
+
+      <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
+
+      {canEditDetails ? (
+        <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
+      ) : null}
 
       <div
-        className="grid grid-cols-2 border border-border bg-card p-1"
+        className="grid grid-cols-4 border border-border bg-card p-1"
         role="tablist"
         aria-label={t`Pool contents`}
       >
         {POOL_TABS.map((tab) => {
-          const label = tab === "offerings" ? <Trans>Offerings</Trans> : <Trans>Vouchers</Trans>;
+          const label = TAB_LABELS[tab];
           const className = [
             "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
             activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
@@ -119,10 +201,24 @@ export function PoolDetailPage({
         })}
       </div>
 
-      {activeTab === "offerings" ? <PoolOfferingsPanel poolAddress={poolAddress} /> : null}
+      {activeTab === "offerings" ? (
+        <PoolOfferingsPanel poolAddress={poolAddress} vouchers={vouchers} />
+      ) : null}
 
       {activeTab === "vouchers" ? (
-        <div id="pool-panel-vouchers" role="tabpanel" aria-labelledby="pool-tab-vouchers">
+        <div
+          id="pool-panel-vouchers"
+          role="tabpanel"
+          aria-labelledby="pool-tab-vouchers"
+          className="space-y-3"
+        >
+          {canManageOnChain ? (
+            <Button variant="outline" className="h-9 w-full" onClick={() => setApproving(true)}>
+              <RiAddLine className="size-4" aria-hidden="true" />
+              <Trans>Approve voucher</Trans>
+            </Button>
+          ) : null}
+
           {vouchers.length === 0 ? (
             <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
               <Trans>No vouchers in this pool yet.</Trans>
@@ -136,11 +232,42 @@ export function PoolDetailPage({
                   voucher={voucher}
                   token={voucherTokens[index]}
                   isLast={index === vouchers.length - 1}
+                  unitSymbol={pool.unitOfAccount ?? pool.symbol}
+                  ratePpm={rates.data?.get(voucher.tokenAddress.toLowerCase())}
+                  onManage={canManageOnChain ? () => setManaging(voucher) : undefined}
                 />
               ))}
             </div>
           )}
         </div>
+      ) : null}
+
+      {activeTab === "holdings" ? <PoolHoldingsPanel pool={pool} vouchers={vouchers} /> : null}
+
+      {activeTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
+
+      {canManageOnChain ? (
+        <PoolVoucherSheet
+          pool={pool}
+          poolVouchers={vouchers}
+          voucher={null}
+          currentRatePpm={undefined}
+          rateIsPending={false}
+          open={approving}
+          onClose={() => setApproving(false)}
+        />
+      ) : null}
+
+      {canManageOnChain && managing ? (
+        <PoolVoucherSheet
+          pool={pool}
+          poolVouchers={vouchers}
+          voucher={managing}
+          currentRatePpm={rates.data?.get(managing.tokenAddress.toLowerCase())}
+          rateIsPending={rates.isEnabled && rates.isPending}
+          open
+          onClose={() => setManaging(null)}
+        />
       ) : null}
     </div>
   );
@@ -161,32 +288,59 @@ function VoucherRow({
   voucher,
   token,
   isLast,
+  unitSymbol,
+  ratePpm,
+  onManage,
 }: {
   poolAddress: string;
   voucher: PoolVoucher;
   token: WalletToken | undefined;
   isLast: boolean;
+  unitSymbol: string;
+  /** The pool's rate for this voucher. Only read for owners, so usually absent. */
+  ratePpm: bigint | undefined;
+  /** Present only for the pool's owner; the row stays a plain link for everyone else. */
+  onManage?: () => void;
 }) {
+  const { t } = useLingui();
   return (
-    <Link
-      to="/vouchers/$voucherAddress"
-      params={{ voucherAddress: voucher.tokenAddress.toLowerCase() }}
-      search={{ poolAddress }}
-      className={["flex items-center gap-3 p-3", isLast ? "" : "border-b border-border"].join(" ")}
-    >
-      {token ? <TokenLogo token={token} size={36} /> : null}
-      <div className="min-w-0 flex-1 overflow-hidden">
-        <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
-      </div>
-      {voucher.offerCount === null ? null : (
-        <span className="shrink-0 text-primary text-[0.6875rem] font-semibold">
-          {voucher.offerCount === 1 ? (
-            <Trans>1 offer</Trans>
-          ) : (
-            <Trans>{voucher.offerCount} offers</Trans>
+    <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
+      <Link
+        to="/vouchers/$voucherAddress"
+        params={{ voucherAddress: voucher.tokenAddress.toLowerCase() }}
+        search={{ poolAddress }}
+        className="flex min-w-0 flex-1 items-center gap-3 p-3"
+      >
+        {token ? <TokenLogo token={token} size={36} /> : null}
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
+          {ratePpm === undefined ? null : (
+            <p className="truncate font-mono text-muted-foreground text-xs">
+              1 {voucher.symbol} ={" "}
+              {formatTokenAmount(ratePpm.toString(), POOL_PRICE_INDEX_DECIMALS)} {unitSymbol}
+            </p>
           )}
-        </span>
-      )}
-    </Link>
+        </div>
+        {voucher.offerCount === null ? null : (
+          <span className="shrink-0 text-primary text-[0.6875rem] font-semibold">
+            {voucher.offerCount === 1 ? (
+              <Trans>1 offer</Trans>
+            ) : (
+              <Trans>{voucher.offerCount} offers</Trans>
+            )}
+          </span>
+        )}
+      </Link>
+      {onManage ? (
+        <button
+          type="button"
+          aria-label={t`Manage ${voucher.symbol}`}
+          onClick={onManage}
+          className="flex size-11 shrink-0 items-center justify-center text-muted-foreground"
+        >
+          <RiSettings3Line className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
   );
 }

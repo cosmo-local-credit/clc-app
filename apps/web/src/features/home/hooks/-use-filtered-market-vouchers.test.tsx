@@ -4,8 +4,8 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { BackendApiError } from "#/features/auth/api/client";
-import type { FilteredMarketVoucherPage, MarketVoucher } from "#/features/home/api/market-client";
+import { BackendApiError } from "@clc/api/client/errors";
+import type { FilteredMarketVoucherPage, MarketVoucher } from "@clc/api/features/market/client";
 import {
   FilteredCatalogTooLargeError,
   MAX_FILTERED_PAGES,
@@ -16,10 +16,16 @@ import { MARKET_MAP_PAGE_SIZE } from "./use-market-vouchers";
 
 const getFilteredMarketVouchers = vi.hoisted(() => vi.fn());
 
-vi.mock("#/features/home/api/market-client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("#/features/home/api/market-client")>();
+vi.mock("@clc/api/features/market/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/api/features/market/client")>();
   return { ...actual, getFilteredMarketVouchers };
 });
+
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/market", async () => ({
+  marketClient: await import("@clc/api/features/market/client"),
+}));
 
 function filter(overrides: Partial<CatalogFilter> = {}): CatalogFilter {
   return {

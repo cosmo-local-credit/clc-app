@@ -66,9 +66,9 @@ describe("isPasskeyPlatformAvailable", () => {
     });
   });
 
-  it("returns false for Chrome on iOS (CriOS)", () => {
+  it("returns true for Chrome on iOS (CriOS)", () => {
     withUA(UA.chromeIos, () => {
-      expect(isPasskeyPlatformAvailable()).toBe(false);
+      expect(isPasskeyPlatformAvailable()).toBe(true);
     });
   });
 

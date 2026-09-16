@@ -1,10 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { signinWithWebAuthn } from "#/features/auth/api/client";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { collectWebAuthnAssertion } from "#/features/webauthn/hooks/assertion";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
+import { authClient } from "#/lib/api/auth";
 
 export type SigninStep = "idle" | "asserting" | "verifying" | "done" | "error";
 
@@ -22,7 +22,7 @@ export function useCaliburSignin(client: RelayerClient) {
       const assertion = await collectWebAuthnAssertion(client);
 
       setStep("verifying");
-      const result = await signinWithWebAuthn(assertion);
+      const result = await authClient.signinWithWebAuthn(assertion);
 
       storeWebAuthnCredential({
         credentialId: assertion.credentialId,

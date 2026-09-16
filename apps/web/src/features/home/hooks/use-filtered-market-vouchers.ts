@@ -1,19 +1,19 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { BackendApiError } from "#/features/auth/api/client";
+import { isRetryableBackendError } from "@clc/api/client/errors";
 import {
   type FilteredMarketVoucherPage,
   type MarketTagFacet,
   type MarketVoucher,
-  getFilteredMarketVouchers,
-} from "#/features/home/api/market-client";
+} from "@clc/api/features/market/client";
 import {
   MARKET_MAP_PAGE_SIZE,
   MARKET_QUERY_FRESHNESS,
   marketVoucherQueryKeys,
   nextMarketCursor,
 } from "#/features/home/hooks/use-market-vouchers";
+import { marketClient } from "#/lib/api/market";
 
 export const MAX_FILTERED_PAGES = 6;
 
@@ -51,7 +51,7 @@ export function useFilteredMarketVouchers(
       let cursor: number | undefined;
 
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
-        const page = await getFilteredMarketVouchers(
+        const page = await marketClient.getFilteredMarketVouchers(
           {
             perPage,
             cursor,
@@ -80,13 +80,10 @@ export function useFilteredMarketVouchers(
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
-    retry: (failureCount, error) => {
-      if (error instanceof FilteredCatalogTooLargeError) return false;
-      if (error instanceof BackendApiError && error.status >= 400 && error.status < 500) {
-        return false;
-      }
-      return failureCount < 1;
-    },
+    // Only a transport failure or server fault is worth replaying; a rejected
+    // filter, an exhausted page budget, or a bug in our own query function
+    // will fail identically. See isRetryableBackendError.
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
   return query;
@@ -96,7 +93,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
   return useQuery({
     queryKey: marketVoucherQueryKeys.facetVocabulary(),
     queryFn: async ({ signal }) => {
-      const page = await getFilteredMarketVouchers(
+      const page = await marketClient.getFilteredMarketVouchers(
         { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
         signal,
       );
@@ -106,10 +103,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
-    retry: (failureCount, error) =>
-      error instanceof BackendApiError && error.status >= 400 && error.status < 500
-        ? false
-        : failureCount < 1,
+    retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }
 

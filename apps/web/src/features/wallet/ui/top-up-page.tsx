@@ -27,13 +27,16 @@ import {
 import { EllipsizedAddress } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import type { PretiumCashTransaction } from "#/features/wallet/api/pretium-client";
+import type { PretiumCashTransaction } from "@clc/api/features/pretium/client";
+import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import {
   usePretiumTransactionsByAddress,
   useTriggerPretiumOnramp,
   usePretiumRates,
 } from "#/features/wallet/hooks/use-pretium";
 import { cn } from "#/lib/utils";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { WithdrawSheet } from "./withdraw-sheet";
 
 // We only onramp Tether. `ONRAMP_ASSET` is the Pretium asset code sent to the
@@ -76,17 +79,19 @@ export function TopUpPage() {
   const normalizedCashPhone = parsedPhone?.country === "KE" ? parsedPhone.number : phone;
   const hasPhone = phone.length > 0;
   const hasKenyanPhone = parsedPhone?.country === "KE";
-  const disabledReason = !cashAddress
-    ? t`Connect your wallet to use MPESA.`
-    : profileQuery.isPending
-      ? t`Loading your profile…`
-      : profileQuery.isError
-        ? t`We couldn't load your profile phone number.`
-        : !hasPhone
-          ? t`Add a phone number to your profile to use MPESA.`
-          : !hasKenyanPhone
-            ? t`MPESA cash services need a Kenyan phone number.`
-            : null;
+  const disabledReason = !chainHasPretiumRamp(CHAIN_ID)
+    ? t`Cash services aren't available on ${CHAIN_INFO.name}.`
+    : !cashAddress
+      ? t`Connect your wallet to use MPESA.`
+      : profileQuery.isPending
+        ? t`Loading your profile…`
+        : profileQuery.isError
+          ? t`We couldn't load your profile phone number.`
+          : !hasPhone
+            ? t`Add a phone number to your profile to use MPESA.`
+            : !hasKenyanPhone
+              ? t`MPESA cash services need a Kenyan phone number.`
+              : null;
   const amountValue = Number(amount);
   const hasValidAmount =
     amount.trim() !== "" &&
@@ -527,7 +532,7 @@ function OnrampDetailsSheet({
   const { t } = useLingui();
   const isComplete = onramp ? isCompletePretiumStatus(onramp.status) : false;
   const hasTxHash = !!onramp?.txHash;
-  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${onramp?.txHash}` : "#";
+  const explorerUrl = hasTxHash ? explorerTxUrl(CHAIN_INFO, onramp?.txHash ?? "") : "#";
 
   const copyPretiumId = (value: string) => {
     if (!navigator.clipboard) {
@@ -638,7 +643,7 @@ function OfframpDetailsSheet({
   const isComplete = offramp ? isCompletePretiumStatus(offramp.status) : false;
   const hasTxHash = !!offramp?.txHash;
   const hasMpesaConfirmation = !!offramp?.mpesaConfirmation;
-  const explorerUrl = hasTxHash ? `https://celoscan.io/tx/${offramp?.txHash}` : "#";
+  const explorerUrl = hasTxHash ? explorerTxUrl(CHAIN_INFO, offramp?.txHash ?? "") : "#";
 
   const copyPretiumId = (value: string) => {
     if (!navigator.clipboard) {

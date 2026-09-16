@@ -1,28 +1,31 @@
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
   toVoucherDeployPayload,
-  type VoucherType,
   type VoucherUnit,
   voucherCreateSchema,
   voucherDescriptionSchema,
-  voucherExpiryDateSchema,
   voucherNameSchema,
   voucherPathLicenseSchema,
   voucherPriceSchema,
+  voucherSupplySchema,
   voucherSymbolSchema,
   voucherTermsSchema,
 } from "@clc/core/features/vouchers/logic";
+import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import {
+  isHttpUrl,
   optionalEmailSchema,
   optionalPhoneSchema,
+  optionalTermsTextSchema,
   optionalTermsUrlSchema,
   optionalWebsiteSchema,
+  TERMS_TEXT_MAX,
 } from "@clc/core/lib/contact";
+import { profilePrefill } from "@clc/core/features/signup/prefill";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
-import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RiLoader4Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { getAddress } from "viem";
@@ -30,33 +33,32 @@ import { useConnection } from "wagmi";
 
 import { AgreementField } from "#/components/ui/agreement-field";
 import { Button } from "#/components/ui/button";
-import { Field } from "#/components/ui/field";
+import { Field, FieldError } from "#/components/ui/field";
+import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { PhoneInputField } from "#/components/ui/phone-input";
-import { RadioGroup, RadioGroupItem } from "#/components/ui/radio-group";
-import {
-  SelectContent,
-  SelectItem,
-  SelectRoot,
-  SelectTrigger,
-  SelectValue,
-} from "#/components/ui/select";
 import { StepProgress } from "#/components/ui/step-progress";
+import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
+import { Toggle } from "#/components/ui/toggle";
 import { BackChevron } from "#/components/wallet/wallet-kit";
-import { BackendApiError, formatBackendApiError } from "#/features/auth/api/client";
+import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
+import { isStorageConfigured } from "#/lib/api/storage";
 import {
   beginVoucherCreateHistory,
   exitVoucherCreateHistory,
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
+import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
 
@@ -66,15 +68,19 @@ type VoucherFormValues = {
   price: string;
   unitOfAccount: VoucherUnit;
   description: string;
-  voucherType: VoucherType;
+  voucherType: "standard";
   expiryDate: string;
   decimals: string;
+  supply: string;
   location: LocationInput | undefined;
   tags: string[];
   email: string;
   website: string;
   phone: string;
   terms: string;
+  /** Form-only: whether `terms` is a link or the terms themselves. */
+  termsMode: "url" | "text";
+  iconUrl: string;
   acceptedTerms: boolean;
   acceptedPathLicense: boolean;
 };
@@ -82,24 +88,32 @@ type VoucherFormValues = {
 const DEFAULT_VALUES: VoucherFormValues = {
   name: "",
   symbol: "",
-  price: "1",
+  price: "0.1",
   unitOfAccount: "KES",
   description: "",
   voucherType: "standard",
   expiryDate: "",
   decimals: "6",
+  supply: "1000",
   location: undefined,
   tags: [],
   email: "",
   website: "",
   phone: "",
   terms: "",
+  termsMode: "url",
+  iconUrl: "",
   acceptedTerms: false,
   acceptedPathLicense: false,
 };
 
-const DETAIL_FIELDS = ["name", "symbol", "price", "description", "expiryDate", "decimals"] as const;
-const PLACE_FIELDS = ["location", "email", "website", "phone", "terms"] as const;
+/** The text fields a saved profile can seed, all of which default to "". */
+type SeedableTextField = "name" | "email" | "phone" | "website" | "description" | "iconUrl";
+
+const DETAIL_FIELDS = ["name", "symbol", "price", "supply", "description"] as const;
+/** Detail fields folded under "Advanced"; an error there has to unfold it to be seen. */
+const ADVANCED_FIELDS = ["symbol", "price", "unitOfAccount"] as const;
+const PLACE_FIELDS = ["location", "email", "website", "phone", "terms", "iconUrl"] as const;
 
 export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const { i18n, t } = useLingui();
@@ -112,24 +126,72 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const draft = useVoucherCreateDraft((state) => state.draft);
   const setDraft = useVoucherCreateDraft((state) => state.setDraft);
   const hasPrefilledProfile = useRef(false);
+  const advancedRef = useRef<HTMLDetailsElement>(null);
+  const suggestedSymbol = useSuggestedSymbol({
+    kind: "voucher",
+    initialSymbol: draft?.symbol ?? "",
+  });
+  const [tagsOpen, setTagsOpen] = useState(false);
+  const [iconBusy, setIconBusy] = useState(false);
+  const [termsPreview, setTermsPreview] = useState(false);
 
+  const defaultValues: VoucherFormValues = draft
+    ? {
+        ...draft,
+        voucherType: "standard",
+        expiryDate: "",
+        decimals: "6",
+        iconUrl: draft.iconUrl ?? "",
+        termsMode: draft.terms && !isHttpUrl(draft.terms) ? "text" : "url",
+      }
+    : DEFAULT_VALUES;
   const form = useForm({
-    defaultValues: draft ?? DEFAULT_VALUES,
-    validators: { onSubmit: voucherCreateSchema },
+    defaultValues,
+    validators: {
+      // A function rather than the schema itself: the form carries `termsMode`,
+      // which the schema neither knows nor needs, so the two types differ.
+      onSubmit: ({ value }) => {
+        const result = voucherCreateSchema.safeParse(value);
+        if (result.success) return undefined;
+        const fields: Record<string, string> = {};
+        for (const issue of result.error.issues) {
+          const key = issue.path.map(String).join(".");
+          if (key !== "" && !(key in fields)) fields[key] = issue.message;
+        }
+        return { fields };
+      },
+    },
     onSubmit: async ({ value }) => {
       if (!address) {
         toast.error(t`Connect your wallet before publishing.`);
         return;
       }
-      const parsed = voucherCreateSchema.parse(value);
+      const check = await suggestedSymbol.confirm(value.name, value.symbol);
+      if (!check.ok) {
+        toast.error(t`That symbol is already in use.`);
+        return;
+      }
+      if (check.symbol !== value.symbol) {
+        form.setFieldValue("symbol", check.symbol);
+        toast.info(t`Symbol was taken, using ${check.symbol} instead.`);
+      }
+      const parsed = voucherCreateSchema.parse({
+        ...value,
+        symbol: check.symbol,
+        voucherType: "standard",
+        expiryDate: "",
+        decimals: "6",
+      });
       setDraft(parsed);
       try {
         const result = await deployVoucher.mutateAsync(
           toVoucherDeployPayload(parsed, getAddress(address)),
         );
+        // The opening supply rides along in the URL so the receipt can mint it
+        // as soon as the contract confirms, even after a reload loses the draft.
         exitVoucherCreateHistory({
           history: router.history,
-          destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
+          destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}&mintAmount=${encodeURIComponent(parsed.supply.trim())}`,
         });
       } catch (error) {
         toast.error(
@@ -143,23 +205,51 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     },
   });
 
+  // Everything the issuer already told us about themselves during onboarding is
+  // the same thing this form asks for again, so it starts filled in. Only an
+  // untouched field still holding its default is seeded — a retry draft, or a
+  // value the issuer has typed over, always wins.
   useEffect(() => {
     const profile = profileQuery.data;
     if (hasPrefilledProfile.current || !profile || draft) return;
     hasPrefilledProfile.current = true;
 
-    const email = profile.email.trim();
-    if (
-      !form.getFieldMeta("email")?.isTouched &&
-      form.getFieldValue("email") === "" &&
-      !email.endsWith("@clc.local")
-    ) {
-      form.setFieldValue("email", email, { dontUpdateMeta: true });
+    const prefill = profilePrefill(profile);
+
+    function seedText(name: SeedableTextField, value: string) {
+      if (!value) return;
+      if (form.getFieldMeta(name)?.isTouched) return;
+      if (form.getFieldValue(name) !== "") return;
+      form.setFieldValue(name, value, { dontUpdateMeta: true });
     }
 
-    const phone = profile.phone.trim();
-    if (!form.getFieldMeta("phone")?.isTouched && form.getFieldValue("phone") === "") {
-      form.setFieldValue("phone", phone, { dontUpdateMeta: true });
+    seedText("email", prefill.email);
+    seedText("phone", prefill.phone);
+    seedText("website", prefill.website);
+    seedText("name", prefill.name ? `${prefill.name} Voucher` : "");
+    // The bio is free text with no minimum, so it only becomes a description
+    // when it would pass as one.
+    if (voucherDescriptionSchema.safeParse(prefill.description).success) {
+      seedText("description", prefill.description);
+    }
+    // Only where the upload fields are rendered: seeding a hidden field would
+    // attach a photo the issuer was never shown.
+    if (isStorageConfigured) seedText("iconUrl", prefill.imageUrl);
+
+    if (
+      prefill.unitOfAccount &&
+      !form.getFieldMeta("unitOfAccount")?.isTouched &&
+      form.getFieldValue("unitOfAccount") === DEFAULT_VALUES.unitOfAccount
+    ) {
+      form.setFieldValue("unitOfAccount", prefill.unitOfAccount, { dontUpdateMeta: true });
+    }
+
+    if (
+      prefill.location &&
+      !form.getFieldMeta("location")?.isTouched &&
+      form.getFieldValue("location") === undefined
+    ) {
+      form.setFieldValue("location", prefill.location, { dontUpdateMeta: true });
     }
   }, [draft, form, profileQuery.data]);
 
@@ -185,11 +275,22 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   }
 
   async function goToPlace() {
-    if (!(await fieldsAreValid(DETAIL_FIELDS))) return;
+    // Blur may not have fired, or its lookup may still be in flight.
+    if (form.getFieldValue("symbol") === "") {
+      const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
+      if (symbol) form.setFieldValue("symbol", symbol);
+    }
+    if (!(await fieldsAreValid(DETAIL_FIELDS))) {
+      if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
+        if (advancedRef.current) advancedRef.current.open = true;
+      }
+      return;
+    }
     void navigate({ to: "/vouchers/create/$step", params: { step: "place" } });
   }
 
   async function goToReview() {
+    if (iconBusy) return;
     if (!(await fieldsAreValid(PLACE_FIELDS))) return;
     void navigate({ to: "/vouchers/create/$step", params: { step: "review" } });
   }
@@ -207,6 +308,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
       <BackChevron
         label={step === "voucher" ? t`Vouchers` : t`Back`}
         to={fallbackTo}
+        onClick={step === "place" && tagsOpen ? () => setTagsOpen(false) : undefined}
         className="self-start"
       />
 
@@ -259,7 +361,12 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                       id="voucher-name"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        void suggestedSymbol.suggest(field.state.value).then((symbol) => {
+                          if (symbol !== undefined) form.setFieldValue("symbol", symbol);
+                        });
+                      }}
                       placeholder={t`e.g. Community Market`}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
@@ -268,110 +375,51 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
               </form.Field>
 
               <form.Field
-                name="symbol"
-                validators={{ onBlur: voucherSymbolSchema, onSubmit: voucherSymbolSchema }}
+                name="supply"
+                validators={{
+                  onBlur: voucherSupplySchema(DEFAULT_VALUES.decimals),
+                  onSubmit: voucherSupplySchema(DEFAULT_VALUES.decimals),
+                }}
               >
                 {(field) => (
                   <Field
-                    label={t`Voucher Symbol`}
-                    htmlFor="voucher-symbol"
-                    hint={t`Short ticker, max 6 characters`}
+                    label={t`Create vouchers`}
+                    htmlFor="voucher-supply"
+                    hint={t`How many vouchers to create once this voucher is published`}
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Input
-                      id="voucher-symbol"
+                      id="voucher-supply"
+                      inputMode="decimal"
                       value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
+                      onChange={(event) => field.handleChange(event.target.value)}
                       onBlur={field.handleBlur}
-                      placeholder={t`e.g. MARKET`}
-                      maxLength={6}
                       aria-invalid={field.state.meta.errors.length > 0}
                     />
                   </Field>
                 )}
               </form.Field>
 
-              <form.Subscribe selector={(state) => state.values.unitOfAccount}>
-                {(unit) => (
-                  <div
-                    data-slot="voucher-pricing-row"
-                    className="grid grid-cols-[minmax(0,1fr)_7rem] items-start gap-2.5"
-                  >
-                    <form.Field
-                      name="price"
-                      validators={{ onBlur: voucherPriceSchema, onSubmit: voucherPriceSchema }}
-                    >
-                      {(field) => (
-                        <Field
-                          label={t`Price`}
-                          htmlFor="voucher-price"
-                          error={getFieldError(field.state.meta.errors)}
-                        >
-                          <div className="relative">
-                            <Input
-                              id="voucher-price"
-                              inputMode="decimal"
-                              className="pr-16"
-                              value={field.state.value}
-                              onChange={(event) => field.handleChange(event.target.value)}
-                              onBlur={field.handleBlur}
-                              aria-invalid={field.state.meta.errors.length > 0}
-                            />
-                            <span
-                              data-slot="voucher-price-unit"
-                              className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground text-sm"
-                              aria-hidden="true"
-                            >
-                              {unit}
-                            </span>
-                          </div>
-                        </Field>
-                      )}
-                    </form.Field>
-
-                    <form.Field name="unitOfAccount">
-                      {(field) => (
-                        <Field label={t`Priced in`} htmlFor="voucher-currency">
-                          <SelectRoot
-                            value={field.state.value}
-                            onValueChange={(value) => {
-                              if (value === "KES" || value === "USD" || value === "HOUR") {
-                                field.handleChange(value);
-                              }
-                            }}
-                          >
-                            <SelectTrigger id="voucher-currency" className="w-full">
-                              <SelectValue>{() => field.state.value}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="KES">
-                                <Trans>KES — Kenyan shilling</Trans>
-                              </SelectItem>
-                              <SelectItem value="USD">
-                                <Trans>USD — US dollar</Trans>
-                              </SelectItem>
-                              <SelectItem value="HOUR">
-                                <Trans>HOUR — Hour</Trans>
-                              </SelectItem>
-                            </SelectContent>
-                          </SelectRoot>
-                        </Field>
-                      )}
-                    </form.Field>
-                  </div>
-                )}
-              </form.Subscribe>
-
               <form.Subscribe
                 selector={(state) =>
-                  [state.values.symbol, state.values.price, state.values.unitOfAccount] as const
+                  [
+                    state.values.supply,
+                    state.values.price,
+                    state.values.unitOfAccount,
+                    state.values.name,
+                  ] as const
                 }
               >
-                {([symbol, price, unit]) => (
-                  <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
-                    {`1 ${symbol.trim() || "XYZ"} = ${price || "—"} ${unit}`}
-                  </p>
-                )}
+                {([supply, price, unit, name]) => {
+                  const value = formatOfferingDisplayPrice(supply, price, unit, name);
+                  return value ? (
+                    <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                      <Trans>
+                        Value: {value.value} {value.unit} of offerings
+                      </Trans>
+                    </p>
+                  ) : null;
+                }}
               </form.Subscribe>
 
               <form.Field
@@ -401,7 +449,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <details>
+              <details ref={advancedRef}>
                 <summary className="cursor-pointer font-medium text-foreground text-sm">
                   <Trans>Advanced</Trans>
                 </summary>
@@ -410,92 +458,103 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   id="voucher-advanced"
                   className="mt-4 space-y-3.5 border border-border bg-card p-4"
                 >
-                  <form.Field name="voucherType">
-                    {(field) => (
-                      <div>
-                        <p className="mb-2 font-medium text-sm">
-                          <Trans>Voucher Type</Trans>
-                        </p>
-                        <RadioGroup
-                          value={field.state.value}
-                          onValueChange={(value) => {
-                            if (value === "standard" || value === "expiring") {
-                              field.handleChange(value);
-                            }
-                          }}
-                          aria-label={t`Voucher Type`}
-                          className="gap-2.5"
-                        >
-                          <VoucherTypeOption
-                            value="standard"
-                            title={t`Standard`}
-                            description={t`Circulates forever`}
-                          />
-                          <VoucherTypeOption
-                            value="expiring"
-                            title={t`Expiring`}
-                            description={t`Has an expiration date`}
-                          />
-                        </RadioGroup>
-                      </div>
-                    )}
-                  </form.Field>
-
-                  {/* Subscribed, not read via getFieldValue: the validator and conditional
-                      field both have to follow the live voucher type. */}
-                  <form.Subscribe selector={(state) => state.values.voucherType}>
-                    {(voucherType) =>
-                      voucherType === "expiring" ? (
-                        <form.Field
-                          name="expiryDate"
-                          validators={{
-                            onBlur: voucherExpiryDateSchema(voucherType),
-                            onSubmit: voucherExpiryDateSchema(voucherType),
-                          }}
-                        >
-                          {(field) => (
-                            <Field
-                              label={t`Expiration Date`}
-                              htmlFor="voucher-expiry"
-                              hint={t`When does this voucher expire?`}
-                              error={getFieldError(field.state.meta.errors)}
-                            >
-                              <Input
-                                id="voucher-expiry"
-                                type="date"
-                                value={field.state.value}
-                                onChange={(event) => field.handleChange(event.target.value)}
-                                onBlur={field.handleBlur}
-                                aria-invalid={field.state.meta.errors.length > 0}
-                              />
-                            </Field>
-                          )}
-                        </form.Field>
-                      ) : null
-                    }
-                  </form.Subscribe>
-
                   <form.Field
-                    name="decimals"
-                    validators={{ onBlur: tokenDecimalsSchema, onSubmit: tokenDecimalsSchema }}
+                    name="symbol"
+                    validators={{ onBlur: voucherSymbolSchema, onSubmit: voucherSymbolSchema }}
                   >
                     {(field) => (
                       <Field
-                        label={t`Decimals`}
-                        htmlFor="voucher-decimals"
+                        label={t`Voucher Symbol`}
+                        htmlFor="voucher-symbol"
+                        hint={t`Suggested from the name. You can change it.`}
                         error={getFieldError(field.state.meta.errors)}
                       >
                         <Input
-                          id="voucher-decimals"
-                          inputMode="numeric"
+                          id="voucher-symbol"
                           value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
+                          onChange={(event) => {
+                            const symbol = event.target.value.toUpperCase();
+                            field.handleChange(symbol);
+                            suggestedSymbol.track(symbol);
+                          }}
                           onBlur={field.handleBlur}
+                          placeholder={t`e.g. MARKET`}
+                          maxLength={6}
                           aria-invalid={field.state.meta.errors.length > 0}
                         />
                       </Field>
                     )}
                   </form.Field>
+
+                  <form.Subscribe selector={(state) => state.values.unitOfAccount}>
+                    {(unit) => (
+                      <div
+                        data-slot="voucher-pricing-row"
+                        className="grid grid-cols-[7rem_minmax(0,1fr)] items-start gap-2.5"
+                      >
+                        <form.Field
+                          name="price"
+                          validators={{ onBlur: voucherPriceSchema, onSubmit: voucherPriceSchema }}
+                        >
+                          {(field) => (
+                            <Field
+                              label={t`Price`}
+                              htmlFor="voucher-price"
+                              error={getFieldError(field.state.meta.errors)}
+                            >
+                              <div className="relative">
+                                <Input
+                                  id="voucher-price"
+                                  inputMode="decimal"
+                                  className="pr-16"
+                                  value={field.state.value}
+                                  onChange={(event) => field.handleChange(event.target.value)}
+                                  onBlur={field.handleBlur}
+                                  aria-invalid={field.state.meta.errors.length > 0}
+                                />
+                                <span
+                                  data-slot="voucher-price-unit"
+                                  className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground text-sm"
+                                  aria-hidden="true"
+                                >
+                                  {unit}
+                                </span>
+                              </div>
+                            </Field>
+                          )}
+                        </form.Field>
+
+                        <form.Field name="unitOfAccount">
+                          {(field) => (
+                            <Field label={t`Priced in`} htmlFor="voucher-currency">
+                              <UnitOfAccountCombobox
+                                id="voucher-currency"
+                                value={field.state.value}
+                                onValueChange={field.handleChange}
+                                placeholder={t`Search currencies`}
+                                emptyMessage={t`No currencies found.`}
+                              />
+                            </Field>
+                          )}
+                        </form.Field>
+                      </div>
+                    )}
+                  </form.Subscribe>
+
+                  <form.Subscribe
+                    selector={(state) =>
+                      [state.values.name, state.values.price, state.values.unitOfAccount] as const
+                    }
+                  >
+                    {([name, price, unit]) => {
+                      const voucherName = name.trim() || t`voucher`;
+                      return (
+                        <p className="-mt-2 font-mono text-muted-foreground text-xs tabular-nums">
+                          {`1 ${voucherName} = ${price || "—"} ${unit}`}
+                        </p>
+                      );
+                    }}
+                  </form.Subscribe>
                 </div>
               </details>
             </div>
@@ -515,6 +574,24 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </h1>
 
             <div className="mt-3.5 space-y-3.5">
+              {isStorageConfigured ? (
+                <div className="border border-border bg-card p-4">
+                  <form.Field name="iconUrl">
+                    {(field) => (
+                      <ImageUploadField
+                        label={t`Logo`}
+                        hint={t`Optional`}
+                        purpose="voucher.icon"
+                        value={field.state.value || null}
+                        onChange={(url) => field.handleChange(url ?? "")}
+                        onBusyChange={setIconBusy}
+                        disabled={deployVoucher.isPending}
+                      />
+                    )}
+                  </form.Field>
+                </div>
+              ) : null}
+
               <form.Field name="location" validators={{ onSubmit: locationSchema }}>
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
@@ -565,11 +642,11 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                         listLabel={t`Voucher tags`}
                         placeholder={t`Search tags`}
                         removeLabel={(tag) => t`Remove ${tag}`}
+                        navigationHistory={router.history}
+                        open={tagsOpen}
+                        onOpenChange={setTagsOpen}
                       />
                     ) : null}
-                    <p className="mt-1.5 text-muted-foreground text-xs">
-                      <Trans>Helps buyers find and trust your offer</Trans>
-                    </p>
                   </div>
                 )}
               </form.Field>
@@ -643,36 +720,141 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <form.Field
-                name="terms"
-                validators={{ onBlur: optionalTermsUrlSchema, onSubmit: optionalTermsUrlSchema }}
-              >
-                {(field) => (
-                  <Field
-                    label={t`Terms URL`}
-                    htmlFor="voucher-terms-url"
-                    hint={t`Link to the terms that apply to this voucher`}
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Input
-                      id="voucher-terms-url"
-                      type="url"
-                      inputMode="url"
-                      autoComplete="url"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      placeholder="https://example.com/terms"
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
-                  </Field>
+              <form.Field name="termsMode">
+                {(modeField) => (
+                  <div>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium text-sm">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <label className="flex items-center gap-2 text-muted-foreground text-xs">
+                        <Trans>Write my own</Trans>
+                        <Switch
+                          checked={modeField.state.value === "text"}
+                          onCheckedChange={(checked) => {
+                            modeField.handleChange(checked ? "text" : "url");
+                            // A link and a body of text are different things;
+                            // one does not become the other by flipping the switch.
+                            form.setFieldValue("terms", "");
+                            setTermsPreview(false);
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    {modeField.state.value === "text" ? (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsTextSchema,
+                          onSubmit: optionalTermsTextSchema,
+                        }}
+                      >
+                        {(field) => (
+                          <div className="mt-1.5">
+                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                              <label
+                                htmlFor="voucher-terms-text"
+                                className="text-muted-foreground text-xs"
+                              >
+                                <Trans>Shown to anyone holding this voucher</Trans>
+                              </label>
+                              <Toggle
+                                variant="outline"
+                                pressed={termsPreview}
+                                onPressedChange={setTermsPreview}
+                                aria-label={t`Preview`}
+                              >
+                                <Trans>Preview</Trans>
+                              </Toggle>
+                            </div>
+                            {termsPreview ? (
+                              <div className="min-h-24 border border-border bg-card p-3">
+                                {field.state.value.trim() === "" ? (
+                                  <p className="text-muted-foreground text-sm">
+                                    <Trans>Nothing to preview yet.</Trans>
+                                  </p>
+                                ) : (
+                                  <MarkdownContent>{field.state.value}</MarkdownContent>
+                                )}
+                              </div>
+                            ) : (
+                              <Textarea
+                                id="voucher-terms-text"
+                                rows={8}
+                                maxLength={TERMS_TEXT_MAX}
+                                className="font-mono text-[0.8125rem]"
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder={t`Redeemable at our stall on market days...`}
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                            )}
+                            {getFieldError(field.state.meta.errors) ? (
+                              <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
+                            ) : (
+                              <p className="mt-1 text-muted-foreground text-xs">
+                                <Trans>
+                                  Markdown: **bold**, # headings, - lists, [links](https://…)
+                                </Trans>
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </form.Field>
+                    ) : (
+                      <form.Field
+                        name="terms"
+                        validators={{
+                          onBlur: optionalTermsUrlSchema,
+                          onSubmit: optionalTermsUrlSchema,
+                        }}
+                      >
+                        {(field) => {
+                          const error = getFieldError(field.state.meta.errors);
+                          return (
+                            <div className="mt-1.5">
+                              <Input
+                                id="voucher-terms-url"
+                                type="url"
+                                inputMode="url"
+                                autoComplete="url"
+                                aria-label={t`Terms URL`}
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={field.handleBlur}
+                                placeholder="https://example.com/terms"
+                                aria-invalid={field.state.meta.errors.length > 0}
+                              />
+                              {error ? (
+                                <FieldError error={error} />
+                              ) : (
+                                <p className="mt-1 text-muted-foreground text-xs">
+                                  <Trans>Link to the terms that apply to this voucher</Trans>
+                                </p>
+                              )}
+                            </div>
+                          );
+                        }}
+                      </form.Field>
+                    )}
+                  </div>
                 )}
               </form.Field>
             </div>
 
             <div className="mt-auto pt-6">
-              <Button type="button" className="h-11 w-full" onClick={() => void goToReview()}>
-                <Trans>Next</Trans>
+              <Button
+                type="button"
+                className="h-11 w-full"
+                disabled={iconBusy}
+                onClick={() => void goToReview()}
+              >
+                {iconBusy ? (
+                  <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
+                ) : null}
+                {iconBusy ? <Trans>Uploading…</Trans> : <Trans>Next</Trans>}
               </Button>
             </div>
           </>
@@ -686,9 +868,19 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
 
             <form.Subscribe selector={(state) => state.values}>
               {(values) => (
-                <dl className="mt-3.5 border border-border bg-card">
-                  <VoucherDetailsRows values={values} />
-                </dl>
+                <>
+                  <dl className="mt-3.5 border border-border bg-card">
+                    <VoucherDetailsRows values={values} />
+                  </dl>
+                  {values.terms !== "" && !isHttpUrl(values.terms) ? (
+                    <div className="mt-3.5 border border-border bg-card p-4">
+                      <p className="font-heading text-sm font-semibold leading-snug">
+                        <Trans>Terms</Trans>
+                      </p>
+                      <MarkdownContent className="mt-2">{values.terms}</MarkdownContent>
+                    </div>
+                  ) : null}
+                </>
               )}
             </form.Subscribe>
 
@@ -778,25 +970,5 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
         ) : null}
       </form>
     </div>
-  );
-}
-
-function VoucherTypeOption({
-  value,
-  title,
-  description,
-}: {
-  value: VoucherType;
-  title: string;
-  description: string;
-}) {
-  return (
-    <label className="grid cursor-pointer grid-cols-[1rem_minmax(0,1fr)] gap-3 border border-border bg-card p-3 has-data-[checked]:border-primary has-data-[checked]:bg-primary/[0.05]">
-      <RadioGroupItem value={value} className="mt-0.5" />
-      <span>
-        <strong className="block text-sm font-semibold">{title}</strong>
-        <span className="mt-0.5 block text-muted-foreground text-xs">{description}</span>
-      </span>
-    </label>
   );
 }

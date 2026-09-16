@@ -9,6 +9,8 @@ const searchSchema = z.object({
   recipient: z.string().optional().catch(undefined),
   amount: z.string().optional().catch(undefined),
   symbol: z.string().optional().catch(undefined),
+  /** Pool the send started from, so Done returns there instead of the wallet. */
+  returnPool: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/wallet/send/receipt")({
@@ -17,7 +19,7 @@ export const Route = createFileRoute("/wallet/send/receipt")({
 });
 
 function SendReceiptRoute() {
-  const { trackingId, recipient, amount, symbol } = Route.useSearch();
+  const { trackingId, recipient, amount, symbol, returnPool } = Route.useSearch();
   return (
     <AuthenticatedRoute>
       <SendReceiptPage
@@ -25,6 +27,7 @@ function SendReceiptRoute() {
         recipient={recipient}
         amount={amount}
         symbol={symbol}
+        returnPool={returnPool}
       />
     </AuthenticatedRoute>
   );

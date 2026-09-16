@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import type { MarketTagFacet, MarketVoucher } from "#/features/home/api/market-client";
+import type { MarketTagFacet, MarketVoucher } from "@clc/api/features/market/client";
 import {
   ensureSelectedFacets,
   toFilteredCatalogState,

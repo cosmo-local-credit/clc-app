@@ -1,12 +1,27 @@
+import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ReactNode } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import type { ReactElement, ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitVoucherCreateHistoryMock, navigateMock } = vi.hoisted(() => ({
-  deployMutateAsync: vi.fn(),
-  exitVoucherCreateHistoryMock: vi.fn(),
-  navigateMock: vi.fn(),
-}));
+const { deployMutateAsync, exitVoucherCreateHistoryMock, getTakenSymbols, navigateMock, profile } =
+  vi.hoisted(() => ({
+    deployMutateAsync: vi.fn(),
+    exitVoucherCreateHistoryMock: vi.fn(),
+    getTakenSymbols: vi.fn(),
+    navigateMock: vi.fn(),
+    // Mutable so one test can hand the form a profile that also carries a saved
+    // location and currency, which the rest deliberately leave at their defaults.
+    profile: { current: {} as ProfileDefaults },
+  }));
+
+const DEFAULT_PROFILE: ProfileDefaults = {
+  email: "issuer@example.org",
+  phone: "+254712345678",
+  website: "https://issuer.example",
+  bio: "Fresh produce from Kilifi.",
+  avatarUrl: "https://cdn.test/profile/avatar.webp",
+};
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
@@ -21,6 +36,7 @@ vi.mock("@tanstack/react-router", () => ({
       push: vi.fn(),
       replace: vi.fn(),
       back: vi.fn(),
+      block: vi.fn(() => vi.fn()),
     },
   }),
 }));
@@ -29,7 +45,9 @@ vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
-vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
+
+vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
 
 vi.mock("#/lib/navigation/voucher-create-history", () => ({
   beginVoucherCreateHistory: vi.fn(),
@@ -69,12 +87,7 @@ vi.mock("#/features/vouchers/hooks/use-voucher-deployment", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
-  useAuthProfile: () => ({
-    data: {
-      email: "issuer@example.org",
-      phone: "+254712345678",
-    },
-  }),
+  useAuthProfile: () => ({ data: profile.current }),
 }));
 
 vi.mock("#/hooks/use-deployment", () => ({
@@ -86,8 +99,66 @@ vi.mock("#/hooks/use-deployment", () => ({
   }),
 }));
 
+vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
+
+// Cropping and uploading are covered by the shared field's tests. This keeps
+// this suite on form integration: stored URLs must survive the steps and reach
+// the deploy request.
+vi.mock("#/components/ui/image-upload-field", () => ({
+  ImageUploadField: ({
+    label,
+    purpose,
+    value,
+    onChange,
+    onBusyChange,
+  }: {
+    label: string;
+    purpose: "voucher.icon";
+    value: string | null;
+    onChange: (url: string | null) => void;
+    onBusyChange?: (busy: boolean) => void;
+  }) => (
+    <div>
+      <span>{label}</span>
+      <span data-testid={`${purpose}-value`}>{value ?? ""}</span>
+      <button
+        type="button"
+        onClick={() => onChange(`https://cdn.test/${purpose.replace(".", "/")}.webp`)}
+      >
+        {`Upload ${label}`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(true)}>
+        {`Start ${label} upload`}
+      </button>
+      <button type="button" onClick={() => onBusyChange?.(false)}>
+        {`Finish ${label} upload`}
+      </button>
+    </div>
+  ),
+}));
+
 import { CreateVoucherFlow } from "./create-voucher-flow";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
+
+/** The flow reads symbol occupancy through the query cache, so it needs a client. */
+function renderFlow(ui: ReactElement) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = render(ui, {
+    wrapper: ({ children }) => (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    ),
+  });
+  return { ...view, queryClient };
+}
+
+beforeEach(() => {
+  profile.current = { ...DEFAULT_PROFILE };
+  getTakenSymbols.mockImplementation(async (kind: string, prefix: string) => ({
+    kind,
+    prefix,
+    taken: [],
+  }));
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -95,8 +166,8 @@ afterEach(() => {
 });
 
 describe("CreateVoucherFlow", () => {
-  it("uses compact guidance, issuer-facing pricing fields, and the standard disclosure pattern", () => {
-    render(<CreateVoucherFlow step="voucher" />);
+  it("keeps technical pricing and token settings in Advanced", () => {
+    renderFlow(<CreateVoucherFlow step="voucher" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Create voucher" })).toBeTruthy();
 
@@ -108,11 +179,10 @@ describe("CreateVoucherFlow", () => {
     expect(guidanceTitle.classList).toContain("text-primary");
     expect(guidanceTitle.closest("aside")?.classList).toContain("bg-card");
 
-    const currency = screen.getByLabelText("Priced in");
-    const price = screen.getByLabelText("Price");
-    const pricingRow = document.querySelector('[data-slot="voucher-pricing-row"]');
-    expect(pricingRow?.contains(price)).toBe(true);
-    expect(pricingRow?.contains(currency)).toBe(true);
+    expect(screen.queryByLabelText("Voucher Type")).toBeNull();
+    expect(screen.queryByLabelText("Decimals")).toBeNull();
+    expect((screen.getByLabelText("Create vouchers") as HTMLInputElement).value).toBe("1000");
+    expect(screen.getByText("Value: 100 KES of offerings")).toBeTruthy();
     expect(screen.queryByLabelText("Voucher Value")).toBeNull();
     expect(screen.queryByLabelText("Currency")).toBeNull();
     expect(screen.queryByLabelText("Unit of Account")).toBeNull();
@@ -122,24 +192,58 @@ describe("CreateVoucherFlow", () => {
     expect(advancedSummary.tagName).toBe("SUMMARY");
     const advancedDetails = advancedSummary.closest("details") as HTMLDetailsElement;
     expect(advancedDetails.open).toBe(false);
+    expect(advancedDetails.contains(screen.getByLabelText("Price"))).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Priced in"))).toBe(true);
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Voucher Symbol"))).toBe(true);
+    const currency = screen.getByLabelText("Priced in");
+    const price = screen.getByLabelText("Price");
+    const pricingRow = document.querySelector('[data-slot="voucher-pricing-row"]');
+    expect(pricingRow?.contains(price)).toBe(true);
+    expect(pricingRow?.contains(currency)).toBe(true);
+    expect(document.querySelector('[data-slot="voucher-price-unit"]')?.textContent).toBe("KES");
   });
 
   it("previews the voucher price in its selected currency or measure", () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
 
-    expect(screen.getByText("1 XYZ = 1 KES")).toBeTruthy();
+    expect(screen.getByText("1 voucher = 0.1 KES")).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "khv" } });
+    fireEvent.change(screen.getByLabelText("Voucher Name"), {
+      target: { value: "Kilifi Voucher" },
+    });
     fireEvent.change(screen.getByLabelText("Price"), { target: { value: "10" } });
 
-    expect(screen.getByText("1 KHV = 10 KES")).toBeTruthy();
+    expect(screen.getByText("1 Kilifi Voucher = 10 KES")).toBeTruthy();
+  });
+
+  it("searches the full currency list using code or currency name", async () => {
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
+
+    const currency = screen.getByRole("combobox", { name: "Priced in" });
+    fireEvent.click(currency);
+    expect(screen.getByRole("option", { name: "KES - Kenyan Shillings" })).toBeTruthy();
+    expect(screen.queryByText(/KES —/)).toBeNull();
+
+    fireEvent.change(currency, { target: { value: "Tanzanian" } });
+    const tanzanianShilling = await screen.findByRole("option", {
+      name: "TZS - Tanzanian Shilling",
+    });
+    fireEvent.pointerDown(tanzanianShilling, { pointerType: "touch" });
+    fireEvent.click(tanzanianShilling);
+
+    await waitFor(() =>
+      expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
+    );
+    expect(screen.getByText("1 voucher = 0.1 TZS")).toBeTruthy();
   });
 
   it("keeps tags compact and prefills contact details from the profile", async () => {
-    render(<CreateVoucherFlow step="place" />);
+    renderFlow(<CreateVoucherFlow step="place" />);
 
     await waitFor(() => {
       expect((screen.getByLabelText("Contact Email") as HTMLInputElement).value).toBe(
@@ -147,7 +251,11 @@ describe("CreateVoucherFlow", () => {
       );
       expect((screen.getByLabelText("Contact Phone") as HTMLInputElement).value).toBe("712 345678");
     });
-    expect(screen.getByLabelText("Contact Website")).toBeTruthy();
+    expect((screen.getByLabelText("Contact Website") as HTMLInputElement).value).toBe(
+      "https://issuer.example",
+    );
+    expect(screen.getByRole("button", { name: "Upload Logo" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Upload Cover photo" })).toBeNull();
     expect(screen.queryByText(/Public — voucher holders/)).toBeNull();
 
     const tagSearch = screen.getByRole("combobox", { name: "Search voucher tags" });
@@ -162,16 +270,125 @@ describe("CreateVoucherFlow", () => {
     expect(screen.queryByRole("option", { name: "Agriculture" })).toBeNull();
   });
 
+  it("seeds the location, icon and unit of account from the saved profile", async () => {
+    profile.current = {
+      ...DEFAULT_PROFILE,
+      preferredCurrency: "TZS",
+      country: "KE",
+      locationName: "Kilifi, Kenya",
+      geoLat: -3.5107,
+      geoLng: 39.9093,
+    };
+    const view = renderFlow(<CreateVoucherFlow step="place" />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("voucher.icon-value").textContent).toBe(
+        "https://cdn.test/profile/avatar.webp",
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Kilifi, Kenya" })).toBeTruthy();
+
+    view.rerender(<CreateVoucherFlow step="voucher" />);
+    expect((screen.getByLabelText("Voucher Description") as HTMLTextAreaElement).value).toBe(
+      "Fresh produce from Kilifi.",
+    );
+    fireEvent.click(screen.getByText("Advanced"));
+    expect((screen.getByLabelText("Priced in") as HTMLInputElement).value).toBe(
+      "TZS - Tanzanian Shilling",
+    );
+  });
+
+  it("starts a new voucher with the profile name", async () => {
+    profile.current = { ...DEFAULT_PROFILE, name: "Amina's Bakery" };
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+
+    await waitFor(() =>
+      expect((screen.getByLabelText("Voucher Name") as HTMLInputElement).value).toBe(
+        "Amina's Bakery Voucher",
+      ),
+    );
+  });
+
   it("collects an optional voucher terms URL", () => {
-    render(<CreateVoucherFlow step="place" />);
+    renderFlow(<CreateVoucherFlow step="place" />);
 
     const terms = screen.getByLabelText("Terms URL");
     expect(terms.getAttribute("type")).toBe("url");
     expect(screen.getByText("Link to the terms that apply to this voucher")).toBeTruthy();
+    expect(screen.queryByLabelText("Shown to anyone holding this voucher")).toBeNull();
+  });
+
+  it("lets the issuer write their own terms as Markdown instead of linking", async () => {
+    deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10" } });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "place" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="place" />);
+
+    fireEvent.change(screen.getByLabelText("Terms URL"), {
+      target: { value: "https://kilifi.example/terms" },
+    });
+    fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
+
+    // Flipping the switch discards the link: a URL is not a body of terms.
+    const editor = screen.getByLabelText("Shown to anyone holding this voucher");
+    expect((editor as HTMLTextAreaElement).value).toBe("");
+    expect(screen.queryByLabelText("Terms URL")).toBeNull();
+
+    fireEvent.change(editor, {
+      target: { value: "# House rules\n\nRedeemable on **market days** only." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+    expect(screen.getByText("market days").tagName).toBe("STRONG");
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "review" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="review" />);
+    expect(screen.getByText("Written below")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
+    expect(deployMutateAsync.mock.calls[0]?.[0]).toMatchObject({
+      terms: "# House rules\n\nRedeemable on **market days** only.",
+    });
+  });
+
+  it("does not advance while a voucher image is still uploading", () => {
+    renderFlow(<CreateVoucherFlow step="place" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Start Logo upload" }));
+    expect((screen.getByRole("button", { name: "Uploading…" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Finish Logo upload" }));
+    expect((screen.getByRole("button", { name: "Next" }) as HTMLButtonElement).disabled).toBe(
+      false,
+    );
   });
 
   it("requires both linked legal agreements before publishing", () => {
-    render(<CreateVoucherFlow step="review" />);
+    renderFlow(<CreateVoucherFlow step="review" />);
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
     const pathLicense = screen.getByRole("checkbox", { name: "Accept PATH License" });
@@ -194,7 +411,8 @@ describe("CreateVoucherFlow", () => {
 
   it("keeps form state across all three routes and deploys only after confirmation", async () => {
     deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
-    const view = render(<CreateVoucherFlow step="voucher" />);
+    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
 
     fireEvent.change(screen.getByLabelText("Voucher Name"), {
       target: { value: "Kilifi Harvest" },
@@ -203,6 +421,7 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food from Kilifi producers." },
     });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     await waitFor(() =>
@@ -220,6 +439,7 @@ describe("CreateVoucherFlow", () => {
     fireEvent.change(screen.getByLabelText("Terms URL"), {
       target: { value: "https://kilifi.example/terms" },
     });
+    fireEvent.click(screen.getByRole("button", { name: "Upload Logo" }));
     fireEvent.click(screen.getByRole("combobox", { name: "Search voucher tags" }));
     fireEvent.click(await screen.findByRole("option", { name: "Agriculture" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -252,7 +472,7 @@ describe("CreateVoucherFlow", () => {
         owner: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
         description: "Fresh food from Kilifi producers.",
         voucherUoa: "KES",
-        voucherValue: 1,
+        voucherValue: 0.1,
         locationName: "Kilifi, Kenya",
         geoLat: -3.5107,
         geoLng: 39.9093,
@@ -261,42 +481,27 @@ describe("CreateVoucherFlow", () => {
         website: "https://kilifi.example",
         terms: "https://kilifi.example/terms",
         phone: "+254712345678",
+        iconUrl: "https://cdn.test/voucher/icon.webp",
       }),
     );
     expect(exitVoucherCreateHistoryMock).toHaveBeenCalledWith({
       history: expect.any(Object),
-      destination: "/vouchers/create/receipt?trackingId=tracking-1",
+      destination: "/vouchers/create/receipt?trackingId=tracking-1&mintAmount=10000",
     });
   });
 
-  it("enables and requires the expiry date as soon as the voucher is marked expiring", async () => {
-    render(<CreateVoucherFlow step="voucher" />);
+  it("always sends the standard six-decimal token defaults", async () => {
+    renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.click(screen.getByText("Advanced"));
     fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
     fireEvent.change(screen.getByLabelText("Voucher Description"), {
       target: { value: "Fresh food." },
     });
-    fireEvent.click(screen.getByText("Advanced"));
-
+    expect(screen.queryByLabelText("Voucher Type")).toBeNull();
     expect(screen.queryByLabelText("Expiration Date")).toBeNull();
-
-    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
-    const expiry = () => screen.getByLabelText("Expiration Date") as HTMLInputElement;
-    expect(expiry().disabled).toBe(false);
-
-    fireEvent.click(screen.getByRole("radio", { name: /Standard/ }));
-    expect(screen.queryByLabelText("Expiration Date")).toBeNull();
-    fireEvent.click(screen.getByRole("radio", { name: /Expiring/ }));
-
+    expect(screen.queryByLabelText("Decimals")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
-    expect(await screen.findByText("Choose an expiration date")).toBeTruthy();
-    expect(navigateMock).not.toHaveBeenCalledWith(
-      expect.objectContaining({ params: { step: "place" } }),
-    );
-
-    fireEvent.change(expiry(), { target: { value: "2099-12-31" } });
-    fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
     await waitFor(() =>
       expect(navigateMock).toHaveBeenCalledWith({
         to: "/vouchers/create/$step",
@@ -306,12 +511,198 @@ describe("CreateVoucherFlow", () => {
   });
 
   it("does not advance while required voucher fields are empty", async () => {
-    render(<CreateVoucherFlow step="voucher" />);
+    renderFlow(<CreateVoucherFlow step="voucher" />);
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
     expect(await screen.findByText("Voucher name must be at least 3 characters")).toBeTruthy();
     expect(navigateMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ params: { step: "place" } }),
     );
+  });
+
+  it("asks for the opening supply on the first step and previews its value", async () => {
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.change(screen.getByLabelText("Price"), { target: { value: "2.5" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "0" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(await screen.findByText("Supply must be greater than zero")).toBeTruthy();
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ params: { step: "place" } }),
+    );
+
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "12" } });
+    expect(screen.getByText("Value: 30 KES of offerings")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/vouchers/create/$step",
+        params: { step: "place" },
+      }),
+    );
+  });
+
+  describe("symbol suggestion", () => {
+    const symbolInput = () => {
+      if (!screen.queryByLabelText("Voucher Symbol")) fireEvent.click(screen.getByText("Advanced"));
+      return screen.getByLabelText("Voucher Symbol") as HTMLInputElement;
+    };
+
+    it("fills the symbol from the name once the name blurs", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
+      expect(getTakenSymbols).toHaveBeenCalledWith("voucher", "KVKS", expect.anything());
+      expect(screen.getByText("1 Kivukoni School Voucher = 0.1 KES")).toBeTruthy();
+    });
+
+    it("skips to the first free numbered candidate when the stem is taken", async () => {
+      getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KVKS", taken: ["KVKS"] });
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS1"));
+    });
+
+    it("still suggests the bare stem when the occupancy lookup fails", async () => {
+      getTakenSymbols.mockRejectedValue(new Error("Not Found"));
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+      fireEvent.click(screen.getByText("Advanced"));
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+    });
+
+    it("suggests before validating when the issuer goes straight to Next", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      fireEvent.change(screen.getByLabelText("Voucher Name"), {
+        target: { value: "Kilifi Harvest" },
+      });
+      fireEvent.change(screen.getByLabelText("Voucher Description"), {
+        target: { value: "Fresh food from Kilifi producers." },
+      });
+      fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith({
+          to: "/vouchers/create/$step",
+          params: { step: "place" },
+        }),
+      );
+      expect(symbolInput().value).toBe("KLFH");
+    });
+
+    it("leaves a symbol the issuer typed alone when the name changes", async () => {
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+      const name = screen.getByLabelText("Voucher Name");
+
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+
+      fireEvent.change(symbolInput(), { target: { value: "kivs" } });
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(symbolInput().value).toBe("KIVS");
+      expect(getTakenSymbols).toHaveBeenCalledTimes(1);
+
+      // Clearing the field hands it back to the suggestion.
+      fireEvent.change(symbolInput(), { target: { value: "" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KVKS"));
+    });
+
+    it("does not overwrite the symbol of a restored draft", async () => {
+      useVoucherCreateDraft.getState().setDraft({
+        name: "Kilifi Harvest",
+        symbol: "KHV",
+        price: "1",
+        unitOfAccount: "KES",
+        description: "Fresh food from Kilifi producers.",
+        voucherType: "standard",
+        expiryDate: "",
+        decimals: "6",
+        supply: "1000",
+        location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5107, lng: 39.9093 },
+        tags: [],
+        email: "",
+        website: "",
+        phone: "",
+        terms: "",
+        iconUrl: "",
+        acceptedTerms: true,
+        acceptedPathLicense: true,
+      });
+      renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kivukoni School Voucher" } });
+      fireEvent.blur(name);
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(symbolInput().value).toBe("KHV");
+      expect(getTakenSymbols).not.toHaveBeenCalled();
+    });
+
+    it("bumps a suggested symbol that was taken before publish", async () => {
+      deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+      const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+
+      const name = screen.getByLabelText("Voucher Name");
+      fireEvent.change(name, { target: { value: "Kilifi Harvest" } });
+      fireEvent.blur(name);
+      await waitFor(() => expect(symbolInput().value).toBe("KLFH"));
+      fireEvent.change(screen.getByLabelText("Voucher Description"), {
+        target: { value: "Fresh food from Kilifi producers." },
+      });
+      fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
+
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+      await waitFor(() =>
+        expect(navigateMock).toHaveBeenCalledWith(
+          expect.objectContaining({ params: { step: "place" } }),
+        ),
+      );
+      view.rerender(<CreateVoucherFlow step="place" />);
+      fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+
+      // Someone else claimed the stem after the blur lookup was cached.
+      getTakenSymbols.mockResolvedValue({ kind: "voucher", prefix: "KLFH", taken: ["KLFH"] });
+      view.queryClient.clear();
+
+      view.rerender(<CreateVoucherFlow step="review" />);
+      fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+      fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+      fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+
+      await waitFor(() =>
+        expect(deployMutateAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ symbol: "KLFH1" }),
+        ),
+      );
+    });
   });
 });

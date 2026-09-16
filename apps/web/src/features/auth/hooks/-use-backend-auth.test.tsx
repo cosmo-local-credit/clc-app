@@ -6,12 +6,23 @@ const mockSignupWithSiwe = vi.fn();
 const mockSigninWithSiwe = vi.fn();
 const mockSubmitProfile = vi.fn();
 const mockSignMessage = vi.fn<() => Promise<`0x${string}`>>();
+const mockGetStorageToken = vi.fn();
+const mockUpload = vi.fn();
+const { mockToastError } = vi.hoisted(() => ({ mockToastError: vi.fn() }));
 
-vi.mock("../api/client", () => ({
+vi.mock("sonner", () => ({ toast: { error: mockToastError, success: vi.fn() } }));
+
+vi.mock("@clc/api/features/auth/client", () => ({
   getSiweNonce: () => mockGetSiweNonce(),
   signupWithSiwe: (payload: unknown) => mockSignupWithSiwe(payload),
   signinWithSiwe: (payload: unknown) => mockSigninWithSiwe(payload),
   submitProfile: (payload: unknown) => mockSubmitProfile(payload),
+  getStorageToken: () => mockGetStorageToken(),
+}));
+
+vi.mock("#/lib/api/storage", () => ({
+  isStorageConfigured: true,
+  storageClient: () => ({ upload: (input: unknown, token: unknown) => mockUpload(input, token) }),
 }));
 
 vi.mock("wagmi/actions", () => ({
@@ -22,8 +33,15 @@ vi.mock("#/providers/web3-config", () => ({
   wagmiConfig: {},
 }));
 
+// The app-owned client is the seam the code now goes through. Build it from
+// the already-mocked resource modules above so their overrides still apply.
+vi.mock("#/lib/api/auth", async () => ({
+  authClient: await import("@clc/api/features/auth/client"),
+}));
+
 // QueryClient wrapper for useMutation
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StorageApiError } from "@clc/api/features/images/client";
 import type { ReactNode } from "react";
 import React from "react";
 
@@ -49,12 +67,29 @@ const LOCATION = {
   country: "KE",
 };
 
+const PROFILE_DETAILS = {
+  preferredCurrency: "KES",
+  bio: "Neighbourhood organiser",
+  website: "https://alice.example",
+} as const;
+
 beforeEach(() => {
   mockGetSiweNonce.mockResolvedValue("testNonce1234");
   mockSignupWithSiwe.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
   mockSigninWithSiwe.mockResolvedValue({ userId: 1, role: "USER" });
   mockSubmitProfile.mockResolvedValue(undefined);
   mockSignMessage.mockResolvedValue("0xsignature");
+  mockGetStorageToken.mockResolvedValue({
+    token: "storage-token",
+    expiresAt: "2026-09-19T10:00:00Z",
+  });
+  mockUpload.mockResolvedValue({
+    url: "https://cdn.test/profile/abc_400_a3f91c2e.webp",
+    width: 400,
+    height: 400,
+    byteSize: 6516,
+    contentType: "image/webp",
+  });
   // jsdom doesn't set window.location
   Object.defineProperty(window, "location", {
     value: { host: "localhost", origin: "http://localhost" },
@@ -72,7 +107,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "a@b.com", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     expect(mockGetSiweNonce).toHaveBeenCalledOnce();
@@ -85,7 +126,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "   ", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "   ",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
@@ -102,6 +149,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -119,6 +167,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -128,6 +177,9 @@ describe("useBackendSignup", () => {
       email: string;
       phone: string;
       country: string;
+      preferredCurrency: string;
+      bio: string;
+      website: string;
       locationName: string;
       geoLat: number;
       geoLng: number;
@@ -135,6 +187,9 @@ describe("useBackendSignup", () => {
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
     expect(payload.country).toBe("KE");
+    expect(payload.preferredCurrency).toBe("KES");
+    expect(payload.bio).toBe("Neighbourhood organiser");
+    expect(payload.website).toBe("https://alice.example");
     expect(payload.locationName).toBe("Nairobi");
     expect(payload.geoLat).toBe(-1.286);
     expect(payload.geoLng).toBe(36.817);
@@ -156,6 +211,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254711111111",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -209,5 +265,121 @@ describe("useBackendWalletSignin", () => {
     expect(mockSigninWithSiwe).toHaveBeenCalledOnce();
     const payload = mockSigninWithSiwe.mock.calls[0]?.[0] as { message: string };
     expect(payload.message).toContain("testNonce1234");
+  });
+});
+
+describe("useBackendSignup — onboarding photo", () => {
+  const photo = () => new File([new Uint8Array(64)], "me.jpg", { type: "image/jpeg" });
+
+  const signUp = async (avatarFile: File | null) => {
+    const { result } = renderHook(() => useBackendSignup(), { wrapper: createWrapper() });
+    await result.current.mutateAsync({
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
+      privateKey: FAKE_PK,
+      avatarFile,
+    });
+  };
+
+  it("uploads the photo and saves the URL with the profile", async () => {
+    await signUp(photo());
+
+    const [input, token] = mockUpload.mock.calls[0] as [
+      { purpose: string; uploadId: string },
+      string,
+    ];
+    expect(input.purpose).toBe("profile.avatar");
+    // 32 opaque characters, so the object key carries no identity.
+    expect(input.uploadId).toMatch(/^[0-9a-f]{32}$/);
+    expect(token).toBe("storage-token");
+
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as { avatarUrl?: string };
+    expect(profile.avatarUrl).toBe("https://cdn.test/profile/abc_400_a3f91c2e.webp");
+  });
+
+  it("only uploads once a session exists", async () => {
+    await signUp(photo());
+
+    // The token can only be fetched with the session cookie signup just set, so
+    // the order here is the whole reason the upload does not live on the profile
+    // step.
+    expect(mockSignupWithSiwe).toHaveBeenCalled();
+    const signupAt = mockSignupWithSiwe.mock.invocationCallOrder[0] ?? 0;
+    const tokenAt = mockGetStorageToken.mock.invocationCallOrder[0] ?? 0;
+    expect(tokenAt).toBeGreaterThan(signupAt);
+  });
+
+  it("retries one transient storage failure with the same upload id", async () => {
+    mockUpload
+      .mockRejectedValueOnce(
+        new StorageApiError(500, "unexpected EOF", undefined, { kind: "server" }),
+      )
+      .mockResolvedValueOnce({
+        url: "https://cdn.test/profile/abc_400_a3f91c2e.webp",
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      });
+
+    await signUp(photo());
+
+    expect(mockUpload).toHaveBeenCalledTimes(2);
+    const firstInput = mockUpload.mock.calls[0]?.[0] as { uploadId: string };
+    const retryInput = mockUpload.mock.calls[1]?.[0] as { uploadId: string };
+    expect(retryInput.uploadId).toBe(firstInput.uploadId);
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as { avatarUrl?: string };
+    expect(profile.avatarUrl).toBe("https://cdn.test/profile/abc_400_a3f91c2e.webp");
+    expect(mockToastError).not.toHaveBeenCalled();
+  });
+
+  it("still creates the account when the upload fails", async () => {
+    mockUpload.mockRejectedValue(new Error("storage unreachable"));
+
+    await signUp(photo());
+
+    expect(mockSubmitProfile).toHaveBeenCalledOnce();
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as Record<string, unknown>;
+    // Absent, not null: null would ask clc-core to clear an avatar, and there is
+    // nothing to clear.
+    expect("avatarUrl" in profile).toBe(false);
+    // ...and the person is told, or an account that silently dropped their photo
+    // is indistinguishable from one that never had it.
+    expect(mockToastError).toHaveBeenCalledOnce();
+  });
+
+  it("says nothing about a photo when none was chosen", async () => {
+    await signUp(null);
+
+    expect(mockToastError).not.toHaveBeenCalled();
+  });
+
+  it("does not reach the upload service when no photo was chosen", async () => {
+    await signUp(null);
+
+    expect(mockGetStorageToken).not.toHaveBeenCalled();
+    expect(mockUpload).not.toHaveBeenCalled();
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect("avatarUrl" in profile).toBe(false);
+  });
+
+  it("uploads after the sign-in fallback on an already-registered address", async () => {
+    mockSignupWithSiwe.mockResolvedValue({
+      userId: null,
+      status: "REGISTERED",
+      role: "USER",
+      alreadyRegistered: true,
+    });
+
+    await signUp(photo());
+
+    const signinAt = mockSigninWithSiwe.mock.invocationCallOrder[0] ?? 0;
+    const tokenAt = mockGetStorageToken.mock.invocationCallOrder[0] ?? 0;
+    expect(tokenAt).toBeGreaterThan(signinAt);
   });
 });

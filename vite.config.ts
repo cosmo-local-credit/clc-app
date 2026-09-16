@@ -122,7 +122,129 @@ export default defineConfig({
         },
       },
       {
-        files: ["apps/web/src/features/*/ui/**"],
+        // Shared API layer: HTTP clients + queryOptions factories consumed by
+        // every app. React is allowed here (hooks may live alongside the
+        // factories) but nothing platform-specific may be.
+        files: ["packages/api/src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: [
+                {
+                  name: "react-dom",
+                  message: "DOM is web-only. Move to an app's components/ or features/*/ui/.",
+                },
+                {
+                  name: "lucide-react",
+                  message: "Icons are web-only. Move to an app.",
+                },
+                {
+                  name: "sonner",
+                  message: "sonner is web-only. Call toast from ui/ after the query resolves.",
+                },
+              ],
+              patterns: [
+                {
+                  group: [
+                    "@tanstack/react-router",
+                    "@tanstack/react-router/**",
+                    "@tanstack/react-start",
+                    "@tanstack/react-start/**",
+                  ],
+                  message:
+                    "Routing is app-specific. Pass route params/state into the factories as plain args.",
+                },
+                {
+                  group: ["@base-ui/react", "@base-ui/react/**", "react-icons", "react-icons/**"],
+                  message: "UI libraries are app-only.",
+                },
+                {
+                  group: ["serwist", "@serwist/**"],
+                  message: "Serwist runs in service workers — web-only.",
+                },
+                {
+                  group: ["#/*", "@/*"],
+                  message:
+                    "App-private aliases don't resolve here. Use relative paths or @clc/core.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // The apps are independently deployable and must never reach into each
+        // other. Shared code goes through @clc/core (pure) or @clc/api (network).
+        files: ["apps/admin/src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              patterns: [
+                {
+                  // Matches the literal specifier, not the resolved path, so the
+                  // relative-traversal forms are listed explicitly: `../../web/src/x`
+                  // from apps/admin is exactly how this leak happens.
+                  group: [
+                    "**/web/src/**",
+                    "**/admin/src/**",
+                    "@clc/web",
+                    "@clc/web/**",
+                    "@clc/admin",
+                    "@clc/admin/**",
+                  ],
+                  message:
+                    "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        // Web keeps backend resources route-scoped. The aggregate and admin
+        // client are valid in the desktop console, never in the mobile graph.
+        files: ["apps/web/src/**"],
+        rules: {
+          "no-restricted-imports": [
+            "error",
+            {
+              paths: [
+                {
+                  name: "@clc/api/client/create-clc-api",
+                  message:
+                    "Use the exact #/lib/api/<resource> module so web route splitting is preserved.",
+                },
+                {
+                  name: "@clc/api/features/admin",
+                  message: "Admin endpoints belong to apps/admin, never apps/web.",
+                },
+              ],
+              patterns: [
+                {
+                  group: [
+                    "**/web/src/**",
+                    "**/admin/src/**",
+                    "@clc/web",
+                    "@clc/web/**",
+                    "@clc/admin",
+                    "@clc/admin/**",
+                  ],
+                  message:
+                    "Apps must not import each other. Move shared logic to @clc/core or @clc/api.",
+                },
+                {
+                  group: ["@clc/api/features/admin/**"],
+                  message: "Admin endpoints belong to apps/admin, never apps/web.",
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        files: ["apps/web/src/features/*/ui/**", "apps/admin/src/features/*/ui/**"],
         rules: {
           "no-restricted-imports": [
             "error",
@@ -146,6 +268,11 @@ export default defineConfig({
     ],
   },
   test: {
-    projects: ["apps/web/vitest.config.ts", "packages/core/vitest.config.ts"],
+    projects: [
+      "apps/admin/vitest.config.ts",
+      "apps/web/vitest.config.ts",
+      "packages/api/vitest.config.ts",
+      "packages/core/vitest.config.ts",
+    ],
   },
 });

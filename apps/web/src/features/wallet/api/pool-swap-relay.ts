@@ -7,7 +7,7 @@ import {
   relayCaliburBatch,
   type RelayCaliburBatchResult,
 } from "#/features/webauthn/api/relay-calibur-batch";
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 type RelayPoolBatchOptions = {
   senderAddress: `0x${string}`;

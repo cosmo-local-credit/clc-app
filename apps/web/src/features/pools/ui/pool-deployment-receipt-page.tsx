@@ -19,8 +19,8 @@ import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import {
   getPoolDeploymentRecords,
   getPoolTrackingOutcome,
-} from "#/features/pools/api/pool-deploy-client";
-import { poolQueryKeys } from "#/features/pools/hooks/use-user-pools";
+} from "@clc/api/features/pools/deploy-client";
+import { poolKeys } from "@clc/api/features/pools/queries";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useDeploymentContract } from "#/hooks/use-deployment";
 import { exitPoolCreateHistory } from "#/lib/navigation/pool-create-history";
@@ -69,7 +69,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
 
   useEffect(() => {
     if (!confirmed) return;
-    void queryClient.invalidateQueries({ queryKey: poolQueryKeys.all });
+    void queryClient.invalidateQueries({ queryKey: poolKeys.all });
   }, [confirmed, queryClient]);
 
   const exit = (destination: string, preserveDraft = false) => {

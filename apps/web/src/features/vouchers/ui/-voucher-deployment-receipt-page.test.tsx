@@ -37,6 +37,8 @@ const {
     mintTrackingQueryError: null as Error | null,
     supplyRaw: "0" as string | undefined,
     supplyError: null as Error | null,
+    voucherValue: null as string | null,
+    voucherUoa: null as string | null,
     walletAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" as `0x${string}` | undefined,
     delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
   },
@@ -69,6 +71,15 @@ vi.mock("#/features/vouchers/hooks/use-voucher-supply", () => ({
 
 vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
   useVoucherMint: () => ({ mutateAsync: mintMock, isPending: false }),
+}));
+
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({
+    data:
+      state.voucherValue && state.voucherUoa
+        ? { voucherValue: state.voucherValue, voucherUoa: state.voucherUoa }
+        : undefined,
+  }),
 }));
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({
@@ -125,6 +136,8 @@ beforeEach(() => {
   state.mintTrackingQueryError = null;
   state.supplyRaw = "0";
   state.supplyError = null;
+  state.voucherValue = null;
+  state.voucherUoa = null;
   state.walletAddress = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045";
   state.delegationStatus = "delegated";
   mintMock.mockResolvedValue({ trackingId: "mint-1", signatureType: "webauthn" });
@@ -172,6 +185,7 @@ describe("VoucherDeploymentReceiptPage", () => {
       voucherType: "standard",
       expiryDate: "",
       decimals: "6",
+      supply: "1000",
       location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
       tags: ["Agriculture"],
       email: "issuer@example.org",
@@ -196,11 +210,12 @@ describe("VoucherDeploymentReceiptPage", () => {
     Object.defineProperty(navigatorMock, "clipboard", { value: { writeText } });
     vi.stubGlobal("navigator", navigatorMock);
 
-    renderReceipt();
+    renderReceipt({ mintTrackingId: "mint-1", mintAmount: "100" });
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
     expect(screen.getByText("Kilifi Harvest can be held, sent and redeemed.")).toBeTruthy();
     expect(screen.getByText("Published")).toBeTruthy();
+    expect(screen.getByText("100 KES")).toBeTruthy();
     expect(screen.getByText("Standard")).toBeTruthy();
     expect(screen.getByText("Decimals")).toBeTruthy();
     expect(screen.getByText("Contract address")).toBeTruthy();
@@ -209,6 +224,10 @@ describe("VoucherDeploymentReceiptPage", () => {
     expect(screen.queryByText("Kilifi, Kenya")).toBeNull();
     expect(screen.getByText("Deployment transaction")).toBeTruthy();
     expect(screen.getByText("Mint transaction")).toBeTruthy();
+    const advancedDetails = screen.getByText("Advanced details").closest("details");
+    expect(advancedDetails?.open).toBe(false);
+    expect(advancedDetails?.textContent).toContain("Deployment transaction");
+    expect(advancedDetails?.textContent).toContain("Mint transaction");
     const copyAddress = screen.getByRole("button", { name: "Copy contract address" });
     const copyIcon = copyAddress.querySelector("svg");
     expect(copyIcon?.parentElement?.classList).toContain("size-6");
@@ -248,10 +267,41 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
   it("holds the flow on the mint step until the issuer mints", () => {
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "KHV is deployed" })).toBeTruthy();
-    expect(screen.getByLabelText("First supply")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is deployed" })).toBeTruthy();
+    expect(screen.getByLabelText("Create vouchers")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
+
+    const advancedDetails = screen.getByText("Advanced details").closest("details");
+    expect(advancedDetails?.open).toBe(false);
+    expect(advancedDetails?.textContent).toContain("Contract address");
+  });
+
+  it("shows the value of the vouchers to create in the draft's unit of account", () => {
+    useVoucherCreateDraft.getState().setDraft({
+      name: "Kilifi Harvest",
+      symbol: "KHV",
+      price: "2.5",
+      unitOfAccount: "KES",
+      description: "Fresh food from Kilifi producers.",
+      voucherType: "standard",
+      expiryDate: "",
+      decimals: "6",
+      supply: "1000",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5, lng: 39.9 },
+      tags: ["Agriculture"],
+      email: "issuer@example.org",
+      website: "",
+      phone: "",
+      terms: "",
+      acceptedTerms: true,
+      acceptedPathLicense: true,
+    });
+    renderReceipt();
+
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "12" } });
+
+    expect(screen.getByText("Value: 30 KES")).toBeTruthy();
   });
 
   it("waits for an on-chain supply check before enabling mint", () => {
@@ -265,18 +315,20 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
   it("recovers a completed mint from on-chain supply after refresh", () => {
     state.supplyRaw = "10000000000";
+    state.voucherValue = "1";
+    state.voucherUoa = "KES";
 
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
-    expect(screen.getByText("10000 KHV")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
+    expect(screen.getByText("10000 KES")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Mint supply" })).toBeNull();
   });
 
   it("rejects a supply of zero without relaying anything", () => {
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "0" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "0" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     expect(screen.getByText("Supply must be greater than zero")).toBeTruthy();
@@ -287,7 +339,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     state.contract = { ...confirmedContract, decimals: 2 };
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "1.234" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "1.234" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     expect(
@@ -299,7 +351,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
   it("mints the scaled supply to the issuer's own wallet", async () => {
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "10000" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     await waitFor(() =>
@@ -323,11 +375,54 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
   });
 
+  it("mints the supply chosen during creation as soon as the contract confirms", async () => {
+    renderReceipt({ mintAmount: "2500" });
+
+    await waitFor(() =>
+      expect(mintMock).toHaveBeenCalledWith({
+        tokenAddress: confirmedContract.address,
+        ownerAddress: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+        amountRaw: "2500000000",
+        includeAuthorization: false,
+      }),
+    );
+    expect(mintMock).toHaveBeenCalledTimes(1);
+    expect(navigateMock).toHaveBeenCalledWith({
+      to: "/vouchers/create/receipt",
+      search: { trackingId: "tracking-1", mintTrackingId: "mint-1", mintAmount: "2500" },
+      replace: true,
+    });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Minting…" })).toBeTruthy());
+  });
+
+  it("does not auto-mint while the on-chain supply is still being read", () => {
+    state.supplyRaw = undefined;
+    renderReceipt({ mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-mint again when a mint is already being tracked", () => {
+    renderReceipt({ mintTrackingId: "mint-1", mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+  });
+
+  it("shows the chosen supply as a row, not a second input, and waits for the owner", () => {
+    state.walletAddress = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+    renderReceipt({ mintAmount: "2500" });
+
+    expect(mintMock).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+    expect(screen.getByText("Supply").nextElementSibling?.textContent).toBe("2500 KHV");
+    expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
+  });
+
   it("submits at most one mint while the relay request is unresolved", () => {
     mintMock.mockReturnValue(new Promise(() => undefined));
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "10000" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
     const button = screen.getByRole("button", { name: "Mint supply" });
     fireEvent.click(button);
     fireEvent.click(button);
@@ -386,7 +481,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     mintMock.mockRejectedValueOnce(new Error("Credential is stale; re-authenticate"));
     renderReceipt();
 
-    fireEvent.change(screen.getByLabelText("First supply"), { target: { value: "500" } });
+    fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "500" } });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
 
     await waitFor(() =>
@@ -397,12 +492,14 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
   it("releases the flow once the mint confirms, showing what was minted", () => {
     state.mintTrackingOutcome = { kind: "success", otx: { txHash: "0xmint" } };
+    state.voucherValue = "1";
+    state.voucherUoa = "KES";
 
     renderReceipt({ mintTrackingId: "mint-1", mintAmount: "500" });
 
-    expect(screen.getByRole("heading", { name: "KHV is live" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "View voucher" })).toBeTruthy();
-    expect(screen.queryByLabelText("First supply")).toBeNull();
-    expect(screen.getByText("500 KHV")).toBeTruthy();
+    expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+    expect(screen.getByText("500 KES")).toBeTruthy();
   });
 });

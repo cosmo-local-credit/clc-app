@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useConnection } from "wagmi";
 
-import { BackendApiError, getSession, type SessionResult } from "#/features/auth/api/client";
+import { BackendApiError } from "@clc/api/client/errors";
+import { type SessionResult } from "@clc/api/features/auth/client";
 import { useReconnectAttempted } from "#/providers/auth-bootstrap";
+import { authClient } from "#/lib/api/auth";
 
 type AuthStatusState =
   | "loading"
@@ -35,7 +37,7 @@ export function useAuthStatus(): AuthStatus {
   const { address, chainId, connector, status } = useConnection();
   const sessionQuery = useQuery({
     queryKey: authSessionQueryKeyForAddress(address),
-    queryFn: getSession,
+    queryFn: () => authClient.getSession(),
     enabled: reconnectAttempted && !!address,
     retry: false,
   });
@@ -52,7 +54,7 @@ export function useAuthStatus(): AuthStatus {
   } else if (sessionQuery.isPending) {
     state = "loading";
   } else if (sessionQuery.isError) {
-    if (error instanceof BackendApiError && (error.status === 401 || error.code === "E06")) {
+    if (error instanceof BackendApiError && error.kind === "unauthenticated") {
       state = "connectedNoSession";
     } else {
       state = "sessionCheckError";

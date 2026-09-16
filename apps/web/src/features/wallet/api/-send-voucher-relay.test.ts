@@ -1,4 +1,4 @@
-import type { RelayerClient } from "#/features/webauthn/api/relayer-client";
+import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { storePrivateKey } from "#/connectors/privateKey";
 import { storeWebAuthnCredential } from "#/lib/webauthn-storage";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";

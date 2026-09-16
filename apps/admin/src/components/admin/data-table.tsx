@@ -1,0 +1,178 @@
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type RowData,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "#/components/ui/table";
+import { cn } from "#/lib/utils";
+
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /**
+     * `right` for a column of figures. Amounts are compared down the column
+     * rather than read across the row, and a ragged right edge makes two numbers
+     * of different lengths look like different magnitudes.
+     */
+    align?: "right";
+  }
+}
+
+/**
+ * Sortable table over a fully-loaded page of rows.
+ *
+ * Sorting reorders **the fetched page only**. No clc-core list endpoint accepts a
+ * sort, so ordering cannot be applied across the whole resource; callers must say
+ * so next to the table rather than let an operator read one page's ordering as the
+ * resource's. When an endpoint gains a sort parameter, move `sort`/`order` into
+ * the request and drop `getSortedRowModel`.
+ *
+ * Sort state is owned by the caller — normally the route's search params — so the
+ * URL describes the view and Back restores it. An uncontrolled table would reset
+ * its ordering on every navigation.
+ *
+ * **Cell type scale.** Headers are set by `TableHead` and need no classes here.
+ * `TableCell` sets `text-sm`; a cell overrides the size only
+ * to change typeface with it. JetBrains Mono at `text-xs` reads at about the
+ * optical size of Inter at `text-sm`, so the pairing below keeps a row's baseline
+ * weight even though the numbers differ — while a sans cell shrunk to `text-xs`
+ * just looks like a mistake next to its neighbours:
+ *
+ * | Role                                       | Classes                             |
+ * | ------------------------------------------ | ----------------------------------- |
+ * | Primary identity (name, title)             | inherited, plus `font-medium`        |
+ * | Secondary line under it (symbol, subtitle) | `font-mono text-xs text-muted-foreground` |
+ * | Figures (amount, count, address, time)     | `font-data text-xs`                 |
+ * | Enum-like text (role, kind, status)        | `font-mono text-xs`                 |
+ * | Plain secondary text (location)            | inherited, plus `text-muted-foreground` |
+ *
+ * `onRowClick` is a **mouse convenience only**. A row is not an interactive
+ * element: it takes no focus, answers no keyboard, and cannot be opened in a new
+ * tab. Any table whose rows navigate must also put a real `<Link>` in one cell —
+ * that link is the accessible path to the detail screen, and the row handler
+ * merely widens its hit area.
+ */
+export function DataTable<TData>({
+  columns,
+  data,
+  sorting,
+  onSortChange,
+  onRowClick,
+  emptyState,
+  footer,
+  className,
+  rowClassName,
+}: {
+  columns: Array<ColumnDef<TData>>;
+  data: Array<TData>;
+  /** Controlled sort state. Omit for an unsorted table. */
+  sorting?: SortingState;
+  /** Called with the column id whose header was activated. */
+  onSortChange?: (columnId: string) => void;
+  onRowClick?: (row: TData) => void;
+  emptyState?: ReactNode;
+  /** Flush bar under the table (pager, count). Omitted on empty-state. */
+  footer?: ReactNode;
+  className?: string;
+  /** A page-level row-height baseline; row content may still expand naturally. */
+  rowClassName?: string;
+}) {
+  const table = useReactTable({
+    data,
+    columns,
+    state: { sorting: sorting ?? [] },
+    // The rows are sorted here, not upstream: no endpoint accepts a sort, so the
+    // fetched page is reordered locally from the caller's sort state.
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  if (data.length === 0 && emptyState) return <>{emptyState}</>;
+
+  return (
+    <div className={cn("border-border bg-card overflow-hidden border", className)}>
+      <Table>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                const sortable = header.column.getCanSort();
+                const sorted = header.column.getIsSorted();
+                return (
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      "whitespace-nowrap",
+                      header.column.columnDef.meta?.align === "right" && "text-right",
+                    )}
+                    // Without this a screen reader reads the header text and the
+                    // arrow glyph but never says the column is sorted, or which way.
+                    aria-sort={
+                      sortable
+                        ? sorted === "asc"
+                          ? "ascending"
+                          : sorted === "desc"
+                            ? "descending"
+                            : "none"
+                        : undefined
+                    }
+                  >
+                    {header.isPlaceholder ? null : sortable ? (
+                      <button
+                        type="button"
+                        onClick={() => onSortChange?.(header.column.id)}
+                        className="hover:text-foreground focus-visible:ring-ring inline-flex items-center gap-1 outline-none focus-visible:ring-1"
+                      >
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {sorted === "asc" ? (
+                          <ArrowUpIcon className="size-3" />
+                        ) : sorted === "desc" ? (
+                          <ArrowDownIcon className="size-3" />
+                        ) : (
+                          <ChevronsUpDownIcon className="size-3 opacity-40" />
+                        )}
+                      </button>
+                    ) : (
+                      flexRender(header.column.columnDef.header, header.getContext())
+                    )}
+                  </TableHead>
+                );
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow
+              key={row.id}
+              onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+              className={cn(onRowClick && "cursor-pointer", rowClassName)}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell
+                  key={cell.id}
+                  className={cn(cell.column.columnDef.meta?.align === "right" && "text-right")}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      {footer ? <div className="border-border border-t px-4 py-3">{footer}</div> : null}
+    </div>
+  );
+}

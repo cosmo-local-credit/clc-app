@@ -29,6 +29,9 @@ function profileFingerprint(profile: ProfileInput): string {
     email: profile.email,
     phone: profile.phone,
     location: profile.location,
+    preferredCurrency: profile.preferredCurrency,
+    bio: profile.bio,
+    website: profile.website,
   });
 }
 
@@ -45,6 +48,15 @@ function profileFingerprint(profile: ProfileInput): string {
 export function OnboardingFlow({ step, redirectTo }: Props) {
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<ProfileInput | null>(null);
+  /**
+   * The chosen profile photo, held until an account exists.
+   *
+   * It cannot be uploaded from the profile step: the upload service wants a
+   * clc-core session token and there is no session until the wallet step
+   * registers the account. Kept out of ProfileInput because that schema is
+   * shared with @clc/core, which cannot name a File.
+   */
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [walletMethod, setWalletMethod] = useState<WalletMethodChoice | null>(null);
   /** Fingerprint of the profile last successfully registered for this key. */
   const [registeredProfileFp, setRegisteredProfileFp] = useState<string | null>(null);
@@ -128,6 +140,7 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
       <Suspense fallback={<OnboardingStepFallback />}>
         <OnboardingWalletStep
           profileData={profileData}
+          avatarFile={avatarFile}
           privateKey={privateKey}
           backendRegistered={backendRegistered}
           onBackendRegistered={() => setRegisteredProfileFp(currentFp)}
@@ -147,12 +160,17 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
       progressStep={1}
       progressTotal={passkeyAvailable ? 3 : 2}
       initialValues={profileData ?? undefined}
-      onNext={(data) => {
-        // Edited profile after a prior signup must be re-persisted.
-        if (registeredProfileFp && registeredProfileFp !== profileFingerprint(data)) {
+      initialAvatarFile={avatarFile}
+      onNext={(data, nextAvatarFile) => {
+        // Edited profile after a prior signup must be re-persisted. A newly
+        // chosen photo is an edit too: signup is what uploads it.
+        const fingerprintChanged =
+          registeredProfileFp && registeredProfileFp !== profileFingerprint(data);
+        if (fingerprintChanged || nextAvatarFile !== avatarFile) {
           setRegisteredProfileFp(null);
         }
         setProfileData(data);
+        setAvatarFile(nextAvatarFile);
         if (passkeyAvailable) {
           go("method");
         } else {

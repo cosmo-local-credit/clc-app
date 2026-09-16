@@ -29,15 +29,16 @@ Install the **Vite+ extension pack** for your editor:
 
 ## Common commands
 
-| Command           | Description                     |
-| ----------------- | ------------------------------- |
-| `vp dev apps/web` | Start dev server                |
-| `vp build`        | Production build                |
-| `vp test`         | Run all tests                   |
-| `vp check`        | Type-check + lint + format      |
-| `vp check --fix`  | Auto-fix lint and format issues |
-| `vp lint`         | Lint only                       |
-| `vp fmt --fix`    | Format only                     |
+| Command             | Description                         |
+| ------------------- | ----------------------------------- |
+| `vp dev apps/web`   | PWA dev server, port 3000           |
+| `vp dev apps/admin` | Admin console dev server, port 3001 |
+| `vp build`          | Production build                    |
+| `vp test`           | Run all tests                       |
+| `vp check`          | Type-check + lint + format          |
+| `vp check --fix`    | Auto-fix lint and format issues     |
+| `vp lint`           | Lint only                           |
+| `vp fmt --fix`      | Format only                         |
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for project rules, dependency guidelines, and feature structure.
 

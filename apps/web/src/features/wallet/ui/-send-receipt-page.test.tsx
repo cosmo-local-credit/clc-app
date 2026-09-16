@@ -49,7 +49,7 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   }),
 }));
 
-vi.mock("#/features/webauthn/api/relayer-client", () => ({
+vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
 }));
 
@@ -57,6 +57,7 @@ import { SendReceiptPage } from "./send-receipt-page";
 
 const RECIPIENT = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
 const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
+const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 beforeEach(() => {
   createShare.mockResolvedValue({ id: 1, txHash: TX_HASH });
@@ -221,6 +222,43 @@ describe("SendReceiptPage", () => {
     expect(navigate).toHaveBeenCalledWith({
       to: "/",
       search: { tab: "wallet" },
+      replace: true,
+    });
+  });
+
+  it("returns a pool deposit to that pool instead of the wallet", () => {
+    // The flow pushed the amount form and this receipt between the pool and
+    // here, so Back is the wrong instrument — the param names the destination.
+    useOtxTracking.mockReturnValue({
+      outcome: {
+        kind: "success",
+        otx: {
+          id: 1,
+          trackingId: "tracking-1",
+          otxType: "RELAY_EXEC",
+          txHash: TX_HASH,
+          nonce: 1,
+          replaced: false,
+          createdAt: "2026-07-02T10:00:00Z",
+          status: "SUCCESS",
+        },
+      },
+    });
+
+    render(
+      <SendReceiptPage
+        trackingId="tracking-1"
+        recipient={POOL_ADDRESS}
+        amount="2.13"
+        symbol="USDC"
+        returnPool={POOL_ADDRESS}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /back to pool/i }));
+
+    expect(navigate).toHaveBeenCalledWith({
+      to: "/pools/$poolAddress",
+      params: { poolAddress: POOL_ADDRESS },
       replace: true,
     });
   });
