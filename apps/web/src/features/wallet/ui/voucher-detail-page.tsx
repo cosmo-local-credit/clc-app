@@ -21,7 +21,6 @@ import {
   RiDownloadLine,
   RiFileCopyLine,
   RiNavigationLine,
-  RiPencilLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 import { toast } from "sonner";
@@ -60,7 +59,6 @@ import {
 } from "#/lib/navigation/voucher-navigation-owner";
 import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
 import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
-import { VoucherProfileEditorSheet } from "./voucher-profile-editor-sheet";
 
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
@@ -498,7 +496,7 @@ function VoucherPostsPanel({
           and arrives already linked. Only the issuer (or a superadmin) sees it:
           a post may only link vouchers its author owns. */}
       {canWritePost && voucher ? (
-        <Button asChild size="sm" className="h-9 w-full">
+        <Button asChild className="h-9 w-full">
           <Link
             to="/posts/new"
             search={{ voucher: voucher.address, chainId: voucher.chainId, voucherName }}
@@ -682,10 +680,9 @@ function VoucherInfoPanel({
   lng: number | null;
   /** The catalog record, when the viewer may edit it; null for everyone else. */
   editable: MarketVoucherDetail | null;
-  contractActions: ComponentProps<typeof VoucherContractActionsPanel>;
+  contractActions: Omit<ComponentProps<typeof VoucherContractActionsPanel>, "editable">;
 }) {
   const { t } = useLingui();
-  const [editing, setEditing] = useState(false);
   const hasCoordinates = typeof lat === "number" && typeof lng === "number";
   const locationLabel = locationName ?? (hasCoordinates ? `${lat}, ${lng}` : null);
 
@@ -696,26 +693,7 @@ function VoucherInfoPanel({
       aria-labelledby="voucher-tab-info"
       className="space-y-3"
     >
-      {editable ? (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 w-full bg-card"
-            onClick={() => setEditing(true)}
-          >
-            <RiPencilLine className="size-4" aria-hidden="true" />
-            <Trans>Edit details</Trans>
-          </Button>
-          <VoucherProfileEditorSheet
-            open={editing}
-            voucher={editable}
-            onClose={() => setEditing(false)}
-          />
-        </>
-      ) : null}
-
-      <VoucherContractActionsPanel {...contractActions} />
+      <VoucherContractActionsPanel {...contractActions} editable={editable} />
 
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">

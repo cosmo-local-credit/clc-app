@@ -130,7 +130,7 @@ afterEach(() => {
 
 describe("PoolControlsPanel withdrawing liquidity", () => {
   it("sends the named amount to the owner and leaves reserved fees behind", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} />);
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Withdraw liquidity/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -149,7 +149,7 @@ describe("PoolControlsPanel withdrawing liquidity", () => {
   });
 
   it("refuses an amount above what the pool can release", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} />);
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Withdraw liquidity/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -164,7 +164,7 @@ describe("PoolControlsPanel withdrawing liquidity", () => {
 
 describe("PoolControlsPanel collecting fees", () => {
   it("collects the whole accrued balance for one voucher", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} />);
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Withdraw fees/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -180,7 +180,13 @@ describe("PoolControlsPanel collecting fees", () => {
   it("blocks collection while the pool has no fee recipient", async () => {
     // `withdraw(token)` pays `feeAddress`, so with none set it reverts
     // InvalidFeeAddress; saying so beforehand is cheaper than a failed relay.
-    render(<PoolControlsPanel pool={pool({ feeAddress: null })} vouchers={[voucher()]} />);
+    render(
+      <PoolControlsPanel
+        pool={pool({ feeAddress: null })}
+        vouchers={[voucher()]}
+        canManageOnChain
+      />,
+    );
     fireEvent.click(screen.getByRole("button", { name: /Withdraw fees/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -193,7 +199,7 @@ describe("PoolControlsPanel collecting fees", () => {
 
 describe("PoolControlsPanel fee recipient", () => {
   it("re-points the pool at a new address", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} />);
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Fee recipient/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -210,7 +216,7 @@ describe("PoolControlsPanel fee recipient", () => {
   });
 
   it("will not save an address the pool could never pay", async () => {
-    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} />);
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Fee recipient/ }));
 
     const dialog = await screen.findByRole("dialog");

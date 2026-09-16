@@ -1,9 +1,15 @@
-import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
+import type { PoolVoucher } from "@clc/api/features/pools/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
-import { RiAddLine, RiPencilLine, RiQrCodeLine, RiSettings3Line } from "react-icons/ri";
+import {
+  RiAddLine,
+  RiArrowLeftRightLine,
+  RiArrowRightUpLine,
+  RiQrCodeLine,
+  RiSettings3Line,
+} from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -16,7 +22,6 @@ import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
-import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
@@ -101,9 +106,12 @@ export function PoolDetailPage({
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Button asChild className="h-11 w-full">
+      {/* The three-up icon grid the wallet and voucher screens already use, so
+          a pool's actions are read the same way as every other screen's. */}
+      <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
+        <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
           <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+            <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
             <Trans>Swap</Trans>
           </Link>
         </Button>
@@ -112,7 +120,7 @@ export function PoolDetailPage({
             own: BackChevron prefers real history over its deep-link fallback.
             `returnPool` rides along to the receipt so finishing the send lands
             back on this pool rather than on the wallet. */}
-        <Button asChild variant="outline" className="h-11 w-full bg-card">
+        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
           <Link
             to="/wallet/send/amount"
             search={{
@@ -121,24 +129,27 @@ export function PoolDetailPage({
               returnPool: pool.address,
             }}
           >
+            <RiArrowRightUpLine className="size-4" aria-hidden="true" />
             <Trans>Deposit</Trans>
           </Link>
         </Button>
+        {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
+            one-word label so all three fit a 360px row. */}
         <Button
-          variant="outline"
-          className="col-span-2 h-11 w-full bg-card"
+          variant="info"
+          className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
           onClick={() => setReceiving(true)}
         >
           <RiQrCodeLine className="size-4" aria-hidden="true" />
-          <Trans>Receive vouchers</Trans>
+          <Trans>Receive</Trans>
         </Button>
-      </div>
+      </section>
 
       <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
 
-      {canEditDetails ? <EditPoolDetails pool={pool} /> : null}
-
-      {canManageOnChain ? <PoolControlsPanel pool={pool} vouchers={vouchers} /> : null}
+      {canEditDetails ? (
+        <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
+      ) : null}
 
       <div
         className="grid grid-cols-4 border border-border bg-card p-1"
@@ -202,12 +213,7 @@ export function PoolDetailPage({
           className="space-y-3"
         >
           {canManageOnChain ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 w-full bg-card"
-              onClick={() => setApproving(true)}
-            >
+            <Button variant="outline" className="h-9 w-full" onClick={() => setApproving(true)}>
               <RiAddLine className="size-4" aria-hidden="true" />
               <Trans>Approve voucher</Trans>
             </Button>
@@ -264,25 +270,6 @@ export function PoolDetailPage({
         />
       ) : null}
     </div>
-  );
-}
-
-/** The owner's way into the catalog record; a button plus the sheet it opens. */
-function EditPoolDetails({ pool }: { pool: UserPool }) {
-  const [editing, setEditing] = useState(false);
-  return (
-    <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-9 w-full bg-card"
-        onClick={() => setEditing(true)}
-      >
-        <RiPencilLine className="size-4" aria-hidden="true" />
-        <Trans>Edit details</Trans>
-      </Button>
-      <PoolProfileEditorSheet open={editing} pool={pool} onClose={() => setEditing(false)} />
-    </>
   );
 }
 
