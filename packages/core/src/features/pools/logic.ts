@@ -394,3 +394,25 @@ export function poolDepositCap(
   if (/^0+$/.test(voucher.tokenLimit)) return { kind: "blocked" };
   return { kind: "capped", raw: voucher.tokenLimit };
 }
+
+/**
+ * How much more of a voucher the pool will accept, in raw base units.
+ *
+ * `SwapPool.mustWithinLimit` reverts `LimitExceeded` unless
+ * `balanceOf(pool) + value <= limitOf(token, pool)`, so this is the largest
+ * `value` a deposit — and therefore the input side of a swap — may carry.
+ *
+ * Null where there is no number to give: an uncapped pool has no ceiling, and an
+ * unrecorded cap is one nothing has told us about. Neither is zero, and a caller
+ * that conflated them would refuse a swap the contract would have taken.
+ */
+export function poolDepositHeadroomRaw(cap: PoolDepositCap, poolBalanceRaw: string): string | null {
+  if (cap.kind === "blocked") return "0";
+  if (cap.kind !== "capped") return null;
+  try {
+    const left = BigInt(cap.raw) - BigInt(poolBalanceRaw);
+    return left > 0n ? left.toString() : "0";
+  } catch {
+    return null;
+  }
+}

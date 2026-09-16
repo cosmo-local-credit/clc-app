@@ -45,30 +45,59 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
-  usePoolVouchers: () => [],
+  usePoolVouchersWithStatus: () => ({
+    vouchers: [
+      {
+        id: "1",
+        tokenAddress: "0x2222222222222222222222222222222222222222",
+        name: "Trade Token",
+        symbol: "TTX",
+        decimals: 6,
+        iconUrl: null,
+        tokenLimit: null,
+      },
+      {
+        id: "2",
+        tokenAddress: "0x3333333333333333333333333333333333333333",
+        name: "Rambo Token",
+        symbol: "RAMBO",
+        decimals: 6,
+        iconUrl: null,
+        tokenLimit: null,
+      },
+    ],
+    isPending: false,
+    isError: false,
+    refetch: () => Promise.resolve(),
+  }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
-  usePoolVoucherTokens: () => [
-    {
-      id: "0x2222222222222222222222222222222222222222",
-      name: "Trade Token",
-      symbol: "TTX",
-      amount: "100.00",
-      balance: "100000000",
-      contractAddress: "0x2222222222222222222222222222222222222222",
-      tokenDecimals: 6,
-    },
-    {
-      id: "0x3333333333333333333333333333333333333333",
-      name: "Rambo Token",
-      symbol: "RAMBO",
-      amount: "1000.00",
-      balance: "1000000000",
-      contractAddress: "0x3333333333333333333333333333333333333333",
-      tokenDecimals: 6,
-    },
-  ],
+vi.mock("#/features/pools/hooks/use-pool-swap-tokens", () => ({
+  usePoolSwapTokenReads: () => ({
+    data: new Map([
+      [
+        "0x2222222222222222222222222222222222222222",
+        {
+          holderBalanceRaw: "100000000",
+          poolBalanceRaw: "500000000",
+          feesRaw: "0",
+          limitRaw: null,
+        },
+      ],
+      [
+        "0x3333333333333333333333333333333333333333",
+        {
+          holderBalanceRaw: "1000000000",
+          poolBalanceRaw: "500000000",
+          feesRaw: "0",
+          limitRaw: null,
+        },
+      ],
+    ]),
+    isLoading: false,
+    isError: false,
+    refetch: () => Promise.resolve(),
+  }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-swap-quote", () => ({
@@ -130,7 +159,15 @@ describe("pool swap navigation", () => {
     const router = createTestRouter();
     render(<RouterProvider router={router} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: /^swap$/i }));
+    // The amount field opens empty, so the swap has to be sized before the CTA
+    // enables — the screen no longer seeds a figure the holder did not choose.
+    fireEvent.change(await screen.findByRole("textbox", { name: "From" }), {
+      target: { value: "25" },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^swap$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^confirm swap$/i }));
 
     expect(await screen.findByRole("heading", { name: /tracked swap receipt/i })).toBeTruthy();
