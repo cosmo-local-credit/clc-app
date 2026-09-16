@@ -94,6 +94,27 @@ describe("SwapReceiptPage", () => {
     expect(trackRelay).toHaveBeenCalledWith("swap-tracking-1");
   });
 
+  it("offers no way out while the swap is still settling", () => {
+    // The screen replaces itself with the outcome the moment the chain answers.
+    // A Done button meanwhile is a way to leave before ever seeing whether the
+    // swap landed — and an easy one to hit by accident.
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+
+    expect(screen.queryByRole("button", { name: /done/i })).toBeNull();
+  });
+
+  it("offers Done once the swap reverted, which is an outcome", () => {
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "error", error: "execution reverted" },
+    });
+
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+
+    expect(screen.getByRole("button", { name: /done/i })).toBeTruthy();
+  });
+
   it("reacts to confirmation with a Swapped receipt and copyable transaction hash", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "clipboard", {

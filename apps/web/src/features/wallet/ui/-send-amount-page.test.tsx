@@ -130,9 +130,13 @@ describe("SendAmountPage", () => {
     expect(input.value).toBe("3");
   });
 
-  it("focuses the amount when the tile around it is pressed", async () => {
+  it("makes the whole tile a label for the amount field", async () => {
     // `field-sizing:content` leaves an empty input a few pixels wide, so the
-    // card has to be the hit target or the field is unfindable.
+    // card has to be the hit target or the field is unfindable. It is a real
+    // label rather than a pointer handler: a handler has to preventDefault to
+    // stop the press blurring the field, and iOS Safari in an installed PWA
+    // then raises the keypad for the programmatic focus and dismisses it again
+    // on touch end.
     mockTokens();
     renderWithQueryClient(
       <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
@@ -141,17 +145,17 @@ describe("SendAmountPage", () => {
     const maxButton = await screen.findByRole("button", { name: /use max · 245/i });
     const input = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
     const tile = maxButton.parentElement as HTMLElement;
+    const label = tile.querySelector("label");
 
-    input.blur();
-    expect(document.activeElement).not.toBe(input);
+    expect(input.id).toBeTruthy();
+    expect(label?.getAttribute("for")).toBe(input.id);
 
-    fireEvent.pointerDown(tile);
-    expect(document.activeElement).toBe(input);
-
-    // A press that lands on the tile's own button is left alone.
-    input.blur();
-    fireEvent.pointerDown(maxButton);
-    expect(document.activeElement).not.toBe(input);
+    // An overlay under the tile's own controls, not a wrapper around them: a
+    // label may hold only its own labelled control, and one wrapping Max would
+    // be invalid and would swallow its presses. The input stays outside it too,
+    // so a tap on a digit still puts the caret there.
+    expect(label?.contains(maxButton)).toBe(false);
+    expect(label?.contains(input)).toBe(false);
   });
 
   it("carries the originating pool through to the receipt", async () => {

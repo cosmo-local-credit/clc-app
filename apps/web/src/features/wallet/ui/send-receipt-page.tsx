@@ -125,7 +125,6 @@ export function SendReceiptPage({
         message={<Trans>Waiting for on-chain confirmation</Trans>}
         toAddress={toAddress}
         status={<StatusPill tone="pending" label={<Trans>Pending</Trans>} />}
-        onDone={exitReceipt}
       />
     );
   }
@@ -425,7 +424,12 @@ function ReceiptShell({
   message: React.ReactNode;
   toAddress: string | null;
   status: React.ReactNode;
-  onDone: () => void;
+  /**
+   * Omitted while the transfer is still settling. The screen replaces itself
+   * with the outcome the moment the chain answers, and a Done button sitting
+   * there meanwhile is a way to leave before ever seeing whether it landed.
+   */
+  onDone?: () => void;
 }) {
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -457,9 +461,11 @@ function ReceiptShell({
 
       <div className="flex-1" />
 
-      <Button className="h-11 w-full" onClick={onDone}>
-        <Trans>Done</Trans>
-      </Button>
+      {onDone ? (
+        <Button className="h-11 w-full" onClick={onDone}>
+          <Trans>Done</Trans>
+        </Button>
+      ) : null}
     </div>
   );
 }
