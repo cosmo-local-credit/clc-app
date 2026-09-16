@@ -272,12 +272,22 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
     return results.every((errors) => errors.length === 0);
   }
 
+  /**
+   * Writes the derived symbol into the still-empty field.
+   *
+   * Called both when "Advanced" unfolds and on the way out of the step: the
+   * field is only ever looked at from inside the disclosure, so a suggestion
+   * that arrives at Next is one the user never sees being made.
+   */
+  async function fillSuggestedSymbol() {
+    if (form.getFieldValue("symbol") !== "") return;
+    const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
+    if (symbol) form.setFieldValue("symbol", symbol);
+  }
+
   async function goToPlace() {
     // Blur may not have fired, or its lookup may still be in flight.
-    if (form.getFieldValue("symbol") === "") {
-      const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
-      if (symbol) form.setFieldValue("symbol", symbol);
-    }
+    await fillSuggestedSymbol();
     if (!(await fieldsAreValid(DETAIL_FIELDS))) {
       if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
         if (advancedRef.current) advancedRef.current.open = true;
@@ -423,7 +433,12 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                 )}
               </form.Field>
 
-              <details ref={advancedRef}>
+              <details
+                ref={advancedRef}
+                onToggle={(event) => {
+                  if (event.currentTarget.open) void fillSuggestedSymbol();
+                }}
+              >
                 <summary className="cursor-pointer font-medium text-foreground text-sm">
                   <Trans>Advanced</Trans>
                 </summary>
@@ -516,12 +531,22 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                           onChange={(event) => {
                             const fee = event.target.value;
                             field.handleChange(fee);
-                            if (Number(fee) <= 0) {
-                              form.setFieldValue("feesDecoupled", false, {
-                                dontUpdateMeta: true,
-                              });
-                              form.setFieldValue("feeAddress", "", { dontUpdateMeta: true });
+                            if (Number(fee) > 0) {
+                              // The recipient starts as the connected wallet,
+                              // which is where the pool pays fees when nothing
+                              // else is named. Seeded, not bound: a steward who
+                              // typed another address keeps it.
+                              if (address && form.getFieldValue("feeAddress") === "") {
+                                form.setFieldValue("feeAddress", getAddress(address), {
+                                  dontUpdateMeta: true,
+                                });
+                              }
+                              return;
                             }
+                            form.setFieldValue("feesDecoupled", false, {
+                              dontUpdateMeta: true,
+                            });
+                            form.setFieldValue("feeAddress", "", { dontUpdateMeta: true });
                           }}
                           onBlur={field.handleBlur}
                           aria-invalid={field.state.meta.errors.length > 0}
@@ -550,22 +575,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                               <Checkbox
                                 id="pool-fees-decoupled"
                                 checked={field.state.value}
-                                onCheckedChange={(checked) => {
-                                  field.handleChange(checked);
-                                  // Fees go to the owner unless told otherwise, so
-                                  // the recipient starts as the connected wallet and
-                                  // is there to be overwritten. Seeded, not bound:
-                                  // a steward who typed another address keeps it.
-                                  if (
-                                    checked &&
-                                    address &&
-                                    form.getFieldValue("feeAddress") === ""
-                                  ) {
-                                    form.setFieldValue("feeAddress", getAddress(address), {
-                                      dontUpdateMeta: true,
-                                    });
-                                  }
-                                }}
+                                onCheckedChange={(checked) => field.handleChange(checked)}
                               />
                             </label>
                           )}
@@ -574,13 +584,15 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                     }
                   </form.Subscribe>
 
-                  <form.Subscribe
-                    selector={(state) =>
-                      Number(state.values.feePolicyDefault) > 0 && state.values.feesDecoupled
-                    }
-                  >
-                    {(feesDecoupled) =>
-                      feesDecoupled ? (
+                  {/* Shown for any non-zero fee, not only a decoupled one. The
+                      pool credits `fees[token]` and pays `withdraw` to
+                      `feeAddress` in both modes; decoupling only reserves the
+                      accrued fees from withdrawable liquidity. Hiding the
+                      recipient behind the checkbox left the fee going to
+                      whoever deployed the pool with no way to say otherwise. */}
+                  <form.Subscribe selector={(state) => Number(state.values.feePolicyDefault) > 0}>
+                    {(hasFee) =>
+                      hasFee ? (
                         <form.Field
                           name="feeAddress"
                           validators={{
@@ -604,7 +616,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                                 }}
                                 onBlur={field.handleBlur}
                                 ariaLabel={t`Fee recipient`}
-                                aria-invalid={field.state.meta.errors.length > 0}
+                                ariaInvalid={field.state.meta.errors.length > 0}
                               />
                             </Field>
                           )}

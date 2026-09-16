@@ -240,6 +240,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 </label>
                 <PhoneInputField
                   id="profile-phone"
+                  defaultCountry={profile.country}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(val)}
                   aria-invalid={!!err}

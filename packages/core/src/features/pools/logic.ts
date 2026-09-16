@@ -68,8 +68,12 @@ export const poolSwapFeeSchema = z
   });
 
 /**
- * Where decoupled swap fees are paid. Blank means the pool owner, which is what
+ * Where collected swap fees are paid. Blank means the pool owner, which is what
  * the deploy defaults to; anything else has to be a real account.
+ *
+ * Not tied to decoupling: `SwapPool` settles `withdraw` to `feeAddress`
+ * whichever mode it is in, and decoupling only reserves accrued fees from
+ * withdrawable liquidity.
  */
 export const poolFeeAddressSchema = z
   .string()
@@ -201,7 +205,7 @@ export type PoolDeployPayload = {
   quoterType: PoolPricing;
   feesDecoupled: boolean;
   feePolicyDefault: string;
-  /** Present only when fees are decoupled: the account they are paid to. */
+  /** Present only when the pool charges a fee: the account it is paid to. */
   feeAddress?: string;
   baseCurrency?: string;
   unitOfAccount: string;
@@ -244,9 +248,13 @@ export function toPoolDeployPayload(
       ? getPoolOracleBaseCurrency(input.unitOfAccount, chainId)
       : undefined;
 
-  const feesDecoupled = Number(input.feePolicyDefault) > 0 && input.feesDecoupled;
-  // Fees held in liquidity have no recipient. Held apart, they go to the
-  // address the steward named, or to the owner when they left it blank.
+  const hasFee = Number(input.feePolicyDefault) > 0;
+  const feesDecoupled = hasFee && input.feesDecoupled;
+  // A pool that charges a fee always has somewhere to pay it: `SwapPool` credits
+  // `fees[token]` and settles `withdraw` to `feeAddress` whether or not fees are
+  // decoupled, and decoupling only reserves the accrued balance from
+  // withdrawable liquidity. The recipient therefore follows the fee, not the
+  // checkbox — it is the address the steward named, or the owner when blank.
   const feeAddress = input.feeAddress.trim();
 
   return {
@@ -257,7 +265,7 @@ export function toPoolDeployPayload(
     quoterType: input.pricing,
     feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
-    ...(feesDecoupled ? { feeAddress: feeAddress ? getAddress(feeAddress) : owner } : {}),
+    ...(hasFee ? { feeAddress: feeAddress ? getAddress(feeAddress) : owner } : {}),
     ...(baseCurrency ? { baseCurrency } : {}),
     unitOfAccount: input.unitOfAccount,
     description: input.description.trim(),

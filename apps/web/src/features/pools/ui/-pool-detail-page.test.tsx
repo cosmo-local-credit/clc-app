@@ -100,6 +100,11 @@ vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
   poolTreasuryQueryKeys: { all: ["pool-treasury"] },
 }));
 
+vi.mock("#/features/pools/hooks/use-pool-fee-settings", () => ({
+  usePoolFeeSettings: () => ({ data: undefined }),
+  poolFeeSettingsQueryKeys: { all: ["pool-fee-settings"] },
+}));
+
 vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
   usePoolAdminRelay: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));

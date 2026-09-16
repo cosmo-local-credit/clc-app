@@ -1,8 +1,9 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
-  buildSetPoolFeeAddressCalls,
+  buildSetPoolFeeCalls,
   buildWithdrawPoolLiquidityCalls,
+  POOL_FEE_PERCENT_DECIMALS,
 } from "@clc/core/features/pool-admin/logic";
 import { buildCollectPoolFeesCalls } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
@@ -29,11 +30,15 @@ import {
 } from "#/components/ui/sheet";
 import { SignHint } from "#/components/wallet";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
+import {
+  type PoolFeeSettings,
+  usePoolFeeSettings,
+} from "#/features/pools/hooks/use-pool-fee-settings";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 
 import { PoolProfileEditorSheet } from "./pool-profile-editor-sheet";
 
-type ControlSheet = "details" | "liquidity" | "fees" | "feeAddress";
+type ControlSheet = "details" | "liquidity" | "fees" | "feeSettings";
 
 /**
  * Everything a steward can change about one pool, in a single group.
@@ -64,6 +69,8 @@ export function PoolControlsPanel({
   // Balances are read for the withdraw sheets alone, so a superadmin who can
   // only edit the record never pays for the calls.
   const treasury = usePoolTreasury(pool, vouchers, canManageOnChain);
+  const feeSettings = usePoolFeeSettings(pool, canManageOnChain);
+  const fee = feeSettings.data;
 
   return (
     <>
@@ -87,9 +94,15 @@ export function PoolControlsPanel({
             />
             <ActionRow
               icon={<RiWalletLine className="size-4" aria-hidden="true" />}
-              label={t`Fee recipient`}
-              value={pool.feeAddress ? formatVoucherAddress(pool.feeAddress) : t`Not set`}
-              onClick={() => setSheet("feeAddress")}
+              label={t`Fee % and recipient`}
+              value={
+                fee
+                  ? `${fee.feePercent}% · ${fee.feeAddress ? formatVoucherAddress(fee.feeAddress) : t`Not set`}`
+                  : feeSettings.isError
+                    ? t`Unavailable`
+                    : t`Reading…`
+              }
+              onClick={() => setSheet("feeSettings")}
             />
           </>
         ) : null}
@@ -123,16 +136,17 @@ export function PoolControlsPanel({
           pool={pool}
           vouchers={vouchers}
           treasury={treasury.data}
+          feeAddress={fee?.feeAddress ?? null}
           onDone={() => setSheet(null)}
         />
       </ControlSheetShell>
 
       <ControlSheetShell
-        open={sheet === "feeAddress"}
-        title={t`Fee recipient`}
+        open={sheet === "feeSettings"}
+        title={t`Fee % and recipient`}
         onClose={() => setSheet(null)}
       >
-        <FeeAddressForm pool={pool} onDone={() => setSheet(null)} />
+        <FeeSettingsForm pool={pool} settings={fee} onDone={() => setSheet(null)} />
       </ControlSheetShell>
     </>
   );
@@ -312,11 +326,14 @@ function CollectFeesForm({
   pool,
   vouchers,
   treasury,
+  feeAddress,
   onDone,
 }: {
   pool: UserPool;
   vouchers: PoolVoucher[];
   treasury: Map<string, { feesRaw: string }> | undefined;
+  /** Read from the pool, not the catalog — see `usePoolFeeSettings`. */
+  feeAddress: `0x${string}` | null;
   onDone: () => void;
 }) {
   const { t } = useLingui();
@@ -324,7 +341,6 @@ function CollectFeesForm({
   const [tokenAddress, setTokenAddress] = useState<string | null>(null);
 
   const selected = vouchers.find((voucher) => voucher.tokenAddress.toLowerCase() === tokenAddress);
-  const hasRecipient = !!pool.feeAddress && pool.feeAddress.toLowerCase() !== zeroAddress;
   const accruedRaw = tokenAddress ? treasury?.get(tokenAddress)?.feesRaw : undefined;
 
   const submit = async () => {
@@ -350,11 +366,9 @@ function CollectFeesForm({
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
-        {hasRecipient ? (
+        {feeAddress ? (
           <p className="text-muted-foreground text-xs">
-            <Trans>
-              Fees are paid to {formatVoucherAddress(pool.feeAddress as `0x${string}`)}.
-            </Trans>
+            <Trans>Fees are paid to {formatVoucherAddress(feeAddress)}.</Trans>
           </p>
         ) : (
           <p role="alert" className="border border-border bg-card p-4 text-destructive text-xs">
@@ -379,7 +393,7 @@ function CollectFeesForm({
         <Button
           type="button"
           className="h-11 w-full"
-          disabled={!selected || !hasRecipient || relay.isPending}
+          disabled={!selected || !feeAddress || relay.isPending}
           onClick={() => void submit()}
         >
           {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Collect fees</Trans>}
@@ -389,47 +403,119 @@ function CollectFeesForm({
   );
 }
 
-function FeeAddressForm({ pool, onDone }: { pool: UserPool; onDone: () => void }) {
+/**
+ * The pool's swap fee and the account it is paid to, changed together.
+ *
+ * Two contracts — the fee is the FeePolicy's `defaultFee`, the recipient is
+ * SwapPool's `feeAddress` — and therefore two calls, relayed as one batch so a
+ * steward never signs twice for one decision or lands halfway. Whichever field
+ * is unchanged is left out of the batch rather than re-sent.
+ *
+ * Both fields start from the chain read, so the form shows what the pool
+ * actually charges rather than what the catalog failed to record.
+ */
+function FeeSettingsForm({
+  pool,
+  settings,
+  onDone,
+}: {
+  pool: UserPool;
+  settings: PoolFeeSettings | undefined;
+  onDone: () => void;
+}) {
   const { t } = useLingui();
   const relay = usePoolAdminRelay();
-  const [value, setValue] = useState(pool.feeAddress ?? "");
-  const trimmed = value.trim();
-  const isValid = isAddress(trimmed) && trimmed.toLowerCase() !== zeroAddress;
+  const { address } = useConnection();
+  const [feePercent, setFeePercent] = useState(settings?.feePercent ?? "");
+  // Blank rather than the connected wallet when the pool has none: seeding the
+  // owner's address here would present a recipient the pool does not have as
+  // one it does, and `withdraw` would keep reverting until it was submitted.
+  const [recipient, setRecipient] = useState<string>(settings?.feeAddress ?? "");
+
+  const trimmedFee = feePercent.trim();
+  const feeIsValid =
+    trimmedFee !== "" &&
+    /^\d+(\.\d{1,4})?$/.test(trimmedFee) &&
+    Number(trimmedFee) >= 0 &&
+    Number(trimmedFee) <= 100;
+  const trimmedRecipient = recipient.trim();
+  const recipientIsValid =
+    isAddress(trimmedRecipient) && trimmedRecipient.toLowerCase() !== zeroAddress;
+
+  const feeChanged = feeIsValid && trimmedFee !== settings?.feePercent;
+  const recipientChanged =
+    recipientIsValid && trimmedRecipient.toLowerCase() !== settings?.feeAddress?.toLowerCase();
+  const canSubmit = feeIsValid && recipientIsValid && (feeChanged || recipientChanged);
 
   const submit = async () => {
-    if (!isValid) return;
+    if (!canSubmit) return;
     try {
       await relay.mutateAsync(
-        buildSetPoolFeeAddressCalls({
+        buildSetPoolFeeCalls({
           poolAddress: pool.address,
-          feeAddress: trimmed as `0x${string}`,
+          feePolicyAddress: pool.feePolicyAddress,
+          ...(feeChanged
+            ? { feePpm: parseTokenAmount(trimmedFee, POOL_FEE_PERCENT_DECIMALS) }
+            : {}),
+          ...(recipientChanged ? { feeAddress: trimmedRecipient as `0x${string}` } : {}),
         }),
       );
-      toast.success(t`Fee recipient updated.`);
+      toast.success(t`Pool fee updated.`);
       onDone();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t`The transaction failed.`);
     }
   };
 
+  // Both fields are seeded from the chain read, so a sheet opened before it
+  // lands would present an empty form as though the pool charged nothing.
+  if (!settings) {
+    return (
+      <div className="px-4 pb-4 text-muted-foreground text-xs">
+        <Trans>Reading this pool's fee…</Trans>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
         <Field
-          label={t`Wallet address`}
+          label={t`Swap fee (%)`}
+          htmlFor="pool-fee-percent"
+          hint={t`Charged on every swap this pool settles.`}
+          error={trimmedFee && !feeIsValid ? t`Enter a fee from 0 to 100` : null}
+        >
+          <Input
+            id="pool-fee-percent"
+            inputMode="decimal"
+            value={feePercent}
+            placeholder="0"
+            onChange={(event) => setFeePercent(event.target.value)}
+            className="font-mono"
+            aria-invalid={!!trimmedFee && !feeIsValid}
+          />
+        </Field>
+
+        <Field
+          label={t`Fee recipient`}
           htmlFor="pool-fee-address"
-          hint={t`Collected swap fees are paid here.`}
-          error={trimmed && !isValid ? t`Enter a valid wallet address` : null}
+          hint={
+            address && !trimmedRecipient
+              ? t`Collected swap fees are paid here. Your own wallet is ${formatVoucherAddress(address as `0x${string}`)}.`
+              : t`Collected swap fees are paid here.`
+          }
+          error={trimmedRecipient && !recipientIsValid ? t`Enter a valid wallet address` : null}
         >
           <RecipientAddressInput
             id="pool-fee-address"
-            defaultValue={value}
-            onValueChange={setValue}
-            onRecipientChange={(recipient) => {
-              if (recipient) setValue(recipient.address);
+            defaultValue={recipient}
+            onValueChange={setRecipient}
+            onRecipientChange={(next) => {
+              if (next) setRecipient(next.address);
             }}
-            ariaLabel={t`Wallet address`}
-            ariaInvalid={!!trimmed && !isValid}
+            ariaLabel={t`Fee recipient`}
+            ariaInvalid={!!trimmedRecipient && !recipientIsValid}
           />
         </Field>
       </div>
@@ -439,10 +525,14 @@ function FeeAddressForm({ pool, onDone }: { pool: UserPool; onDone: () => void }
         <Button
           type="button"
           className="h-11 w-full"
-          disabled={!isValid || relay.isPending}
+          disabled={!canSubmit || relay.isPending}
           onClick={() => void submit()}
         >
-          {relay.isPending ? <Trans>Waiting for the chain…</Trans> : <Trans>Save recipient</Trans>}
+          {relay.isPending ? (
+            <Trans>Waiting for the chain…</Trans>
+          ) : (
+            <Trans>Save fee settings</Trans>
+          )}
         </Button>
       </SheetFooter>
     </>

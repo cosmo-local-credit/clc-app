@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
 import {
+  feePolicySetDefaultFeeAbi,
   swapPoolSetFeeAddressAbi,
   swapPoolWithdrawLiquidityAbi,
 } from "@clc/core/features/pool-admin/logic";
@@ -14,10 +15,16 @@ const POOL = "0x8e0a000000000000000000000000000000000b41";
 const TOKEN = "0x3aa7000000000000000000000000000000000102";
 const OWNER = "0x1234000000000000000000000000000000005678";
 const RECIPIENT = "0x9911000000000000000000000000000000002244";
+const FEE_POLICY = "0x70c1000000000000000000000000000000003b55";
 
 const mocks = vi.hoisted(() => ({
   relay: vi.fn(),
   treasury: new Map<string, { balanceRaw: string; feesRaw: string; withdrawableRaw: string }>(),
+  // The fee and the recipient come from the chain, never from the catalog row.
+  feeSettings: { data: undefined } as {
+    data?: { feePpm: string; feePercent: string; feeAddress: string | null };
+    isError?: boolean;
+  },
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
 }));
@@ -33,6 +40,11 @@ vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
 vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
   usePoolTreasury: () => ({ data: mocks.treasury }),
   poolTreasuryQueryKeys: { all: ["pool-treasury"] },
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-fee-settings", () => ({
+  usePoolFeeSettings: () => mocks.feeSettings,
+  poolFeeSettingsQueryKeys: { all: ["pool-fee-settings"] },
 }));
 
 vi.mock("sonner", () => ({
@@ -65,7 +77,7 @@ function pool(overrides: Partial<UserPool> = {}): UserPool {
     limiterAddress: null,
     quoterAddress: null,
     quoterType: "relative",
-    feePolicyAddress: null,
+    feePolicyAddress: FEE_POLICY,
     protocolFeeControllerAddress: null,
     feesDecoupled: true,
     decimals: 6,
@@ -126,6 +138,9 @@ beforeEach(() => {
   mocks.treasury = new Map([
     [TOKEN, { balanceRaw: "1000000000", feesRaw: "4000000", withdrawableRaw: "996000000" }],
   ]);
+  mocks.feeSettings = {
+    data: { feePpm: "10000", feePercent: "1", feeAddress: RECIPIENT },
+  };
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
 });
@@ -186,13 +201,8 @@ describe("PoolControlsPanel collecting fees", () => {
   it("blocks collection while the pool has no fee recipient", async () => {
     // `withdraw(token)` pays `feeAddress`, so with none set it reverts
     // InvalidFeeAddress; saying so beforehand is cheaper than a failed relay.
-    render(
-      <PoolControlsPanel
-        pool={pool({ feeAddress: null })}
-        vouchers={[voucher()]}
-        canManageOnChain
-      />,
-    );
+    mocks.feeSettings = { data: { feePpm: "10000", feePercent: "1", feeAddress: null } };
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
     fireEvent.click(screen.getByRole("button", { name: /Withdraw fees/ }));
 
     const dialog = await screen.findByRole("dialog");
@@ -203,34 +213,91 @@ describe("PoolControlsPanel collecting fees", () => {
   });
 });
 
-describe("PoolControlsPanel fee recipient", () => {
-  it("re-points the pool at a new address", async () => {
+describe("PoolControlsPanel fee settings", () => {
+  it("shows the rate and recipient the chain reports, not the catalog's", () => {
+    render(
+      <PoolControlsPanel
+        pool={pool({ feeAddress: null, feePpm: null })}
+        vouchers={[voucher()]}
+        canManageOnChain
+      />,
+    );
+    // The catalog row carries neither value; the row must still read 1%.
+    expect(screen.getByRole("button", { name: /Fee % and recipient/ }).textContent).toContain("1%");
+  });
+
+  it("relays the rate and the recipient as one batch", async () => {
     render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Fee recipient/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Fee % and recipient/ }));
 
     const dialog = await screen.findByRole("dialog");
-    const input = within(dialog).getByLabelText("Wallet address") as HTMLInputElement;
-    expect(input.value).toBe(RECIPIENT);
+    const fee = within(dialog).getByLabelText("Swap fee (%)") as HTMLInputElement;
+    const recipient = within(dialog).getByLabelText("Fee recipient") as HTMLInputElement;
+    expect(fee.value).toBe("1");
+    expect(recipient.value).toBe(RECIPIENT);
 
-    fireEvent.change(input, { target: { value: OWNER } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Save recipient" }));
+    fireEvent.change(fee, { target: { value: "2.5" } });
+    fireEvent.change(recipient, { target: { value: OWNER } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save fee settings" }));
 
     await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
-    expect(
-      decodeFunctionData({ abi: swapPoolSetFeeAddressAbi, data: relayedCalls()[0]!.data }),
-    ).toEqual({ functionName: "setFeeAddress", args: [OWNER] });
+    const calls = relayedCalls();
+    expect(calls.map((call) => call.to)).toEqual([FEE_POLICY, POOL]);
+    expect(decodeFunctionData({ abi: feePolicySetDefaultFeeAbi, data: calls[0]!.data })).toEqual({
+      functionName: "setDefaultFee",
+      args: [25_000n],
+    });
+    expect(decodeFunctionData({ abi: swapPoolSetFeeAddressAbi, data: calls[1]!.data })).toEqual({
+      functionName: "setFeeAddress",
+      args: [OWNER],
+    });
+  });
+
+  it("sends only the value that changed", async () => {
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: /Fee % and recipient/ }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Swap fee (%)"), { target: { value: "0" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save fee settings" }));
+
+    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
+    expect(relayedCalls().map((call) => call.to)).toEqual([FEE_POLICY]);
   });
 
   it("will not save an address the pool could never pay", async () => {
     render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
-    fireEvent.click(screen.getByRole("button", { name: /Fee recipient/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Fee % and recipient/ }));
 
     const dialog = await screen.findByRole("dialog");
-    fireEvent.change(within(dialog).getByLabelText("Wallet address"), {
+    fireEvent.change(within(dialog).getByLabelText("Fee recipient"), {
       target: { value: "0x0000000000000000000000000000000000000000" },
     });
     expect(
-      (within(dialog).getByRole("button", { name: "Save recipient" }) as HTMLButtonElement)
+      (within(dialog).getByRole("button", { name: "Save fee settings" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
+  it("will not save a fee the contract would reject", async () => {
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: /Fee % and recipient/ }));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Swap fee (%)"), { target: { value: "120" } });
+    expect(
+      (within(dialog).getByRole("button", { name: "Save fee settings" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+  });
+
+  it("keeps the button inert while nothing has changed", async () => {
+    render(<PoolControlsPanel pool={pool()} vouchers={[voucher()]} canManageOnChain />);
+    fireEvent.click(screen.getByRole("button", { name: /Fee % and recipient/ }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      (within(dialog).getByRole("button", { name: "Save fee settings" }) as HTMLButtonElement)
         .disabled,
     ).toBe(true);
   });

@@ -175,7 +175,12 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
 
       <dl className="mt-6 border border-border bg-card">
         {draft ? (
-          <PoolDetailsRows values={draft} />
+          <PoolDetailsRows
+            values={draft}
+            onCopyFeeAddress={(value) =>
+              copyValue(value, t`Fee recipient copied`, t`Couldn't copy fee recipient`)
+            }
+          />
         ) : (
           <>
             <InfoRow label={t`Pool`}>{contract.name}</InfoRow>

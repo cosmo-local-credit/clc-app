@@ -274,12 +274,22 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     return results.every((errors) => errors.length === 0);
   }
 
+  /**
+   * Writes the derived symbol into the still-empty field.
+   *
+   * Called both when "Advanced" unfolds and on the way out of the step: the
+   * field is only ever looked at from inside the disclosure, so a suggestion
+   * that arrives at Next is one the user never sees being made.
+   */
+  async function fillSuggestedSymbol() {
+    if (form.getFieldValue("symbol") !== "") return;
+    const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
+    if (symbol) form.setFieldValue("symbol", symbol);
+  }
+
   async function goToPlace() {
     // Blur may not have fired, or its lookup may still be in flight.
-    if (form.getFieldValue("symbol") === "") {
-      const symbol = await suggestedSymbol.suggest(form.getFieldValue("name"));
-      if (symbol) form.setFieldValue("symbol", symbol);
-    }
+    await fillSuggestedSymbol();
     if (!(await fieldsAreValid(DETAIL_FIELDS))) {
       if (ADVANCED_FIELDS.some((field) => (form.getFieldMeta(field)?.errors.length ?? 0) > 0)) {
         if (advancedRef.current) advancedRef.current.open = true;
@@ -449,7 +459,12 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 )}
               </form.Field>
 
-              <details ref={advancedRef}>
+              <details
+                ref={advancedRef}
+                onToggle={(event) => {
+                  if (event.currentTarget.open) void fillSuggestedSymbol();
+                }}
+              >
                 <summary className="cursor-pointer font-medium text-foreground text-sm">
                   <Trans>Advanced</Trans>
                 </summary>
