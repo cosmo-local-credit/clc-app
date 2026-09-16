@@ -1,5 +1,7 @@
 import type { ManagedReportDetail } from "@clc/api/features/reports/client";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { REPORT_BODY_MAX } from "@clc/core/features/reports/logic";
+import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -91,6 +93,13 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div data-testid="location-map" />,
 }));
 
+// The shell only defers the chunk. These tests want the editor inside it, and
+// want it on the first render, so the rest of the form reads as it always has.
+vi.mock("#/components/ui/markdown-editor", async () => {
+  const editor = await import("#/components/ui/markdown-editor-lexical");
+  return { MarkdownEditor: editor.MarkdownEditorLexical };
+});
+
 import { PostEditorPage } from "./post-editor-page";
 
 function saved(overrides: Partial<ManagedReportDetail> = {}): ManagedReportDetail {
@@ -148,6 +157,30 @@ const OTHER_VOUCHER = "0x2222222222222222222222222222222222222222";
 
 function typeTitle(value: string) {
   fireEvent.change(screen.getByLabelText("Title"), { target: { value } });
+}
+
+/**
+ * Writes into the body and leaves it selected.
+ *
+ * jsdom sends no `beforeinput`, so the keystroke is applied through the editor
+ * Lexical hangs off its own root element — the same handle
+ * `getNearestEditorFromDOMNode` uses. The selection it leaves behind is what a
+ * following toolbar press formats.
+ */
+async function typeBody(text: string) {
+  const root = screen.getByRole("textbox", { name: "Post text" }) as HTMLElement & {
+    __lexicalEditor: LexicalEditor;
+  };
+  await act(async () => {
+    root.__lexicalEditor.update(() => {
+      $getRoot().selectEnd().insertText(text);
+    });
+  });
+  await act(async () => {
+    root.__lexicalEditor.update(() => {
+      $selectAll();
+    });
+  });
 }
 
 describe("creating a post", () => {
@@ -245,28 +278,34 @@ describe("creating a post", () => {
     });
   });
 
-  it("shows Write and Preview as one pressed control, never side by side", () => {
+  // Formatting is applied, not typed, so there is nothing to preview and no
+  // Markdown cheat sheet to read.
+  it("writes the body through the editor instead of a markdown textarea", async () => {
     render(<PostEditorPage mode="create" />);
-    const toggle = screen.getByRole("button", { name: "Preview" });
 
-    expect(screen.getByLabelText("Post text")).toBeTruthy();
-    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
+    expect(screen.queryByText(/Markdown: \*\*bold\*\*/)).toBeNull();
 
-    fireEvent.click(toggle);
+    const body = screen.getByRole("textbox", { name: "Post text" });
+    await typeBody("What happened");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Heading" }));
+    });
 
-    // Pressed replaces the textarea rather than appearing beside it.
-    expect(screen.queryByLabelText("Post text")).toBeNull();
-    expect(screen.getByText("Nothing to preview yet.")).toBeTruthy();
+    expect(body.querySelector("h2")?.textContent).toBe("What happened");
   });
 
-  it("renders the body as markdown while Preview is pressed", () => {
+  it("submits the body as markdown", async () => {
     render(<PostEditorPage mode="create" />);
-    fireEvent.change(screen.getByLabelText("Post text"), {
-      target: { value: "## What happened" },
+    typeTitle("August community harvest");
+    await typeBody("It went well");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Bold" }));
     });
-    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
 
-    expect(screen.getByText("What happened").tagName).toBe("H3");
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ body: "**It went well**" });
   });
 
   it("warns before abandoning a dirty form and only then goes back", () => {
@@ -422,6 +461,47 @@ describe("creating a post", () => {
     expect(window.localStorage.getItem("clc_post_draft_v1")).toBeNull();
   });
 
+  it("parks a formatted body and reopens it formatted", async () => {
+    const first = render(<PostEditorPage mode="create" />);
+    typeTitle("Half-written");
+    await typeBody("Market day");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Heading" }));
+    });
+
+    await waitFor(
+      () => expect(window.localStorage.getItem("clc_post_draft_v1")).toContain("## Market day"),
+      { timeout: 2000 },
+    );
+    first.unmount();
+
+    render(<PostEditorPage mode="create" />);
+    expect(
+      screen.getByRole("textbox", { name: "Post text" }).querySelector("h2")?.textContent,
+    ).toBe("Market day");
+  });
+
+  // The limit is the schema's, measured on the Markdown that would be stored.
+  it("refuses a paste longer than a post may be", async () => {
+    render(<PostEditorPage mode="create" />);
+    await typeBody("Short enough");
+
+    await act(async () => {
+      fireEvent.paste(screen.getByRole("textbox", { name: "Post text" }), {
+        clipboardData: {
+          files: [],
+          getData: (type: string) => (type === "text/plain" ? "x".repeat(REPORT_BODY_MAX + 1) : ""),
+          types: ["text/plain"],
+        },
+      });
+    });
+
+    typeTitle("August community harvest");
+    fireEvent.click(screen.getByRole("button", { name: "Publish" }));
+    await waitFor(() => expect(mocks.createPost).toHaveBeenCalledTimes(1));
+    expect(mocks.createPost.mock.calls[0]?.[0]).toMatchObject({ body: "Short enough" });
+  });
+
   it("drops the parked post once it has been submitted", async () => {
     render(<PostEditorPage mode="create" />);
     typeTitle("August community harvest");
@@ -509,7 +589,10 @@ describe("editing a post", () => {
     expect((screen.getByLabelText("Title") as HTMLInputElement).value).toBe(
       "August community harvest",
     );
-    expect((screen.getByLabelText("Post text") as HTMLTextAreaElement).value).toBe("## Body");
+    // The stored Markdown, shown as what it describes rather than as its source.
+    expect(
+      screen.getByRole("textbox", { name: "Post text" }).querySelector("h2")?.textContent,
+    ).toBe("Body");
     expect((screen.getByLabelText("Host") as HTMLInputElement).value).toBe("Wendo Group");
     expect((screen.getByLabelText("Caption for photo 1") as HTMLInputElement).value).toBe(
       "Sorting",

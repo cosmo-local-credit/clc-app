@@ -18,7 +18,7 @@ import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
-import { MarkdownContent } from "#/components/ui/markdown-content";
+import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import {
   SheetBackdrop,
@@ -32,7 +32,6 @@ import {
 import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
-import { Toggle } from "#/components/ui/toggle";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { isStorageConfigured } from "#/lib/api/storage";
@@ -106,7 +105,6 @@ function VoucherProfileForm({
   const tagsQuery = useTokenTags();
   const update = useUpdateVoucherProfile(voucher.address);
   const [iconBusy, setIconBusy] = useState(false);
-  const [termsPreview, setTermsPreview] = useState(false);
   const storedLocation: VoucherPlace | undefined =
     voucher.locationName !== null && voucher.lat !== null && voucher.lng !== null
       ? { locationName: voucher.locationName, lat: voucher.lat, lng: voucher.lng }
@@ -399,7 +397,6 @@ function VoucherProfileForm({
                     onCheckedChange={(checked) => {
                       modeField.handleChange(checked ? "text" : "url");
                       form.setFieldValue("terms", "");
-                      setTermsPreview(false);
                     }}
                   />
                 </label>
@@ -413,56 +410,34 @@ function VoucherProfileForm({
                     onSubmit: optionalTermsTextSchema,
                   }}
                 >
-                  {(field) => (
-                    <div className="mt-1.5">
-                      <div className="mb-1.5 flex items-center justify-between gap-3">
+                  {(field) => {
+                    const error = getFieldError(field.state.meta.errors);
+                    return (
+                      <div className="mt-1.5">
+                        {/* `htmlFor` alone does not name a `contentEditable`,
+                            which is not a labelable element, so the editor is
+                            pointed back at this label by id. */}
                         <label
+                          id="voucher-terms-text-label"
                           htmlFor="voucher-terms-text"
-                          className="text-muted-foreground text-xs"
+                          className="mb-1.5 block text-muted-foreground text-xs"
                         >
                           <Trans>Shown to anyone holding this voucher</Trans>
                         </label>
-                        <Toggle
-                          variant="outline"
-                          pressed={termsPreview}
-                          onPressedChange={setTermsPreview}
-                          aria-label={t`Preview`}
-                        >
-                          <Trans>Preview</Trans>
-                        </Toggle>
-                      </div>
-                      {termsPreview ? (
-                        <div className="min-h-24 border border-border bg-card p-3">
-                          {field.state.value.trim() === "" ? (
-                            <p className="text-muted-foreground text-sm">
-                              <Trans>Nothing to preview yet.</Trans>
-                            </p>
-                          ) : (
-                            <MarkdownContent>{field.state.value}</MarkdownContent>
-                          )}
-                        </div>
-                      ) : (
-                        <Textarea
+                        <MarkdownEditor
                           id="voucher-terms-text"
-                          rows={8}
+                          aria-labelledby="voucher-terms-text-label"
+                          aria-invalid={field.state.meta.errors.length > 0}
                           maxLength={TERMS_TEXT_MAX}
-                          className="font-mono text-[0.8125rem]"
                           value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
+                          onChange={field.handleChange}
                           onBlur={field.handleBlur}
                           placeholder={t`Redeemable at our stall on market days...`}
-                          aria-invalid={field.state.meta.errors.length > 0}
                         />
-                      )}
-                      {getFieldError(field.state.meta.errors) ? (
-                        <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
-                      ) : (
-                        <p className="mt-1 text-muted-foreground text-xs">
-                          <Trans>Markdown: **bold**, # headings, - lists, [links](https://…)</Trans>
-                        </p>
-                      )}
-                    </div>
-                  )}
+                        {error ? <FieldError error={error} /> : null}
+                      </div>
+                    );
+                  }}
                 </form.Field>
               ) : (
                 <form.Field
