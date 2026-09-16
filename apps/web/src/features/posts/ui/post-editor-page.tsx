@@ -32,11 +32,9 @@ import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
-import { MarkdownContent } from "#/components/ui/markdown-content";
+import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagCombobox } from "#/components/ui/tag-combobox";
-import { Textarea } from "#/components/ui/textarea";
-import { Toggle } from "#/components/ui/toggle";
 import { BackChevron } from "#/components/wallet";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
@@ -263,7 +261,6 @@ function PostEditorForm({
 
   /** Bytes in flight. Save would otherwise persist the list from before them. */
   const [imagesBusy, setImagesBusy] = useState(false);
-  const [preview, setPreview] = useState(false);
   const [confirmLeave, setConfirmLeave] = useState(false);
 
   const saving = create.isPending || update.isPending;
@@ -384,59 +381,37 @@ function PostEditorForm({
         </form.Field>
 
         <form.Field name="body">
-          {(field) => (
-            <div>
-              <div className="mb-1.5 flex items-center justify-between gap-3">
-                <label htmlFor={field.name} className="block font-medium text-sm">
+          {(field) => {
+            const error = getFieldError(field.state.meta.errors);
+            return (
+              <div>
+                {/* `htmlFor` alone does not name a `contentEditable`, which is
+                    not a labelable element, so the editor is pointed back at
+                    this label by id. */}
+                <label
+                  id="post-body-label"
+                  htmlFor={field.name}
+                  className="mb-1.5 block font-medium text-sm"
+                >
                   <Trans>Post text</Trans>
                 </label>
-                {/* One pressed/unpressed control, not a segmented pair and never
-                    a side-by-side layout: there is no room for two panes at
-                    360px. Component state, so Back does not step through it. */}
-                <Toggle
-                  variant="outline"
-                  pressed={preview}
-                  onPressedChange={setPreview}
-                  aria-label={t`Preview`}
-                >
-                  <Trans>Preview</Trans>
-                </Toggle>
-              </div>
-
-              {preview ? (
-                <div className="min-h-24 border border-border bg-card p-3">
-                  {field.state.value.trim() === "" ? (
-                    <p className="text-muted-foreground text-sm">
-                      <Trans>Nothing to preview yet.</Trans>
-                    </p>
-                  ) : (
-                    // Parsed only while Preview is pressed.
-                    <MarkdownContent>{field.state.value}</MarkdownContent>
-                  )}
-                </div>
-              ) : (
-                <Textarea
+                <MarkdownEditor
                   id={field.name}
-                  rows={8}
+                  aria-labelledby="post-body-label"
+                  aria-invalid={field.state.meta.errors.length > 0}
                   maxLength={REPORT_BODY_MAX}
-                  className="bg-card font-mono text-[0.8125rem]"
                   value={field.state.value}
                   onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
+                  onChange={field.handleChange}
                 />
-              )}
-
-              {getFieldError(field.state.meta.errors) ? (
-                <p role="alert" className="mt-1 text-destructive text-xs">
-                  {getFieldError(field.state.meta.errors)}
-                </p>
-              ) : (
-                <p className="mt-1 text-muted-foreground text-xs">
-                  <Trans>Markdown: **bold**, # headings, - lists, [links](https://…)</Trans>
-                </p>
-              )}
-            </div>
-          )}
+                {error ? (
+                  <p role="alert" className="mt-1 text-destructive text-xs">
+                    {error}
+                  </p>
+                ) : null}
+              </div>
+            );
+          }}
         </form.Field>
 
         <Section title={t`Event details`}>

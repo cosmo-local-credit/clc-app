@@ -97,6 +97,33 @@ class ImageStub {
 
 vi.stubGlobal("Image", ImageStub);
 
+// Three more jsdom gaps, all of them on the rich text editor's path.
+//
+// Lexical narrows on `DragEvent` and `ClipboardEvent` before it will read a
+// paste, and after moving the DOM selection it measures the caret to decide
+// whether to scroll it into view. jsdom lays nothing out, so a `Range` has no
+// box and nothing scrolls; an empty rectangle is the honest answer.
+class DragEventStub extends Event {}
+class ClipboardEventStub extends Event {}
+
+vi.stubGlobal("DragEvent", DragEventStub);
+vi.stubGlobal("ClipboardEvent", ClipboardEventStub);
+
+Range.prototype.getBoundingClientRect = () =>
+  ({
+    bottom: 0,
+    height: 0,
+    left: 0,
+    right: 0,
+    toJSON: () => ({}),
+    top: 0,
+    width: 0,
+    x: 0,
+    y: 0,
+  }) satisfies DOMRect;
+
+Element.prototype.scrollIntoView = () => {};
+
 afterEach(() => {
   cleanup();
 });
