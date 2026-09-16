@@ -136,8 +136,20 @@ function HoldingRow({
         <TokenLogo token={token} size={36} />
         {/* The name alone, not the ticker. A steward reading their own pool
             knows it by what it is called; the symbol still appears below,
-            against the amount it denominates. */}
-        <p className="min-w-0 flex-1 truncate font-bold text-sm tracking-tight">{holding.name}</p>
+            against the rate and the amount it denominates. */}
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className="truncate font-bold text-sm tracking-tight">{holding.name}</p>
+          {/* The same line the vouchers tab prints, so one voucher reads the
+              same way on both. Present only where the quoter publishes a rate:
+              on an oracle- or decimal-quoted pool nothing was read, and parity
+              is what the contract falls back to rather than what it was told. */}
+          {holding.ratePpm === null ? null : (
+            <p className="truncate font-mono text-muted-foreground text-xs">
+              1 {holding.symbol} = {formatTokenAmount(holding.ratePpm, POOL_PRICE_INDEX_DECIMALS)}{" "}
+              {unit}
+            </p>
+          )}
+        </div>
         <div className="shrink-0 text-right">
           {/* Value in the pool's unit of account leads, with the voucher's own
               amount beneath it. The conversion is exact — the same arithmetic

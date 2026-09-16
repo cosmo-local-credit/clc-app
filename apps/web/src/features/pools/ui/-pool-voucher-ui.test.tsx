@@ -452,9 +452,12 @@ describe("pool voucher UI", () => {
     expect(within(panel).getByText("30 USDC")).toBeTruthy();
     expect(within(panel).getByText("30 TTX")).toBeTruthy();
 
-    // Rows are named, not tickered.
+    // Rows are named, not tickered, with the pool's rate for the voucher under
+    // the name — the same line the vouchers tab prints.
     expect(within(panel).getByText("USD Coin")).toBeTruthy();
     expect(within(panel).getByText("Trade Token")).toBeTruthy();
+    expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
+    expect(within(panel).getByText("1 TTX = 2 USD")).toBeTruthy();
 
     // USDC carries a recorded cap of 40 tokens — 80 USD — against 30 held, so
     // 20 USD of credit is still on offer. TTX has no cap on record, which is not
