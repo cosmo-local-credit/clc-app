@@ -9,11 +9,7 @@ import { Progress } from "#/components/ui/progress";
 import { TokenLogo } from "#/components/wallet";
 import { usePoolQuoterKind, usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
-import {
-  type PoolHolding,
-  buildPoolHoldings,
-  totalPoolHoldingValue,
-} from "#/features/pools/logic/pool-holdings";
+import { type PoolHolding, buildPoolHoldings } from "#/features/pools/logic/pool-holdings";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 
@@ -49,10 +45,7 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
     rates: isRelative ? rates.data : undefined,
     priced: isRelative,
   });
-  const total = totalPoolHoldingValue(holdings);
   const unit = pool.unitOfAccount ?? pool.symbol;
-
-  const nothingPriced = holdings.length > 0 && total.unpricedCount === holdings.length;
 
   const isPending = treasury.isPending && indexed.isPending && holdings.length === 0;
   const isError = treasury.isError && indexed.isError;
@@ -64,41 +57,6 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
       aria-labelledby="pool-tab-holdings"
       className="space-y-3"
     >
-      <section className="border border-border bg-card p-4">
-        <p className="text-muted-foreground text-xs">
-          <Trans>Total holdings</Trans>
-        </p>
-        {/* A pool nothing could price would otherwise announce a total of zero,
-            which reads as an empty pool rather than an unvalued one. */}
-        {nothingPriced ? (
-          <p className="mt-1 font-heading text-[1.375rem] font-bold leading-tight text-muted-foreground">
-            —
-          </p>
-        ) : (
-          <p className="mt-1 font-heading text-[1.375rem] font-bold leading-tight tabular-nums">
-            {formatTokenAmountFixed(total.raw, POOL_PRICE_INDEX_DECIMALS, 2)}{" "}
-            <span className="font-mono text-sm font-medium text-muted-foreground">{unit}</span>
-          </p>
-        )}
-        {total.unpricedCount === 0 ? null : (
-          // Stated rather than folded in: a total that silently omits what it
-          // could not price reads as the whole pool.
-          <p className="mt-1.5 text-muted-foreground text-[0.6875rem]">
-            {nothingPriced ? (
-              <Trans>
-                This pool's quoter doesn't publish rates, so its holdings can't be valued.
-              </Trans>
-            ) : total.unpricedCount === 1 ? (
-              <Trans>1 voucher could not be priced and is not in this total.</Trans>
-            ) : (
-              <Trans>
-                {total.unpricedCount} vouchers could not be priced and are not in this total.
-              </Trans>
-            )}
-          </p>
-        )}
-      </section>
-
       <section className="border border-border bg-card" aria-label={t`Pool balances`}>
         {isPending ? (
           <div className="p-3 text-muted-foreground text-sm">
@@ -176,23 +134,34 @@ function HoldingRow({
     >
       <div className="flex items-center gap-3">
         <TokenLogo token={token} size={36} />
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <p className="truncate font-bold text-sm tracking-tight">{holding.symbol}</p>
-          <p className="truncate text-muted-foreground text-xs">{holding.name}</p>
-        </div>
+        {/* The name alone, not the ticker. A steward reading their own pool
+            knows it by what it is called; the symbol still appears below,
+            against the amount it denominates. */}
+        <p className="min-w-0 flex-1 truncate font-bold text-sm tracking-tight">{holding.name}</p>
         <div className="shrink-0 text-right">
-          <p className="font-mono text-sm font-semibold tabular-nums">
-            {decimals === null ? "—" : formatTokenAmount(holding.balanceRaw, decimals, 2)}
-          </p>
-          {holding.unitValueRaw === null ? null : (
-            <p className="font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
-              ≈ {formatTokenAmountFixed(holding.unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)} {unit}
+          {/* Value in the pool's unit of account leads, with the voucher's own
+              amount beneath it. The conversion is exact — the same arithmetic
+              the limiter applies — so it carries no approximation sign. */}
+          {holding.unitValueRaw === null ? (
+            <p className="font-mono text-sm font-semibold tabular-nums">
+              {decimals === null ? "—" : formatTokenAmount(holding.balanceRaw, decimals, 2)}{" "}
+              {holding.symbol}
             </p>
+          ) : (
+            <>
+              <p className="font-mono text-sm font-semibold tabular-nums">
+                {formatTokenAmountFixed(holding.unitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)} {unit}
+              </p>
+              <p className="font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
+                {decimals === null ? "—" : formatTokenAmount(holding.balanceRaw, decimals, 2)}{" "}
+                {holding.symbol}
+              </p>
+            </>
           )}
         </div>
       </div>
 
-      <CapRow holding={holding} />
+      <CapRow holding={holding} unit={unit} />
     </Link>
   );
 }
@@ -206,10 +175,15 @@ function HoldingRow({
  * same and mean different things; and the two "no cap" cases are separated
  * because one is a pool that takes anything and the other is a pool nobody has
  * told us about.
+ *
+ * The bar fills with what is *available*, not with what has been used. A
+ * steward setting a 100 KES limit on an empty voucher is offering 100 KES of
+ * credit, and a bar that reads empty at the moment the whole limit is on offer
+ * says the opposite of the figure printed under it.
  */
-function CapRow({ holding }: { holding: PoolHolding }) {
+function CapRow({ holding, unit }: { holding: PoolHolding; unit: string }) {
   const { t } = useLingui();
-  const { cap, decimals, balanceRaw, fillPercent } = holding;
+  const { cap, decimals, fillPercent, headroomRaw } = holding;
 
   if (cap.kind === "blocked") {
     return (
@@ -219,7 +193,7 @@ function CapRow({ holding }: { holding: PoolHolding }) {
     );
   }
 
-  if (cap.kind !== "capped" || decimals === null || fillPercent === null) {
+  if (cap.kind !== "capped" || decimals === null || fillPercent === null || headroomRaw === null) {
     return (
       <p className="mt-2 text-muted-foreground text-[0.6875rem]">
         {cap.kind === "uncapped" ? <Trans>No deposit limit</Trans> : <Trans>Limit not set</Trans>}
@@ -227,31 +201,32 @@ function CapRow({ holding }: { holding: PoolHolding }) {
     );
   }
 
-  const headroom = remaining(balanceRaw, cap.raw);
+  // Stated in the pool's unit of account where anything prices the voucher,
+  // because that is the unit the limit was decided in. An unpriced pool falls
+  // back to the voucher's own units rather than printing a currency figure no
+  // rate supports.
+  const { headroomUnitValueRaw, capUnitValueRaw } = holding;
+  const priced = headroomUnitValueRaw !== null && capUnitValueRaw !== null;
+  const available = priced
+    ? formatTokenAmountFixed(headroomUnitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)
+    : formatTokenAmount(headroomRaw, decimals, 2);
+  const limit = priced
+    ? formatTokenAmountFixed(capUnitValueRaw, POOL_PRICE_INDEX_DECIMALS, 2)
+    : formatTokenAmount(cap.raw, decimals, 2);
+  const denomination = priced ? unit : holding.symbol;
 
   return (
     <div className="mt-2">
       <Progress
-        value={fillPercent}
-        aria-label={t`${holding.symbol} deposit limit used`}
+        value={100 - fillPercent}
+        aria-label={t`${holding.name} available credit`}
         className="h-1 w-full overflow-hidden bg-muted"
       />
       <p className="mt-1 font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
         <Trans>
-          {formatTokenAmount(headroom, decimals, 2)} of {formatTokenAmount(cap.raw, decimals, 2)}{" "}
-          {holding.symbol} left
+          {available} of {limit} {denomination} available credit
         </Trans>
       </p>
     </div>
   );
-}
-
-/** Deposit headroom in raw units, floored at zero — a pool over its cap has none. */
-function remaining(balanceRaw: string, capRaw: string): string {
-  try {
-    const left = BigInt(capRaw) - BigInt(balanceRaw);
-    return left > 0n ? left.toString() : "0";
-  } catch {
-    return "0";
-  }
 }

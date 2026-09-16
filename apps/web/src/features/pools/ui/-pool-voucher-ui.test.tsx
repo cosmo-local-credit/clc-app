@@ -445,14 +445,37 @@ describe("pool voucher UI", () => {
     const panel = await screen.findByRole("tabpanel");
     expect(panel.id).toBe("pool-panel-holdings");
 
-    // 30 of each voucher on chain, each priced at 2 USD: 120 USD in total.
-    await waitFor(() => expect(within(panel).getByText("120.00")).toBeTruthy());
-    expect(within(panel).getAllByText("≈ 60.00 USD")).toHaveLength(2);
+    // 30 of each voucher on chain, each priced at 2 USD. The pool's own unit
+    // leads and the voucher's amount sits under it, so a steward reads the
+    // figure they set the pool up in first.
+    await waitFor(() => expect(within(panel).getAllByText("60.00 USD")).toHaveLength(2));
+    expect(within(panel).getByText("30 USDC")).toBeTruthy();
+    expect(within(panel).getByText("30 TTX")).toBeTruthy();
 
-    // USDC carries a recorded cap of 40, so 10 is still depositable. TTX has no
-    // cap on record, which is not the same as having none.
-    expect(within(panel).getByText("10 of 40 USDC left")).toBeTruthy();
+    // Rows are named, not tickered.
+    expect(within(panel).getByText("USD Coin")).toBeTruthy();
+    expect(within(panel).getByText("Trade Token")).toBeTruthy();
+
+    // USDC carries a recorded cap of 40 tokens — 80 USD — against 30 held, so
+    // 20 USD of credit is still on offer. TTX has no cap on record, which is not
+    // the same as having none.
+    expect(within(panel).getByText("20.00 of 80.00 USD available credit")).toBeTruthy();
     expect(within(panel).getByText("Limit not set")).toBeTruthy();
+  });
+
+  it("fills the deposit bar with the credit still on offer, not the credit used", async () => {
+    // A steward who set a limit on an empty voucher is offering the whole of it.
+    // A bar reading empty at that moment says the opposite of the figure printed
+    // under it, which is what it used to do.
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    const bar = await within(panel).findByRole("progressbar", {
+      name: /USD Coin available credit/i,
+    });
+    // 30 of 40 held, so a quarter of the cap is left.
+    expect(bar.getAttribute("aria-valuenow")).toBe("25");
   });
 
   it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
@@ -499,8 +522,30 @@ describe("pool voucher UI", () => {
     const rows = await within(panel).findAllByRole("button");
     expect(rows).toHaveLength(1);
     expect(rows[0]?.textContent).toContain("Swapped USDC for TTX");
-    expect(rows[0]?.textContent).toContain("5 USDC");
-    expect(rows[0]?.textContent).toContain("2.5 TTX");
+    // The in/out marks the receipts use, rather than a bare + and −: the pool
+    // gained one voucher and gave up a different one, and nothing about the
+    // pair sums.
+    expect(rows[0]?.textContent).toContain("+5 USDC");
+    expect(rows[0]?.textContent).toContain("−2.5 TTX");
+
+    // Opening the row spells the swap out with both legs and the addresses on
+    // each side, which the single-transfer wallet sheet could not do.
+    fireEvent.click(rows[0] as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Pool received").parentElement?.textContent).toContain(
+      "+5 USDC",
+    );
+    expect(within(dialog).getByText("Pool paid out").parentElement?.textContent).toContain(
+      "−2.5 TTX",
+    );
+    expect(within(dialog).getByText("Trade Token")).toBeTruthy();
+    expect(within(dialog).getByText("USD Coin")).toBeTruthy();
+    expect(within(dialog).getByText("Confirmed")).toBeTruthy();
+    expect(
+      within(dialog)
+        .getByRole("link", { name: /view on block explorer/i })
+        .getAttribute("href"),
+    ).toContain("0xswap");
   });
 
   it("uses pool vouchers, wallet logos, and selected voucher balances in both swap fields", async () => {

@@ -31,6 +31,20 @@ export type PoolHolding = {
    */
   fillPercent: number | null;
   /**
+   * Deposit headroom in the voucher's own base units, floored at zero — a pool
+   * over its cap has none. Null without a recorded cap to subtract from.
+   */
+  headroomRaw: string | null;
+  /**
+   * The cap and the headroom restated in the pool's unit of account, scaled to
+   * `POOL_PRICE_INDEX_DECIMALS`, so the credit a steward reads is in the unit
+   * they set the pool up in rather than in each voucher's own units. Null
+   * wherever nothing prices the voucher, which is the same condition that
+   * leaves `unitValueRaw` null.
+   */
+  capUnitValueRaw: string | null;
+  headroomUnitValueRaw: string | null;
+  /**
    * Raw fees accrued in this voucher, or null when the treasury was not read.
    * Not part of `balanceRaw`'s meaning — under decoupled fees the pool holds
    * both and only one of them is liquidity.
@@ -171,6 +185,9 @@ function holding(input: {
     ratePpm,
     cap: input.cap,
     fillPercent: null,
+    headroomRaw: null,
+    capUnitValueRaw: null,
+    headroomUnitValueRaw: null,
     feesRaw: input.feesRaw,
     priced: input.priced,
     uncatalogued: input.uncatalogued,
@@ -178,16 +195,42 @@ function holding(input: {
   return { ...base, ...valued(base, balanceRaw) };
 }
 
-/** The two figures that move with the balance, recomputed for a new one. */
+/** Everything that moves with the balance, recomputed for a new one. */
 function valued(
   holding: PoolHolding,
   balanceRaw: string,
-): Pick<PoolHolding, "balanceRaw" | "unitValueRaw" | "fillPercent"> {
+): Pick<
+  PoolHolding,
+  | "balanceRaw"
+  | "unitValueRaw"
+  | "fillPercent"
+  | "headroomRaw"
+  | "capUnitValueRaw"
+  | "headroomUnitValueRaw"
+> {
+  const capRaw = holding.cap.kind === "capped" ? holding.cap.raw : null;
+  const headroomRaw = capRaw === null ? null : remaining(balanceRaw, capRaw);
+  const priceIn = (raw: string | null) =>
+    raw === null || !holding.priced ? null : unitValue(raw, holding.ratePpm, holding.decimals);
+
   return {
     balanceRaw,
     unitValueRaw: holding.priced ? unitValue(balanceRaw, holding.ratePpm, holding.decimals) : null,
     fillPercent: capFill(balanceRaw, holding.cap),
+    headroomRaw,
+    capUnitValueRaw: priceIn(capRaw),
+    headroomUnitValueRaw: priceIn(headroomRaw),
   };
+}
+
+/** Deposit headroom in raw units, floored at zero — a pool over its cap has none. */
+function remaining(balanceRaw: string, capRaw: string): string {
+  try {
+    const left = BigInt(capRaw) - BigInt(balanceRaw);
+    return left > 0n ? left.toString() : "0";
+  } catch {
+    return "0";
+  }
 }
 
 /**
@@ -247,28 +290,4 @@ function compareByValue(a: PoolHolding, b: PoolHolding): number {
     return a.unitValueRaw === null ? 1 : -1;
   }
   return a.symbol.localeCompare(b.symbol);
-}
-
-/**
- * What the pool is worth in its unit of account, and how much of itself that
- * total can account for.
- *
- * `unpricedCount` is reported alongside rather than folded in: a total that
- * silently omits the vouchers nothing could price reads as the whole pool, and
- * a reader deciding whether to deposit needs to know it is not.
- */
-export function totalPoolHoldingValue(holdings: PoolHolding[]): {
-  raw: string;
-  unpricedCount: number;
-} {
-  let total = 0n;
-  let unpricedCount = 0;
-  for (const holding of holdings) {
-    if (holding.unitValueRaw === null) {
-      unpricedCount += 1;
-      continue;
-    }
-    total += BigInt(holding.unitValueRaw);
-  }
-  return { raw: total.toString(), unpricedCount };
 }

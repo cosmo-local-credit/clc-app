@@ -11,7 +11,7 @@ import {
 } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, type TransferDetails, TransferDetailsSheet } from "#/components/wallet";
+import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
 import {
   type PoolActivityEntry,
   type PoolActivityLeg,
@@ -19,6 +19,7 @@ import {
 } from "#/features/pools/logic/pool-activity";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import { PoolActivityDetailsSheet } from "./pool-activity-details-sheet";
 
 /**
  * Everything that has moved through the pool.
@@ -37,7 +38,7 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
     isAddress(pool.address) ? getAddress(pool.address) : undefined,
     { poll: true },
   );
-  const [selected, setSelected] = useState<TransferDetails | null>(null);
+  const [selected, setSelected] = useState<PoolActivityEntry | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const transfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
@@ -95,7 +96,7 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
             key={entry.key}
             entry={entry}
             isLast={index === list.length - 1}
-            onOpen={() => setSelected(entry.detail)}
+            onOpen={() => setSelected(entry)}
           />
         ))}
         <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
@@ -106,8 +107,8 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
         ) : null}
       </section>
 
-      <TransferDetailsSheet
-        transfer={selected}
+      <PoolActivityDetailsSheet
+        entry={selected}
         open={selected !== null}
         onOpenChange={(open) => {
           if (!open) setSelected(null);
@@ -211,39 +212,44 @@ function EntrySubtitle({ entry }: { entry: PoolActivityEntry }) {
 /**
  * A swap shows both sides, because which voucher left the pool is half of what
  * happened; every other row has one figure and shows it alone.
+ *
+ * Direction is carried by the same in/out marks the send and swap receipts use,
+ * rather than by a bare + and −. Those two read as arithmetic on one balance,
+ * which is the wrong frame for a swap: the pool gained one voucher and gave up
+ * a different one, and nothing about the pair sums.
  */
 function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
   if (entry.kind !== "swap") {
     return (
-      <span className="font-mono text-xs font-semibold tabular-nums">
-        <LegAmount leg={entry.leg} />
-      </span>
+      <SignedAmount
+        direction={entry.kind === "mint" || entry.direction === "IN" ? "in" : "out"}
+        amount={legAmount(entry.leg)}
+      />
     );
   }
 
   return (
     <>
-      <span className="block font-mono text-primary text-xs font-semibold tabular-nums">
-        + <LegAmount leg={entry.received} />
-      </span>
-      <span className="block font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
-        − <LegAmount leg={entry.sent} />
-      </span>
+      {/* `flex justify-end` rather than `block`: SignedAmount is an inline-flex
+          row of icon and figure, so stacking the two sides has to keep the flex
+          box and change only how it fills the line. */}
+      <SignedAmount
+        direction="in"
+        amount={legAmount(entry.received)}
+        className="flex justify-end"
+      />
+      <SignedAmount direction="out" amount={legAmount(entry.sent)} className="flex justify-end" />
       {entry.protocolFee ? (
         // Shown apart from the trader's side: it left the pool in the same
         // transaction but went to the protocol, not to whoever swapped.
         <span className="block font-mono text-muted-foreground text-[0.625rem] tabular-nums">
-          <Trans>fee</Trans> <LegAmount leg={entry.protocolFee} />
+          <Trans>fee</Trans> {legAmount(entry.protocolFee)}
         </span>
       ) : null}
     </>
   );
 }
 
-function LegAmount({ leg }: { leg: PoolActivityLeg }) {
-  return (
-    <>
-      {formatTokenAmount(leg.amount, leg.tokenDecimals)} {leg.tokenSymbol}
-    </>
-  );
+function legAmount(leg: PoolActivityLeg): string {
+  return `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
 }
