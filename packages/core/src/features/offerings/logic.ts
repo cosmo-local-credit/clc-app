@@ -1,13 +1,12 @@
 import { z } from "zod";
+import { CUSTOM_UNIT_MAX_LENGTH } from "../vocabulary/logic";
 
 /**
- * The closed set of units an offering write may choose.
+ * The built-in offering units shipped with every deployment.
  *
- * This is one of three copies of the same set: the `offering_unit` lookup table
- * that migration 023 seeds, `apiresp.OfferingUnits` in clc-core's handler, and
- * this one. The duplication is deliberate at each hop — a value this list does
- * not contain is rejected before it leaves the device, and neither the client nor
- * the handler can read the other's source. When one moves, all three move.
+ * Custom units are loaded from clc-core at runtime. This list remains the label
+ * registry for built-ins so apps can translate them without treating arbitrary
+ * user text as a message id.
  *
  * Lower-case because the lookup is: the label an operator or a member reads is a
  * separate concern, owned by whichever app is rendering it. `apps/admin` keeps an
@@ -112,9 +111,11 @@ const offeringImageUrlSchema = z
   })
   .nullable();
 
-const offeringUnitSchema = z.enum(OFFERING_UNITS, {
-  error: "Choose a unit",
-});
+const offeringUnitSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Choose a unit" })
+  .max(CUSTOM_UNIT_MAX_LENGTH, { message: "Unit must be 32 characters or fewer" });
 
 const offeringCommodityTypeSchema = z.enum(OFFERING_COMMODITY_TYPES, {
   error: "Choose whether this is a good or a service",
@@ -151,7 +152,7 @@ export const emptyOfferingWrite: {
   name: string;
   commodityType: OfferingCommodityType | "";
   description: string;
-  unit: OfferingUnit | "";
+  unit: string;
   pricePerUnit: string;
   imageUrl: string | null;
 } = {

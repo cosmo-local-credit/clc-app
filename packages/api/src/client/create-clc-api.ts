@@ -21,6 +21,7 @@ import { createPoolDeployClient } from "../features/pools/deploy-client";
 import { createReportsClient } from "../features/reports/client";
 import { createSymbolsClient } from "../features/symbols/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
+import { createVocabularyClient } from "../features/vocabulary/client";
 import { type CreateHttpClientOptions, createHttpClient } from "./http-client";
 
 export type CreateClcApiOptions = CreateHttpClientOptions & {
@@ -54,5 +55,6 @@ export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) 
     reports: createReportsClient(http),
     symbols: createSymbolsClient(http),
     voucherDeploy: createVoucherDeployClient(http),
+    vocabulary: createVocabularyClient(http),
   };
 }

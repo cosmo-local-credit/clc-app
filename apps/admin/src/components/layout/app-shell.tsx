@@ -5,6 +5,7 @@ import {
   HiOutlineHome,
   HiOutlineNewspaper,
   HiOutlineSwitchHorizontal,
+  HiOutlineTag,
   HiOutlineTicket,
   HiOutlineUsers,
 } from "react-icons/hi";
@@ -34,6 +35,7 @@ type NavPath =
   | "/vouchers"
   | "/users"
   | "/posts"
+  | "/vocabulary"
   | "/transactions"
   | "/transactions/vouchers"
   | "/transactions/pools"
@@ -60,6 +62,7 @@ const navItems: Array<{
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
+  { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },
   {
     to: "/transactions",
     label: "Transactions",

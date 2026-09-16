@@ -2,9 +2,9 @@ import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client
 import {
   OFFERING_UNITS,
   type OfferingCommodityType,
-  type OfferingUnit,
   offeringWriteSchema,
 } from "@clc/core/features/offerings/logic";
+import { toVocabularyTitleCase, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -25,6 +25,7 @@ import {
 } from "#/components/ui/sheet";
 import { Textarea } from "#/components/ui/textarea";
 import { isStorageConfigured } from "#/lib/api/storage";
+import { useOfferingUnits } from "#/hooks/use-vocabulary";
 
 import {
   useCreateVoucherOffering,
@@ -43,7 +44,7 @@ export type OfferingEditor = { kind: "create" } | { kind: "edit"; offering: Offe
  * being exhaustive means a unit added to `OFFERING_UNITS` is a type error here
  * rather than an untranslated string in production.
  */
-function useUnitLabel(): (unit: OfferingUnit) => string {
+function useUnitLabel(): (unit: string) => string {
   const { t } = useLingui();
 
   return (unit) => {
@@ -78,6 +79,8 @@ function useUnitLabel(): (unit: OfferingUnit) => string {
         return t`Session`;
       case "metre":
         return t`Metre`;
+      default:
+        return unit;
     }
   };
 }
@@ -154,7 +157,10 @@ function OfferingForm({
 }) {
   const { t } = useLingui();
   const unitLabel = useUnitLabel();
-  const unitOptions = OFFERING_UNITS.map((unit) => ({ value: unit, label: unitLabel(unit) }));
+  const unitsQuery = useOfferingUnits();
+  const unitValues = [...(unitsQuery.data ?? OFFERING_UNITS)];
+  if (offering?.unit && !unitValues.includes(offering.unit)) unitValues.push(offering.unit);
+  const unitOptions = unitValues.map((unit) => ({ value: unit, label: unitLabel(unit) }));
   const create = useCreateVoucherOffering(voucherAddress);
   const update = useUpdateVoucherOffering(voucherAddress);
   const hasSeededDefaultImage = useRef(false);
@@ -174,7 +180,7 @@ function OfferingForm({
       name: offering?.name ?? "",
       commodityType: (offering?.commodityType ?? "") as OfferingCommodityType | "",
       description: offering?.description ?? "",
-      unit: (offering?.unit ?? "") as OfferingUnit | "",
+      unit: offering?.unit ?? "",
       pricePerUnit: offering?.pricePerUnit ?? "",
       // A new offering starts with the issuer's profile photo, just like a
       // voucher deployment. Editing preserves the offering's own saved photo
@@ -334,10 +340,13 @@ function OfferingForm({
                       className="w-[8.5rem] shrink-0"
                       options={unitOptions}
                       value={unitField.state.value}
-                      onValueChange={(unit) => unitField.handleChange(unit as OfferingUnit)}
+                      onValueChange={unitField.handleChange}
                       ariaLabel={t`Unit`}
                       placeholder={t`Unit`}
                       emptyMessage={t`No units found.`}
+                      createLabel={(unit) => t`Use “${unit}”`}
+                      normalizeCustomValue={toVocabularyTitleCase}
+                      validateCustomValue={validateCustomUnit}
                     />
                   </div>
                 </Field>

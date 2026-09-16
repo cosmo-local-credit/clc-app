@@ -3,6 +3,7 @@ import { voucherKeys } from "@clc/api/features/market/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { marketClient } from "#/lib/api/market";
+import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 /**
  * The owner's write to their voucher's catalog record.
@@ -28,10 +29,13 @@ export function useUpdateVoucherProfile(address: string) {
     },
     onSuccess: (voucher: MarketVoucherDetail) => {
       queryClient.setQueryData(voucherKeys.detail(address), voucher);
-      return queryClient.invalidateQueries({
-        queryKey: voucherKeys.all,
-        predicate: (query) => query.queryKey[2] !== "detail",
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: voucherKeys.all,
+          predicate: (query) => query.queryKey[2] !== "detail",
+        }),
+        queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey }),
+      ]);
     },
   });
 }

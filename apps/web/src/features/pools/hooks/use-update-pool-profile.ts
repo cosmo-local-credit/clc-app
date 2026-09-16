@@ -3,6 +3,7 @@ import { poolKeys } from "@clc/api/features/pools/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { poolsClient } from "#/lib/api/pools";
+import { tokenTagsQueryKey } from "#/hooks/use-deployment";
 
 /**
  * The owner's write to their pool's catalog record.
@@ -22,10 +23,13 @@ export function useUpdatePoolProfile(address: string) {
     mutationFn: (profile: PoolProfileUpdate) => poolsClient.updatePoolProfile(address, profile),
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
-      return queryClient.invalidateQueries({
-        queryKey: poolKeys.all,
-        predicate: (query) => query.queryKey[2] !== "detail",
-      });
+      return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: poolKeys.all,
+          predicate: (query) => query.queryKey[2] !== "detail",
+        }),
+        queryClient.invalidateQueries({ queryKey: tokenTagsQueryKey }),
+      ]);
     },
   });
 }

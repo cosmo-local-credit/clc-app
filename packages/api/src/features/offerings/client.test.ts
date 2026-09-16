@@ -179,9 +179,9 @@ describe("the app-facing model", () => {
     expect(row).not.toHaveProperty("price");
   });
 
-  // A canonical unit is both displayable and resubmittable, so the two fields
-  // agree. Imported free text is only the former.
-  it("splits a canonical unit from imported free text", async () => {
+  // Every nonblank stored unit is now displayable and resubmittable; the backend
+  // resolves built-ins case-insensitively and creates custom values on write.
+  it("keeps built-in and custom unit text editable", async () => {
     fetchMock.mockResolvedValue(
       response({
         offerings: [
@@ -201,12 +201,9 @@ describe("the app-facing model", () => {
 
     expect(rows.map((row) => [row.unit, row.unitLabel])).toEqual([
       ["kg", "kg"],
-      // Still shown, cannot be saved back.
-      [null, "50kg sack"],
+      ["50kg sack", "50kg sack"],
       ["litre", "litre"],
-      // The lookup holds lower-case values, so "KG" is not one of them — but it
-      // is what the importer wrote, so it is still what a reader sees.
-      [null, "KG"],
+      ["KG", "KG"],
       [null, null],
       [null, null],
     ]);
