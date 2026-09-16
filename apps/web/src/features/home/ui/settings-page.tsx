@@ -2,6 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { RiCheckboxCircleLine, RiLogoutBoxRLine, RiShieldFlashLine } from "react-icons/ri";
 
 import { LanguageSelector } from "#/components/language-selector";
+import { InstallAppLink } from "#/components/install-app-link";
 import { ThemeSelector } from "#/components/theme-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
@@ -34,6 +35,8 @@ export function SettingsPage({
       </div>
 
       <AccountSettingsSection />
+
+      <InstallAppLink />
 
       <section aria-labelledby="preferences-title" className="space-y-3">
         <h2 id="preferences-title">

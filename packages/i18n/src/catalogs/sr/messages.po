@@ -222,11 +222,11 @@ msgstr "1 ваучер"
 msgid "A good"
 msgstr "Производ"
 
-#: apps/web/src/routes/__root.tsx:234
+#: apps/web/src/routes/__root.tsx:237
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Отворена је веза папирног новчаника. Пријавите се овом адресом?"
 
-#: apps/web/src/routes/__root.tsx:232
+#: apps/web/src/routes/__root.tsx:235
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Скениран је QR код папирног новчаника. Увести ову адресу?"
 
@@ -309,7 +309,7 @@ msgstr "Активирање на ланцу..."
 msgid "Activating smart wallet..."
 msgstr "Активирање паметног новчаника..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Active"
 msgstr "Активно"
 
@@ -341,6 +341,11 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "Додајте CLC на почетни екран iPhone уређаја, отворите инсталирану "
 "апликацију, а затим омогућите обавјештења."
+
+#: apps/web/src/components/install-app-button.tsx:63
+#: apps/web/src/features/install/ui/install-page.tsx:98
+msgid "Add CLC to your phone"
+msgstr "Додајте CLC на телефон"
 
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:116
 #: apps/web/src/features/wallet/ui/voucher-offerings-panel.tsx:90
@@ -444,6 +449,10 @@ msgstr "Било која изабрана"
 #~ msgid "Any tag"
 #~ msgstr "Било која ознака"
 
+#: apps/web/src/features/install/ui/install-page.tsx:76
+msgid "App installation"
+msgstr "Инсталација апликације"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:566
 msgid "Apply filters"
 msgstr "Примени филтере"
@@ -458,6 +467,7 @@ msgstr "Аутор"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
+#: apps/web/src/features/install/ui/install-page.tsx:61
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:74
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:336
@@ -523,7 +533,7 @@ msgstr "Приступ камери је одбијен."
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:354
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
-#: apps/web/src/routes/__root.tsx:248
+#: apps/web/src/routes/__root.tsx:251
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -581,7 +591,7 @@ msgstr "Провера количине…"
 #~ msgid "Checking voucher supply..."
 #~ msgstr "Провера количине ваучера..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Checking…"
 msgstr "Провјера…"
 
@@ -603,6 +613,10 @@ msgstr "Изаберите фотографију профила"
 #~ msgid "Choose a wallet to continue."
 #~ msgstr "Изаберите новчаник да бисте наставили."
 
+#: apps/web/src/features/install/ui/install-page.tsx:134
+#~ msgid "Choose Add to Home Screen."
+#~ msgstr "Изаберите „Додај на почетни екран“ (Add to Home Screen)."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:83
 msgid "Choose an expiration date"
@@ -612,7 +626,7 @@ msgstr "Изаберите датум истека"
 msgid "Choose another"
 msgstr "Изаберите другу"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:52
+#: apps/web/src/features/home/ui/settings-page.tsx:55
 msgid "Choose between light and dark mode."
 msgstr "Изаберите свијетли или тамни режим."
 
@@ -626,7 +640,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Изаберите стопе које сами постављате или једнаку вредност када јединица "
 "нема извор цене"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:45
+#: apps/web/src/features/home/ui/settings-page.tsx:48
 msgid "Choose the app display language."
 msgstr "Изаберите језик приказа апликације."
 
@@ -637,6 +651,14 @@ msgstr "Изаберите језик приказа апликације."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:432
 msgid "Circulates forever"
 msgstr "Нема датум истека"
+
+#: apps/web/src/features/install/ui/install-page.tsx:79
+msgid "CLC is installed. Find it on your home screen."
+msgstr "CLC је инсталиран. Пронађите га на почетном екрану."
+
+#: apps/web/src/features/install/ui/install-page.tsx:69
+msgid "CLC on your home screen"
+msgstr "CLC на вашем почетном екрану"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:145
 msgid "Clear"
@@ -723,6 +745,10 @@ msgstr "Потврди и објави"
 msgid "Confirm and send"
 msgstr "Потврди и пошаљи"
 
+#: apps/web/src/features/install/ui/install-page.tsx:149
+#~ msgid "Confirm Install or Add when asked."
+#~ msgstr "Када се затражи, потврдите „Инсталирај“ или „Додај“."
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
 msgid "Confirm password"
 msgstr "Потврдите лозинку"
@@ -760,7 +786,7 @@ msgstr "Повежите новчаник да бисте ковали."
 msgid "Connect your wallet to use MPESA."
 msgstr "Повежите новчаник да бисте користили MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:73
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Connected address"
 msgstr "Повезана адреса"
 
@@ -773,15 +799,15 @@ msgstr "Povezivanje novčanika..."
 msgid "Connecting..."
 msgstr "Повезивање..."
 
-#: apps/web/src/routes/__root.tsx:240
+#: apps/web/src/routes/__root.tsx:243
 msgid "Connecting…"
 msgstr "Повезивање…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:124
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:260
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:305
-#: apps/web/src/routes/__root.tsx:158
-#: apps/web/src/routes/__root.tsx:184
+#: apps/web/src/routes/__root.tsx:161
+#: apps/web/src/routes/__root.tsx:187
 msgid "Connection failed."
 msgstr "Повезивање није успјело."
 
@@ -810,6 +836,14 @@ msgstr "Веб-сајт за контакт"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:410
 msgid "Continue"
 msgstr "Настави"
+
+#: apps/web/src/features/install/ui/install-page.tsx:111
+msgid "Continue in browser"
+msgstr "Настави у прегледачу"
+
+#: apps/web/src/features/install/ui/install-page.tsx:111
+msgid "Continue to CLC"
+msgstr "Настави на CLC"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:436
 msgid "Continue to wallet"
@@ -872,7 +906,7 @@ msgstr "Копирај хеш трансакције"
 msgid "Copy wallet address"
 msgstr "Копирај адресу новчаника"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:32
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:33
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1005,6 +1039,11 @@ msgstr "Ваучере није могуће учитати."
 msgid "Couldn't mint the first supply."
 msgstr "Није било могуће исковати прву количину."
 
+#: apps/web/src/components/install-app-button.tsx:58
+msgid "Couldn't open installation. Follow the steps below or try again later."
+msgstr "Није могуће покренути инсталацију. Пратите кораке испод или покушајте "
+"касније."
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:137
 msgid "Couldn't publish your pool."
 msgstr "Није могуће објавити ваш пул."
@@ -1078,7 +1117,7 @@ msgid "Create"
 msgstr "Направи"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:42
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:43
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:92
 msgid "Create account"
 msgstr "Направите налог"
@@ -1150,7 +1189,7 @@ msgstr "Смањи количину"
 msgid "Default"
 msgstr "Подразумевано"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:93
 msgid "Delegated to Calibur"
 msgstr "Делегирано Calibur-у"
 
@@ -1493,7 +1532,7 @@ msgid "How should vouchers match?"
 msgstr "Како ваучери треба да се подударају?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 msgid "I already have an account"
 msgstr "Već imam nalog"
 
@@ -1510,17 +1549,22 @@ msgstr "Сачувао/ла сам овај кључ. Ако се изгуби, 
 msgid "Identifying location…"
 msgstr "Одређивање локације…"
 
+#: apps/web/src/features/install/ui/install-page.tsx:137
+#~ msgid "If shown, keep Open as Web App switched on, then tap Add."
+#~ msgstr "Ако је приказана опција „Отвори као веб апликацију“ (Open as Web App), "
+#~ "оставите је укљученом, па додирните „Додај“."
+
 #: apps/web/src/features/home/ui/posts-page.tsx:23
 #~ msgid "Impact reports from pools, service providers, and stewards will appear "
 #~ "here."
 #~ msgstr "Извештаји о утицају тржница, пружалаца услуга и управника појавиће се "
 #~ "овде."
 
-#: apps/web/src/routes/__root.tsx:228
+#: apps/web/src/routes/__root.tsx:231
 msgid "Import paper wallet?"
 msgstr "Увести папирни новчаник?"
 
-#: apps/web/src/routes/__root.tsx:240
+#: apps/web/src/routes/__root.tsx:243
 msgid "Import wallet"
 msgstr "Увези новчаник"
 
@@ -1529,7 +1573,7 @@ msgstr "Увези новчаник"
 msgid "In network"
 msgstr "На мрежи"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Inactive"
 msgstr "Неактивно"
 
@@ -1541,9 +1585,29 @@ msgstr "Повећај количину"
 msgid "Info"
 msgstr "Информације"
 
+#: apps/web/src/components/install-app-button.tsx:53
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:29
+msgid "Install CLC"
+msgstr "Инсталирај CLC"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:201
 msgid "Install the app first"
 msgstr "Прво инсталирајте апликацију"
+
+#: apps/web/src/features/install/ui/install-page.tsx:90
+msgid "Installation cancelled. You can keep using CLC in your browser or "
+"install it later."
+msgstr "Инсталација је отказана. Можете наставити да користите CLC у прегледачу "
+"или га инсталирати касније."
+
+#: apps/web/src/features/install/ui/install-page.tsx:127
+msgid "Installation link"
+msgstr "Линк за инсталацију"
+
+#: apps/web/src/features/install/ui/install-page.tsx:83
+msgid "Installation requested. Follow your browser's instructions to finish."
+msgstr "Инсталација је затражена. Пратите упутства прегледача да је завршите."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:13
@@ -1619,6 +1683,10 @@ msgstr "Poveži {providerLabel}"
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:56
 msgid "Link {providerLabel}?"
 msgstr "Povezati {providerLabel}?"
+
+#: apps/web/src/features/install/ui/install-page.tsx:142
+msgid "Link copied. Paste it into a message."
+msgstr "Линк је копиран. Налепите га у поруку."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:594
 msgid "Link to the terms that apply to this pool"
@@ -1766,7 +1834,7 @@ msgstr "Лого"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Управљајте ваучерима, тржницама и локалним плаћањима."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:32
+#: apps/web/src/features/home/ui/settings-page.tsx:33
 msgid "Manage your wallet session and app preferences."
 msgstr "Управљајте сесијом новчаника и подешавањима апликације."
 
@@ -1967,7 +2035,7 @@ msgstr "Не"
 msgid "No activity yet."
 msgstr "Још нема активности."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:76
+#: apps/web/src/features/home/ui/settings-page.tsx:79
 msgid "No address available"
 msgstr "Адреса није доступна"
 
@@ -2187,6 +2255,32 @@ msgstr "Отвори у мапама"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Отворите Тржиште да прегледате појединачне понуде сваког ваучера."
 
+#: apps/web/src/features/install/ui/install-page.tsx:122
+#~ msgid "Open this link in your phone's browser first. Use Chrome on Android or "
+#~ "Safari on iPhone."
+#~ msgstr "Прво отворите овај линк у прегледачу телефона. Користите Chrome на "
+#~ "Android-у или Safari на iPhone-у."
+
+#: apps/web/src/features/install/ui/install-page.tsx:154
+#~ msgid "Open this link on your phone in Chrome on Android or Safari on iPhone. "
+#~ "You can also look for Install app in your browser's menu."
+#~ msgstr "Отворите овај линк на телефону у Chrome-у на Android-у или Safari-ју на "
+#~ "iPhone-у. Можете потражити и опцију „Инсталирај апликацију“ у менију "
+#~ "прегледача."
+
+#: apps/web/src/features/install/ui/install-page.tsx:143
+#~ msgid "Open this page in Chrome."
+#~ msgstr "Отворите ову страницу у Chrome-у."
+
+#: apps/web/src/features/install/ui/install-page.tsx:131
+#~ msgid "Open this page in Safari or Chrome and tap Share."
+#~ msgstr "Отворите ову страницу у Safari-ју или Chrome-у и додирните „Дели“ "
+#~ "(Share)."
+
+#: apps/web/src/features/install/ui/install-page.tsx:72
+msgid "Open your wallet and community market with one tap from your phone."
+msgstr "Отворите новчаник и тржиште заједнице једним додиром на телефону."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:140
 msgid "Opening paper wallet..."
 msgstr "Отварање папирног новчаника..."
@@ -2247,7 +2341,7 @@ msgid "Password cannot be empty."
 msgstr "Лозинка не може бити празна."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:203
+#: apps/web/src/routes/__root.tsx:206
 msgid "Password-protected paper wallet"
 msgstr "Папирни новчаник заштићен лозинком"
 
@@ -2427,7 +2521,7 @@ msgstr "Објаве"
 msgid "Posts aren't available for this voucher."
 msgstr "Објаве нису доступне за овај ваучер."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:40
+#: apps/web/src/features/home/ui/settings-page.tsx:43
 msgid "Preferences"
 msgstr "Подешавања"
 
@@ -2781,7 +2875,7 @@ msgstr "Рецензије"
 msgid "Reviews for this voucher will appear here."
 msgstr "Рецензије за овај ваучер ће се појавити овдје."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:36
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Усмјерите откупљива потраживања кроз одабрана тржишта уз заједничке "
 "стандарде."
@@ -2870,6 +2964,10 @@ msgstr "Претрага ваучера…"
 msgid "Select a token"
 msgstr "Изаберите токен"
 
+#: apps/web/src/features/install/ui/install-page.tsx:144
+msgid "Select and copy the link above to share it."
+msgstr "Изаберите и копирајте линк изнад да бисте га поделили."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:40
 #~ msgid "Selected pool"
 #~ msgstr "Изабрани пул"
@@ -2900,6 +2998,10 @@ msgstr "Продајте стабилне токене за локални но�
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:233
 msgid "Send"
 msgstr "Пошаљи"
+
+#: apps/web/src/features/install/ui/install-page.tsx:124
+msgid "Send this link to help someone add CLC to their phone."
+msgstr "Пошаљите овај линк да помогнете некоме да дода CLC на телефон."
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:135
 msgid "Send to"
@@ -2949,7 +3051,7 @@ msgstr "Sesija nije mogla biti verifikovana. Pokušajte ponovo."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:34
-#: apps/web/src/features/home/ui/settings-page.tsx:29
+#: apps/web/src/features/home/ui/settings-page.tsx:30
 msgid "Settings"
 msgstr "Подешавања"
 
@@ -2957,6 +3059,15 @@ msgstr "Подешавања"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:364
 msgid "Share"
 msgstr "Подијели"
+
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:121
+msgid "Share CLC"
+msgstr "Подели CLC"
+
+#: apps/web/src/features/install/ui/install-page.tsx:139
+msgid "Share installation link"
+msgstr "Подели линк за инсталацију"
 
 #. placeholder {0}: share.sharedBy.name
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:143
@@ -3009,7 +3120,7 @@ msgstr "Пријавите се да бисте видјели објаве."
 msgid "Sign in with private key"
 msgstr "Пријави се приватним кључем"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Sign out"
 msgstr "Одјави се"
 
@@ -3026,7 +3137,7 @@ msgstr "Региструјте се или се пријавите да бист
 msgid "Sign-in method"
 msgstr "Način prijave"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Signing out..."
 msgstr "Одјављивање..."
 
@@ -3166,11 +3277,11 @@ msgstr "Размјена у току"
 msgid "Swapping…"
 msgstr "Размјена у току…"
 
-#: apps/web/src/routes/__root.tsx:240
+#: apps/web/src/routes/__root.tsx:243
 msgid "Switch wallet"
 msgstr "Промијени новчаник"
 
-#: apps/web/src/routes/__root.tsx:228
+#: apps/web/src/routes/__root.tsx:231
 msgid "Switch wallet?"
 msgstr "Промијенити новчаник?"
 
@@ -3188,6 +3299,11 @@ msgstr "Ознаке"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:421
 msgid "Take fees separately"
 msgstr "Одвајај накнаде"
+
+#: apps/web/src/features/install/ui/install-page.tsx:146
+#~ msgid "Tap the three-dot menu, then Add to home screen or Install app."
+#~ msgstr "Додирните мени са три тачке, па „Додај на почетни екран“ или "
+#~ "„Инсталирај апликацију“."
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:396
 msgid "Tell people about your business..."
@@ -3537,6 +3653,14 @@ msgstr "За ознаку ваучера користите само слова 
 msgid "Use photo"
 msgstr "Употреби фотографију"
 
+#: apps/web/src/features/install/ui/install-page.tsx:101
+msgid "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
+"to Home Screen. In an embedded browser, open this link in Safari or "
+"Chrome first."
+msgstr "Употријебите мени прегледача да инсталирате CLC. На iPhone-у додирните "
+"Дијели, па Додај на почетни екран. Ако сте у прегледачу унутар друге "
+"апликације, прво отворите ову везу у Safari-ју или Chrome-у."
+
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:281
 #~ msgid "Use your location to order vouchers by distance."
 #~ msgstr "Користите своју локацију да поређате ваучере по удаљености."
@@ -3688,6 +3812,10 @@ msgstr "Ваучери се размењују један за један"
 msgid "Waiting for blockchain confirmation..."
 msgstr "Чека се потврда на блокчејну..."
 
+#: apps/web/src/components/install-app-button.tsx:51
+msgid "Waiting for confirmation…"
+msgstr "Чека се потврда…"
+
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:78
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:105
 msgid "Waiting for on-chain confirmation"
@@ -3712,7 +3840,7 @@ msgstr "Радње новчаника"
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Радње новчаника су доступне након регистрације или пријаве."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Wallet session"
 msgstr "Сесија новчаника"
 

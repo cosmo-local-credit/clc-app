@@ -2,6 +2,7 @@ import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 
 import { OnboardingMenu } from "#/components/language-selector";
+import { InstallAppLink } from "#/components/install-app-link";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
 import { onboardingSearch } from "#/lib/onboarding-search";
@@ -44,6 +45,7 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
         <Button variant="outline" className="h-11 w-full" onClick={() => go("signin")}>
           <Trans>I already have an account</Trans>
         </Button>
+        <InstallAppLink openDialog />
       </div>
     </div>
   );
