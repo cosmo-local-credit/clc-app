@@ -2,7 +2,7 @@ import type { AccountToken } from "@clc/api/features/accounts/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { describe, expect, it } from "vite-plus/test";
 
-import { buildPoolHoldings, totalPoolHoldingValue } from "./pool-holdings";
+import { buildPoolHoldings } from "./pool-holdings";
 
 const POOL = "0xdD97a5282D11e55d7271d466C80963d6793B276f" as const;
 const LIMITER = "0x4d9000000000000000000000000000000000a1c7" as const;
@@ -234,8 +234,14 @@ describe("buildPoolHoldings", () => {
     });
 
     expect(holdings).toHaveLength(1);
-    expect(holdings[0]).toMatchObject({ balanceRaw: "100000000", unitValueRaw: null });
-    expect(totalPoolHoldingValue(holdings)).toEqual({ raw: "0", unpricedCount: 1 });
+    expect(holdings[0]).toMatchObject({
+      balanceRaw: "100000000",
+      unitValueRaw: null,
+      // The deposit limit falls back to the voucher's own units for the same
+      // reason: nothing prices it into the pool's unit of account.
+      capUnitValueRaw: null,
+      headroomUnitValueRaw: null,
+    });
   });
 
   it("orders by what the pool holds, with the unpriceable rows last", () => {
@@ -254,28 +260,5 @@ describe("buildPoolHoldings", () => {
     });
 
     expect(holdings.map((entry) => entry.symbol)).toEqual(["BBB", "AAA", "CCC"]);
-  });
-});
-
-describe("totalPoolHoldingValue", () => {
-  it("sums the priced rows and counts the ones it left out", () => {
-    const holdings = buildPoolHoldings({
-      pool: pool(),
-      vouchers: [
-        voucher({ id: "a", tokenAddress: KAW }),
-        voucher({ id: "b", tokenAddress: SAR, decimals: null }),
-      ],
-      treasury: new Map([
-        [KAW.toLowerCase(), { balanceRaw: "100000000", feesRaw: "0" }],
-        [SAR.toLowerCase(), { balanceRaw: "500000000", feesRaw: "0" }],
-      ]),
-    });
-
-    // A total that silently omitted the unpriced row would read as the whole pool.
-    expect(totalPoolHoldingValue(holdings)).toEqual({ raw: "100000000", unpricedCount: 1 });
-  });
-
-  it("totals an empty pool at zero rather than at nothing", () => {
-    expect(totalPoolHoldingValue([])).toEqual({ raw: "0", unpricedCount: 0 });
   });
 });

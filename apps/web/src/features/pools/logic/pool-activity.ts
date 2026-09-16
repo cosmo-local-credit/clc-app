@@ -7,6 +7,8 @@ export type PoolTransfer = AccountTransfersResult["transfers"][number];
 export type PoolActivityLeg = {
   tokenAddress: string;
   tokenSymbol: string;
+  /** Carried alongside the ticker so a details sheet can name the voucher. */
+  tokenName: string;
   tokenDecimals: number;
   amount: string;
 };
@@ -234,6 +236,7 @@ function leg(transfer: PoolTransfer): PoolActivityLeg {
   return {
     tokenAddress: transfer.tokenAddress,
     tokenSymbol: transfer.tokenSymbol,
+    tokenName: transfer.tokenName,
     tokenDecimals: transfer.tokenDecimals,
     amount: transfer.amount,
   };
