@@ -9,6 +9,9 @@ import {
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import { CHAIN_INFO } from "#/lib/chain";
+import { RELAYER_GAS_FLOOR_LABEL } from "./relayer-gas";
+
 const dashboardStats = vi.hoisted(() =>
   vi.fn(() => ({
     data: {
@@ -68,7 +71,7 @@ describe("DashboardPage", () => {
     expect(await screen.findByRole("heading", { name: "Dashboard" })).toBeTruthy();
     expect(screen.getByText("40")).toBeTruthy();
     expect(screen.getByText("88")).toBeTruthy();
-    expect(screen.getByText("12 CELO")).toBeTruthy();
+    expect(screen.getByText(`12 ${CHAIN_INFO.nativeSymbol}`)).toBeTruthy();
     expect(screen.getAllByText("last 1d").length).toBeGreaterThan(0);
     expect(screen.getByText("Catalog")).toBeTruthy();
     expect(screen.getAllByText("Transactions").length).toBeGreaterThan(1);
@@ -76,7 +79,7 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("unavailable")).toBeNull();
   });
 
-  it("turns relayer gas red when the balance is below 10 CELO", async () => {
+  it("turns relayer gas red when the balance is below the floor", async () => {
     relayerGas.mockReturnValueOnce({
       data: { address: "0xabc", wei: (4n * 10n ** 18n).toString() },
       isPending: false,
@@ -85,8 +88,8 @@ describe("DashboardPage", () => {
     });
 
     const { container } = renderPage();
-    expect(await screen.findByText("4 CELO")).toBeTruthy();
-    expect(screen.getByText("below 10 CELO")).toBeTruthy();
+    expect(await screen.findByText(`4 ${CHAIN_INFO.nativeSymbol}`)).toBeTruthy();
+    expect(screen.getByText(`below ${RELAYER_GAS_FLOOR_LABEL}`)).toBeTruthy();
     expect(container.querySelector(".text-destructive")).toBeTruthy();
   });
 

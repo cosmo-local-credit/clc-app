@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
+
+import { CHAIN_INFO } from "#/lib/chain";
 import {
   fetchRelayerGas,
   formatRelayerGas,
@@ -7,7 +9,7 @@ import {
 } from "./relayer-gas";
 
 describe("relayerGasTone", () => {
-  it("is danger below 10 CELO and success at or above it", () => {
+  it("is danger below the floor and success at or above it", () => {
     expect(relayerGasTone(RELAYER_GAS_FLOOR_WEI - 1n)).toBe("danger");
     expect(relayerGasTone(RELAYER_GAS_FLOOR_WEI)).toBe("success");
     expect(relayerGasTone(RELAYER_GAS_FLOOR_WEI + 1n)).toBe("success");
@@ -15,9 +17,15 @@ describe("relayerGasTone", () => {
 });
 
 describe("formatRelayerGas", () => {
-  it("renders CELO with the shared token formatter", () => {
-    expect(formatRelayerGas((12n * 10n ** 18n + 5n * 10n ** 16n).toString())).toBe("12.05 CELO");
-    expect(formatRelayerGas((8n * 10n ** 18n).toString())).toBe("8 CELO");
+  // The symbol comes from the chain table rather than a literal: this suite
+  // runs on whichever chain the build points at, and "CELO" passed only until
+  // one pointed at Gnosis.
+  it("renders the native symbol with the shared token formatter", () => {
+    const symbol = CHAIN_INFO.nativeSymbol;
+    expect(formatRelayerGas((12n * 10n ** 18n + 5n * 10n ** 16n).toString())).toBe(
+      `12.05 ${symbol}`,
+    );
+    expect(formatRelayerGas((8n * 10n ** 18n).toString())).toBe(`8 ${symbol}`);
   });
 });
 
