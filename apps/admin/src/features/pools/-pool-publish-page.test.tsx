@@ -13,8 +13,6 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 const OWNER = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 const POOL_ADDRESS = "0x88a3c18f7329bb8b533e5be0d8b176ee1ed73563d";
 const PIN = { lat: -1.3, lng: 36.85 };
-const CKES = "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0";
-
 const reverseLocation = vi.hoisted(() => vi.fn());
 const getTokenTags = vi.hoisted(() => vi.fn());
 const deployPool = vi.hoisted(() => vi.fn());
@@ -142,7 +140,7 @@ async function fillRequiredFields() {
   fireEvent.change(screen.getByRole("textbox", { name: "Website" }), {
     target: { value: "https://kilifi.test" },
   });
-  fireEvent.change(screen.getByRole("textbox", { name: "Terms URL" }), {
+  fireEvent.change(screen.getByRole("textbox", { name: "Terms" }), {
     target: { value: "https://kilifi.test/terms" },
   });
 }
@@ -186,7 +184,7 @@ describe("PoolPublishPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: "Symbol" })).toBeTruthy();
-    expect(screen.getByLabelText("Oracle base currency")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: "Unit of account" })).toBeTruthy();
     expect(screen.getByText("0x33a573…5c2645")).toBeTruthy();
     expect(screen.queryByText("Decimals")).toBeNull();
     expect(screen.queryByText("Request")).toBeNull();
@@ -218,10 +216,10 @@ describe("PoolPublishPage", () => {
       symbol: "KLF",
       decimals: "6",
       owner: OWNER,
-      quoterType: "oracle",
+      quoterType: "relative",
       feesDecoupled: true,
       feePolicyDefault: "0.5",
-      baseCurrency: CKES,
+      unitOfAccount: "KES",
       description: "A weekly market pool",
       locationName: "Kilifi, Kenya",
       geoLat: PIN.lat,
@@ -266,12 +264,35 @@ describe("PoolPublishPage", () => {
     expect(router.state.location.pathname).toBe("/pools/publish");
   });
 
-  it("offers the oracle base currencies by ISO code", async () => {
+  it("defaults to relative pricing and searches the full currency catalog", async () => {
     renderPage();
-    fireEvent.click(await screen.findByLabelText("Oracle base currency"));
-    for (const code of ["KES", "USD", "BAM", "BTN", "EUR", "INR", "ZAR"]) {
-      expect(screen.getByRole("option", { name: code })).toBeTruthy();
-    }
+    expect((await screen.findByRole("combobox", { name: "Pricing" })).textContent).toContain(
+      "Relative pricing",
+    );
+
+    const currency = screen.getByRole("combobox", { name: "Unit of account" });
+    fireEvent.click(currency);
+    fireEvent.change(currency, { target: { value: "Tanzanian" } });
+    fireEvent.click(screen.getByRole("option", { name: "TZS - Tanzanian Shilling" }));
+
+    await waitFor(() =>
+      expect((currency as HTMLInputElement).value).toBe("TZS - Tanzanian Shilling"),
+    );
+  });
+
+  it("accepts Markdown pool terms", async () => {
+    renderPage();
+    expect(await screen.findByRole("heading", { name: "Publish pool" })).toBeTruthy();
+    await fillRequiredFields();
+    fireEvent.change(screen.getByRole("textbox", { name: "Terms" }), {
+      target: { value: "# Rules\n\nSettle every Friday." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Publish pool" }));
+
+    await waitFor(() => expect(deployPool).toHaveBeenCalledTimes(1));
+    expect(deployPool.mock.calls[0]![0]).toMatchObject({
+      terms: "# Rules\n\nSettle every Friday.",
+    });
   });
 
   it("binds a filled field onto the deployment card", async () => {

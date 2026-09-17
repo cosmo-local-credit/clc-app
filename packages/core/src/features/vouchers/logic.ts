@@ -3,9 +3,11 @@ import { z } from "zod";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
+import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
+import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
 import type { CaliburCall } from "../webauthn/index";
@@ -44,9 +46,41 @@ export const voucherPathLicenseSchema = z.literal(true, {
   error: "Accept the PATH License to publish your voucher",
 });
 
-const voucherUnitSchema = z.enum(["KES", "USD", "HOUR"]);
-const voucherTypeSchema = z.enum(["standard", "expiring"]);
+const voucherDisplayNameSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "Display name is required" })
+  .max(120, { message: "Display name must be 120 characters or fewer" });
 
+/**
+ * The text of a deployed voucher's catalog record, as its owner or a steward may
+ * correct it after the fact. Description and value reuse the publish rules so a
+ * voucher cannot be edited into a state its create form would have rejected,
+ * but both also accept "" because clearing a field is a legitimate correction
+ * and imported rows may never have had one. Terms is validated by length only;
+ * a form with a link/text switch applies the narrower schema per mode.
+ */
+export const voucherProfileTextSchema = z.object({
+  displayName: voucherDisplayNameSchema,
+  description: voucherDescriptionSchema.or(z.literal("")),
+  voucherUoa: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
+      message: "Use letters and numbers, for example KES",
+    }),
+  voucherValue: voucherPriceSchema.or(z.literal("")),
+  email: optionalEmailSchema,
+  website: optionalWebsiteSchema,
+  phone: optionalPhoneSchema,
+  terms: optionalTermsSchema,
+});
+
+export const voucherUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
+  message: "Choose a currency",
+});
+const voucherTypeSchema = z.enum(["standard", "expiring"]);
 export type VoucherUnit = z.infer<typeof voucherUnitSchema>;
 export type VoucherType = z.infer<typeof voucherTypeSchema>;
 
@@ -65,10 +99,28 @@ function checkExpiryDate(
   if (expiry <= Date.now()) addIssue("Expiration date must be in the future");
 }
 
-export function voucherExpiryDateSchema(type: VoucherType) {
-  return z.string().superRefine((value, ctx) => {
-    checkExpiryDate(type, value, (message) => ctx.addIssue({ code: "custom", message }));
-  });
+/**
+ * The opening supply is chosen while creating the voucher but minted only once
+ * the contract exists. Decimals are a form field until then and come from the
+ * deployed contract afterwards, so the schema is built per voucher.
+ */
+export function voucherMintAmountSchema(decimals: number) {
+  return z
+    .string()
+    .trim()
+    .refine((value) => /^\d+(\.\d+)?$/.test(value) && Number(value) > 0, {
+      message: "Supply must be greater than zero",
+    })
+    .refine((value) => (value.split(".")[1]?.length ?? 0) <= decimals, {
+      message: "Supply has more decimal places than this voucher supports",
+    });
+}
+
+/** Field-level variant over the form's decimals string; an unparseable decimals
+ * value already fails its own field, so supply is checked as whole units. */
+export function voucherSupplySchema(decimals: string) {
+  const parsed = tokenDecimalsSchema.safeParse(decimals);
+  return voucherMintAmountSchema(parsed.success ? Number(parsed.data) : 0);
 }
 
 const voucherDetailsSchema = z.object({
@@ -80,6 +132,7 @@ const voucherDetailsSchema = z.object({
   voucherType: voucherTypeSchema,
   expiryDate: z.string(),
   decimals: tokenDecimalsSchema,
+  supply: z.string(),
 });
 
 const voucherPlaceSchema = z.object({
@@ -88,7 +141,9 @@ const voucherPlaceSchema = z.object({
   email: optionalEmailSchema,
   website: optionalWebsiteSchema,
   phone: optionalPhoneSchema,
-  terms: optionalTermsUrlSchema,
+  terms: optionalTermsSchema,
+  iconUrl: optionalStoredImageUrlSchema,
+  bannerUrl: optionalStoredImageUrlSchema,
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
@@ -101,6 +156,14 @@ export const voucherCreateSchema = voucherDetailsSchema
     checkExpiryDate(value.voucherType, value.expiryDate, (message) =>
       ctx.addIssue({ code: "custom", path: ["expiryDate"], message }),
     );
+    const supply = voucherSupplySchema(value.decimals).safeParse(value.supply);
+    if (!supply.success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["supply"],
+        message: supply.error.issues[0]?.message ?? "Supply must be greater than zero",
+      });
+    }
   });
 
 export type VoucherCreateInput = z.infer<typeof voucherCreateSchema>;
@@ -154,6 +217,8 @@ export function toVoucherDeployPayload(
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
+    ...(input.iconUrl?.trim() ? { iconUrl: input.iconUrl.trim() } : {}),
+    ...(input.bannerUrl?.trim() ? { bannerUrl: input.bannerUrl.trim() } : {}),
     voucherUoa: input.unitOfAccount,
     voucherValue: Number(input.price),
     locationName: input.location.locationName,
@@ -170,22 +235,10 @@ export function toVoucherDeployPayload(
  * tx onward, so they mint their own opening supply through the relayer.
  */
 export const giftableTokenMintToAbi = parseAbi(["function mintTo(address to, uint256 amount)"]);
+export const giftableTokenOwnershipAbi = parseAbi(["function transferOwnership(address newOwner)"]);
 export const giftableTokenTotalSupplyAbi = parseAbi([
   "function totalSupply() view returns (uint256)",
 ]);
-
-/** Decimals come from the deployed contract, so the schema is built per voucher. */
-export function voucherMintAmountSchema(decimals: number) {
-  return z
-    .string()
-    .trim()
-    .refine((value) => /^\d+(\.\d+)?$/.test(value) && Number(value) > 0, {
-      message: "Supply must be greater than zero",
-    })
-    .refine((value) => (value.split(".")[1]?.length ?? 0) <= decimals, {
-      message: "Supply has more decimal places than this voucher supports",
-    });
-}
 
 export type BuildVoucherMintCallInput = {
   tokenAddress: `0x${string}`;
@@ -208,6 +261,30 @@ export function buildVoucherMintCall(input: BuildVoucherMintCallInput): CaliburC
       abi: giftableTokenMintToAbi,
       functionName: "mintTo",
       args: [input.ownerAddress, amount],
+    }),
+  };
+}
+
+export type BuildVoucherOwnershipTransferCallInput = {
+  tokenAddress: `0x${string}`;
+  newOwnerAddress: `0x${string}`;
+};
+
+/**
+ * GiftableToken inherits Solady's `transferOwnership(address)`. Ownership is
+ * deliberately transferred by the current owner through Calibur, rather than
+ * trusting a catalog-profile edit to change an on-chain authority.
+ */
+export function buildVoucherOwnershipTransferCall(
+  input: BuildVoucherOwnershipTransferCallInput,
+): CaliburCall {
+  return {
+    to: input.tokenAddress,
+    value: "0",
+    data: encodeFunctionData({
+      abi: giftableTokenOwnershipAbi,
+      functionName: "transferOwnership",
+      args: [input.newOwnerAddress],
     }),
   };
 }

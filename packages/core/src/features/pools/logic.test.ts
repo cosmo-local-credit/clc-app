@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 import { CELO_MAINNET_CHAIN_ID } from "../../lib/constants/celo";
+import { GNOSIS_MAINNET_CHAIN_ID } from "../../lib/constants/gnosis";
 import {
+  chainHasPoolOracle,
   getPoolDeploymentStages,
   type PoolCreateInput,
-  poolCreateSchema,
+  poolCreateSchemaForChain,
   poolDeploymentContractCount,
   PoolOracleUnavailableError,
   poolUnitSchemaForPricing,
@@ -13,11 +15,12 @@ import {
 const validPool: PoolCreateInput = {
   name: "Kilifi Growers",
   symbol: "KGP1",
-  unit: "KES",
+  unitOfAccount: "KES",
   description: "A pool for growers in Kilifi.",
   pricing: "oracle",
   feePolicyDefault: "1",
   feesDecoupled: false,
+  feeAddress: "",
   location: {
     locationName: "Kilifi, Kenya",
     country: "KE",
@@ -35,19 +38,28 @@ const validPool: PoolCreateInput = {
 
 const OWNER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
 
+const poolCreateSchema = poolCreateSchemaForChain(CELO_MAINNET_CHAIN_ID);
+
+describe("chainHasPoolOracle", () => {
+  it("is true only where a base currency is configured", () => {
+    expect(chainHasPoolOracle(CELO_MAINNET_CHAIN_ID)).toBe(true);
+    expect(chainHasPoolOracle(GNOSIS_MAINNET_CHAIN_ID)).toBe(false);
+  });
+});
+
 describe("poolCreateSchema", () => {
   it("accepts the price-feed defaults", () => {
     expect(poolCreateSchema.safeParse(validPool).success).toBe(true);
   });
 
   it("requires a configured base currency for price-feed pools", () => {
-    const result = poolCreateSchema.safeParse({ ...validPool, unit: "HOUR" });
+    const result = poolCreateSchema.safeParse({ ...validPool, unitOfAccount: "HOUR" });
 
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues).toContainEqual(
         expect.objectContaining({
-          path: ["unit"],
+          path: ["unitOfAccount"],
           message: "Choose rates you set or equal value when the unit has no price feed",
         }),
       );
@@ -63,9 +75,36 @@ describe("poolCreateSchema", () => {
     );
   });
 
+  it("refuses price-feed pricing on a chain with no base currency at all", () => {
+    const gnosisSchema = poolCreateSchemaForChain(GNOSIS_MAINNET_CHAIN_ID);
+
+    expect(gnosisSchema.safeParse(validPool).success).toBe(false);
+    expect(gnosisSchema.safeParse({ ...validPool, pricing: "decimal" }).success).toBe(true);
+  });
+
   it("allows HOUR for pool pricing that does not need a base currency", () => {
     expect(
-      poolCreateSchema.safeParse({ ...validPool, unit: "HOUR", pricing: "decimal" }).success,
+      poolCreateSchema.safeParse({ ...validPool, unitOfAccount: "HOUR", pricing: "decimal" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("accepts relative pricing and the full currency catalog", () => {
+    expect(
+      poolCreateSchema.safeParse({
+        ...validPool,
+        unitOfAccount: "TZS",
+        pricing: "relative",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts pool terms written as Markdown", () => {
+    expect(
+      poolCreateSchema.safeParse({
+        ...validPool,
+        terms: "# Pool rules\n\nMembers settle every Friday.",
+      }).success,
     ).toBe(true);
   });
 
@@ -95,14 +134,15 @@ describe("poolCreateSchema", () => {
     );
   });
 
-  it("accepts only blank or valid HTTP terms URLs", () => {
+  it("accepts a URL or Markdown terms up to the shared limit", () => {
     expect(poolCreateSchema.safeParse({ ...validPool, terms: "" }).success).toBe(true);
     expect(
       poolCreateSchema.safeParse({ ...validPool, terms: "https://kilifi.example/terms" }).success,
     ).toBe(true);
-    expect(
-      poolCreateSchema.safeParse({ ...validPool, terms: "kilifi.example/terms" }).success,
-    ).toBe(false);
+    expect(poolCreateSchema.safeParse({ ...validPool, terms: "Pool rules" }).success).toBe(true);
+    expect(poolCreateSchema.safeParse({ ...validPool, terms: "a".repeat(5001) }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -128,6 +168,39 @@ describe("toPoolDeployPayload", () => {
     ).toBe(true);
   });
 
+  it("names a fee recipient whenever a fee is charged, defaulting to the owner", () => {
+    const OTHER = "0x9999999999999999999999999999999999999999";
+    // Decoupling only reserves accrued fees from withdrawable liquidity; the
+    // pool pays `withdraw` to `feeAddress` either way, so the recipient follows
+    // the fee rather than the checkbox.
+    expect(
+      toPoolDeployPayload({ ...validPool, feeAddress: OTHER }, OWNER, CELO_MAINNET_CHAIN_ID)
+        .feeAddress,
+    ).toBe(OTHER);
+    expect(
+      toPoolDeployPayload({ ...validPool, feesDecoupled: true }, OWNER, CELO_MAINNET_CHAIN_ID)
+        .feeAddress,
+    ).toBe(OWNER);
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, feesDecoupled: true, feeAddress: ` ${OTHER.toLowerCase()} ` },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).feeAddress,
+    ).toBe(OTHER);
+  });
+
+  it("leaves the recipient out of a pool that charges nothing", () => {
+    expect(
+      "feeAddress" in
+        toPoolDeployPayload(
+          { ...validPool, feePolicyDefault: "0", feeAddress: "" },
+          OWNER,
+          CELO_MAINNET_CHAIN_ID,
+        ),
+    ).toBe(false);
+  });
+
   it("maps the complete live pool request and omits blank optional fields", () => {
     expect(toPoolDeployPayload({ ...validPool, phone: "" }, OWNER, CELO_MAINNET_CHAIN_ID)).toEqual({
       name: "Kilifi Growers",
@@ -137,7 +210,9 @@ describe("toPoolDeployPayload", () => {
       quoterType: "oracle",
       feesDecoupled: false,
       feePolicyDefault: "1",
+      feeAddress: OWNER,
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
+      unitOfAccount: "KES",
       description: "A pool for growers in Kilifi.",
       email: "steward@example.org",
       website: "https://kilifi.example",
@@ -168,9 +243,19 @@ describe("toPoolDeployPayload", () => {
     ).not.toHaveProperty("baseCurrency");
   });
 
+  it("sends the unit of account for every pricing strategy", () => {
+    expect(
+      toPoolDeployPayload(
+        { ...validPool, pricing: "relative", unitOfAccount: "TZS" },
+        OWNER,
+        CELO_MAINNET_CHAIN_ID,
+      ).unitOfAccount,
+    ).toBe("TZS");
+  });
+
   it("guards the payload against an oracle unit without a feed", () => {
     expect(() =>
-      toPoolDeployPayload({ ...validPool, unit: "HOUR" }, OWNER, CELO_MAINNET_CHAIN_ID),
+      toPoolDeployPayload({ ...validPool, unitOfAccount: "HOUR" }, OWNER, CELO_MAINNET_CHAIN_ID),
     ).toThrow(PoolOracleUnavailableError);
   });
 
@@ -225,6 +310,7 @@ describe("getPoolDeploymentStages", () => {
   it("derives the decimal deployment count and omits its pricing stage", () => {
     expect(poolDeploymentContractCount("decimal")).toBe(4);
     expect(poolDeploymentContractCount("oracle")).toBe(5);
+    expect(poolDeploymentContractCount("relative")).toBe(5);
     expect(getPoolDeploymentStages([], stageLabels, statusLabels, "decimal")).toHaveLength(4);
   });
 });

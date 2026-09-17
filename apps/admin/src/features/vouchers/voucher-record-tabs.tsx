@@ -44,7 +44,7 @@ const OFFERING_PAGE_SIZE = 100;
 const TAB_LABELS: Record<VoucherDetailTab, string> = {
   offerings: "Offerings",
   transactions: "Transactions",
-  reports: "Reports",
+  reports: "Approved posts",
   pools: "Pools",
 };
 
@@ -179,6 +179,8 @@ function OfferingsPanel({
             <VoucherOfferingCard
               key={offering.id}
               offering={offering}
+              voucherValue={voucher.voucherValue}
+              voucherUoa={voucher.voucherUoa}
               onEdit={() => onEditOffering(offering)}
             />
           ))}
@@ -317,6 +319,14 @@ function catalogFilter(voucher: MarketVoucherDetail): CatalogFilter | null {
   };
 }
 
+/**
+ * Approved posts referencing this voucher.
+ *
+ * Deliberately the public catalog query, and labelled "Approved posts" for it.
+ * The account screen's Posts tab is an audit view and reads the all-status admin
+ * endpoint; this one answers "what does the feed show about this voucher", which
+ * is the question a voucher record is asked.
+ */
 function ReportsPanel({ filter }: { filter: CatalogFilter }) {
   const query = useQuery(reportFilteredQueryOptions(clcApi.reports, filter, RECORD_PAGE_SIZE));
   const state = useDataState(query, (page) => page.reports.length === 0);
@@ -325,9 +335,9 @@ function ReportsPanel({ filter }: { filter: CatalogFilter }) {
     <RecordPanel state={state}>
       <SectionState
         state={state}
-        errorTitle="Could not load reports"
-        emptyTitle="No reports"
-        emptyDescription="No report in the catalog references this voucher."
+        errorTitle="Could not load posts"
+        emptyTitle="No approved posts"
+        emptyDescription="No approved post references this voucher."
         loadingRows={6}
       >
         <div className="overflow-x-auto">

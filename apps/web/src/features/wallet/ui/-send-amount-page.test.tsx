@@ -112,6 +112,82 @@ describe("SendAmountPage", () => {
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(true);
   });
 
+  it("seeds the amount from a shortcut that already chose one", async () => {
+    // What the post-swap "Send" button hands this screen: token and amount both
+    // decided, leaving only the recipient.
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" amount="12.50" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    const input = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    expect(input.value).toBe("12.50");
+    expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(false);
+
+    // Seeded, not controlled: typing over it must stick.
+    fireEvent.change(input, { target: { value: "3" } });
+    expect(input.value).toBe("3");
+  });
+
+  it("makes the whole tile a label for the amount field", async () => {
+    // `field-sizing:content` leaves an empty input a few pixels wide, so the
+    // card has to be the hit target or the field is unfindable. It is a real
+    // label rather than a pointer handler: a handler has to preventDefault to
+    // stop the press blurring the field, and iOS Safari in an installed PWA
+    // then raises the keypad for the programmatic focus and dismisses it again
+    // on touch end.
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    const maxButton = await screen.findByRole("button", { name: /use max · 245/i });
+    const input = screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement;
+    const tile = maxButton.parentElement as HTMLElement;
+    const label = tile.querySelector("label");
+
+    expect(input.id).toBeTruthy();
+    expect(label?.getAttribute("for")).toBe(input.id);
+
+    // An overlay under the tile's own controls, not a wrapper around them: a
+    // label may hold only its own labelled control, and one wrapping Max would
+    // be invalid and would swallow its presses. The input stays outside it too,
+    // so a tap on a digit still puts the caret there.
+    expect(label?.contains(maxButton)).toBe(false);
+    expect(label?.contains(input)).toBe(false);
+  });
+
+  it("carries the originating pool through to the receipt", async () => {
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage
+        token={USDC}
+        recipient={RECIPIENT}
+        recipientLabel="Trade Pool"
+        returnPool={RECIPIENT}
+      />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), { target: { value: "5" } });
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and send/i }));
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/wallet/send/receipt",
+        search: {
+          trackingId: "tracking-1",
+          recipient: RECIPIENT,
+          amount: "5",
+          symbol: "USDC",
+          returnPool: RECIPIENT,
+        },
+      });
+    });
+  });
+
   it("preselects the token passed via the search param", async () => {
     mockTokens();
     renderWithQueryClient(<SendAmountPage token={BABAS} />);

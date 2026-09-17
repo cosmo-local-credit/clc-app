@@ -1,12 +1,6 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { voucherDescriptionSchema, voucherPriceSchema } from "@clc/core/features/vouchers/logic";
-import {
-  optionalEmailSchema,
-  optionalPhoneSchema,
-  optionalTermsUrlSchema,
-  optionalWebsiteSchema,
-} from "@clc/core/lib/contact";
+import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -33,6 +27,7 @@ import { clcApi } from "#/lib/api";
 import { isStorageConfigured } from "#/lib/storage";
 
 import { useUpdateVoucherProfile } from "../use-update-voucher-profile";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 
 const optionalStoredImageSchema = z
   .string()
@@ -41,31 +36,12 @@ const optionalStoredImageSchema = z
   });
 
 /**
- * Contact validation is the product's, not this screen's: the same optional
- * email, E.164 phone and URL rules apply here, in signup, on a pool's record and
- * on the voucher publish form, and clc-core validates the same shapes on the way
- * in.
- *
- * Description and value reuse the publish schemas, so a voucher cannot be edited
- * into a state its own create form would have rejected. Both accept "" as well,
- * because the endpoint does: clearing a field is a legitimate correction, and the
- * catalog holds imported rows that never had either.
+ * The text fields are the product's shared profile rules, so a voucher cannot be
+ * edited here into a state the owner's own editor or the publish form would
+ * reject. Images and the pin are this console's additions.
  */
-const profileSchema = z
-  .object({
-    description: voucherDescriptionSchema.or(z.literal("")),
-    voucherUoa: z
-      .string()
-      .trim()
-      .toUpperCase()
-      .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
-        message: "Use letters and numbers, for example KES",
-      }),
-    voucherValue: voucherPriceSchema.or(z.literal("")),
-    email: optionalEmailSchema,
-    website: optionalWebsiteSchema,
-    phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
+const profileSchema = voucherProfileTextSchema
+  .extend({
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
     iconUrl: optionalStoredImageSchema,
@@ -100,11 +76,10 @@ const profileSchema = z
  * sheet — see `offering-editor-sheet.tsx`. They used to be a second branch here,
  * which is how that half sat unsaveable for as long as it did.
  *
- * Only catalog metadata is editable. Name, symbol, decimals and the owner mirror
- * the deployed ERC20, and an operator retyping one of those would produce a
- * catalog that disagrees with the chain while winning on every screen that reads
- * it. Those change by transacting; the endpoint does not accept them at all. So
- * does `active` — retiring a voucher is a different operation from correcting its
+ * The display name is catalog metadata. It changes the public label only; the
+ * deployed ERC20 name remains readable on the record card and never reaches this
+ * form. Symbol, decimals and owner follow the same chain-derived rule. So does
+ * `active` — retiring a voucher is a different operation from correcting its
  * prose, and folding the two together would let a description edit hide a voucher
  * by accident.
  */
@@ -148,6 +123,7 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
 
   const form = useForm({
     defaultValues: {
+      displayName: voucher.name,
       description: voucher.description ?? "",
       voucherUoa: voucher.voucherUoa ?? "",
       voucherValue: voucher.voucherValue ?? "",
@@ -169,6 +145,10 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
     onSubmit: async ({ value }) => {
       try {
         await update.mutateAsync({
+          // `name` is the effective label, not proof that an override exists.
+          // Do not turn an ordinary metadata save into a redundant override;
+          // only send this compatibility field after the operator changes it.
+          ...(value.displayName === voucher.name ? {} : { displayName: value.displayName }),
           description: value.description,
           voucherUoa: value.voucherUoa,
           voucherValue: value.voucherValue === "" ? null : Number(value.voucherValue),
@@ -215,6 +195,24 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+        <form.Field name="displayName">
+          {(field) => (
+            <Field
+              htmlFor={field.name}
+              label="Display name"
+              hint="The public catalog label. It does not change the deployed contract name."
+              error={getFieldError(field.state.meta.errors)}
+            >
+              <Input
+                id={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
+
         <form.Field name="description">
           {(field) => (
             <Field
@@ -234,25 +232,24 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
         </form.Field>
 
         <div className="flex gap-3">
-          <form.Field name="voucherUoa">
-            {(field) => (
-              <Field
-                htmlFor={field.name}
-                label="Unit of account"
-                hint="What this voucher is priced in, for example KES."
-                error={getFieldError(field.state.meta.errors)}
-              >
-                <Input
-                  id={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(event) => field.handleChange(event.target.value)}
-                  className="w-32 font-mono uppercase"
-                  maxLength={16}
-                />
-              </Field>
-            )}
-          </form.Field>
+          <div className="min-w-0 flex-1">
+            <form.Field name="voucherUoa">
+              {(field) => (
+                <Field
+                  htmlFor={field.name}
+                  label="Unit of account"
+                  hint="What this voucher is priced in, for example KES."
+                  error={getFieldError(field.state.meta.errors)}
+                >
+                  <UnitOfAccountCombobox
+                    id={field.name}
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                  />
+                </Field>
+              )}
+            </form.Field>
+          </div>
 
           <form.Field name="voucherValue">
             {(field) => (
@@ -338,15 +335,17 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
             {(field) => (
               <Field
                 htmlFor={field.name}
-                label="Terms URL"
+                label="Terms"
+                hint="A link to the terms, or the terms themselves written as Markdown."
                 error={getFieldError(field.state.meta.errors)}
               >
-                <Input
+                <Textarea
                   id={field.name}
-                  inputMode="url"
+                  rows={3}
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(event) => field.handleChange(event.target.value)}
+                  aria-invalid={field.state.meta.isTouched && field.state.meta.errors.length > 0}
                 />
               </Field>
             )}

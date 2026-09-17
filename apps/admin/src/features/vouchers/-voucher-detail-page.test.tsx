@@ -233,6 +233,7 @@ describe("VoucherDetailPage tabs", () => {
     // every tile to duplicate what clicking the thing already means.
     const tile = screen.getByRole("button", { name: /Maize flour/ });
     expect(tile.querySelector("img")).toBeTruthy();
+    expect(screen.getByText("120 KES / bag")).toBeTruthy();
     // Availability is not shown, because this tab reads the public list where
     // every row is available by definition.
     expect(screen.queryByText("available")).toBeNull();
@@ -241,7 +242,7 @@ describe("VoucherDetailPage tabs", () => {
     expect(await screen.findByText("transfer")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open transactions" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("tab", { name: "Reports" }));
+    fireEvent.click(screen.getByRole("tab", { name: "Approved posts" }));
     expect(await screen.findByText("Market day")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("tab", { name: "Pools" }));

@@ -29,6 +29,9 @@ function profileFingerprint(profile: ProfileInput): string {
     email: profile.email,
     phone: profile.phone,
     location: profile.location,
+    preferredCurrency: profile.preferredCurrency,
+    bio: profile.bio,
+    website: profile.website,
   });
 }
 

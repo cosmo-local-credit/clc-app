@@ -1,8 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockNavigate } = vi.hoisted(() => ({
+const { mockNavigate, mockResolveProfileCountry } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
+  mockResolveProfileCountry: vi.fn(),
 }));
 
 // Uploads are offered only where the service is configured, and the test env has
@@ -11,6 +12,11 @@ vi.mock("#/lib/api/storage", () => ({
   isStorageConfigured: true,
   storageClient: () => ({ upload: vi.fn() }),
 }));
+
+vi.mock("#/lib/profile-currency", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("#/lib/profile-currency")>();
+  return { ...actual, resolveProfileCountry: mockResolveProfileCountry };
+});
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
@@ -44,13 +50,16 @@ vi.mock("#/components/ui/phone-input", () => ({
     value,
     onChange,
     id,
+    defaultCountry,
   }: {
     value: string;
     onChange: (v: string) => void;
     id?: string;
+    defaultCountry?: string | null;
   }) => (
     <input
       data-testid="phone-input"
+      data-default-country={defaultCountry ?? ""}
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -124,14 +133,19 @@ function renderForm(
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockResolveProfileCountry.mockReset();
+  mockResolveProfileCountry.mockResolvedValue("US");
 });
 
 describe("OnboardingProfileForm rendering", () => {
-  it("renders name, email, phone, and location fields", () => {
+  it("renders contact, profile, currency, and location fields", () => {
     renderForm();
     expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(screen.getByTestId("phone-input")).toBeTruthy();
+    expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     expect(screen.getByTestId("location-picker")).toBeTruthy();
     expect(screen.queryByTestId("country-select")).toBeNull();
   });
@@ -189,6 +203,9 @@ describe("OnboardingProfileForm submission", () => {
       expect.objectContaining<Partial<ProfileInput>>({
         name: "Alice",
         email: "alice@example.com",
+        preferredCurrency: "KES",
+        bio: "",
+        website: "",
         location: {
           lat: -1.2921,
           lng: 36.8219,
@@ -198,6 +215,86 @@ describe("OnboardingProfileForm submission", () => {
       }),
       // The photo travels beside the validated profile: it cannot be part of it,
       // because profileSchema lives in @clc/core and cannot name a File.
+      null,
+    );
+  });
+
+  it("keeps a location currency when the network suggestion arrives later", async () => {
+    let resolveNetworkCountry: (country: string) => void = () => undefined;
+    mockResolveProfileCountry.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveNetworkCountry = resolve;
+        }),
+    );
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      resolveNetworkCountry("US");
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
+      null,
+    );
+  });
+
+  it("seeds the phone dialling code from the same country as the currency", async () => {
+    renderForm();
+
+    await waitFor(() =>
+      expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
+    );
+
+    // A chosen location beats the network hint for both fields.
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("KE");
+  });
+
+  it("still seeds the dialling code when a currency was already chosen", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, {
+      name: "",
+      email: "",
+      phone: "",
+      location: undefined,
+      preferredCurrency: "EUR",
+      bio: "",
+      website: "",
+    } as unknown as ProfileInput);
+
+    // A saved currency preference says nothing about which dialling code to
+    // start on, so the network hint still reaches the phone field.
+    await waitFor(() =>
+      expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    // A location picked afterwards does not override the chosen currency either.
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "EUR" }),
       null,
     );
   });
@@ -272,6 +369,9 @@ describe("OnboardingProfileForm value restoration", () => {
       name: "Alice",
       email: "alice@example.com",
       phone: "",
+      preferredCurrency: "KES",
+      bio: "Neighbourhood organiser",
+      website: "https://alice.example",
       location: {
         lat: -1.2921,
         lng: 36.8219,

@@ -1,0 +1,1 @@
+export const GNOSIS_MAINNET_CHAIN_ID = 100;

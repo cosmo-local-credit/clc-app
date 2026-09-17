@@ -50,6 +50,7 @@ describe("pool deploy client", () => {
       feesDecoupled: false,
       feePolicyDefault: "1",
       baseCurrency: "0x456a3D042C0DbD3db53D5489e98dFb038553B0d0",
+      unitOfAccount: "KES",
       description: "A pool for Kilifi growers.",
       locationName: "Kilifi, Kenya",
       geoLat: -3.5107,

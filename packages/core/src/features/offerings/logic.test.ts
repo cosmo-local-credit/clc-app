@@ -81,8 +81,7 @@ describe("offeringWriteSchema", () => {
     ["a name over 120 characters", { name: "a".repeat(121) }],
     ["a description over 2000 characters", { description: "a".repeat(2001) }],
     ["an empty unit", { unit: "" }],
-    ["a free-text unit", { unit: "50kg sack" }],
-    ["an upper-case unit", { unit: "KG" }],
+    ["a unit over 32 characters", { unit: "a".repeat(33) }],
     ["an empty commodity type", { commodityType: "" }],
     ["a third commodity type", { commodityType: "UNCLASSIFIED" }],
     ["a lower-case commodity type", { commodityType: "good" }],
@@ -91,6 +90,10 @@ describe("offeringWriteSchema", () => {
     ["a bare path photo", { imageUrl: "/offering/a.webp" }],
   ])("rejects %s", (_label, override) => {
     expect(offeringWriteSchema.safeParse({ ...valid, ...override }).success).toBe(false);
+  });
+
+  it.each(["50kg Sack", "KG", "Produce Crate"])("accepts the custom unit %s", (unit) => {
+    expect(offeringWriteSchema.safeParse({ ...valid, unit }).success).toBe(true);
   });
 
   it.each([

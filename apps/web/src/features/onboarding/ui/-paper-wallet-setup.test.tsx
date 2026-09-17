@@ -22,6 +22,45 @@ vi.mock("html-to-image", () => ({
 const mockAnchorClick = vi.fn();
 HTMLAnchorElement.prototype.click = mockAnchorClick;
 
+/** Installs the share sheet the platform would offer, or removes it again. */
+function setShareSupport(share: ((data: ShareData) => Promise<void>) | null) {
+  if (!share) {
+    Reflect.deleteProperty(navigator, "share");
+    Reflect.deleteProperty(navigator, "canShare");
+    return;
+  }
+  Object.defineProperty(navigator, "share", { value: share, configurable: true });
+  Object.defineProperty(navigator, "canShare", { value: () => true, configurable: true });
+}
+
+function setInstalledApp(installed: boolean) {
+  Object.defineProperty(window, "matchMedia", {
+    value: (query: string) => ({
+      matches: installed && query.includes("standalone"),
+      media: query,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }),
+    configurable: true,
+  });
+}
+
+function renderDownload() {
+  return render(
+    <HookRenderer
+      address={FAKE_ADDRESS}
+      qrUrl="https://cosmolocal.credit/?w=0xabc"
+      defaultName="Alice"
+      render={(s) => (
+        <>
+          {s.card}
+          {s.downloadButton}
+        </>
+      )}
+    />,
+  );
+}
+
 import { type PaperWalletSetupSlots, usePaperWalletSetup } from "./paper-wallet-setup";
 
 /**
@@ -141,24 +180,13 @@ describe("usePaperWalletSetup", () => {
   it("downloads with correct options and filename", async () => {
     mockToPng.mockClear();
     mockAnchorClick.mockClear();
+    setShareSupport(null);
+    setInstalledApp(false);
 
-    render(
-      <HookRenderer
-        address={FAKE_ADDRESS}
-        qrUrl="https://cosmolocal.credit/?w=0xabc"
-        defaultName="Alice"
-        render={(s) => (
-          <>
-            {s.card}
-            {s.downloadButton}
-          </>
-        )}
-      />,
-    );
+    renderDownload();
 
-    const btn = screen.getByRole("button", { name: /download/i });
     await act(async () => {
-      fireEvent.click(btn);
+      fireEvent.click(screen.getByRole("button", { name: /download/i }));
     });
 
     expect(mockToPng).toHaveBeenCalled();
@@ -171,6 +199,50 @@ describe("usePaperWalletSetup", () => {
       backgroundColor: "#ffffff",
     });
     expect(mockAnchorClick).toHaveBeenCalled();
+  });
+
+  it("hands the card to the share sheet where the platform has one", async () => {
+    mockAnchorClick.mockClear();
+    const share = vi.fn().mockResolvedValue(undefined);
+    setShareSupport(share);
+    setInstalledApp(true);
+
+    renderDownload();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /download/i }));
+    });
+
+    // The anchor's `download` attribute is ignored inside an installed iOS PWA,
+    // so the share sheet is the only path that actually saves the image.
+    expect(share).toHaveBeenCalledTimes(1);
+    const [shared] = share.mock.calls[0] as [ShareData];
+    const sharedFile = shared.files?.[0];
+    expect(sharedFile?.name).toBe("clc-wallet-37f944fe.png");
+    expect(sharedFile?.type).toBe("image/png");
+    expect(mockAnchorClick).not.toHaveBeenCalled();
+
+    setShareSupport(null);
+    setInstalledApp(false);
+  });
+
+  it("shows the rendered card to long-press when an installed app can neither share nor download", async () => {
+    mockAnchorClick.mockClear();
+    setShareSupport(null);
+    setInstalledApp(true);
+
+    renderDownload();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /download/i }));
+    });
+
+    expect(screen.getByRole("img", { name: /paper wallet card/i }).getAttribute("src")).toBe(
+      "data:image/png;base64,exported",
+    );
+    expect(mockAnchorClick).not.toHaveBeenCalled();
+
+    setInstalledApp(false);
   });
 
   it("includes the Customize disclosure in controls slot", () => {

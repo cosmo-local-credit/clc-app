@@ -215,6 +215,33 @@ describe("runNotificationRecovery", () => {
     expect(storage.listAcks).not.toHaveBeenCalled();
     expect(storage.readDeviceId).not.toHaveBeenCalled();
   });
+
+  // With no wallet to scope it to, the sync pulls whatever the device is still
+  // linked to and writes it into the inbox — on a sign-out, the outgoing user's
+  // messages landing back in the store teardown just emptied. It also advances
+  // `syncCursor`, which would skip the next user's backlog.
+  it("does not sync the inbox when no wallet is signed in", async () => {
+    await runNotificationRecovery();
+
+    expect(api.syncInbox).not.toHaveBeenCalled();
+    // Device-scoped acks are still drained.
+    expect(storage.listAcks).toHaveBeenCalled();
+  });
+
+  it("syncs the inbox once a wallet is signed in", async () => {
+    api.syncInbox.mockResolvedValue({
+      deletedIds: [],
+      messages: [],
+      nextSyncCursor: "cursor-2",
+    });
+
+    await runNotificationRecovery({
+      currentWalletAddress: "0xa316408425cf17f1827483dee621c6c3a9b5fad4",
+      linkedWalletAddresses: ["0xa316408425cf17f1827483dee621c6c3a9b5fad4"],
+    });
+
+    expect(api.syncInbox).toHaveBeenCalledTimes(1);
+  });
 });
 
 function ackEntry(overrides: Partial<NotificationAckQueueEntry> = {}): NotificationAckQueueEntry {

@@ -5,25 +5,27 @@ import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { BackChevron } from "#/components/wallet";
+import { BackChevron, PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
-import { CATALOG_FILTER_PREFERENCE_KEYS } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
-import { PoolLogo } from "./pool-logo";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
 export function PoolsPage() {
   const { t, i18n } = useLingui();
-  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_KEYS.pools, {
-    voucherRelationships: true,
-  });
+  const filter = usePersistedCatalogFilter(
+    CATALOG_FILTER_PREFERENCE_NAMES.pools,
+    useStorageOwner(),
+    { voucherRelationships: true },
+  );
   const poolsQuery = useUserPoolsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,

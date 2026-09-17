@@ -5,8 +5,10 @@ import {
   HiOutlineCollection,
   HiOutlineHome,
   HiOutlineLightningBolt,
+  HiOutlineNewspaper,
   HiOutlineSwitchHorizontal,
   HiOutlineTicket,
+  HiOutlineTag,
   HiOutlineUsers,
 } from "react-icons/hi";
 import {
@@ -27,6 +29,8 @@ const pages = [
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
+  { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },
+  { to: "/vocabulary", label: "Vocabulary", icon: HiOutlineTag },
   {
     to: "/transactions/vouchers",
     label: "Voucher transactions",

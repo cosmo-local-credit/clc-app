@@ -40,25 +40,18 @@ describe("send share client", () => {
   });
 
   it("creates an attachment only after a transaction hash is available", async () => {
-    const attachment = {
-      id: 1,
-      trackingId: "tracking-1",
-      txHash: `0x${"11".repeat(32)}`,
-      permission: 1,
-      note: "Thanks for the delivery",
-      createdAt: "2026-08-04T12:00:00Z",
-      sharedBy: { name: "Alice", email: "alice@example.com" },
-    };
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() => response(attachment));
+    const txHash = `0x${"11".repeat(32)}`;
+    const result = { shareId: 1, txHash };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(() => response(result));
 
     await expect(
-      createSendShare(attachment.txHash, {
+      createSendShare(txHash, {
         permission: 1,
         note: "Thanks for the delivery",
       }),
-    ).resolves.toEqual(attachment);
+    ).resolves.toEqual(result);
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining(`/api/v2/users/me/shares/${attachment.txHash}`),
+      expect.stringContaining(`/api/v2/users/me/shares/${txHash}`),
       expect.objectContaining({
         method: "POST",
         credentials: "include",
@@ -75,7 +68,6 @@ describe("send share client", () => {
   it("returns only the attachment fields supplied by Core", async () => {
     const attachment = {
       id: 1,
-      trackingId: "tracking-1",
       txHash: `0x${"11".repeat(32)}`,
       permission: 1,
       note: "Hello",

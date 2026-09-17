@@ -4,17 +4,20 @@ import {
   serializeVoucherRef,
 } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { ReportCursor, ReportsClient } from "./client";
+import type { ManagedReportsParams, ReportCursor, ReportsClient } from "./client";
 
 /**
  * Canonical query identity and base options for reports.
  *
- * Every key hangs off `all` so one invalidation reaches the list, the infinite
- * feed, details, filtered results and facets.
- *
  * Note that reports page by an opaque `{ updatedAt, id }` cursor rather than a
  * numeric one, so the infinite feed's page param is an object and its
  * termination is simply "the backend stopped offering a next cursor".
+ *
+ * Keys are split into four families — public lists, public detail, one author's
+ * own, and the operator console's — because a write does not affect them
+ * equally, and because `reportKeys.all` also covers the app-private
+ * reverse-geocode entries in `apps/web`. Invalidating that prefix would refetch
+ * third-party place lookups every time a post was saved, so nothing does.
  */
 /** No text or tag narrowing: the author is the whole filter. */
 const EMPTY_REPORT_FILTER: CatalogFilter = {
@@ -37,10 +40,6 @@ export const reportKeys = {
   filtered: (filter: CatalogFilter | null, perPage: number) =>
     ["clc", "reports", "filtered", { filter, perPage }] as const,
 
-  /** Reports authored by one account. */
-  byAuthor: (author: string, perPage: number) =>
-    ["clc", "reports", "author", author.toLowerCase(), perPage] as const,
-
   /**
    * Infinite feed of reports linked to one voucher.
    *
@@ -56,6 +55,25 @@ export const reportKeys = {
       perPage,
     ] as const,
   facetVocabulary: () => ["clc", "reports", "facet-vocabulary"] as const,
+
+  /**
+   * One author's own posts, in every status.
+   *
+   * The address is part of the key so a session switch cannot be served the
+   * previous account's rows: these are the caller's private drafts, not catalog
+   * data, and "mine" means whoever the cookie says.
+   */
+  mineRoot: () => ["clc", "reports", "mine"] as const,
+  mineFor: (address: string) => [...reportKeys.mineRoot(), address.toLowerCase()] as const,
+  mine: (address: string, params: ManagedReportsParams) =>
+    [...reportKeys.mineFor(address), "list", params] as const,
+  myDetail: (address: string, id: string) =>
+    [...reportKeys.mineFor(address), "detail", id] as const,
+
+  /** The operator console's global reads. */
+  adminRoot: () => ["clc", "reports", "admin"] as const,
+  adminList: (params: ManagedReportsParams) => [...reportKeys.adminRoot(), "list", params] as const,
+  adminDetail: (id: string) => [...reportKeys.adminRoot(), "detail", id] as const,
 } as const;
 
 export function reportFeedInfiniteQueryOptions(reports: ReportsClient, perPage: number) {
@@ -104,33 +122,67 @@ export function reportFilteredQueryOptions(
 }
 
 /**
- * Reports authored by one account.
+ * One account's posts are read through `adminReportsQueryOptions` with an
+ * `author`, not through a public author feed.
  *
- * Filtered at the backend rather than by scanning the feed: a global page filtered
- * in the browser answers with whichever reports happened to be on it, which for an
- * audit screen omits without saying so.
+ * There was one: an approved-only, backend-filtered list for the console's
+ * account panel. That panel is an audit view and has to show a submitted post,
+ * which the catalog cannot, so the query and its `byAuthor` key went with it
+ * rather than sitting unused.
  */
-export function reportsByAuthorQueryOptions(
-  reports: ReportsClient,
-  author: string | undefined,
-  perPage: number,
-) {
-  return queryOptions({
-    queryKey: reportKeys.byAuthor(author ?? "none", perPage),
-    queryFn: ({ signal }) =>
-      reports.getFilteredReports(
-        { perPage, filter: EMPTY_REPORT_FILTER, author: author ?? "" },
-        signal,
-      ),
-    enabled: Boolean(author),
-    placeholderData: keepPreviousData,
-  });
-}
 
 export function reportQueryOptions(reports: ReportsClient, id: string | undefined) {
   return queryOptions({
     queryKey: reportKeys.detail(id ?? "none"),
     queryFn: ({ signal }) => reports.getReport(requireId(id), signal),
+    enabled: Boolean(id),
+  });
+}
+
+/**
+ * The signed-in author's own posts.
+ *
+ * `address` is the session's wallet and gates the query as well as keying it: a
+ * page rendered before the session resolves must not fetch, because the backend
+ * would answer for whoever the cookie names rather than for nobody.
+ */
+export function myReportsQueryOptions(
+  reports: ReportsClient,
+  address: string | undefined,
+  params: ManagedReportsParams,
+) {
+  return queryOptions({
+    queryKey: reportKeys.mine(address ?? "none", params),
+    queryFn: ({ signal }) => reports.getMyReports(params, signal),
+    enabled: Boolean(address),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function myReportQueryOptions(
+  reports: ReportsClient,
+  address: string | undefined,
+  id: string | undefined,
+) {
+  return queryOptions({
+    queryKey: reportKeys.myDetail(address ?? "none", id ?? "none"),
+    queryFn: ({ signal }) => reports.getMyReport(requireId(id), signal),
+    enabled: Boolean(address) && Boolean(id),
+  });
+}
+
+export function adminReportsQueryOptions(reports: ReportsClient, params: ManagedReportsParams) {
+  return queryOptions({
+    queryKey: reportKeys.adminList(params),
+    queryFn: ({ signal }) => reports.getAdminReports(params, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function adminReportQueryOptions(reports: ReportsClient, id: string | undefined) {
+  return queryOptions({
+    queryKey: reportKeys.adminDetail(id ?? "none"),
+    queryFn: ({ signal }) => reports.getAdminReport(requireId(id), signal),
     enabled: Boolean(id),
   });
 }

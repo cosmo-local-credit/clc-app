@@ -2,6 +2,7 @@ import type { CreateConnectorFn } from "wagmi";
 import { createConnector } from "wagmi";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { sendCaliburTransaction } from "#/features/webauthn/hooks/use-calibur-transaction";
+import { CHAIN_ID } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { clearWebAuthnCredential, getWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -22,7 +23,7 @@ export function caliburWebAuthnConnector() {
         const cred = getWebAuthnCredential();
         if (!cred) throw new Error("No WebAuthn credential stored");
         if (cred.stale) throw new Error("Credential is stale; re-authenticate");
-        const chainId = config.chains[0]?.id ?? 42220;
+        const chainId = config.chains[0]?.id ?? CHAIN_ID;
         return { accounts: [cred.address], chainId };
       },
 
@@ -37,7 +38,7 @@ export function caliburWebAuthnConnector() {
       },
 
       async getChainId() {
-        return config.chains[0]?.id ?? 42220;
+        return config.chains[0]?.id ?? CHAIN_ID;
       },
 
       async getProvider() {
@@ -59,7 +60,7 @@ export function caliburWebAuthnConnector() {
                 return cred ? [cred.address] : [];
 
               case "eth_chainId":
-                return `0x${(chain?.id ?? 42220).toString(16)}`;
+                return `0x${(chain?.id ?? CHAIN_ID).toString(16)}`;
 
               case "eth_sendTransaction": {
                 const [tx] = params as [Record<string, string>];

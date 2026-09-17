@@ -1,6 +1,7 @@
 import type { AdminPoolTransaction } from "@clc/api/features/admin/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import type { HexAddress } from "@clc/core/features/catalog/logic";
+import { poolDepositCap } from "@clc/core/features/pools/logic";
 
 /**
  * What the pool catalog says about a pool's operating state.
@@ -15,25 +16,6 @@ import type { HexAddress } from "@clc/core/features/catalog/logic";
  * read the chain, and an absent value is reported as unrecorded rather than as
  * a zero address, because the two have opposite consequences on SwapPool.
  */
-
-/** Deposit headroom for one voucher, as its recorded limiter cap decides it. */
-export type DepositCap =
-  /** No limiter on the pool: `mustWithinLimit` returns early and nothing is capped. */
-  | { kind: "uncapped" }
-  /** A limiter is recorded but the catalog holds no cap for this voucher. */
-  | { kind: "unrecorded" }
-  /** A recorded cap of zero. `balance + value > 0` for any deposit, so all revert. */
-  | { kind: "blocked" }
-  | { kind: "capped"; raw: string };
-
-export function depositCap(pool: UserPool, voucher: PoolVoucher): DepositCap {
-  if (!pool.limiterAddress) return { kind: "uncapped" };
-  if (voucher.tokenLimit === null) return { kind: "unrecorded" };
-  // Normalized upstream to a run of digits, so a leading-zero string is still
-  // zero and must not be read as a cap.
-  if (/^0+$/.test(voucher.tokenLimit)) return { kind: "blocked" };
-  return { kind: "capped", raw: voucher.tokenLimit };
-}
 
 /** The vouchers sharing one price feed, or the ones sharing none. */
 export type PoolFeedGroup = {
@@ -106,7 +88,7 @@ export function poolComposition(pool: UserPool, vouchers: PoolVoucher[]): PoolCo
       priced += 1;
       feeds.add(voucher.oracleFeedId);
     }
-    if (depositCap(pool, voucher).kind === "blocked") blocked += 1;
+    if (poolDepositCap(pool, voucher).kind === "blocked") blocked += 1;
     offers += voucher.offerCount;
     liveOffers += voucher.availableOfferCount;
   }

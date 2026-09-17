@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri";
 
+import { formatByteSize } from "@clc/core/features/reports/logic";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
@@ -23,17 +24,20 @@ import {
 } from "#/components/ui/dialog";
 import { InfoRow } from "#/components/ui/info-row";
 import { LocationMap } from "#/components/ui/location-map.lazy";
+import { MarkdownContent } from "#/components/ui/markdown-content";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { Skeleton } from "#/components/ui/skeleton";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { BackChevron, EllipsizedAddress } from "#/components/wallet";
-import type { ReportDetail, ReportImage } from "@clc/api/features/reports/client";
+import type { ReportAttachment, ReportDetail, ReportImage } from "@clc/api/features/reports/client";
 import { useReport, useReportLocation } from "#/features/home/hooks/use-reports";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { formatReportDate, formatReportPeriod } from "#/lib/report-display";
 
 export function ReportPage({ reportId }: { reportId: string }) {
   const { t, i18n } = useLingui();
+  const auth = useAuthStatus();
   const reportQuery = useReport(reportId);
   const report = reportQuery.data;
   const locationQuery = useReportLocation(report?.lat, report?.lng);
@@ -59,6 +63,11 @@ export function ReportPage({ reportId }: { reportId: string }) {
   const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
   const coordinateLabel = hasCoordinates ? `${report.lat}, ${report.lng}` : null;
   const locationLabel = locationQuery.data?.locationName ?? report.locationName ?? coordinateLabel;
+  const isAuthor =
+    auth.isAuthenticated &&
+    !!auth.address &&
+    !!report.authorAddress &&
+    auth.address.toLowerCase() === report.authorAddress.toLowerCase();
 
   return (
     <div className="space-y-3">
@@ -66,9 +75,18 @@ export function ReportPage({ reportId }: { reportId: string }) {
 
       <article className="space-y-6">
         <header className="space-y-2">
-          <h1 className="font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
-            {report.title}
-          </h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="min-w-0 flex-1 font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
+              {report.title}
+            </h1>
+            {isAuthor ? (
+              <Button asChild variant="outline" size="sm" className="h-9 shrink-0 bg-card">
+                <Link to="/posts/$reportId/edit" params={{ reportId: report.id }}>
+                  <Trans>Edit</Trans>
+                </Link>
+              </Button>
+            ) : null}
+          </div>
 
           {updated || locationLabel ? (
             <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-xs leading-5">
@@ -107,7 +125,12 @@ export function ReportPage({ reportId }: { reportId: string }) {
           </p>
         ) : null}
 
+        {/* Description is feed copy and stays a plain paragraph; only `body` is
+            markdown. Most imported posts have no body at all. */}
+        {report.body ? <MarkdownContent>{report.body}</MarkdownContent> : null}
+
         <ReportDetails report={report} />
+        <ReportAttachments report={report} />
         <ReportLocation report={report} label={locationLabel} />
         <RelatedVouchers report={report} />
         <ReportProvenance report={report} />
@@ -383,6 +406,69 @@ function ReportDetails({ report }: { report: ReportDetail }) {
       </dl>
     </section>
   );
+}
+
+/**
+ * Files and embeds on the post.
+ *
+ * A filename when the upload recorded one, otherwise the host — a bare CDN URL
+ * says nothing about what it is, and the whole path would not fit at 360px.
+ */
+function ReportAttachments({ report }: { report: ReportDetail }) {
+  const { t } = useLingui();
+  if (report.attachments.length === 0) return null;
+
+  return (
+    <section aria-labelledby="report-attachments-heading">
+      <h2
+        id="report-attachments-heading"
+        className="font-heading text-[1.125rem] font-semibold leading-snug"
+      >
+        <Trans>Links</Trans>
+      </h2>
+      <ul className="mt-2 border border-border bg-card">
+        {report.attachments.map((attachment) => (
+          <li
+            key={`${attachment.kind}:${attachment.url}`}
+            className="border-b border-border last:border-b-0"
+          >
+            <a
+              href={attachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-12 items-center gap-2 px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset active:bg-muted"
+            >
+              <span className="min-w-0 flex-1 truncate text-sm">{attachmentLabel(attachment)}</span>
+              <span className="shrink-0 text-muted-foreground text-xs">
+                {attachmentMeta(attachment, {
+                  file: t`File`,
+                  embed: t`Link`,
+                })}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function attachmentLabel(attachment: ReportAttachment): string {
+  if (attachment.filename) return attachment.filename;
+  try {
+    return new URL(attachment.url).host;
+  } catch {
+    return attachment.url;
+  }
+}
+
+function attachmentMeta(
+  attachment: ReportAttachment,
+  labels: { file: string; embed: string },
+): string {
+  const kind = attachment.kind === "FILE" ? labels.file : labels.embed;
+  const size = formatByteSize(attachment.byteSize);
+  return size ? `${kind} · ${size}` : kind;
 }
 
 function RelatedVouchers({ report }: { report: ReportDetail }) {

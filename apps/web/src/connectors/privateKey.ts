@@ -1,8 +1,10 @@
 import type { Chain, SignableMessage, TypedData, TypedDataDefinition } from "viem";
-import { createWalletClient, http } from "viem";
+import { createWalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { CreateConnectorFn } from "wagmi";
 import { createConnector } from "wagmi";
+import { CHAIN_ID, PUBLIC_RPC_URLS } from "#/lib/chain";
+import { createRpcTransport } from "#/lib/rpc-transport";
 
 const STORAGE_KEY = "clc_pk_connected";
 const ADDRESS_KEY = "clc_pk_address";
@@ -57,7 +59,7 @@ export function privateKeyConnector() {
         const key = getStoredKey();
         if (!key) throw new Error("No private key stored. Store one first via storePrivateKey().");
         const account = privateKeyToAccount(key);
-        const chainId = config.chains[0]?.id ?? 42220;
+        const chainId = config.chains[0]?.id ?? CHAIN_ID;
         return {
           accounts: [account.address],
           chainId,
@@ -76,7 +78,7 @@ export function privateKeyConnector() {
       },
 
       async getChainId() {
-        return config.chains[0]?.id ?? 42220;
+        return config.chains[0]?.id ?? CHAIN_ID;
       },
 
       async getProvider() {
@@ -84,13 +86,10 @@ export function privateKeyConnector() {
         if (!key) throw new Error("No private key stored");
         const account = privateKeyToAccount(key);
         const chain = config.chains[0] as Chain;
-        const rpcUrl =
-          (config.transports?.[chain.id] as { url?: string } | undefined)?.url ??
-          "https://forno.celo.org";
         const walletClient = createWalletClient({
           account,
           chain,
-          transport: http(rpcUrl),
+          transport: createRpcTransport(PUBLIC_RPC_URLS),
         });
 
         return {

@@ -9,6 +9,10 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
+
+import { CHAIN_INFO } from "#/lib/chain";
 import { VoucherTransactionsPage } from "./voucher-transactions-page";
 import { parseVoucherTransactionsSearch } from "./transactions-search";
 
@@ -156,7 +160,7 @@ describe("VoucherTransactionsPage", () => {
     renderPage([transfer]);
 
     const link = (await table()).getByRole("link", { name: /on the block explorer/ });
-    expect(link.getAttribute("href")).toBe(`https://celoscan.io/tx/${TX_HASH}`);
+    expect(link.getAttribute("href")).toBe(explorerTxUrl(CHAIN_INFO, TX_HASH));
   });
 
   it("sends a free-text term to the backend and keeps it in the URL", async () => {

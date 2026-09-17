@@ -1,15 +1,18 @@
+import { getAddress, isAddress, zeroAddress } from "viem";
 import { z } from "zod";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "../../lib/contact";
+import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import {
   CELO_MAINNET_CHAIN_ID,
   CELO_MAINNET_CKES_ADDRESS,
   CELO_MAINNET_CUSD_ADDRESS,
 } from "../../lib/constants/celo";
+import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { isTerminalOtxFailure } from "../../lib/otx";
 import { locationSchema } from "../location/logic";
 
@@ -32,11 +35,51 @@ export const poolDescriptionSchema = z
   .min(3, { message: "Pool description must be at least 3 characters" })
   .max(500, { message: "Pool description must be 500 characters or fewer" });
 
+/**
+ * The text of a deployed pool's catalog record, as its owner or a steward may
+ * correct it after the fact. The display name reuses the publish rule for a
+ * pool name and the description reuses its publish rule too, so a pool cannot
+ * be edited into a state its create form would have rejected; the description
+ * also accepts "" because clearing a field is a legitimate correction and
+ * imported rows may never have had one. Terms is validated by length only; a
+ * form with a link/text switch applies the narrower schema per mode.
+ */
+export const poolProfileTextSchema = z.object({
+  displayName: poolNameSchema,
+  description: poolDescriptionSchema.or(z.literal("")),
+  unitOfAccount: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .refine((value) => value === "" || /^[A-Z0-9]{2,16}$/.test(value), {
+      message: "Use letters and numbers, for example KES",
+    }),
+  email: optionalEmailSchema,
+  website: optionalWebsiteSchema,
+  phone: optionalPhoneSchema,
+  terms: optionalTermsSchema,
+});
+
 export const poolSwapFeeSchema = z
   .string()
   .trim()
   .refine((value) => Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100, {
     message: "Swap fee must be a number from 0 to 100",
+  });
+
+/**
+ * Where collected swap fees are paid. Blank means the pool owner, which is what
+ * the deploy defaults to; anything else has to be a real account.
+ *
+ * Not tied to decoupling: `SwapPool` settles `withdraw` to `feeAddress`
+ * whichever mode it is in, and decoupling only reserves accrued fees from
+ * withdrawable liquidity.
+ */
+export const poolFeeAddressSchema = z
+  .string()
+  .trim()
+  .refine((value) => value === "" || (isAddress(value) && value.toLowerCase() !== zeroAddress), {
+    message: "Enter a valid wallet address",
   });
 
 export const poolTermsSchema = z.literal(true, {
@@ -47,22 +90,18 @@ export const poolSproutLicenseSchema = z.literal(true, {
   error: "Accept the SPROUT License to publish your pool",
 });
 
-const poolUnitSchema = z.enum(["KES", "USD", "HOUR"]);
+const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
+  message: "Choose a currency",
+});
 
 /**
  * The pricing models a new pool may be published with.
  *
- * RelativeQuoter is deliberately absent. It prices from manually maintained
- * per-token rates, which nothing in this product maintains — clc-core dropped
- * `pool_tokens.exchange_rate` in migration 007 — so a pool published on it has
- * no rate source and quotes whatever was last written by hand. DecimalQuoter
- * covers the same ground without that: it derives every pair from token
- * decimals, holds no state, and needs no per-voucher configuration.
- *
- * The backend still deploys and records relative pools, so this is a narrowing
- * of what is offered, not of what exists — see `poolQuoterTypeSchema`.
+ * Relative pricing is the product default. Its per-token rates can be managed
+ * as vouchers join the pool, while unset rates start at parity. DecimalQuoter
+ * remains the stateless equal-value option and OracleQuoter uses live feeds.
  */
-const poolPricingSchema = z.enum(["oracle", "decimal"]);
+const poolPricingSchema = z.enum(["relative", "oracle", "decimal"]);
 
 /**
  * The pricing models a pool may *be*, which is the wider set.
@@ -79,14 +118,28 @@ export type PoolQuoterType = z.infer<typeof poolQuoterTypeSchema>;
 
 export const POOL_QUOTER_TYPES = poolQuoterTypeSchema.options;
 
-const CELO_MAINNET_ORACLE_BASE_CURRENCY = {
-  KES: CELO_MAINNET_CKES_ADDRESS,
-  USD: CELO_MAINNET_CUSD_ADDRESS,
-} as const satisfies Partial<Record<PoolUnit, string>>;
+/**
+ * The token an OracleQuoter prices a pool's unit against, per chain.
+ *
+ * A unit is offered for oracle pricing only where the chain has a stable whose
+ * feed the quoter can read. Celo has Mento's; a chain absent from this table
+ * has none, so oracle pricing is refused there rather than deploying a quoter
+ * with a base currency that does not exist.
+ */
+const POOL_ORACLE_BASE_CURRENCY: Record<number, Partial<Record<PoolUnit, string>>> = {
+  [CELO_MAINNET_CHAIN_ID]: {
+    KES: CELO_MAINNET_CKES_ADDRESS,
+    USD: CELO_MAINNET_CUSD_ADDRESS,
+  },
+};
 
 function getPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): string | undefined {
-  if (chainId !== CELO_MAINNET_CHAIN_ID) return undefined;
-  return CELO_MAINNET_ORACLE_BASE_CURRENCY[unit as keyof typeof CELO_MAINNET_ORACLE_BASE_CURRENCY];
+  return POOL_ORACLE_BASE_CURRENCY[chainId]?.[unit];
+}
+
+/** Whether any unit at all can be oracle-priced on this chain. */
+export function chainHasPoolOracle(chainId: number): boolean {
+  return Object.keys(POOL_ORACLE_BASE_CURRENCY[chainId] ?? {}).length > 0;
 }
 
 function hasPoolOracleBaseCurrency(unit: PoolUnit, chainId: number): boolean {
@@ -100,39 +153,49 @@ export function poolUnitSchemaForPricing(pricing: PoolPricing, chainId: number) 
   );
 }
 
-export const poolCreateSchema = z
-  .object({
-    name: poolNameSchema,
-    symbol: poolSymbolSchema,
-    unit: poolUnitSchema,
-    description: poolDescriptionSchema,
-    pricing: poolPricingSchema,
-    feePolicyDefault: poolSwapFeeSchema,
-    feesDecoupled: z.boolean(),
-    location: locationSchema,
-    tags: z.array(z.string()),
-    email: optionalEmailSchema,
-    website: optionalWebsiteSchema,
-    phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
-    acceptedTerms: poolTermsSchema,
-    acceptedSproutLicense: poolSproutLicenseSchema,
-  })
-  .superRefine((value, ctx) => {
-    if (
-      value.pricing !== "oracle" ||
-      hasPoolOracleBaseCurrency(value.unit, CELO_MAINNET_CHAIN_ID)
-    ) {
-      return;
-    }
-    ctx.addIssue({
-      code: "custom",
-      path: ["unit"],
-      message: "Choose rates you set or equal value when the unit has no price feed",
+/**
+ * Takes the chain because the unit check depends on it: which units can be
+ * oracle-priced is a property of what is deployed on the chain being published
+ * to. It used to be fixed at Celo mainnet here while `poolUnitSchemaForPricing`
+ * and `toPoolDeployPayload` were both given the connected chain, so on any other
+ * chain the form accepted a unit that the payload builder then threw on.
+ */
+export function poolCreateSchemaForChain(chainId: number) {
+  return z
+    .object({
+      name: poolNameSchema,
+      symbol: poolSymbolSchema,
+      unitOfAccount: poolUnitSchema,
+      description: poolDescriptionSchema,
+      pricing: poolPricingSchema,
+      feePolicyDefault: poolSwapFeeSchema,
+      feesDecoupled: z.boolean(),
+      feeAddress: poolFeeAddressSchema,
+      location: locationSchema,
+      tags: z.array(z.string()),
+      email: optionalEmailSchema,
+      website: optionalWebsiteSchema,
+      phone: optionalPhoneSchema,
+      terms: optionalTermsSchema,
+      // Already uploaded by the time they reach the form: the picker uploads on
+      // selection, so these hold a stored URL or nothing.
+      imageUrl: optionalStoredImageUrlSchema,
+      acceptedTerms: poolTermsSchema,
+      acceptedSproutLicense: poolSproutLicenseSchema,
+    })
+    .superRefine((value, ctx) => {
+      if (value.pricing !== "oracle" || hasPoolOracleBaseCurrency(value.unitOfAccount, chainId)) {
+        return;
+      }
+      ctx.addIssue({
+        code: "custom",
+        path: ["unitOfAccount"],
+        message: "Choose rates you set or equal value when the unit has no price feed",
+      });
     });
-  });
+}
 
-export type PoolCreateInput = z.infer<typeof poolCreateSchema>;
+export type PoolCreateInput = z.infer<ReturnType<typeof poolCreateSchemaForChain>>;
 
 export type PoolDeployPayload = {
   name: string;
@@ -142,7 +205,10 @@ export type PoolDeployPayload = {
   quoterType: PoolPricing;
   feesDecoupled: boolean;
   feePolicyDefault: string;
+  /** Present only when the pool charges a fee: the account it is paid to. */
+  feeAddress?: string;
   baseCurrency?: string;
+  unitOfAccount: string;
   description: string;
   email?: string;
   website?: string;
@@ -174,11 +240,22 @@ export function toPoolDeployPayload(
   owner: string,
   chainId: number,
 ): PoolDeployPayload {
-  if (input.pricing === "oracle" && !hasPoolOracleBaseCurrency(input.unit, chainId)) {
+  if (input.pricing === "oracle" && !hasPoolOracleBaseCurrency(input.unitOfAccount, chainId)) {
     throw new PoolOracleUnavailableError();
   }
   const baseCurrency =
-    input.pricing === "oracle" ? getPoolOracleBaseCurrency(input.unit, chainId) : undefined;
+    input.pricing === "oracle"
+      ? getPoolOracleBaseCurrency(input.unitOfAccount, chainId)
+      : undefined;
+
+  const hasFee = Number(input.feePolicyDefault) > 0;
+  const feesDecoupled = hasFee && input.feesDecoupled;
+  // A pool that charges a fee always has somewhere to pay it: `SwapPool` credits
+  // `fees[token]` and settles `withdraw` to `feeAddress` whether or not fees are
+  // decoupled, and decoupling only reserves the accrued balance from
+  // withdrawable liquidity. The recipient therefore follows the fee, not the
+  // checkbox — it is the address the steward named, or the owner when blank.
+  const feeAddress = input.feeAddress.trim();
 
   return {
     name: input.name.trim(),
@@ -186,14 +263,17 @@ export function toPoolDeployPayload(
     decimals: "6",
     owner,
     quoterType: input.pricing,
-    feesDecoupled: Number(input.feePolicyDefault) > 0 && input.feesDecoupled,
+    feesDecoupled,
     feePolicyDefault: input.feePolicyDefault,
+    ...(hasFee ? { feeAddress: feeAddress ? getAddress(feeAddress) : owner } : {}),
     ...(baseCurrency ? { baseCurrency } : {}),
+    unitOfAccount: input.unitOfAccount,
     description: input.description.trim(),
     ...(input.email.trim() ? { email: input.email.trim() } : {}),
     ...(input.website.trim() ? { website: input.website.trim() } : {}),
     ...(input.phone.trim() ? { phone: input.phone.trim() } : {}),
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
+    ...(input.imageUrl?.trim() ? { imageUrl: input.imageUrl.trim() } : {}),
     locationName: input.location.locationName,
     geoLat: input.location.lat,
     geoLng: input.location.lng,
@@ -288,4 +368,59 @@ export function getPoolDeploymentStages(
       status: records.length > 0 ? statusLabels.queued : statusLabels.notSent,
     };
   });
+}
+
+/**
+ * Deposit headroom for one voucher, as its recorded limiter cap decides it.
+ *
+ * Every conclusion is a statement about the **catalog**, which mirrors the chain
+ * and can lag it or miss a field entirely — pools imported from federation carry
+ * no dependency addresses at all. An absent value is reported as unrecorded
+ * rather than as a zero, because the two have opposite consequences on SwapPool.
+ */
+export type PoolDepositCap =
+  /** No limiter on the pool: `mustWithinLimit` returns early and nothing is capped. */
+  | { kind: "uncapped" }
+  /** A limiter is recorded but the catalog holds no cap for this voucher. */
+  | { kind: "unrecorded" }
+  /** A recorded cap of zero. `balance + value > 0` for any deposit, so all revert. */
+  | { kind: "blocked" }
+  | { kind: "capped"; raw: string };
+
+/**
+ * Structural rather than typed against `UserPool` / `PoolVoucher`: those live in
+ * `@clc/api`, which core cannot import, and the rule needs one field from each.
+ */
+export function poolDepositCap(
+  pool: { limiterAddress: string | null },
+  voucher: { tokenLimit: string | null },
+): PoolDepositCap {
+  if (!pool.limiterAddress) return { kind: "uncapped" };
+  if (voucher.tokenLimit === null) return { kind: "unrecorded" };
+  // Normalized upstream to a run of digits, so a leading-zero string is still
+  // zero and must not be read as a cap.
+  if (/^0+$/.test(voucher.tokenLimit)) return { kind: "blocked" };
+  return { kind: "capped", raw: voucher.tokenLimit };
+}
+
+/**
+ * How much more of a voucher the pool will accept, in raw base units.
+ *
+ * `SwapPool.mustWithinLimit` reverts `LimitExceeded` unless
+ * `balanceOf(pool) + value <= limitOf(token, pool)`, so this is the largest
+ * `value` a deposit — and therefore the input side of a swap — may carry.
+ *
+ * Null where there is no number to give: an uncapped pool has no ceiling, and an
+ * unrecorded cap is one nothing has told us about. Neither is zero, and a caller
+ * that conflated them would refuse a swap the contract would have taken.
+ */
+export function poolDepositHeadroomRaw(cap: PoolDepositCap, poolBalanceRaw: string): string | null {
+  if (cap.kind === "blocked") return "0";
+  if (cap.kind !== "capped") return null;
+  try {
+    const left = BigInt(cap.raw) - BigInt(poolBalanceRaw);
+    return left > 0n ? left.toString() : "0";
+  } catch {
+    return null;
+  }
 }

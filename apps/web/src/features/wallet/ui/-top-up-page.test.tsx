@@ -27,6 +27,22 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Pretium wires its MPESA ramps on Celo mainnet alone, so every flow below is
+// exercised against that chain explicitly. Left to the build's own
+// VITE_CHAIN_ID these tests assert one thing on Celo and another on Gnosis,
+// where `chainHasPretiumRamp` is false and the whole section renders as
+// unavailable.
+vi.mock("#/lib/chain", () => ({
+  CHAIN_ID: 42220,
+  CHAIN_INFO: {
+    name: "Celo",
+    nativeSymbol: "CELO",
+    blockTimeMs: 1_000,
+    explorerUrl: "https://celoscan.io",
+    explorerName: "Celoscan",
+  },
+}));
+
 import { TopUpPage } from "./top-up-page";
 
 function renderWithQueryClient(ui: React.ReactElement) {

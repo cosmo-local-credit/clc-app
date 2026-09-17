@@ -1,6 +1,6 @@
 import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
 import { accountPoolsQueryOptions } from "@clc/api/features/admin/queries";
-import { reportsByAuthorQueryOptions } from "@clc/api/features/reports/queries";
+import { adminReportsQueryOptions } from "@clc/api/features/reports/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -44,8 +44,9 @@ import {
   type UserDetailSearch,
 } from "../user-detail-search";
 
-// The reports feed pages by an opaque (updated_at, id) cursor rather than the
-// numeric one this screen's search params carry, so its tab reads one page.
+// The post management list pages by an opaque (updated_at, id) cursor rather
+// than the numeric one this screen's search params carry, so its tab reads one
+// page.
 const RECORD_PAGE_SIZE = 50;
 
 const DIRECTIONS = [
@@ -56,7 +57,7 @@ const DIRECTIONS = [
 
 const TAB_LABELS: Record<AccountDetailTab, string> = {
   transactions: "Transactions",
-  reports: "Reports",
+  reports: "Posts",
   vouchers: "Vouchers created",
   pools: "Pool memberships",
 };
@@ -279,18 +280,27 @@ function TransfersPanel({ address, search }: { address: string; search: UserDeta
   );
 }
 
-/** Reports this account authored, filtered at the backend by author. */
+/**
+ * Every post this account authored, in any status.
+ *
+ * Reads the admin management endpoint rather than the approved-only catalog: as
+ * an audit view this has to show a submitted post, and the catalog query cannot.
+ * The `Approved posts` tile beside it is deliberately still approved-only, and
+ * says so, because it counts what the public feed shows.
+ */
 function ReportsPanel({ address }: { address: string }) {
-  const query = useQuery(reportsByAuthorQueryOptions(clcApi.reports, address, RECORD_PAGE_SIZE));
+  const query = useQuery(
+    adminReportsQueryOptions(clcApi.reports, { perPage: RECORD_PAGE_SIZE, author: address }),
+  );
   const state = useDataState(query, (page) => page.reports.length === 0);
 
   return (
     <RecordPanel state={state}>
       <SectionState
         state={state}
-        errorTitle="Could not load reports"
-        emptyTitle="No reports"
-        emptyDescription="This account has authored nothing in the catalog."
+        errorTitle="Could not load posts"
+        emptyTitle="No posts"
+        emptyDescription="This account has authored nothing."
         loadingRows={6}
       >
         <div className="overflow-x-auto">
@@ -298,21 +308,30 @@ function ReportsPanel({ address }: { address: string }) {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Tags</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Updated</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(query.data?.reports ?? []).map((report) => (
                 <TableRow key={report.id}>
                   <TableCell>
-                    <div className="truncate font-medium">{report.title}</div>
+                    <Link
+                      to="/posts/$reportId"
+                      params={{ reportId: report.id }}
+                      className="truncate font-medium underline-offset-4 hover:underline"
+                    >
+                      {report.title}
+                    </Link>
                     {report.description ? (
                       <div className="text-muted-foreground truncate text-xs">
                         {report.description}
                       </div>
                     ) : null}
+                  </TableCell>
+                  <TableCell>
+                    <StateBadge state={report.status} kind="post" />
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -323,11 +342,8 @@ function ReportsPanel({ address }: { address: string }) {
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {report.locationName ?? "—"}
-                  </TableCell>
                   <TableCell className="font-data text-xs">
-                    {formatDateTime(report.createdAt)}
+                    {formatDateTime(report.updatedAt)}
                   </TableCell>
                 </TableRow>
               ))}

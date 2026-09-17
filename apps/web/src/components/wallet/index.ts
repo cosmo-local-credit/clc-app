@@ -16,4 +16,5 @@ export {
   type TransferDetails,
   VoucherAvatar,
 } from "./wallet-kit";
+export { PoolLogo } from "./pool-logo";
 export { type WalletToken, WALLET_TOKEN_BY_ID } from "./wallet-data";

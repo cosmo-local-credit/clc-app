@@ -62,6 +62,12 @@ export type ProfilePayload = {
   email: string;
   phone: string;
   country: string;
+  /** Omitted only by clients released before profile preferences existed. */
+  preferredCurrency?: string;
+  /** An empty string explicitly clears a previously saved value. */
+  bio?: string;
+  /** An empty string explicitly clears a previously saved value. */
+  website?: string;
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
@@ -84,6 +90,12 @@ export type ProfileResult = {
   email: string;
   phone: string;
   country: string;
+  /** Optional while an older backend is deployed. */
+  preferredCurrency?: string | null;
+  /** Optional while an older backend is deployed. */
+  bio?: string | null;
+  /** Optional while an older backend is deployed. */
+  website?: string | null;
   locationName?: string | null;
   geoLat?: number | null;
   geoLng?: number | null;
@@ -136,6 +148,76 @@ export type OtxTrackingOutcome =
 const TRACKING_TIMEOUT_MS = 120_000;
 export const TRACKING_POLL_MS = 2_000;
 
+export type TrackingPollOptions = {
+  timeoutMs?: number;
+  pollMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+  /**
+   * Treat a not-found as "the row has not been written yet" instead of a
+   * failure.
+   *
+   * True for the relayer's own tracker, which issues a tracking id the moment it
+   * accepts a batch and writes the OTX row from an async worker shortly after.
+   * False for clc-core's `/api/v2/otx/track`, where a 404 is a decision rather
+   * than a race: it answers only for rows the caller owns, so polling through
+   * one would hang until the timeout instead of reporting the refusal.
+   */
+  pendingWhileNotFound?: boolean;
+};
+
+/**
+ * Whether an error means "no such tracking row", across both trackers.
+ *
+ * Two arms because the two clients raise different types for the same status —
+ * clc-core's `http.request` throws a classified `BackendApiError`, the relayer
+ * client its own `RelayerError` carrying a raw `status`.
+ */
+export function isTrackingNotFound(error: unknown): boolean {
+  if (error instanceof BackendApiError) return error.kind === "not-found";
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    (error as { status: unknown }).status === 404
+  );
+}
+
+/**
+ * Polls a tracker until the transaction settles, and returns the winning record.
+ *
+ * Takes the tracker as a function because the two that exist answer for
+ * different things: clc-core's projection covers deployments the signed-in user
+ * owns, while the relayer's covers every batch it submitted — including one
+ * signed by the relayer on a user's behalf, which never appears in the former.
+ */
+export async function pollTrackingCompletion(
+  track: () => Promise<OtxTrackResult>,
+  options: TrackingPollOptions = {},
+): Promise<OtxRecord> {
+  const timeoutMs = options.timeoutMs ?? TRACKING_TIMEOUT_MS;
+  const pollMs = options.pollMs ?? TRACKING_POLL_MS;
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    let result: OtxTrackResult | undefined;
+    try {
+      result = await track();
+    } catch (error) {
+      if (!(options.pendingWhileNotFound && isTrackingNotFound(error))) throw error;
+    }
+
+    const outcome = getTrackingOutcome(result);
+    if (outcome.kind === "success") return outcome.otx;
+    if (outcome.kind === "error") throw new Error(outcome.error);
+
+    await sleep(pollMs);
+  }
+
+  throw new Error("Transaction was accepted but not confirmed on-chain.");
+}
+
 export type AuthClient = {
   getSiweNonce(): Promise<string>;
   signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult>;
@@ -147,14 +229,7 @@ export type AuthClient = {
   getProfile(): Promise<ProfileResult>;
   getStorageToken(): Promise<StorageTokenResult>;
   trackOtx(trackingId: string): Promise<OtxTrackResult>;
-  waitForTrackingCompletion(
-    trackingId: string,
-    options?: {
-      timeoutMs?: number;
-      pollMs?: number;
-      sleep?: (ms: number) => Promise<void>;
-    },
-  ): Promise<OtxRecord>;
+  waitForTrackingCompletion(trackingId: string, options?: TrackingPollOptions): Promise<OtxRecord>;
 };
 
 export function createAuthClient(http: HttpClient): AuthClient {
@@ -231,6 +306,11 @@ export function createAuthClient(http: HttpClient): AuthClient {
           email: payload.email,
           phone: payload.phone,
           country: payload.country,
+          ...(payload.preferredCurrency === undefined
+            ? {}
+            : { preferredCurrency: payload.preferredCurrency }),
+          ...(payload.bio === undefined ? {} : { bio: payload.bio }),
+          ...(payload.website === undefined ? {} : { website: payload.website }),
           locationName: payload.locationName,
           geoLat: payload.geoLat,
           geoLng: payload.geoLng,
@@ -260,30 +340,9 @@ export function createAuthClient(http: HttpClient): AuthClient {
 
     async waitForTrackingCompletion(
       trackingId: string,
-      options: {
-        timeoutMs?: number;
-        pollMs?: number;
-        sleep?: (ms: number) => Promise<void>;
-      } = {},
+      options: TrackingPollOptions = {},
     ): Promise<OtxRecord> {
-      const timeoutMs = options.timeoutMs ?? TRACKING_TIMEOUT_MS;
-      const pollMs = options.pollMs ?? TRACKING_POLL_MS;
-      const sleep =
-        options.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
-      const deadline = Date.now() + timeoutMs;
-
-      while (Date.now() < deadline) {
-        const result = await trackOtx(trackingId);
-        const outcome = getTrackingOutcome(result);
-        if (outcome.kind === "success") return outcome.otx;
-        if (outcome.kind === "error") {
-          throw new Error(outcome.error);
-        }
-
-        await sleep(pollMs);
-      }
-
-      throw new Error("Transaction was accepted but not confirmed on-chain.");
+      return pollTrackingCompletion(() => trackOtx(trackingId), options);
     },
   };
 }

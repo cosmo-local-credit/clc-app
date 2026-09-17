@@ -20,7 +20,9 @@ export function useVoucherSupply(address: `0x${string}` | undefined) {
       return supply.toString();
     },
     enabled: Boolean(client && address),
-    retry: 2,
+    // The transport already tries every configured RPC. One query retry covers
+    // a transient all-provider failure without multiplying the worst-case wait.
+    retry: 1,
     refetchIntervalInBackground: true,
     refetchInterval: (query) => (query.state.data === "0" ? SUPPLY_POLL_MS : false),
   });

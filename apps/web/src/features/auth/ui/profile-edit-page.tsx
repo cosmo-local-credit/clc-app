@@ -1,6 +1,7 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
 import { type ProfileEditInput, profileEditSchema } from "@clc/core/features/signup/logic";
+import { isIsoCurrency } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useCanGoBack, useNavigate, useRouter } from "@tanstack/react-router";
@@ -9,16 +10,19 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
+import { CurrencySelect } from "#/components/ui/currency-select";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
+import { Textarea } from "#/components/ui/textarea";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { type ProfileResult } from "@clc/api/features/auth/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
 import { isStorageConfigured } from "#/lib/api/storage";
+import { preferredCurrencyForCountry } from "#/lib/profile-currency";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 // The signup flow stores a placeholder email for wallets created without one.
@@ -93,6 +97,13 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
     email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
     phone: profile.phone ?? "",
     location: initialLocation,
+    // Accounts made before profile preferences existed still get a useful,
+    // editable starting point the first time their profile is opened.
+    preferredCurrency: isIsoCurrency(profile.preferredCurrency)
+      ? profile.preferredCurrency
+      : preferredCurrencyForCountry(profile.country),
+    bio: profile.bio ?? "",
+    website: profile.website ?? "",
   };
 
   const form = useForm({
@@ -107,6 +118,9 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
           email: parsed.email,
           phone: parsed.phone,
           country: parsed.location?.country ?? profile.country,
+          preferredCurrency: parsed.preferredCurrency,
+          bio: parsed.bio,
+          website: parsed.website,
           ...(parsed.location
             ? {
                 locationName: parsed.location.locationName,
@@ -226,10 +240,95 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 </label>
                 <PhoneInputField
                   id="profile-phone"
+                  defaultCountry={profile.country}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(val)}
                   aria-invalid={!!err}
                   aria-label={t`Phone number`}
+                />
+                {err ? (
+                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
+                ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="preferredCurrency">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="profile-preferred-currency" className="font-medium text-sm">
+                  <Trans>Preferred currency</Trans>
+                </label>
+                <CurrencySelect
+                  id="profile-preferred-currency"
+                  value={field.state.value}
+                  onValueChange={field.handleChange}
+                  placeholder={t`Search currencies`}
+                  emptyMessage={t`No currencies found`}
+                  ariaLabel={t`Preferred currency`}
+                />
+                {err ? (
+                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
+                ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="bio">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="profile-bio" className="font-medium text-sm">
+                  <Trans>Bio</Trans>
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    <Trans>Optional</Trans>
+                  </span>
+                </label>
+                <Textarea
+                  id="profile-bio"
+                  rows={3}
+                  maxLength={500}
+                  placeholder={t`Tell people a little about yourself`}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  aria-invalid={!!err}
+                />
+                {err ? (
+                  <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
+                ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="website">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="profile-website" className="font-medium text-sm">
+                  <Trans>Website</Trans>
+                  <span className="ml-1 font-normal text-muted-foreground">
+                    <Trans>Optional</Trans>
+                  </span>
+                </label>
+                <Input
+                  id="profile-website"
+                  type="url"
+                  autoComplete="url"
+                  inputMode="url"
+                  placeholder="https://example.com"
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  aria-invalid={!!err}
+                  aria-label={t`Website`}
                 />
                 {err ? (
                   <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
@@ -299,7 +398,7 @@ function ProfileEditSkeleton() {
   return (
     <div className="space-y-4">
       <div className="space-y-4 border border-border bg-card p-4">
-        {["name", "email", "phone"].map((key) => (
+        {["name", "email", "phone", "currency", "bio", "website"].map((key) => (
           <div key={key} className="flex flex-col gap-1.5">
             <div className="h-4 w-16 bg-muted" />
             <div className="h-9 w-full bg-muted" />

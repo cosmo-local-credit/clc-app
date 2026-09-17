@@ -38,6 +38,8 @@ describe("voucher deploy client", () => {
       locationName: "Kilifi, Kenya",
       geoLat: -3.5107,
       geoLng: 39.9093,
+      iconUrl: "https://cdn.test/voucher/icon.webp",
+      bannerUrl: "https://cdn.test/voucher/banner.webp",
       tags: ["Agriculture"],
     };
 

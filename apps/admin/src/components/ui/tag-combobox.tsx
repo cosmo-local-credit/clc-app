@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { toVocabularyTitleCase, validateCustomTag } from "@clc/core/features/vocabulary/logic";
 
 import {
   Combobox,
   ComboboxChip,
   ComboboxChips,
+  ComboboxEmpty,
   ComboboxInput,
   ComboboxItem,
   ComboboxItemIndicator,
@@ -32,6 +34,21 @@ export function TagCombobox({
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const customValue = toVocabularyTitleCase(inputValue);
+  const canAddCustom =
+    !validateCustomTag(customValue) &&
+    !items.some((item) => item.toLowerCase() === customValue.toLowerCase());
+
+  const addCustomValue = () => {
+    if (!canAddCustom) return;
+    if (!value.some((item) => item.toLowerCase() === customValue.toLowerCase())) {
+      onValueChange([...value, customValue]);
+    }
+    setInputValue("");
+    setOpen(false);
+    inputRef.current?.blur();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -53,6 +70,8 @@ export function TagCombobox({
         open={open}
         onOpenChange={setOpen}
         items={items}
+        inputValue={inputValue}
+        onInputValueChange={setInputValue}
         value={value}
         onValueChange={(nextValue, eventDetails) => {
           onValueChange(nextValue);
@@ -78,18 +97,38 @@ export function TagCombobox({
               aria-label={searchLabel}
               onFocus={() => setOpen(true)}
               onClick={() => setOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && canAddCustom) {
+                  event.preventDefault();
+                  addCustomValue();
+                }
+              }}
             />
           </div>
         </ComboboxChips>
         {open ? (
-          <ComboboxList className="mt-1.5" aria-label={listLabel}>
-            {(tag: string) => (
-              <ComboboxItem key={tag} value={tag}>
-                <span className="flex-1">{tag}</span>
-                <ComboboxItemIndicator />
-              </ComboboxItem>
-            )}
-          </ComboboxList>
+          <>
+            <ComboboxList className="mt-1.5" aria-label={listLabel}>
+              {(tag: string) => (
+                <ComboboxItem key={tag} value={tag}>
+                  <span className="flex-1">{tag}</span>
+                  <ComboboxItemIndicator />
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+            {canAddCustom ? (
+              <button
+                type="button"
+                className="mt-1 w-full border border-border bg-card px-2.5 py-2 text-left text-sm"
+                onClick={addCustomValue}
+              >
+                Add “{customValue}”
+              </button>
+            ) : null}
+            <ComboboxEmpty>
+              <p className="px-2.5 py-2 text-muted-foreground text-sm">No tags found.</p>
+            </ComboboxEmpty>
+          </>
         ) : null}
       </Combobox>
     </div>

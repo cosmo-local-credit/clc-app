@@ -1,4 +1,5 @@
 import type { VoucherCreateInput } from "@clc/core/features/vouchers/logic";
+import { isHttpUrl } from "@clc/core/lib/contact";
 import { useLingui } from "@lingui/react/macro";
 
 import { InfoRow } from "#/components/ui/info-row";
@@ -19,6 +20,9 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
       <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
       <InfoRow label={t`Price`}>
         {values.price} {values.unitOfAccount}
+      </InfoRow>
+      <InfoRow label={t`Supply`}>
+        {values.supply} {values.symbol}
       </InfoRow>
       <InfoRow label={t`Type`} muted>
         {values.voucherType === "expiring" ? t`Expiring` : t`Standard`}
@@ -44,7 +48,7 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
         {values.phone || "—"}
       </InfoRow>
       <InfoRow label={t`Terms`} muted>
-        {values.terms || "—"}
+        {values.terms === "" ? "—" : isHttpUrl(values.terms) ? values.terms : t`Written below`}
       </InfoRow>
     </>
   );

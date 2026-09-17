@@ -100,6 +100,16 @@ describe("EditVoucherSheet", () => {
     }
   });
 
+  it("shows the unit of account as a searchable named currency", async () => {
+    renderSheet();
+
+    const currency = await waitFor(() => screen.getByLabelText("Unit of account"));
+    expect((currency as HTMLInputElement).value).toBe("KES - Kenyan Shillings");
+    fireEvent.click(currency);
+    fireEvent.change(currency, { target: { value: "Ugandan" } });
+    expect(await screen.findByRole("option", { name: "UGX - Ugandan Shilling" })).toBeTruthy();
+  });
+
   it("sends the whole record, since the endpoint assigns every column", async () => {
     renderSheet();
 
@@ -126,6 +136,18 @@ describe("EditVoucherSheet", () => {
       geoLng: 39.9093,
       tags: ["food"],
     });
+  });
+
+  it("sends a display-name override only when the operator changes the public label", async () => {
+    renderSheet();
+
+    const displayName = await waitFor(() => screen.getByLabelText("Display name"));
+    fireEvent.change(displayName, { target: { value: "Kilifi Community Market" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalled());
+    const [, profile] = updateVoucherProfile.mock.calls[0]!;
+    expect(profile).toMatchObject({ displayName: "Kilifi Community Market" });
   });
 
   it("sends a cleared value as null rather than zero", async () => {

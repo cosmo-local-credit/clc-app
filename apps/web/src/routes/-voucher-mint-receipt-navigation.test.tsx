@@ -28,6 +28,10 @@ vi.mock("#/features/vouchers/hooks/use-voucher-mint", () => ({
   useVoucherMint: () => ({ mutateAsync: mintMock, isPending: false }),
 }));
 
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({ data: undefined }),
+}));
+
 vi.mock("#/features/vouchers/hooks/use-voucher-supply", () => ({
   useVoucherSupply: () => ({
     data: "0",
@@ -65,6 +69,7 @@ vi.mock("#/hooks/use-deployment", () => ({
   }),
 }));
 
+import { voucherReceiptSearchSchema } from "#/features/vouchers/receipt-search";
 import { VoucherDeploymentReceiptPage } from "#/features/vouchers/ui";
 
 afterEach(() => {
@@ -72,6 +77,36 @@ afterEach(() => {
 });
 
 describe("voucher mint receipt navigation", () => {
+  it("keeps the supply chosen during creation when the flow lands with it in the URL", async () => {
+    const rootRoute = createRootRoute({ component: Outlet });
+    const receiptRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/vouchers/create/receipt",
+      validateSearch: voucherReceiptSearchSchema,
+      component: function Receipt() {
+        const search = receiptRoute.useSearch();
+        return <VoucherDeploymentReceiptPage {...search} />;
+      },
+    });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([receiptRoute]),
+      history: createMemoryHistory({
+        // Exactly what the create flow pushes: a plain, unquoted amount.
+        initialEntries: ["/vouchers/create/receipt?trackingId=deploy-1&mintAmount=2000"],
+      }),
+    });
+    await router.load();
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+
+    expect((await screen.findByText("Supply")).nextElementSibling?.textContent).toBe("2000 KHV");
+    expect(screen.queryByLabelText("Create vouchers")).toBeNull();
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ mintAmount: "2000" }));
+  });
+
   it("replaces the pre-mint receipt so Back returns to review", async () => {
     const rootRoute = createRootRoute({ component: Outlet });
     const reviewRoute = createRoute({
@@ -82,18 +117,7 @@ describe("voucher mint receipt navigation", () => {
     const receiptRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/vouchers/create/receipt",
-      validateSearch: (
-        search,
-      ): {
-        trackingId?: string;
-        mintTrackingId?: string;
-        mintAmount?: string;
-      } => ({
-        trackingId: typeof search.trackingId === "string" ? search.trackingId : undefined,
-        mintTrackingId:
-          typeof search.mintTrackingId === "string" ? search.mintTrackingId : undefined,
-        mintAmount: typeof search.mintAmount === "string" ? search.mintAmount : undefined,
-      }),
+      validateSearch: voucherReceiptSearchSchema,
       component: function Receipt() {
         const search = receiptRoute.useSearch();
         return <VoucherDeploymentReceiptPage {...search} />;
@@ -112,7 +136,7 @@ describe("voucher mint receipt navigation", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.change(await screen.findByLabelText("First supply"), {
+    fireEvent.change(await screen.findByLabelText("Create vouchers"), {
       target: { value: "500" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
