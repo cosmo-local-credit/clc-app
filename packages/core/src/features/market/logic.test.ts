@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import {
+  formatOfferingDisplayPrice,
+  formatOfferingDisplayTotal,
   formatOfferingPrice,
   formatOfferingQuantity,
   formatOfferingTotal,
@@ -82,6 +84,42 @@ describe("formatOfferingPrice", () => {
   });
 });
 
+describe("formatOfferingDisplayPrice", () => {
+  it("converts a voucher-denominated offering price into its unit of account", () => {
+    expect(formatOfferingDisplayPrice("600", "1", "KES", "MOK")).toEqual({
+      value: "600",
+      unit: "KES",
+    });
+    expect(formatOfferingDisplayPrice("120.50", "0.5", "USD", "MOK")).toEqual({
+      value: "60.25",
+      unit: "USD",
+    });
+  });
+
+  it("multiplies decimal text exactly without losing precision", () => {
+    expect(formatOfferingDisplayPrice("9007199254740993.25", "1.2", "KES", "MOK")).toEqual({
+      value: "10808639105689191.9",
+      unit: "KES",
+    });
+  });
+
+  it("falls back to the voucher symbol when the conversion rate is incomplete", () => {
+    expect(formatOfferingDisplayPrice("600", null, "KES", "MOK")).toEqual({
+      value: "600",
+      unit: "MOK",
+    });
+    expect(formatOfferingDisplayPrice("600", "1", null, "MOK")).toEqual({
+      value: "600",
+      unit: "MOK",
+    });
+  });
+
+  it("returns no display price when the offering price is unusable", () => {
+    expect(formatOfferingDisplayPrice(null, "1", "KES", "MOK")).toBeNull();
+    expect(formatOfferingDisplayPrice("0", "1", "KES", "MOK")).toBeNull();
+  });
+});
+
 describe("formatOfferingQuantity", () => {
   it.each([null, "", "0", "0.000", "many", "-1"])("omits %s", (quantity) => {
     expect(formatOfferingQuantity(quantity, "kg")).toBeNull();
@@ -93,6 +131,11 @@ describe("formatOfferingQuantity", () => {
       value: "1000000000",
       unit: null,
     });
+  });
+
+  it("omits the synthetic quantity one stored for a new offering write", () => {
+    expect(formatOfferingQuantity("1", "hour", true)).toBeNull();
+    expect(formatOfferingQuantity("2", "hour", true)).toEqual({ value: "2", unit: "hour" });
   });
 });
 
@@ -129,5 +172,21 @@ describe("formatOfferingTotal", () => {
     ["a fractional quantity", "100", 1.5],
   ])("returns null for %s", (_label, price, count) => {
     expect(formatOfferingTotal(price, count)).toBeNull();
+  });
+});
+
+describe("formatOfferingDisplayTotal", () => {
+  it("totals the converted unit-of-account price", () => {
+    expect(formatOfferingDisplayTotal("600", "1", "KES", "MOK", 3)).toEqual({
+      value: "1800",
+      unit: "KES",
+    });
+  });
+
+  it("totals the voucher amount when no conversion is available", () => {
+    expect(formatOfferingDisplayTotal("600", null, null, "MOK", 2)).toEqual({
+      value: "1200",
+      unit: "MOK",
+    });
   });
 });

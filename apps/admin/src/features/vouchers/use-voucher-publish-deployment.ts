@@ -1,7 +1,10 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import { TRACKING_POLL_MS } from "@clc/api/features/auth/client";
 import { otxTrackQueryOptions } from "@clc/api/features/auth/otx-queries";
-import { deploymentContractQueryOptions } from "@clc/api/features/deployments/queries";
+import {
+  deploymentContractQueryOptions,
+  deploymentKeys,
+} from "@clc/api/features/deployments/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
 import { getVoucherTrackingOutcome } from "@clc/api/features/vouchers/deploy-client";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
@@ -12,7 +15,7 @@ import { toast } from "sonner";
 import { clcApi } from "#/lib/api";
 
 /** One stage per thing the operator is waiting on, in the order they resolve. */
-export type VoucherDeploymentStage = {
+type VoucherDeploymentStage = {
   label: string;
   state: "idle" | "active" | "done" | "failed";
   status: string;
@@ -40,6 +43,7 @@ export function useVoucherPublishDeployment() {
 
   const deploy = useMutation({
     mutationFn: (payload: VoucherDeployPayload) => clcApi.voucherDeploy.deployVoucher(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
   });
 
   const tracking = useQuery({

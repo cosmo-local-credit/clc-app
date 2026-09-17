@@ -86,7 +86,13 @@ export const voucherKeys = {
       },
     ] as const,
   facetVocabulary: () => ["clc", "vouchers", "facet-vocabulary"] as const,
-  search: (term: string) => ["clc", "vouchers", "search", term] as const,
+  /**
+   * `owner` narrows the lookup to one address's vouchers and is part of the key
+   * because it is a server parameter: the same term answers differently with
+   * and without it. Lower-cased so two casings of one address share an entry.
+   */
+  search: (term: string, owner?: string) =>
+    ["clc", "vouchers", "search", term, owner?.toLowerCase() ?? null] as const,
 } as const;
 
 /**

@@ -41,10 +41,16 @@ export function SendAmountPage({
   token,
   recipient,
   recipientLabel,
+  amount: seededAmount,
+  returnPool,
 }: {
   token?: string;
   recipient?: string;
   recipientLabel?: string;
+  /** Prefilled amount from a shortcut into this screen, such as send-after-swap. */
+  amount?: string;
+  /** Pool whose Deposit shortcut opened this screen; carried on to the receipt. */
+  returnPool?: string;
 }) {
   const { t } = useLingui();
   const navigate = useNavigate();
@@ -63,7 +69,9 @@ export function SendAmountPage({
   // Preserve the current token selection when editing the recipient.
   const tokenParam = selectedToken?.contractAddress ?? selectedToken?.id ?? token;
 
-  const [amount, setAmount] = useState("");
+  // Seeded once. The param is a starting point a shortcut chose, not a
+  // controlled value — typing over it must not be undone by a re-render.
+  const [amount, setAmount] = useState(() => sanitizeAmount(seededAmount ?? ""));
   const [amountFocused, setAmountFocused] = useState(false);
   const [maxAmountRaw, setMaxAmountRaw] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -126,6 +134,9 @@ export function SendAmountPage({
               <EllipsizedAddress address={recipientAddress} />
             )}
           </div>
+          {/* Changing the recipient leaves the deposit: `returnPool` is not
+              carried, because a send to someone else should end on the wallet
+              rather than on a pool it never reached. */}
           <button
             type="button"
             className="font-semibold text-primary text-xs hover:underline"
@@ -170,10 +181,34 @@ export function SendAmountPage({
         <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </button>
 
-      <div className="mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5">
-        <div className="flex items-baseline justify-center gap-1.5">
+      {/* The whole tile is the hit target. `field-sizing:content` shrinks the
+          input to the width of what has been typed, so an empty field is a few
+          pixels wide and nobody finds it.
+
+          A real `<label>` rather than a pointer handler. A handler has to call
+          preventDefault to stop the press blurring the field, and iOS Safari —
+          an installed PWA especially — then reads the press as a tap that ended
+          on nothing focusable: it raised the keypad for the programmatic
+          `focus()` and dismissed it again on touch end, leaving the few pixels
+          of caret as the only target that worked. Label activation is the one
+          path WebKit treats as a genuine tap on the control itself, and it
+          needs no script at all.
+
+          The label is an overlay under the tile's own controls, not a wrapper
+          around them: a label may hold only its own labelled control, and one
+          wrapping the Max button would both be invalid and steal its presses.
+          Everything above it keeps `relative` so it stays tappable — the input
+          included, so a tap on a digit still puts the caret there. */}
+      <div className="relative mb-2.5 flex flex-col items-center border border-border bg-card px-4 py-5">
+        <label htmlFor="send-amount" className="absolute inset-0 cursor-text">
+          <span className="sr-only">
+            <Trans>Amount</Trans>
+          </span>
+        </label>
+        <div className="relative flex items-baseline justify-center gap-1.5">
           <div className="relative flex items-baseline">
             <input
+              id="send-amount"
               type="text"
               inputMode="decimal"
               autoFocus
@@ -187,7 +222,6 @@ export function SendAmountPage({
               // field-sizing sizes the input to its text exactly, so the
               // number + symbol pair centers true. size is the pre-support fallback.
               size={Math.max(amount.length, 1)}
-              aria-label={t`Amount`}
               aria-invalid={exceedsMax}
               className={cn(
                 "min-w-0 bg-transparent text-center font-heading text-[2.5rem] font-semibold leading-none tracking-tight caret-primary outline-none [field-sizing:content]",
@@ -207,7 +241,7 @@ export function SendAmountPage({
           <Button
             variant="secondary"
             size="sm"
-            className="mt-3 h-8"
+            className="relative mt-3 h-8"
             onClick={() => {
               if (selectedToken.balance) {
                 setAmount(formatTokenAmountFixed(selectedToken.balance, tokenDecimals, 2));
@@ -222,7 +256,7 @@ export function SendAmountPage({
           </Button>
         ) : null}
         {exceedsMax ? (
-          <p className="mt-2 text-destructive text-xs">
+          <p className="relative mt-2 text-destructive text-xs">
             <Trans>Amount exceeds your balance</Trans>
           </p>
         ) : null}
@@ -278,6 +312,7 @@ export function SendAmountPage({
               recipient: recipientAddress,
               amount,
               symbol: selectedToken.symbol,
+              returnPool,
             },
           });
         }}

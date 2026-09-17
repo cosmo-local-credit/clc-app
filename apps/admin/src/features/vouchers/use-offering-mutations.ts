@@ -5,6 +5,7 @@ import {
 import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
 import { voucherKeys } from "@clc/api/features/market/queries";
+import { vocabularyKeys } from "@clc/api/features/vocabulary/queries";
 import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 import { clcApi } from "#/lib/api";
@@ -36,6 +37,7 @@ function settleOfferingWrite(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: poolKeys.all }),
     queryClient.invalidateQueries({ queryKey: voucherKeys.all }),
+    queryClient.invalidateQueries({ queryKey: vocabularyKeys.offeringUnits() }),
   ]);
 }
 

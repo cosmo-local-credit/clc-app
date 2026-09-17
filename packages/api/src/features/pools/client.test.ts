@@ -172,6 +172,84 @@ describe("pools client", () => {
   });
 });
 
+describe("updatePoolProfile", () => {
+  const ADDRESS = "0xAbC0000000000000000000000000000000000123";
+  const base = {
+    description: "A pool",
+    unitOfAccount: "KES",
+    email: "  ",
+    website: "",
+    phone: " +254700000000 ",
+    terms: "",
+    locationName: "Kilifi",
+    geoLat: -3.5,
+    geoLng: 39.9,
+    tags: ["food"],
+  };
+
+  it("PUTs the whole record to the owner route and returns the saved row", async () => {
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        pool: {
+          address: ADDRESS,
+          name: "Kilifi Traders",
+          contractName: "Kilifi Pool",
+          symbol: "KLF",
+        },
+      },
+    });
+    vi.stubGlobal("fetch", fetcher);
+
+    const pool = await api.updatePoolProfile(ADDRESS, base);
+
+    const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(`https://api.test/api/v2/pools/${ADDRESS}/profile`);
+    expect(init.method).toBe("PUT");
+    expect(init.cache).toBe("no-store");
+    expect(init.credentials).toBe("include");
+    expect(JSON.parse(init.body as string)).toEqual({
+      description: "A pool",
+      unitOfAccount: "KES",
+      email: null,
+      website: null,
+      phone: "+254700000000",
+      terms: null,
+      locationName: "Kilifi",
+      geoLat: -3.5,
+      geoLng: 39.9,
+      tags: ["food"],
+    });
+    expect(pool.name).toBe("Kilifi Traders");
+    expect(pool.contractName).toBe("Kilifi Pool");
+  });
+
+  // The label is an override, and an ordinary metadata save must not create one.
+  it("sends the display name only when the caller supplied it, and passes a blank through", async () => {
+    const fetcher = mockFetch({ ok: true, result: { pool: { address: ADDRESS } } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.updatePoolProfile(ADDRESS, base);
+    let body = JSON.parse((fetcher.mock.calls[0] as [string, RequestInit])[1].body as string);
+    expect("displayName" in body).toBe(false);
+
+    await api.updatePoolProfile(ADDRESS, { ...base, displayName: "Kilifi Traders" });
+    body = JSON.parse((fetcher.mock.calls[1] as [string, RequestInit])[1].body as string);
+    expect(body.displayName).toBe("Kilifi Traders");
+
+    await api.updatePoolProfile(ADDRESS, { ...base, displayName: "" });
+    body = JSON.parse((fetcher.mock.calls[2] as [string, RequestInit])[1].body as string);
+    expect(body.displayName).toBe("");
+  });
+
+  it("rejects a response without a usable pool", async () => {
+    vi.stubGlobal("fetch", mockFetch({ ok: true, result: { pool: { name: "No address" } } }));
+    await expect(api.updatePoolProfile(ADDRESS, base)).rejects.toThrow(
+      "Pool update response did not include a valid address.",
+    );
+  });
+});
+
 describe("getPools pagination and cancellation", () => {
   it("reports the sent row count, not the surviving one", async () => {
     const fetcher = mockFetch({

@@ -38,11 +38,13 @@ import {
   type BackendMarketVoucherDetail,
   type MarketVoucherDetail,
   normalizeMarketVoucherDetail,
+  serializeVoucherProfileUpdate,
   type VoucherProfileUpdate,
 } from "../market/client";
 import {
   normalizeUserPool,
   type PoolProfileUpdate,
+  serializePoolProfileUpdate,
   type UserPool,
   type UserPoolPage,
 } from "../pools/client";
@@ -60,6 +62,12 @@ export type AdminUser = {
   maxTokens: number;
   createdAt: string;
   updatedAt: string;
+  /** The account's chosen ISO 4217 currency. Null for profiles created before it existed. */
+  preferredCurrency?: string | null;
+  /** A short, optional account description. */
+  bio?: string | null;
+  /** The account's optional public website. */
+  website?: string | null;
   /** The account's profile image. Null when it has none. */
   avatarUrl: string | null;
   /** The account's saved place. Null when it has none. */
@@ -78,8 +86,14 @@ export type AdminUser = {
  * every consumer would otherwise have to know the difference between "absent"
  * and "empty".
  */
-type BackendAdminUser = Omit<AdminUser, "avatarUrl" | "locationName" | "geoLat" | "geoLng"> &
+type BackendAdminUser = Omit<
+  AdminUser,
+  "preferredCurrency" | "bio" | "website" | "avatarUrl" | "locationName" | "geoLat" | "geoLng"
+> &
   Partial<{
+    preferredCurrency: string | null;
+    bio: string | null;
+    website: string | null;
     avatarUrl: string | null;
     locationName: string | null;
     geoLat: number | null;
@@ -94,7 +108,7 @@ export type AdminUserLimits = {
 /**
  * The fields `PUT /admin/users/:address/profile` accepts.
  *
- * **The first four are required on every request, including one that only means
+ * **The first four identity fields are required on every request, including one that only means
  * to move a pin.** clc-core's `update-user-profile` statement assigns them
  * unconditionally (`SET name = $2, email = NULLIF($3, ''), …`), so a body that
  * omits `name` stores an empty name. Only the location keys are COALESCEd, which
@@ -112,6 +126,12 @@ export type AdminUserProfile = {
   email: string;
   phone: string;
   country: string;
+  /** ISO 4217 code. Omit only to preserve a legacy profile with no preference. */
+  preferredCurrency?: string;
+  /** Send an empty string to remove the bio. */
+  bio?: string;
+  /** Send an empty string to remove the website. */
+  website?: string;
   /** Sent as a set, or not at all: a label and its coordinates travel together. */
   locationName?: string;
   geoLat?: number;
@@ -419,6 +439,9 @@ function normalizeAdminUser(user: BackendAdminUser): AdminUser {
 
   return {
     ...user,
+    preferredCurrency: normalizeText(user.preferredCurrency),
+    bio: normalizeText(user.bio),
+    website: normalizeText(user.website),
     // Absent on a backend that predates avatars, and "" from one that has the
     // column but nothing in it; both mean no image.
     avatarUrl: normalizeText(user.avatarUrl),
@@ -488,11 +511,6 @@ type BackendAdminPoolEnvelope = { pool?: BackendAdminPool | null } & BackendAdmi
 type BackendAdminVoucherEnvelope = {
   voucher?: BackendMarketVoucherDetail | null;
 } & BackendMarketVoucherDetail;
-
-function emptyToNull(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed === "" ? null : trimmed;
-}
 
 export function createAdminClient(http: HttpClient): AdminClient {
   /**
@@ -587,27 +605,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
     async updatePoolProfile(address, profile, signal) {
       const result = await http.request<BackendAdminPoolEnvelope>(
         `/api/v2/admin/pools/${encodeURIComponent(address)}/profile`,
-        {
-          method: "PUT",
-          signal,
-          body: JSON.stringify({
-            description: emptyToNull(profile.description),
-            unitOfAccount: emptyToNull(profile.unitOfAccount),
-            email: emptyToNull(profile.email),
-            website: emptyToNull(profile.website),
-            phone: emptyToNull(profile.phone),
-            terms: emptyToNull(profile.terms),
-            locationName: emptyToNull(profile.locationName),
-            geoLat: profile.geoLat,
-            geoLng: profile.geoLng,
-            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
-            // two, so null means "leave the stored image alone" and "" is the only
-            // way to remove one. Omitted entirely when the caller has no opinion.
-            ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
-            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
-            tags: profile.tags,
-          }),
-        },
+        { method: "PUT", signal, body: JSON.stringify(serializePoolProfileUpdate(profile)) },
       );
       const pool = normalizeUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool update response did not include a valid address.");
@@ -625,28 +623,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
     async updateVoucherProfile(address, profile, signal) {
       const result = await http.request<BackendAdminVoucherEnvelope>(
         `/api/v2/admin/vouchers/${encodeURIComponent(address)}/profile`,
-        {
-          method: "PUT",
-          signal,
-          body: JSON.stringify({
-            description: emptyToNull(profile.description),
-            voucherUoa: emptyToNull(profile.voucherUoa),
-            voucherValue: profile.voucherValue,
-            email: emptyToNull(profile.email),
-            website: emptyToNull(profile.website),
-            phone: emptyToNull(profile.phone),
-            terms: emptyToNull(profile.terms),
-            locationName: emptyToNull(profile.locationName),
-            geoLat: profile.geoLat,
-            geoLng: profile.geoLng,
-            // Not emptyToNull, unlike every field above: clc-core COALESCEs these
-            // two, so null means "leave the stored image alone" and "" is the only
-            // way to remove one. Omitted entirely when the caller has no opinion.
-            ...(profile.iconUrl === undefined ? {} : { iconUrl: profile.iconUrl }),
-            ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
-            tags: profile.tags,
-          }),
-        },
+        { method: "PUT", signal, body: JSON.stringify(serializeVoucherProfileUpdate(profile)) },
       );
       const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
       if (!voucher) throw new Error("Voucher update response did not include a valid address.");

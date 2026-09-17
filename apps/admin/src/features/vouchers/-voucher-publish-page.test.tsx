@@ -226,6 +226,22 @@ describe("VoucherPublishPage", () => {
     );
   });
 
+  it("searches the full currency catalog by name", async () => {
+    renderPage();
+
+    const currency = await waitFor(() => screen.getByRole("combobox", { name: "Unit of account" }));
+    fireEvent.click(currency);
+    expect(screen.getByRole("option", { name: "KES - Kenyan Shillings" })).toBeTruthy();
+
+    fireEvent.change(currency, { target: { value: "Euro" } });
+    const euro = await screen.findByRole("option", { name: "EUR - Euro" });
+    fireEvent.pointerDown(euro, { pointerType: "mouse" });
+    fireEvent.click(euro);
+
+    await waitFor(() => expect((currency as HTMLInputElement).value).toBe("EUR - Euro"));
+    expect(screen.getByRole("definition", { name: "Value" }).textContent).toContain("EUR");
+  });
+
   it("defaults the owner to the operator and checksums an address typed in lowercase", async () => {
     renderPage();
 

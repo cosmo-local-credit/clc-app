@@ -1,3 +1,4 @@
+import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import { voucherMintAmountSchema } from "@clc/core/features/vouchers/logic";
 import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -15,6 +16,7 @@ import { InfoRow } from "#/components/ui/info-row";
 import { Input } from "#/components/ui/input";
 import { FailureCross, PendingClock, StatusPill, SuccessCheck } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { marketVoucherQueryKeys } from "#/features/home/hooks/use-market-vouchers";
 import { useVoucherMint } from "#/features/vouchers/hooks/use-voucher-mint";
 import { useVoucherSupply } from "#/features/vouchers/hooks/use-voucher-supply";
@@ -53,6 +55,9 @@ export function VoucherDeploymentReceiptPage({
   );
   const contract = contractQuery.data;
   const confirmed = contract?.status === "CONFIRMED" && contract.address !== null;
+  const voucherDetail = useMarketVoucherDetail(
+    confirmed && !draft ? (contract?.address ?? undefined) : undefined,
+  );
 
   const [supply, setSupply] = useState(mintAmount ?? "");
   const [supplyError, setSupplyError] = useState<string | null>(null);
@@ -88,6 +93,89 @@ export function VoucherDeploymentReceiptPage({
     void queryClient.invalidateQueries({ queryKey: accountWalletQueryKeys.all });
     void queryClient.invalidateQueries({ queryKey: marketVoucherQueryKeys.all });
   }, [minted, queryClient]);
+
+  const decimals = contract?.decimals ?? (draft ? Number(draft.decimals) : null);
+  const walletPreparing = delegationStatus === "checking";
+
+  const submitMint = async () => {
+    if (mintSubmissionInFlight.current) return;
+    if (!confirmed || !contract.address) return;
+    if (decimals === null || !Number.isInteger(decimals)) {
+      toast.error(t`Couldn't read how many decimals this voucher uses.`);
+      return;
+    }
+    if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
+    const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
+    if (!parsed.success) {
+      setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
+      return;
+    }
+    if (!walletAddress) {
+      toast.error(t`Connect your wallet to mint.`);
+      return;
+    }
+    if (!contract.admin) {
+      toast.error(t`Couldn't verify who owns this voucher.`);
+      return;
+    }
+    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
+      toast.error(t`Reconnect the wallet that published this voucher to mint.`);
+      return;
+    }
+    if (walletPreparing) return;
+    setSupplyError(null);
+    mintSubmissionInFlight.current = true;
+
+    const result = await mint
+      .mutateAsync({
+        tokenAddress: contract.address,
+        ownerAddress: contract.admin,
+        amountRaw: parseTokenAmount(parsed.data, decimals),
+        includeAuthorization: delegationStatus === "not-delegated",
+      })
+      .catch((error: unknown) => {
+        toast.error(error instanceof Error ? error.message : t`Couldn't mint the first supply.`);
+        return null;
+      });
+    if (!result) {
+      mintSubmissionInFlight.current = false;
+      return;
+    }
+    setSubmittedMintTrackingId(result.trackingId);
+    void navigate({
+      to: "/vouchers/create/receipt",
+      search: {
+        trackingId,
+        mintTrackingId: result.trackingId,
+        mintAmount: parsed.data,
+      },
+      replace: true,
+    });
+  };
+
+  // The issuer chose the opening supply while creating the voucher, so once the
+  // contract confirms it is minted without another tap. Anything the guards
+  // below reject leaves the manual mint step in place as the recovery path.
+  const autoMintAttempted = useRef(false);
+  useEffect(() => {
+    if (autoMintAttempted.current) return;
+    if (!mintAmount || activeMintTrackingId !== null) return;
+    if (!confirmed || !contract.address || !contract.admin || !walletAddress) return;
+    if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) return;
+    if (walletPreparing) return;
+    if (voucherSupply.data !== "0") return;
+    autoMintAttempted.current = true;
+    void submitMint();
+  }, [
+    activeMintTrackingId,
+    confirmed,
+    contract,
+    mintAmount,
+    submitMint,
+    voucherSupply.data,
+    walletAddress,
+    walletPreparing,
+  ]);
 
   const exit = (destination: string) => {
     clearDraft();
@@ -148,7 +236,14 @@ export function VoucherDeploymentReceiptPage({
       .catch(() => toast.error(errorMessage));
   };
 
-  const decimals = contract.decimals ?? (draft ? Number(draft.decimals) : null);
+  const voucherValue = draft?.price ?? voucherDetail.data?.voucherValue ?? null;
+  const voucherUnit = draft?.unitOfAccount ?? voucherDetail.data?.voucherUoa ?? null;
+  const supplyValue = formatOfferingDisplayPrice(
+    supply,
+    voucherValue,
+    voucherUnit,
+    contract.symbol,
+  );
   const detailRows = (
     <>
       <InfoRow label={t`Name`}>{contract.name}</InfoRow>
@@ -197,62 +292,6 @@ export function VoucherDeploymentReceiptPage({
       walletAddress &&
       contract.admin.toLowerCase() !== walletAddress.toLowerCase(),
     );
-    const walletPreparing = delegationStatus === "checking";
-    const submitMint = async () => {
-      if (mintSubmissionInFlight.current) return;
-      if (decimals === null || !Number.isInteger(decimals)) {
-        toast.error(t`Couldn't read how many decimals this voucher uses.`);
-        return;
-      }
-      if (voucherSupply.data === undefined || BigInt(voucherSupply.data) > 0n) return;
-      const parsed = voucherMintAmountSchema(decimals).safeParse(supply);
-      if (!parsed.success) {
-        setSupplyError(parsed.error.issues[0]?.message ?? "Supply must be greater than zero");
-        return;
-      }
-      if (!walletAddress) {
-        toast.error(t`Connect your wallet to mint.`);
-        return;
-      }
-      if (!contract.admin) {
-        toast.error(t`Couldn't verify who owns this voucher.`);
-        return;
-      }
-      if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
-        toast.error(t`Reconnect the wallet that published this voucher to mint.`);
-        return;
-      }
-      if (walletPreparing) return;
-      setSupplyError(null);
-      mintSubmissionInFlight.current = true;
-
-      const result = await mint
-        .mutateAsync({
-          tokenAddress: address,
-          ownerAddress: contract.admin,
-          amountRaw: parseTokenAmount(parsed.data, decimals),
-          includeAuthorization: delegationStatus === "not-delegated",
-        })
-        .catch((error: unknown) => {
-          toast.error(error instanceof Error ? error.message : t`Couldn't mint the first supply.`);
-          return null;
-        });
-      if (!result) {
-        mintSubmissionInFlight.current = false;
-        return;
-      }
-      setSubmittedMintTrackingId(result.trackingId);
-      void navigate({
-        to: "/vouchers/create/receipt",
-        search: {
-          trackingId,
-          mintTrackingId: result.trackingId,
-          mintAmount: parsed.data,
-        },
-        replace: true,
-      });
-    };
-
     const primaryAction = () => {
       if (trackingUnavailable) {
         void mintTracking.refetch();
@@ -292,7 +331,7 @@ export function VoucherDeploymentReceiptPage({
             ) : minting ? (
               <Trans>Minting {contract.symbol}...</Trans>
             ) : (
-              <Trans>{contract.symbol} is deployed</Trans>
+              <Trans>{contract.name} is deployed</Trans>
             )}
           </h1>
           <p className="mt-2 text-muted-foreground text-sm">
@@ -320,32 +359,52 @@ export function VoucherDeploymentReceiptPage({
           </div>
         </div>
 
-        <dl className="mt-6 border border-border bg-card">{detailRows}</dl>
+        {mintAmount ? (
+          // The amount was chosen while creating the voucher; asking again here
+          // would be the same question twice. The input below is the recovery
+          // path for a receipt opened without it.
+          <dl className="mt-6 border border-border bg-card">
+            <InfoRow label={t`Supply`}>
+              {supplyValue
+                ? `${supplyValue.value} ${supplyValue.unit}`
+                : `${supply} ${contract.symbol}`}
+            </InfoRow>
+          </dl>
+        ) : (
+          <div className="mt-6">
+            <Field label={t`Create vouchers`} htmlFor="voucher-supply" error={supplyError}>
+              <Input
+                id="voucher-supply"
+                inputMode="decimal"
+                value={supply}
+                onChange={(event) => {
+                  setSupply(event.target.value);
+                  setSupplyError(null);
+                }}
+                placeholder="0"
+                disabled={
+                  minting ||
+                  supplyChecking ||
+                  supplyCheckFailed ||
+                  trackingUnavailable ||
+                  ownerUnavailable ||
+                  ownerMismatch ||
+                  walletPreparing
+                }
+                aria-invalid={supplyError !== null}
+              />
+            </Field>
+            {supplyValue ? (
+              <p className="mt-1 font-mono text-muted-foreground text-xs tabular-nums">
+                <Trans>
+                  Value: {supplyValue.value} {supplyValue.unit}
+                </Trans>
+              </p>
+            ) : null}
+          </div>
+        )}
 
-        <div className="mt-3.5">
-          <Field label={t`First supply`} htmlFor="voucher-supply" error={supplyError}>
-            <Input
-              id="voucher-supply"
-              inputMode="decimal"
-              value={supply}
-              onChange={(event) => {
-                setSupply(event.target.value);
-                setSupplyError(null);
-              }}
-              placeholder="0"
-              disabled={
-                minting ||
-                supplyChecking ||
-                supplyCheckFailed ||
-                trackingUnavailable ||
-                ownerUnavailable ||
-                ownerMismatch ||
-                walletPreparing
-              }
-              aria-invalid={supplyError !== null}
-            />
-          </Field>
-        </div>
+        <AdvancedDeploymentDetails className="mt-3.5">{detailRows}</AdvancedDeploymentDetails>
 
         <div className="mt-auto pt-6">
           <Button
@@ -390,13 +449,16 @@ export function VoucherDeploymentReceiptPage({
       ? formatTokenAmount(voucherSupply.data, decimals, decimals)
       : "";
   const publishedSupply = chainSupply || mintAmount || supply.trim();
+  const publishedSupplyValue = publishedSupply
+    ? formatOfferingDisplayPrice(publishedSupply, voucherValue, voucherUnit, contract.symbol)
+    : null;
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+3rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="flex flex-col items-center text-center">
         <SuccessCheck />
         <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>{contract.symbol} is live</Trans>
+          <Trans>{contract.name} is live</Trans>
         </h1>
         <p className="mt-2 text-muted-foreground text-sm">
           <Trans>{contract.name} can be held, sent and redeemed.</Trans>
@@ -406,11 +468,18 @@ export function VoucherDeploymentReceiptPage({
         </div>
       </div>
 
-      <dl className="mt-6 border border-border bg-card">
+      {publishedSupply ? (
+        <dl className="mt-6 border border-border bg-card">
+          <InfoRow label={t`Supply`}>
+            {publishedSupplyValue
+              ? `${publishedSupplyValue.value} ${publishedSupplyValue.unit}`
+              : `${publishedSupply} ${contract.symbol}`}
+          </InfoRow>
+        </dl>
+      ) : null}
+
+      <AdvancedDeploymentDetails className={publishedSupply ? "mt-3.5" : "mt-6"}>
         {detailRows}
-        {publishedSupply ? (
-          <InfoRow label={t`Supply`}>{`${publishedSupply} ${contract.symbol}`}</InfoRow>
-        ) : null}
         {deploymentTxHash ? (
           <InfoRow label={t`Deployment transaction`}>
             <CopyableInfoValue
@@ -441,7 +510,7 @@ export function VoucherDeploymentReceiptPage({
             />
           </InfoRow>
         ) : null}
-      </dl>
+      </AdvancedDeploymentDetails>
 
       <div className="mt-auto pt-6">
         <Button className="h-11 w-full" onClick={() => exit(`/vouchers/${address}?from=vouchers`)}>
@@ -449,6 +518,23 @@ export function VoucherDeploymentReceiptPage({
         </Button>
       </div>
     </div>
+  );
+}
+
+function AdvancedDeploymentDetails({
+  className,
+  children,
+}: {
+  className: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className={`${className} border border-border bg-card`}>
+      <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
+        <Trans>Advanced details</Trans>
+      </summary>
+      <dl className="border-border border-t">{children}</dl>
+    </details>
   );
 }
 

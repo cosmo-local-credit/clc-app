@@ -1,4 +1,5 @@
 import type { CaliburCall } from "@clc/core/features/webauthn/index";
+import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { decodeAbiParameters, hexToBytes, keccak256, recoverAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
@@ -127,6 +128,9 @@ describe("relayOperatorBatch", () => {
     // these calls rather than to a nonce standing in for them.
     const challenge = new Uint8Array(get.mock.calls[0]![0].publicKey.challenge);
     expect(Array.from(challenge)).toEqual(Array.from(hexToBytes(DIGEST)));
+    expect(get.mock.calls[0]![0].publicKey.rpId).toBe(
+      resolveRelyingPartyId(import.meta.env.VITE_RELYING_PARTY_ID),
+    );
   });
 
   it("refuses a passkey the console has marked stale", async () => {

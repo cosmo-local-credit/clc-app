@@ -2,17 +2,18 @@ import type { Offering, OfferingWrite } from "@clc/api/features/offerings/client
 import {
   OFFERING_UNITS,
   type OfferingCommodityType,
-  type OfferingUnit,
   offeringWriteSchema,
 } from "@clc/core/features/offerings/logic";
+import { toVocabularyTitleCase, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
+import { SearchableSelect } from "#/components/ui/searchable-select";
 import {
   SheetBackdrop,
   SheetContent,
@@ -24,6 +25,7 @@ import {
 } from "#/components/ui/sheet";
 import { Textarea } from "#/components/ui/textarea";
 import { isStorageConfigured } from "#/lib/api/storage";
+import { useOfferingUnits } from "#/hooks/use-vocabulary";
 
 import {
   useCreateVoucherOffering,
@@ -42,7 +44,7 @@ export type OfferingEditor = { kind: "create" } | { kind: "edit"; offering: Offe
  * being exhaustive means a unit added to `OFFERING_UNITS` is a type error here
  * rather than an untranslated string in production.
  */
-function useUnitLabel(): (unit: OfferingUnit) => string {
+function useUnitLabel(): (unit: string) => string {
   const { t } = useLingui();
 
   return (unit) => {
@@ -77,6 +79,8 @@ function useUnitLabel(): (unit: OfferingUnit) => string {
         return t`Session`;
       case "metre":
         return t`Metre`;
+      default:
+        return unit;
     }
   };
 }
@@ -91,12 +95,16 @@ function useUnitLabel(): (unit: OfferingUnit) => string {
 export function OfferingEditorSheet({
   editor,
   voucherAddress,
-  voucherSymbol,
+  priceCurrency,
+  defaultImageUrl,
   onClose,
 }: {
   editor: OfferingEditor | null;
   voucherAddress: string;
-  voucherSymbol: string;
+  /** The voucher's unit of account, such as KES — never its token symbol. */
+  priceCurrency: string;
+  /** The issuer's profile photo, used only for a new offering. */
+  defaultImageUrl: string | null;
   onClose: () => void;
 }) {
   const offering = editor?.kind === "edit" ? editor.offering : null;
@@ -123,7 +131,8 @@ export function OfferingEditorSheet({
               key={offering?.id ?? "create"}
               offering={offering}
               voucherAddress={voucherAddress}
-              voucherSymbol={voucherSymbol}
+              priceCurrency={priceCurrency}
+              defaultImageUrl={defaultImageUrl}
               onClose={onClose}
             />
           ) : null}
@@ -136,18 +145,25 @@ export function OfferingEditorSheet({
 function OfferingForm({
   offering,
   voucherAddress,
-  voucherSymbol,
+  priceCurrency,
+  defaultImageUrl,
   onClose,
 }: {
   offering: Offering | null;
   voucherAddress: string;
-  voucherSymbol: string;
+  priceCurrency: string;
+  defaultImageUrl: string | null;
   onClose: () => void;
 }) {
   const { t } = useLingui();
   const unitLabel = useUnitLabel();
+  const unitsQuery = useOfferingUnits();
+  const unitValues = [...(unitsQuery.data ?? OFFERING_UNITS)];
+  if (offering?.unit && !unitValues.includes(offering.unit)) unitValues.push(offering.unit);
+  const unitOptions = unitValues.map((unit) => ({ value: unit, label: unitLabel(unit) }));
   const create = useCreateVoucherOffering(voucherAddress);
   const update = useUpdateVoucherOffering(voucherAddress);
+  const hasSeededDefaultImage = useRef(false);
 
   /**
    * Whether the photo field is mid-upload.
@@ -164,9 +180,12 @@ function OfferingForm({
       name: offering?.name ?? "",
       commodityType: (offering?.commodityType ?? "") as OfferingCommodityType | "",
       description: offering?.description ?? "",
-      unit: (offering?.unit ?? "") as OfferingUnit | "",
+      unit: offering?.unit ?? "",
       pricePerUnit: offering?.pricePerUnit ?? "",
-      imageUrl: offering?.imageUrl ?? null,
+      // A new offering starts with the issuer's profile photo, just like a
+      // voucher deployment. Editing preserves the offering's own saved photo
+      // (including an intentionally removed one).
+      imageUrl: offering ? offering.imageUrl : defaultImageUrl,
     },
     validators: { onSubmit: offeringWriteSchema },
     onSubmit: async ({ value }) => {
@@ -188,6 +207,16 @@ function OfferingForm({
       }
     },
   });
+
+  // Profiles can arrive after this sheet mounts. Like the deployment forms,
+  // seed only a pristine new record so a photo the issuer chose or removed is
+  // never replaced by a late profile response.
+  useEffect(() => {
+    if (offering || hasSeededDefaultImage.current || !defaultImageUrl) return;
+    hasSeededDefaultImage.current = true;
+    if (form.getFieldMeta("imageUrl")?.isTouched || form.getFieldValue("imageUrl") !== null) return;
+    form.setFieldValue("imageUrl", defaultImageUrl, { dontUpdateMeta: true });
+  }, [defaultImageUrl, form, offering]);
 
   const legacyUnit = offering?.unitLabel && !offering.unit ? offering.unitLabel : null;
 
@@ -275,49 +304,54 @@ function OfferingForm({
           )}
         </form.Field>
 
+        {/* One line for the pair, because they are one figure: fifteen unit
+            chips filled a screen of a sheet that has five other fields, and the
+            price they qualify sat above the fold on its own. */}
         <form.Field name="pricePerUnit">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Price per unit in ${voucherSymbol}`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              {/* inputMode, not type="number": a number input lets the browser
-                  localise and round, and this value has to reach the database as
-                  the exact text that was typed. */}
-              <Input
-                id={field.name}
-                inputMode="decimal"
-                autoComplete="off"
-                className="bg-card font-mono"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                maxLength={64}
-              />
-            </Field>
-          )}
-        </form.Field>
-
-        <form.Field name="unit">
-          {(field) => (
-            <Field
-              htmlFor={field.name}
-              label={t`Unit`}
-              error={getFieldError(field.state.meta.errors)}
-            >
-              <div className="flex flex-wrap gap-2" id={field.name}>
-                {OFFERING_UNITS.map((unit) => (
-                  <ChoiceButton
-                    key={unit}
-                    selected={field.state.value === unit}
-                    onClick={() => field.handleChange(unit)}
-                  >
-                    {unitLabel(unit)}
-                  </ChoiceButton>
-                ))}
-              </div>
-            </Field>
+          {(priceField) => (
+            <form.Field name="unit">
+              {(unitField) => (
+                <Field
+                  htmlFor={priceField.name}
+                  label={t`Price per unit in ${priceCurrency}`}
+                  // The row's first complaint. Both cannot be shown without
+                  // stacking two alerts under a single label.
+                  error={
+                    getFieldError(priceField.state.meta.errors) ??
+                    getFieldError(unitField.state.meta.errors)
+                  }
+                >
+                  <div className="flex gap-2">
+                    {/* inputMode, not type="number": a number input lets the
+                        browser localise and round, and this value has to reach
+                        the database as the exact text that was typed. */}
+                    <Input
+                      id={priceField.name}
+                      inputMode="decimal"
+                      autoComplete="off"
+                      className="min-w-0 flex-1 bg-card font-mono"
+                      value={priceField.state.value}
+                      onBlur={priceField.handleBlur}
+                      onChange={(event) => priceField.handleChange(event.target.value)}
+                      maxLength={64}
+                    />
+                    <SearchableSelect
+                      id={unitField.name}
+                      className="w-[8.5rem] shrink-0"
+                      options={unitOptions}
+                      value={unitField.state.value}
+                      onValueChange={unitField.handleChange}
+                      ariaLabel={t`Unit`}
+                      placeholder={t`Unit`}
+                      emptyMessage={t`No units found.`}
+                      createLabel={(unit) => t`Use “${unit}”`}
+                      normalizeCustomValue={toVocabularyTitleCase}
+                      validateCustomValue={validateCustomUnit}
+                    />
+                  </div>
+                </Field>
+              )}
+            </form.Field>
           )}
         </form.Field>
 

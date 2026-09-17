@@ -57,6 +57,34 @@ export function AccountProfileCard({ account }: { account: AdminUser }) {
               <RecordAbsent>None</RecordAbsent>
             )}
           </RecordRow>
+          <RecordRow label="Preferred currency">
+            {account.preferredCurrency ? (
+              <span className="font-data text-xs">{account.preferredCurrency}</span>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
+          </RecordRow>
+          <RecordRow label="Bio">
+            {account.bio ? (
+              <span className="whitespace-pre-wrap">{account.bio}</span>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
+          </RecordRow>
+          <RecordRow label="Website">
+            {account.website ? (
+              <a
+                href={account.website}
+                target="_blank"
+                rel="noreferrer"
+                className="truncate text-primary underline underline-offset-4"
+              >
+                {account.website}
+              </a>
+            ) : (
+              <RecordAbsent>None</RecordAbsent>
+            )}
+          </RecordRow>
           {/* Labelled as the profile sheet labels them, so the row an operator
               reads and the field they change are the same words. */}
           <RecordRow label="Max pools">

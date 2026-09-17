@@ -4,7 +4,7 @@ import { poolDescriptionSchema } from "@clc/core/features/pools/logic";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
-  optionalTermsUrlSchema,
+  optionalTermsSchema,
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { SectionLabel } from "#/components/admin/section-heading";
+import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { Button } from "#/components/ui/button";
@@ -60,7 +61,7 @@ const profileSchema = z
     email: optionalEmailSchema,
     website: optionalWebsiteSchema,
     phone: optionalPhoneSchema,
-    terms: optionalTermsUrlSchema,
+    terms: optionalTermsSchema,
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
     imageUrl: optionalStoredImageSchema,
@@ -213,13 +214,10 @@ export function EditPoolProfileSheet({
                   hint="What amounts in this pool are quoted in, for example KES."
                   error={getFieldError(field.state.meta.errors)}
                 >
-                  <Input
+                  <UnitOfAccountCombobox
                     id={field.name}
                     value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(event) => field.handleChange(event.target.value)}
-                    className="w-32 font-mono uppercase"
-                    maxLength={16}
+                    onValueChange={field.handleChange}
                   />
                 </Field>
               )}
@@ -289,12 +287,13 @@ export function EditPoolProfileSheet({
                 {(field) => (
                   <Field
                     htmlFor={field.name}
-                    label="Terms URL"
+                    label="Terms"
+                    hint="A link to the terms, or the terms themselves written as Markdown."
                     error={getFieldError(field.state.meta.errors)}
                   >
-                    <Input
+                    <Textarea
                       id={field.name}
-                      inputMode="url"
+                      rows={4}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) => field.handleChange(event.target.value)}

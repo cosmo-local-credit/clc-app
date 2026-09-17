@@ -14,6 +14,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { NotificationPayload } from "../logic/payload-schema";
 import {
+  clearNotificationIdentityStores,
   clearQueuedNotificationAcks,
   consumePendingNotificationClickEvents,
   deleteNotificationInboxMessages,
@@ -137,7 +138,9 @@ describe("notification inbox storage", () => {
     });
 
     expect(
-      (await listNotificationInboxMessages()).map((message) => message.notificationId),
+      (await listNotificationInboxMessages(basePayload.walletAddressTarget as string)).map(
+        (message) => message.notificationId,
+      ),
     ).toEqual(["notification-newer", "notification-older"]);
 
     expect(
@@ -161,6 +164,74 @@ describe("notification inbox storage", () => {
     await deleteNotificationInboxMessages(["notification-older"]);
     expect(await getNotificationInboxMessage("notification-older")).toBeNull();
     expect(await getNotificationInboxMessage("notification-newer")).not.toBeNull();
+  });
+
+  it("lists one wallet's messages and the device's, never another wallet's", async () => {
+    const other = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd";
+    await saveNotificationInboxMessage(inboxMessage({ notificationId: "mine" }));
+    await saveNotificationInboxMessage(
+      inboxMessage({ notificationId: "theirs", walletAddressTarget: other }),
+    );
+    // No target at all: a device-level message, which belongs to whoever holds
+    // the phone. Such a row has no entry in `by-wallet-address`, which is why
+    // the read cannot be an index lookup.
+    await saveNotificationInboxMessage(
+      inboxMessage({ notificationId: "device-wide", walletAddressTarget: undefined }),
+    );
+
+    const mine = await listNotificationInboxMessages(basePayload.walletAddressTarget as string);
+    expect(mine.map((message) => message.notificationId).sort()).toEqual(["device-wide", "mine"]);
+
+    const theirs = await listNotificationInboxMessages(other);
+    expect(theirs.map((message) => message.notificationId).sort()).toEqual([
+      "device-wide",
+      "theirs",
+    ]);
+  });
+
+  it("lowercases the target on save so a mixed-case address still matches", async () => {
+    const mixedCase = "0xAbCdEfAbCdEfAbCdEfAbCdEfAbCdEfAbCdEfAbCd";
+    await saveNotificationInboxMessage(
+      inboxMessage({ notificationId: "mixed", walletAddressTarget: mixedCase }),
+    );
+
+    expect(await getNotificationInboxMessage("mixed")).toMatchObject({
+      walletAddressTarget: mixedCase.toLowerCase(),
+    });
+    expect(
+      (await listNotificationInboxMessages(mixedCase)).map((message) => message.notificationId),
+    ).toEqual(["mixed"]);
+  });
+
+  it("clears one identity's rows on an identity change but keeps the device", async () => {
+    const deviceId = await getOrCreateNotificationDeviceId();
+    await updateNotificationConfig({ syncCursor: "cursor-9", vapidKeyVersion: "v3" });
+    await saveNotificationInboxMessage(inboxMessage({ notificationId: "mine" }));
+    await enqueueNotificationAck({
+      deviceId,
+      kind: "delivery",
+      notificationId: "mine",
+    });
+    await savePendingNotificationClickEvent({
+      notificationId: "mine",
+      targetUrl: "/wallet",
+    });
+
+    await clearNotificationIdentityStores();
+
+    expect(await listNotificationInboxMessages(basePayload.walletAddressTarget as string)).toEqual(
+      [],
+    );
+    expect(await listQueuedNotificationAcks()).toEqual([]);
+    expect(await consumePendingNotificationClickEvents()).toEqual([]);
+
+    // The device record is what the backend keys its record on. Dropping it
+    // would orphan that record and mint a new device on every account switch.
+    expect(await readNotificationDeviceId()).toBe(deviceId);
+    // The cursor must go with the inbox, or the backend treats the incoming
+    // user's backlog as already delivered. The rest of config stays.
+    expect(await readNotificationConfig()).toMatchObject({ vapidKeyVersion: "v3" });
+    expect((await readNotificationConfig())?.syncCursor).toBeUndefined();
   });
 });
 

@@ -47,6 +47,13 @@ export function VoucherProfileCard({ voucher }: { voucher: MarketVoucherDetail }
           within reading distance of each other. */}
       <CardContent className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(12rem,1.3fr)]">
         <dl className="flex flex-col">
+          <RecordRow label="Contract name">
+            {voucher.contractName ? (
+              <RecordData>{voucher.contractName}</RecordData>
+            ) : (
+              <RecordAbsent>Not recorded</RecordAbsent>
+            )}
+          </RecordRow>
           <RecordRow label="Owner">
             <RecordOwner address={voucher.ownerAddress} />
           </RecordRow>

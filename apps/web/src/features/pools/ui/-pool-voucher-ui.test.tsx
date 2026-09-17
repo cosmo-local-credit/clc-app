@@ -9,17 +9,37 @@ import { decodeFunctionData, encodeFunctionResult, type Hex } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const {
+  holderBalances,
   navigate,
   poolLiquidityBalance,
+  poolTreasuryState,
+  poolTokenLimit,
+  poolTransfers,
   publicClientCall,
   publicClientMulticall,
   swapMutateAsync,
   swapTransferState,
 } = vi.hoisted(() => ({
+  // What the wallet holds of each voucher, on chain. The swap screen reads this
+  // per voucher rather than from the indexer's holdings page, so a voucher the
+  // holder has not moved lately cannot fall off a page and read as a zero.
+  holderBalances: { value: {} as Record<string, bigint> },
   navigate: vi.fn(),
   poolLiquidityBalance: { value: 1_000_000_000n },
+  poolTreasuryState: {
+    balances: {} as Record<string, bigint>,
+    fees: {} as Record<string, bigint>,
+    feesDecoupled: false,
+  },
+  /**
+   * `limitOf(token, pool)` per token, over a default high enough to leave every
+   * swap room. The pool holds 30 of each voucher, so a cap of 30_000_000n is a
+   * pool that is full of it.
+   */
+  poolTokenLimit: { overrides: {} as Record<string, bigint>, fallback: 1_000_000_000n },
   publicClientCall: vi.fn(),
   publicClientMulticall: vi.fn(),
+  poolTransfers: { value: [] as Array<Record<string, unknown>> },
   swapMutateAsync: vi.fn(),
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
@@ -73,13 +93,25 @@ import { PoolSwapPage } from "./pool-swap-page";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const USDC_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
+const RAMBO_ADDRESS = "0x5555555555555555555555555555555555555555";
+const LIMITER_ADDRESS = "0x3333333333333333333333333333333333333333";
+const QUOTER_ADDRESS = "0x4444444444444444444444444444444444444444";
 
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string } = {}) {
+function mockPoolRequests({
+  usdcBalance = "12340000",
+  // A voucher the pool takes and the holder has none of — off by default so the
+  // holdings and offerings assertions keep their two-voucher arithmetic.
+  withUnheldVoucher = false,
+}: { usdcBalance?: string; withUnheldVoucher?: boolean } = {}) {
+  holderBalances.value = {
+    [USDC_ADDRESS.toLowerCase()]: BigInt(usdcBalance),
+    [TTX_ADDRESS.toLowerCase()]: 9_000_000n,
+  };
   vi.stubGlobal(
     "fetch",
     vi.fn((input: RequestInfo | URL) => {
@@ -88,12 +120,32 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
         return Promise.resolve(
           response({
             vouchers: [
+              // `list-pool-vouchers` orders by `v.id DESC`, so the newest voucher
+              // leads the page — which under the old screen was whatever got
+              // preselected, held or not.
+              ...(withUnheldVoucher
+                ? [
+                    {
+                      id: 3,
+                      address: RAMBO_ADDRESS,
+                      name: "Rambo Token",
+                      symbol: "RAMBO",
+                      decimals: 6,
+                      voucherUoa: "KES",
+                      voucherValue: "1",
+                      iconUrl: null,
+                    },
+                  ]
+                : []),
               {
                 id: 1,
                 address: USDC_ADDRESS,
                 name: "USD Coin",
                 symbol: "USDC",
                 decimals: 6,
+                voucherUoa: "USD",
+                voucherValue: "1",
+                tokenLimit: "40000000",
                 iconUrl: "https://pool.example/usdc.png",
               },
               {
@@ -102,11 +154,16 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
                 name: "Trade Token",
                 symbol: "TTX",
                 decimals: 6,
+                voucherUoa: "KES",
+                voucherValue: "2",
                 iconUrl: "https://pool.example/ttx.png",
               },
             ],
           }),
         );
+      }
+      if (url.includes(`/api/v2/accounts/`) && url.includes("/transfers")) {
+        return Promise.resolve(response({ transfers: poolTransfers.value }));
       }
       if (url.includes(`/api/v2/accounts/`) && url.includes("/tokens?")) {
         return Promise.resolve(
@@ -186,6 +243,13 @@ function mockPoolRequests({ usdcBalance = "12340000" }: { usdcBalance?: string }
             address: POOL_ADDRESS,
             name: "Trade Pool",
             symbol: "TRD",
+            unitOfAccount: "USD",
+            limiterAddress: LIMITER_ADDRESS,
+            quoterAddress: QUOTER_ADDRESS,
+            // Recorded, so the holdings panel does not have to probe for it.
+            // Only a RelativeQuoter exposes a readable rate, and without one
+            // the panel declines to value the pool rather than assume parity.
+            quoterType: "relative",
           }),
         );
       }
@@ -203,13 +267,82 @@ function response(result: unknown) {
   };
 }
 
+function tokenLimitOf(token: unknown): bigint {
+  return poolTokenLimit.overrides[String(token).toLowerCase()] ?? poolTokenLimit.fallback;
+}
+
 beforeEach(() => {
   poolLiquidityBalance.value = 1_000_000_000n;
+  poolTreasuryState.balances = {
+    [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
+    [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
+  };
+  poolTreasuryState.fees = {};
+  poolTreasuryState.feesDecoupled = false;
+  poolTokenLimit.overrides = {};
   swapTransferState.error = null;
   swapTransferState.isPending = false;
   swapMutateAsync.mockResolvedValue({ trackingId: "swap-tracking-1", signatureType: "secp256k1" });
-  publicClientMulticall.mockImplementation(() =>
-    Promise.resolve([poolLiquidityBalance.value, false, 0n]),
+  poolTransfers.value = [];
+  publicClientMulticall.mockImplementation(
+    ({
+      allowFailure,
+      contracts,
+    }: {
+      allowFailure: boolean;
+      contracts: Array<{ address: string; functionName: string; args?: readonly unknown[] }>;
+    }) => {
+      // The swap screen's per-voucher reads: holder balance, pool balance, fees,
+      // limiter cap — four to a voucher, in that order.
+      if (allowFailure && contracts[3]?.functionName === "limitOf") {
+        return Promise.resolve(
+          contracts.map((contract, index) => ({
+            status: "success",
+            result:
+              index % 4 === 0
+                ? (holderBalances.value[contract.address.toLowerCase()] ?? 0n)
+                : index % 4 === 1
+                  ? 30_000_000n
+                  : index % 4 === 2
+                    ? 0n
+                    : tokenLimitOf(contract.args?.[0]),
+          })),
+        );
+      }
+      // The quote's deposit-side pair: what the pool holds of the input token,
+      // and the cap it is measured against.
+      if (allowFailure && contracts[1]?.functionName === "limitOf") {
+        return Promise.resolve([
+          { status: "success", result: 30_000_000n },
+          { status: "success", result: tokenLimitOf(contracts[1].args?.[0]) },
+        ]);
+      }
+      // The holdings/admin treasury reads the immutable fee mode once, then
+      // alternates balanceOf/fees per voucher in the same Multicall3 snapshot.
+      // The swap quote's own three reads put feesDecoupled second instead.
+      if (contracts[0]?.functionName === "feesDecoupled" && contracts[2]?.functionName === "fees") {
+        return Promise.resolve(
+          contracts.map((contract, index) => {
+            if (index === 0) {
+              return { status: "success", result: poolTreasuryState.feesDecoupled };
+            }
+            if (index % 2 === 1) {
+              return {
+                status: "success",
+                result: poolTreasuryState.balances[contract.address.toLowerCase()] ?? 0n,
+              };
+            }
+            const tokenAddress = String(contract.args?.[0]).toLowerCase();
+            return { status: "success", result: poolTreasuryState.fees[tokenAddress] ?? 0n };
+          }),
+        );
+      }
+      // The holdings panel's quoter rates, which tolerate a reverted read.
+      if (allowFailure) {
+        return Promise.resolve(contracts.map(() => ({ status: "success", result: 2_000_000n })));
+      }
+      return Promise.resolve([poolLiquidityBalance.value, false, 0n]);
+    },
   );
   publicClientCall.mockImplementation(({ data }: { data: Hex }) => {
     try {
@@ -281,9 +414,9 @@ describe("pool voucher UI", () => {
     expect(attributions.every((element) => element.className.includes("text-info"))).toBe(true);
 
     // The unit rides with the price now, so the tile says what the amount buys.
-    expect(within(panel).getByText("25 USDC per bag")).toBeTruthy();
+    expect(within(panel).getByText("25 USD / bag")).toBeTruthy();
     // An offering with no unit keeps the bare price rather than reading "per null".
-    expect(within(panel).getByText("8 TTX")).toBeTruthy();
+    expect(within(panel).getByText("16 KES")).toBeTruthy();
     // The pool view is read-only for everyone. `OfferingsPanel` takes management
     // actions as a prop rather than deriving ownership, precisely so this screen
     // — which lists offerings from vouchers the viewer does not own — cannot
@@ -301,12 +434,12 @@ describe("pool voucher UI", () => {
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
-    expect(within(dialog).getByText("25 USDC each")).toBeTruthy();
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USDC");
+    expect(within(dialog).getByText("25 USD / bag")).toBeTruthy();
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USD");
     expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USDC");
+    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USD");
   });
 
   it("puts offerings first and links the vouchers tab without stacking history", async () => {
@@ -314,11 +447,154 @@ describe("pool voucher UI", () => {
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="offerings" />);
 
     const tabs = await screen.findAllByRole("tab");
-    expect(tabs.map((tab) => tab.textContent)).toEqual(["Offerings", "Vouchers"]);
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      "Offerings",
+      "Vouchers",
+      "Holdings",
+      "Activity",
+    ]);
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
-    expect(tabs[0]?.getAttribute("aria-controls")).toBe("pool-panel-offerings");
-    expect(tabs[1]?.getAttribute("aria-controls")).toBe("pool-panel-vouchers");
+    expect(tabs.map((tab) => tab.getAttribute("aria-controls"))).toEqual([
+      "pool-panel-offerings",
+      "pool-panel-vouchers",
+      "pool-panel-holdings",
+      "pool-panel-activity",
+    ]);
+    // Only the selected panel is mounted, so every tab's target exists but one
+    // panel is on screen.
     expect(screen.getByRole("tabpanel").id).toBe("pool-panel-offerings");
+  });
+
+  it("prices the pool's holdings and shows what each voucher has left before its cap", async () => {
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(panel.id).toBe("pool-panel-holdings");
+
+    // 30 of each voucher on chain, each priced at 2 USD. The pool's own unit
+    // leads and the voucher's amount sits under it, so a steward reads the
+    // figure they set the pool up in first.
+    await waitFor(() => expect(within(panel).getAllByText("60.00 USD")).toHaveLength(2));
+    expect(within(panel).getByText("30 USDC")).toBeTruthy();
+    expect(within(panel).getByText("30 TTX")).toBeTruthy();
+
+    // Rows are named, not tickered, with the pool's rate for the voucher under
+    // the name — the same line the vouchers tab prints.
+    expect(within(panel).getByText("USD Coin")).toBeTruthy();
+    expect(within(panel).getByText("Trade Token")).toBeTruthy();
+    expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
+    expect(within(panel).getByText("1 TTX = 2 USD")).toBeTruthy();
+
+    // USDC carries a recorded cap of 40 tokens — 80 USD — against 30 held, so
+    // 20 USD of credit is still on offer. TTX has no cap on record, which is not
+    // the same as having none.
+    expect(within(panel).getByText("20.00 of 80.00 USD available credit")).toBeTruthy();
+    expect(within(panel).getByText("Limit not set")).toBeTruthy();
+  });
+
+  it("fills the deposit bar with the credit still on offer, not the credit used", async () => {
+    // A steward who set a limit on an empty voucher is offering the whole of it.
+    // A bar reading empty at that moment says the opposite of the figure printed
+    // under it, which is what it used to do.
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    const bar = await within(panel).findByRole("progressbar", {
+      name: /USD Coin available credit/i,
+    });
+    // 30 of 40 held, so a quarter of the cap is left.
+    expect(bar.getAttribute("aria-valuenow")).toBe("25");
+  });
+
+  it("shows only withdrawable liquidity when the pool holds fees separately", async () => {
+    poolTreasuryState.feesDecoupled = true;
+    poolTreasuryState.balances[USDC_ADDRESS.toLowerCase()] = 7_430_000n;
+    poolTreasuryState.fees[USDC_ADDRESS.toLowerCase()] = 3_930_000n;
+    mockPoolRequests({ usdcBalance: "7430000" });
+
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    // 7.43 is the gross ERC-20 balance, but 3.93 is reserved for collection.
+    // The row values the 3.50 the pool can release: 3.50 x 2 USD = 7.00 USD.
+    await waitFor(() => expect(within(panel).getByText("7.00 USD")).toBeTruthy());
+    expect(within(panel).getByText("3.5 USDC")).toBeTruthy();
+    expect(within(panel).queryByText("7.43 USDC")).toBeNull();
+    // Deposit caps still use the gross balance, exactly like mustWithinLimit:
+    // (40 - 7.43) x 2 USD leaves 65.14 USD of credit.
+    expect(within(panel).getByText("65.14 of 80.00 USD available credit")).toBeTruthy();
+  });
+
+  it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
+    // clc-core exposes swaps to non-superadmins only as their ERC-20 legs, so
+    // the panel that does not rejoin them reports one trade as two movements.
+    poolTransfers.value = [
+      {
+        id: 2,
+        txHash: "0xswap",
+        dateBlock: "2026-09-01T10:00:00Z",
+        direction: "IN",
+        counterpartyAddress: "0x9999999999999999999999999999999999999999",
+        senderAddress: "0x9999999999999999999999999999999999999999",
+        recipientAddress: POOL_ADDRESS,
+        tokenAddress: USDC_ADDRESS,
+        tokenSymbol: "USDC",
+        tokenName: "USD Coin",
+        tokenDecimals: 6,
+        amount: "5000000",
+        success: true,
+      },
+      {
+        id: 1,
+        txHash: "0xswap",
+        dateBlock: "2026-09-01T10:00:00Z",
+        direction: "OUT",
+        counterpartyAddress: "0x9999999999999999999999999999999999999999",
+        senderAddress: POOL_ADDRESS,
+        recipientAddress: "0x9999999999999999999999999999999999999999",
+        tokenAddress: TTX_ADDRESS,
+        tokenSymbol: "TTX",
+        tokenName: "Trade Token",
+        tokenDecimals: 6,
+        amount: "2500000",
+        success: true,
+      },
+    ];
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="activity" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(panel.id).toBe("pool-panel-activity");
+
+    const rows = await within(panel).findAllByRole("button");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.textContent).toContain("Swapped USDC for TTX");
+    // The in/out marks the receipts use, rather than a bare + and −: the pool
+    // gained one voucher and gave up a different one, and nothing about the
+    // pair sums.
+    expect(rows[0]?.textContent).toContain("+5 USDC");
+    expect(rows[0]?.textContent).toContain("−2.5 TTX");
+
+    // Opening the row spells the swap out with both legs and the addresses on
+    // each side, which the single-transfer wallet sheet could not do.
+    fireEvent.click(rows[0] as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Pool received").parentElement?.textContent).toContain(
+      "+5 USDC",
+    );
+    expect(within(dialog).getByText("Pool paid out").parentElement?.textContent).toContain(
+      "−2.5 TTX",
+    );
+    expect(within(dialog).getByText("Trade Token")).toBeTruthy();
+    expect(within(dialog).getByText("USD Coin")).toBeTruthy();
+    expect(within(dialog).getByText("Confirmed")).toBeTruthy();
+    expect(
+      within(dialog)
+        .getByRole("link", { name: /view on block explorer/i })
+        .getAttribute("href"),
+    ).toContain("0xswap");
   });
 
   it("uses pool vouchers, wallet logos, and selected voucher balances in both swap fields", async () => {
@@ -336,8 +612,13 @@ describe("pool voucher UI", () => {
       (within(fromField).getByRole("textbox", { name: "From" }) as HTMLElement).className,
     ).toBe((within(toField).getByRole("textbox", { name: "To" }) as HTMLElement).className);
     expect(fromField.parentElement?.className).toContain("grid-rows-2");
-    expect(document.querySelector('img[src="https://wallet.example/usdc.png"]')).toBeTruthy();
-    expect(document.querySelector('img[src="https://wallet.example/ttx.png"]')).toBeTruthy();
+    // The pool's own catalog row supplies the icon. clc-core enriches an account
+    // token's `iconUrl` from the same `vouchers.icon_url` column, so the two
+    // agree in production and only the fixtures tell them apart — but the swap
+    // screen reads the catalog directly, and a voucher the holder's balance page
+    // has not reached still has to have a logo.
+    expect(document.querySelector('img[src="https://pool.example/usdc.png"]')).toBeTruthy();
+    expect(document.querySelector('img[src="https://pool.example/ttx.png"]')).toBeTruthy();
   });
 
   it("updates To from the real exact-input quote when From changes", async () => {
@@ -351,7 +632,10 @@ describe("pool voucher UI", () => {
     await waitFor(() => expect(toInput.value).toBe("20.00"));
     expect(screen.getByText("1 USDC = 2.000 TTX")).toBeTruthy();
     const call = publicClientCall.mock.calls.at(-2)?.[0] as { to: string; data: Hex };
-    expect(call.to).toBe("0x204653A89FF5F2A935c88b0c750cAcdaA9e7368d");
+    // `SWAP_ROUTER_ADDRESS` in `hooks/use-pool-swap-quote.ts`. Left asserting the
+    // Celo router when 197d2ee pointed the hook at the Gnosis one, which is what
+    // has been failing here since.
+    expect(call.to).toBe("0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC");
     expect(decodeFunctionData({ abi: swapRouterQuoteExactInputAbi, data: call.data }).args).toEqual(
       [[{ pool: POOL_ADDRESS, tokenIn: USDC_ADDRESS, tokenOut: TTX_ADDRESS }], 10_000_000n],
     );
@@ -363,6 +647,9 @@ describe("pool voucher UI", () => {
 
     const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
+    // The field opens empty now, so the settled state this asserts against has to
+    // be typed rather than assumed.
+    fireEvent.change(fromInput, { target: { value: "25" } });
     await waitFor(() => expect(toInput.value).toBe("50.00"));
     publicClientCall.mockClear();
 
@@ -382,6 +669,7 @@ describe("pool voucher UI", () => {
 
     const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
+    fireEvent.change(fromInput, { target: { value: "25" } });
     await waitFor(() => expect(toInput.value).toBe("50.00"));
     fireEvent.change(toInput, { target: { value: "8" } });
 
@@ -425,6 +713,7 @@ describe("pool voucher UI", () => {
 
     const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
+    fireEvent.change(fromInput, { target: { value: "25" } });
     await waitFor(() => expect(toInput.value).toBe("50.00"));
     expect(screen.getByText(/amount exceeds your balance/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
@@ -485,6 +774,9 @@ describe("pool voucher UI", () => {
         sendSymbol: "USDC",
         receiveAmount: "2.00",
         receiveSymbol: "TTX",
+        // Carried so the receipt can prefill a send of what was swapped out; a
+        // symbol alone would not identify the token to send.
+        receiveToken: TTX_ADDRESS,
         poolName: "Trade Pool",
       },
     });
@@ -577,7 +869,126 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
+    fireEvent.change(await screen.findByRole("textbox", { name: "From" }), {
+      target: { value: "1" },
+    });
+
     expect(await screen.findByRole("alert", { name: /couldn't estimate this swap/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("offers every voucher you hold in the From picker, not just the first one", async () => {
+    // The reported bug: the picker listed the pool's catalog rows and preselected
+    // whichever happened to be first, so a holder saw one voucher — often one
+    // they held none of — instead of their own shelf.
+    mockPoolRequests({ withUnheldVoucher: true });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "From" });
+    await within(fromField).findByText("USDC");
+    fireEvent.click(within(fromField).getByRole("button", { name: "USDC" }));
+
+    const rows = await screen.findAllByRole("button", { name: /USDC|TTX|RAMBO/ });
+    // Held first, largest holding leading: 12.34 USDC, then 9 TTX, then the one
+    // the holder has none of.
+    expect(rows.map((row) => row.textContent)).toEqual([
+      expect.stringContaining("USDC"),
+      expect.stringContaining("TTX"),
+      expect.stringContaining("RAMBO"),
+    ]);
+    expect(rows[0]?.textContent).toContain("12.34");
+    expect(rows[1]?.textContent).toContain("9");
+  });
+
+  it("keeps a voucher you hold none of visible, under Not held and unselectable", async () => {
+    // Hiding it would tell a holder who knows this pool takes RAMBO that it no
+    // longer does. Listing it dimmed says the pool is fine and their wallet is
+    // empty of it.
+    mockPoolRequests({ withUnheldVoucher: true });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "From" });
+    await within(fromField).findByText("USDC");
+    fireEvent.click(within(fromField).getByRole("button", { name: "USDC" }));
+
+    expect(await screen.findByText("Not held")).toBeTruthy();
+    const unheld = screen.getByRole("button", { name: /RAMBO/ });
+    expect(unheld.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("preselects the largest holding the pool will take, not the first catalog row", async () => {
+    // TTX is second in the catalog but the bigger holding, so it leads.
+    mockPoolRequests({ usdcBalance: "1000000" });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "From" });
+    expect(await within(fromField).findByText("TTX")).toBeTruthy();
+    expect(within(screen.getByRole("group", { name: "To" })).getByText("USDC")).toBeTruthy();
+  });
+
+  it("says when the pool is full of a voucher instead of quietly dropping it", async () => {
+    // The pool holds 30 USDC against a cap of 30, so `mustWithinLimit` reverts
+    // `LimitExceeded` on any deposit — worth knowing before a passkey ceremony.
+    poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 30_000_000n };
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "From" });
+    // USDC is the larger holding but cannot be deposited, so TTX leads instead.
+    expect(await within(fromField).findByText("TTX")).toBeTruthy();
+    fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
+
+    const full = await screen.findByRole("button", { name: /USDC/ });
+    expect(full.textContent).toContain("This pool is full of it");
+    expect(full.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("blocks an amount the pool has no room for, and clamps Max to that room", async () => {
+    // 30 USDC held against a cap of 34 leaves the pool room for 4, well under the
+    // holder's balance.
+    poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 34_000_000n };
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    expect(await screen.findByRole("button", { name: /max 4$/i })).toBeTruthy();
+
+    fireEvent.change(fromInput, { target: { value: "10" } });
+    expect(await screen.findByText(/this pool can only take 4\.00 more usdc/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: /max 4$/i }));
+    await waitFor(() => {
+      expect(fromInput.value).toBe("4");
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+  });
+
+  it("offers the pool's liquidity in the To picker, minus whatever From is", async () => {
+    mockPoolRequests({ withUnheldVoucher: true });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const toField = await screen.findByRole("group", { name: "To" });
+    await within(toField).findByText("TTX");
+    fireEvent.click(within(toField).getByRole("button", { name: "TTX" }));
+
+    const rows = await screen.findAllByRole("button", { name: /USDC|TTX|RAMBO/ });
+    // USDC is the selected From, so it cannot also be the output.
+    expect(rows.every((row) => !row.textContent?.includes("USDC"))).toBe(true);
+    // The pool holds 30 of each, which is what a holder is choosing between here
+    // — their own balance is irrelevant on this side.
+    expect(rows.every((row) => row.textContent?.includes("30"))).toBe(true);
+    expect(rows.some((row) => row.textContent?.includes("RAMBO"))).toBe(true);
+  });
+
+  it("says so when you hold nothing this pool takes", async () => {
+    holderBalances.value = {};
+    vi.stubGlobal("fetch", vi.fn());
+    mockPoolRequests();
+    holderBalances.value = {};
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    expect(await screen.findByText(/you don't hold any voucher this pool takes/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
@@ -587,6 +998,9 @@ describe("pool voucher UI", () => {
 
     const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
+    // Reversing is offered only once both sides are known to be swappable, so the
+    // selections have to have settled before the button means anything.
+    await within(screen.getByRole("group", { name: "From" })).findByText("USDC");
     fireEvent.change(fromInput, { target: { value: "17.25" } });
     const amountsBefore = [fromInput.value, toInput.value];
 

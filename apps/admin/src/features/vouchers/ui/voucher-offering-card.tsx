@@ -1,5 +1,8 @@
 import type { Offering } from "@clc/api/features/offerings/client";
-import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
+import {
+  formatOfferingDisplayPrice,
+  formatOfferingQuantity,
+} from "@clc/core/features/market/logic";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 
 /**
@@ -18,15 +21,28 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
  */
 export function VoucherOfferingCard({
   offering,
+  voucherValue,
+  voucherUoa,
   onEdit,
 }: {
   offering: Offering;
+  voucherValue: string | null;
+  voucherUoa: string | null;
   onEdit: () => void;
 }) {
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unitLabel);
-  const price = formatOfferingPrice(offering.pricePerUnit);
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucherValue,
+    voucherUoa,
+    offering.voucherSymbol ?? "",
+  );
   const priceLine = price
-    ? [price.value, offering.voucherSymbol, offering.unitLabel ? `/ ${offering.unitLabel}` : null]
+    ? [price.value, price.unit, offering.unitLabel ? `/ ${offering.unitLabel}` : null]
         .filter(Boolean)
         .join(" ")
     : "Unpriced";

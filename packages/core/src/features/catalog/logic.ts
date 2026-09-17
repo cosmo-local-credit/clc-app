@@ -106,6 +106,19 @@ export function toCatalogSearchState(filter: CatalogFilter): CatalogSearchState 
   return state;
 }
 
+/**
+ * A filter that narrows nothing, for callers whose only predicate lives beside
+ * the filter rather than in it — the owner-scoped pool list, say. Frozen because
+ * it is shared by every such call site.
+ */
+export const EMPTY_CATALOG_FILTER: CatalogFilter = Object.freeze({
+  term: "",
+  tags: Object.freeze([]) as readonly string[],
+  tagMatch: "any",
+  vouchers: Object.freeze([]) as readonly VoucherRef[],
+  voucherMatch: "any",
+});
+
 export function isFilterActive(filter: CatalogFilter): boolean {
   return filter.term !== "" || filter.tags.length > 0 || filter.vouchers.length > 0;
 }

@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { OfferingsPanel } from "#/components/offerings";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
   useManagedVoucherOfferingsInfinite,
   useVoucherOfferingsInfinite,
 } from "#/features/home/hooks/use-voucher-offerings";
+import { isStorageConfigured } from "#/lib/api/storage";
 
 import { useDeleteVoucherOffering } from "../hooks/use-offering-mutations";
 import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-sheet";
@@ -34,11 +36,15 @@ import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-shee
 export function VoucherOfferingsPanel({
   voucherAddress,
   voucherSymbol,
+  voucherValue,
+  voucherUoa,
   ownerAddress,
   isKnownEmpty,
 }: {
   voucherAddress: string | undefined;
   voucherSymbol: string;
+  voucherValue: string | null;
+  voucherUoa: string | null;
   /** The catalog's owner for this voucher, or null when it records none. */
   ownerAddress: string | null;
   /** `kind === "voucher"` already proves the result is empty — skip the request. */
@@ -46,6 +52,7 @@ export function VoucherOfferingsPanel({
 }) {
   const { t } = useLingui();
   const { isAuthenticated, session } = useAuthStatus();
+  const profileQuery = useAuthProfile();
 
   // The backend session's address, not the wagmi connector's. The write is
   // authorized against the cookie, so a connector that has moved on from the
@@ -95,6 +102,7 @@ export function VoucherOfferingsPanel({
         query={query}
         suppressed={!isOwner && isKnownEmpty}
         fallbackSymbol={voucherSymbol}
+        resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
         management={
           isOwner
             ? {
@@ -117,7 +125,8 @@ export function VoucherOfferingsPanel({
         <OfferingEditorSheet
           editor={editor}
           voucherAddress={voucherAddress}
-          voucherSymbol={voucherSymbol}
+          priceCurrency={voucherUoa ?? voucherSymbol}
+          defaultImageUrl={isStorageConfigured ? (profileQuery.data?.avatarUrl ?? null) : null}
           onClose={() => setEditor(null)}
         />
       ) : null}

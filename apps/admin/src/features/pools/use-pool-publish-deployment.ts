@@ -1,7 +1,10 @@
 import { BackendApiError } from "@clc/api/client/errors";
 import { TRACKING_POLL_MS } from "@clc/api/features/auth/client";
 import { otxTrackQueryOptions } from "@clc/api/features/auth/otx-queries";
-import { deploymentContractQueryOptions } from "@clc/api/features/deployments/queries";
+import {
+  deploymentContractQueryOptions,
+  deploymentKeys,
+} from "@clc/api/features/deployments/queries";
 import {
   getPoolDeploymentRecords,
   getPoolTrackingOutcome,
@@ -44,10 +47,11 @@ export function usePoolPublishDeployment() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [trackingId, setTrackingId] = useState<string | null>(null);
-  const [pricing, setPricing] = useState<PoolPricing>("oracle");
+  const [pricing, setPricing] = useState<PoolPricing>("relative");
 
   const deploy = useMutation({
     mutationFn: (payload: PoolDeployPayload) => clcApi.poolDeploy.deployPool(payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: deploymentKeys.tokenTags() }),
   });
 
   const tracking = useQuery({

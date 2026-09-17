@@ -3,7 +3,10 @@ import type { Offering } from "@clc/api/features/offerings/client";
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
 import { adminPoolTransactionsQueryOptions } from "@clc/api/features/admin/queries";
 import { poolOfferingsQueryOptions } from "@clc/api/features/offerings/queries";
-import { formatOfferingPrice, formatOfferingQuantity } from "@clc/core/features/market/logic";
+import {
+  formatOfferingDisplayPrice,
+  formatOfferingQuantity,
+} from "@clc/core/features/market/logic";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 
@@ -36,7 +39,8 @@ import { isModifiedClick } from "#/lib/tab-navigation";
 import { useDataState } from "#/lib/use-data-state";
 import { cn } from "#/lib/utils";
 import { POOL_DETAIL_TABS, type PoolDetailSearch, type PoolDetailTab } from "./pool-detail-search";
-import { depositCap, groupPoolFeeds } from "./pool-posture";
+import { poolDepositCap } from "@clc/core/features/pools/logic";
+import { groupPoolFeeds } from "./pool-posture";
 import { hasVoucher, type SettlingVoucher } from "./use-pool-vouchers";
 
 const RECORD_PAGE_SIZE = 25;
@@ -124,7 +128,7 @@ export function PoolRecordTabs({
         ) : tab === "feeds" ? (
           <FeedsPanel pool={pool} vouchers={vouchers} state={vouchersState} />
         ) : tab === "offerings" ? (
-          <OfferingsPanel pool={pool} />
+          <OfferingsPanel pool={pool} vouchers={vouchers} />
         ) : (
           <ActivityPanel pool={pool} />
         )}
@@ -230,7 +234,7 @@ function VouchersPanel({
  * rejects every deposit, and no record at all is neither.
  */
 function DepositCapCell({ pool, voucher }: { pool: UserPool; voucher: PoolVoucher }) {
-  const cap = depositCap(pool, voucher);
+  const cap = poolDepositCap(pool, voucher);
 
   if (cap.kind === "capped") {
     // No symbol: the voucher column two cells to the left already carries it,
@@ -352,7 +356,7 @@ function FeedsPanel({
  * the console that answers "is this pool trading" with something other than a
  * transaction count.
  */
-function OfferingsPanel({ pool }: { pool: UserPool }) {
+function OfferingsPanel({ pool, vouchers }: { pool: UserPool; vouchers: PoolVoucher[] }) {
   const query = useQuery(
     poolOfferingsQueryOptions(clcApi.offerings, pool.address, OFFERING_PAGE_SIZE),
   );
@@ -382,7 +386,15 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
             </TableHeader>
             <TableBody>
               {offerings.map((offering) => (
-                <OfferingRow key={offering.id} offering={offering} />
+                <OfferingRow
+                  key={offering.id}
+                  offering={offering}
+                  voucher={vouchers.find(
+                    (candidate) =>
+                      candidate.tokenAddress.toLowerCase() ===
+                      offering.voucherAddress.toLowerCase(),
+                  )}
+                />
               ))}
             </TableBody>
           </Table>
@@ -392,9 +404,18 @@ function OfferingsPanel({ pool }: { pool: UserPool }) {
   );
 }
 
-function OfferingRow({ offering }: { offering: Offering }) {
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unitLabel);
-  const price = formatOfferingPrice(offering.pricePerUnit);
+function OfferingRow({ offering, voucher }: { offering: Offering; voucher?: PoolVoucher }) {
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucher?.voucherValue ?? null,
+    voucher?.voucherUoa ?? null,
+    offering.voucherSymbol ?? "",
+  );
 
   return (
     <TableRow>
@@ -419,7 +440,7 @@ function OfferingRow({ offering }: { offering: Offering }) {
       </TableCell>
       <TableCell className="font-data text-xs">
         {price
-          ? `${price.value}${offering.voucherSymbol ? ` ${offering.voucherSymbol}` : ""}`
+          ? `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
           : "—"}
       </TableCell>
       <TableCell>

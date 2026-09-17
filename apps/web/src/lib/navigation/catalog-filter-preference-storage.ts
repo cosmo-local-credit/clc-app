@@ -1,5 +1,11 @@
 import type { TagMatch, VoucherRef } from "@clc/core/features/catalog/logic";
 import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/catalog/logic";
+import {
+  readOwnerScoped,
+  removeOwnerScoped,
+  writeOwnerScoped,
+} from "#/lib/storage/owner-scoped-storage";
+import type { StorageOwner } from "#/lib/storage/owner-tier-key";
 
 /**
  * Read-once bootstrap persistence for a catalog's remembered facet selection.
@@ -18,11 +24,20 @@ import { parseCatalogFilter, serializeVoucherRef } from "@clc/core/features/cata
  *
  * Only facet choices are remembered: restoring free text would make a later
  * visit look mysteriously empty.
+ *
+ * Scoped to an owner, including a `guest` tier — these are public screens, and a
+ * visitor who has never signed in still gets their selection back. Previously a
+ * single key per catalog, so one person's remembered facets silently narrowed
+ * the next person's market: not a disclosure so much as a screen that looks
+ * mysteriously empty for reasons the new user cannot see.
+ *
+ * The owner arrives as an argument rather than from a hook, so `lib/navigation/`
+ * stays free of `features/` imports.
  */
-export const CATALOG_FILTER_PREFERENCE_KEYS = {
-  market: "clc.market.filter-preferences.v1",
-  pools: "clc.pools.filter-preferences.v1",
-  posts: "clc.posts.filter-preferences.v1",
+export const CATALOG_FILTER_PREFERENCE_NAMES = {
+  market: "market.filter-preferences.v1",
+  pools: "pools.filter-preferences.v1",
+  posts: "posts.filter-preferences.v1",
 } as const;
 
 export type CatalogFilterPreference = {
@@ -32,25 +47,23 @@ export type CatalogFilterPreference = {
   voucherMatch: TagMatch;
 };
 
-export function readCatalogFilterPreference(storageKey: string): CatalogFilterPreference | null {
-  let raw: string | null | undefined;
-  try {
-    raw = getStorage()?.getItem(storageKey);
-  } catch {
-    return null;
-  }
+export function readCatalogFilterPreference(
+  owner: StorageOwner,
+  name: string,
+): CatalogFilterPreference | null {
+  const raw = readOwnerScoped(owner, name);
   if (!raw) return null;
 
   let value: unknown;
   try {
     value = JSON.parse(raw) as unknown;
   } catch {
-    clearCatalogFilterPreference(storageKey);
+    clearCatalogFilterPreference(owner, name);
     return null;
   }
 
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    clearCatalogFilterPreference(storageKey);
+    clearCatalogFilterPreference(owner, name);
     return null;
   }
 
@@ -65,7 +78,7 @@ export function readCatalogFilterPreference(storageKey: string): CatalogFilterPr
     !storedVouchers.every((voucher) => typeof voucher === "string") ||
     (storedVoucherMatch !== "any" && storedVoucherMatch !== "all")
   ) {
-    clearCatalogFilterPreference(storageKey);
+    clearCatalogFilterPreference(owner, name);
     return null;
   }
 
@@ -76,7 +89,7 @@ export function readCatalogFilterPreference(storageKey: string): CatalogFilterPr
     voucherMatch: storedVoucherMatch,
   });
   if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
-    clearCatalogFilterPreference(storageKey);
+    clearCatalogFilterPreference(owner, name);
     return null;
   }
 
@@ -89,7 +102,8 @@ export function readCatalogFilterPreference(storageKey: string): CatalogFilterPr
 }
 
 export function writeCatalogFilterPreference(
-  storageKey: string,
+  owner: StorageOwner,
+  name: string,
   tags: readonly string[],
   tagMatch: TagMatch,
   vouchers: readonly VoucherRef[],
@@ -102,38 +116,24 @@ export function writeCatalogFilterPreference(
     voucherMatch,
   });
   if (!result.ok || (result.filter.tags.length === 0 && result.filter.vouchers.length === 0)) {
-    clearCatalogFilterPreference(storageKey);
+    clearCatalogFilterPreference(owner, name);
     return;
   }
 
-  try {
-    getStorage()?.setItem(
-      storageKey,
-      JSON.stringify({
-        tags: result.filter.tags,
-        tagMatch: result.filter.tagMatch,
-        vouchers: result.filter.vouchers.map(serializeVoucherRef),
-        voucherMatch: result.filter.voucherMatch,
-      }),
-    );
-  } catch {
-    // A blocked or full store must not stop filters from applying to the URL.
-  }
+  // A blocked or full store must not stop filters from applying to the URL, so
+  // this write is best-effort — see `lib/storage/local-storage.ts`.
+  writeOwnerScoped(
+    owner,
+    name,
+    JSON.stringify({
+      tags: result.filter.tags,
+      tagMatch: result.filter.tagMatch,
+      vouchers: result.filter.vouchers.map(serializeVoucherRef),
+      voucherMatch: result.filter.voucherMatch,
+    }),
+  );
 }
 
-export function clearCatalogFilterPreference(storageKey: string): void {
-  try {
-    getStorage()?.removeItem(storageKey);
-  } catch {
-    // The URL clear still succeeds when storage is unavailable.
-  }
-}
-
-function getStorage(): Storage | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
+export function clearCatalogFilterPreference(owner: StorageOwner, name: string): void {
+  removeOwnerScoped(owner, name);
 }

@@ -206,7 +206,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               ) : null}
             </div>
           ) : null}
-          <Button variant="ghost" className="w-full" onClick={handleCancel}>
+          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>
@@ -229,7 +229,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}
-          <Button variant="ghost" className="w-full" onClick={handleCancel}>
+          <Button variant="ghost" className="h-9 w-full" onClick={handleCancel}>
             <Trans>Back</Trans>
           </Button>
         </div>

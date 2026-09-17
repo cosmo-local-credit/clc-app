@@ -1,7 +1,7 @@
 import {
-  formatOfferingPrice,
+  formatOfferingDisplayPrice,
+  formatOfferingDisplayTotal,
   formatOfferingQuantity,
-  formatOfferingTotal,
 } from "@clc/core/features/market/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
@@ -66,6 +66,11 @@ export type OfferingManagement = {
   deletingID?: string | null;
 };
 
+export type OfferingVoucherRate = {
+  value: string | null;
+  unit: string | null;
+};
+
 export function OfferingsPanel({
   query,
   emptyState,
@@ -73,6 +78,7 @@ export function OfferingsPanel({
   fallbackSymbol,
   suppressed = false,
   management,
+  resolveVoucherRate,
   ...props
 }: ComponentProps<"div"> & {
   query: OfferingsQueryLike;
@@ -86,6 +92,8 @@ export function OfferingsPanel({
   suppressed?: boolean;
   /** Present only for a voucher's own owner. Absent means read-only. */
   management?: OfferingManagement;
+  /** Resolves the voucher conversion attached to this row's parent voucher. */
+  resolveVoucherRate?: (offering: Offering) => OfferingVoucherRate | null;
 }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
@@ -152,6 +160,7 @@ export function OfferingsPanel({
               voucherSymbol={offering.voucherSymbol ?? fallbackSymbol ?? "VOUCHER"}
               showVoucher={showVoucher}
               management={management}
+              voucherRate={resolveVoucherRate?.(offering) ?? null}
             />
           ))}
         </div>
@@ -183,19 +192,30 @@ function OfferingTile({
   voucherSymbol,
   showVoucher,
   management,
+  voucherRate,
 }: {
   offering: Offering;
   voucherSymbol: string;
   showVoucher: boolean;
   management?: OfferingManagement;
+  voucherRate: OfferingVoucherRate | null;
 }) {
   const { i18n, t } = useLingui();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const imageUrl =
     offering.imageUrl && failedImage !== offering.imageUrl ? offering.imageUrl : null;
-  const price = formatOfferingPrice(offering.pricePerUnit);
-  const quantity = formatOfferingQuantity(offering.quantity, offering.unitLabel);
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+  );
+  const quantity = formatOfferingQuantity(
+    offering.quantity,
+    offering.unitLabel,
+    offering.sourceId === null,
+  );
   const quantityNumber = quantity ? Number(quantity.value) : 0;
   const quantityValue =
     quantity && quantity.value.length > 6 && Number.isFinite(quantityNumber)
@@ -248,21 +268,12 @@ function OfferingTile({
           <span className="line-clamp-2 font-heading text-xs font-semibold leading-tight [overflow-wrap:anywhere]">
             {offering.name}
           </span>
-          {/* One whole message, not concatenated fragments: a translator has to be
-              able to reorder the amount, the symbol and the unit. `unitLabel` is
-              the text as stored, so an imported "50kg sack" still reads as itself
-              even though it could not be saved back. */}
+          {/* Currency code, slash and issuer-authored unit are all data. The
+              amount is converted through the voucher's recorded rate; a legacy
+              voucher without one falls back to its own symbol. */}
           <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
             {price ? (
-              offering.unitLabel ? (
-                <Trans>
-                  {price.value} {voucherSymbol} per {offering.unitLabel}
-                </Trans>
-              ) : (
-                <Trans>
-                  {price.value} {voucherSymbol}
-                </Trans>
-              )
+              `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
             ) : (
               <Trans>Price on request</Trans>
             )}
@@ -312,6 +323,7 @@ function OfferingTile({
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onImageError={() => setFailedImage(imageUrl)}
+        voucherRate={voucherRate}
       />
     </div>
   );
@@ -333,6 +345,7 @@ function OfferingDetailsSheet({
   open,
   onOpenChange,
   onImageError,
+  voucherRate,
 }: {
   offering: Offering;
   voucherSymbol: string;
@@ -341,11 +354,23 @@ function OfferingDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImageError: () => void;
+  voucherRate: OfferingVoucherRate | null;
 }) {
   const { t } = useLingui();
   const [count, setCount] = useState(1);
-  const price = formatOfferingPrice(offering.pricePerUnit);
-  const total = formatOfferingTotal(offering.pricePerUnit, count);
+  const price = formatOfferingDisplayPrice(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+  );
+  const total = formatOfferingDisplayTotal(
+    offering.pricePerUnit,
+    voucherRate?.value ?? null,
+    voucherRate?.unit ?? null,
+    voucherSymbol,
+    count,
+  );
 
   return (
     <SheetRoot
@@ -386,9 +411,7 @@ function OfferingDetailsSheet({
               </SheetTitle>
               <p className="font-mono text-sm font-semibold text-primary">
                 {price ? (
-                  <Trans>
-                    {price.value} {voucherSymbol} each
-                  </Trans>
+                  `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
                 ) : (
                   <Trans>Price on request</Trans>
                 )}
@@ -453,9 +476,7 @@ function OfferingDetailsSheet({
                     <Trans>Total</Trans>
                   </span>
                   <span className="font-mono text-lg font-semibold text-primary">
-                    <Trans>
-                      {total.value} {voucherSymbol}
-                    </Trans>
+                    {total.value} {total.unit}
                   </span>
                 </div>
               ) : null}

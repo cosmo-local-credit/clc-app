@@ -1,5 +1,10 @@
 import type { AdminUser } from "@clc/api/features/admin/client";
-import { optionalEmailSchema, optionalPhoneSchema } from "@clc/core/lib/contact";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+  optionalWebsiteSchema,
+} from "@clc/core/lib/contact";
+import { isIsoCurrency } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -17,6 +22,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { Textarea } from "#/components/ui/textarea";
 import { isStorageConfigured } from "#/lib/storage";
 import { useUpdateUserLimits, useUpdateUserProfile } from "../use-admin-users";
 
@@ -53,6 +59,15 @@ const profileSchema = z
       .refine((value) => value === "" || /^[A-Z]{2}$/.test(value), {
         message: "Use a two-letter country code, for example KE",
       }),
+    preferredCurrency: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .refine((value) => value === "" || isIsoCurrency(value), {
+        message: "Use a three-letter ISO currency code, for example KES",
+      }),
+    bio: z.string().trim().max(500, { message: "Bio must be 500 characters or fewer" }),
+    website: optionalWebsiteSchema,
     locationName: z.string().trim().max(200, { message: "Location name is too long" }),
     latitude: z.string(),
     longitude: z.string(),
@@ -120,6 +135,18 @@ export function EditAccountProfileSheet({
   const updateProfile = useUpdateUserProfile();
   const updateLimits = useUpdateUserLimits();
   const saving = updateProfile.isPending || updateLimits.isPending;
+  const storedPreferredCurrency = account.preferredCurrency ?? "";
+  const storedBio = account.bio ?? "";
+  const storedWebsite = account.website ?? "";
+  const formProfileSchema = profileSchema.superRefine((value, ctx) => {
+    if (storedPreferredCurrency !== "" && value.preferredCurrency === "") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["preferredCurrency"],
+        message: "A saved preferred currency cannot be removed",
+      });
+    }
+  });
 
   const form = useForm({
     defaultValues: {
@@ -127,6 +154,9 @@ export function EditAccountProfileSheet({
       email: account.email,
       phone: account.phone,
       country: account.country,
+      preferredCurrency: storedPreferredCurrency,
+      bio: storedBio,
+      website: storedWebsite,
       locationName: account.locationName ?? "",
       latitude: account.geoLat === null ? "" : String(account.geoLat),
       longitude: account.geoLng === null ? "" : String(account.geoLng),
@@ -137,7 +167,7 @@ export function EditAccountProfileSheet({
       // form value a string like every other field here.
       avatarUrl: account.avatarUrl ?? "",
     },
-    validators: { onSubmit: profileSchema },
+    validators: { onSubmit: formProfileSchema },
     onSubmit: async ({ value }) => {
       // The pair travels together or not at all. Omitted, the endpoint leaves
       // whatever place is stored alone — which is why the field offers no way to
@@ -167,6 +197,11 @@ export function EditAccountProfileSheet({
         email: value.email.trim(),
         phone: value.phone.trim(),
         country: value.country.trim().toUpperCase(),
+        ...(value.preferredCurrency !== storedPreferredCurrency
+          ? { preferredCurrency: value.preferredCurrency }
+          : {}),
+        ...(value.bio.trim() !== storedBio ? { bio: value.bio.trim() } : {}),
+        ...(value.website.trim() !== storedWebsite ? { website: value.website.trim() } : {}),
         ...location,
         ...avatar,
       };
@@ -183,6 +218,9 @@ export function EditAccountProfileSheet({
         profile.email !== account.email ||
         profile.phone !== account.phone ||
         profile.country !== account.country ||
+        value.preferredCurrency !== storedPreferredCurrency ||
+        value.bio.trim() !== storedBio ||
+        value.website.trim() !== storedWebsite ||
         value.avatarUrl !== storedAvatar ||
         // The endpoint assigns every field it is given, so a location edit alone
         // still sends the identity fields unchanged beside it.
@@ -319,6 +357,58 @@ export function EditAccountProfileSheet({
                 </Field>
               )}
             </form.Field>
+
+            <div className="border-border flex flex-col gap-4 border-t pt-4">
+              <SectionLabel>Profile preferences</SectionLabel>
+              <form.Field name="preferredCurrency">
+                {(field) => (
+                  <Field
+                    label="Preferred currency"
+                    hint="Three-letter ISO 4217 code, for example KES"
+                    error={getFieldError(field.state.meta.errors)}
+                  >
+                    <Input
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value.toUpperCase())}
+                      className="w-28 font-mono uppercase"
+                      maxLength={3}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="bio">
+                {(field) => (
+                  <Field label="Bio" error={getFieldError(field.state.meta.errors)}>
+                    <Textarea
+                      id={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      rows={3}
+                      maxLength={500}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+
+              <form.Field name="website">
+                {(field) => (
+                  <Field label="Website" error={getFieldError(field.state.meta.errors)}>
+                    <Input
+                      id={field.name}
+                      type="url"
+                      inputMode="url"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                    />
+                  </Field>
+                )}
+              </form.Field>
+            </div>
 
             <div className="border-border flex flex-col gap-4 border-t pt-4">
               <SectionLabel>Location</SectionLabel>

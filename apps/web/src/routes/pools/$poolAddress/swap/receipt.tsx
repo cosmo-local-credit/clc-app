@@ -10,6 +10,8 @@ const searchSchema = z.object({
   sendSymbol: z.string().optional().catch(undefined),
   receiveAmount: z.string().optional().catch(undefined),
   receiveSymbol: z.string().optional().catch(undefined),
+  /** Contract address of the received voucher, so the receipt can prefill a send. */
+  receiveToken: z.string().optional().catch(undefined),
   poolName: z.string().optional().catch(undefined),
 });
 

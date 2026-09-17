@@ -38,6 +38,8 @@ export type PoolVoucherFacet = VoucherRef & {
 export type FilteredPoolsParams = CursorParams & {
   filter: CatalogFilter;
   facets?: boolean;
+  /** Only pools whose `ownerAddress` is this address. Compared case-insensitively. */
+  owner?: string;
 };
 
 export type FilteredPoolPage = UserPoolPage & {
@@ -50,6 +52,8 @@ export type UserPool = {
   chainId: number | null;
   address: HexAddress;
   name: string;
+  /** Immutable SwapPool name; `name` is the effective catalog label. */
+  contractName?: string | null;
   symbol: string;
   ownerAddress: HexAddress | null;
   feePpm: number | null;
@@ -97,6 +101,11 @@ export type UserPool = {
  * addresses come from the chain and cannot be edited into disagreement with it.
  */
 export type PoolProfileUpdate = {
+  /**
+   * The catalog label, overriding the deployed SwapPool name for reads. Omit to
+   * preserve the current override; send an empty string to clear it.
+   */
+  displayName?: string;
   description: string;
   unitOfAccount: string;
   email: string;
@@ -116,6 +125,37 @@ export type PoolProfileUpdate = {
   bannerUrl?: string;
   tags: string[];
 };
+
+function emptyToNull(value: string): string | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+/**
+ * The wire shape of a pool profile write, shared by the owner and admin routes.
+ *
+ * Blank text becomes null because clc-core writes every column it receives.
+ * The display name and the two images are the exceptions: omitted preserves
+ * them, and "" is the only way to clear one, so they pass through untouched and
+ * only when the caller supplied them.
+ */
+export function serializePoolProfileUpdate(profile: PoolProfileUpdate) {
+  return {
+    ...(profile.displayName === undefined ? {} : { displayName: profile.displayName }),
+    description: emptyToNull(profile.description),
+    unitOfAccount: emptyToNull(profile.unitOfAccount),
+    email: emptyToNull(profile.email),
+    website: emptyToNull(profile.website),
+    phone: emptyToNull(profile.phone),
+    terms: emptyToNull(profile.terms),
+    locationName: emptyToNull(profile.locationName),
+    geoLat: profile.geoLat,
+    geoLng: profile.geoLng,
+    ...(profile.imageUrl === undefined ? {} : { imageUrl: profile.imageUrl }),
+    ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
+    tags: profile.tags,
+  };
+}
 
 export type PoolVoucher = {
   id: string;
@@ -171,6 +211,7 @@ type BackendPool = Partial<{
   chainId: string | number;
   address: string;
   name: string;
+  contractName: string | null;
   symbol: string;
   ownerAddress: string | null;
   feePpm: string | number | null;
@@ -282,7 +323,7 @@ export function createPoolsClient(http: HttpClient) {
     },
 
     async getFilteredPools(
-      { filter, facets, ...cursor }: FilteredPoolsParams,
+      { filter, facets, owner, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,
     ): Promise<FilteredPoolPage> {
       const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -295,6 +336,7 @@ export function createPoolsClient(http: HttpClient) {
       if (filter.vouchers.length > 1 && filter.voucherMatch === "all") {
         search.set("voucherMatch", "all");
       }
+      if (owner) search.set("owner", owner);
       if (facets) search.set("facets", "true");
 
       const result = await http.request<BackendFilteredPoolPage>(
@@ -323,6 +365,29 @@ export function createPoolsClient(http: HttpClient) {
       );
       const pool = normalizeUserPool(result.pool ?? result);
       if (!pool) throw new Error("Pool response did not include a valid address.");
+      return pool;
+    },
+
+    /**
+     * The owner's write to their pool's catalog record. Same payload and
+     * semantics as the admin route; only the authorization differs.
+     */
+    async updatePoolProfile(
+      address: string,
+      profile: PoolProfileUpdate,
+      signal?: AbortSignal,
+    ): Promise<UserPool> {
+      const result = await http.request<BackendPoolEnvelope>(
+        `/api/v2/pools/${encodeURIComponent(address)}/profile`,
+        {
+          method: "PUT",
+          cache: "no-store",
+          signal,
+          body: JSON.stringify(serializePoolProfileUpdate(profile)),
+        },
+      );
+      const pool = normalizeUserPool(result.pool ?? result);
+      if (!pool) throw new Error("Pool update response did not include a valid address.");
       return pool;
     },
 
@@ -385,6 +450,7 @@ export function normalizeUserPool(pool: BackendPool): UserPool | null {
     chainId: normalizeNumber(pool.chainId),
     address,
     name,
+    contractName: normalizeText(pool.contractName),
     symbol,
     ownerAddress: normalizeHex(pool.ownerAddress),
     feePpm: normalizeNumber(pool.feePpm),

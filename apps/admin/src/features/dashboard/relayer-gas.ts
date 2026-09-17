@@ -2,9 +2,13 @@ import type { AccountsClient } from "@clc/api/features/accounts/client";
 import type { RelayerClient } from "@clc/api/features/relayer/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import type { MetricTone } from "#/components/admin/metric-card";
+import { CHAIN_INFO } from "#/lib/chain";
 
-/** Native CELO below this is treated as a low-gas warning on the dashboard. */
+/** Native gas below this is treated as a low-gas warning on the dashboard. */
 export const RELAYER_GAS_FLOOR_WEI = 10n * 10n ** 18n;
+
+/** "10 CELO" on Celo, "10 xDAI" on Gnosis — the floor as an operator reads it. */
+export const RELAYER_GAS_FLOOR_LABEL = `${RELAYER_GAS_FLOOR_WEI / 10n ** 18n} ${CHAIN_INFO.nativeSymbol}`;
 
 export type RelayerGas = {
   address: string;
@@ -16,7 +20,7 @@ export function relayerGasTone(wei: bigint): MetricTone {
 }
 
 export function formatRelayerGas(wei: string): string {
-  return `${formatTokenAmount(wei, 18, 2)} CELO`;
+  return `${formatTokenAmount(wei, 18, 2)} ${CHAIN_INFO.nativeSymbol}`;
 }
 
 /**

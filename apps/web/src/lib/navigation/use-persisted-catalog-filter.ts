@@ -8,6 +8,7 @@ import {
   type CatalogFilterPreference,
 } from "#/lib/navigation/catalog-filter-preference-storage";
 import { useCatalogFilter, type CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import type { StorageOwner } from "#/lib/storage/owner-tier-key";
 
 export type PersistedCatalogFilterControls = Omit<CatalogFilterControls, "clear"> & {
   /** True until client storage has been checked and any saved preference reaches the URL. */
@@ -29,9 +30,15 @@ export type PersistedCatalogFilterControls = Omit<CatalogFilterControls, "clear"
  * The URL remains the source of truth for an active visit. Storage is read only when a
  * catalog mounts without a filter, so an explicit or shared link always wins. See
  * {@link readCatalogFilterPreference} for what is stored and why it is not a store.
+ *
+ * `owner` is null while the session is still being decided. That case must not
+ * latch the one-shot below: these are public screens gated on
+ * `!isRestoringPreference`, so a session check that never resolves would
+ * otherwise pin the gate shut and render a permanently empty market.
  */
 export function usePersistedCatalogFilter(
-  storageKey: string,
+  name: string,
+  owner: StorageOwner | null,
   options?: { voucherRelationships?: boolean },
 ): PersistedCatalogFilterControls {
   const filter = useCatalogFilter(options);
@@ -43,6 +50,14 @@ export function usePersistedCatalogFilter(
 
   useEffect(() => {
     if (checkedStorage.current) return;
+
+    if (owner === null) {
+      // Deliberately without latching `checkedStorage`: stop restoring so the
+      // catalog renders unfiltered now, and run for real once the owner resolves.
+      setPreferenceToRestore(null);
+      return;
+    }
+
     checkedStorage.current = true;
 
     if (filter.isFiltered) {
@@ -50,7 +65,7 @@ export function usePersistedCatalogFilter(
       return;
     }
 
-    const storedPreference = readCatalogFilterPreference(storageKey);
+    const storedPreference = readCatalogFilterPreference(owner, name);
     if (!storedPreference) {
       setPreferenceToRestore(null);
       return;
@@ -60,13 +75,14 @@ export function usePersistedCatalogFilter(
       ? storedPreference
       : { ...storedPreference, vouchers: [], voucherMatch: "any" as const };
     if (preference.tags.length === 0 && preference.vouchers.length === 0) {
-      clearCatalogFilterPreference(storageKey);
+      clearCatalogFilterPreference(owner, name);
       setPreferenceToRestore(null);
       return;
     }
     if (!voucherRelationships && storedPreference.vouchers.length > 0) {
       writeCatalogFilterPreference(
-        storageKey,
+        owner,
+        name,
         preference.tags,
         preference.tagMatch,
         preference.vouchers,
@@ -83,7 +99,7 @@ export function usePersistedCatalogFilter(
       preference.voucherMatch,
       { replace: true },
     );
-  }, [filter.isFiltered, filter.setFacets, storageKey, voucherRelationships]);
+  }, [filter.isFiltered, filter.setFacets, name, owner, voucherRelationships]);
 
   useEffect(() => {
     if (!preferenceToRestore) return;
@@ -110,16 +126,20 @@ export function usePersistedCatalogFilter(
       vouchers: readonly VoucherRef[],
       voucherMatch: TagMatch,
     ) => {
-      writeCatalogFilterPreference(storageKey, tags, tagMatch, vouchers, voucherMatch);
+      // The URL still updates when the owner is undecided; only the memory of
+      // the choice waits, rather than being filed under the wrong person.
+      if (owner !== null) {
+        writeCatalogFilterPreference(owner, name, tags, tagMatch, vouchers, voucherMatch);
+      }
       filter.setFacets(tags, tagMatch, vouchers, voucherMatch);
     },
-    [filter.setFacets, storageKey],
+    [filter.setFacets, name, owner],
   );
 
   const clear = useCallback(() => {
-    clearCatalogFilterPreference(storageKey);
+    if (owner !== null) clearCatalogFilterPreference(owner, name);
     filter.clear();
-  }, [filter.clear, storageKey]);
+  }, [filter.clear, name, owner]);
 
   return {
     ...filter,

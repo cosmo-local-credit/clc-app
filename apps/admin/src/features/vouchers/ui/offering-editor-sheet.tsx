@@ -4,9 +4,13 @@ import {
   OFFERING_UNITS,
   type OfferingCommodityType,
   type OfferingUnit,
+  isOfferingUnit,
   offeringWriteSchema,
 } from "@clc/core/features/offerings/logic";
+import { toVocabularyTitleCase, validateCustomUnit } from "@clc/core/features/vocabulary/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { offeringUnitsQueryOptions } from "@clc/api/features/vocabulary/queries";
+import { useQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +26,7 @@ import {
 } from "#/components/ui/dialog";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
+import { SearchableSelect } from "#/components/ui/searchable-select";
 import {
   Select,
   SelectContent,
@@ -39,6 +44,7 @@ import {
 } from "#/components/ui/sheet";
 import { Textarea } from "#/components/ui/textarea";
 import { isStorageConfigured } from "#/lib/storage";
+import { clcApi } from "#/lib/api";
 
 import {
   useCreateVoucherOffering,
@@ -155,7 +161,7 @@ function initialValues(offering: Offering | null) {
     name: offering?.name ?? "",
     commodityType: (offering?.commodityType ?? "") as OfferingCommodityType | "",
     description: offering?.description ?? "",
-    unit: (offering?.unit ?? "") as OfferingUnit | "",
+    unit: offering?.unit ?? offering?.unitLabel ?? "",
     pricePerUnit: offering?.pricePerUnit ?? "",
     imageUrl: offering?.imageUrl ?? null,
   };
@@ -173,6 +179,13 @@ function OfferingForm({
   const create = useCreateVoucherOffering(voucher.address);
   const update = useUpdateVoucherOffering(voucher.address);
   const remove = useDeleteVoucherOffering(voucher.address);
+  const unitsQuery = useQuery(offeringUnitsQueryOptions(clcApi.vocabulary));
+  const unitValues = [...(unitsQuery.data ?? OFFERING_UNITS)];
+  if (offering?.unit && !unitValues.includes(offering.unit)) unitValues.push(offering.unit);
+  const unitOptions = unitValues.map((unit) => ({
+    value: unit,
+    label: isOfferingUnit(unit) ? UNIT_LABELS[unit] : unit,
+  }));
 
   /**
    * Whether the photo field is mid-upload.
@@ -230,7 +243,6 @@ function OfferingForm({
     }
   }
 
-  const legacyUnit = offering?.unitLabel && !offering.unit ? offering.unitLabel : null;
   const legacyType = offering && !offering.commodityType;
 
   return (
@@ -242,14 +254,10 @@ function OfferingForm({
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-        {legacyUnit || legacyType ? (
+        {legacyType ? (
           <p className="border-border bg-muted/40 text-muted-foreground border p-3 text-xs leading-snug">
-            This offering was imported with{" "}
-            {legacyUnit ? <>a unit of &ldquo;{legacyUnit}&rdquo;</> : null}
-            {legacyUnit && legacyType ? " and " : null}
-            {legacyType ? "no goods or services classification" : null}. Choose{" "}
-            {legacyUnit && legacyType ? "both" : "one"} below before saving — the imported value
-            stays on record but cannot be written back.
+            This offering was imported with no goods or services classification. Choose one below
+            before saving.
           </p>
         ) : null}
 
@@ -347,22 +355,17 @@ function OfferingForm({
                 label="Unit"
                 error={getFieldError(field.state.meta.errors)}
               >
-                <Select
-                  items={UNIT_LABELS}
+                <SearchableSelect
+                  id={field.name}
+                  options={unitOptions}
                   value={field.state.value}
-                  onValueChange={(next) => field.handleChange(next as OfferingUnit)}
-                >
-                  <SelectTrigger id={field.name}>
-                    <SelectValue placeholder="Choose a unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {OFFERING_UNITS.map((unit) => (
-                      <SelectItem key={unit} value={unit}>
-                        {UNIT_LABELS[unit]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={field.handleChange}
+                  placeholder="Choose a unit"
+                  emptyMessage="No units found."
+                  createLabel={(unit) => `Use “${unit}”`}
+                  normalizeCustomValue={toVocabularyTitleCase}
+                  validateCustomValue={validateCustomUnit}
+                />
               </Field>
             )}
           </form.Field>

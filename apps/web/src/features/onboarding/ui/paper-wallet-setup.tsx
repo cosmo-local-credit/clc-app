@@ -16,11 +16,53 @@ import {
 import { PaperWalletCustomizer } from "./paper-wallet-customizer";
 import type { PaperWalletCustomization } from "./paper-wallet-types";
 
+/**
+ * iOS ignores an anchor's `download` attribute inside an installed PWA: the tap
+ * does nothing at all, which is what made the button look broken there. The
+ * share sheet is the platform's own "Save Image", so it is tried first wherever
+ * the browser will take a file — Android included, where it is also the better
+ * destination — and the anchor stays the desktop path.
+ */
+async function shareCard(file: File): Promise<boolean> {
+  if (typeof navigator === "undefined" || !navigator.canShare?.({ files: [file] })) return false;
+  try {
+    await navigator.share({ files: [file] });
+    return true;
+  } catch (error) {
+    // A dismissed sheet is not a failure. The person was offered the save and
+    // declined it, so falling through to another mechanism would be noise.
+    return error instanceof DOMException && error.name === "AbortError";
+  }
+}
+
+/**
+ * Whether the app is running as an installed PWA, where the anchor fallback is
+ * known to be silently ignored. Only there is the rendered PNG worth showing:
+ * the preview above it is live DOM and cannot be long-pressed into Photos.
+ */
+function isInstalledApp(): boolean {
+  if (typeof window === "undefined") return false;
+  const iosStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return iosStandalone || window.matchMedia?.("(display-mode: standalone)").matches === true;
+}
+
+/** Decoded here rather than fetched: a `fetch` of a data URL is a needless round trip. */
+function pngFileFromDataUrl(dataUrl: string, fileName: string): File {
+  const binary = atob(dataUrl.slice(dataUrl.indexOf(",") + 1));
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return new File([bytes], fileName, { type: "image/png" });
+}
+
 export type UsePaperWalletSetupProps = {
   address: `0x${string}`;
   qrUrl: string;
   defaultName: string;
   downloadDisabled?: boolean;
+  /** Called only after the image has been rendered and its browser download opened. */
+  onDownloaded?: () => void;
 };
 
 export type PaperWalletSetupSlots = {
@@ -42,6 +84,7 @@ export function usePaperWalletSetup({
   qrUrl,
   defaultName,
   downloadDisabled = false,
+  onDownloaded,
 }: UsePaperWalletSetupProps): PaperWalletSetupSlots {
   const { t } = useLingui();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -55,6 +98,8 @@ export function usePaperWalletSetup({
   const [previewScale, setPreviewScale] = useState(PAPER_WALLET_PREVIEW_SCALE);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  /** The rendered PNG, shown only where neither the share sheet nor the anchor works. */
+  const [savedCardUrl, setSavedCardUrl] = useState<string | null>(null);
   const fallbackName = defaultName.trim() || t`Paper wallet`;
   const normalizedCustomization = useMemo<PaperWalletCustomization>(
     () => ({
@@ -94,6 +139,8 @@ export function usePaperWalletSetup({
     if (!cardRef.current) return;
     setDownloading(true);
     setDownloadError(null);
+    setSavedCardUrl(null);
+    const fileName = `clc-wallet-${address.slice(2, 10)}.png`;
     try {
       const dataUrl = await toPng(cardRef.current, {
         pixelRatio: PAPER_WALLET_EXPORT_PIXEL_RATIO,
@@ -101,10 +148,23 @@ export function usePaperWalletSetup({
         height: PAPER_WALLET_HEIGHT,
         backgroundColor: "#ffffff",
       });
+
+      if (await shareCard(pngFileFromDataUrl(dataUrl, fileName))) {
+        onDownloaded?.();
+        return;
+      }
+
+      if (isInstalledApp()) {
+        setSavedCardUrl(dataUrl);
+        onDownloaded?.();
+        return;
+      }
+
       const a = document.createElement("a");
       a.href = dataUrl;
-      a.download = `clc-wallet-${address.slice(2, 10)}.png`;
+      a.download = fileName;
       a.click();
+      onDownloaded?.();
     } catch {
       setDownloadError(t`Download failed. Try a screenshot instead.`);
     } finally {
@@ -163,6 +223,14 @@ export function usePaperWalletSetup({
         {downloading ? t`Preparing...` : t`Download card`}
       </Button>
       {downloadError ? <p className="text-destructive mt-2 text-xs">{downloadError}</p> : null}
+      {savedCardUrl ? (
+        <div className="mt-3 space-y-2 border border-border bg-card p-3">
+          <p className="text-muted-foreground text-xs">
+            {t`Press and hold the card below, then choose Save to Photos.`}
+          </p>
+          <img src={savedCardUrl} alt={t`Paper wallet card`} className="w-full" />
+        </div>
+      ) : null}
     </div>
   );
 

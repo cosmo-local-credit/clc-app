@@ -26,7 +26,6 @@ vi.mock("#/lib/use-browser-geolocation", () => ({
 }));
 
 vi.mock("#/features/home/api/last-location-storage", () => ({
-  GUEST_LOCATION_OWNER: "guest",
   readPersistedLocation,
   writePersistedLocation,
   clearPersistedLocation: vi.fn(),

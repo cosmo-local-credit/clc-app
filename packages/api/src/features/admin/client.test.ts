@@ -315,6 +315,20 @@ describe("voucher administration", () => {
     expect(body.iconUrl).toBe("");
   });
 
+  // Omitting the key is what tells clc-core to keep an owner's override; a form
+  // that never showed the field must not erase it.
+  it("sends the display name only when the caller supplied one", async () => {
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+    await client().updateVoucherProfile(ADDRESS, base);
+    let body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect("displayName" in body).toBe(false);
+
+    fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
+    await client().updateVoucherProfile(ADDRESS, { ...base, displayName: "Malii Fresh" });
+    body = JSON.parse(lastCall().init.body as string) as Record<string, unknown>;
+    expect(body.displayName).toBe("Malii Fresh");
+  });
+
   // A null value is how the catalog records "no stated value", and 0 is a price.
   it("passes a cleared value through as null", async () => {
     fetchMock.mockResolvedValue(ok({ voucher: { id: 1, address: ADDRESS, kind: "goods" } }));
@@ -451,6 +465,9 @@ describe("user mutations", () => {
       email: "ada@example.com",
       phone: "+254700000000",
       country: "KE",
+      preferredCurrency: "KES",
+      bio: "Community organiser",
+      website: "https://ada.example",
     });
 
     const { url, init } = lastCall();
@@ -461,6 +478,9 @@ describe("user mutations", () => {
       email: "ada@example.com",
       phone: "+254700000000",
       country: "KE",
+      preferredCurrency: "KES",
+      bio: "Community organiser",
+      website: "https://ada.example",
     });
     expect(updated.name).toBe("Ada Lovelace");
   });

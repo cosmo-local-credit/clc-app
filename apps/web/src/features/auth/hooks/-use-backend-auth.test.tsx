@@ -41,6 +41,7 @@ vi.mock("#/lib/api/auth", async () => ({
 
 // QueryClient wrapper for useMutation
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StorageApiError } from "@clc/api/features/images/client";
 import type { ReactNode } from "react";
 import React from "react";
 
@@ -65,6 +66,12 @@ const LOCATION = {
   locationName: "Nairobi",
   country: "KE",
 };
+
+const PROFILE_DETAILS = {
+  preferredCurrency: "KES",
+  bio: "Neighbourhood organiser",
+  website: "https://alice.example",
+} as const;
 
 beforeEach(() => {
   mockGetSiweNonce.mockResolvedValue("testNonce1234");
@@ -100,7 +107,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "a@b.com", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     expect(mockGetSiweNonce).toHaveBeenCalledOnce();
@@ -113,7 +126,13 @@ describe("useBackendSignup", () => {
       wrapper: createWrapper(),
     });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "   ", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "   ",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
@@ -130,6 +149,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -147,6 +167,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254700000000",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -156,6 +177,9 @@ describe("useBackendSignup", () => {
       email: string;
       phone: string;
       country: string;
+      preferredCurrency: string;
+      bio: string;
+      website: string;
       locationName: string;
       geoLat: number;
       geoLng: number;
@@ -163,6 +187,9 @@ describe("useBackendSignup", () => {
     expect(payload.phone).toBe("+254700000000");
     expect(payload.email).toBe("alice@example.com");
     expect(payload.country).toBe("KE");
+    expect(payload.preferredCurrency).toBe("KES");
+    expect(payload.bio).toBe("Neighbourhood organiser");
+    expect(payload.website).toBe("https://alice.example");
     expect(payload.locationName).toBe("Nairobi");
     expect(payload.geoLat).toBe(-1.286);
     expect(payload.geoLng).toBe(36.817);
@@ -184,6 +211,7 @@ describe("useBackendSignup", () => {
         email: "alice@example.com",
         phone: "+254711111111",
         location: LOCATION,
+        ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
     });
@@ -246,7 +274,13 @@ describe("useBackendSignup — onboarding photo", () => {
   const signUp = async (avatarFile: File | null) => {
     const { result } = renderHook(() => useBackendSignup(), { wrapper: createWrapper() });
     await result.current.mutateAsync({
-      profile: { name: "Alice", email: "a@b.com", phone: "+254700000000", location: LOCATION },
+      profile: {
+        name: "Alice",
+        email: "a@b.com",
+        phone: "+254700000000",
+        location: LOCATION,
+        ...PROFILE_DETAILS,
+      },
       privateKey: FAKE_PK,
       avatarFile,
     });
@@ -278,6 +312,30 @@ describe("useBackendSignup — onboarding photo", () => {
     const signupAt = mockSignupWithSiwe.mock.invocationCallOrder[0] ?? 0;
     const tokenAt = mockGetStorageToken.mock.invocationCallOrder[0] ?? 0;
     expect(tokenAt).toBeGreaterThan(signupAt);
+  });
+
+  it("retries one transient storage failure with the same upload id", async () => {
+    mockUpload
+      .mockRejectedValueOnce(
+        new StorageApiError(500, "unexpected EOF", undefined, { kind: "server" }),
+      )
+      .mockResolvedValueOnce({
+        url: "https://cdn.test/profile/abc_400_a3f91c2e.webp",
+        width: 400,
+        height: 400,
+        byteSize: 6516,
+        contentType: "image/webp",
+      });
+
+    await signUp(photo());
+
+    expect(mockUpload).toHaveBeenCalledTimes(2);
+    const firstInput = mockUpload.mock.calls[0]?.[0] as { uploadId: string };
+    const retryInput = mockUpload.mock.calls[1]?.[0] as { uploadId: string };
+    expect(retryInput.uploadId).toBe(firstInput.uploadId);
+    const profile = mockSubmitProfile.mock.calls[0]?.[0] as { avatarUrl?: string };
+    expect(profile.avatarUrl).toBe("https://cdn.test/profile/abc_400_a3f91c2e.webp");
+    expect(mockToastError).not.toHaveBeenCalled();
   });
 
   it("still creates the account when the upload fails", async () => {

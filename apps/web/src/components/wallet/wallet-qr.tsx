@@ -5,7 +5,7 @@ import { cn } from "#/lib/utils";
 
 export function AddressQRCode({
   value,
-  size = 156,
+  size = 184,
   className,
 }: {
   value: string;
@@ -16,8 +16,13 @@ export function AddressQRCode({
   useEffect(() => {
     let cancelled = false;
     void QRCode.toDataURL(value, {
-      margin: 0,
-      width: 512,
+      // Keep the required four-module quiet zone in the QR image itself. The
+      // surrounding surface is visual chrome, not a dependable scan margin.
+      margin: 4,
+      // Render at the displayed size so browser interpolation cannot soften
+      // the individual QR modules.
+      width: size,
+      errorCorrectionLevel: "M",
       color: { dark: "#000000", light: "#ffffff" },
     }).then((result) => {
       if (!cancelled) setDataUrl(result);
@@ -29,10 +34,7 @@ export function AddressQRCode({
 
   return (
     <div
-      className={cn(
-        "flex items-center justify-center border border-border bg-card p-2.5",
-        className,
-      )}
+      className={cn("flex items-center justify-center bg-card", className)}
       style={{ width: size, height: size }}
     >
       {dataUrl ? (

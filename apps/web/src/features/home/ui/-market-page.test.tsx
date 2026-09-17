@@ -84,6 +84,10 @@ function scalar(key: string, value: unknown): string {
   throw new Error(`search value for ${key} is not a URL scalar`);
 }
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
   useMarketCamera: () => cameraResult.current,
@@ -247,6 +251,16 @@ describe("MarketPage location button", () => {
     renderPage();
     fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
     expect(mockRequestLocation).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("MarketPage guest entry", () => {
+  it("floats the sign-in action at the top of the map", () => {
+    renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
+
+    expect(
+      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
+    ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
   });
 });
 

@@ -33,7 +33,10 @@ export function AccountSummaryMetrics({ stats }: { stats: AdminAccountStats | nu
       <Tile label="Swaps" value={stats?.swaps ?? null} />
       <Tile label="Partners" value={stats?.partners ?? null} />
       <Tile label="Voucher holdings" value={stats?.vouchers ?? null} />
-      <Tile label="Reports" value={stats?.reports ?? null} />
+      {/* Approved only: account-relationship-counts counts what the public feed
+          shows, while the Posts tab beside it lists every status. Labelled so
+          the two figures are not read as the same count. */}
+      <Tile label="Approved posts" value={stats?.reports ?? null} />
       <Tile label="Pool memberships" value={stats?.poolMemberships ?? null} />
     </section>
   );

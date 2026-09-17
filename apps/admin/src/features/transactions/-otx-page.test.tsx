@@ -9,6 +9,10 @@ import {
 } from "@tanstack/react-router";
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
+
+import { CHAIN_INFO } from "#/lib/chain";
 import { OTXPage } from "./otx-page";
 import { parseOTXSearch } from "./transactions-search";
 
@@ -82,7 +86,7 @@ describe("OTXPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Origin transactions" })).toBeTruthy();
     const link = (await table()).getByRole("link", { name: /on the block explorer/ });
-    expect(link.getAttribute("href")).toBe(`https://celoscan.io/tx/${TX_HASH}`);
+    expect(link.getAttribute("href")).toBe(explorerTxUrl(CHAIN_INFO, TX_HASH));
   });
 
   it("does not link a dispatch the network never took", async () => {

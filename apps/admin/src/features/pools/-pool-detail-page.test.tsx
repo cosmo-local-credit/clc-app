@@ -337,6 +337,9 @@ describe("PoolDetailPage", () => {
 
   it("lists what the pool's vouchers are offered for", async () => {
     getPoolByAddress.mockResolvedValue(pool());
+    getPoolVouchers.mockResolvedValue({
+      vouchers: [poolVoucher({ voucherUoa: "KES", voucherValue: "2" })],
+    });
     getPoolOfferings.mockResolvedValue({
       offerings: [
         {
@@ -375,7 +378,7 @@ describe("PoolDetailPage", () => {
 
     await waitFor(() => expect(screen.getByText("Maize flour")).toBeTruthy());
     expect(screen.getByText("20 kg")).toBeTruthy();
-    expect(screen.getByText("150 RIBA")).toBeTruthy();
+    expect(screen.getByText("300 KES / kg")).toBeTruthy();
   });
 
   it("uses the compact remix copy icon", async () => {
