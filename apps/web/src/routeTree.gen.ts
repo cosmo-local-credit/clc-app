@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as InstallRouteImport } from './routes/install'
 import { Route as NavRouteImport } from './routes/_nav'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as VouchersIndexRouteImport } from './routes/vouchers/index'
@@ -40,6 +41,11 @@ import { Route as NavPostsReportIdEditRouteImport } from './routes/_nav/posts/$r
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallRoute = InstallRouteImport.update({
+  id: '/install',
+  path: '/install',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavRoute = NavRouteImport.update({
@@ -178,6 +184,7 @@ const NavPostsReportIdEditRoute = NavPostsReportIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof NavIndexRoute
+  '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/pools/$poolAddress/swap/': typeof PoolsPoolAddressSwapIndexRoute
 }
 export interface FileRoutesByTo {
+  '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -235,6 +243,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_nav': typeof NavRouteWithChildren
+  '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/install'
     | '/onboarding'
     | '/settings/profile'
     | '/wallet/receive'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/pools/$poolAddress/swap/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/install'
     | '/onboarding'
     | '/settings/profile'
     | '/wallet/receive'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_nav'
+    | '/install'
     | '/onboarding'
     | '/settings/profile'
     | '/wallet/receive'
@@ -352,6 +364,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   NavRoute: typeof NavRouteWithChildren
+  InstallRoute: typeof InstallRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/install': {
+      id: '/install'
+      path: '/install'
+      fullPath: '/install'
+      preLoaderRoute: typeof InstallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_nav': {
@@ -593,6 +613,7 @@ const NavRouteWithChildren = NavRoute._addFileChildren(NavRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   NavRoute: NavRouteWithChildren,
+  InstallRoute: InstallRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   WalletReceiveRoute: WalletReceiveRoute,

@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+vi.mock("#/components/install-app-link", () => ({
+  InstallAppLink: () => <a href="/install">Install CLC</a>,
+}));
+
 vi.mock("#/components/language-selector", () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,
 }));

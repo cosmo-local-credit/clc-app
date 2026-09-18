@@ -77,7 +77,9 @@ async function buildServiceWorker(rootDir: string, production: boolean) {
         // _worker.js/ is the Cloudflare Pages server bundle — not a static asset.
         // Large route/vendor chunks and fonts are better fetched on demand on slow
         // connections; the browser cache will keep what the user actually visits.
-        globIgnores: ["_worker.js/**"],
+        // Keep the install dialog genuinely on demand, even when small enough
+        // to fit under the precache limit. Installed users rarely need it.
+        globIgnores: ["_worker.js/**", "**/install-app-dialog-*.js"],
         maximumFileSizeToCacheInBytes: 300 * 1024,
         injectionPoint: "self.__SW_MANIFEST",
       });

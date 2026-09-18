@@ -306,11 +306,11 @@ msgstr "1 voucher"
 msgid "A good"
 msgstr "A good"
 
-#: apps/web/src/routes/__root.tsx:276
+#: apps/web/src/routes/__root.tsx:279
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "A paper wallet link was opened. Sign in with this address?"
 
-#: apps/web/src/routes/__root.tsx:274
+#: apps/web/src/routes/__root.tsx:277
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
@@ -393,7 +393,7 @@ msgstr "Activating on chain..."
 msgid "Activating smart wallet..."
 msgstr "Activating smart wallet..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Active"
 msgstr "Active"
 
@@ -444,6 +444,11 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
+
+#: apps/web/src/components/install-app-button.tsx:70
+#: apps/web/src/features/install/ui/install-page.tsx:99
+msgid "Add CLC to your phone"
+msgstr "Add CLC to your phone"
 
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:143
 msgid "Add link"
@@ -576,6 +581,10 @@ msgstr "Any selected"
 #~ msgid "Any tag"
 #~ msgstr "Any tag"
 
+#: apps/web/src/features/install/ui/install-page.tsx:77
+msgid "App installation"
+msgstr "App installation"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
 #~ msgstr "Appearance"
@@ -627,6 +636,7 @@ msgstr "Awaiting approval"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
+#: apps/web/src/features/install/ui/install-page.tsx:62
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:386
@@ -760,7 +770,7 @@ msgstr "Camera access denied."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:389
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:497
-#: apps/web/src/routes/__root.tsx:290
+#: apps/web/src/routes/__root.tsx:293
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -868,7 +878,7 @@ msgstr "Checking supply…"
 msgid "Checking which vouchers this pool takes…"
 msgstr "Checking which vouchers this pool takes…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Checking…"
 msgstr "Checking…"
 
@@ -910,6 +920,10 @@ msgstr "Choose a voucher"
 #~ msgid "Choose a wallet to continue."
 #~ msgstr "Choose a wallet to continue."
 
+#: apps/web/src/components/install-instructions.tsx:30
+msgid "Choose Add to Home Screen."
+msgstr "Choose Add to Home Screen."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:113
 msgid "Choose an expiration date"
@@ -924,7 +938,7 @@ msgstr "Choose another"
 msgid "Choose at most 12 tags"
 msgstr "Choose at most 12 tags"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:52
+#: apps/web/src/features/home/ui/settings-page.tsx:55
 msgid "Choose between light and dark mode."
 msgstr "Choose between light and dark mode."
 
@@ -937,7 +951,7 @@ msgstr "Choose Image"
 msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Choose rates you set or equal value when the unit has no price feed"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:45
+#: apps/web/src/features/home/ui/settings-page.tsx:48
 msgid "Choose the app display language."
 msgstr "Choose the app display language."
 
@@ -948,6 +962,14 @@ msgstr "Choose the app display language."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:583
 #~ msgid "Circulates forever"
 #~ msgstr "Circulates forever"
+
+#: apps/web/src/features/install/ui/install-page.tsx:80
+msgid "CLC is installed. Find it on your home screen."
+msgstr "CLC is installed. Find it on your home screen."
+
+#: apps/web/src/features/install/ui/install-page.tsx:70
+msgid "CLC on your home screen"
+msgstr "CLC on your home screen"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:145
 msgid "Clear"
@@ -1051,6 +1073,10 @@ msgstr "Confirm & Publish"
 msgid "Confirm and send"
 msgstr "Confirm and send"
 
+#: apps/web/src/components/install-instructions.tsx:45
+msgid "Confirm Install or Add when asked."
+msgstr "Confirm Install or Add when asked."
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
 #~ msgid "Confirm passphrase"
 #~ msgstr "Confirm passphrase"
@@ -1101,7 +1127,7 @@ msgstr "Connect your wallet to mint."
 msgid "Connect your wallet to use MPESA."
 msgstr "Connect your wallet to use MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:73
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Connected address"
 msgstr "Connected address"
 
@@ -1114,15 +1140,15 @@ msgstr "Connecting wallet..."
 msgid "Connecting..."
 msgstr "Connecting..."
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Connecting…"
 msgstr "Connecting…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:125
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:290
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:338
-#: apps/web/src/routes/__root.tsx:195
-#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:198
+#: apps/web/src/routes/__root.tsx:229
 msgid "Connection failed."
 msgstr "Connection failed."
 
@@ -1157,6 +1183,15 @@ msgstr "Contact Website"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:415
 msgid "Continue"
 msgstr "Continue"
+
+#: apps/web/src/components/install-app-dialog.tsx:64
+#: apps/web/src/features/install/ui/install-page.tsx:107
+msgid "Continue in browser"
+msgstr "Continue in browser"
+
+#: apps/web/src/features/install/ui/install-page.tsx:107
+msgid "Continue to CLC"
+msgstr "Continue to CLC"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:481
 msgid "Continue to wallet"
@@ -1244,7 +1279,7 @@ msgstr "Copy wallet address"
 #~ msgid "Copy wallet name"
 #~ msgstr "Copy wallet name"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:32
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:33
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1427,6 +1462,16 @@ msgstr "Couldn't load your posts."
 msgid "Couldn't mint the first supply."
 msgstr "Couldn't mint the first supply."
 
+#: apps/web/src/components/install-app-button.tsx:65
+msgid "Couldn't open installation. Follow the steps below or try again later."
+msgstr "Couldn't open installation. Follow the steps below or try again later."
+
+#: apps/web/src/components/install-app-dialog.tsx:58
+msgid "Couldn't open installation. Follow these instructions or try again "
+"later."
+msgstr "Couldn't open installation. Follow these instructions or try again "
+"later."
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "Couldn't publish your pool."
 msgstr "Couldn't publish your pool."
@@ -1528,7 +1573,7 @@ msgid "Create"
 msgstr "Create"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:42
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:43
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:158
 msgid "Create account"
 msgstr "Create account"
@@ -1627,7 +1672,7 @@ msgstr "Decrease quantity"
 msgid "Default"
 msgstr "Default"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:93
 msgid "Delegated to Calibur"
 msgstr "Delegated to Calibur"
 
@@ -2244,7 +2289,7 @@ msgid "How should vouchers match?"
 msgstr "How should vouchers match?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 msgid "I already have an account"
 msgstr "I already have an account"
 
@@ -2260,17 +2305,21 @@ msgstr "I have saved this key. If lost, my wallet cannot be recovered."
 msgid "Identifying location…"
 msgstr "Identifying location…"
 
+#: apps/web/src/components/install-instructions.tsx:33
+msgid "If shown, keep Open as Web App switched on, then tap Add."
+msgstr "If shown, keep Open as Web App switched on, then tap Add."
+
 #: apps/web/src/features/home/ui/posts-page.tsx:23
 #~ msgid "Impact reports from pools, service providers, and stewards will appear "
 #~ "here."
 #~ msgstr "Impact reports from pools, service providers, and stewards will appear "
 #~ "here."
 
-#: apps/web/src/routes/__root.tsx:270
+#: apps/web/src/routes/__root.tsx:273
 msgid "Import paper wallet?"
 msgstr "Import paper wallet?"
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Import wallet"
 msgstr "Import wallet"
 
@@ -2283,7 +2332,7 @@ msgstr "Import wallet"
 msgid "In network"
 msgstr "In network"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Inactive"
 msgstr "Inactive"
 
@@ -2295,9 +2344,36 @@ msgstr "Increase quantity"
 msgid "Info"
 msgstr "Info"
 
+#: apps/web/src/components/install-app-button.tsx:60
+#: apps/web/src/components/install-app-dialog.tsx:29
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:30
+msgid "Install CLC"
+msgstr "Install CLC"
+
+#: apps/web/src/components/install-app-dialog.tsx:43
+msgid "Install now"
+msgstr "Install now"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:201
 msgid "Install the app first"
 msgstr "Install the app first"
+
+#: apps/web/src/components/install-app-dialog.tsx:51
+#: apps/web/src/features/install/ui/install-page.tsx:91
+msgid "Installation cancelled. You can keep using CLC in your browser or "
+"install it later."
+msgstr "Installation cancelled. You can keep using CLC in your browser or "
+"install it later."
+
+#: apps/web/src/features/install/ui/install-page.tsx:123
+msgid "Installation link"
+msgstr "Installation link"
+
+#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/features/install/ui/install-page.tsx:84
+msgid "Installation requested. Follow your browser's instructions to finish."
+msgstr "Installation requested. Follow your browser's instructions to finish."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:13
@@ -2427,6 +2503,10 @@ msgstr "Link address"
 #: apps/web/src/lib/validation-i18n.ts:305
 msgid "Link at most 12 vouchers"
 msgstr "Link at most 12 vouchers"
+
+#: apps/web/src/features/install/ui/install-page.tsx:138
+msgid "Link copied. Paste it into a message."
+msgstr "Link copied. Paste it into a message."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:905
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:461
@@ -2625,6 +2705,12 @@ msgstr "Logo"
 msgid "Longitude must be between -180 and 180"
 msgstr "Longitude must be between -180 and 180"
 
+#: apps/web/src/components/install-instructions.tsx:50
+msgid "Look for Install app in your browser's menu. On a Mac with Safari, "
+"choose File, then Add to Dock."
+msgstr "Look for Install app in your browser's menu. On a Mac with Safari, "
+"choose File, then Add to Dock."
+
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:337
 msgid "Manage {0}"
@@ -2643,7 +2729,7 @@ msgstr "Manage voucher"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Manage vouchers, pools, and local payments."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:32
+#: apps/web/src/features/home/ui/settings-page.tsx:33
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
@@ -2930,7 +3016,7 @@ msgstr "No {0} fees have accrued yet."
 msgid "No activity yet."
 msgstr "No activity yet."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:76
+#: apps/web/src/features/home/ui/settings-page.tsx:79
 msgid "No address available"
 msgstr "No address available"
 
@@ -3250,6 +3336,31 @@ msgstr "Open in Maps"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Open Market to browse each voucher's individual offers."
 
+#: apps/web/src/components/install-instructions.tsx:19
+msgid "Open this link in your phone's browser first. Use Chrome on Android or "
+"Safari on iPhone."
+msgstr "Open this link in your phone's browser first. Use Chrome on Android or "
+"Safari on iPhone."
+
+#: apps/web/src/features/install/ui/install-page.tsx:154
+#~ msgid "Open this link on your phone in Chrome on Android or Safari on iPhone. "
+#~ "You can also look for Install app in your browser's menu."
+#~ msgstr "Open this link on your phone in Chrome on Android or Safari on iPhone. "
+#~ "You can also look for Install app in your browser's menu."
+
+#: apps/web/src/components/install-instructions.tsx:39
+msgid "Open this page in Chrome."
+msgstr "Open this page in Chrome."
+
+#: apps/web/src/components/install-instructions.tsx:27
+msgid "Open this page in Safari or Chrome and tap Share."
+msgstr "Open this page in Safari or Chrome and tap Share."
+
+#: apps/web/src/components/install-app-dialog.tsx:32
+#: apps/web/src/features/install/ui/install-page.tsx:73
+msgid "Open your wallet and community market with one tap from your phone."
+msgstr "Open your wallet and community market with one tap from your phone."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:146
 msgid "Opening paper wallet..."
 msgstr "Opening paper wallet..."
@@ -3365,7 +3476,7 @@ msgid "Password cannot be empty."
 msgstr "Password cannot be empty."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:245
+#: apps/web/src/routes/__root.tsx:248
 msgid "Password-protected paper wallet"
 msgstr "Password-protected paper wallet"
 
@@ -3634,7 +3745,7 @@ msgstr "Posts aren't available for this voucher."
 #~ msgid "Powered by Pretium"
 #~ msgstr "Powered by Pretium"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:40
+#: apps/web/src/features/home/ui/settings-page.tsx:43
 msgid "Preferences"
 msgstr "Preferences"
 
@@ -4159,7 +4270,7 @@ msgstr "Reviews"
 msgid "Reviews for this voucher will appear here."
 msgstr "Reviews for this voucher will appear here."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:36
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
@@ -4304,6 +4415,10 @@ msgstr "Searching…"
 msgid "Select a token"
 msgstr "Select a token"
 
+#: apps/web/src/features/install/ui/install-page.tsx:140
+msgid "Select and copy the link above to share it."
+msgstr "Select and copy the link above to share it."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:40
 #~ msgid "Selected pool"
 #~ msgstr "Selected pool"
@@ -4353,6 +4468,10 @@ msgstr "Send {0}"
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:60
 msgid "Send supported vouchers to this pool address."
 msgstr "Send supported vouchers to this pool address."
+
+#: apps/web/src/features/install/ui/install-page.tsx:120
+msgid "Send this link to help someone add CLC to their phone."
+msgstr "Send this link to help someone add CLC to their phone."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:695
 #~ msgid "Send this post back for approval?"
@@ -4419,7 +4538,7 @@ msgstr "Setting up your wallet..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
-#: apps/web/src/features/home/ui/settings-page.tsx:29
+#: apps/web/src/features/home/ui/settings-page.tsx:30
 msgid "Settings"
 msgstr "Settings"
 
@@ -4427,6 +4546,15 @@ msgstr "Settings"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:383
 msgid "Share"
 msgstr "Share"
+
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:117
+msgid "Share CLC"
+msgstr "Share CLC"
+
+#: apps/web/src/features/install/ui/install-page.tsx:135
+msgid "Share installation link"
+msgstr "Share installation link"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:21
 #~ msgid "Share your address to get paid"
@@ -4508,7 +4636,7 @@ msgstr "Sign in with private key"
 #~ msgid "Sign once to refresh your app session."
 #~ msgstr "Sign once to refresh your app session."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -4532,7 +4660,7 @@ msgstr "Sign-in method"
 #~ msgid "Signed contract actions for this voucher."
 #~ msgstr "Signed contract actions for this voucher."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Signing out..."
 msgstr "Signing out..."
 
@@ -4742,11 +4870,11 @@ msgstr "Swapping…"
 msgid "Swaps settle within the market association..."
 msgstr "Swaps settle within the market association..."
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Switch wallet"
 msgstr "Switch wallet"
 
-#: apps/web/src/routes/__root.tsx:270
+#: apps/web/src/routes/__root.tsx:273
 msgid "Switch wallet?"
 msgstr "Switch wallet?"
 
@@ -4791,6 +4919,10 @@ msgstr "Tags must not be blank"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:569
 msgid "Take fees separately"
 msgstr "Take fees separately"
+
+#: apps/web/src/components/install-instructions.tsx:42
+msgid "Tap the three-dot menu, then Add to home screen or Install app."
+msgstr "Tap the three-dot menu, then Add to home screen or Install app."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:301
@@ -5389,6 +5521,14 @@ msgstr "Use only letters and numbers for the voucher symbol"
 msgid "Use photo"
 msgstr "Use photo"
 
+#: apps/web/src/features/install/ui/install-page.tsx:101
+#~ msgid "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
+#~ "to Home Screen. In an embedded browser, open this link in Safari or "
+#~ "Chrome first."
+#~ msgstr "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
+#~ "to Home Screen. In an embedded browser, open this link in Safari or "
+#~ "Chrome first."
+
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:281
 #~ msgid "Use your location to order vouchers by distance."
 #~ msgstr "Use your location to order vouchers by distance."
@@ -5587,6 +5727,11 @@ msgstr "Vouchers swap one for one"
 msgid "Waiting for blockchain confirmation..."
 msgstr "Waiting for blockchain confirmation..."
 
+#: apps/web/src/components/install-app-button.tsx:58
+#: apps/web/src/components/install-app-dialog.tsx:41
+msgid "Waiting for confirmation…"
+msgstr "Waiting for confirmation…"
+
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:90
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:125
 msgid "Waiting for on-chain confirmation"
@@ -5627,7 +5772,7 @@ msgstr "Wallet actions are available after you sign up or sign in."
 #~ msgid "Wallet connected"
 #~ msgstr "Wallet connected"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Wallet session"
 msgstr "Wallet session"
 

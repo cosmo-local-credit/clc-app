@@ -308,11 +308,11 @@ msgstr "vocha 1"
 msgid "A good"
 msgstr "Bidhaa"
 
-#: apps/web/src/routes/__root.tsx:276
+#: apps/web/src/routes/__root.tsx:279
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Kiungo cha mkoba wa karatasi kimefunguliwa. Ingia kwa anwani hii?"
 
-#: apps/web/src/routes/__root.tsx:274
+#: apps/web/src/routes/__root.tsx:277
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "QR ya mkoba wa karatasi imechanganuliwa. Leta anwani hii?"
 
@@ -395,7 +395,7 @@ msgstr "Inawezesha kwenye mtandao..."
 msgid "Activating smart wallet..."
 msgstr "Inawezesha mkoba mahiri..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Active"
 msgstr "Imewashwa"
 
@@ -446,6 +446,11 @@ msgid "Add CLC to your iPhone Home Screen, open the installed app, then enable "
 "notifications."
 msgstr "Ongeza CLC kwenye Skrini ya Mwanzo ya iPhone yako, fungua programu "
 "iliyosakinishwa, kisha washa arifa."
+
+#: apps/web/src/components/install-app-button.tsx:70
+#: apps/web/src/features/install/ui/install-page.tsx:99
+msgid "Add CLC to your phone"
+msgstr "Ongeza CLC kwenye simu yako"
 
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:143
 msgid "Add link"
@@ -577,6 +582,10 @@ msgstr "Yoyote iliyochaguliwa"
 #~ msgid "Any tag"
 #~ msgstr "Lebo yoyote"
 
+#: apps/web/src/features/install/ui/install-page.tsx:77
+msgid "App installation"
+msgstr "Usakinishaji wa programu"
+
 #: apps/web/src/features/home/ui/settings-page.tsx:47
 #~ msgid "Appearance"
 #~ msgstr "Mwonekano"
@@ -628,6 +637,7 @@ msgstr "Inasubiri idhini"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 #: apps/web/src/components/paper-wallet-scanner.tsx:233
+#: apps/web/src/features/install/ui/install-page.tsx:62
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:46
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:137
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:386
@@ -761,7 +771,7 @@ msgstr "Ruhusa ya kamera imekataliwa."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:389
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:497
-#: apps/web/src/routes/__root.tsx:290
+#: apps/web/src/routes/__root.tsx:293
 msgid "Cancel"
 msgstr "Ghairi"
 
@@ -871,7 +881,7 @@ msgstr "Inaangalia usambazaji…"
 msgid "Checking which vouchers this pool takes…"
 msgstr "Inaangalia vocha ambazo kikundi hiki kinakubali…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Checking…"
 msgstr "Inakagua…"
 
@@ -913,6 +923,10 @@ msgstr "Chagua vocha"
 #~ msgid "Choose a wallet to continue."
 #~ msgstr "Chagua mkoba ili kuendelea."
 
+#: apps/web/src/components/install-instructions.tsx:30
+msgid "Choose Add to Home Screen."
+msgstr "Chagua Add to Home Screen (Ongeza kwenye skrini ya kwanza)."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:113
 msgid "Choose an expiration date"
@@ -927,7 +941,7 @@ msgstr "Chagua nyingine"
 msgid "Choose at most 12 tags"
 msgstr "Chagua lebo 12 kwa juu zaidi"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:52
+#: apps/web/src/features/home/ui/settings-page.tsx:55
 msgid "Choose between light and dark mode."
 msgstr "Chagua kati ya hali ya mwanga na giza."
 
@@ -941,7 +955,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Chagua viwango unavyoweka au thamani sawa wakati kipimo hakina chanzo "
 "cha bei"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:45
+#: apps/web/src/features/home/ui/settings-page.tsx:48
 msgid "Choose the app display language."
 msgstr "Chagua lugha ya programu."
 
@@ -952,6 +966,14 @@ msgstr "Chagua lugha ya programu."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:583
 #~ msgid "Circulates forever"
 #~ msgstr "Inazunguka bila kuisha"
+
+#: apps/web/src/features/install/ui/install-page.tsx:80
+msgid "CLC is installed. Find it on your home screen."
+msgstr "CLC imesakinishwa. Itafute kwenye skrini yako ya kwanza."
+
+#: apps/web/src/features/install/ui/install-page.tsx:70
+msgid "CLC on your home screen"
+msgstr "CLC kwenye skrini yako ya kwanza"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:145
 msgid "Clear"
@@ -1056,6 +1078,10 @@ msgstr "Thibitisha na Uchapishe"
 msgid "Confirm and send"
 msgstr "Thibitisha na utume"
 
+#: apps/web/src/components/install-instructions.tsx:45
+msgid "Confirm Install or Add when asked."
+msgstr "Thibitisha Install (Sakinisha) au Add (Ongeza) unapoombwa."
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:133
 #~ msgid "Confirm passphrase"
 #~ msgstr "Thibitisha kauli ya siri"
@@ -1106,7 +1132,7 @@ msgstr "Unganisha pochi yako ili kutengeneza."
 msgid "Connect your wallet to use MPESA."
 msgstr "Unganisha mkoba wako ili kutumia MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:73
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Connected address"
 msgstr "Anwani iliyounganishwa"
 
@@ -1119,15 +1145,15 @@ msgstr "Inaunganisha pochi..."
 msgid "Connecting..."
 msgstr "Inaunganisha..."
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Connecting…"
 msgstr "Inaunganisha…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:125
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:290
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:338
-#: apps/web/src/routes/__root.tsx:195
-#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:198
+#: apps/web/src/routes/__root.tsx:229
 msgid "Connection failed."
 msgstr "Muunganisho umeshindikana."
 
@@ -1162,6 +1188,15 @@ msgstr "Tovuti ya mawasiliano"
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:415
 msgid "Continue"
 msgstr "Endelea"
+
+#: apps/web/src/components/install-app-dialog.tsx:64
+#: apps/web/src/features/install/ui/install-page.tsx:107
+msgid "Continue in browser"
+msgstr "Endelea kwenye kivinjari"
+
+#: apps/web/src/features/install/ui/install-page.tsx:107
+msgid "Continue to CLC"
+msgstr "Endelea kwenda CLC"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:481
 msgid "Continue to wallet"
@@ -1249,7 +1284,7 @@ msgstr "Nakili anwani ya pochi"
 #~ msgid "Copy wallet name"
 #~ msgstr "Nakili jina la pochi"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:32
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:33
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1433,6 +1468,17 @@ msgstr "Imeshindwa kupakia machapisho yako."
 msgid "Couldn't mint the first supply."
 msgstr "Imeshindikana kutengeneza usambazaji wa kwanza."
 
+#: apps/web/src/components/install-app-button.tsx:65
+msgid "Couldn't open installation. Follow the steps below or try again later."
+msgstr "Imeshindikana kufungua usakinishaji. Fuata hatua hapa chini au ujaribu "
+"tena baadaye."
+
+#: apps/web/src/components/install-app-dialog.tsx:58
+msgid "Couldn't open installation. Follow these instructions or try again "
+"later."
+msgstr "Imeshindikana kufungua usakinishaji. Fuata maelekezo haya au ujaribu "
+"tena baadaye."
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "Couldn't publish your pool."
 msgstr "Imeshindikana kuchapisha puli yako."
@@ -1534,7 +1580,7 @@ msgid "Create"
 msgstr "Unda"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:42
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:43
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:158
 msgid "Create account"
 msgstr "Fungua akaunti"
@@ -1633,7 +1679,7 @@ msgstr "Punguza kiasi"
 msgid "Default"
 msgstr "Chaguo-msingi"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:90
+#: apps/web/src/features/home/ui/settings-page.tsx:93
 msgid "Delegated to Calibur"
 msgstr "Imekabidhiwa kwa Calibur"
 
@@ -2251,7 +2297,7 @@ msgid "How should vouchers match?"
 msgstr "Vocha zilingane vipi?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:45
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:46
 msgid "I already have an account"
 msgstr "Nina akaunti tayari"
 
@@ -2267,17 +2313,22 @@ msgstr "Nimehifadhi ufunguo huu. Ukipotea, mkoba wangu hauwezi kurejeshwa."
 msgid "Identifying location…"
 msgstr "Inatambua eneo…"
 
+#: apps/web/src/components/install-instructions.tsx:33
+msgid "If shown, keep Open as Web App switched on, then tap Add."
+msgstr "Ikiwa chaguo la Fungua kama programu ya wavuti (Open as Web App) "
+"linaonekana, liache likiwa limewashwa, kisha gusa Ongeza (Add)."
+
 #: apps/web/src/features/home/ui/posts-page.tsx:23
 #~ msgid "Impact reports from pools, service providers, and stewards will appear "
 #~ "here."
 #~ msgstr "Ripoti za athari kutoka vikundi, watoa huduma, na wasimamizi "
 #~ "zitaonekana hapa."
 
-#: apps/web/src/routes/__root.tsx:270
+#: apps/web/src/routes/__root.tsx:273
 msgid "Import paper wallet?"
 msgstr "Leta mkoba wa karatasi?"
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Import wallet"
 msgstr "Leta mkoba"
 
@@ -2290,7 +2341,7 @@ msgstr "Leta mkoba"
 msgid "In network"
 msgstr "Kwenye mtandao"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/home/ui/settings-page.tsx:119
 msgid "Inactive"
 msgstr "Haijawashwa"
 
@@ -2302,9 +2353,36 @@ msgstr "Ongeza kiasi"
 msgid "Info"
 msgstr "Maelezo"
 
+#: apps/web/src/components/install-app-button.tsx:60
+#: apps/web/src/components/install-app-dialog.tsx:29
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:30
+msgid "Install CLC"
+msgstr "Sakinisha CLC"
+
+#: apps/web/src/components/install-app-dialog.tsx:43
+msgid "Install now"
+msgstr "Sakinisha sasa"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:201
 msgid "Install the app first"
 msgstr "Sakinisha programu kwanza"
+
+#: apps/web/src/components/install-app-dialog.tsx:51
+#: apps/web/src/features/install/ui/install-page.tsx:91
+msgid "Installation cancelled. You can keep using CLC in your browser or "
+"install it later."
+msgstr "Usakinishaji umeghairiwa. Unaweza kuendelea kutumia CLC kwenye "
+"kivinjari au kuisakinisha baadaye."
+
+#: apps/web/src/features/install/ui/install-page.tsx:123
+msgid "Installation link"
+msgstr "Kiungo cha usakinishaji"
+
+#: apps/web/src/components/install-app-button.tsx:45
+#: apps/web/src/features/install/ui/install-page.tsx:84
+msgid "Installation requested. Follow your browser's instructions to finish."
+msgstr "Usakinishaji umeombwa. Fuata maelekezo ya kivinjari chako ili kumaliza."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:13
@@ -2434,6 +2512,10 @@ msgstr "Anwani ya kiungo"
 #: apps/web/src/lib/validation-i18n.ts:305
 msgid "Link at most 12 vouchers"
 msgstr "Unganisha vocha 12 kwa juu zaidi"
+
+#: apps/web/src/features/install/ui/install-page.tsx:138
+msgid "Link copied. Paste it into a message."
+msgstr "Kiungo kimenakiliwa. Kibandike kwenye ujumbe."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:905
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:461
@@ -2632,6 +2714,13 @@ msgstr "Nembo"
 msgid "Longitude must be between -180 and 180"
 msgstr "Longitudo iwe kati ya -180 na 180"
 
+#: apps/web/src/components/install-instructions.tsx:50
+msgid "Look for Install app in your browser's menu. On a Mac with Safari, "
+"choose File, then Add to Dock."
+msgstr "Tafuta Sakinisha programu (Install app) kwenye menyu ya kivinjari "
+"chako. Kwenye Mac ukitumia Safari, chagua Faili (File), kisha Ongeza "
+"kwenye Dock (Add to Dock)."
+
 #. placeholder {0}: voucher.symbol
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:337
 msgid "Manage {0}"
@@ -2650,7 +2739,7 @@ msgstr "Simamia vocha"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Simamia hati, vikundi, na malipo ya mitaa."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:32
+#: apps/web/src/features/home/ui/settings-page.tsx:33
 msgid "Manage your wallet session and app preferences."
 msgstr "Simamia kikao cha mkoba na mapendeleo ya programu."
 
@@ -2938,7 +3027,7 @@ msgstr "Bado hakuna ada za {0} zilizokusanywa."
 msgid "No activity yet."
 msgstr "Bado hakuna shughuli."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:76
+#: apps/web/src/features/home/ui/settings-page.tsx:79
 msgid "No address available"
 msgstr "Hakuna anwani inayopatikana"
 
@@ -3259,6 +3348,32 @@ msgstr "Fungua kwenye Ramani"
 #~ msgid "Open Market to browse each voucher's individual offers."
 #~ msgstr "Fungua Soko ili kuvinjari ofa binafsi za kila vocha."
 
+#: apps/web/src/components/install-instructions.tsx:19
+msgid "Open this link in your phone's browser first. Use Chrome on Android or "
+"Safari on iPhone."
+msgstr "Fungua kiungo hiki kwenye kivinjari cha simu yako kwanza. Tumia Chrome "
+"kwenye Android au Safari kwenye iPhone."
+
+#: apps/web/src/features/install/ui/install-page.tsx:154
+#~ msgid "Open this link on your phone in Chrome on Android or Safari on iPhone. "
+#~ "You can also look for Install app in your browser's menu."
+#~ msgstr "Fungua kiungo hiki kwenye simu yako kwa Chrome kwenye Android au Safari "
+#~ "kwenye iPhone. Unaweza pia kutafuta Install app kwenye menyu ya "
+#~ "kivinjari."
+
+#: apps/web/src/components/install-instructions.tsx:39
+msgid "Open this page in Chrome."
+msgstr "Fungua ukurasa huu kwenye Chrome."
+
+#: apps/web/src/components/install-instructions.tsx:27
+msgid "Open this page in Safari or Chrome and tap Share."
+msgstr "Fungua ukurasa huu kwenye Safari au Chrome na uguse Share (Shiriki)."
+
+#: apps/web/src/components/install-app-dialog.tsx:32
+#: apps/web/src/features/install/ui/install-page.tsx:73
+msgid "Open your wallet and community market with one tap from your phone."
+msgstr "Fungua pochi yako na soko la jamii kwa mguso mmoja kwenye simu yako."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:146
 msgid "Opening paper wallet..."
 msgstr "Inafungua mkoba wa karatasi..."
@@ -3374,7 +3489,7 @@ msgid "Password cannot be empty."
 msgstr "Nenosiri haliwezi kuwa tupu."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:245
+#: apps/web/src/routes/__root.tsx:248
 msgid "Password-protected paper wallet"
 msgstr "Mkoba wa karatasi uliolindwa kwa nenosiri"
 
@@ -3644,7 +3759,7 @@ msgstr "Machapisho hayapatikani kwa vocha hii."
 #~ msgid "Powered by Pretium"
 #~ msgstr "Inaendeshwa na Pretium"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:40
+#: apps/web/src/features/home/ui/settings-page.tsx:43
 msgid "Preferences"
 msgstr "Mapendeleo"
 
@@ -4172,7 +4287,7 @@ msgstr "Maoni"
 msgid "Reviews for this voucher will appear here."
 msgstr "Maoni kuhusu vocha hii yataonekana hapa."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:36
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 "viwango vya pamoja."
@@ -4318,6 +4433,10 @@ msgstr "Inatafuta…"
 msgid "Select a token"
 msgstr "Chagua tokeni"
 
+#: apps/web/src/features/install/ui/install-page.tsx:140
+msgid "Select and copy the link above to share it."
+msgstr "Chagua na unakili kiungo hapo juu ili kukishiriki."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:40
 #~ msgid "Selected pool"
 #~ msgstr "Puli iliyochaguliwa"
@@ -4367,6 +4486,10 @@ msgstr "Tuma {0}"
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:60
 msgid "Send supported vouchers to this pool address."
 msgstr "Tuma vocha zinazokubaliwa kwa anwani hii ya kikundi."
+
+#: apps/web/src/features/install/ui/install-page.tsx:120
+msgid "Send this link to help someone add CLC to their phone."
+msgstr "Tuma kiungo hiki kumsaidia mtu kuongeza CLC kwenye simu yake."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:695
 #~ msgid "Send this post back for approval?"
@@ -4434,7 +4557,7 @@ msgstr "Inaandaa pochi yako..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:38
-#: apps/web/src/features/home/ui/settings-page.tsx:29
+#: apps/web/src/features/home/ui/settings-page.tsx:30
 msgid "Settings"
 msgstr "Mipangilio"
 
@@ -4442,6 +4565,15 @@ msgstr "Mipangilio"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:383
 msgid "Share"
 msgstr "Shiriki"
+
+#: apps/web/src/components/install-app-link.tsx:17
+#: apps/web/src/features/install/ui/install-page.tsx:117
+msgid "Share CLC"
+msgstr "Shiriki CLC"
+
+#: apps/web/src/features/install/ui/install-page.tsx:135
+msgid "Share installation link"
+msgstr "Shiriki kiungo cha usakinishaji"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:21
 #~ msgid "Share your address to get paid"
@@ -4523,7 +4655,7 @@ msgstr "Ingia kwa ufunguo binafsi"
 #~ msgid "Sign once to refresh your app session."
 #~ msgstr "Saini mara moja ili kusasisha kikao chako cha programu."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Sign out"
 msgstr "Ondoka"
 
@@ -4547,7 +4679,7 @@ msgstr "Njia ya kuingia"
 #~ msgid "Signed contract actions for this voucher."
 #~ msgstr "Vitendo vya mkataba vilivyotiwa saini kwa vocha hii."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:105
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "Signing out..."
 msgstr "Inaondoka..."
 
@@ -4759,11 +4891,11 @@ msgstr "Inabadilisha…"
 msgid "Swaps settle within the market association..."
 msgstr "Ubadilishaji hukamilika ndani ya chama cha soko..."
 
-#: apps/web/src/routes/__root.tsx:282
+#: apps/web/src/routes/__root.tsx:285
 msgid "Switch wallet"
 msgstr "Badili mkoba"
 
-#: apps/web/src/routes/__root.tsx:270
+#: apps/web/src/routes/__root.tsx:273
 msgid "Switch wallet?"
 msgstr "Badili mkoba?"
 
@@ -4808,6 +4940,11 @@ msgstr "Lebo zisiwe tupu"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:569
 msgid "Take fees separately"
 msgstr "Tenga ada"
+
+#: apps/web/src/components/install-instructions.tsx:42
+msgid "Tap the three-dot menu, then Add to home screen or Install app."
+msgstr "Gusa menyu ya nukta tatu, kisha Ongeza kwenye skrini ya kwanza (Add to "
+"home screen) au Sakinisha programu (Install app)."
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:301
@@ -5409,6 +5546,15 @@ msgstr "Tumia herufi na namba pekee kwa alama ya vocha"
 msgid "Use photo"
 msgstr "Tumia picha"
 
+#: apps/web/src/features/install/ui/install-page.tsx:101
+#~ msgid "Use your browser's menu to install CLC. On iPhone, tap Share, then Add "
+#~ "to Home Screen. In an embedded browser, open this link in Safari or "
+#~ "Chrome first."
+#~ msgstr "Tumia menyu ya kivinjari chako kusakinisha CLC. Kwenye iPhone, gusa "
+#~ "Shiriki, kisha Ongeza kwenye Skrini ya Nyumbani. Ukiwa kwenye kivinjari "
+#~ "cha ndani ya programu nyingine, fungua kiungo hiki kwenye Safari au "
+#~ "Chrome kwanza."
+
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:281
 #~ msgid "Use your location to order vouchers by distance."
 #~ msgstr "Tumia eneo lako kupanga vocha kulingana na umbali."
@@ -5607,6 +5753,11 @@ msgstr "Vocha hubadilishwa moja kwa moja"
 msgid "Waiting for blockchain confirmation..."
 msgstr "Inasubiri uthibitisho wa blockchain..."
 
+#: apps/web/src/components/install-app-button.tsx:58
+#: apps/web/src/components/install-app-dialog.tsx:41
+msgid "Waiting for confirmation…"
+msgstr "Inasubiri uthibitisho…"
+
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:90
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:125
 msgid "Waiting for on-chain confirmation"
@@ -5647,7 +5798,7 @@ msgstr "Vitendo vya mkoba vinapatikana baada ya kujisajili au kuingia."
 #~ msgid "Wallet connected"
 #~ msgstr "Mkoba umeunganishwa"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:66
 msgid "Wallet session"
 msgstr "Kikao cha mkoba"
 

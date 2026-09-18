@@ -38,6 +38,8 @@ import { Web3Provider } from "#/providers/web3";
 import { pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { RouteError } from "#/components/route-error";
 import { reloadOnceForStaleChunk } from "#/lib/stale-chunk-recovery";
+import { useInstallPromptListener } from "#/features/install/install-store";
+import { installBootstrapScript } from "#/features/install/install-bootstrap";
 import appCss from "../styles.css?url";
 
 const AppDevtools = import.meta.env.DEV
@@ -87,6 +89,7 @@ function AppContent() {
 }
 
 function AppInner() {
+  useInstallPromptListener();
   const { t } = useLingui();
   const { address } = useConnection();
   const auth = useAuthStatus();
@@ -374,6 +377,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>

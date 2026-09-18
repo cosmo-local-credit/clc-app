@@ -62,6 +62,7 @@ const routePolicy = [
     navOwner: "voucher",
   },
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
+  { id: "/install", fullPath: "/install", source: "install.tsx" },
   {
     id: "/settings/profile",
     fullPath: "/settings/profile",
