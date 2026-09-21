@@ -2,7 +2,7 @@ import path from "node:path";
 import { injectManifest } from "@serwist/build";
 import { build, type Plugin } from "vite-plus";
 
-export function tanstackSerwistPlugin(): Plugin {
+export function tanstackSerwistPlugin({ brand }: { brand: "prod" | "staging" }): Plugin {
   let rootDir: string;
   let isProduction: boolean;
 
@@ -14,12 +14,12 @@ export function tanstackSerwistPlugin(): Plugin {
     },
     async buildStart() {
       if (!isProduction) {
-        await buildServiceWorker(rootDir, false);
+        await buildServiceWorker(rootDir, false, brand);
       }
     },
     async closeBundle() {
       if (isProduction) {
-        await buildServiceWorker(rootDir, true);
+        await buildServiceWorker(rootDir, true, brand);
       }
     },
   };
@@ -34,7 +34,7 @@ function getPublicOutputDir(rootDir: string, production: boolean): string {
   return isCfPages ? path.resolve(rootDir, "dist") : path.resolve(rootDir, ".output", "public");
 }
 
-async function buildServiceWorker(rootDir: string, production: boolean) {
+async function buildServiceWorker(rootDir: string, production: boolean, brand: "prod" | "staging") {
   const outName = "sw.js";
   const outDir = getPublicOutputDir(rootDir, production);
   const swSrc = path.resolve(rootDir, "src", "sw.ts");
@@ -79,7 +79,14 @@ async function buildServiceWorker(rootDir: string, production: boolean) {
         // connections; the browser cache will keep what the user actually visits.
         // Keep the install dialog genuinely on demand, even when small enough
         // to fit under the precache limit. Installed users rarely need it.
-        globIgnores: ["_worker.js/**", "**/install-app-dialog-*.js"],
+        globIgnores: [
+          "_worker.js/**",
+          "**/install-app-dialog-*.js",
+          // Both brands' icon sets ship so develop and master keep identical
+          // trees, but only the one this build resolved is ever requested.
+          `brand/${brand === "staging" ? "prod" : "staging"}/**`,
+          `manifest.${brand === "staging" ? "prod" : "staging"}.webmanifest`,
+        ],
         maximumFileSizeToCacheInBytes: 300 * 1024,
         injectionPoint: "self.__SW_MANIFEST",
       });

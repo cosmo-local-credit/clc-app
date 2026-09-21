@@ -9,6 +9,7 @@ import {
   HiOutlineTicket,
   HiOutlineUsers,
 } from "react-icons/hi";
+import { BRAND_ICON_BASE } from "#/lib/brand";
 import { CommandPalette } from "#/components/layout/command-palette";
 import { OperatorMenu } from "#/components/layout/operator-menu";
 import {
@@ -99,7 +100,7 @@ function AppShellInner() {
             aria-label="CLC Admin dashboard"
             className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
           >
-            <img src="/logo.svg" alt="" className="size-6 shrink-0" />
+            <img src={`${BRAND_ICON_BASE}/logo.svg`} alt="" className="size-6 shrink-0" />
             <span className="font-heading text-foreground text-lg font-bold tracking-tight group-data-[collapsible=icon]:hidden">
               CLC Admin
             </span>

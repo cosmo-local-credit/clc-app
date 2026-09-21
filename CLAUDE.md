@@ -369,6 +369,50 @@ for that branch.
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); blue marks staging.
 
+#### The brand reaches past CSS — icons, manifest, status bar
+
+`data-brand` only recolours what the stylesheet draws. Everything the OS renders
+outside the page — home-screen icon, install splash, task switcher, Android
+status bar, browser tab — names a colour in sRGB and has to be selected by the
+build. The palette is one table, `BRAND_PRIMARY_COLOR` in
+`@clc/core/lib/constants/brand`, resolved by each app's `#/lib/brand` through
+`resolveBrand`. Nothing else may hardcode `#007a55` or `#1762b8`, and unset
+`VITE_BRAND` is prod: a misconfigured production deploy must not look like
+staging.
+
+**Both brands' assets ship; the build picks one by path.** `develop` and
+`master` must keep identical trees outside the two Wrangler files, so nothing is
+swapped or patched at build time:
+
+| Surface         | Prod                            | Staging                            |
+| --------------- | ------------------------------- | ---------------------------------- |
+| Manifest        | `manifest.prod.webmanifest`     | `manifest.staging.webmanifest`     |
+| Web icons       | `public/brand/prod/`            | `public/brand/staging/`            |
+| Admin icons     | `apps/admin/public/brand/prod/` | `apps/admin/public/brand/staging/` |
+| Install name    | `CLC`                           | `CLC Staging`                      |
+| Admin tab title | `CLC Admin`                     | `CLC Admin (staging)`              |
+
+Each web set is one SVG plus four rasters derived from it, and they are not
+interchangeable: `logo.svg` / `icon-192` / `icon-512` are the rounded tile with
+transparent corners (`purpose: "any"`); `maskable-512` is full-bleed and opaque
+with the mark pulled into the central 80% safe zone (`purpose: "maskable"`, so a
+launcher can crop it); `apple-touch-icon` is full-bleed, opaque and 180px
+because iOS ignores the manifest, applies its own squircle, and composites
+transparency on black. Regenerate the rasters from the SVG with
+`magick -background none logo.svg -resize NxN out.png` after any change to the
+mark. `apps/admin` uses the square tile (`rx="0"`) and needs only `logo.svg` and
+`favicon.ico`.
+
+**Do not patch `public/` after the build.** The previous mechanism rewrote
+`manifest.json`'s `theme_color` in a `closeBundle` hook; Nitro copies `public/`
+into the output later, so the file was still green in a blue staging build while
+the `<head>` meta was correct. `apps/web/src/lib/-brand.test.ts` pins the
+manifests to the palette so that cannot come back.
+
+`theme-color` is a single meta that the pre-paint bootstrap in `theme.ts`
+rewrites to the dark variant when that scheme is active — do not split it into
+`media`-scoped copies, which would follow the OS rather than the stored choice.
+
 Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
 `#/lib/chain` and validated at boot. The chain's name, gas symbol, explorer and
 Calibur implementation come from the table in

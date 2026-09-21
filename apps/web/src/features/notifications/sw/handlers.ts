@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BRAND_ICON_BASE } from "#/lib/brand";
 import type {
   SendNotificationClickAckRequest,
   SendNotificationDeliveryAckRequest,
@@ -203,7 +204,7 @@ function createNotificationOptions(payload: NotificationPayload): NotificationOp
       walletAddressTarget: payload.walletAddressTarget,
     },
     badge: "/notification-badge.png",
-    icon: "/logo192.png",
+    icon: `${BRAND_ICON_BASE}/icon-192.png`,
     renotify: policy.renotify,
     silent: false,
     tag: `clc:${payload.kind}:${payload.walletAddressTarget ?? "device"}`,

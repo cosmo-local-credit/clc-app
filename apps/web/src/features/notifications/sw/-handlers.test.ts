@@ -13,6 +13,7 @@ import {
   type NotificationClickInput,
   type NotificationServiceWorkerDependencies,
 } from "./handlers";
+import { BRAND_ICON_BASE } from "#/lib/brand";
 
 const APP_ORIGIN = "https://app.cosmolocal.credit";
 const NOW = "2026-06-10T12:00:00.000Z";
@@ -54,7 +55,7 @@ describe("handleNotificationPush", () => {
           targetUrl: "/wallet",
           walletAddressTarget: WALLET_ADDRESS,
         },
-        icon: "/logo192.png",
+        icon: `${BRAND_ICON_BASE}/icon-192.png`,
         renotify: true,
         tag: `clc:voucher.received:${WALLET_ADDRESS}`,
       }),
