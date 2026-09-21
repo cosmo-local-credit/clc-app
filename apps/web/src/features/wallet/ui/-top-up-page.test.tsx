@@ -40,6 +40,10 @@ vi.mock("#/lib/chain", () => ({
     blockTimeMs: 1_000,
     explorerUrl: "https://celoscan.io",
     explorerName: "Celoscan",
+    // The real Celo entry carries one. Omitting it made relayer-config throw
+    // at import on any machine without VITE_CALIBUR_ADDRESS in .env — which is
+    // every CI runner.
+    caliburAddress: "0x1289fE793392fb1a905f78Ea23f632EDD3d15b85",
   },
 }));
 
