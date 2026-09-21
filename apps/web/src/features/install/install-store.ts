@@ -8,7 +8,7 @@ export const useInstallStore = create<InstallSnapshot>(() => ({
   status: "idle",
 }));
 
-export function updateInstallState(update: Partial<InstallSnapshot>) {
+function updateInstallState(update: Partial<InstallSnapshot>) {
   if (window.__clcInstall) Object.assign(window.__clcInstall, update);
   useInstallStore.setState(update);
 }
