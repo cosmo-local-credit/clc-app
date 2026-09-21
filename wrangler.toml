@@ -1,15 +1,15 @@
-# Cloudflare Pages project for the mobile PWA on **staging** (Gnosis, chain 100).
+# Cloudflare Pages project for the mobile PWA on **prod** (Gnosis, chain 100).
 # The admin console is a separate project — see apps/admin/wrangler.toml.
 #
 # `develop` and `master` share one codebase and differ only in these two Wrangler
 # files. Pages resolves one config per root directory and that file's `name`
 # binds it to one project, so the files occupy the same paths on both branches.
-# Merging this file onto master renames the prod project (`clc-app`) out from
+# Merging develop's copy onto master renames this project (`clc-app`) out from
 # under itself.
 #
-#   develop  → clc-app-gnosis  → https://test.cosmolocal.credit     (staging)
 #   master   → clc-app         → https://app.cosmolocal.credit      (prod)
-name = "clc-app-gnosis"
+#   develop  → clc-app-gnosis  → https://test.cosmolocal.credit     (staging)
+name = "clc-app"
 pages_build_output_dir = "apps/web/dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
@@ -18,40 +18,27 @@ compatibility_flags = ["nodejs_compat"]
 # shows these values in the dashboard but will not let them be edited there. Pages
 # supplies them to the build as well as to the Function, which is why VITE_
 # values belong here — they are inlined into the client bundle at build time.
-#
-# Staging backend is the clc-gnosis box. gnosis-staging is clc-core;
-# gnosis-storage is the upload service (shared with prod). Each origin below
-# must be in that box's `api.cors`, `relayer.allowed_origins`, and
-# `STORAGE_API__ORIGIN`.
 [vars]
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
+VITE_API_URL = "https://api.cosmolocal.credit"
+VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
-VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
-# PublicNode is independent of our node and Gnosis's starter RPC. The client
-# appends the chain default last and ranks all three by stability and latency.
+VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
-# Our own Gnosis full node, the same endpoint clc-core, eth-tracker and
-# eth-indexer use.
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
-VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
+VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
-# Scoped to the staging subtree so one passkey works on test.cosmolocal.credit
-# and admin.test.cosmolocal.credit without being offered on prod
-# (app.cosmolocal.credit / admin.cosmolocal.credit), whose backend is a
-# different credential store.
+# The registrable domain, so one passkey works on app.cosmolocal.credit and
+# admin.cosmolocal.credit alike. `resolveRelyingPartyId` honours this only when
+# it is a suffix of the serving host — see the preview override below.
 #
-# `resolveRelyingPartyId` honours the value only when it is a suffix of the
-# serving host — see the preview override below.
-#
-# CHANGING THIS INVALIDATES EXISTING PASSKEYS. WebAuthn credentials cannot be
-# re-scoped, so anyone registered under the old relying party has to enrol again.
-# Paper wallets are unaffected. clc-core does not verify it (the browser does);
-# the backend setting that must list a new origin is `relayer.allowed_origins`.
-VITE_RELYING_PARTY_ID = "test.cosmolocal.credit"
+# CHANGING THIS INVALIDATES EXISTING PASSKEYS. Credentials registered under a
+# different relying party cannot be re-scoped. Paper wallets are unaffected.
+# clc-core does not verify it (the browser does); the backend setting that must
+# list a new origin is `relayer.allowed_origins`.
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"
 VITE_RELYING_PARTY_NAME = "CLC"
 
 # No VITE_CALIBUR_ADDRESS: the implementation for chain 100 is in the chain table
@@ -59,23 +46,22 @@ VITE_RELYING_PARTY_NAME = "CLC"
 
 # Preview deploys keep their own relying party.
 #
-# `test.cosmolocal.credit` is not a suffix of any *.pages.dev host, so it would
-# be ignored there and each branch would fall back to its own hostname.
-# `clc-app-gnosis.pages.dev` *is* a suffix of `<branch>.clc-app-gnosis.pages.dev`.
+# `cosmolocal.credit` is not a suffix of any *.pages.dev host, so it would be
+# ignored there and each branch would fall back to its own hostname.
+# `clc-app.pages.dev` *is* a suffix of `<branch>.clc-app.pages.dev`.
 #
-# Every key is repeated because `vars` is non-inheritable: overriding it for an
-# environment without restating the rest fails validation at deploy time.
+# Every key is repeated because `vars` is non-inheritable.
 [env.preview.vars]
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
+VITE_API_URL = "https://api.cosmolocal.credit"
+VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
 VITE_FULL_REACT_ERRORS = "true"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
-VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
+VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
-VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
+VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
-VITE_RELYING_PARTY_ID = "clc-app-gnosis.pages.dev"
+VITE_RELYING_PARTY_ID = "clc-app.pages.dev"
 VITE_RELYING_PARTY_NAME = "CLC"
