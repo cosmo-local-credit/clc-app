@@ -34,8 +34,9 @@ compatibility_flags = ["nodejs_compat"]
 # web project: the console has no paper-wallet origin and no RPC, and it never
 # *registers* a passkey — only asserts one — so it needs no relying-party name.
 #
-# VITE_STORAGE_URL is shared with apps/web: gnosis-storage.cosmolocal.credit.
-# Its origin allowlist must include this console's hosts.
+# VITE_STORAGE_URL is shared with apps/web: storage.cosmolocal.credit, which is
+# prod's own bucket and not staging's gnosis-storage. Its origin allowlist must
+# include this console's hosts.
 #
 # VITE_MAPTILER_KEY is the same key apps/web uses. The account's allowed-origins
 # list must include this console's hosts (admin.cosmolocal.credit and the
@@ -46,7 +47,7 @@ VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 # The registrable domain, not this host: a passkey is bound to the relying party
 # it was registered under, so scoping it to the parent is what lets one
 # credential work on app.cosmolocal.credit and admin.cosmolocal.credit alike.
@@ -61,5 +62,5 @@ VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"

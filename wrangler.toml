@@ -18,18 +18,30 @@ compatibility_flags = ["nodejs_compat"]
 # shows these values in the dashboard but will not let them be edited there. Pages
 # supplies them to the build as well as to the Function, which is why VITE_
 # values belong here — they are inlined into the client bundle at build time.
+#
+# Two values here are prod-only and must never be taken from develop:
+#
+# VITE_STORAGE_URL is storage.cosmolocal.credit, a different bucket from
+# staging's gnosis-storage. They were one host, so QA uploads landed in the same
+# folders as real user images with only the object key telling them apart. A
+# stored image URL is absolute, so images uploaded before the move still resolve
+# from gnosis-storage and that host has to stay up for prod.
+#
+# VITE_FULL_REACT_ERRORS is false. "true" sets `minify: false` and
+# NODE_ENV=development for the client build, which is a staging debugging tool,
+# not something to ship to app.cosmolocal.credit.
 [vars]
 VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
-VITE_FULL_REACT_ERRORS = "true"
+VITE_FULL_REACT_ERRORS = "false"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 # The registrable domain, so one passkey works on app.cosmolocal.credit and
 # admin.cosmolocal.credit alike. `resolveRelyingPartyId` honours this only when
 # it is a suffix of the serving host — see the preview override below.
@@ -56,12 +68,12 @@ VITE_API_URL = "https://api.cosmolocal.credit"
 VITE_BRAND = "prod"
 VITE_CHAIN_ID = "100"
 VITE_DEFAULT_COUNTRY = "KE"
-VITE_FULL_REACT_ERRORS = "true"
+VITE_FULL_REACT_ERRORS = "false"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
 VITE_PUBLIC_RPC_FALLBACK_URLS = "https://gnosis-rpc.publicnode.com"
 VITE_PUBLIC_RPC_URL = "https://r1-gnosis.grassecon.org"
 VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-app.pages.dev"
 VITE_RELYING_PARTY_NAME = "CLC"
