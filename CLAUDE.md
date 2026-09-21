@@ -350,16 +350,17 @@ is prod. The codebase is shared. The two Wrangler files are the only files that
 must differ, because Pages resolves one config per root directory and that
 file's `name` binds it to one project:
 
-|                            | `master` (prod)                             | `develop` (staging)                |
-| -------------------------- | ------------------------------------------- | ---------------------------------- |
-| `wrangler.toml`            | `clc-app`                                   | `clc-app-gnosis`                   |
-| `apps/admin/wrangler.toml` | `clc-admin`                                 | `clc-admin-gnosis`                 |
-| Web host                   | `app.cosmolocal.credit`                     | `test.cosmolocal.credit`           |
-| Admin host                 | `admin.cosmolocal.credit`                   | `admin.test.cosmolocal.credit`     |
-| API                        | `api.cosmolocal.credit`                     | `gnosis-staging.cosmolocal.credit` |
-| Storage                    | `gnosis-storage.cosmolocal.credit` (shared) | same                               |
-| `VITE_BRAND`               | `prod` (green)                              | `staging` (blue)                   |
-| Relying party              | `cosmolocal.credit`                         | `test.cosmolocal.credit`           |
+|                            | `master` (prod)             | `develop` (staging)                |
+| -------------------------- | --------------------------- | ---------------------------------- |
+| `wrangler.toml`            | `clc-app`                   | `clc-app-gnosis`                   |
+| `apps/admin/wrangler.toml` | `clc-admin`                 | `clc-admin-gnosis`                 |
+| Web host                   | `app.cosmolocal.credit`     | `test.cosmolocal.credit`           |
+| Admin host                 | `admin.cosmolocal.credit`   | `admin.test.cosmolocal.credit`     |
+| API                        | `api.cosmolocal.credit`     | `gnosis-staging.cosmolocal.credit` |
+| Storage                    | `storage.cosmolocal.credit` | `gnosis-storage.cosmolocal.credit` |
+| `VITE_BRAND`               | `prod` (green)              | `staging` (blue)                   |
+| `VITE_FULL_REACT_ERRORS`   | `false`                     | `true`                             |
+| Relying party              | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
 
 **Merging the Wrangler files onto the other branch renames that branch's Pages
 projects out from under themselves.** Promote `develop` → `master` for code;
@@ -424,10 +425,29 @@ request claimed another chain. Unset now means `100`.
 
 Staging backend (`~/gnosis` on the `clc-gnosis` host):
 `https://gnosis-staging.cosmolocal.credit` (clc-core) and
-`https://gnosis-storage.cosmolocal.credit` (uploads). Prod API is
-`https://api.cosmolocal.credit`; uploads still go to gnosis-storage. Each
+`https://gnosis-storage.cosmolocal.credit` (uploads). Prod is
+`https://api.cosmolocal.credit` and `https://storage.cosmolocal.credit`. Each
 frontend origin must appear in the matching box's `CORE_API__CORS`,
 `CORE_RELAYER__ALLOWED_ORIGINS` and `STORAGE_API__ORIGIN`.
+
+**The two storage hosts are separate buckets, and that is the point.** They were
+one until prod moved to `storage.cosmolocal.credit`: staging QA uploads landed in
+the same folders as real user images, distinguished only by object key, and
+nothing in the client tags an environment.
+
+A stored image URL is absolute. `optionalStoredImageUrlSchema` requires
+`http(s)://`, storage-server returns the full URL and clc-core persists it, and
+`VITE_STORAGE_URL` is read in exactly one place per app — to build the upload
+client. Nothing joins it to a key at render time. So moving the endpoint moves
+_new_ uploads only: every image uploaded before the move still points at
+`gnosis-storage.cosmolocal.credit` and keeps resolving from there. That host has
+to stay up for prod, or its objects have to be copied to the new one and the
+stored URLs rewritten in clc-core.
+
+`VITE_FULL_REACT_ERRORS` is a staging tool. It sets `minify: false` and
+`NODE_ENV=development` for the client build, so a prod deploy with it on ships an
+unminified bundle running development React. It is `true` on `develop` and must
+stay `false` on `master`.
 
 ### Deployment — four Cloudflare Pages projects
 
