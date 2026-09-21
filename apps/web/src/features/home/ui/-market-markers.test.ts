@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { BRAND_THEME_COLOR } from "#/lib/brand";
 
 import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-market-canvas-stub";
 import type { MarketLocationKind } from "./market-data";
@@ -116,9 +117,17 @@ describe("market marker images", () => {
   });
 });
 
+function rgbOf(hex: string): [number, number, number] {
+  const value = Number.parseInt(hex.slice(1), 16);
+  return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
+}
+
 describe("market marker colours without Canvas OKLCH support", () => {
+  // `goods` paints the brand primary, which VITE_BRAND picks at build time.
+  // Spelling one brand's hex here passed only where .env said "staging" and
+  // failed in CI, which sets no VITE_BRAND and so resolves to prod.
   const EXPECTED_FALLBACK: Record<MarketLocationKind, [number, number, number]> = {
-    goods: [0x17, 0x62, 0xb8],
+    goods: rgbOf(BRAND_THEME_COLOR.light),
     services: [0x25, 0x63, 0xeb],
     voucher: [0x1f, 0x24, 0x30],
   };
