@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { create } from "zustand";
+import { BRAND_THEME_COLOR } from "#/lib/brand";
 
 export type Theme = "light" | "dark";
 
@@ -7,12 +8,9 @@ export const THEME_STORAGE_KEY = "clc.theme";
 
 // Mirrors the --primary token in styles.css for each scheme. Used for the
 // PWA <meta name="theme-color">, which needs a concrete sRGB value (oklch is
-// not reliably honored there across browsers). Keeps the Android status bar
-// in the Gnosis blue in both schemes.
-const THEME_COLOR: Record<Theme, string> = {
-  light: "#1762b8",
-  dark: "#3178d0",
-};
+// not reliably honored there across browsers). Follows VITE_BRAND so the
+// Android status bar is green on prod and blue on staging.
+const THEME_COLOR: Record<Theme, string> = BRAND_THEME_COLOR;
 
 // Inline <head> script (as a string) injected in __root.tsx. Runs synchronously
 // before first paint so the correct scheme is applied with no flash: read the

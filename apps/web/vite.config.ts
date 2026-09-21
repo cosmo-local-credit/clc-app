@@ -10,6 +10,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite-plus";
+import { brandManifestPlugin } from "./plugins/brand-manifest";
 import { tanstackSerwistPlugin } from "./plugins/serwist";
 
 const webRoot = dirname(fileURLToPath(import.meta.url));
@@ -77,6 +78,9 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     viteReact(),
     babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
     lingui(),
+    brandManifestPlugin(
+      (process.env.VITE_BRAND ?? localEnv.VITE_BRAND) === "staging" ? "#1762b8" : "#007a55",
+    ),
     tanstackSerwistPlugin(),
     codecovVitePlugin({
       enableBundleAnalysis: process.env.CI === "true",

@@ -3,7 +3,7 @@
 A mobile-first PWA for community-based exchange via vouchers and commitment
 pools. Users sign up, get a wallet, on-ramp funds, join local pools, issue and
 redeem vouchers, swap between pools, browse marketplaces, and off-ramp to cash.
-Settled on **Celo** for on-chain auditability. Mental model: Sarafu.
+Settled on **Gnosis** for on-chain auditability. Mental model: Sarafu.
 
 **Actors:** users (hold / send / redeem), service providers (issue vouchers),
 stewards (manage pools, approve vouchers, set limits/fees), supporters (fund
@@ -18,7 +18,7 @@ TanStack Start (Vite + Nitro 3), Serwist PWA, shadcn on **Base UI** (not Radix),
 `lucide-react` for shadcn internals, `react-icons` for app icons, `sonner` for
 toasts, TanStack Form + zod 4 (Standard Schema), `@tanstack/react-query` for
 server state, `zustand` for client state, **wagmi + viem (latest stable majors)**
-for chain interactions, **ConnectKit** (family.co) for wallet UI, Celo as the settlement
+for chain interactions, **ConnectKit** (family.co) for wallet UI, Gnosis as the settlement
 chain.
 
 pnpm workspace monorepo separating logic (platform-agnostic, testable) from UI.
@@ -268,8 +268,9 @@ buttons) placed on the gray page background — they become invisible.
 
 Desktop-first back office for stewards and operators. Look and feel is drawn
 from `~/wafer-labs/wafer-ui` (unrelated project, same stack): **Lyra** — square
-corners, dense zinc surfaces, mono numerals, restrained status colour. The brand
-green `--primary` carries over from `apps/web` so both read as one product.
+corners, dense zinc surfaces, mono numerals, restrained status colour. `--primary`
+follows `VITE_BRAND` (green on prod, blue on staging) so both apps on one
+environment read as one product.
 
 What differs from `apps/web`:
 
@@ -327,7 +328,7 @@ Admin conventions:
 1. **CORS** — `api.cors` must list the console's origin. `http://localhost:3001`
    is already there for local dev; staging is configured separately, so verify
    before blaming the client:
-   `curl -sD- -o/dev/null "https://staging.cosmolocal.credit/api/v2/vouchers?perPage=1" -H "Origin: http://localhost:3001" | grep -i access-control`
+   `curl -sD- -o/dev/null "https://gnosis-staging.cosmolocal.credit/api/v2/vouchers?perPage=1" -H "Origin: http://localhost:3001" | grep -i access-control`
 2. **Passkey origin** — `relayer.allowed_origins` is a _separate_ allowlist,
    checked against the assertion's `clientDataJSON.origin` in
    `internal/relayer/webauthn.go`. An origin missing here fails passkey sign-in
@@ -342,21 +343,31 @@ Admin's dev port lives in `apps/admin/vite.config.ts` as
 `vp dev apps/admin` from the root silently takes `apps/web`'s 3000, and both
 allowlists above name the port.
 
-### The `sohail/gnosis` branch — a second chain, not a second app
+### `develop` vs `master` — staging vs prod, one chain
 
-This branch deploys the same two apps against the **Gnosis** stack (chain 100)
-on the `clc-gnosis` box. Everything in it is chain-agnostic and belongs on
-master **except the two Wrangler files**, which rename the Pages projects:
+Both branches settle on **Gnosis** (chain 100). `develop` is staging; `master`
+is prod. The codebase is shared. The two Wrangler files are the only files that
+must differ, because Pages resolves one config per root directory and that
+file's `name` binds it to one project:
 
-|                            | master (Celo) | `sohail/gnosis`    |
-| -------------------------- | ------------- | ------------------ |
-| `wrangler.toml`            | `clc-app`     | `clc-app-gnosis`   |
-| `apps/admin/wrangler.toml` | `clc-admin`   | `clc-admin-gnosis` |
+|                            | `master` (prod)                             | `develop` (staging)                |
+| -------------------------- | ------------------------------------------- | ---------------------------------- |
+| `wrangler.toml`            | `clc-app`                                   | `clc-app-gnosis`                   |
+| `apps/admin/wrangler.toml` | `clc-admin`                                 | `clc-admin-gnosis`                 |
+| Web host                   | `app.cosmolocal.credit`                     | `test.cosmolocal.credit`           |
+| Admin host                 | `admin.cosmolocal.credit`                   | `admin.test.cosmolocal.credit`     |
+| API                        | `api.cosmolocal.credit`                     | `gnosis-staging.cosmolocal.credit` |
+| Storage                    | `gnosis-storage.cosmolocal.credit` (shared) | same                               |
+| `VITE_BRAND`               | `prod` (green)                              | `staging` (blue)                   |
+| Relying party              | `cosmolocal.credit`                         | `test.cosmolocal.credit`           |
 
-It is a branch rather than a directory because Pages resolves one Wrangler
-config per root directory and that file's `name` binds it to one project, so
-the two configs must occupy the same paths. **Merging those two files to master
-renames the Celo projects out from under themselves.**
+**Merging the Wrangler files onto the other branch renames that branch's Pages
+projects out from under themselves.** Promote `develop` → `master` for code;
+rewrite the Wrangler `name` and URLs in the same push so HEAD is always valid
+for that branch.
+
+`VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
+Green is the product brand (prod); blue marks staging.
 
 Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
 `#/lib/chain` and validated at boot. The chain's name, gas symbol, explorer and
@@ -365,32 +376,34 @@ Calibur implementation come from the table in
 currencies, Pretium ramp) sit beside the feature that reads them. Nothing else
 may read `VITE_CHAIN_ID`, and no new `?? "42220"` — a module that defaults on
 its own is how the wagmi config ended up signing against Celo while the SIWE
-request claimed another chain.
+request claimed another chain. Unset now means `100`.
 
-Backend for this branch (`~/gnosis` on the `clc-gnosis` host):
+Staging backend (`~/gnosis` on the `clc-gnosis` host):
 `https://gnosis-staging.cosmolocal.credit` (clc-core) and
-`https://gnosis-storage.cosmolocal.credit` (uploads, sharing Celo's R2 bucket
-and CDN). Each frontend origin must appear in that box's `CORE_API__CORS`,
+`https://gnosis-storage.cosmolocal.credit` (uploads). Prod API is
+`https://api.cosmolocal.credit`; uploads still go to gnosis-storage. Each
+frontend origin must appear in the matching box's `CORE_API__CORS`,
 `CORE_RELAYER__ALLOWED_ORIGINS` and `STORAGE_API__ORIGIN`.
 
-### Deployment — two Cloudflare Pages projects
+### Deployment — four Cloudflare Pages projects
 
-On this branch (the Celo equivalents, `clc-app` / `clc-admin`, live on master):
+|              | Branch    | Project            | Config                     | Host                           |
+| ------------ | --------- | ------------------ | -------------------------- | ------------------------------ |
+| `apps/web`   | `master`  | `clc-app`          | `wrangler.toml` (root)     | `app.cosmolocal.credit`        |
+| `apps/admin` | `master`  | `clc-admin`        | `apps/admin/wrangler.toml` | `admin.cosmolocal.credit`      |
+| `apps/web`   | `develop` | `clc-app-gnosis`   | `wrangler.toml` (root)     | `test.cosmolocal.credit`       |
+| `apps/admin` | `develop` | `clc-admin-gnosis` | `apps/admin/wrangler.toml` | `admin.test.cosmolocal.credit` |
 
-|              | Project            | Config                     | Host                             |
-| ------------ | ------------------ | -------------------------- | -------------------------------- |
-| `apps/web`   | `clc-app-gnosis`   | `wrangler.toml` (root)     | `app.gnosis.cosmolocal.credit`   |
-| `apps/admin` | `clc-admin-gnosis` | `apps/admin/wrangler.toml` | `admin.gnosis.cosmolocal.credit` |
+Both pairs deploy from Git. The dashboard build settings are **not** symmetric,
+and the asymmetry is load-bearing:
 
-Both deploy from Git. The dashboard build settings are **not** symmetric, and the
-asymmetry is load-bearing:
+| Project                          | Root directory | Build command                  | Output dir      |
+| -------------------------------- | -------------- | ------------------------------ | --------------- |
+| `clc-app` / `clc-app-gnosis`     | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
+| `clc-admin` / `clc-admin-gnosis` | `apps/admin`   | `pnpm build`                   | `dist`          |
 
-| Project            | Root directory | Build command                  | Output dir      |
-| ------------------ | -------------- | ------------------------------ | --------------- |
-| `clc-app-gnosis`   | _(repo root)_  | `pnpm --filter @clc/web build` | `apps/web/dist` |
-| `clc-admin-gnosis` | `apps/admin`   | `pnpm build`                   | `dist`          |
-
-Production branch for both: `sohail/gnosis`.
+Production branch: `master` on `clc-app` / `clc-admin`, `develop` on
+`clc-app-gnosis` / `clc-admin-gnosis`.
 
 **Admin's root directory must be `apps/admin`.** Two different things read a
 Wrangler config and they resolve it from different places:
@@ -419,8 +432,10 @@ pair either with `wrangler pages dev apps/<app>/dist`.
 **Every variable lives in the Wrangler file, not the dashboard.** While a Wrangler
 config is present it is the source of truth: Pages surfaces its `vars` in the
 dashboard read-only, and supplies them to the build as well as to the Function, so
-`VITE_` values are inlined into the client bundle from there. Admin declares exactly
-four — `VITE_API_URL`, `VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`, `VITE_CHAIN_ID`.
+`VITE_` values are inlined into the client bundle from there. Admin declares the
+variables it reads (`VITE_API_URL`, `VITE_BRAND`, `VITE_CHAIN_ID`,
+`VITE_RELAYER_URL`, `VITE_RELYING_PARTY_ID`, `VITE_STORAGE_URL`,
+`VITE_MAPTILER_KEY`).
 
 A local build is the exception and can mislead: nothing injects `[vars]` outside
 Cloudflare's build system, so `vp build` / `build:cf` on a laptop reads `.env`
@@ -434,8 +449,8 @@ checked-in file only seeds it. Hence the build-time warning that
 
 **`apps/admin/wrangler.toml` is load-bearing, not boilerplate.** Deleting it makes
 Nitro's resolution walk up to the root config, and the admin build then generates a
-worker named `clc-app` carrying every one of `apps/web`'s vars, MapTiler key
-included. Verified by building both ways.
+worker named after the web project carrying every one of `apps/web`'s vars,
+MapTiler key included. Verified by building both ways.
 
 The division of labour, from Cloudflare's own rule that a Wrangler file "serves as
 the source of truth for Pages Functions projects":
@@ -455,10 +470,12 @@ Each project's Wrangler file carries an `[env.preview.vars]` block. Pages suppor
 exactly two environment overrides, `production` and `preview`, and only the relying
 party differs between them:
 
-| Project     | `[vars]` (production) | `[env.preview.vars]`  |
-| ----------- | --------------------- | --------------------- |
-| `clc-app`   | `cosmolocal.credit`   | `clc-app.pages.dev`   |
-| `clc-admin` | `cosmolocal.credit`   | `clc-admin.pages.dev` |
+| Project            | `[vars]` (production)    | `[env.preview.vars]`         |
+| ------------------ | ------------------------ | ---------------------------- |
+| `clc-app`          | `cosmolocal.credit`      | `clc-app.pages.dev`          |
+| `clc-admin`        | `cosmolocal.credit`      | `clc-admin.pages.dev`        |
+| `clc-app-gnosis`   | `test.cosmolocal.credit` | `clc-app-gnosis.pages.dev`   |
+| `clc-admin-gnosis` | `test.cosmolocal.credit` | `clc-admin-gnosis.pages.dev` |
 
 The preview value is the project's own `pages.dev` host on purpose, and it is why
 web's was set that way to begin with: `resolveRelyingPartyId` honours a configured
@@ -506,8 +523,10 @@ the scope of `apps/web`'s service worker.
    while `*.pages.dev` previews are inherently third-party and may need `Partitioned`
    added if a browser tightens.
 
-2. **`VITE_RELYING_PARTY_ID` must be the same on both projects** for one passkey to
-   work on either host — set it to the shared parent, `cosmolocal.credit`.
+2. **`VITE_RELYING_PARTY_ID` must be the same on web and admin of one
+   environment** for one passkey to work on either host — `cosmolocal.credit` on
+   prod, `test.cosmolocal.credit` on staging. Do not share an RP across prod and
+   staging: they are different credential stores.
 
    The value is normalized with `new URL(value).hostname`, so a scheme is stripped:
    `https://cosmolocal.credit` and `cosmolocal.credit` are equivalent. It is honoured

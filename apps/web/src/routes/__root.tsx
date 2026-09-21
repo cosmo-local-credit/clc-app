@@ -32,6 +32,7 @@ import {
   getWebAuthnCredential,
   storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
+import { BRAND, BRAND_THEME_COLOR } from "#/lib/brand";
 import { AppI18nProvider } from "#/providers/i18n";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
@@ -61,7 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#1762b8" },
+      { name: "theme-color", content: BRAND_THEME_COLOR.light },
       { title: "CLC App" },
     ],
     links: [
@@ -374,7 +375,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-brand={BRAND} suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />

@@ -2,6 +2,7 @@ import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
 import { RiCouponLine, RiHandCoinLine, RiShoppingBasket2Line } from "react-icons/ri";
 
+import { BRAND_THEME_COLOR } from "#/lib/brand";
 import type { MarketLocationKind } from "./market-data";
 
 /**
@@ -45,7 +46,7 @@ const KIND_CSS_VARIABLE: Record<MarketLocationKind, string> = {
  * used only when `CSS.supports("color", "oklch(...)")` is false.
  */
 const KIND_SRGB_FALLBACK: Record<MarketLocationKind, string> = {
-  goods: "#1762b8",
+  goods: BRAND_THEME_COLOR.light,
   services: "#2563eb",
   voucher: "#1f2430",
 };

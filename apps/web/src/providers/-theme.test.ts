@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { BRAND_THEME_COLOR } from "#/lib/brand";
 
 const { readInitialTheme, useThemeStore, themeBootstrapScript, THEME_STORAGE_KEY } =
   await import("./theme");
@@ -57,7 +58,7 @@ describe("useThemeStore", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     expect(document.querySelector('meta[name="theme-color"]')?.getAttribute("content")).toBe(
-      "#3178d0",
+      BRAND_THEME_COLOR.dark,
     );
   });
 
@@ -72,7 +73,7 @@ describe("useThemeStore", () => {
 describe("themeBootstrapScript", () => {
   it("embeds the shared storage key and theme-color values so they cannot drift", () => {
     expect(themeBootstrapScript).toContain(JSON.stringify(THEME_STORAGE_KEY));
-    expect(themeBootstrapScript).toContain("#3178d0");
-    expect(themeBootstrapScript).toContain("#1762b8");
+    expect(themeBootstrapScript).toContain(BRAND_THEME_COLOR.dark);
+    expect(themeBootstrapScript).toContain(BRAND_THEME_COLOR.light);
   });
 });

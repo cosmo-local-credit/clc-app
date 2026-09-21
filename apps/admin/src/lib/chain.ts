@@ -6,13 +6,15 @@
  * request, the relayer batch domain and the explorer links — each defaulting to
  * Celo mainnet on its own.
  *
+ * Unset now means Gnosis (100). Do not reintroduce a Celo default.
+ *
  * An id the shared chain table carries nothing for throws at boot. The console
  * would otherwise link an operator to an explorer that answers "no such
  * transaction", which reads as data loss rather than as a misconfiguration.
  */
 import { chainMetadata } from "@clc/core/lib/constants/chains";
 
-export const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
+export const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "100");
 
 const metadata = chainMetadata(CHAIN_ID);
 

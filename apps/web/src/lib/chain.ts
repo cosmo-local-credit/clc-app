@@ -6,6 +6,8 @@
  * own `?? "42220"` — while the wagmi config ignored the variable altogether and
  * hardcoded Celo. Setting the variable therefore moved the SIWE and relayer
  * chain ids off Celo while every transaction was still signed against it.
+ *
+ * Unset now means Gnosis (100). Do not reintroduce a Celo default.
  */
 import { chainMetadata } from "@clc/core/lib/constants/chains";
 import type { Chain } from "viem";
@@ -14,7 +16,7 @@ import { resolveRpcUrls } from "#/lib/rpc-transport";
 
 const SUPPORTED_CHAINS: readonly Chain[] = [celo, celoAlfajores, gnosis];
 
-export const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "42220");
+export const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "100");
 
 const configured = SUPPORTED_CHAINS.find((chain) => chain.id === CHAIN_ID);
 const metadata = chainMetadata(CHAIN_ID);

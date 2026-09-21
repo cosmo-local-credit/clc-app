@@ -2,6 +2,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { BRAND_THEME_COLOR } from "#/lib/brand";
 import { cn } from "#/lib/utils";
 
 /**
@@ -28,7 +29,7 @@ import { cn } from "#/lib/utils";
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const PIN_ZOOM = 13;
 const EMPTY_ZOOM = 5;
-const MARKER_COLOR = "#1762b8";
+const MARKER_COLOR = BRAND_THEME_COLOR.light;
 
 type LocationMapProps = {
   lat?: number | null;

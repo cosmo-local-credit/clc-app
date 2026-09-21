@@ -3,6 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { RouteError } from "#/components/route-error";
+import { BRAND } from "#/lib/brand";
 import { themeBootstrapScript } from "#/providers/theme";
 import appCss from "../styles.css?url";
 
@@ -40,7 +41,7 @@ function AppContent() {
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-brand={BRAND} suppressHydrationWarning>
       <head>
         <HeadContent />
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: synchronous pre-paint theme bootstrap, no user input */}
