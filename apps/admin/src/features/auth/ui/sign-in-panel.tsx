@@ -42,6 +42,7 @@ import { useAdminSignOut } from "../admin-session";
 import { type PasskeyUnsupportedReason, usePasskeySupport } from "../passkey-support";
 import { useAdminPasskeySignin, useAdminPrivateKeySignin } from "../use-admin-signin";
 import { PaperWalletReader } from "./paper-wallet-reader";
+import { BRAND_ICON_BASE } from "#/lib/brand";
 
 /**
  * Why the operator is looking at sign-in when they did not ask for it — a session
@@ -127,8 +128,8 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex items-center gap-2 self-center">
-          {/* The brand mark already ships in this app's public/ as the favicon. */}
-          <img src="/logo.svg" alt="" className="size-6" />
+          {/* Same per-brand mark the favicon uses — green on prod, blue on staging. */}
+          <img src={`${BRAND_ICON_BASE}/logo.svg`} alt="" className="size-6" />
           <span className="font-heading font-semibold tracking-tight">CLC Admin</span>
         </div>
 

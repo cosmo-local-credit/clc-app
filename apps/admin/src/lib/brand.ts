@@ -1,22 +1,20 @@
+import { type Brand, BRAND_PRIMARY_COLOR, resolveBrand } from "@clc/core/lib/constants/brand";
+
 /**
  * Deploy brand: prod is green, staging is blue.
  *
- * Same contract as apps/web — the two apps cannot import each other, and the
- * palette has to match so the console and the PWA read as one product on a
- * given environment. Unset or any value other than `staging` is prod.
+ * Same contract as apps/web — the two apps cannot import each other, so both
+ * resolve the shared palette in `@clc/core` and the console and the PWA read as
+ * one product on a given environment.
  */
-export type Brand = "prod" | "staging";
+export const BRAND: Brand = resolveBrand(import.meta.env.VITE_BRAND as string | undefined);
 
-const raw = (import.meta.env.VITE_BRAND as string | undefined)?.trim();
+/** sRGB `--primary` for map pins and the browser UI hint that cannot consume `oklch(...)`. */
+export const BRAND_THEME_COLOR = BRAND_PRIMARY_COLOR[BRAND];
 
-if (raw && raw !== "prod" && raw !== "staging") {
-  throw new Error(`VITE_BRAND=${raw} is not a brand. Use "prod" or "staging".`);
-}
-
-export const BRAND: Brand = raw === "staging" ? "staging" : "prod";
-
-/** sRGB `--primary` for map pins that cannot consume `oklch(...)`. */
-export const BRAND_THEME_COLOR: Record<"light" | "dark", string> =
-  BRAND === "staging"
-    ? { light: "#1762b8", dark: "#3178d0" }
-    : { light: "#007a55", dark: "#009268" };
+/**
+ * The console's mark is square (the shell has never carried a rounded tile) and
+ * follows the brand, so an operator can tell a staging tab from a prod one by
+ * its favicon alone. Both sets ship; the build picks one by path.
+ */
+export const BRAND_ICON_BASE = `/brand/${BRAND}`;

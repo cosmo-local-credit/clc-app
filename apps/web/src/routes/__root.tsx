@@ -32,7 +32,13 @@ import {
   getWebAuthnCredential,
   storeWebAuthnCredential,
 } from "#/lib/webauthn-storage";
-import { BRAND, BRAND_THEME_COLOR } from "#/lib/brand";
+import {
+  BRAND,
+  BRAND_APP_NAME,
+  BRAND_ICON_BASE,
+  BRAND_MANIFEST_HREF,
+  BRAND_THEME_COLOR,
+} from "#/lib/brand";
 import { AppI18nProvider } from "#/providers/i18n";
 import { themeBootstrapScript } from "#/providers/theme";
 import { Web3Provider } from "#/providers/web3";
@@ -62,15 +68,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Android status bar and the Chrome toolbar. Rewritten by the theme
+      // bootstrap script below to the dark variant when that scheme is active.
       { name: "theme-color", content: BRAND_THEME_COLOR.light },
-      { title: "CLC App" },
+      // iOS only honours the standalone hints from `apple-`-prefixed metas;
+      // `mobile-web-app-capable` is the standardised name every other browser
+      // reads. Both are required for a full-screen install.
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      // `default` keeps the iOS status bar legible over the app background.
+      // `black-translucent` would slide the content under it, which this
+      // top-to-bottom mobile layout does not account for.
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: BRAND_APP_NAME },
+      { title: BRAND_APP_NAME },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/manifest.json" },
-      { rel: "icon", type: "image/svg+xml", href: "/logo.svg" },
-      { rel: "icon", href: "/favicon.ico" },
-      { rel: "apple-touch-icon", href: "/logo192.png" },
+      { rel: "manifest", href: BRAND_MANIFEST_HREF },
+      { rel: "icon", type: "image/svg+xml", href: `${BRAND_ICON_BASE}/logo.svg` },
+      { rel: "icon", type: "image/x-icon", href: `${BRAND_ICON_BASE}/favicon.ico` },
+      // iOS ignores the manifest icons and does not mask transparency, so this
+      // one is full-bleed and opaque — a rounded tile here would be composited
+      // on black before the home-screen squircle is applied.
+      {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: `${BRAND_ICON_BASE}/apple-touch-icon.png`,
+      },
     ],
   }),
   shellComponent: RootDocument,
