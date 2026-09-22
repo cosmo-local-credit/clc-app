@@ -72,6 +72,7 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     bannerUrl: null,
     tags: [],
     kind: "goods",
+    active: true,
     ...overrides,
   };
 }

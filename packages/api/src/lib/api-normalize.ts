@@ -82,6 +82,17 @@ export function normalizeHex(value: unknown): HexAddress | null {
     : null;
 }
 
+/**
+ * A latitude or longitude, or null when the value is missing or out of range.
+ *
+ * Shared by the public catalog and the console: both read the same columns, and
+ * a second copy would be a second opinion on what counts as a usable coordinate.
+ */
+export function normalizeCoordinate(value: unknown, bound: number): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  return value >= -bound && value <= bound ? value : null;
+}
+
 export function isPresent<T>(value: T | null): value is T {
   return value !== null;
 }

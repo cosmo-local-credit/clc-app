@@ -11,7 +11,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { VouchersPage } from "#/features/vouchers/vouchers-page";
-import { parseTableSearch } from "#/lib/table-search";
+import { parseVoucherListSearch } from "#/features/vouchers/voucher-list-search";
 
 const PAGE = {
   vouchers: [voucher(1000)],
@@ -32,15 +32,16 @@ function voucher(id: number) {
     lat: -3.51,
     lng: 39.91,
     kind: "goods" as const,
+    active: true,
   };
 }
 
-const getFilteredMarketVouchers = vi.hoisted(() => vi.fn());
+const listVouchers = vi.hoisted(() => vi.fn());
 
 vi.mock("#/lib/api", () => ({
   clcApi: {
-    market: {
-      getFilteredMarketVouchers: (...args: unknown[]) => getFilteredMarketVouchers(...args),
+    admin: {
+      listVouchers: (...args: unknown[]) => listVouchers(...args),
     },
   },
 }));
@@ -50,7 +51,7 @@ function renderVouchersRoute(initialEntry = "/vouchers") {
   const vouchersRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/vouchers",
-    validateSearch: parseTableSearch,
+    validateSearch: parseVoucherListSearch,
     component: function VouchersRoute() {
       return <VouchersPage search={vouchersRoute.useSearch()} />;
     },
@@ -77,11 +78,11 @@ function renderVouchersRoute(initialEntry = "/vouchers") {
 
 describe("vouchers table", () => {
   beforeEach(() => {
-    getFilteredMarketVouchers.mockReset();
+    listVouchers.mockReset();
   });
 
   it("lists name and symbol as their own columns, without kind, chain, or kind tabs", async () => {
-    getFilteredMarketVouchers.mockResolvedValue(PAGE);
+    listVouchers.mockResolvedValue(PAGE);
     renderVouchersRoute();
     await waitFor(() => expect(screen.getByText("Voucher 1000")).toBeTruthy());
 
@@ -90,10 +91,15 @@ describe("vouchers table", () => {
     expect(screen.getByText("V1000")).toBeTruthy();
     expect(screen.queryByRole("columnheader", { name: /^kind$/i })).toBeNull();
     expect(screen.queryByRole("columnheader", { name: /^chain$/i })).toBeNull();
-    expect(screen.queryByRole("button", { name: /^all$/i })).toBeNull();
+    // The kind tab bar stays gone. The three buttons that are here are the
+    // visibility filter, which is a different axis — and `all` belongs to it.
     expect(screen.queryByRole("button", { name: /^goods$/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /^services$/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /^voucher$/i })).toBeNull();
+    expect(screen.getByRole("columnheader", { name: /^status$/i })).toBeTruthy();
+    for (const status of ["all", "active", "retired"]) {
+      expect(screen.getByRole("button", { name: new RegExp(`^${status}$`, "i") })).toBeTruthy();
+    }
     expect(screen.getByRole("textbox", { name: "Name, symbol, address" }).className).toContain(
       "h-9",
     );
@@ -101,12 +107,12 @@ describe("vouchers table", () => {
   });
 
   it("refetches the catalog when Refresh is pressed", async () => {
-    getFilteredMarketVouchers.mockResolvedValue(PAGE);
+    listVouchers.mockResolvedValue(PAGE);
     renderVouchersRoute();
     await waitFor(() => expect(screen.getByText("Voucher 1000")).toBeTruthy());
-    expect(getFilteredMarketVouchers).toHaveBeenCalledTimes(1);
+    expect(listVouchers).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    await waitFor(() => expect(getFilteredMarketVouchers).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(listVouchers).toHaveBeenCalledTimes(2));
   });
 });

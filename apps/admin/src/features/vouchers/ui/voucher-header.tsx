@@ -1,6 +1,11 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { Link } from "@tanstack/react-router";
-import { HiOutlineExternalLink, HiOutlinePencil, HiOutlineSwitchHorizontal } from "react-icons/hi";
+import {
+  HiOutlineArrowCircleUp,
+  HiOutlineExternalLink,
+  HiOutlinePencil,
+  HiOutlineSwitchHorizontal,
+} from "react-icons/hi";
 
 import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { CopyButton } from "#/components/admin/copy-button";
@@ -34,9 +39,13 @@ import { cn } from "#/lib/utils";
 export function VoucherHeader({
   voucher,
   onEdit,
+  onRestore,
+  restoring,
 }: {
   voucher: MarketVoucherDetail;
   onEdit: () => void;
+  onRestore: () => void;
+  restoring: boolean;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -76,6 +85,11 @@ export function VoucherHeader({
               <Badge variant="outline" className="font-data text-xs">
                 ID {voucher.id}
               </Badge>
+              {!voucher.active ? (
+                <Badge variant="outline" className="text-destructive font-mono text-xs uppercase">
+                  Retired
+                </Badge>
+              ) : null}
             </div>
 
             {voucher.description ? (
@@ -87,6 +101,12 @@ export function VoucherHeader({
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {!voucher.active ? (
+            <Button size="sm" onClick={onRestore} disabled={restoring}>
+              <HiOutlineArrowCircleUp />
+              {restoring ? "Restoring…" : "Restore"}
+            </Button>
+          ) : null}
           <a
             href={addressUrl(voucher.address)}
             target="_blank"

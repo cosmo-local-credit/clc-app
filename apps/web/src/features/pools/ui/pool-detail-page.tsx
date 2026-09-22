@@ -46,7 +46,13 @@ export function PoolDetailPage({
   const { t } = useLingui();
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
-  const vouchers = usePoolVouchers(pool);
+  // Retired vouchers are dropped here and not in the hook. `list-pool-vouchers`
+  // deliberately does not filter `active` — pool composition is an operations
+  // view, and the swap picker reads the same list, where a retired voucher must
+  // stay selectable as a *source* so a holder is never left unable to swap out
+  // of one. This is the browse list, where it is only an entry to a page that no
+  // longer resolves.
+  const vouchers = usePoolVouchers(pool).filter((voucher) => voucher.active);
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const auth = useAuthStatus();
   // The same rule the voucher screen applies: the backend session's address

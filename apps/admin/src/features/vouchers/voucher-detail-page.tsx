@@ -1,5 +1,5 @@
 import type { Offering } from "@clc/api/features/offerings/client";
-import { voucherQueryOptions } from "@clc/api/features/market/queries";
+import { adminVoucherQueryOptions } from "@clc/api/features/admin/queries";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ import { errorMessage } from "#/lib/data-state";
 import { useDataState } from "#/lib/use-data-state";
 import { EditVoucherSheet } from "./ui/edit-voucher-sheet";
 import { OfferingEditorSheet, type OfferingEditor } from "./ui/offering-editor-sheet";
+import { useRestoreVoucher } from "./use-restore-voucher";
 import { VoucherHeader } from "./ui/voucher-header";
 import { VoucherProfileCard } from "./ui/voucher-profile-card";
 import type { VoucherDetailSearch } from "./voucher-detail-search";
@@ -37,8 +38,13 @@ export function VoucherDetailPage({
   address: string;
   search: VoucherDetailSearch;
 }) {
-  const voucherQuery = useQuery(voucherQueryOptions(clcApi.market, address));
+  // The console's own read, not the public one: that endpoint filters `active`,
+  // so a retired voucher would 404 here and the restore below would have no
+  // screen to sit on.
+  const voucherQuery = useQuery(adminVoucherQueryOptions(clcApi.admin, address));
   const voucherState = useDataState(voucherQuery, () => false);
+
+  const restore = useRestoreVoucher(address);
 
   const [editingVoucher, setEditingVoucher] = useState(false);
   const [offeringEditor, setOfferingEditor] = useState<OfferingEditor | null>(null);
@@ -61,7 +67,12 @@ export function VoucherDetailPage({
     <div className="flex flex-col gap-6">
       {voucherState.kind === "stale" ? <StaleNotice message={voucherState.message} /> : null}
 
-      <VoucherHeader voucher={voucher} onEdit={() => setEditingVoucher(true)} />
+      <VoucherHeader
+        voucher={voucher}
+        onEdit={() => setEditingVoucher(true)}
+        onRestore={() => restore.mutate()}
+        restoring={restore.isPending}
+      />
 
       <VoucherProfileCard voucher={voucher} />
 
