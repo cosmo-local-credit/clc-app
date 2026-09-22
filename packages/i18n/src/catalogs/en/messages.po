@@ -306,11 +306,11 @@ msgstr "1 voucher"
 msgid "A good"
 msgstr "A good"
 
-#: apps/web/src/routes/__root.tsx:279
+#: apps/web/src/routes/__root.tsx:305
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "A paper wallet link was opened. Sign in with this address?"
 
-#: apps/web/src/routes/__root.tsx:277
+#: apps/web/src/routes/__root.tsx:303
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "A paper wallet QR was scanned. Import this address?"
 
@@ -770,7 +770,7 @@ msgstr "Camera access denied."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:389
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:497
-#: apps/web/src/routes/__root.tsx:293
+#: apps/web/src/routes/__root.tsx:319
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1140,15 +1140,15 @@ msgstr "Connecting wallet..."
 msgid "Connecting..."
 msgstr "Connecting..."
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Connecting…"
 msgstr "Connecting…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:125
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:290
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:338
-#: apps/web/src/routes/__root.tsx:198
-#: apps/web/src/routes/__root.tsx:229
+#: apps/web/src/routes/__root.tsx:224
+#: apps/web/src/routes/__root.tsx:255
 msgid "Connection failed."
 msgstr "Connection failed."
 
@@ -1298,6 +1298,14 @@ msgstr "Could not protect this paper wallet."
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
 #~ msgid "Could not protect this QR code."
 #~ msgstr "Could not protect this QR code."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:175
+msgid "Could not save the paper wallet. Try again."
+msgstr "Could not save the paper wallet. Try again."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:194
+msgid "Could not share the paper wallet. Try downloading it instead."
+msgstr "Could not share the paper wallet. Try downloading it instead."
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
 #~ msgid "Could not update the display name."
@@ -1764,20 +1772,20 @@ msgstr "Done"
 #~ msgid "Done to Pools"
 #~ msgstr "Done to Pools"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:216
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:223
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:242
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:249
 msgid "Download card"
 msgstr "Download card"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:169
-msgid "Download failed. Try a screenshot instead."
-msgstr "Download failed. Try a screenshot instead."
+#~ msgid "Download failed. Try a screenshot instead."
+#~ msgstr "Download failed. Try a screenshot instead."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:399
-msgid "Download or photograph this card. Anyone who scans the QR code will have "
-"full access to this wallet."
-msgstr "Download or photograph this card. Anyone who scans the QR code will "
-"have full access to this wallet."
+#~ msgid "Download or photograph this card. Anyone who scans the QR code will have "
+#~ "full access to this wallet."
+#~ msgstr "Download or photograph this card. Anyone who scans the QR code will "
+#~ "have full access to this wallet."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:429
 msgid "Download your paper wallet before continuing."
@@ -2315,11 +2323,11 @@ msgstr "If shown, keep Open as Web App switched on, then tap Add."
 #~ msgstr "Impact reports from pools, service providers, and stewards will appear "
 #~ "here."
 
-#: apps/web/src/routes/__root.tsx:273
+#: apps/web/src/routes/__root.tsx:299
 msgid "Import paper wallet?"
 msgstr "Import paper wallet?"
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Import wallet"
 msgstr "Import wallet"
 
@@ -2683,7 +2691,7 @@ msgstr "Location"
 msgid "Location denied"
 msgstr "Location denied"
 
-#: apps/web/src/components/ui/location-map.tsx:180
+#: apps/web/src/components/ui/location-map.tsx:181
 msgid "Location map"
 msgstr "Location map"
 
@@ -3404,7 +3412,7 @@ msgstr "Ownership transfer submitted."
 msgid "Paid out"
 msgstr "Paid out"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:103
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
 msgid "Paper wallet"
 msgstr "Paper wallet"
 
@@ -3412,7 +3420,7 @@ msgstr "Paper wallet"
 msgid "Paper Wallet"
 msgstr "Paper Wallet"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:231
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:268
 msgid "Paper wallet card"
 msgstr "Paper wallet card"
 
@@ -3476,7 +3484,7 @@ msgid "Password cannot be empty."
 msgstr "Password cannot be empty."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:248
+#: apps/web/src/routes/__root.tsx:274
 msgid "Password-protected paper wallet"
 msgstr "Password-protected paper wallet"
 
@@ -3766,7 +3774,7 @@ msgstr "Preparing wallet…"
 msgid "Preparing your withdrawal…"
 msgstr "Preparing your withdrawal…"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:223
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:249
 msgid "Preparing..."
 msgstr "Preparing..."
 
@@ -3775,8 +3783,12 @@ msgid "Preparing…"
 msgstr "Preparing…"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:229
-msgid "Press and hold the card below, then choose Save to Photos."
-msgstr "Press and hold the card below, then choose Save to Photos."
+#~ msgid "Press and hold the card below, then choose Save to Photos."
+#~ msgstr "Press and hold the card below, then choose Save to Photos."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:266
+msgid "Press and hold the image below, then choose Save Image."
+msgstr "Press and hold the image below, then choose Save Image."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:468
 msgid "Pretium deposits and withdrawals will appear here."
@@ -4299,6 +4311,12 @@ msgstr "Save fee settings"
 #~ msgid "Save recipient"
 #~ msgstr "Save recipient"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:399
+msgid "Save this card securely. If you use a password, keep it separately. "
+"Anyone with an unprotected QR code can access the wallet."
+msgstr "Save this card securely. If you use a password, keep it separately. "
+"Anyone with an unprotected QR code can access the wallet."
+
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:283
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Saved. Your post is awaiting approval again."
@@ -4546,6 +4564,10 @@ msgstr "Settings"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:383
 msgid "Share"
 msgstr "Share"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:259
+msgid "Share card"
+msgstr "Share card"
 
 #: apps/web/src/components/install-app-link.tsx:17
 #: apps/web/src/features/install/ui/install-page.tsx:117
@@ -4870,11 +4892,11 @@ msgstr "Swapping…"
 msgid "Swaps settle within the market association..."
 msgstr "Swaps settle within the market association..."
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Switch wallet"
 msgstr "Switch wallet"
 
-#: apps/web/src/routes/__root.tsx:273
+#: apps/web/src/routes/__root.tsx:299
 msgid "Switch wallet?"
 msgstr "Switch wallet?"
 

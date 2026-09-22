@@ -1,9 +1,9 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockToPng, FAKE_QR_DATA_URL, FAKE_ADDRESS } = vi.hoisted(() => ({
-  mockToPng: vi.fn().mockResolvedValue("data:image/png;base64,exported"),
+const { mockExport, FAKE_QR_DATA_URL, FAKE_ADDRESS } = vi.hoisted(() => ({
+  mockExport: vi.fn().mockResolvedValue(new Blob(["png"], { type: "image/png" })),
   FAKE_QR_DATA_URL: "data:image/png;base64,fakeqrcode",
   FAKE_ADDRESS: "0x37f944fe60D10350a2AAFBAf14FaA824811153a2" as `0x${string}`,
 }));
@@ -14,8 +14,8 @@ vi.mock("qrcode", () => ({
   },
 }));
 
-vi.mock("html-to-image", () => ({
-  toPng: mockToPng,
+vi.mock("./paper-wallet-export", () => ({
+  exportPaperWallet: mockExport,
 }));
 
 // Prevent actual anchor download during tests
@@ -34,9 +34,10 @@ function setShareSupport(share: ((data: ShareData) => Promise<void>) | null) {
 }
 
 function setInstalledApp(installed: boolean) {
+  Object.defineProperty(navigator, "standalone", { value: installed, configurable: true });
   Object.defineProperty(window, "matchMedia", {
     value: (query: string) => ({
-      matches: installed && query.includes("standalone"),
+      matches: query.includes("standalone"),
       media: query,
       addEventListener: () => undefined,
       removeEventListener: () => undefined,
@@ -71,18 +72,34 @@ function HookRenderer({
   address,
   qrUrl,
   defaultName,
+  onDownloaded,
   render: renderSlots,
 }: {
   address: `0x${string}`;
   qrUrl: string;
   defaultName: string;
+  onDownloaded?: () => void;
   render: (slots: PaperWalletSetupSlots) => ReactNode;
 }) {
-  const slots = usePaperWalletSetup({ address, qrUrl, defaultName });
+  const slots = usePaperWalletSetup({ address, qrUrl, defaultName, onDownloaded });
   return <>{renderSlots(slots)}</>;
 }
 
 describe("usePaperWalletSetup", () => {
+  const createObjectURL = vi.fn().mockReturnValue("blob:paper-wallet");
+  const revokeObjectURL = vi.fn();
+
+  beforeEach(() => {
+    Object.defineProperty(URL, "createObjectURL", { value: createObjectURL, configurable: true });
+    Object.defineProperty(URL, "revokeObjectURL", { value: revokeObjectURL, configurable: true });
+    mockExport.mockReset();
+    mockExport.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
+    mockAnchorClick.mockClear();
+    createObjectURL.mockClear();
+    setShareSupport(null);
+    setInstalledApp(false);
+  });
+
   it("returns card, controls, and downloadButton slots", () => {
     const capturedSlots: PaperWalletSetupSlots[] = [];
     render(
@@ -177,58 +194,43 @@ describe("usePaperWalletSetup", () => {
     expect(screen.getByText("example.org")).toBeTruthy();
   });
 
-  it("downloads with correct options and filename", async () => {
-    mockToPng.mockClear();
-    mockAnchorClick.mockClear();
-    setShareSupport(null);
-    setInstalledApp(false);
-
-    renderDownload();
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /download/i }));
-    });
-
-    expect(mockToPng).toHaveBeenCalled();
-    const callArgs = mockToPng.mock.calls[0] as unknown[];
-    expect(callArgs[0]).toBeTruthy();
-    expect(callArgs[1]).toMatchObject({
-      pixelRatio: 2,
-      width: 600,
-      height: 378,
-      backgroundColor: "#ffffff",
-    });
-    expect(mockAnchorClick).toHaveBeenCalled();
-  });
-
-  it("hands the card to the share sheet where the platform has one", async () => {
-    mockAnchorClick.mockClear();
+  it("downloads a PNG through a blob URL on Android, even when sharing is available", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     setShareSupport(share);
-    setInstalledApp(true);
-
     renderDownload();
 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: /download/i }));
     });
 
-    // The anchor's `download` attribute is ignored inside an installed iOS PWA,
-    // so the share sheet is the only path that actually saves the image.
+    expect(mockExport).toHaveBeenCalledWith(
+      expect.any(HTMLDivElement),
+      "https://cosmolocal.credit/?w=0xabc",
+    );
+    expect(mockAnchorClick).toHaveBeenCalled();
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(share).not.toHaveBeenCalled();
+  });
+
+  it("shares the PNG only when Share card is tapped", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    setShareSupport(share);
+
+    renderDownload();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /share card/i }));
+    });
+
     expect(share).toHaveBeenCalledTimes(1);
     const [shared] = share.mock.calls[0] as [ShareData];
     const sharedFile = shared.files?.[0];
     expect(sharedFile?.name).toBe("clc-wallet-37f944fe.png");
     expect(sharedFile?.type).toBe("image/png");
     expect(mockAnchorClick).not.toHaveBeenCalled();
-
-    setShareSupport(null);
-    setInstalledApp(false);
   });
 
-  it("shows the rendered card to long-press when an installed app can neither share nor download", async () => {
-    mockAnchorClick.mockClear();
-    setShareSupport(null);
+  it("shows the rendered card for long-press saving in an installed iOS app", async () => {
     setInstalledApp(true);
 
     renderDownload();
@@ -238,11 +240,79 @@ describe("usePaperWalletSetup", () => {
     });
 
     expect(screen.getByRole("img", { name: /paper wallet card/i }).getAttribute("src")).toBe(
-      "data:image/png;base64,exported",
+      "blob:paper-wallet",
     );
     expect(mockAnchorClick).not.toHaveBeenCalled();
+  });
 
-    setInstalledApp(false);
+  it("does not offer an empty card when QR rendering fails", async () => {
+    mockExport.mockRejectedValueOnce(new Error("QR failed"));
+    const onDownloaded = vi.fn();
+    render(
+      <HookRenderer
+        address={FAKE_ADDRESS}
+        qrUrl="https://cosmolocal.credit/?w=0xabc"
+        defaultName="Alice"
+        onDownloaded={onDownloaded}
+        render={(slots) => (
+          <>
+            {slots.card}
+            {slots.downloadButton}
+          </>
+        )}
+      />,
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /download/i }));
+    });
+
+    expect(screen.getByText(/could not save the paper wallet/i)).toBeTruthy();
+    expect(mockAnchorClick).not.toHaveBeenCalled();
+    expect(onDownloaded).not.toHaveBeenCalled();
+  });
+
+  it("does not mark an outdated QR export as saved", async () => {
+    let finishExport: ((blob: Blob) => void) | undefined;
+    mockExport.mockImplementationOnce(
+      () =>
+        new Promise<Blob>((resolve) => {
+          finishExport = resolve;
+        }),
+    );
+    const onDownloaded = vi.fn();
+    const renderSlots = (slots: PaperWalletSetupSlots) => (
+      <>
+        {slots.card}
+        {slots.downloadButton}
+      </>
+    );
+    const view = render(
+      <HookRenderer
+        address={FAKE_ADDRESS}
+        qrUrl="https://cosmolocal.credit/?w=old"
+        defaultName="Alice"
+        onDownloaded={onDownloaded}
+        render={renderSlots}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /download/i }));
+    view.rerender(
+      <HookRenderer
+        address={FAKE_ADDRESS}
+        qrUrl="https://cosmolocal.credit/?w=new"
+        defaultName="Alice"
+        onDownloaded={onDownloaded}
+        render={renderSlots}
+      />,
+    );
+    await act(async () => {
+      finishExport?.(new Blob(["png"], { type: "image/png" }));
+    });
+
+    expect(mockAnchorClick).not.toHaveBeenCalled();
+    expect(onDownloaded).not.toHaveBeenCalled();
   });
 
   it("includes the Customize disclosure in controls slot", () => {
