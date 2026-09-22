@@ -99,22 +99,22 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
     // no-op: route exitOnboarding runs when isAuthenticated flips
   }
 
-  // Method / card require a completed profile. Deep links land on profile.
+  // Method / card require a completed profile and photo. Deep links land on profile.
   useEffect(() => {
-    if ((step === "method" || step === "card") && !profileData) {
+    if ((step === "method" || step === "card") && (!profileData || !avatarFile)) {
       goReplace("profile");
     }
-  }, [step, profileData, goReplace]);
+  }, [step, profileData, avatarFile, goReplace]);
 
   // Skip method when the platform cannot store passkeys.
   useEffect(() => {
-    if (step === "method" && profileData && !passkeyAvailable) {
+    if (step === "method" && profileData && avatarFile && !passkeyAvailable) {
       setWalletMethod("paper");
       goReplace("card");
     }
-  }, [step, profileData, passkeyAvailable, goReplace]);
+  }, [step, profileData, avatarFile, passkeyAvailable, goReplace]);
 
-  if (step === "method" && profileData && passkeyAvailable) {
+  if (step === "method" && profileData && avatarFile && passkeyAvailable) {
     return (
       <OnboardingMethodStep
         redirectTo={redirectTo}
@@ -128,7 +128,7 @@ export function OnboardingFlow({ step, redirectTo }: Props) {
     );
   }
 
-  if (step === "card" && profileData) {
+  if (step === "card" && profileData && avatarFile) {
     const totalSteps = passkeyAvailable ? 3 : 2;
     const progressStep = passkeyAvailable ? 3 : 2;
     const linkPasskey = passkeyAvailable && walletMethod !== "paper";

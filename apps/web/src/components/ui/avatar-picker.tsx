@@ -1,6 +1,6 @@
 import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import { useLingui } from "@lingui/react/macro";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { FaCamera, FaUser } from "react-icons/fa";
 
 import { Button } from "#/components/ui/button";
@@ -14,6 +14,8 @@ type Props = {
   /** Shown instead of the placeholder when nothing new has been chosen. */
   currentUrl?: string | null;
   disabled?: boolean;
+  required?: boolean;
+  validationError?: string | null;
 };
 
 /**
@@ -27,8 +29,16 @@ type Props = {
  * The accept list and the size ceiling come from the shared policy rather than
  * being retyped, so a file this control admits is one the service will take.
  */
-export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
+export function AvatarPicker({
+  value,
+  onChange,
+  currentUrl,
+  disabled,
+  required,
+  validationError,
+}: Props) {
   const { t } = useLingui();
+  const validationErrorId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +103,7 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
           aria-label={t`Choose a profile photo`}
+          aria-required={required || undefined}
           onChange={(e) => {
             select(e.target.files?.[0]);
             // Cleared so choosing the same file twice still fires a change.
@@ -103,6 +114,8 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
           type="button"
           variant="outline"
           disabled={disabled}
+          aria-invalid={!!validationError}
+          aria-describedby={validationError ? validationErrorId : undefined}
           onClick={() => inputRef.current?.click()}
           className="h-11 bg-card"
         >
@@ -123,10 +136,15 @@ export function AvatarPicker({ value, onChange, currentUrl, disabled }: Props) {
             {t`Remove`}
           </button>
         ) : (
-          <p className="text-muted-foreground text-xs">{t`Optional`}</p>
+          <p className="text-muted-foreground text-xs">{required ? t`Required` : t`Optional`}</p>
         )}
 
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
+        {validationError ? (
+          <p id={validationErrorId} className="text-destructive text-xs" role="alert">
+            {validationError}
+          </p>
+        ) : null}
       </div>
 
       <ImageCropSheet

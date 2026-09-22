@@ -433,6 +433,10 @@ msgstr "Додајте фотографију"
 msgid "Add a private message"
 msgstr "Додајте приватну поруку"
 
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Add a profile photo to continue."
+msgstr "Додајте фотографију профила да бисте наставили."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:315
 msgid "Add at most 20 attachments"
@@ -1229,6 +1233,10 @@ msgstr "Nije moguće podeliti papirni novčanik. Pokušajte da ga preuzmete."
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
 #~ msgid "Could not update the display name."
 #~ msgstr "Nije moguće ažurirati ime za prikaz."
+
+#: apps/web/src/features/auth/hooks/use-backend-auth.ts
+msgid "Could not upload your photo. Please try again."
+msgstr "Нисмо успели да отпремимо вашу фотографију. Покушајте поново."
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:262
 msgid "Couldn't check message availability."
@@ -2826,11 +2834,10 @@ msgstr "Име на новчанику"
 #~ msgstr "Име, локација и жељена валута су обавезни. Додајте биографију или "
 #~ "веб-сајт ако желите."
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:150
-msgid "Name, location, and preferred currency are required. Provide an email "
-"address or phone number. Bio and website are optional."
-msgstr "Име, локација и жељена валута су обавезни. Наведите адресу е-поште или "
-"број телефона. Биографија и веб-сајт су опциони."
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Name, photo, location, and preferred currency are required. Provide an "
+"email address or phone number. Bio and website are optional."
+msgstr "Име, фотографија, локација и жељена валута су обавезни. Наведите адресу е-поште или број телефона. Биографија и веб-сајт су опциони."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:624
 msgid "Name, symbol or address"
@@ -3372,6 +3379,10 @@ msgstr "Број телефона"
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 msgid "Photo"
 msgstr "Фотографија"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Photo uploads are unavailable right now."
+msgstr "Отпремање фотографија тренутно није доступно."
 
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:204
@@ -4011,6 +4022,10 @@ msgstr "Период извештаја"
 #: apps/web/src/features/home/ui/report-page.tsx:521
 msgid "Report provenance"
 msgstr "Порекло извештаја"
+
+#: apps/web/src/components/ui/avatar-picker.tsx
+msgid "Required"
+msgstr "Обавезно"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:556
 msgid "Reset"
@@ -5534,11 +5549,6 @@ msgstr "Нисмо могли да учитамо број телефона са
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
 msgid "We couldn't load your profile."
 msgstr "Нисмо могли да учитамо ваш профил."
-
-#: apps/web/src/features/auth/hooks/use-backend-auth.ts:105
-msgid "We couldn't save your photo. You can add it from Settings."
-msgstr "Нисмо могли да сачувамо вашу фотографију. Можете је додати у "
-"Подешавањима."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:492
 msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "

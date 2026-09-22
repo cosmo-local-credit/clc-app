@@ -438,6 +438,10 @@ msgstr "Ongeza picha"
 msgid "Add a private message"
 msgstr "Ongeza ujumbe wa faragha"
 
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Add a profile photo to continue."
+msgstr "Ongeza picha ya wasifu ili kuendelea."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:315
 msgid "Add at most 20 attachments"
@@ -1323,6 +1327,10 @@ msgstr "Imeshindikana kushiriki pochi ya karatasi. Jaribu kuipakua badala yake."
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
 #~ msgid "Could not update the display name."
 #~ msgstr "Haikuweza kusasisha jina la kuonyesha."
+
+#: apps/web/src/features/auth/hooks/use-backend-auth.ts
+msgid "Could not upload your photo. Please try again."
+msgstr "Hatukuweza kupakia picha yako. Tafadhali jaribu tena."
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:262
 msgid "Couldn't check message availability."
@@ -2973,11 +2981,10 @@ msgstr "Jina kwenye mkoba"
 #~ msgstr "Jina, eneo, na sarafu unayopendelea vinahitajika. Ongeza wasifu au "
 #~ "tovuti ukitaka."
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:150
-msgid "Name, location, and preferred currency are required. Provide an email "
-"address or phone number. Bio and website are optional."
-msgstr "Jina, eneo na sarafu unayopendelea vinahitajika. Toa anwani ya barua "
-"pepe au nambari ya simu. Wasifu na tovuti ni za hiari."
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Name, photo, location, and preferred currency are required. Provide an "
+"email address or phone number. Bio and website are optional."
+msgstr "Jina, picha, eneo na sarafu unayopendelea vinahitajika. Toa anwani ya barua pepe au nambari ya simu. Wasifu na tovuti ni za hiari."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:624
 msgid "Name, symbol or address"
@@ -3555,6 +3562,10 @@ msgstr "Nambari ya simu"
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 msgid "Photo"
 msgstr "Picha"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Photo uploads are unavailable right now."
+msgstr "Upakiaji wa picha haupatikani kwa sasa."
 
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:204
@@ -4250,6 +4261,10 @@ msgstr "Kipindi cha ripoti"
 #: apps/web/src/features/home/ui/report-page.tsx:521
 msgid "Report provenance"
 msgstr "Asili ya ripoti"
+
+#: apps/web/src/components/ui/avatar-picker.tsx
+msgid "Required"
+msgstr "Inahitajika"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:556
 msgid "Reset"
@@ -5867,10 +5882,6 @@ msgstr "Hatukuweza kupakia nambari ya simu kwenye wasifu wako."
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
 msgid "We couldn't load your profile."
 msgstr "Hatukuweza kupakia wasifu wako."
-
-#: apps/web/src/features/auth/hooks/use-backend-auth.ts:105
-msgid "We couldn't save your photo. You can add it from Settings."
-msgstr "Hatukuweza kuhifadhi picha yako. Unaweza kuiongeza kutoka Mipangilio."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:492
 msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "

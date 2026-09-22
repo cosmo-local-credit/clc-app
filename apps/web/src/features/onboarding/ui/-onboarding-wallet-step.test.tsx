@@ -173,12 +173,13 @@ const PROFILE: ProfileInput = {
 
 const STABLE_PK =
   "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" as `0x${string}`;
+const PHOTO = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
 
 function WalletStepFixture({ linkPasskey = false }: { linkPasskey?: boolean }) {
   return (
     <OnboardingWalletStep
       profileData={PROFILE}
-      avatarFile={null}
+      avatarFile={PHOTO}
       privateKey={STABLE_PK}
       backendRegistered={false}
       onBackendRegistered={vi.fn()}
@@ -483,8 +484,7 @@ describe("OnboardingWalletStep continue flow", () => {
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
       profile: PROFILE,
       privateKey: STABLE_PK,
-      // No photo was chosen on the profile step, so signup has nothing to upload.
-      avatarFile: null,
+      avatarFile: PHOTO,
     });
     expect(mockDelegateMutateAsync).toHaveBeenCalledWith({ privateKey: STABLE_PK });
     expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();
@@ -561,8 +561,7 @@ describe("OnboardingWalletStep link flow", () => {
     expect(mockBackendSignupMutateAsync).toHaveBeenCalledWith({
       profile: PROFILE,
       privateKey: STABLE_PK,
-      // No photo was chosen on the profile step, so signup has nothing to upload.
-      avatarFile: null,
+      avatarFile: PHOTO,
     });
     expect(mockUpgradeAndLinkMutate).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("heading", { name: /setting up your wallet/i })).toBeTruthy();

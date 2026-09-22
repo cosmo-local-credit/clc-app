@@ -33,7 +33,7 @@ type Props = {
   redirectTo?: string;
   progressStep: number;
   progressTotal: number;
-  onNext: (data: ProfileInput, avatarFile: File | null) => void;
+  onNext: (data: ProfileInput, avatarFile: File) => void;
 };
 
 type ProfileFormValues = {
@@ -67,9 +67,10 @@ export function OnboardingProfileForm({
 }: Props) {
   const { i18n, t } = useLingui();
   // Outside the form: profileSchema lives in @clc/core, which is React Native
-  // compatible and cannot name a browser File. The photo is also optional and
-  // has nothing to validate that AvatarPicker has not already checked.
+  // compatible and cannot name a browser File. AvatarPicker validates the file;
+  // this step also requires one before advancing.
   const [avatarFile, setAvatarFile] = useState<File | null>(initialAvatarFile ?? null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
   const currencyWasSuggestedByLocationRef = useRef(
     Boolean(initialValues?.location && !initialValues?.preferredCurrency),
@@ -84,6 +85,7 @@ export function OnboardingProfileForm({
     defaultValues: initialValues ?? DEFAULT_VALUES,
     validators: { onChange: profileSchema },
     onSubmit: async ({ value }) => {
+      if (!avatarFile || !isStorageConfigured) return;
       const parsed = profileSchema.parse(value);
       onNext(parsed, avatarFile);
     },
@@ -148,8 +150,8 @@ export function OnboardingProfileForm({
           </h1>
           <p className="text-muted-foreground text-sm">
             <Trans>
-              Name, location, and preferred currency are required. Provide an email address or phone
-              number. Bio and website are optional.
+              Name, photo, location, and preferred currency are required. Provide an email address
+              or phone number. Bio and website are optional.
             </Trans>
           </p>
         </div>
@@ -159,15 +161,26 @@ export function OnboardingProfileForm({
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (!avatarFile) setPhotoError(t`Add a profile photo to continue.`);
             void form.handleSubmit();
           }}
           className="space-y-4"
         >
           <div className="space-y-4 border border-border bg-card p-4">
-            {/* Hidden rather than disabled when the upload service is not
-                configured: a control that cannot work is worse than no control. */}
-            {isStorageConfigured ? (
-              <AvatarPicker value={avatarFile} onChange={setAvatarFile} />
+            <AvatarPicker
+              value={avatarFile}
+              onChange={(file) => {
+                setPhotoError(null);
+                setAvatarFile(file);
+              }}
+              required
+              disabled={!isStorageConfigured}
+              validationError={photoError}
+            />
+            {!isStorageConfigured ? (
+              <p className="text-destructive text-xs" role="alert">
+                {t`Photo uploads are unavailable right now.`}
+              </p>
             ) : null}
 
             <form.Field name="name">
@@ -376,7 +389,11 @@ export function OnboardingProfileForm({
 
           <form.Subscribe selector={(s) => s.isSubmitting}>
             {(isSubmitting) => (
-              <Button type="submit" disabled={isSubmitting} className="h-11 w-full">
+              <Button
+                type="submit"
+                disabled={isSubmitting || !isStorageConfigured}
+                className="h-11 w-full"
+              >
                 {isSubmitting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
                 {isSubmitting ? t`Saving…` : t`Continue`}
               </Button>

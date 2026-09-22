@@ -436,6 +436,10 @@ msgstr "Add a photo"
 msgid "Add a private message"
 msgstr "Add a private message"
 
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Add a profile photo to continue."
+msgstr "Add a profile photo to continue."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:315
 msgid "Add at most 20 attachments"
@@ -1318,6 +1322,10 @@ msgstr "Could not share the paper wallet. Try downloading it instead."
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
 #~ msgid "Could not update the display name."
 #~ msgstr "Could not update the display name."
+
+#: apps/web/src/features/auth/hooks/use-backend-auth.ts
+msgid "Could not upload your photo. Please try again."
+msgstr "Could not upload your photo. Please try again."
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:262
 msgid "Couldn't check message availability."
@@ -2962,11 +2970,10 @@ msgstr "Name on wallet"
 #~ msgstr "Name, location, and preferred currency are required. Add a bio or "
 #~ "website if you'd like."
 
-#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:150
-msgid "Name, location, and preferred currency are required. Provide an email "
-"address or phone number. Bio and website are optional."
-msgstr "Name, location, and preferred currency are required. Provide an email "
-"address or phone number. Bio and website are optional."
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Name, photo, location, and preferred currency are required. Provide an "
+"email address or phone number. Bio and website are optional."
+msgstr "Name, photo, location, and preferred currency are required. Provide an email address or phone number. Bio and website are optional."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:624
 msgid "Name, symbol or address"
@@ -3542,6 +3549,10 @@ msgstr "Phone number"
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:362
 msgid "Photo"
 msgstr "Photo"
+
+#: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx
+msgid "Photo uploads are unavailable right now."
+msgstr "Photo uploads are unavailable right now."
 
 #. placeholder {0}: index + 1
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:204
@@ -4232,6 +4243,10 @@ msgstr "Report period"
 #: apps/web/src/features/home/ui/report-page.tsx:521
 msgid "Report provenance"
 msgstr "Report provenance"
+
+#: apps/web/src/components/ui/avatar-picker.tsx
+msgid "Required"
+msgstr "Required"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:556
 msgid "Reset"
@@ -5839,10 +5854,6 @@ msgstr "We couldn't load your profile phone number."
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:54
 msgid "We couldn't load your profile."
 msgstr "We couldn't load your profile."
-
-#: apps/web/src/features/auth/hooks/use-backend-auth.ts:105
-msgid "We couldn't save your photo. You can add it from Settings."
-msgstr "We couldn't save your photo. You can add it from Settings."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:492
 msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "

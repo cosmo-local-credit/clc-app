@@ -117,9 +117,12 @@ vi.mock("#/components/ui/location-picker", () => ({
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingProfileForm } from "./onboarding-profile-form";
 
+const PHOTO = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
+
 function renderForm(
-  onNext: (data: ProfileInput, avatarFile: File | null) => void = vi.fn(),
+  onNext: (data: ProfileInput, avatarFile: File) => void = vi.fn(),
   initialValues?: ProfileInput,
+  initialAvatarFile?: File,
 ) {
   return render(
     <OnboardingProfileForm
@@ -127,11 +130,17 @@ function renderForm(
       progressStep={1}
       progressTotal={3}
       initialValues={initialValues}
+      initialAvatarFile={initialAvatarFile}
     />,
   );
 }
 
 beforeEach(() => {
+  vi.stubGlobal("URL", {
+    ...URL,
+    createObjectURL: vi.fn(() => "blob:preview"),
+    revokeObjectURL: vi.fn(),
+  });
   mockNavigate.mockClear();
   mockResolveProfileCountry.mockReset();
   mockResolveProfileCountry.mockResolvedValue("US");
@@ -183,9 +192,32 @@ describe("OnboardingProfileForm rendering", () => {
 });
 
 describe("OnboardingProfileForm submission", () => {
-  it("calls onNext with validated data on valid submission", async () => {
+  it("does not advance without a photo and explains what is required", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toBe("Add a profile photo to continue.");
+    expect(screen.getByRole("button", { name: /add a photo/i }).getAttribute("aria-invalid")).toBe(
+      "true",
+    );
+  });
+
+  it("calls onNext with validated data on valid submission", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
 
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
@@ -215,7 +247,7 @@ describe("OnboardingProfileForm submission", () => {
       }),
       // The photo travels beside the validated profile: it cannot be part of it,
       // because profileSchema lives in @clc/core and cannot name a File.
-      null,
+      PHOTO,
     );
   });
 
@@ -228,7 +260,7 @@ describe("OnboardingProfileForm submission", () => {
         }),
     );
     const mockOnNext = vi.fn();
-    renderForm(mockOnNext);
+    renderForm(mockOnNext, undefined, PHOTO);
 
     fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
       target: { value: "Alice" },
@@ -247,7 +279,7 @@ describe("OnboardingProfileForm submission", () => {
 
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "KES" }),
-      null,
+      PHOTO,
     );
   });
 
@@ -265,15 +297,19 @@ describe("OnboardingProfileForm submission", () => {
 
   it("still seeds the dialling code when a currency was already chosen", async () => {
     const mockOnNext = vi.fn();
-    renderForm(mockOnNext, {
-      name: "",
-      email: "",
-      phone: "",
-      location: undefined,
-      preferredCurrency: "EUR",
-      bio: "",
-      website: "",
-    } as unknown as ProfileInput);
+    renderForm(
+      mockOnNext,
+      {
+        name: "",
+        email: "",
+        phone: "",
+        location: undefined,
+        preferredCurrency: "EUR",
+        bio: "",
+        website: "",
+      } as unknown as ProfileInput,
+      PHOTO,
+    );
 
     // A saved currency preference says nothing about which dialling code to
     // start on, so the network hint still reaches the phone field.
@@ -295,7 +331,7 @@ describe("OnboardingProfileForm submission", () => {
     // A location picked afterwards does not override the chosen currency either.
     expect(mockOnNext).toHaveBeenCalledWith(
       expect.objectContaining<Partial<ProfileInput>>({ preferredCurrency: "EUR" }),
-      null,
+      PHOTO,
     );
   });
 
@@ -397,18 +433,11 @@ describe("OnboardingProfileForm value restoration", () => {
 });
 
 describe("OnboardingProfileForm photo", () => {
-  beforeEach(() => {
-    vi.stubGlobal("URL", {
-      ...URL,
-      createObjectURL: vi.fn(() => "blob:preview"),
-      revokeObjectURL: vi.fn(),
-    });
-  });
-
   it("offers a photo alongside the identity fields", () => {
     renderForm();
 
     expect(screen.getByRole("button", { name: /add a photo/i })).toBeTruthy();
+    expect(screen.getByText("Required")).toBeTruthy();
   });
 
   it("carries the chosen photo out with the validated profile", async () => {

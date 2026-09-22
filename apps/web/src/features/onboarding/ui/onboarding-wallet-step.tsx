@@ -33,7 +33,7 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 type Props = {
   profileData: ProfileInput;
   /** Chosen on the profile step; uploaded here, once a session exists. */
-  avatarFile: File | null;
+  avatarFile: File;
   /** Stable key owned by OnboardingFlow — must not be regenerated on remount. */
   privateKey: `0x${string}`;
   backendRegistered: boolean;
