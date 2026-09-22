@@ -17,6 +17,7 @@ const {
   mockOnDone,
   mockOnBack,
   mockEncryptPaperWalletPrivateKey,
+  mockExportPaperWallet,
   mockFetchQuery,
   mockGetSession,
 } = vi.hoisted(() => ({
@@ -35,6 +36,7 @@ const {
   mockOnDone: vi.fn(),
   mockOnBack: vi.fn(),
   mockEncryptPaperWalletPrivateKey: vi.fn().mockResolvedValue("6PYEncryptedPaperWallet"),
+  mockExportPaperWallet: vi.fn().mockResolvedValue(new Blob(["png"], { type: "image/png" })),
   mockFetchQuery: vi.fn(),
   mockGetSession: vi.fn(),
 }));
@@ -69,8 +71,8 @@ vi.mock("#/features/onboarding/ui/paper-wallet-card", () => ({
   )),
 }));
 
-vi.mock("html-to-image", () => ({
-  toPng: vi.fn().mockResolvedValue("data:image/png;base64,fake"),
+vi.mock("#/features/onboarding/ui/paper-wallet-export", () => ({
+  exportPaperWallet: (...args: unknown[]) => mockExportPaperWallet(...args),
 }));
 
 const mockClearPrivateKey = vi.hoisted(() => vi.fn());
@@ -193,6 +195,7 @@ function renderWalletStep(overrides: { linkPasskey?: boolean } = {}) {
 }
 
 async function acknowledgeSavedWallet() {
+  fireEvent.click(screen.getByLabelText(/protect paper wallet with a password/i));
   await act(async () => {
     fireEvent.click(screen.getByRole("button", { name: /download card/i }));
   });
@@ -200,6 +203,13 @@ async function acknowledgeSavedWallet() {
 }
 
 beforeEach(() => {
+  Object.defineProperty(URL, "createObjectURL", {
+    value: vi.fn().mockReturnValue("blob:paper-wallet"),
+    configurable: true,
+  });
+  Object.defineProperty(URL, "revokeObjectURL", { value: vi.fn(), configurable: true });
+  mockExportPaperWallet.mockClear();
+  mockExportPaperWallet.mockResolvedValue(new Blob(["png"], { type: "image/png" }));
   mockUpgradeAndLinkMutate.mockClear();
   mockBackendSignupMutateAsync.mockReset();
   mockBackendSignupMutateAsync.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
@@ -388,6 +398,19 @@ describe("OnboardingWalletStep rendering", () => {
 });
 
 describe("OnboardingWalletStep continue flow", () => {
+  it("requires a password by default and allows an explicit opt-out", () => {
+    renderWalletStep({ linkPasskey: false });
+    const protection = screen.getByLabelText(/protect paper wallet with a password/i);
+    expect(protection).toHaveProperty("checked", true);
+    expect(screen.getByRole("button", { name: /download card/i })).toHaveProperty("disabled", true);
+    fireEvent.click(protection);
+    expect(protection).toHaveProperty("checked", false);
+    expect(screen.getByRole("button", { name: /download card/i })).toHaveProperty(
+      "disabled",
+      false,
+    );
+  });
+
   it("Continue button is disabled before acknowledging", () => {
     renderWalletStep({ linkPasskey: false });
     expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(

@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { BRAND_THEME_COLOR } from "#/lib/brand";
 
 import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-market-canvas-stub";
 import type { MarketLocationKind } from "./market-data";
@@ -122,19 +121,17 @@ function rgbOf(hex: string): [number, number, number] {
   return [(value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff];
 }
 
-describe("market marker colours without Canvas OKLCH support", () => {
-  // `goods` paints the brand primary, which VITE_BRAND picks at build time.
-  // Spelling one brand's hex here passed only where .env said "staging" and
-  // failed in CI, which sets no VITE_BRAND and so resolves to prod.
-  const EXPECTED_FALLBACK: Record<MarketLocationKind, [number, number, number]> = {
-    goods: rgbOf(BRAND_THEME_COLOR.light),
-    services: [0x25, 0x63, 0xeb],
-    voucher: [0x1f, 0x24, 0x30],
+describe("market marker colours", () => {
+  // Goods is red, services is purple, and a voucher with no offerings is
+  // orange. None of these may follow the brand primary: that colour belongs
+  // to the live-location dot, and it changes between prod and staging.
+  const EXPECTED: Record<MarketLocationKind, [number, number, number]> = {
+    goods: rgbOf("#dc2626"),
+    services: rgbOf("#7c3aed"),
+    voucher: rgbOf("#ea580c"),
   };
 
-  it("paints an audited sRGB pixel instead of silently keeping the previous fill", () => {
-    // The failure this guards against is silent: an unsupported oklch() string
-    // leaves fillStyle untouched, so the marker paints in the last colour used.
+  it("paints each kind in its fixed sRGB colour", () => {
     vi.stubGlobal("CSS", { supports: () => false });
     const map = fakeMap();
 
@@ -144,7 +141,7 @@ describe("market marker colours without Canvas OKLCH support", () => {
       const image = map.images.get(markerImageIds.base[kind]);
       if (!image) throw new Error(`missing image for ${kind}`);
       const [r, g, b, a] = pixelOf(image);
-      expect([r, g, b]).toEqual(EXPECTED_FALLBACK[kind]);
+      expect([r, g, b]).toEqual(EXPECTED[kind]);
       expect(a).toBe(255);
     }
   });
@@ -163,7 +160,7 @@ describe("market marker colours without Canvas OKLCH support", () => {
     expect(new Set(painted).size).toBe(MARKET_MARKER_KINDS.length);
   });
 
-  it("prefers the resolved CSS token when Canvas can parse oklch", () => {
+  it("ignores the brand token even when Canvas can parse oklch", () => {
     vi.stubGlobal("CSS", { supports: () => true });
     vi.spyOn(window, "getComputedStyle").mockReturnValue({
       getPropertyValue: () => "oklch(0.72 0.13 178)",
@@ -172,21 +169,10 @@ describe("market marker colours without Canvas OKLCH support", () => {
 
     addMarketMarkerImages(map as never);
 
-    const fills = [...contexts.values()].flatMap((record) => record.fills);
-    expect(fills).toContain("oklch(0.72 0.13 178)");
-  });
-
-  it("falls back when the CSS token resolves to an empty string", () => {
-    vi.stubGlobal("CSS", { supports: () => true });
-    vi.spyOn(window, "getComputedStyle").mockReturnValue({
-      getPropertyValue: () => "   ",
-    } as unknown as CSSStyleDeclaration);
-    const map = fakeMap();
-
-    addMarketMarkerImages(map as never);
-
     const goods = map.images.get(markerImageIds.base.goods);
     if (!goods) throw new Error("missing goods image");
-    expect(pixelOf(goods).slice(0, 3)).toEqual(EXPECTED_FALLBACK.goods);
+    expect(pixelOf(goods).slice(0, 3)).toEqual(EXPECTED.goods);
+    const fills = [...contexts.values()].flatMap((record) => record.fills);
+    expect(fills).not.toContain("oklch(0.72 0.13 178)");
   });
 });

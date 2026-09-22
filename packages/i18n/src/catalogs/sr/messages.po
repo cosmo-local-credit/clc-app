@@ -303,11 +303,11 @@ msgstr "1 ваучер"
 msgid "A good"
 msgstr "Производ"
 
-#: apps/web/src/routes/__root.tsx:279
+#: apps/web/src/routes/__root.tsx:305
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Отворена је веза папирног новчаника. Пријавите се овом адресом?"
 
-#: apps/web/src/routes/__root.tsx:277
+#: apps/web/src/routes/__root.tsx:303
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Скениран је QR код папирног новчаника. Увести ову адресу?"
 
@@ -716,7 +716,7 @@ msgstr "Приступ камери је одбијен."
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:389
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:497
-#: apps/web/src/routes/__root.tsx:293
+#: apps/web/src/routes/__root.tsx:319
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -1071,15 +1071,15 @@ msgstr "Povezivanje novčanika..."
 msgid "Connecting..."
 msgstr "Повезивање..."
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Connecting…"
 msgstr "Повезивање…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:125
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:290
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:338
-#: apps/web/src/routes/__root.tsx:198
-#: apps/web/src/routes/__root.tsx:229
+#: apps/web/src/routes/__root.tsx:224
+#: apps/web/src/routes/__root.tsx:255
 msgid "Connection failed."
 msgstr "Повезивање није успјело."
 
@@ -1209,6 +1209,14 @@ msgstr "Учитавање ваучера није успело."
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:77
 msgid "Could not protect this paper wallet."
 msgstr "Овај папирни новчаник није могуће заштитити."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:175
+msgid "Could not save the paper wallet. Try again."
+msgstr "Nije moguće sačuvati papirni novčanik. Pokušajte ponovo."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:194
+msgid "Could not share the paper wallet. Try downloading it instead."
+msgstr "Nije moguće podeliti papirni novčanik. Pokušajte da ga preuzmete."
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
 #~ msgid "Could not update the display name."
@@ -1666,20 +1674,20 @@ msgstr "Готово"
 #~ msgid "Done to Pools"
 #~ msgstr "Готово, на Пулове"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:216
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:223
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:242
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:249
 msgid "Download card"
 msgstr "Преузми картицу"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:169
-msgid "Download failed. Try a screenshot instead."
-msgstr "Преузимање није успјело. Покушајте да направите снимак екрана."
+#~ msgid "Download failed. Try a screenshot instead."
+#~ msgstr "Преузимање није успјело. Покушајте да направите снимак екрана."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:399
-msgid "Download or photograph this card. Anyone who scans the QR code will have "
-"full access to this wallet."
-msgstr "Преузмите или фотографишите ову картицу. Свако ко скенира QR код имаће "
-"потпун приступ овом новчанику."
+#~ msgid "Download or photograph this card. Anyone who scans the QR code will have "
+#~ "full access to this wallet."
+#~ msgstr "Преузмите или фотографишите ову картицу. Свако ко скенира QR код имаће "
+#~ "потпун приступ овом новчанику."
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:429
 msgid "Download your paper wallet before continuing."
@@ -2203,11 +2211,11 @@ msgstr "Ако је приказана опција „Отвори као ве�
 #~ msgstr "Извештаји о утицају тржница, пружалаца услуга и управника појавиће се "
 #~ "овде."
 
-#: apps/web/src/routes/__root.tsx:273
+#: apps/web/src/routes/__root.tsx:299
 msgid "Import paper wallet?"
 msgstr "Увести папирни новчаник?"
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Import wallet"
 msgstr "Увези новчаник"
 
@@ -2559,7 +2567,7 @@ msgstr "Локација"
 msgid "Location denied"
 msgstr "Приступ локацији је одбијен"
 
-#: apps/web/src/components/ui/location-map.tsx:180
+#: apps/web/src/components/ui/location-map.tsx:181
 msgid "Location map"
 msgstr "Мапа локације"
 
@@ -3255,7 +3263,7 @@ msgstr "Пренос власништва је послат."
 msgid "Paid out"
 msgstr "Исплаћено"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:103
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:72
 msgid "Paper wallet"
 msgstr "Папирни новчаник"
 
@@ -3263,7 +3271,7 @@ msgstr "Папирни новчаник"
 msgid "Paper Wallet"
 msgstr "Папирни новчаник"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:231
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:268
 msgid "Paper wallet card"
 msgstr "Картица папирног новчаника"
 
@@ -3306,7 +3314,7 @@ msgid "Password cannot be empty."
 msgstr "Лозинка не може бити празна."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:248
+#: apps/web/src/routes/__root.tsx:274
 msgid "Password-protected paper wallet"
 msgstr "Папирни новчаник заштићен лозинком"
 
@@ -3594,7 +3602,7 @@ msgstr "Припрема новчаника…"
 msgid "Preparing your withdrawal…"
 msgstr "Припрема ваше исплате…"
 
-#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:223
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:249
 msgid "Preparing..."
 msgstr "Припрема..."
 
@@ -3603,9 +3611,13 @@ msgid "Preparing…"
 msgstr "Припрема…"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:229
-msgid "Press and hold the card below, then choose Save to Photos."
-msgstr "Притисните и задржите картицу испод, затим изаберите Сачувај у "
-"Фотографије."
+#~ msgid "Press and hold the card below, then choose Save to Photos."
+#~ msgstr "Притисните и задржите картицу испод, затим изаберите Сачувај у "
+#~ "Фотографије."
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:266
+msgid "Press and hold the image below, then choose Save Image."
+msgstr "Pritisnite i zadržite sliku ispod, pa izaberite Sačuvaj sliku."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:468
 msgid "Pretium deposits and withdrawals will appear here."
@@ -4075,6 +4087,12 @@ msgstr "Сачувај подешавања накнаде"
 #~ msgid "Save recipient"
 #~ msgstr "Сачувај примаоца"
 
+#: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:399
+msgid "Save this card securely. If you use a password, keep it separately. "
+"Anyone with an unprotected QR code can access the wallet."
+msgstr "Sačuvajte ovu karticu na sigurnom. Ako koristite lozinku, čuvajte je "
+"odvojeno. Svako ko ima nezaštićen QR kod može pristupiti novčaniku."
+
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:283
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Сачувано. Ваша објава поново чека одобрење."
@@ -4314,6 +4332,10 @@ msgstr "Подешавања"
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:383
 msgid "Share"
 msgstr "Подијели"
+
+#: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:259
+msgid "Share card"
+msgstr "Podeli karticu"
 
 #: apps/web/src/components/install-app-link.tsx:17
 #: apps/web/src/features/install/ui/install-page.tsx:117
@@ -4617,11 +4639,11 @@ msgstr "Размјена у току…"
 msgid "Swaps settle within the market association..."
 msgstr "Замене се измирују унутар пијачног удружења..."
 
-#: apps/web/src/routes/__root.tsx:285
+#: apps/web/src/routes/__root.tsx:311
 msgid "Switch wallet"
 msgstr "Промијени новчаник"
 
-#: apps/web/src/routes/__root.tsx:273
+#: apps/web/src/routes/__root.tsx:299
 msgid "Switch wallet?"
 msgstr "Промијенити новчаник?"
 

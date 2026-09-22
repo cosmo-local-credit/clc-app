@@ -397,8 +397,8 @@ export function OnboardingWalletStep({
           </h1>
           <p className="text-muted-foreground text-sm">
             <Trans>
-              Download or photograph this card. Anyone who scans the QR code will have full access
-              to this wallet.
+              Save this card securely. If you use a password, keep it separately. Anyone with an
+              unprotected QR code can access the wallet.
             </Trans>
           </p>
         </div>

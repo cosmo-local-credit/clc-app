@@ -23,7 +23,7 @@ export function usePaperWalletProtection({
   privateKey,
 }: UsePaperWalletProtectionProps): PaperWalletProtectionSlots {
   const { t } = useLingui();
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [passphrase, setPassphrase] = useState("");
   const [confirmPassphrase, setConfirmPassphrase] = useState("");
   const [encryptedPayload, setEncryptedPayload] = useState<string | null>(null);
