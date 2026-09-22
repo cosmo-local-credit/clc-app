@@ -1,10 +1,10 @@
 import { checkImageFile, IMAGE_POLICIES } from "@clc/api/features/images/policy";
 import { useLingui } from "@lingui/react/macro";
-import { useEffect, useId, useRef, useState } from "react";
-import { FaCamera, FaUser } from "react-icons/fa";
+import { useEffect, useId, useState } from "react";
+import { FaUser } from "react-icons/fa";
 
-import { Button } from "#/components/ui/button";
 import { ImageCropSheet } from "#/components/ui/image-crop-sheet";
+import { PhotoSourcePicker } from "#/components/ui/photo-source-picker";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 
 type Props = {
@@ -26,8 +26,8 @@ type Props = {
  * file is held here and sent once an account exists; the preview is a local
  * object URL, which is why it is revoked on every change and on unmount.
  *
- * The native picker accepts image/* so mobile browsers can offer the camera.
- * The shared policy still rejects formats and sizes the service cannot take.
+ * The source sheet offers native camera capture and existing photos. The shared
+ * policy still rejects formats and sizes the service cannot take.
  */
 export function AvatarPicker({
   value,
@@ -39,7 +39,6 @@ export function AvatarPicker({
 }: Props) {
   const { t } = useLingui();
   const validationErrorId = useId();
-  const inputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** Chosen but not yet framed. Held here so the sheet owns one job. */
@@ -97,31 +96,16 @@ export function AvatarPicker({
       </div>
 
       <div className="flex min-w-0 flex-col items-start gap-1.5">
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          aria-label={t`Choose a profile photo`}
-          aria-required={required || undefined}
-          onChange={(e) => {
-            select(e.target.files?.[0]);
-            // Cleared so choosing the same file twice still fires a change.
-            e.target.value = "";
-          }}
-        />
-        <Button
-          type="button"
-          variant="outline"
+        <PhotoSourcePicker
+          buttonLabel={shown ? t`Change photo` : t`Add a photo`}
+          inputLabel={t`Choose a profile photo`}
+          onSelect={select}
+          cameraFacing="user"
           disabled={disabled}
-          aria-invalid={!!validationError}
-          aria-describedby={validationError ? validationErrorId : undefined}
-          onClick={() => inputRef.current?.click()}
-          className="h-11 bg-card"
-        >
-          <FaCamera aria-hidden className="mr-2 size-4" />
-          {shown ? t`Change photo` : t`Add a photo`}
-        </Button>
+          required={required}
+          ariaInvalid={!!validationError}
+          ariaDescribedBy={validationError ? validationErrorId : undefined}
+        />
 
         {value ? (
           <button

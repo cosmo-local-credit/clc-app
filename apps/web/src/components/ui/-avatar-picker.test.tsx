@@ -35,6 +35,36 @@ describe("AvatarPicker", () => {
     expect(screen.getByText("Optional")).toBeTruthy();
   });
 
+  it("opens the front camera from the existing Add a photo button", () => {
+    const onChange = vi.fn();
+    render(<AvatarPicker value={null} onChange={onChange} required />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a photo" }));
+    const cameraInput = screen.getByLabelText("Take photo", { selector: "input" });
+    expect(cameraInput.getAttribute("capture")).toBe("user");
+    expect(cameraInput.getAttribute("aria-required")).toBe("true");
+    const openCamera = vi.spyOn(cameraInput as HTMLInputElement, "click");
+
+    fireEvent.click(screen.getByRole("button", { name: "Take photo" }));
+    expect(openCamera).toHaveBeenCalledOnce();
+
+    fireEvent.change(cameraInput, { target: { files: [file("selfie.jpg", "image/jpeg")] } });
+    expect(screen.getByText("Frame your photo")).toBeTruthy();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("also opens the existing photo library from the same button", () => {
+    render(<AvatarPicker value={null} onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add a photo" }));
+    const libraryInput = screen.getByLabelText("Choose a profile photo", { selector: "input" });
+    expect(libraryInput.hasAttribute("capture")).toBe(false);
+    const openLibrary = vi.spyOn(libraryInput as HTMLInputElement, "click");
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose from photos" }));
+    expect(openLibrary).toHaveBeenCalledOnce();
+  });
+
   it("opens the frame rather than accepting the file as chosen", () => {
     const onChange = vi.fn();
     render(<AvatarPicker value={null} onChange={onChange} />);
