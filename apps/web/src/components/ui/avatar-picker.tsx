@@ -26,8 +26,8 @@ type Props = {
  * file is held here and sent once an account exists; the preview is a local
  * object URL, which is why it is revoked on every change and on unmount.
  *
- * The accept list and the size ceiling come from the shared policy rather than
- * being retyped, so a file this control admits is one the service will take.
+ * The native picker accepts image/* so mobile browsers can offer the camera.
+ * The shared policy still rejects formats and sizes the service cannot take.
  */
 export function AvatarPicker({
   value,
@@ -100,7 +100,7 @@ export function AvatarPicker({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/*"
           className="hidden"
           aria-label={t`Choose a profile photo`}
           aria-required={required || undefined}

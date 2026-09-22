@@ -25,6 +25,8 @@ import { useImageUpload } from "#/features/images/use-image-upload";
  * service never deletes, so a photo chosen for a save the user then abandons
  * costs one orphaned object — a better trade than carrying a `File` through a
  * form and re-deriving the upload on every submit attempt.
+ * The native picker accepts image/* so mobile browsers can offer the camera;
+ * checkImageFile still limits the formats and size sent to storage.
  */
 export function ImageUploadField({
   label,
@@ -143,7 +145,7 @@ export function ImageUploadField({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             className="hidden"
             aria-label={label}
             disabled={busy}
