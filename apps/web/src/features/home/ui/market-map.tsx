@@ -147,10 +147,22 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
 
 function createUserMarker(): HTMLDivElement {
   const marker = document.createElement("div");
-  marker.className = "relative flex size-7 items-center justify-center rounded-full bg-transparent";
-  marker.innerHTML =
-    "<span class='absolute size-5 rounded-full bg-foreground/30 animate-ping'></span><span class='relative size-2 rounded-full bg-foreground'></span>";
+  // `bg-primary` follows `data-brand`: green on prod, blue on staging, and the
+  // dark-scheme variant of the same token. The white ring is the stroke that
+  // keeps the dot readable on the basemap. No pulse.
+  marker.className = "size-3 rounded-full bg-primary ring-2 ring-white";
   return marker;
+}
+
+/** North-up and flat. Pan and zoom stay; bearing and pitch cannot change. */
+function lockMapUpright(map: MapLibreGL.Map): void {
+  map.dragRotate.disable();
+  map.touchPitch.disable();
+  map.touchZoomRotate.disableRotation();
+  map.keyboard.disableRotation();
+  map.setMaxPitch(0);
+  map.setPitch(0);
+  map.setBearing(0);
 }
 
 function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecification<string> {
@@ -379,9 +391,16 @@ export function MarketMap({
         center: [NAIROBI.lng, NAIROBI.lat],
         zoom: DEFAULT_ZOOM,
         maxZoom: MAP_MAX_ZOOM,
+        bearing: 0,
+        pitch: 0,
+        maxPitch: 0,
+        dragRotate: false,
+        pitchWithRotate: false,
+        touchPitch: false,
         fadeDuration: 0,
         attributionControl: false,
       });
+      lockMapUpright(map);
     } catch {
       setFailure("error");
       return;

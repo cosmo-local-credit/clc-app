@@ -2,7 +2,6 @@ import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
 import { RiCouponLine, RiHandCoinLine, RiShoppingBasket2Line } from "react-icons/ri";
 
-import { BRAND_THEME_COLOR } from "#/lib/brand";
 import type { MarketLocationKind } from "./market-data";
 
 /**
@@ -30,25 +29,19 @@ const SELECTED_SCALE = 1.1;
 const ICON_VIEWBOX = 24;
 const GLYPH_FRACTION = 0.52;
 
-const KIND_CSS_VARIABLE: Record<MarketLocationKind, string> = {
-  goods: "--primary",
-  services: "--info",
-  voucher: "--foreground",
-};
-
 /**
- * sRGB duplicates of the project colour tokens.
+ * Fixed sRGB fills, one per offering kind.
  *
- * These exist ONLY because older Canvas implementations silently retain the
- * previous `fillStyle` when handed an unsupported `oklch(...)` string — the
- * marker would then paint in whatever colour happened to be set last, with no
- * error. They are not a second source of truth for the design system; they are
- * used only when `CSS.supports("color", "oklch(...)")` is false.
+ * Goods is red, services is purple, and a voucher with no offerings is orange.
+ * These stay off `--primary`: the live-location dot owns the brand colour
+ * (green on prod, blue on staging), and an oklch token painted onto a canvas
+ * is silently ignored by older implementations. Hex is the colour the marker
+ * actually draws.
  */
-const KIND_SRGB_FALLBACK: Record<MarketLocationKind, string> = {
-  goods: BRAND_THEME_COLOR.light,
-  services: "#2563eb",
-  voucher: "#1f2430",
+const KIND_COLOR: Record<MarketLocationKind, string> = {
+  goods: "#dc2626",
+  services: "#7c3aed",
+  voucher: "#ea580c",
 };
 
 const kindIcon: Record<MarketLocationKind, IconType> = {
@@ -98,7 +91,7 @@ function createMarkerImage(
   ctx.scale(pixelRatio, pixelRatio);
   ctx.clearRect(0, 0, size, size);
 
-  const fill = resolveKindColor(kind);
+  const fill = KIND_COLOR[kind];
   const center = size / 2;
   const ringInset = selected ? 1.75 : 0.75;
   const bodyRadius = center - (selected ? 3 : 1.25);
@@ -174,18 +167,4 @@ function elementProps(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || !("props" in value)) return null;
   const { props } = value as { props: unknown };
   return typeof props === "object" && props !== null ? (props as Record<string, unknown>) : null;
-}
-
-function resolveKindColor(kind: MarketLocationKind): string {
-  if (!supportsCanvasOklch()) return KIND_SRGB_FALLBACK[kind];
-  if (typeof document === "undefined") return KIND_SRGB_FALLBACK[kind];
-
-  const resolved = getComputedStyle(document.documentElement)
-    .getPropertyValue(KIND_CSS_VARIABLE[kind])
-    .trim();
-  return resolved || KIND_SRGB_FALLBACK[kind];
-}
-
-function supportsCanvasOklch(): boolean {
-  return typeof CSS !== "undefined" && CSS.supports("color", "oklch(0.5 0.1 165)");
 }

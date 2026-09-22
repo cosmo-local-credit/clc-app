@@ -16,6 +16,12 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     center: [number, number];
     zoom: number;
     maxZoom?: number;
+    bearing?: number;
+    pitch?: number;
+    maxPitch?: number;
+    dragRotate?: boolean;
+    pitchWithRotate?: boolean;
+    touchPitch?: boolean;
     fadeDuration?: number;
     attributionControl: boolean;
   };
@@ -53,6 +59,13 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     easeTo = vi.fn();
     fitBounds = vi.fn();
     jumpTo = vi.fn();
+    setMaxPitch = vi.fn();
+    setPitch = vi.fn();
+    setBearing = vi.fn();
+    dragRotate = { disable: vi.fn() };
+    touchPitch = { disable: vi.fn() };
+    touchZoomRotate = { disableRotation: vi.fn() };
+    keyboard = { disableRotation: vi.fn() };
     setFilter = vi.fn((layerId: string, filter: unknown) => {
       const layer = this.layers.find((entry) => entry.id === layerId);
       if (layer) layer.filter = filter;
@@ -153,9 +166,11 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
 
   class HoistedMockMarker {
     coordinates: [number, number] | null = null;
+    element: HTMLElement | undefined;
     remove = vi.fn();
 
-    constructor(_: { element?: HTMLElement }) {
+    constructor(options: { element?: HTMLElement }) {
+      this.element = options.element;
       markerInstances.push(this);
     }
 
@@ -490,6 +505,35 @@ describe("MarketMap ranked camera", () => {
     expect(map.easeTo).toHaveBeenCalledWith({ center: [36.82, -1.29], zoom: 14 });
   });
 
+  it("stays north-up and flat", () => {
+    render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = firstMap();
+
+    expect(map.options).toMatchObject({
+      bearing: 0,
+      pitch: 0,
+      maxPitch: 0,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
+    });
+    expect(map.dragRotate.disable).toHaveBeenCalledOnce();
+    expect(map.touchPitch.disable).toHaveBeenCalledOnce();
+    expect(map.touchZoomRotate.disableRotation).toHaveBeenCalledOnce();
+    expect(map.keyboard.disableRotation).toHaveBeenCalledOnce();
+    expect(map.setMaxPitch).toHaveBeenCalledWith(0);
+    expect(map.setPitch).toHaveBeenCalledWith(0);
+    expect(map.setBearing).toHaveBeenCalledWith(0);
+  });
+
   it("creates exactly one user marker and moves it on later fixes", () => {
     const { rerender } = render(
       <MarketMap
@@ -516,6 +560,24 @@ describe("MarketMap ranked camera", () => {
 
     expect(markerInstances).toHaveLength(1);
     expect(markerInstances[0]?.coordinates).toEqual([36.83, -1.3]);
+  });
+
+  it("paints the live location in the brand colour without a pulse", () => {
+    render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={{ lat: -1.29, lng: 36.82 }}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    loadedMap();
+
+    const element = markerInstances[0]?.element;
+    expect(element?.className).toContain("bg-primary");
+    expect(element?.className).not.toContain("animate-ping");
+    expect(element?.querySelector(".animate-ping")).toBeNull();
   });
 });
 
