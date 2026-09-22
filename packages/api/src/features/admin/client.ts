@@ -25,11 +25,16 @@
  * the user/token mutations. Transaction pages live under `/admin/transactions`.
  */
 
+import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+
 import type { HttpClient } from "../../client/http-client";
-import type { CursorParams } from "../../lib/api-normalize";
+import type { CursorParams, HexAddress } from "../../lib/api-normalize";
 import {
   formatCursorQuery,
   isPresent,
+  normalizeChainId,
+  normalizeCoordinate,
+  normalizeHex,
   normalizeNumber,
   normalizeRawAmount,
   normalizeText,
@@ -37,6 +42,7 @@ import {
 import {
   type BackendMarketVoucherDetail,
   type MarketVoucherDetail,
+  type MarketVoucherKind,
   normalizeMarketVoucherDetail,
   serializeVoucherProfileUpdate,
   type VoucherProfileUpdate,
@@ -387,6 +393,46 @@ export type AdminOTXParams = CursorParams & {
   q?: string;
 };
 
+/**
+ * One row of the console's voucher catalog.
+ *
+ * Not `MarketVoucher`. That type's coordinates are non-nullable because every
+ * public statement filters incomplete rows, and this endpoint filters neither
+ * coordinates nor visibility — an ungeolocated or retired voucher is exactly
+ * what an operator comes here to find.
+ */
+export type AdminVoucher = {
+  id: string;
+  chainId: number;
+  address: HexAddress;
+  name: string;
+  symbol: string;
+  iconUrl: string | null;
+  locationName: string | null;
+  lat: number | null;
+  lng: number | null;
+  kind: MarketVoucherKind;
+  /** False once the voucher has been retired out of the public catalog. */
+  active: boolean;
+};
+
+type AdminVoucherPage = {
+  vouchers: AdminVoucher[];
+  first: number;
+  last: number;
+  receivedCount: number;
+};
+
+/** Which side of the visibility gate to list. `all` is the backend default. */
+type AdminVoucherStatus = "all" | "active" | "retired";
+
+export type AdminVoucherParams = CursorParams & {
+  filter: CatalogFilter;
+  status?: AdminVoucherStatus;
+  /** Only vouchers owned by this address. Compared case-insensitively. */
+  owner?: string;
+};
+
 export type AdminClient = {
   /** One cursor page of the account directory, newest first. */
   listUsers(params: AdminUserParams, signal?: AbortSignal): Promise<AdminUserPage>;
@@ -410,6 +456,12 @@ export type AdminClient = {
     profile: VoucherProfileUpdate,
     signal?: AbortSignal,
   ): Promise<MarketVoucherDetail>;
+  /** One cursor page of the catalog, retired vouchers included. */
+  listVouchers(params: AdminVoucherParams, signal?: AbortSignal): Promise<AdminVoucherPage>;
+  /** One voucher whatever its visibility. */
+  getVoucher(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail>;
+  /** Returns a retired voucher to the public catalog. */
+  restoreVoucher(address: string, signal?: AbortSignal): Promise<MarketVoucherDetail>;
   getStats(params: AdminStatsParams, signal?: AbortSignal): Promise<AdminStats>;
   /** Transfers, mints and burns, newest first. */
   listVoucherTransactions(
@@ -511,6 +563,74 @@ type BackendAdminPoolEnvelope = { pool?: BackendAdminPool | null } & BackendAdmi
 type BackendAdminVoucherEnvelope = {
   voucher?: BackendMarketVoucherDetail | null;
 } & BackendMarketVoucherDetail;
+
+type BackendAdminVoucherRow = Partial<{
+  id: string | number;
+  chainId: string | number;
+  address: string | null;
+  name: string | null;
+  symbol: string | null;
+  iconUrl: string | null;
+  locationName: string | null;
+  geoLat: string | number | null;
+  geoLng: string | number | null;
+  kind: string;
+  active: boolean | null;
+}>;
+
+type BackendAdminVoucherPage = {
+  vouchers?: Array<BackendAdminVoucherRow> | null;
+  first?: number;
+  last?: number;
+};
+
+const ADMIN_VOUCHER_KINDS = new Set<MarketVoucherKind>(["goods", "services", "voucher"]);
+
+function formatAdminVoucherQuery({ filter, status, owner, ...cursor }: AdminVoucherParams): string {
+  const search = new URLSearchParams(formatCursorQuery(cursor));
+  if (filter.term !== "") search.set("q", filter.term);
+  if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
+  if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
+  if (owner) search.set("owner", owner);
+  // Omitted rather than sent as "all": the backend already defaults to the whole
+  // catalog, and a redundant parameter is one more thing two sides must agree on.
+  if (status && status !== "all") search.set("status", status);
+  return `?${search.toString()}`;
+}
+
+/**
+ * A console row is dropped only when it has no usable identity. Missing
+ * coordinates are kept, unlike the public list where they are a reason to drop
+ * the row: an ungeolocated voucher is invisible to the market and so is one of
+ * the rows an operator most needs to see.
+ */
+function normalizeAdminVoucher(voucher: BackendAdminVoucherRow): AdminVoucher | null {
+  const address = normalizeHex(voucher.address);
+  const chainId = normalizeChainId(voucher.chainId);
+  if (!address || chainId === null || voucher.id === undefined || voucher.id === null) return null;
+
+  const lat = normalizeCoordinate(voucher.geoLat, 90);
+  const lng = normalizeCoordinate(voucher.geoLng, 180);
+  const hasLocation = lat !== null && lng !== null;
+  const kind = voucher.kind;
+
+  return {
+    id: String(voucher.id),
+    chainId,
+    address,
+    name: normalizeText(voucher.name) ?? "Community Voucher",
+    symbol: normalizeText(voucher.symbol) ?? "VOUCHER",
+    iconUrl: normalizeText(voucher.iconUrl),
+    locationName: normalizeText(voucher.locationName),
+    lat: hasLocation ? lat : null,
+    lng: hasLocation ? lng : null,
+    kind:
+      typeof kind === "string" && ADMIN_VOUCHER_KINDS.has(kind as MarketVoucherKind)
+        ? (kind as MarketVoucherKind)
+        : "voucher",
+    active: voucher.active !== false,
+  };
+}
 
 export function createAdminClient(http: HttpClient): AdminClient {
   /**
@@ -627,6 +747,51 @@ export function createAdminClient(http: HttpClient): AdminClient {
       );
       const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
       if (!voucher) throw new Error("Voucher update response did not include a valid address.");
+      return voucher;
+    },
+
+    /**
+     * The catalog as an operator sees it: no visibility gate, no coordinate
+     * requirement, and no viewport. The public list has all three, which is why
+     * the console cannot reach a retired voucher through it.
+     */
+    async listVouchers(params, signal) {
+      const result = await http.request<BackendAdminVoucherPage>(
+        `/api/v2/admin/vouchers${formatAdminVoucherQuery(params)}`,
+        { method: "GET", signal },
+      );
+
+      const received = result.vouchers ?? [];
+      return {
+        vouchers: received.map(normalizeAdminVoucher).filter(isPresent),
+        first: normalizeNumber(result.first) ?? 0,
+        last: normalizeNumber(result.last) ?? 0,
+        receivedCount: received.length,
+      };
+    },
+
+    /**
+     * One voucher whatever its visibility, so the detail screen survives a
+     * retire and can offer the restore.
+     */
+    async getVoucher(address, signal) {
+      const result = await http.request<BackendAdminVoucherEnvelope>(
+        `/api/v2/admin/vouchers/${encodeURIComponent(address)}`,
+        { method: "GET", signal },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
+      if (!voucher) throw new Error("Voucher response did not include a valid address.");
+      return voucher;
+    },
+
+    /** Superadmin-only: there is no owner-facing restore. */
+    async restoreVoucher(address, signal) {
+      const result = await http.request<BackendAdminVoucherEnvelope>(
+        `/api/v2/admin/vouchers/${encodeURIComponent(address)}/restore`,
+        { method: "PUT", signal },
+      );
+      const voucher = normalizeMarketVoucherDetail(result.voucher ?? result);
+      if (!voucher) throw new Error("Voucher restore response did not include a valid address.");
       return voucher;
     },
 

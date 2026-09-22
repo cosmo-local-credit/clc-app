@@ -59,6 +59,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployPool } from "#/features/pools/hooks/use-pool-deployment";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
 import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { CHAIN_ID } from "#/lib/chain";
@@ -136,6 +137,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
   const hasPrefilledProfile = useRef(false);
   const advancedRef = useRef<HTMLDetailsElement>(null);
   const suggestedSymbol = useSuggestedSymbol({ kind: "pool", initialSymbol: draft?.symbol ?? "" });
+  const checkNameAvailable = useNameAvailabilityValidator("pool");
   const [tagsOpen, setTagsOpen] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const [termsPreview, setTermsPreview] = useState(false);
@@ -188,6 +190,14 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
           destination: `/pools/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}`,
         });
       } catch (error) {
+        // See create-voucher-flow: the availability check is advisory, so the
+        // name can be taken between step 1 and publish.
+        if (error instanceof BackendApiError && error.kind === "conflict") {
+          toast.error(t`That pool name was taken while you were filling this in.`);
+          void navigate({ to: "/pools/create/$step", params: { step: "pool" } });
+          void form.validateField("name", "submit");
+          return;
+        }
         toast.error(
           error instanceof BackendApiError
             ? formatBackendApiError(error)
@@ -353,13 +363,20 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <div className="mt-3.5 space-y-3.5">
               <form.Field
                 name="name"
-                validators={{ onBlur: poolNameSchema, onSubmit: poolNameSchema }}
+                asyncDebounceMs={400}
+                validators={{
+                  onBlur: poolNameSchema,
+                  onSubmit: poolNameSchema,
+                  onChangeAsync: checkNameAvailable,
+                  onSubmitAsync: checkNameAvailable,
+                }}
               >
                 {(field) => (
                   <Field
                     label={t`Pool Name`}
                     htmlFor="pool-name"
                     error={getFieldError(field.state.meta.errors)}
+                    hint={field.state.meta.isValidating ? t`Checking availability…` : undefined}
                   >
                     <Input
                       id="pool-name"

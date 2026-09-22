@@ -8,10 +8,6 @@ const mockSubmitProfile = vi.fn();
 const mockSignMessage = vi.fn<() => Promise<`0x${string}`>>();
 const mockGetStorageToken = vi.fn();
 const mockUpload = vi.fn();
-const { mockToastError } = vi.hoisted(() => ({ mockToastError: vi.fn() }));
-
-vi.mock("sonner", () => ({ toast: { error: mockToastError, success: vi.fn() } }));
-
 vi.mock("@clc/api/features/auth/client", () => ({
   getSiweNonce: () => mockGetSiweNonce(),
   signupWithSiwe: (payload: unknown) => mockSignupWithSiwe(payload),
@@ -59,6 +55,7 @@ import {
 
 const FAKE_PK =
   "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" as `0x${string}`;
+const PHOTO = new File([new Uint8Array(64)], "me.jpg", { type: "image/jpeg" });
 
 const LOCATION = {
   lat: -1.286,
@@ -115,6 +112,7 @@ describe("useBackendSignup", () => {
         ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
+      avatarFile: PHOTO,
     });
     expect(mockGetSiweNonce).toHaveBeenCalledOnce();
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { message: string };
@@ -134,6 +132,7 @@ describe("useBackendSignup", () => {
         ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
+      avatarFile: PHOTO,
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
     expect(payload.email).toMatch(/^pending\+[a-f0-9]+@clc\.local$/);
@@ -152,6 +151,7 @@ describe("useBackendSignup", () => {
         ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
+      avatarFile: PHOTO,
     });
     const payload = mockSignupWithSiwe.mock.calls[0]?.[0] as { email: string };
     expect(payload.email).toBe("alice@example.com");
@@ -170,6 +170,7 @@ describe("useBackendSignup", () => {
         ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
+      avatarFile: PHOTO,
     });
     expect(mockSubmitProfile).toHaveBeenCalledOnce();
     const payload = mockSubmitProfile.mock.calls[0]?.[0] as {
@@ -214,6 +215,7 @@ describe("useBackendSignup", () => {
         ...PROFILE_DETAILS,
       },
       privateKey: FAKE_PK,
+      avatarFile: PHOTO,
     });
     // Fresh SIWE nonce for sign-in after the signup 409.
     expect(mockGetSiweNonce).toHaveBeenCalledTimes(2);
@@ -271,7 +273,7 @@ describe("useBackendWalletSignin", () => {
 describe("useBackendSignup — onboarding photo", () => {
   const photo = () => new File([new Uint8Array(64)], "me.jpg", { type: "image/jpeg" });
 
-  const signUp = async (avatarFile: File | null) => {
+  const signUp = async (avatarFile: File) => {
     const { result } = renderHook(() => useBackendSignup(), { wrapper: createWrapper() });
     await result.current.mutateAsync({
       profile: {
@@ -335,37 +337,37 @@ describe("useBackendSignup — onboarding photo", () => {
     expect(retryInput.uploadId).toBe(firstInput.uploadId);
     const profile = mockSubmitProfile.mock.calls[0]?.[0] as { avatarUrl?: string };
     expect(profile.avatarUrl).toBe("https://cdn.test/profile/abc_400_a3f91c2e.webp");
-    expect(mockToastError).not.toHaveBeenCalled();
   });
 
-  it("still creates the account when the upload fails", async () => {
-    mockUpload.mockRejectedValue(new Error("storage unreachable"));
+  it("stops onboarding on upload failure and completes after a retry", async () => {
+    mockUpload.mockRejectedValueOnce(new Error("storage unreachable"));
 
+    await expect(signUp(photo())).rejects.toThrow("Could not upload your photo. Please try again.");
+
+    expect(mockSubmitProfile).not.toHaveBeenCalled();
+
+    mockSignupWithSiwe.mockResolvedValue({
+      userId: null,
+      status: "REGISTERED",
+      role: "USER",
+      alreadyRegistered: true,
+    });
     await signUp(photo());
-
-    expect(mockSubmitProfile).toHaveBeenCalledOnce();
-    const profile = mockSubmitProfile.mock.calls[0]?.[0] as Record<string, unknown>;
-    // Absent, not null: null would ask clc-core to clear an avatar, and there is
-    // nothing to clear.
-    expect("avatarUrl" in profile).toBe(false);
-    // ...and the person is told, or an account that silently dropped their photo
-    // is indistinguishable from one that never had it.
-    expect(mockToastError).toHaveBeenCalledOnce();
+    expect(mockSigninWithSiwe).toHaveBeenCalledOnce();
+    expect(mockSubmitProfile).toHaveBeenCalledWith(
+      expect.objectContaining({ avatarUrl: "https://cdn.test/profile/abc_400_a3f91c2e.webp" }),
+    );
   });
 
-  it("says nothing about a photo when none was chosen", async () => {
-    await signUp(null);
+  it("rejects a missing photo before creating an account", async () => {
+    await expect(signUp(null as unknown as File)).rejects.toThrow(
+      "Add a profile photo to continue.",
+    );
 
-    expect(mockToastError).not.toHaveBeenCalled();
-  });
-
-  it("does not reach the upload service when no photo was chosen", async () => {
-    await signUp(null);
-
+    expect(mockSignupWithSiwe).not.toHaveBeenCalled();
     expect(mockGetStorageToken).not.toHaveBeenCalled();
     expect(mockUpload).not.toHaveBeenCalled();
-    const profile = mockSubmitProfile.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect("avatarUrl" in profile).toBe(false);
+    expect(mockSubmitProfile).not.toHaveBeenCalled();
   });
 
   it("uploads after the sign-in fallback on an already-registered address", async () => {

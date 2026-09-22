@@ -25,6 +25,8 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
   createVouchers: vi.fn(),
   transferOwnership: vi.fn(),
+  retireVoucher: vi.fn(),
+  navigate: vi.fn(),
   delegationStatus: "delegated" as "checking" | "delegated" | "not-delegated",
   queryClient: { invalidateQueries: vi.fn() },
   detailResult: {
@@ -180,10 +182,15 @@ vi.mock("@tanstack/react-router", () => ({
   },
   useCanGoBack: () => false,
   useRouter: () => ({ history: { back: vi.fn() } }),
+  useNavigate: () => mocks.navigate,
 }));
 
 vi.mock("#/lib/default-maps", () => ({
   openDefaultMaps: mocks.openDefaultMaps,
+}));
+
+vi.mock("#/features/wallet/hooks/use-retire-voucher", () => ({
+  useRetireVoucher: () => ({ mutateAsync: mocks.retireVoucher, isPending: false }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -347,6 +354,7 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     bannerUrl: "https://content.example/banner.jpg",
     tags: ["Agriculture"],
     kind: "goods",
+    active: true,
     ...overrides,
   };
 }
@@ -1349,5 +1357,95 @@ describe("VoucherDetailPage contract controls", () => {
         includeAuthorization: true,
       }),
     );
+  });
+});
+
+describe("VoucherDetailPage retire", () => {
+  const OWNER = "0xDeF0000000000000000000000000000000000456";
+
+  beforeEach(() => {
+    mocks.retireVoucher.mockReset();
+    mocks.retireVoucher.mockResolvedValue(undefined);
+    mocks.navigate.mockReset();
+  });
+
+  it("offers retire on the catalog rule, not the wallet one", () => {
+    // A stranger sees nothing, whatever wallet is connected.
+    mocks.auth.session = { address: OTHER, chainId: 42220 };
+    mocks.address = OWNER;
+    const stranger = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.queryByRole("button", { name: "Retire voucher" })).toBeNull();
+    stranger.unmount();
+
+    // The catalog owner sees it even with no wallet connected: retiring writes
+    // the record, not the token, so it needs no signature.
+    mocks.auth.session = { address: OWNER.toUpperCase(), chainId: 42220 };
+    mocks.address = undefined;
+    const owner = render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Retire voucher" })).toBeTruthy();
+    // And it reads below Transfer ownership rather than above it.
+    owner.unmount();
+
+    mocks.address = OWNER;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    const controls = screen.getByLabelText("Voucher controls");
+    const labels = within(controls)
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+    expect(labels.indexOf("Retire voucher")).toBeGreaterThan(labels.indexOf("Transfer ownership"));
+  });
+
+  it("lets a superadmin retire a voucher they do not own", () => {
+    mocks.auth.session = { address: OTHER, chainId: 42220, role: "SUPERADMIN" };
+    mocks.address = undefined;
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+    expect(screen.getByRole("button", { name: "Retire voucher" })).toBeTruthy();
+  });
+
+  it("confirms before retiring, then leaves for the screen Back points at", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" origin="wallet" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
+    const dialog = await screen.findByRole("dialog");
+    // Opening the sheet must not have written anything yet.
+    expect(mocks.retireVoucher).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retire voucher" }));
+
+    await waitFor(() => expect(mocks.retireVoucher).toHaveBeenCalledTimes(1));
+    // `replace`, so Back cannot return to a page that no longer resolves.
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/",
+        search: { tab: "wallet" },
+        replace: true,
+      }),
+    );
+  });
+
+  it("stays put when the confirmation is cancelled", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    expect(mocks.retireVoucher).not.toHaveBeenCalled();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it("keeps the viewer on the page when the write fails", async () => {
+    mocks.auth.session = { address: OWNER, chainId: 42220 };
+    mocks.retireVoucher.mockRejectedValue(new Error("Voucher is already retired"));
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Retire voucher" }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retire voucher" }));
+
+    await waitFor(() => expect(mocks.retireVoucher).toHaveBeenCalledTimes(1));
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 });

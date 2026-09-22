@@ -74,6 +74,11 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Voucher name must be 80 characters or fewer",
         message: "Voucher name must be 80 characters or fewer",
       });
+    case "That voucher name is already taken":
+      return i18n._({
+        id: "That voucher name is already taken",
+        message: "That voucher name is already taken",
+      });
     case "Voucher symbol is required":
       return i18n._({
         id: "Voucher symbol is required",
@@ -138,6 +143,11 @@ export function translateValidationError(error: string, i18n: I18n) {
       return i18n._({
         id: "Pool name must be 80 characters or fewer",
         message: "Pool name must be 80 characters or fewer",
+      });
+    case "That pool name is already taken":
+      return i18n._({
+        id: "That pool name is already taken",
+        message: "That pool name is already taken",
       });
     case "Pool shortcode is required":
       return i18n._({

@@ -7,14 +7,32 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { parseVoucherDetailSearch } from "./voucher-detail-search";
 
 const ADDRESS = "0xE74B7fDeda8f66A01dC438A012b1eE5cc377298D";
 
-vi.mock("@clc/api/features/market/queries", () => ({
-  voucherQueryOptions: () => ({
+const mocks = vi.hoisted(() => ({ active: true, restoreVoucher: vi.fn() }));
+
+// The query options are mocked below, so clcApi is only ever passed through
+// them — except by the restore mutation, which calls the client directly.
+vi.mock("#/lib/api", () => ({
+  clcApi: {
+    admin: { restoreVoucher: (...args: unknown[]) => mocks.restoreVoucher(...args) },
+    market: {},
+  },
+}));
+
+// The screen reads the console endpoint so a retired voucher still opens; the
+// market keys are still imported by the restore hook's cache sweep.
+vi.mock("@clc/api/features/market/queries", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@clc/api/features/market/queries")>()),
+}));
+
+vi.mock("@clc/api/features/admin/queries", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@clc/api/features/admin/queries")>()),
+  adminVoucherQueryOptions: () => ({
     queryKey: ["voucher", ADDRESS],
     queryFn: () => ({
       id: "1",
@@ -38,6 +56,33 @@ vi.mock("@clc/api/features/market/queries", () => ({
       bannerUrl: null,
       tags: ["Agriculture"],
       kind: "voucher",
+      active: mocks.active,
+    }),
+  }),
+  adminVoucherTransactionsQueryOptions: () => ({
+    queryKey: ["tx", ADDRESS],
+    queryFn: () => ({
+      transactions: [
+        {
+          id: 10_000_000,
+          txId: 10,
+          logIndex: 0,
+          txHash: "0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca",
+          t: "2026-08-13T11:00:00Z",
+          success: true,
+          type: "transfer",
+          voucher: ADDRESS,
+          voucherName: "Sarafu",
+          voucherSymbol: "SRF",
+          voucherDecimals: 6,
+          from: ADDRESS,
+          to: ADDRESS,
+          amount: "1000000",
+        },
+      ],
+      first: 10_000_000,
+      last: 10_000_000,
+      receivedCount: 1,
     }),
   }),
 }));
@@ -74,35 +119,6 @@ vi.mock("@clc/api/features/offerings/queries", () => ({
       ],
       first: 1,
       last: 1,
-      receivedCount: 1,
-    }),
-  }),
-}));
-
-vi.mock("@clc/api/features/admin/queries", () => ({
-  adminVoucherTransactionsQueryOptions: () => ({
-    queryKey: ["tx", ADDRESS],
-    queryFn: () => ({
-      transactions: [
-        {
-          id: 10_000_000,
-          txId: 10,
-          logIndex: 0,
-          txHash: "0xabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabca",
-          t: "2026-08-13T11:00:00Z",
-          success: true,
-          type: "transfer",
-          voucher: ADDRESS,
-          voucherName: "Sarafu",
-          voucherSymbol: "SRF",
-          voucherDecimals: 6,
-          from: ADDRESS,
-          to: ADDRESS,
-          amount: "1000000",
-        },
-      ],
-      first: 10_000_000,
-      last: 10_000_000,
       receivedCount: 1,
     }),
   }),
@@ -247,5 +263,35 @@ describe("VoucherDetailPage tabs", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Pools" }));
     expect(await screen.findByRole("link", { name: "Kawangware Pool" })).toBeTruthy();
+  });
+});
+
+describe("VoucherDetailPage restore", () => {
+  beforeEach(() => {
+    mocks.active = true;
+    mocks.restoreVoucher.mockReset();
+    mocks.restoreVoucher.mockResolvedValue({ address: ADDRESS, active: true });
+  });
+
+  it("offers no restore while the voucher is in the catalog", async () => {
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Sarafu" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /restore/i })).toBeNull();
+    expect(screen.queryByText("Retired")).toBeNull();
+  });
+
+  it("opens a retired voucher and restores it", async () => {
+    // The public detail would 404 here. The screen still has to render, or the
+    // restore below would have nowhere to live.
+    mocks.active = false;
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Sarafu" })).toBeTruthy();
+    expect(screen.getByText("Retired")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Restore" }));
+
+    await waitFor(() => expect(mocks.restoreVoucher).toHaveBeenCalledWith(ADDRESS));
   });
 });

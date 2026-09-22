@@ -1,7 +1,6 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { signMessage } from "wagmi/actions";
 
 import {
@@ -19,45 +18,40 @@ import { isStorageConfigured, storageClient } from "#/lib/api/storage";
 export type BackendSignupInput = {
   profile: ProfileInput;
   privateKey: `0x${string}`;
-  /** Optional profile photo, chosen during onboarding and uploaded here. */
-  avatarFile?: File | null;
+  /** Required profile photo, chosen during onboarding and uploaded here. */
+  avatarFile: File;
 };
 
 /**
- * Uploads the onboarding photo, or gives up quietly.
+ * Uploads the onboarding photo after signup has created a session.
  *
  * Called only once a session cookie exists, because the upload service takes a
  * clc-core token and this is the first point in onboarding where one can be
- * fetched. Failure returns undefined rather than throwing: the account is the
- * thing being created here, and losing it because an optional photo would not
- * encode is the wrong trade. The user can add one later from settings.
+ * fetched. An upload failure stops onboarding so the required photo is never
+ * silently dropped. Retrying signup signs in to the account just created.
  *
  * The upload id is generated per user action rather than derived from the file,
  * so two people uploading the same bytes get their own object. A transient
  * server or network failure gets one retry with that same id, making the retry
  * idempotent at storage.
  */
-async function uploadOnboardingAvatar(file: File): Promise<string | undefined> {
-  try {
-    const { token } = await authClient.getStorageToken();
-    const storage = storageClient();
-    const input = {
-      file,
-      purpose: "profile.avatar" as const,
-      uploadId: crypto.randomUUID().replaceAll("-", ""),
-    };
+async function uploadOnboardingAvatar(file: File): Promise<string> {
+  const { token } = await authClient.getStorageToken();
+  const storage = storageClient();
+  const input = {
+    file,
+    purpose: "profile.avatar" as const,
+    uploadId: crypto.randomUUID().replaceAll("-", ""),
+  };
 
-    let uploaded: UploadedImage;
-    try {
-      uploaded = await storage.upload(input, token);
-    } catch (error) {
-      if (!isRetryableStorageError(error)) throw error;
-      uploaded = await storage.upload(input, token);
-    }
-    return uploaded.url;
-  } catch {
-    return undefined;
+  let uploaded: UploadedImage;
+  try {
+    uploaded = await storage.upload(input, token);
+  } catch (error) {
+    if (!isRetryableStorageError(error)) throw error;
+    uploaded = await storage.upload(input, token);
   }
+  return uploaded.url;
 }
 
 /** The origin the user sees in the signature prompt, plus the intent. */
@@ -75,6 +69,9 @@ export function useBackendSignup() {
 
   return useMutation({
     mutationFn: async ({ profile, privateKey, avatarFile }: BackendSignupInput) => {
+      if (!avatarFile) throw new Error(t`Add a profile photo to continue.`);
+      if (!isStorageConfigured) throw new Error(t`Photo uploads are unavailable right now.`);
+
       const signer = privateKeySigner(privateKey);
       const signed = await signSiweMessage(authClient, signer, siweRequest("Sign up for CLC App"));
 
@@ -99,10 +96,11 @@ export function useBackendSignup() {
       }
 
       // Only now is there a session to authorize an upload with.
-      const avatarUrl =
-        avatarFile && isStorageConfigured ? await uploadOnboardingAvatar(avatarFile) : undefined;
-      if (avatarFile && isStorageConfigured && !avatarUrl) {
-        toast.error(t`We couldn't save your photo. You can add it from Settings.`);
+      let avatarUrl: string;
+      try {
+        avatarUrl = await uploadOnboardingAvatar(avatarFile);
+      } catch {
+        throw new Error(t`Could not upload your photo. Please try again.`);
       }
 
       await authClient.submitProfile({
@@ -116,9 +114,7 @@ export function useBackendSignup() {
         locationName: profile.location.locationName,
         geoLat: profile.location.lat,
         geoLng: profile.location.lng,
-        // Uploaded above, or absent. Omitted rather than null when there is no
-        // photo: null would ask clc-core to clear an avatar that cannot exist yet.
-        ...(avatarUrl ? { avatarUrl } : {}),
+        avatarUrl,
       });
 
       return result;

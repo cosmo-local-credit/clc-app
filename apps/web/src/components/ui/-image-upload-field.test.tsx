@@ -77,6 +77,20 @@ beforeEach(() => {
 });
 
 describe("choosing a photo", () => {
+  it("opens the rear camera and uploads its photo through the usual crop flow", async () => {
+    const { onChange } = renderField();
+    fireEvent.click(screen.getByRole("button", { name: "Add photo" }));
+    const cameraInput = screen.getByLabelText("Take photo", { selector: "input" });
+    expect(cameraInput.getAttribute("capture")).toBe("environment");
+
+    fireEvent.click(screen.getByRole("button", { name: "Take photo" }));
+    choose(file("product.jpg", "image/jpeg"), "Take photo");
+    await confirmCrop();
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalledTimes(1));
+    expect(onChange).toHaveBeenCalledWith("https://cdn.test/offering/abc_800_a3f91c2e.webp");
+  });
+
   // The whole point of the crop step: the storage service resizes but never
   // crops, so a photo that is not framed here arrives at the wrong shape and
   // every screen throws away the sides at render time.

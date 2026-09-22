@@ -3,14 +3,19 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitPoolCreateHistoryMock, getTakenSymbols, navigateMock } = vi.hoisted(
-  () => ({
-    deployMutateAsync: vi.fn(),
-    exitPoolCreateHistoryMock: vi.fn(),
-    getTakenSymbols: vi.fn(),
-    navigateMock: vi.fn(),
-  }),
-);
+const {
+  deployMutateAsync,
+  exitPoolCreateHistoryMock,
+  getNameAvailability,
+  getTakenSymbols,
+  navigateMock,
+} = vi.hoisted(() => ({
+  deployMutateAsync: vi.fn(),
+  exitPoolCreateHistoryMock: vi.fn(),
+  getNameAvailability: vi.fn(),
+  getTakenSymbols: vi.fn(),
+  navigateMock: vi.fn(),
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
@@ -40,6 +45,7 @@ vi.mock("wagmi", () => ({
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
 
 vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
+vi.mock("#/lib/api/names", () => ({ namesClient: { getNameAvailability } }));
 
 vi.mock("#/lib/navigation/pool-create-history", () => ({
   beginPoolCreateHistory: vi.fn(),
@@ -138,6 +144,9 @@ vi.mock("#/hooks/use-deployment", () => ({
 }));
 
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
+import { BackendApiError } from "@clc/api/client/errors";
+import { toast } from "sonner";
+
 import { CreatePoolFlow } from "./create-pool-flow";
 
 /** The flow reads symbol occupancy through the query cache, so it needs a client. */
@@ -155,6 +164,11 @@ beforeEach(() => {
     kind,
     prefix,
     taken: [],
+  }));
+  getNameAvailability.mockImplementation(async (kind: string, name: string) => ({
+    kind,
+    name,
+    available: true,
   }));
 });
 
@@ -466,6 +480,94 @@ describe("CreatePoolFlow", () => {
     });
     expect(deployMutateAsync.mock.calls[0]?.[0]).toHaveProperty("unitOfAccount", "USD");
     expect(deployMutateAsync.mock.calls[0]?.[0]).not.toHaveProperty("bannerUrl");
+  });
+
+  it("warns while typing that a pool name is already taken, and refuses Next", async () => {
+    getNameAvailability.mockImplementation(async (kind: string, name: string) => ({
+      kind,
+      name,
+      available: name.toLowerCase() !== "kilifi growers",
+    }));
+    renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.change(screen.getByLabelText("Pool Name"), {
+      target: { value: "Kilifi Growers" },
+    });
+    expect(await screen.findByText("That pool name is already taken")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(getNameAvailability).toHaveBeenCalled());
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ params: { step: "place" } }),
+    );
+    expect(getNameAvailability).toHaveBeenCalledWith("pool", "Kilifi Growers", expect.anything());
+  });
+
+  it("treats an unreachable availability lookup as no answer rather than a block", async () => {
+    getNameAvailability.mockRejectedValue(new Error("offline"));
+    renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.change(screen.getByLabelText("Pool Name"), {
+      target: { value: "Kilifi Growers" },
+    });
+    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool Description"), {
+      target: { value: "A pool for Kilifi growers." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/pools/create/$step",
+        params: { step: "place" },
+      }),
+    );
+    expect(screen.queryByText("That pool name is already taken")).toBeNull();
+  });
+
+  it("sends the steward back to the name when the backend reports it was taken", async () => {
+    deployMutateAsync.mockRejectedValue(
+      new BackendApiError(409, "a pool with this name already exists", "E16"),
+    );
+    const view = renderFlow(<CreatePoolFlow step="pool" />);
+
+    fireEvent.change(screen.getByLabelText("Pool Name"), {
+      target: { value: "Kilifi Growers" },
+    });
+    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool Description"), {
+      target: { value: "A pool for Kilifi growers." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "place" } }),
+      ),
+    );
+
+    view.rerender(<CreatePoolFlow step="place" />);
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "review" } }),
+      ),
+    );
+
+    view.rerender(<CreatePoolFlow step="review" />);
+    for (const checkbox of screen.getAllByRole("checkbox")) fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/pools/create/$step",
+        params: { step: "pool" },
+      }),
+    );
+    expect(toast.error).toHaveBeenCalledWith(
+      "That pool name was taken while you were filling this in.",
+    );
+    expect(exitPoolCreateHistoryMock).not.toHaveBeenCalled();
   });
 
   it("does not advance while required pool fields are empty", async () => {

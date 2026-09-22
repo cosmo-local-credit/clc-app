@@ -20,6 +20,7 @@ const {
 }));
 
 import type { ProfileInput } from "@clc/core/features/signup/logic";
+const PHOTO = new File([new Uint8Array(8)], "me.jpg", { type: "image/jpeg" });
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mockNavigate,
@@ -48,27 +49,30 @@ vi.mock("#/features/webauthn/hooks/use-platform-passkey-label", () => ({
 }));
 
 vi.mock("./onboarding-profile-form", () => ({
-  OnboardingProfileForm: ({ onNext }: { onNext: (data: ProfileInput) => void }) => {
+  OnboardingProfileForm: ({ onNext }: { onNext: (data: ProfileInput, photo: File) => void }) => {
     return (
       <div data-testid="profile-form">
         <button
           type="button"
           onClick={() => {
             mockOnboardingProfileFormOnNext();
-            onNext({
-              name: "Alice",
-              email: "alice@example.com",
-              phone: "",
-              preferredCurrency: "KES",
-              bio: "",
-              website: "",
-              location: {
-                lat: -1.2921,
-                lng: 36.8219,
-                locationName: "Nairobi, Kenya",
-                country: "KE",
+            onNext(
+              {
+                name: "Alice",
+                email: "alice@example.com",
+                phone: "",
+                preferredCurrency: "KES",
+                bio: "",
+                website: "",
+                location: {
+                  lat: -1.2921,
+                  lng: 36.8219,
+                  locationName: "Nairobi, Kenya",
+                  country: "KE",
+                },
               },
-            });
+              PHOTO,
+            );
           }}
         >
           profile-next

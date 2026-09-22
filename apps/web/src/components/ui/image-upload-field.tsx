@@ -6,6 +6,7 @@ import { FaCamera, FaTrash } from "react-icons/fa";
 
 import { Button } from "#/components/ui/button";
 import { ImageCropSheet } from "#/components/ui/image-crop-sheet";
+import { PhotoSourcePicker } from "#/components/ui/photo-source-picker";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { useImageUpload } from "#/features/images/use-image-upload";
 
@@ -25,6 +26,8 @@ import { useImageUpload } from "#/features/images/use-image-upload";
  * service never deletes, so a photo chosen for a save the user then abandons
  * costs one orphaned object — a better trade than carrying a `File` through a
  * form and re-deriving the upload on every submit attempt.
+ * The source sheet offers native camera capture and existing photos;
+ * checkImageFile still limits the formats and size sent to storage.
  */
 export function ImageUploadField({
   label,
@@ -52,7 +55,6 @@ export function ImageUploadField({
   disabled?: boolean;
 }) {
   const { t } = useLingui();
-  const inputRef = useRef<HTMLInputElement>(null);
   const upload = useImageUpload();
   const [rejection, setRejection] = useState<string | null>(null);
   /** Chosen, awaiting a frame. Purposes with no fixed shape skip this. */
@@ -140,29 +142,13 @@ export function ImageUploadField({
         </div>
 
         <div className="flex min-w-0 flex-col items-start gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            aria-label={label}
+          <PhotoSourcePicker
+            buttonLabel={upload.isPending ? t`Uploading…` : value ? t`Update photo` : t`Add photo`}
+            inputLabel={label}
+            onSelect={select}
+            cameraFacing="environment"
             disabled={busy}
-            onChange={(event) => {
-              select(event.target.files?.[0]);
-              // Cleared so choosing the same file twice still fires a change.
-              event.target.value = "";
-            }}
           />
-          <Button
-            type="button"
-            variant="outline"
-            className="h-11 bg-card"
-            disabled={busy}
-            onClick={() => inputRef.current?.click()}
-          >
-            <FaCamera aria-hidden className="mr-2 size-4" />
-            {upload.isPending ? t`Uploading…` : value ? t`Update photo` : t`Add photo`}
-          </Button>
 
           {value ? (
             <Button

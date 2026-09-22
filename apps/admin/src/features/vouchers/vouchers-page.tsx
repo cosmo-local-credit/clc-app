@@ -1,4 +1,4 @@
-import type { MarketVoucher } from "@clc/api/features/market/client";
+import type { AdminVoucher } from "@clc/api/features/admin/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -12,16 +12,19 @@ import { PageState } from "#/components/admin/page-state";
 import { StaleNotice } from "#/components/admin/stale-notice";
 import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
-import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
+import { adminVouchersQueryOptions } from "@clc/api/features/admin/queries";
 import { ListToolbar } from "#/components/admin/list-toolbar";
 import { TablePagination } from "#/components/admin/table-pagination";
 import { clcApi } from "#/lib/api";
 import { termFilter } from "#/lib/catalog-filter";
-import { filterSearch, type TableSearch } from "#/lib/table-search";
+import { filterSearch } from "#/lib/table-search";
+import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
+import { Badge } from "#/components/ui/badge";
+import { VOUCHER_STATUSES, type VoucherListSearch } from "#/features/vouchers/voucher-list-search";
 import { useDataState } from "#/lib/use-data-state";
 import { usePagedTable } from "#/lib/use-paged-table";
 
-const columns: Array<ColumnDef<MarketVoucher>> = [
+const columns: Array<ColumnDef<AdminVoucher>> = [
   {
     accessorKey: "name",
     header: "Name",
@@ -31,6 +34,20 @@ const columns: Array<ColumnDef<MarketVoucher>> = [
     accessorKey: "symbol",
     header: "Symbol",
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.symbol}</span>,
+  },
+  {
+    accessorKey: "active",
+    header: "Status",
+    cell: ({ row }) =>
+      row.original.active ? (
+        <Badge variant="outline" className="font-mono text-xs uppercase">
+          Active
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="text-destructive font-mono text-xs uppercase">
+          Retired
+        </Badge>
+      ),
   },
   {
     accessorKey: "address",
@@ -59,7 +76,7 @@ const columns: Array<ColumnDef<MarketVoucher>> = [
   },
 ];
 
-export function VouchersPage({ search }: { search: TableSearch }) {
+export function VouchersPage({ search }: { search: VoucherListSearch }) {
   const navigate = useNavigate();
   // The term goes to the endpoint, so a search covers the catalog rather than the
   // page in hand. `searched` is read back off the filter, not off `search.q`: a
@@ -67,12 +84,17 @@ export function VouchersPage({ search }: { search: TableSearch }) {
   // describe the request that was actually made.
   const filter = termFilter(search.q ?? "");
   const searched = filter.term !== "";
+  // The console's own endpoint, not the public catalog: that one filters `active`
+  // and complete coordinates, so a retired or ungeolocated voucher would be
+  // unreachable here — and retiring one would remove the only screen it could be
+  // restored from.
   const vouchersQuery = useQuery(
-    voucherFilteredPageQueryOptions(clcApi.market, {
+    adminVouchersQueryOptions(clcApi.admin, {
       perPage: search.perPage,
       cursor: search.cursor,
       next: search.dir === undefined ? undefined : search.dir === "next",
       filter,
+      status: search.status ?? "all",
     }),
   );
 
@@ -100,6 +122,38 @@ export function VouchersPage({ search }: { search: TableSearch }) {
                 })
               }
               searchPlaceholder="Name, symbol, address"
+              filters={
+                <ToggleGroup
+                  variant="outline"
+                  size="sm"
+                  spacing={0}
+                  value={[search.status ?? "all"]}
+                  onValueChange={(values) => {
+                    const next = values[0] as VoucherListSearch["status"] | undefined;
+                    // Base UI lets the active segment be cleared; clicking the
+                    // selected one is a no-op rather than a reset to nothing.
+                    if (!next) return;
+                    void navigate({
+                      to: "/vouchers",
+                      search: filterSearch(search, {
+                        status: next === "all" ? undefined : next,
+                      }),
+                    });
+                  }}
+                  aria-label="Voucher status"
+                  className="border-border bg-card h-9 items-center border p-0.5"
+                >
+                  {VOUCHER_STATUSES.map((status) => (
+                    <ToggleGroupItem
+                      key={status}
+                      value={status}
+                      className="text-muted-foreground data-[pressed]:bg-muted data-[pressed]:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground h-full min-w-9 px-2.5 font-mono text-xs font-medium tracking-wide uppercase"
+                    >
+                      {status}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              }
             />
             <Button
               type="button"
@@ -124,7 +178,8 @@ export function VouchersPage({ search }: { search: TableSearch }) {
             {dropped} voucher{dropped === 1 ? "" : "s"} hidden
           </AlertTitle>
           <AlertDescription>
-            Rows without coordinates or a known kind are dropped at the API boundary.
+            Rows without a usable address or chain are dropped at the API boundary. Unlike the
+            public catalog, this endpoint keeps rows with no coordinates.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -155,7 +210,9 @@ export function VouchersPage({ search }: { search: TableSearch }) {
                 description={
                   searched
                     ? "No voucher in the catalog matches this search."
-                    : "The catalog is empty."
+                    : search.status === "retired"
+                      ? "No voucher has been retired."
+                      : "The catalog is empty."
                 }
               />
             }

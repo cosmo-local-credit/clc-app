@@ -40,6 +40,7 @@ function detail(name: string): MarketVoucherDetail {
     bannerUrl: null,
     tags: [],
     kind: "voucher",
+    active: true,
   };
 }
 
