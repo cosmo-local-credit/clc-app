@@ -50,6 +50,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useDeployVoucher } from "#/features/vouchers/hooks/use-voucher-deployment";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { useTokenTags } from "#/hooks/use-deployment";
+import { useNameAvailabilityValidator } from "#/hooks/use-name-availability";
 import { useSuggestedSymbol } from "#/hooks/use-suggested-symbol";
 import { isStorageConfigured } from "#/lib/api/storage";
 import {
@@ -131,6 +132,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
     kind: "voucher",
     initialSymbol: draft?.symbol ?? "",
   });
+  const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
   const [termsPreview, setTermsPreview] = useState(false);
@@ -194,6 +196,16 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
           destination: `/vouchers/create/receipt?trackingId=${encodeURIComponent(result.trackingId)}&mintAmount=${encodeURIComponent(parsed.supply.trim())}`,
         });
       } catch (error) {
+        // The availability check is advisory, so a name free when the user left
+        // step 1 can be taken by the time they publish. Say which field is
+        // wrong and put them back in front of it rather than leaving a raw
+        // error code under a review screen they cannot act on.
+        if (error instanceof BackendApiError && error.kind === "conflict") {
+          toast.error(t`That voucher name was taken while you were filling this in.`);
+          void navigate({ to: "/vouchers/create/$step", params: { step: "voucher" } });
+          void form.validateField("name", "submit");
+          return;
+        }
         toast.error(
           error instanceof BackendApiError
             ? formatBackendApiError(error)
@@ -357,15 +369,29 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
             </aside>
 
             <div className="mt-3.5 space-y-3.5">
+              {/*
+                Names are unique across the catalog, and this form seeds one from
+                the profile -- so the same person walking it twice arrives with a
+                name already taken. onChangeAsync says so while they type;
+                onSubmitAsync is what makes Next refuse, since goToPlace awaits
+                validateField(_, "submit").
+              */}
               <form.Field
                 name="name"
-                validators={{ onBlur: voucherNameSchema, onSubmit: voucherNameSchema }}
+                asyncDebounceMs={400}
+                validators={{
+                  onBlur: voucherNameSchema,
+                  onSubmit: voucherNameSchema,
+                  onChangeAsync: checkNameAvailable,
+                  onSubmitAsync: checkNameAvailable,
+                }}
               >
                 {(field) => (
                   <Field
                     label={t`Voucher Name`}
                     htmlFor="voucher-name"
                     error={getFieldError(field.state.meta.errors)}
+                    hint={field.state.meta.isValidating ? t`Checking availability…` : undefined}
                   >
                     <Input
                       id="voucher-name"

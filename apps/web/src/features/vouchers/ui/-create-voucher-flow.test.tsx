@@ -4,16 +4,23 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { deployMutateAsync, exitVoucherCreateHistoryMock, getTakenSymbols, navigateMock, profile } =
-  vi.hoisted(() => ({
-    deployMutateAsync: vi.fn(),
-    exitVoucherCreateHistoryMock: vi.fn(),
-    getTakenSymbols: vi.fn(),
-    navigateMock: vi.fn(),
-    // Mutable so one test can hand the form a profile that also carries a saved
-    // location and currency, which the rest deliberately leave at their defaults.
-    profile: { current: {} as ProfileDefaults },
-  }));
+const {
+  deployMutateAsync,
+  exitVoucherCreateHistoryMock,
+  getNameAvailability,
+  getTakenSymbols,
+  navigateMock,
+  profile,
+} = vi.hoisted(() => ({
+  deployMutateAsync: vi.fn(),
+  exitVoucherCreateHistoryMock: vi.fn(),
+  getNameAvailability: vi.fn(),
+  getTakenSymbols: vi.fn(),
+  navigateMock: vi.fn(),
+  // Mutable so one test can hand the form a profile that also carries a saved
+  // location and currency, which the rest deliberately leave at their defaults.
+  profile: { current: {} as ProfileDefaults },
+}));
 
 const DEFAULT_PROFILE: ProfileDefaults = {
   email: "issuer@example.org",
@@ -48,6 +55,7 @@ vi.mock("wagmi", () => ({
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), info: vi.fn(), success: vi.fn() } }));
 
 vi.mock("#/lib/api/symbols", () => ({ symbolsClient: { getTakenSymbols } }));
+vi.mock("#/lib/api/names", () => ({ namesClient: { getNameAvailability } }));
 
 vi.mock("#/lib/navigation/voucher-create-history", () => ({
   beginVoucherCreateHistory: vi.fn(),
@@ -137,6 +145,9 @@ vi.mock("#/components/ui/image-upload-field", () => ({
   ),
 }));
 
+import { BackendApiError } from "@clc/api/client/errors";
+import { toast } from "sonner";
+
 import { CreateVoucherFlow } from "./create-voucher-flow";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 
@@ -157,6 +168,11 @@ beforeEach(() => {
     kind,
     prefix,
     taken: [],
+  }));
+  getNameAvailability.mockImplementation(async (kind: string, name: string) => ({
+    kind,
+    name,
+    available: true,
   }));
 });
 
@@ -373,6 +389,51 @@ describe("CreateVoucherFlow", () => {
     });
   });
 
+  it("sends the issuer back to the name when the backend reports it was taken", async () => {
+    deployMutateAsync.mockRejectedValue(
+      new BackendApiError(409, "a voucher with this name already exists", "E16"),
+    );
+    const view = renderFlow(<CreateVoucherFlow step="voucher" />);
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "place" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="place" />);
+    fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({ params: { step: "review" } }),
+      ),
+    );
+    view.rerender(<CreateVoucherFlow step="review" />);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
+    // Back to the field that is wrong, not a raw error code under a review
+    // screen the issuer cannot act on.
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/vouchers/create/$step",
+        params: { step: "voucher" },
+      }),
+    );
+    expect(toast.error).toHaveBeenCalledWith(
+      "That voucher name was taken while you were filling this in.",
+    );
+    expect(exitVoucherCreateHistoryMock).not.toHaveBeenCalled();
+  });
+
   it("does not advance while a voucher image is still uploading", () => {
     renderFlow(<CreateVoucherFlow step="place" />);
 
@@ -508,6 +569,51 @@ describe("CreateVoucherFlow", () => {
         params: { step: "place" },
       }),
     );
+  });
+
+  it("warns while typing that a voucher name is already taken, and refuses Next", async () => {
+    getNameAvailability.mockImplementation(async (kind: string, name: string) => ({
+      kind,
+      name,
+      available: name.toLowerCase() !== "kilifi market",
+    }));
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+
+    fireEvent.change(screen.getByLabelText("Voucher Name"), {
+      target: { value: "Kilifi Market" },
+    });
+    expect(await screen.findByText("That voucher name is already taken")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    await waitFor(() => expect(getNameAvailability).toHaveBeenCalled());
+    expect(navigateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ params: { step: "place" } }),
+    );
+
+    // The name the backend was asked about is normalized, so padding and casing
+    // cannot walk past a label that is taken.
+    expect(getNameAvailability).toHaveBeenCalledWith("voucher", "Kilifi Market", expect.anything());
+  });
+
+  it("treats an unreachable availability lookup as no answer rather than a block", async () => {
+    getNameAvailability.mockRejectedValue(new Error("offline"));
+    renderFlow(<CreateVoucherFlow step="voucher" />);
+
+    fireEvent.change(screen.getByLabelText("Voucher Name"), { target: { value: "Kilifi" } });
+    fireEvent.click(screen.getByText("Advanced"));
+    fireEvent.change(screen.getByLabelText("Voucher Symbol"), { target: { value: "KHV" } });
+    fireEvent.change(screen.getByLabelText("Voucher Description"), {
+      target: { value: "Fresh food." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    await waitFor(() =>
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/vouchers/create/$step",
+        params: { step: "place" },
+      }),
+    );
+    expect(screen.queryByText("That voucher name is already taken")).toBeNull();
   });
 
   it("does not advance while required voucher fields are empty", async () => {
