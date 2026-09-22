@@ -4,7 +4,7 @@ import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   Suspense,
   useEffect,
@@ -89,6 +89,7 @@ export function VoucherDetailPage({
   poolAddress?: string;
 }) {
   const { t } = useLingui();
+  const navigate = useNavigate();
   const { address } = useConnection();
   const auth = useAuthStatus();
   const voucherNavigation = resolveVoucherNavigationOwner({ from: origin, poolAddress });
@@ -363,6 +364,13 @@ export function VoucherDetailPage({
             tokenDecimals: token.tokenDecimals,
             ownerAddress: token.owner ?? null,
             walletAddress: address,
+            // A retired voucher's page no longer resolves, so leave for wherever
+            // Back already points — the pool, the wallet or the market the
+            // viewer arrived from. `replace` so Back does not return them to a
+            // screen that would now fail to load.
+            onRetired: () => {
+              void navigate({ to: back.to, search: back.search, replace: true });
+            },
           }}
         />
       ) : null}

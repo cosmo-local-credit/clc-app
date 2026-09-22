@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { VouchersPage } from "#/features/vouchers/vouchers-page";
-import { parseTableSearch } from "#/lib/table-search";
+import { parseVoucherListSearch } from "#/features/vouchers/voucher-list-search";
 
 export const Route = createFileRoute("/_shell/vouchers/")({
-  validateSearch: parseTableSearch,
+  validateSearch: parseVoucherListSearch,
   component: () => <VouchersPage search={Route.useSearch()} />,
 });

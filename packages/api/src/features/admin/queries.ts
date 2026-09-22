@@ -16,6 +16,7 @@ import type {
   AdminStatsParams,
   AdminUser,
   AdminUserParams,
+  AdminVoucherParams,
   AdminVoucherTransactionParams,
 } from "./client";
 import { type PoolListParams, poolKeys } from "../pools/queries";
@@ -51,7 +52,34 @@ export const adminKeys = {
   poolTransactions: (params: AdminPoolTransactionParams) =>
     ["clc", "admin", "transactions", "pools", params] as const,
   otx: (params: AdminOTXParams) => ["clc", "admin", "transactions", "otx", params] as const,
+
+  /**
+   * The console's catalog reads, kept under `admin` rather than beside the
+   * public `voucherKeys`. They answer for rows the public routes hide, so a
+   * sweep of the market cache must not reach them and a retired voucher must
+   * never be seeded into an entry a public read can serve.
+   */
+  vouchers: (params: AdminVoucherParams) => ["clc", "admin", "vouchers", "page", params] as const,
+  voucher: (address: string) =>
+    ["clc", "admin", "vouchers", "detail", address.toLowerCase()] as const,
 } as const;
+
+export function adminVouchersQueryOptions(admin: AdminClient, params: AdminVoucherParams) {
+  return queryOptions({
+    queryKey: adminKeys.vouchers(params),
+    queryFn: ({ signal }) => admin.listVouchers(params, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** One voucher whatever its visibility, so a retired one still has a screen. */
+export function adminVoucherQueryOptions(admin: AdminClient, address: string | undefined) {
+  return queryOptions({
+    queryKey: adminKeys.voucher(address ?? ""),
+    queryFn: ({ signal }) => admin.getVoucher(address as string, signal),
+    enabled: Boolean(address),
+  });
+}
 
 export function adminUsersQueryOptions(admin: AdminClient, params: AdminUserParams) {
   return queryOptions({

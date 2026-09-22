@@ -7,6 +7,7 @@ import {
   formatCursorQuery,
   isPresent,
   normalizeChainId,
+  normalizeCoordinate,
   normalizeHex,
   normalizeNumber,
   normalizeNumericText,
@@ -58,6 +59,15 @@ export type MarketVoucherDetail = {
    */
   tags: string[];
   kind: MarketVoucherKind;
+  /**
+   * Whether the voucher is in the public catalog.
+   *
+   * Always `true` from the public routes, which resolve active vouchers only —
+   * a retired one answers 404 there. It is meaningful on the console reads,
+   * which deliberately ignore the gate, and an older deployment that omits the
+   * key normalizes to `true` rather than hiding a voucher that is not retired.
+   */
+  active: boolean;
 };
 
 export type MarketBoundingBox = {
@@ -120,6 +130,7 @@ export type BackendMarketVoucherDetail = BackendMarketVoucher &
     iconUrl: string | null;
     bannerUrl: string | null;
     tags: unknown;
+    active: boolean | null;
   }>;
 
 /**
@@ -301,6 +312,26 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
       return voucher;
     },
 
+    /**
+     * Takes a voucher out of the public catalog.
+     *
+     * Soft: clc-core flips the `active` flag every market, search and offering
+     * statement filters on, so the reports and offerings that reference the
+     * voucher keep their foreign keys and a restore returns it intact.
+     *
+     * Returns nothing on purpose. The other catalog writes answer with the saved
+     * row so a caller can seed its cache; this one cannot, because the row it
+     * wrote is no longer visible to the detail route. Drop the voucher from the
+     * cache instead of re-reading it.
+     */
+    async retireVoucher(address: string, signal?: AbortSignal): Promise<void> {
+      await http.request<unknown>(`/api/v2/vouchers/${encodeURIComponent(address)}`, {
+        method: "DELETE",
+        cache: "no-store",
+        signal,
+      });
+    },
+
     async getFilteredMarketVouchers(
       params: FilteredMarketVouchersParams,
       signal?: AbortSignal,
@@ -430,6 +461,7 @@ export function normalizeMarketVoucherDetail(
       : [],
     kind:
       typeof kind === "string" && MARKET_KINDS.has(kind) ? (kind as MarketVoucherKind) : "voucher",
+    active: voucher.active !== false,
   };
 }
 
@@ -442,11 +474,6 @@ function normalizeImageUrl(value: unknown): string | null {
   } catch {
     return null;
   }
-}
-
-function normalizeCoordinate(value: unknown, bound: number): number | null {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return value >= -bound && value <= bound ? value : null;
 }
 
 export function viewportToBoundingBoxes(viewport: {

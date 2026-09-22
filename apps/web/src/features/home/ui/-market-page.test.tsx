@@ -410,6 +410,7 @@ describe("MarketPage preview", () => {
         bannerUrl: null,
         tags: [],
         kind: "goods",
+        active: true,
       },
     } as typeof detailResult.current;
     vouchersResult.current = {
