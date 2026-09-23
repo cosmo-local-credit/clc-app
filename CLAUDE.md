@@ -362,10 +362,21 @@ file's `name` binds it to one project:
 | `VITE_FULL_REACT_ERRORS`   | `false`                     | `true`                             |
 | Relying party              | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
 
-**Merging the Wrangler files onto the other branch renames that branch's Pages
-projects out from under themselves.** Promote `develop` → `master` for code;
-rewrite the Wrangler `name` and URLs in the same push so HEAD is always valid
-for that branch.
+**The two copies of each Wrangler file differ only in `name` and in their
+"Per environment" blocks.** Every other line, comments included, is identical
+on both branches, so a develop → master merge that touches a shared line (a new
+shared variable, a comment) leaves master's values alone without a conflict.
+Keep it that way:
+
+- A new variable that is the same everywhere goes in the "Shared" block, on
+  develop only. It reaches master with the next promote.
+- A variable whose value differs goes in the "Per environment" block, committed
+  on **both** branches with each branch's own value. Committing it on develop
+  alone makes the next promote conflict — or, worse, take develop's value.
+- Never resolve a Wrangler conflict by merging `master` into `develop` (GitHub's
+  "Resolve conflicts" button does exactly that). It records master as the new
+  merge base, and the next promote then silently carries staging's `name` and
+  URLs onto master. Resolve on the master side, keeping master's lines.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
 Green is the product brand (prod); red marks staging.

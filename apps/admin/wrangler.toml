@@ -1,9 +1,16 @@
-# Cloudflare Pages project for the admin console on **staging** (Gnosis).
+# Cloudflare Pages project for the admin console (Gnosis). See the root
+# wrangler.toml for why each branch keeps its own copy of this file:
 #
-# See the header of the root wrangler.toml for why develop and master keep
-# different copies of this file at the same path. This file and that one are
-# the only two that must never be merged onto master, or the prod project
-# (`clc-admin`) is renamed out from under itself.
+#   Branch   Web project      Admin project      Hosts
+#   develop  clc-app-gnosis   clc-admin-gnosis   test.cosmolocal.credit, admin.test.cosmolocal.credit
+#   master   clc-app          clc-admin          app.cosmolocal.credit,  admin.cosmolocal.credit
+#
+# The two copies differ only in `name` and in the "Per environment" blocks
+# below; every other line, comments included, is identical on both branches.
+# That is what lets develop merge into master: a change to a shared line never
+# touches a line the branches disagree on, so the three-way merge keeps
+# master's own values without a conflict. Change a per-environment value on
+# both branches, each with its own value, in separate commits.
 #
 # A separate project from apps/web on purpose. A Pages project has one build
 # output directory, and serving the console from a path on the app's origin would
@@ -11,7 +18,7 @@
 # intercept anything here.
 #
 # The deploy is Git-connected, with these dashboard build settings:
-#   Production branch        develop
+#   Production branch        develop (clc-admin-gnosis) / master (clc-admin)
 #   Root directory           apps/admin      <- must be this, not the repo root
 #   Build command            pnpm build
 #   Build output directory   dist
@@ -25,8 +32,8 @@
 #
 # THIS FILE IS ALSO WHAT SEPARATES THE TWO PROJECTS AT BUILD TIME. Nitro resolves a
 # Wrangler config from the build's working directory; delete this and the resolution
-# walks up to the root config, generating a worker named "clc-app-gnosis" carrying
-# every one of apps/web's vars. Verified by building with and without it.
+# walks up to the root config, generating a worker named after the web project and
+# carrying every one of apps/web's vars. Verified by building with and without it.
 #
 # It seeds the config the deploy actually uses, which Nitro generates at
 # dist/_worker.js/wrangler.json — hence the build-time warning that
@@ -39,61 +46,57 @@ compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
 # Only the variables this app reads. Deliberately not copied wholesale from the
-# web project: the console has no RPC, and it never
-# *registers* a passkey — only asserts one — so it needs no relying-party name.
+# web project: the console has no RPC, and it never *registers* a passkey — only
+# asserts one — so it needs no relying-party name.
 #
 # It does relay operator batches, so it needs a Calibur address — but that comes
 # from the chain table in @clc/core, keyed by VITE_CHAIN_ID, and only a deployment
 # whose clc-core points at a different implementation sets VITE_CALIBUR_ADDRESS.
-# Chain 100's entry matches this stack's CORE_RELAYER__CALIBUR_ADDRESS.
 #
-# VITE_STORAGE_URL is the image upload service, shared with apps/web and with
-# prod: gnosis-storage.cosmolocal.credit. Its origin allowlist must include this
-# console's hosts (STORAGE_API__ORIGIN on the clc-gnosis box) or the preflight
-# fails while every other request on the page succeeds.
+# VITE_STORAGE_URL is the same upload service apps/web uses in this environment.
+# Its origin allowlist (STORAGE_API__ORIGIN) must include this console's hosts or
+# the preflight fails while every other request on the page succeeds.
 #
-# VITE_PAPER_WALLET_ORIGIN is apps/web's host, and must match the web project's
-# value on the same branch: the console issues paper wallets in bulk, and each
-# card's QR is a link that opens the app and imports the key there.
+# VITE_PAPER_WALLET_ORIGIN is apps/web's host in this environment: the console
+# issues paper wallets in bulk, and each card's QR is a link that opens the app
+# and imports the key there. It must match the root wrangler.toml.
+#
+# VITE_RELYING_PARTY_ID is the same value apps/web carries, so one passkey works
+# on the app and this console. The backend does not verify it — the assertion
+# check compares `clientDataJSON.origin` against `relayer.allowed_origins`, which
+# is where this console's origins must be added, scheme included.
 #
 # VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves
 # both — and the account's allowed-origins list must include this console's hosts
-# (admin.test.cosmolocal.credit and the pages.dev previews) or tiles 403 while
-# everything else on the page works.
+# (and the pages.dev previews) or tiles 403 while everything else works.
 [vars]
+# ─── Per environment ─────────────────────────────────────────────────────────
+# The only lines that differ between develop and master. Keep them in this block.
 VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_BRAND = "staging"
-VITE_CHAIN_ID = "100"
-VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
-# The staging subtree, not this host: a passkey is bound to the relying party it
-# was registered under, so scoping it to the parent is what lets one credential
-# work on test.cosmolocal.credit and admin.test.cosmolocal.credit alike. apps/web
-# carries the same value.
-#
-# Not `cosmolocal.credit`: that parent is shared with prod, whose clc-core holds
-# different credentials, so a passkey offered there would fail against this
-# backend.
-#
-# The backend does not verify it — clc-core loads `relayer.relying_party_id` and
-# never reads it; the assertion check compares `clientDataJSON.origin` against
-# `relayer.allowed_origins`, which is where this console's origins must be added,
-# scheme included.
 VITE_RELYING_PARTY_ID = "test.cosmolocal.credit"
+VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 
-# Preview deploys keep their own relying party, for the same reason as apps/web:
-# `test.cosmolocal.credit` is not a suffix of any *.pages.dev host and would be
-# ignored there, leaving each branch on its own hostname. Every key is repeated
-# because `vars` is non-inheritable — overriding it for an environment without
-# restating the rest fails validation at deploy time.
-[env.preview.vars]
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
+# ─── Shared ──────────────────────────────────────────────────────────────────
+# Identical on develop and master. Add new variables here, not above.
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
+
+# Preview deploys keep their own relying party, for the same reason as apps/web.
+# Every key is repeated because `vars` is non-inheritable.
+[env.preview.vars]
+# ─── Per environment ─────────────────────────────────────────────────────────
+# The only lines that differ between develop and master. Keep them in this block.
+VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
+VITE_BRAND = "staging"
 VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-admin-gnosis.pages.dev"
+VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+
+# ─── Shared ──────────────────────────────────────────────────────────────────
+# Identical on develop and master. Add new variables here, not above.
+VITE_CHAIN_ID = "100"
+VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
