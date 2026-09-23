@@ -5,17 +5,53 @@ import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
-import type { PaperWalletCardDesign } from "./paper-wallet-card";
+import {
+  PAPER_WALLET_LOGO_SIZE,
+  PAPER_WALLET_PIXEL_RATIO,
+  type PaperWalletCardDesign,
+} from "./paper-wallet-card";
 
 const LOGO_TYPES = "image/png,image/jpeg,image/webp,image/svg+xml";
-/** The logo is embedded in every card of the PDF, so keep it small. */
+/** Bounds the decode; the stored logo is resampled far below this anyway. */
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+/** The logo box at print resolution. Anything larger is detail the sheet discards. */
+const LOGO_PIXELS = PAPER_WALLET_LOGO_SIZE * PAPER_WALLET_PIXEL_RATIO;
+
+/**
+ * The logo resampled to fit `LOGO_PIXELS` square, as a PNG data URL.
+ *
+ * html-to-image inlines the logo into the SVG it rasterises, so an upload kept
+ * at its original size — a 2 MB photo is 2.7 MB of base64 — is carried through
+ * every render for no gain in print.
+ */
+async function resampleLogo(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    // An SVG without a width or height has no intrinsic size; fill the box.
+    const width = image.naturalWidth || LOGO_PIXELS;
+    const height = image.naturalHeight || LOGO_PIXELS;
+    const scale = LOGO_PIXELS / Math.max(width, height);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("This browser cannot resize the logo");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/png");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 /**
  * The parts of the card that are the same on every wallet in a batch.
  *
- * The logo is read into a data URL and kept in the page: it is printed, never
- * uploaded, so it needs no storage and leaves no trace once the batch is done.
+ * The logo is resampled into a data URL and kept in the page: it is printed,
+ * never uploaded, so it needs no storage and leaves no trace once the batch is
+ * done.
  */
 export function CardDesignFields({
   value,
@@ -38,12 +74,10 @@ export function CardDesignFields({
       setLogoError("The logo must be 2 MB or smaller.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") onChange({ ...value, logoDataUrl: reader.result });
-    };
-    reader.onerror = () => setLogoError("The logo could not be read.");
-    reader.readAsDataURL(file);
+    resampleLogo(file).then(
+      (logoDataUrl) => onChange({ ...value, logoDataUrl }),
+      () => setLogoError("The logo could not be read."),
+    );
   }
 
   return (

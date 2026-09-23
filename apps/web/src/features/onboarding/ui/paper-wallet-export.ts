@@ -90,5 +90,5 @@ export async function exportPaperWalletSheet(card: HTMLDivElement, qrUrl: string
     [{ jpeg: dataUrlBytes(jpegUrl), qr: QRCode.create(qrUrl).modules }],
     { hairlines: true, title: "CLC paper wallet" },
   );
-  return new Blob([pdf], { type: "application/pdf" });
+  return new Blob(pdf, { type: "application/pdf" });
 }

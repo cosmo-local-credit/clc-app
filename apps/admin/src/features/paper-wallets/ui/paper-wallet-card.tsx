@@ -7,6 +7,50 @@ import { forwardRef } from "react";
 
 import { BRAND_ICON_BASE } from "#/lib/brand";
 
+/** Print resolution: 2x the design size is ~356 dpi at CR80, above what office printers resolve. */
+export const PAPER_WALLET_PIXEL_RATIO = 2;
+export const PAPER_WALLET_LOGO_SIZE = 124;
+export const PAPER_WALLET_INK = "#111827";
+
+export type CardTextStyle = {
+  family: string;
+  size: number;
+  weight: number;
+  letterSpacingEm: number;
+  lineHeight: number;
+};
+
+/**
+ * The per-wallet text, styled here and drawn onto the print sheet with Canvas
+ * 2D from the same values, so the two cannot drift.
+ */
+export const PAPER_WALLET_NAME_TEXT: CardTextStyle = {
+  family: "Plus Jakarta Sans Variable, Plus Jakarta Sans, sans-serif",
+  size: 24,
+  weight: 700,
+  letterSpacingEm: -0.015,
+  lineHeight: 1.2,
+};
+export const PAPER_WALLET_NAME_WIDTH = 300;
+export const PAPER_WALLET_NAME_LINES = 2;
+export const PAPER_WALLET_ADDRESS_TEXT: CardTextStyle = {
+  family: "JetBrains Mono Variable, JetBrains Mono, monospace",
+  size: 16,
+  weight: 500,
+  letterSpacingEm: -0.035,
+  lineHeight: 1.1,
+};
+
+function textStyle(text: CardTextStyle) {
+  return {
+    fontFamily: text.family,
+    fontSize: text.size,
+    fontWeight: text.weight,
+    letterSpacing: `${text.letterSpacingEm}em`,
+    lineHeight: text.lineHeight,
+  };
+}
+
 export type PaperWalletCardDesign = {
   website: string;
   description: string;
@@ -21,6 +65,11 @@ export type PaperWalletCardProps = {
   design: PaperWalletCardDesign;
   /** Shown in the QR box for previews only; the print sheet draws the QR as vectors. */
   qrDataUrl?: string | null;
+  /**
+   * Lays out the name and address but leaves them unpainted: the print sheet's
+   * shared background, which the sheet draws each wallet's text over.
+   */
+  blankText?: boolean;
 };
 
 /**
@@ -32,8 +81,9 @@ export type PaperWalletCardProps = {
  * box sits at `PAPER_WALLET_QR_BOX`, where the sheet overlays the vector QR.
  */
 export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
-  function PaperWalletCard({ address, name, design, qrDataUrl }, ref) {
+  function PaperWalletCard({ address, name, design, qrDataUrl, blankText }, ref) {
     const qrFrame = PAPER_WALLET_QR_BOX.size + 22;
+    const visibility = blankText ? "hidden" : undefined;
     return (
       <div
         ref={ref}
@@ -48,7 +98,7 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
           border: "1px solid transparent",
           display: "flex",
           flexDirection: "column",
-          color: "#111827",
+          color: PAPER_WALLET_INK,
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", flexGrow: 1, minHeight: 0 }}>
@@ -56,12 +106,18 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
             style={{
               display: "flex",
               flexDirection: "column",
-              width: 300,
+              width: PAPER_WALLET_NAME_WIDTH,
               height: 250,
               paddingRight: 16,
             }}
           >
-            <div style={{ width: 124, height: 124, flexShrink: 0 }}>
+            <div
+              style={{
+                width: PAPER_WALLET_LOGO_SIZE,
+                height: PAPER_WALLET_LOGO_SIZE,
+                flexShrink: 0,
+              }}
+            >
               <img
                 data-slot="logo"
                 src={design.logoDataUrl ?? `${BRAND_ICON_BASE}/logo.svg`}
@@ -77,14 +133,16 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
                   style={{
                     display: "-webkit-box",
                     WebkitBoxOrient: "vertical",
-                    WebkitLineClamp: 2,
+                    WebkitLineClamp: PAPER_WALLET_NAME_LINES,
                     overflow: "hidden",
-                    maxHeight: 57.6,
-                    fontFamily: "Plus Jakarta Sans Variable, Plus Jakarta Sans, sans-serif",
-                    fontSize: 24,
-                    fontWeight: 700,
-                    letterSpacing: "-0.015em",
-                    lineHeight: 1.2,
+                    // Breaks a word too long for the line, as the print sheet does.
+                    overflowWrap: "break-word",
+                    maxHeight:
+                      PAPER_WALLET_NAME_TEXT.size *
+                      PAPER_WALLET_NAME_TEXT.lineHeight *
+                      PAPER_WALLET_NAME_LINES,
+                    ...textStyle(PAPER_WALLET_NAME_TEXT),
+                    visibility,
                   }}
                 >
                   {name}
@@ -185,12 +243,9 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
           <span
             data-slot="address"
             style={{
-              fontFamily: "JetBrains Mono Variable, JetBrains Mono, monospace",
-              fontSize: 16,
-              fontWeight: 500,
-              letterSpacing: "-0.035em",
-              lineHeight: 1.1,
+              ...textStyle(PAPER_WALLET_ADDRESS_TEXT),
               whiteSpace: "nowrap",
+              visibility,
               paddingLeft: 8,
               paddingRight: 8,
             }}

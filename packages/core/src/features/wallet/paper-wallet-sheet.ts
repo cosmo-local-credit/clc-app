@@ -135,20 +135,36 @@ export function paperWalletQrRects(modules: QrModules, slot: SheetSlot): PdfRect
   return rects;
 }
 
+/** A raster placed over a card, in the card's design pixels. */
+export type CardOverlay = {
+  jpeg: Uint8Array<ArrayBuffer>;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type PrintableCard = {
-  /** The card rendered at its design size, without the QR. */
-  jpeg: Uint8Array;
+  /**
+   * The card rendered at its design size, without the QR. Cards that pass the
+   * same array share one embedded image, so a batch's common background is in
+   * the file once however many cards it prints.
+   */
+  jpeg: Uint8Array<ArrayBuffer>;
+  /** Drawn over `jpeg`: the wallet's own text when `jpeg` is a shared background. */
+  overlays?: readonly CardOverlay[];
   qr: QrModules;
 };
 
 /**
- * The A4 PDF for a set of cards: each card's raster at CR80 size with its QR
- * drawn as vectors on top, then the cut guides for the sheet.
+ * The A4 PDF for a set of cards: each card's raster at CR80 size with its
+ * overlays and its QR drawn as vectors on top, then the cut guides for the
+ * sheet. Returned as chunks for `new Blob()`.
  */
 export function buildPaperWalletSheetPdf(
   cards: readonly PrintableCard[],
   options: { hairlines: boolean; title?: string },
-): Uint8Array<ArrayBuffer> {
+): Uint8Array<ArrayBuffer>[] {
   const slots = paperWalletSheetSlots();
   return createPdf({
     widthMm: A4_WIDTH_MM,
@@ -158,7 +174,20 @@ export function buildPaperWalletSheetPdf(
       // A page never holds more cards than there are slots.
       const placed = pageCards.map((card, index) => ({ card, slot: slots[index] as SheetSlot }));
       return {
-        images: placed.map(({ card, slot }) => ({ jpeg: card.jpeg, ...slot })),
+        images: placed.flatMap(({ card, slot }) => {
+          const scaleX = slot.width / PAPER_WALLET_CARD_WIDTH;
+          const scaleY = slot.height / PAPER_WALLET_CARD_HEIGHT;
+          return [
+            { jpeg: card.jpeg, ...slot },
+            ...(card.overlays ?? []).map((overlay) => ({
+              jpeg: overlay.jpeg,
+              x: slot.x + overlay.x * scaleX,
+              y: slot.y + overlay.y * scaleY,
+              width: overlay.width * scaleX,
+              height: overlay.height * scaleY,
+            })),
+          ];
+        }),
         rects: placed.flatMap(({ card, slot }) => paperWalletQrRects(card.qr, slot)),
         lines: paperWalletCutGuides(pageCards.length, { hairlines: options.hairlines }),
       };

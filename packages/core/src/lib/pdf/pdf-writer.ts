@@ -14,8 +14,13 @@
 type PdfColor = readonly [r: number, g: number, b: number];
 
 type PdfImage = {
-  /** Baseline or progressive JPEG bytes. Grayscale and RGB are supported. */
-  jpeg: Uint8Array;
+  /**
+   * Baseline or progressive JPEG bytes. Grayscale and RGB are supported.
+   *
+   * Images are embedded once per distinct array, so placing the same array on
+   * many pages — a background shared by every card — costs its bytes once.
+   */
+  jpeg: Uint8Array<ArrayBuffer>;
   x: number;
   y: number;
   width: number;
@@ -98,15 +103,20 @@ function pdfString(value: string): string {
   return `(${value.replace(/[\\()]/g, (char) => `\\${char}`).replace(/[^\x20-\x7e]/g, "?")})`;
 }
 
-export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
+/**
+ * The file as a list of chunks, in order. A caller passes them straight to
+ * `new Blob(chunks)`; joining them first would hold a second copy of every
+ * image at the moment memory peaks.
+ */
+export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer>[] {
   if (document.pages.length === 0) throw new Error("A PDF needs at least one page");
 
   const encoder = new TextEncoder();
-  const chunks: Uint8Array[] = [];
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
   const offsets: number[] = [];
   let length = 0;
 
-  const write = (chunk: string | Uint8Array) => {
+  const write = (chunk: string | Uint8Array<ArrayBuffer>) => {
     const bytes = typeof chunk === "string" ? encoder.encode(chunk) : chunk;
     chunks.push(bytes);
     length += bytes.length;
@@ -116,11 +126,19 @@ export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
   const pageW = document.widthMm * PT_PER_MM;
   const pageH = document.heightMm * PT_PER_MM;
   let nextObject = 4; // 1 catalog, 2 page tree, 3 info
+  const imageObjects = new Map<Uint8Array<ArrayBuffer>, number>();
   const plan = document.pages.map((page) => {
     const pageObject = nextObject++;
     const contentObject = nextObject++;
-    const imageObjects = (page.images ?? []).map(() => nextObject++);
-    return { page, pageObject, contentObject, imageObjects };
+    const pageImages = (page.images ?? []).map((image) => {
+      let id = imageObjects.get(image.jpeg);
+      if (id === undefined) {
+        id = nextObject++;
+        imageObjects.set(image.jpeg, id);
+      }
+      return id;
+    });
+    return { page, pageObject, contentObject, pageImages };
   });
 
   const beginObject = (id: number) => {
@@ -142,8 +160,8 @@ export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
   const title = document.title ? ` /Title ${pdfString(document.title)}` : "";
   write(`<< /Producer (CLC)${title} >>\nendobj\n`);
 
-  for (const { page, pageObject, contentObject, imageObjects } of plan) {
-    const xObjects = imageObjects.map((id, index) => `/Im${index} ${id} 0 R`).join(" ");
+  for (const { page, pageObject, contentObject, pageImages } of plan) {
+    const xObjects = Array.from(new Set(pageImages), (id) => `/Im${id} ${id} 0 R`).join(" ");
     beginObject(pageObject);
     write(
       `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(pageW)} ${num(pageH)}]` +
@@ -156,7 +174,7 @@ export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
       const h = image.height * PT_PER_MM;
       const x = image.x * PT_PER_MM;
       const y = pageH - image.y * PT_PER_MM - h;
-      ops.push(`q ${num(w)} 0 0 ${num(h)} ${num(x)} ${num(y)} cm /Im${index} Do Q`);
+      ops.push(`q ${num(w)} 0 0 ${num(h)} ${num(x)} ${num(y)} cm /Im${pageImages[index]} Do Q`);
     });
     if (page.rects?.length) {
       ops.push(colorOp(page.rectColor ?? [0, 0, 0], "rg"));
@@ -180,18 +198,18 @@ export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
     write(`<< /Length ${content.length} >>\nstream\n`);
     write(content);
     write("\nendstream\nendobj\n");
+  }
 
-    (page.images ?? []).forEach((image, index) => {
-      const info = readJpegInfo(image.jpeg);
-      const colorSpace = info.components === 1 ? "/DeviceGray" : "/DeviceRGB";
-      beginObject(imageObjects[index] ?? 0);
-      write(
-        `<< /Type /XObject /Subtype /Image /Width ${info.width} /Height ${info.height}` +
-          ` /ColorSpace ${colorSpace} /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.jpeg.length} >>\nstream\n`,
-      );
-      write(image.jpeg);
-      write("\nendstream\nendobj\n");
-    });
+  for (const [jpeg, id] of imageObjects) {
+    const info = readJpegInfo(jpeg);
+    const colorSpace = info.components === 1 ? "/DeviceGray" : "/DeviceRGB";
+    beginObject(id);
+    write(
+      `<< /Type /XObject /Subtype /Image /Width ${info.width} /Height ${info.height}` +
+        ` /ColorSpace ${colorSpace} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`,
+    );
+    write(jpeg);
+    write("\nendstream\nendobj\n");
   }
 
   const xrefOffset = length;
@@ -205,11 +223,5 @@ export function createPdf(document: PdfDocument): Uint8Array<ArrayBuffer> {
     `trailer\n<< /Size ${objectCount} /Root 1 0 R /Info 3 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`,
   );
 
-  const out = new Uint8Array(length);
-  let cursor = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, cursor);
-    cursor += chunk.length;
-  }
-  return out;
+  return chunks;
 }

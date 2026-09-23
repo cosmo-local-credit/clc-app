@@ -7,8 +7,9 @@ const JPEG = new Uint8Array([
   0x03, 0x03, 0x01, 0x11, 0x00, 0x02, 0x11, 0x01, 0x03, 0x11, 0x01, 0xff, 0xd9,
 ]);
 
-function text(bytes: Uint8Array): string {
-  return new TextDecoder("latin1").decode(bytes);
+function text(chunks: readonly Uint8Array[]): string {
+  const decoder = new TextDecoder("latin1");
+  return chunks.map((chunk) => decoder.decode(chunk)).join("");
 }
 
 describe("readJpegInfo", () => {
@@ -52,7 +53,27 @@ describe("createPdf", () => {
 
   it("places content in PDF space, flipped from the top-left", () => {
     // 10 mm from the top of a 297 mm page, 53.98 mm tall.
-    expect(body).toContain("242.646 0 0 153.014 28.346 660.529 cm /Im0 Do");
+    expect(body).toContain("242.646 0 0 153.014 28.346 660.529 cm /Im6 Do");
+  });
+
+  it("embeds an image placed on several pages once", () => {
+    const shared = createPdf({
+      widthMm: 210,
+      heightMm: 297,
+      pages: [
+        {
+          images: [
+            { jpeg: JPEG, x: 0, y: 0, width: 10, height: 10 },
+            { jpeg: JPEG, x: 20, y: 0, width: 10, height: 10 },
+          ],
+        },
+        { images: [{ jpeg: JPEG, x: 0, y: 0, width: 10, height: 10 }] },
+      ],
+    });
+    const sharedBody = text(shared);
+    expect(sharedBody.match(/\/Subtype \/Image/g)).toHaveLength(1);
+    expect(sharedBody.match(/\/Im6 Do/g)).toHaveLength(3);
+    expect(sharedBody.match(/\/XObject << \/Im6 6 0 R >>/g)).toHaveLength(2);
   });
 
   it("points every xref entry at its object", () => {
