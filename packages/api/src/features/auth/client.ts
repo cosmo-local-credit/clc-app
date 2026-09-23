@@ -220,7 +220,15 @@ export async function pollTrackingCompletion(
 
 export type AuthClient = {
   getSiweNonce(): Promise<string>;
-  signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult>;
+  /**
+   * `detached` registers an account without keeping its session: the response's
+   * cookie is discarded, so an operator issuing wallets stays signed in as
+   * themselves.
+   */
+  signupWithSiwe(
+    payload: SignupSiwePayload,
+    options?: { detached?: boolean },
+  ): Promise<SignupResult>;
   signinWithSiwe(payload: SigninSiwePayload): Promise<SigninResult>;
   signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult>;
   logout(): Promise<void>;
@@ -248,11 +256,12 @@ export function createAuthClient(http: HttpClient): AuthClient {
       return data.nonce;
     },
 
-    async signupWithSiwe(payload: SignupSiwePayload): Promise<SignupResult> {
+    async signupWithSiwe(payload, options): Promise<SignupResult> {
       try {
         return await http.request<SignupResult>("/auth/signup", {
           method: "POST",
           body: JSON.stringify(payload),
+          ...(options?.detached ? { credentials: "omit" as const } : {}),
         });
       } catch (err) {
         // 409 means the *address* is already registered only when the backend

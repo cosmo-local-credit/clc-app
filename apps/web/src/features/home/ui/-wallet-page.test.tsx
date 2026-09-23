@@ -28,6 +28,9 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
+// The profile nudge reads the connected wallet; it has its own test.
+vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
+
 import { WalletPage } from "./wallet-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;

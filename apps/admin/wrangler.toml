@@ -39,7 +39,7 @@ compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
 
 # Only the variables this app reads. Deliberately not copied wholesale from the
-# web project: the console has no paper-wallet origin and no RPC, and it never
+# web project: the console has no RPC, and it never
 # *registers* a passkey — only asserts one — so it needs no relying-party name.
 #
 # It does relay operator batches, so it needs a Calibur address — but that comes
@@ -52,6 +52,10 @@ compatibility_flags = ["nodejs_compat"]
 # console's hosts (STORAGE_API__ORIGIN on the clc-gnosis box) or the preflight
 # fails while every other request on the page succeeds.
 #
+# VITE_PAPER_WALLET_ORIGIN is apps/web's host, and must match the web project's
+# value on the same branch: the console issues paper wallets in bulk, and each
+# card's QR is a link that opens the app and imports the key there.
+#
 # VITE_MAPTILER_KEY is the same key apps/web uses — one MapTiler account serves
 # both — and the account's allowed-origins list must include this console's hosts
 # (admin.test.cosmolocal.credit and the pages.dev previews) or tiles 403 while
@@ -61,6 +65,7 @@ VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_BRAND = "staging"
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
+VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 # The staging subtree, not this host: a passkey is bound to the relying party it
@@ -88,6 +93,7 @@ VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
 VITE_BRAND = "staging"
 VITE_CHAIN_ID = "100"
 VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
+VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
 VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
 VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
 VITE_RELYING_PARTY_ID = "clc-admin-gnosis.pages.dev"

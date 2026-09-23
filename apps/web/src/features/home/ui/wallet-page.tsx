@@ -14,6 +14,7 @@ import { PoolLogo, SectionHeader, TokenLogo } from "#/components/wallet";
 import { useOwnedPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
 import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { CompleteProfileBanner } from "./complete-profile-banner";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 export function WalletPage({ address }: { address?: string }) {
@@ -64,6 +65,8 @@ export function WalletPage({ address }: { address?: string }) {
           <Trans>Manage vouchers, pools, and local payments.</Trans>
         </p>
       </div>
+
+      <CompleteProfileBanner address={address} />
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
         <div className="grid grid-cols-4 gap-2">

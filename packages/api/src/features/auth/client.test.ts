@@ -383,6 +383,20 @@ describe("signupWithSiwe — 409 swallow", () => {
     ).rejects.toMatchObject({ status: 409, code: "E17" });
   });
 
+  it("discards the session cookie when detached", async () => {
+    const fetchMock = mockFetch({
+      body: { ok: true, result: { userId: 1, status: "APPROVED", role: "USER" } },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.signupWithSiwe(
+      { message: "msg", signature: "0xsig", name: "Alice", email: "alice@example.com" },
+      { detached: true },
+    );
+
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ credentials: "omit" });
+  });
+
   it("re-throws non-409 errors from signupWithSiwe", async () => {
     vi.stubGlobal(
       "fetch",
