@@ -62,7 +62,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
     confirmation: "",
   });
   const [hairlines, setHairlines] = useState(true);
-  const [rendering, setRendering] = useState(false);
+  const [renderStage, setRenderStage] = useState<"preparing" | "cards" | "assembling" | null>(null);
   const [rendered, setRendered] = useState(0);
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
 
@@ -104,7 +104,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
 
   async function downloadPdf() {
     const ready = batch.wallets.filter((wallet) => wallet.status === "ready");
-    setRendering(true);
+    setRenderStage("preparing");
     setRendered(0);
     try {
       const blob = await renderPaperWalletSheet(
@@ -114,14 +114,21 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           qrUrl: batch.qrUrlFor(wallet.id) ?? "",
         })),
         design,
-        { hairlines, onProgress: setRendered },
+        {
+          hairlines,
+          onProgress: (done) => {
+            setRenderStage("cards");
+            setRendered(done);
+          },
+          onAssembling: () => setRenderStage("assembling"),
+        },
       );
       downloadBlob(blob, `clc-paper-wallets-${new Date().toISOString().slice(0, 10)}.pdf`);
       setPdfDownloaded(true);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "The PDF could not be created.");
     } finally {
-      setRendering(false);
+      setRenderStage(null);
     }
   }
 
@@ -167,7 +174,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           wallets={batch.wallets}
           phase={batch.phase}
           encrypted={batch.encrypted}
-          rendering={rendering}
+          renderStage={renderStage}
           rendered={rendered}
           pdfDownloaded={pdfDownloaded}
           onDownloadPdf={() => void downloadPdf()}

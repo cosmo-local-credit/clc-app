@@ -1,7 +1,16 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ start: vi.fn(), navigate: vi.fn() }));
+import type { BatchWallet } from "./use-paper-wallet-batch";
+
+const mocks = vi.hoisted(() => ({
+  start: vi.fn(),
+  navigate: vi.fn(),
+  renderSheet: vi.fn(),
+  downloadBlob: vi.fn(),
+  phase: "idle",
+  wallets: [] as BatchWallet[],
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
@@ -11,8 +20,8 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 vi.mock("./use-paper-wallet-batch", () => ({
   usePaperWalletBatch: () => ({
-    wallets: [],
-    phase: "idle",
+    wallets: mocks.wallets,
+    phase: mocks.phase,
     encrypted: 0,
     fatalError: null,
     start: mocks.start,
@@ -21,6 +30,8 @@ vi.mock("./use-paper-wallet-batch", () => ({
     qrUrlFor: () => null,
   }),
 }));
+vi.mock("./render-sheet", () => ({ renderPaperWalletSheet: mocks.renderSheet }));
+vi.mock("./download", () => ({ downloadBlob: mocks.downloadBlob }));
 vi.mock("qrcode", () => ({
   default: { toDataURL: vi.fn().mockResolvedValue("data:image/png;base64,") },
 }));
@@ -28,7 +39,13 @@ vi.mock("qrcode", () => ({
 import { PaperWalletsPage } from "./paper-wallets-page";
 
 describe("PaperWalletsPage", () => {
-  beforeEach(() => mocks.start.mockReset());
+  beforeEach(() => {
+    mocks.start.mockReset();
+    mocks.renderSheet.mockReset();
+    mocks.downloadBlob.mockReset();
+    mocks.phase = "idle";
+    mocks.wallets = [];
+  });
 
   it("requires a confirmed batch password before generating", () => {
     render(<PaperWalletsPage search={{ source: "blank" }} />);
@@ -68,5 +85,41 @@ describe("PaperWalletsPage", () => {
       ],
       { kind: "none" },
     );
+  });
+
+  it("shows PDF progress from click through worker assembly", async () => {
+    mocks.phase = "done";
+    mocks.wallets = [
+      {
+        id: 0,
+        address: `0x${"a".repeat(40)}`,
+        recipient: { name: "Amina", email: "", phone: "", country: "", currency: "" },
+        status: "ready",
+      },
+    ];
+    let finish!: (pdf: Blob) => void;
+    const pending = new Promise<Blob>((resolve) => {
+      finish = resolve;
+    });
+    mocks.renderSheet.mockReturnValue(pending);
+
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Download A4 PDF (1)" }));
+
+    expect(screen.getByText("Preparing card design…")).toBeTruthy();
+    expect(screen.getByRole("progressbar", { name: "PDF generation" })).toBeTruthy();
+    const options = mocks.renderSheet.mock.calls[0]?.[2];
+    act(() => {
+      options.onProgress(1);
+    });
+    expect(screen.getByText("Drawing cards… 1 / 1")).toBeTruthy();
+    act(() => {
+      options.onAssembling();
+    });
+    expect(screen.getByText("Assembling PDF…")).toBeTruthy();
+
+    await act(async () => finish(new Blob(["%PDF-1.4"], { type: "application/pdf" })));
+    expect(mocks.downloadBlob).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("progressbar", { name: "PDF generation" })).toBeNull();
   });
 });

@@ -1,5 +1,7 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import type { ColumnDef } from "@tanstack/react-table";
+import { memo } from "react";
+import { FiLoader } from "react-icons/fi";
 import { HiOutlineDocumentDownload, HiOutlinePrinter, HiOutlineRefresh } from "react-icons/hi";
 
 import { CopyButton } from "#/components/admin/copy-button";
@@ -63,11 +65,16 @@ const columns: Array<ColumnDef<BatchWallet>> = [
   },
 ];
 
+/** PDF progress changes often; the wallet rows do not change during export. */
+const WalletTable = memo(function WalletTable({ wallets }: { wallets: BatchWallet[] }) {
+  return <DataTable columns={columns} data={wallets} />;
+});
+
 export function BatchResults({
   wallets,
   phase,
   encrypted,
-  rendering,
+  renderStage,
   rendered,
   pdfDownloaded,
   onDownloadPdf,
@@ -78,7 +85,7 @@ export function BatchResults({
   wallets: BatchWallet[];
   phase: BatchPhase;
   encrypted: number;
-  rendering: boolean;
+  renderStage: "preparing" | "cards" | "assembling" | null;
   rendered: number;
   pdfDownloaded: boolean;
   onDownloadPdf: () => void;
@@ -89,15 +96,20 @@ export function BatchResults({
   const ready = wallets.filter((wallet) => wallet.status === "ready").length;
   const failed = wallets.filter((wallet) => wallet.status === "failed").length;
   const busy = phase === "encrypting" || phase === "registering";
+  const rendering = renderStage !== null;
 
   const progress =
     phase === "encrypting"
       ? `Encrypting keys… ${encrypted} / ${wallets.length}`
       : phase === "registering"
         ? `Registering accounts… ${ready + failed} / ${wallets.length}`
-        : rendering
-          ? `Rendering cards… ${rendered} / ${ready}`
-          : `${ready} of ${wallets.length} wallets registered and approved${failed ? `, ${failed} failed` : ""}.`;
+        : renderStage === "preparing"
+          ? "Preparing card design…"
+          : renderStage === "cards"
+            ? `Drawing cards… ${rendered} / ${ready}`
+            : renderStage === "assembling"
+              ? "Assembling PDF…"
+              : `${ready} of ${wallets.length} wallets registered and approved${failed ? `, ${failed} failed` : ""}.`;
 
   return (
     <div className="space-y-4">
@@ -107,6 +119,32 @@ export function BatchResults({
           <p className="font-data text-sm" aria-live="polite">
             {progress}
           </p>
+          {rendering ? (
+            <div
+              className="flex min-w-64 items-center gap-3 pt-2"
+              aria-label="PDF generation in progress"
+            >
+              <FiLoader className="size-4 shrink-0 animate-spin text-primary" aria-hidden="true" />
+              <div
+                role="progressbar"
+                aria-label="PDF generation"
+                aria-valuemin={0}
+                aria-valuemax={ready}
+                aria-valuenow={renderStage === "cards" ? rendered : undefined}
+                aria-valuetext={progress}
+                className="h-2 w-full overflow-hidden bg-muted"
+              >
+                <div
+                  className={`h-full bg-primary ${renderStage === "cards" ? "" : "w-1/3 animate-pulse"}`}
+                  style={
+                    renderStage === "cards"
+                      ? { width: `${ready ? (rendered / ready) * 100 : 0}%` }
+                      : undefined
+                  }
+                />
+              </div>
+            </div>
+          ) : null}
           {phase === "done" && !pdfDownloaded ? (
             <p className="text-muted-foreground text-xs">
               Download the PDF before leaving. Keys cannot be recovered.
@@ -130,15 +168,15 @@ export function BatchResults({
             Manifest CSV
           </Button>
           <Button type="button" disabled={busy || rendering || ready === 0} onClick={onDownloadPdf}>
-            <HiOutlinePrinter />
-            Download A4 PDF ({ready})
+            {rendering ? <FiLoader className="animate-spin" /> : <HiOutlinePrinter />}
+            {rendering ? "Creating PDF…" : `Download A4 PDF (${ready})`}
           </Button>
           <Button type="button" variant="ghost" disabled={busy || rendering} onClick={onReset}>
             New batch
           </Button>
         </div>
       </div>
-      <DataTable columns={columns} data={wallets} />
+      <WalletTable wallets={wallets} />
     </div>
   );
 }

@@ -1,17 +1,15 @@
 import { layoutWithLines, measureNaturalWidth, prepareWithSegments } from "@chenglou/pretext";
 import { dataUrlBytes } from "@clc/core/lib/data-url";
 import {
-  buildPaperWalletSheetPdf,
   type CardOverlay,
   PAPER_WALLET_CARD_HEIGHT,
   PAPER_WALLET_CARD_WIDTH,
-  type PrintableCard,
 } from "@clc/core/features/wallet/paper-wallet-sheet";
 import { getFontEmbedCSS, toJpeg } from "html-to-image";
-import QRCode from "qrcode";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
+import { assemblePaperWalletPdfInWorker, type PreparedCard } from "./assemble-pdf";
 import {
   type CardTextStyle,
   PAPER_WALLET_ADDRESS_TEXT,
@@ -60,7 +58,11 @@ const ELLIPSIS = "…";
 export async function renderPaperWalletSheet(
   wallets: readonly PrintWallet[],
   design: PaperWalletCardDesign,
-  options: { hairlines: boolean; onProgress?: (done: number) => void },
+  options: {
+    hairlines: boolean;
+    onProgress?: (done: number) => void;
+    onAssembling?: () => void;
+  },
 ): Promise<Blob> {
   const context = document.createElement("canvas").getContext("2d");
   if (!context) throw new Error("This browser cannot draw the paper wallet sheet");
@@ -75,9 +77,18 @@ export async function renderPaperWalletSheet(
   });
   document.body.appendChild(host);
   const root = createRoot(host);
+  let mounted = true;
+  const removeCard = () => {
+    if (!mounted) return;
+    mounted = false;
+    root.unmount();
+    host.remove();
+  };
 
   const backgrounds = new Map<Layout, Background>();
+  const nameJpegs = new Map<string, Uint8Array<ArrayBuffer>>();
   let fontEmbedCSS: string | undefined;
+  let lastProgressAt = Number.NEGATIVE_INFINITY;
 
   async function backgroundFor(layout: Layout): Promise<Background> {
     const cached = backgrounds.get(layout);
@@ -148,7 +159,7 @@ export async function renderPaperWalletSheet(
       document.fonts.load(canvasFont(PAPER_WALLET_ADDRESS_TEXT), SAMPLE_ADDRESS),
     ]);
 
-    const cards: PrintableCard[] = [];
+    const cards: PreparedCard[] = [];
     for (const [index, wallet] of wallets.entries()) {
       const lines = clampLines(
         wallet.name,
@@ -161,12 +172,18 @@ export async function renderPaperWalletSheet(
 
       const overlays: CardOverlay[] = [];
       if (background.name) {
-        overlays.push({
-          ...background.name,
-          jpeg: await rasterizeText(context, background.name, lines, PAPER_WALLET_NAME_TEXT, {
+        const key = JSON.stringify([layout, lines]);
+        let jpeg = nameJpegs.get(key);
+        if (!jpeg) {
+          jpeg = await rasterizeText(context, background.name, lines, PAPER_WALLET_NAME_TEXT, {
             align: "left",
             top: 0,
-          }),
+          });
+          nameJpegs.set(key, jpeg);
+        }
+        overlays.push({
+          ...background.name,
+          jpeg,
         });
       }
       overlays.push({
@@ -179,18 +196,19 @@ export async function renderPaperWalletSheet(
           { align: "center", top: ADDRESS_BLEED },
         ),
       });
-      cards.push({ jpeg: background.jpeg, overlays, qr: QRCode.create(wallet.qrUrl).modules });
-      options.onProgress?.(index + 1);
+      cards.push({ jpeg: background.jpeg, overlays, qrUrl: wallet.qrUrl });
+      const now = performance.now();
+      if (index + 1 === wallets.length || now - lastProgressAt >= 100) {
+        options.onProgress?.(index + 1);
+        lastProgressAt = now;
+      }
     }
 
-    const pdf = buildPaperWalletSheetPdf(cards, {
-      hairlines: options.hairlines,
-      title: "CLC paper wallets",
-    });
-    return new Blob(pdf, { type: "application/pdf" });
+    options.onAssembling?.();
+    removeCard();
+    return await assemblePaperWalletPdfInWorker(cards, options.hairlines);
   } finally {
-    root.unmount();
-    host.remove();
+    removeCard();
   }
 }
 

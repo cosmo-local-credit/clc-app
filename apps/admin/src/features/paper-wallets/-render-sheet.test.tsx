@@ -60,11 +60,15 @@ const wallet = (name: string) => ({
 });
 
 describe("renderPaperWalletSheet", () => {
+  const toBlobCalls = vi.fn();
+
   beforeEach(() => {
+    toBlobCalls.mockClear();
     mocks.toJpeg.mockReset().mockResolvedValue(dataUrl(jpeg(BACKGROUND_BYTES)));
     mocks.getFontEmbedCSS.mockReset().mockResolvedValue("");
     stubCanvas();
     vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((callback) => {
+      toBlobCalls();
       callback(new Blob([STRIP], { type: "image/jpeg" }));
     });
     HTMLImageElement.prototype.decode = () => Promise.resolve();
@@ -88,8 +92,9 @@ describe("renderPaperWalletSheet", () => {
 
     const body = await pdfText(blob);
     expect(body).toContain("/Count 50");
-    // One shared background, then a name and an address strip per card.
-    expect(body.match(/\/Subtype \/Image/g)).toHaveLength(1 + 500 * 2);
+    // One shared background and name, then one unique address strip per card.
+    expect(body.match(/\/Subtype \/Image/g)).toHaveLength(2 + 500);
+    expect(toBlobCalls).toHaveBeenCalledTimes(1 + 500);
 
     // The background's bytes are paid once, not per card: rasterising every
     // card put them in the file 500 times, 30 MB for this background alone.
