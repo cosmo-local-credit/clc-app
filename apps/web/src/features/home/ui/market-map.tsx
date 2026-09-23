@@ -10,11 +10,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
-import { MARKET_SOURCE_ID, type MarketLocation, type MarketLocationKind } from "./market-data";
+import {
+  MAP_MAX_ZOOM,
+  MARKET_SOURCE_ID,
+  type MarketLocation,
+  type MarketLocationKind,
+} from "./market-data";
 import { addMarketMarkerImages, markerImageIds } from "./market-markers";
 import {
   type MarketStack,
-  groupByCoordinate,
+  groupByProximity,
   spiderPageCount,
   spiderPageMembers,
   spiderfyOffsets,
@@ -22,7 +27,6 @@ import {
 
 const NAIROBI = { lat: -1.2921, lng: 36.8219 };
 const DEFAULT_ZOOM = 12;
-const MAP_MAX_ZOOM = 20;
 
 const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
@@ -353,7 +357,7 @@ export function MarketMap({
     ? `https://api.maptiler.com/maps/base-v4/style.json?key=${encodeURIComponent(maptilerKey)}`
     : null;
 
-  const stacks = useMemo(() => groupByCoordinate(locations), [locations]);
+  const stacks = useMemo(() => groupByProximity(locations), [locations]);
   const stacksByKey = useMemo(() => new Map(stacks.map((stack) => [stack.key, stack])), [stacks]);
 
   const stacksRef = useRef(stacks);

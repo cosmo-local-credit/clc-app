@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import type { MarketLocation } from "./market-data";
 import {
   SPIDER_PAGE_SIZE,
-  groupByCoordinate,
+  groupByProximity,
   spiderPageCount,
   spiderPageMembers,
   spiderfyOffsets,
@@ -13,9 +13,9 @@ function at(id: string, lat: number, lng: number): MarketLocation {
   return { id, name: `Voucher ${id}`, kind: "voucher", lat, lng, locationName: null };
 }
 
-describe("groupByCoordinate", () => {
-  it("returns one single-member stack per distinct coordinate", () => {
-    const stacks = groupByCoordinate([at("1", -1.28, 36.82), at("2", -1.3, 36.81)]);
+describe("groupByProximity", () => {
+  it("returns one single-member stack per distinct location", () => {
+    const stacks = groupByProximity([at("1", -1.28, 36.82), at("2", -1.3, 36.81)]);
 
     expect(stacks).toHaveLength(2);
     expect(stacks.every((stack) => stack.members.length === 1)).toBe(true);
@@ -23,7 +23,7 @@ describe("groupByCoordinate", () => {
 
   it("collapses vouchers on one exact coordinate into a single stack", () => {
     // 63 vouchers share -1.283253,36.817245 in the real catalog.
-    const stacks = groupByCoordinate([
+    const stacks = groupByProximity([
       at("1", -1.283253, 36.817245),
       at("2", -1.283253, 36.817245),
       at("3", -1.283253, 36.817245),
@@ -36,8 +36,8 @@ describe("groupByCoordinate", () => {
   });
 
   it("keeps near-but-distinct coordinates apart", () => {
-    // ~6 m apart in the real Kilifi North data; separable by zooming.
-    const stacks = groupByCoordinate([
+    // ~150 m apart in the real Kilifi North data; separable by zooming.
+    const stacks = groupByProximity([
       at("1", -3.6789944, 39.8335828),
       at("2", -3.6789434, 39.8349467),
     ]);
@@ -45,8 +45,39 @@ describe("groupByCoordinate", () => {
     expect(stacks).toHaveLength(2);
   });
 
+  it("stacks vouchers pinned a fraction of a metre apart", () => {
+    // The real Kilifi North trio. NJMN and NJMN2 share a coordinate exactly;
+    // WCHK is 0.34 m away, which is under five pixels at MAP_MAX_ZOOM. Grouped
+    // on the exact coordinate it became a second stack and was drawn — and
+    // tapped — underneath the pair's badge, so it never appeared on the map.
+    const stacks = groupByProximity([
+      at("WCHK", -3.6844169, 39.8327649),
+      at("NJMN2", -3.684415, 39.8327673),
+      at("NJMN", -3.684415, 39.8327673),
+    ]);
+
+    expect(stacks).toHaveLength(1);
+    expect(stacks[0]?.members.map((member) => member.id)).toEqual(["WCHK", "NJMN2", "NJMN"]);
+  });
+
+  it("keeps vouchers a marker's width apart in separate stacks", () => {
+    // 10 m north: two clear markers once the map is zoomed in.
+    const stacks = groupByProximity([
+      at("1", -3.684415, 39.8327673),
+      at("2", -3.6843252, 39.8327673),
+    ]);
+
+    expect(stacks).toHaveLength(2);
+  });
+
+  it("still groups at the poles, where Mercator has no value", () => {
+    const stacks = groupByProximity([at("1", 90, 0), at("2", 90, 0), at("3", -90, 0)]);
+
+    expect(stacks.map((stack) => stack.members.length)).toEqual([2, 1]);
+  });
+
   it("preserves input order of both stacks and members", () => {
-    const stacks = groupByCoordinate([at("a", 1, 1), at("b", 2, 2), at("c", 1, 1), at("d", 2, 2)]);
+    const stacks = groupByProximity([at("a", 1, 1), at("b", 2, 2), at("c", 1, 1), at("d", 2, 2)]);
 
     expect(stacks.map((stack) => stack.members.map((member) => member.id))).toEqual([
       ["a", "c"],
@@ -55,20 +86,20 @@ describe("groupByCoordinate", () => {
   });
 
   it("gives every stack a stable key derived from its coordinate", () => {
-    const first = groupByCoordinate([at("1", -1.283253, 36.817245)]);
-    const second = groupByCoordinate([at("2", -1.283253, 36.817245)]);
+    const first = groupByProximity([at("1", -1.283253, 36.817245)]);
+    const second = groupByProximity([at("2", -1.283253, 36.817245)]);
 
     expect(first[0]?.key).toBe(second[0]?.key);
   });
 
   it("does not confuse a swapped latitude and longitude", () => {
-    const stacks = groupByCoordinate([at("1", 10, 20), at("2", 20, 10)]);
+    const stacks = groupByProximity([at("1", 10, 20), at("2", 20, 10)]);
 
     expect(stacks).toHaveLength(2);
   });
 
   it("handles an empty catalog", () => {
-    expect(groupByCoordinate([])).toEqual([]);
+    expect(groupByProximity([])).toEqual([]);
   });
 });
 
