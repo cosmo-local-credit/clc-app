@@ -20,3 +20,11 @@ export type MarketLocation = {
 };
 
 export const MARKET_SOURCE_ID = "market-vouchers";
+
+/**
+ * The deepest zoom the map allows.
+ *
+ * It is also the yardstick for grouping: two markers that still overlap here
+ * can never be separated by zooming, so they are stacked instead.
+ */
+export const MAP_MAX_ZOOM = 20;
