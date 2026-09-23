@@ -41,8 +41,8 @@ export type PaperWalletCsvResult =
 
 export const PAPER_WALLET_CSV_TEMPLATE =
   "name,email,phone,country,currency\n" +
-  "Amina Njeri,amina@example.com,+254712345678,KE,KES\n" +
-  "Baraka Otieno,,+254722000111,KE,\n";
+  "Jane Doe,jane.doe@example.com,+254712345678,KE,KES\n" +
+  "John Doe,,+254722000111,KE,\n";
 
 const HEADER_ALIASES: Record<string, keyof PaperWalletRecipient> = {
   name: "name",

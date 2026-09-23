@@ -324,9 +324,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           <aside className="xl:sticky xl:top-6 xl:self-start">
             <CardPreview
               name={
-                search.source === "blank"
-                  ? printedName.trim()
-                  : (recipients[0]?.name ?? "Amina Njeri")
+                search.source === "blank" ? printedName.trim() : (recipients[0]?.name ?? "Jane Doe")
               }
               design={design}
             />

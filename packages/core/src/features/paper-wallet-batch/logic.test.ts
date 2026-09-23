@@ -22,7 +22,7 @@ describe("parsePaperWalletCsv", () => {
     expect(result.rows).toHaveLength(2);
     expect(result.rows.every((row) => row.errors.length === 0)).toBe(true);
     expect(result.rows[1]?.recipient).toEqual({
-      name: "Baraka Otieno",
+      name: "John Doe",
       email: "",
       phone: "+254722000111",
       country: "KE",
