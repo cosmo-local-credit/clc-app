@@ -119,4 +119,65 @@ describe("ActivityPage", () => {
       ),
     );
   });
+
+  it("marks only the transfers that carry a private message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              ok: true,
+              result: {
+                transfers: [
+                  {
+                    id: 743839,
+                    txHash: "0xf6c12f66ae53435466ec44f33c7b981476f26779e93c725eb7b2afdf52577fcc",
+                    dateBlock: "2026-07-01T12:20:29Z",
+                    direction: "IN",
+                    counterpartyAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                    senderAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                    recipientAddress: ADDRESS,
+                    tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+                    tokenSymbol: "USD₮",
+                    tokenName: "Tether USD",
+                    tokenDecimals: 6,
+                    amount: "1234567",
+                    success: true,
+                    hasNote: true,
+                  },
+                  {
+                    id: 743838,
+                    txHash: "0x0ab4f0dd3a4f4a2f8a0b6f1dbe0b5a0c1b2d3e4f5061728394a5b6c7d8e9f001",
+                    dateBlock: "2026-07-01T11:02:14Z",
+                    direction: "OUT",
+                    counterpartyAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                    senderAddress: ADDRESS,
+                    recipientAddress: "0x27c1B2724F9075878b5A8D19B1b056c72C16c8E4",
+                    tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+                    tokenSymbol: "USD₮",
+                    tokenName: "Tether USD",
+                    tokenDecimals: 6,
+                    amount: "500000",
+                    success: true,
+                    hasNote: false,
+                  },
+                ],
+              },
+            }),
+          ),
+      }),
+    );
+
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+    // The badge is decorative, so the row's accessible name is what a screen
+    // reader gets and what this asserts on.
+    expect(await screen.findByRole("button", { name: /received.*has a message/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^sent/i })).toBeTruthy();
+    expect(screen.getAllByText("Has a message")).toHaveLength(1);
+  });
 });
