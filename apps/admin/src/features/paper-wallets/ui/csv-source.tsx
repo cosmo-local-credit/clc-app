@@ -74,13 +74,6 @@ export function CsvSource({
   return (
     <div className="space-y-4">
       <SectionLabel>Recipients</SectionLabel>
-      <p className="text-muted-foreground text-sm">
-        One row per wallet. Every column is optional: <span className="font-mono">name</span>,{" "}
-        <span className="font-mono">email</span>, <span className="font-mono">phone</span>{" "}
-        (international format), <span className="font-mono">country</span> (two letters) and{" "}
-        <span className="font-mono">currency</span> (ISO code). Holders add anything missing,
-        including their photo, after they sign in.
-      </p>
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
           <HiOutlineUpload />

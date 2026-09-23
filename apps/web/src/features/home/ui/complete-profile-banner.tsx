@@ -20,7 +20,7 @@ const DISMISSED_KEY = "profile-nudge.dismissed";
  * account, since one phone may serve several people.
  */
 export function CompleteProfileBanner({ address }: { address?: string }) {
-  const { t, i18n } = useLingui();
+  const { t } = useLingui();
   const profile = useAuthProfile();
   const owner = address?.toLowerCase();
   const [dismissed, setDismissed] = useState(
@@ -31,27 +31,17 @@ export function CompleteProfileBanner({ address }: { address?: string }) {
   const gaps = profileGaps(profile.data);
   if (!hasProfileGaps(gaps)) return null;
 
-  const missing = [
-    gaps.name ? t`your name` : null,
-    gaps.avatar ? t`a profile photo` : null,
-    gaps.contact ? t`an email or phone number` : null,
-  ].filter((item): item is string => item !== null);
-  const missingList = new Intl.ListFormat(i18n.locale, { type: "conjunction" }).format(missing);
-
   return (
     <section
       aria-label={t`Complete your profile`}
       className="flex items-start gap-3 border border-border bg-card p-4"
     >
       <RiUserSettingsLine className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
-      <div className="min-w-0 flex-1 space-y-2">
+      <div className="min-w-0 flex-1">
         <p className="font-medium text-sm">
           <Trans>Complete your profile</Trans>
         </p>
-        <p className="text-muted-foreground text-xs">
-          <Trans>Add {missingList} so people in your community can recognise you.</Trans>
-        </p>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="mt-2">
           <Link to="/settings/profile">
             <Trans>Edit profile</Trans>
           </Link>

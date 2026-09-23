@@ -307,9 +307,6 @@ export function usePaperWalletSetup({
           {t`Print`}
         </Button>
       </div>
-      <p className="text-muted-foreground mt-2 text-xs">
-        {t`Print saves an A4 PDF with cut marks. Print it at 100% scale for a bank-card sized wallet.`}
-      </p>
       {shareSupported ? (
         <Button
           variant="outline"

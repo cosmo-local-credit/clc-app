@@ -109,8 +109,7 @@ export function BatchResults({
           </p>
           {phase === "done" && !pdfDownloaded ? (
             <p className="text-muted-foreground text-xs">
-              The keys exist only in this tab. Download the PDF before leaving the page — they
-              cannot be recovered afterwards.
+              Download the PDF before leaving. Keys cannot be recovered.
             </p>
           ) : null}
         </div>

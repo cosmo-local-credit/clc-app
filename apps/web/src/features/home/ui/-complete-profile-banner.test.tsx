@@ -29,9 +29,6 @@ describe("CompleteProfileBanner", () => {
     render(<CompleteProfileBanner address={ADDRESS} />);
 
     expect(screen.getByText("Complete your profile")).toBeTruthy();
-    expect(
-      screen.getByText(/your name, a profile photo, and an email or phone number/),
-    ).toBeTruthy();
     expect(screen.getByRole("link", { name: "Edit profile" }).getAttribute("href")).toBe(
       "/settings/profile",
     );

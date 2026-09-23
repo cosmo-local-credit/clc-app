@@ -144,16 +144,10 @@ export function OnboardingProfileForm({
 
         <StepProgress step={progressStep} total={progressTotal} />
 
-        <div className="mb-4 space-y-1">
+        <div className="mb-4">
           <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Create your account</Trans>
           </h1>
-          <p className="text-muted-foreground text-sm">
-            <Trans>
-              Name, photo, location, and preferred currency are required. Provide an email address
-              or phone number. Bio and website are optional.
-            </Trans>
-          </p>
         </div>
 
         <form

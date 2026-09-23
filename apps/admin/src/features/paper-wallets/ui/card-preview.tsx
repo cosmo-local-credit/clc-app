@@ -46,10 +46,7 @@ export function CardPreview({ name, design }: { name: string; design: PaperWalle
           />
         </div>
       </div>
-      <p className="text-muted-foreground text-xs">
-        Printed at 85.6 × 54 mm, ten to an A4 sheet, with crop marks for a trimmer. Print at 100%
-        scale (not “fit to page”).
-      </p>
+      <p className="text-muted-foreground text-xs">Print at 100% scale.</p>
     </div>
   );
 }

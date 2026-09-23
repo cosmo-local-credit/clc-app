@@ -50,8 +50,7 @@ export function ProtectionFields({
       {value.kind === "password" ? (
         <>
           <p className="text-muted-foreground text-sm">
-            Every card in this batch is encrypted with one password. Holders enter it the first time
-            they scan their card, so share it with them in person — it is not stored anywhere.
+            Share this password separately. It is not stored.
           </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -78,8 +77,7 @@ export function ProtectionFields({
         </>
       ) : (
         <p className="text-sm text-amber-700 dark:text-amber-400">
-          The QR holds the raw private key. Anyone who scans or photographs a card controls that
-          wallet — treat printed sheets like cash.
+          Anyone with this QR code controls the wallet.
         </p>
       )}
     </div>

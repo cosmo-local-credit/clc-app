@@ -12,9 +12,9 @@ import { toast } from "sonner";
 import { PageHeader } from "#/components/admin/page-header";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
-import { Switch } from "#/components/ui/switch";
 import { Tabs, TabsList, TabsTab } from "#/components/ui/tabs";
 import { isModifiedClick } from "#/lib/tab-navigation";
 import { downloadBlob } from "./download";
@@ -160,10 +160,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Paper wallets"
-        description="Issue printable, pre-approved wallets in bulk. Each card is a bank-card sized QR that signs its holder in; they complete their profile, photo included, after the first scan."
-      />
+      <PageHeader title="Paper wallets" />
 
       {batch.phase !== "idle" ? (
         <BatchResults
@@ -180,7 +177,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
         />
       ) : (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="flex min-w-0 flex-col gap-6">
+          <div className="xl:col-span-2">
             <Tabs
               value={search.source}
               onValueChange={(next) => {
@@ -213,15 +210,13 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
                 ))}
               </TabsList>
             </Tabs>
+          </div>
 
+          <div className="flex min-w-0 flex-col gap-6">
             <section className="space-y-4 border border-border bg-card p-4">
               {search.source === "blank" ? (
                 <>
                   <SectionLabel>Wallets</SectionLabel>
-                  <p className="text-muted-foreground text-sm">
-                    Blank cards carry no personal details. Holders fill in their name, contact and
-                    photo after they sign in.
-                  </p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="paper-wallet-count">Number of wallets</Label>
@@ -269,14 +264,17 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
             </section>
 
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
+              <label
+                htmlFor="paper-wallet-hairlines"
+                className="flex min-h-9 cursor-pointer items-center gap-2 text-sm"
+              >
+                <Checkbox
                   id="paper-wallet-hairlines"
                   checked={hairlines}
-                  onCheckedChange={setHairlines}
+                  onCheckedChange={(checked) => setHairlines(checked === true)}
                 />
-                <Label htmlFor="paper-wallet-hairlines">Print cut lines between cards</Label>
-              </div>
+                Print cut lines between cards
+              </label>
               <div className="flex items-center gap-3">
                 {passwordError && protection.passphrase ? (
                   <p className="text-destructive text-xs">{passwordError}</p>
