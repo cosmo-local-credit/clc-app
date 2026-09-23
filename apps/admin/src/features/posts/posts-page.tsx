@@ -295,11 +295,6 @@ export function PostsPage({ search }: { search: PostSearch }) {
       ) : (
         <>
           {listState.kind === "stale" ? <StaleNotice message={listState.message} /> : null}
-          {/* Sorting reorders the fetched page only: no report endpoint accepts
-              a sort parameter yet. */}
-          <p className="text-muted-foreground text-xs">
-            Ordered by latest activity. Column sorting applies to this page only.
-          </p>
           <DataTable
             columns={columns}
             data={posts}
