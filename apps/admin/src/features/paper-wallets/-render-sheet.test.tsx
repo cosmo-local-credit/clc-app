@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const mocks = vi.hoisted(() => ({ toJpeg: vi.fn(), getFontEmbedCSS: vi.fn() }));
+const mocks = vi.hoisted(() => ({ toJpeg: vi.fn() }));
 vi.mock("html-to-image", () => mocks);
 
-import { clampLines, fontFacesCovering, renderPaperWalletSheet } from "./render-sheet";
+import { fontFacesCovering } from "./font-embed";
+import { clampLines, renderPaperWalletSheet } from "./render-sheet";
 import { PAPER_WALLET_NAME_TEXT } from "./ui/paper-wallet-card";
 
 /** A valid 1 x 1 RGB JPEG header carrying `padding` bytes in an APP1 segment. */
@@ -65,7 +66,6 @@ describe("renderPaperWalletSheet", () => {
   beforeEach(() => {
     toBlobCalls.mockClear();
     mocks.toJpeg.mockReset().mockResolvedValue(dataUrl(jpeg(BACKGROUND_BYTES)));
-    mocks.getFontEmbedCSS.mockReset().mockResolvedValue("");
     stubCanvas();
     vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation((callback) => {
       toBlobCalls();
@@ -87,7 +87,6 @@ describe("renderPaperWalletSheet", () => {
     const blob = await renderPaperWalletSheet(fullBatch, DESIGN, { hairlines: true, onProgress });
 
     expect(mocks.toJpeg).toHaveBeenCalledTimes(1);
-    expect(mocks.getFontEmbedCSS).toHaveBeenCalledTimes(1);
     expect(onProgress).toHaveBeenLastCalledWith(500);
 
     const body = await pdfText(blob);

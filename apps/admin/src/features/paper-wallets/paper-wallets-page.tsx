@@ -7,6 +7,7 @@ import {
 } from "@clc/core/features/paper-wallet-batch/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { toast } from "sonner";
 
 import { PageHeader } from "#/components/admin/page-header";
@@ -36,6 +37,27 @@ const SOURCE_LABELS: Record<PaperWalletSource, string> = {
   blank: "Blank wallets",
   csv: "From CSV",
 };
+
+/** Give React's new progress state a browser paint before export work begins. */
+function afterProgressPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestAnimationFrame === "function") {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const fallback = window.setTimeout(finish, 1000);
+      requestAnimationFrame(() => {
+        window.clearTimeout(fallback);
+        window.setTimeout(finish, 0);
+      });
+    } else {
+      window.setTimeout(resolve, 0);
+    }
+  });
+}
 
 /**
  * Bulk paper wallet issuance.
@@ -104,9 +126,12 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
 
   async function downloadPdf() {
     const ready = batch.wallets.filter((wallet) => wallet.status === "ready");
-    setRenderStage("preparing");
-    setRendered(0);
+    flushSync(() => {
+      setRenderStage("preparing");
+      setRendered(0);
+    });
     try {
+      await afterProgressPaint();
       const blob = await renderPaperWalletSheet(
         ready.map((wallet) => ({
           address: wallet.address,

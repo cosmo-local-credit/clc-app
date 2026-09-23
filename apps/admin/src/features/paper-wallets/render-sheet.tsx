@@ -5,11 +5,12 @@ import {
   PAPER_WALLET_CARD_HEIGHT,
   PAPER_WALLET_CARD_WIDTH,
 } from "@clc/core/features/wallet/paper-wallet-sheet";
-import { getFontEmbedCSS, toJpeg } from "html-to-image";
+import { toJpeg } from "html-to-image";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 
 import { assemblePaperWalletPdfInWorker, type PreparedCard } from "./assemble-pdf";
+import { embedCardFonts } from "./font-embed";
 import {
   type CardTextStyle,
   PAPER_WALLET_ADDRESS_TEXT,
@@ -111,9 +112,8 @@ export async function renderPaperWalletSheet(
     );
     // Only the design's own text is painted into the background; the wallet
     // text is drawn from the document's fonts, which are already loaded.
-    fontEmbedCSS ??= fontFacesCovering(
-      await getFontEmbedCSS(card),
-      `${design.website}${design.description}Name`,
+    fontEmbedCSS ??= await embedCardFonts(
+      `${design.website}${design.description}Name${SAMPLE_ADDRESS}M`,
     );
 
     const origin = card.getBoundingClientRect();
@@ -247,28 +247,6 @@ export function clampLines(
     graphemes.pop();
   }
   return [...lines.slice(0, maxLines - 1).map((line) => line.text.trimEnd()), ellipsized()];
-}
-
-/**
- * The `@font-face` rules in `css` whose unicode-range covers a character of
- * `text`. Fontsource declares a rule per script — latin, cyrillic, greek,
- * vietnamese — and html-to-image would otherwise inline all of them.
- */
-export function fontFacesCovering(css: string, text: string): string {
-  const codePoints = Array.from(new Set(text), (char) => char.codePointAt(0) ?? 0);
-  return css
-    .split(/(?=@font-face)/)
-    .filter((rule) => {
-      const ranges = /unicode-range:\s*([^;}]+)/.exec(rule)?.[1];
-      if (!ranges) return true;
-      return ranges.split(",").some((range) => {
-        const [low = "", high = low] = range.trim().replace(/^U\+/i, "").split("-");
-        const from = Number.parseInt(low.replaceAll("?", "0"), 16);
-        const to = Number.parseInt(high.replaceAll("?", "F"), 16);
-        return codePoints.some((point) => point >= from && point <= to);
-      });
-    })
-    .join("");
 }
 
 function canvasFont(text: CardTextStyle): string {

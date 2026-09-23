@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { BatchWallet } from "./use-paper-wallet-batch";
@@ -108,6 +108,8 @@ describe("PaperWalletsPage", () => {
 
     expect(screen.getByText("Preparing card design…")).toBeTruthy();
     expect(screen.getByRole("progressbar", { name: "PDF generation" })).toBeTruthy();
+    expect(mocks.renderSheet).not.toHaveBeenCalled();
+    await waitFor(() => expect(mocks.renderSheet).toHaveBeenCalledTimes(1));
     const options = mocks.renderSheet.mock.calls[0]?.[2];
     act(() => {
       options.onProgress(1);
