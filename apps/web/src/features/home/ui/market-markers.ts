@@ -34,7 +34,7 @@ const GLYPH_FRACTION = 0.52;
  *
  * Goods is red, services is purple, and a voucher with no offerings is orange.
  * These stay off `--primary`: the live-location dot owns the brand colour
- * (green on prod, blue on staging), and an oklch token painted onto a canvas
+ * (green on prod, red on staging), and an oklch token painted onto a canvas
  * is silently ignored by older implementations. Hex is the colour the marker
  * actually draws.
  */

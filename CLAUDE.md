@@ -269,7 +269,7 @@ buttons) placed on the gray page background — they become invisible.
 Desktop-first back office for stewards and operators. Look and feel is drawn
 from `~/wafer-labs/wafer-ui` (unrelated project, same stack): **Lyra** — square
 corners, dense zinc surfaces, mono numerals, restrained status colour. `--primary`
-follows `VITE_BRAND` (green on prod, blue on staging) so both apps on one
+follows `VITE_BRAND` (green on prod, red on staging) so both apps on one
 environment read as one product.
 
 What differs from `apps/web`:
@@ -358,7 +358,7 @@ file's `name` binds it to one project:
 | Admin host                 | `admin.cosmolocal.credit`   | `admin.test.cosmolocal.credit`     |
 | API                        | `api.cosmolocal.credit`     | `gnosis-staging.cosmolocal.credit` |
 | Storage                    | `storage.cosmolocal.credit` | `gnosis-storage.cosmolocal.credit` |
-| `VITE_BRAND`               | `prod` (green)              | `staging` (blue)                   |
+| `VITE_BRAND`               | `prod` (green)              | `staging` (red)                    |
 | `VITE_FULL_REACT_ERRORS`   | `false`                     | `true`                             |
 | Relying party              | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
 
@@ -368,7 +368,7 @@ rewrite the Wrangler `name` and URLs in the same push so HEAD is always valid
 for that branch.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
-Green is the product brand (prod); blue marks staging.
+Green is the product brand (prod); red marks staging.
 
 #### The brand reaches past CSS — icons, manifest, status bar
 
@@ -377,7 +377,7 @@ outside the page — home-screen icon, install splash, task switcher, Android
 status bar, browser tab — names a colour in sRGB and has to be selected by the
 build. The palette is one table, `BRAND_PRIMARY_COLOR` in
 `@clc/core/lib/constants/brand`, resolved by each app's `#/lib/brand` through
-`resolveBrand`. Nothing else may hardcode `#007a55` or `#1762b8`, and unset
+`resolveBrand`. Nothing else may hardcode `#007a55` or `#e7000b`, and unset
 `VITE_BRAND` is prod: a misconfigured production deploy must not look like
 staging.
 
@@ -406,7 +406,7 @@ mark. `apps/admin` uses the square tile (`rx="0"`) and needs only `logo.svg` and
 
 **Do not patch `public/` after the build.** The previous mechanism rewrote
 `manifest.json`'s `theme_color` in a `closeBundle` hook; Nitro copies `public/`
-into the output later, so the file was still green in a blue staging build while
+into the output later, so the file was still green in a staging build while
 the `<head>` meta was correct. `apps/web/src/lib/-brand.test.ts` pins the
 manifests to the palette so that cannot come back.
 
