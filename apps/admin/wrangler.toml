@@ -40,7 +40,7 @@
 # `pages_build_output_dir` is overridden and ignored. That key is kept anyway
 # because Wrangler requires it in a Pages config, and a manual
 # `wrangler pages deploy -c apps/admin/wrangler.toml` reads it relative to here.
-name = "clc-admin-gnosis"
+name = "clc-admin"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-05-25"
 compatibility_flags = ["nodejs_compat"]
@@ -72,12 +72,12 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 # ─── Per environment ─────────────────────────────────────────────────────────
 # The only lines that differ between develop and master. Keep them in this block.
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
-VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
-VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
-VITE_RELYING_PARTY_ID = "test.cosmolocal.credit"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_API_URL = "https://api.cosmolocal.credit"
+VITE_BRAND = "prod"
+VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
+VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
+VITE_RELYING_PARTY_ID = "cosmolocal.credit"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
 # ─── Shared ──────────────────────────────────────────────────────────────────
 # Identical on develop and master. Add new variables here, not above.
@@ -89,12 +89,12 @@ VITE_MAPTILER_KEY = "HJ3ZCTfCnAxQ6EOKlSgl"
 [env.preview.vars]
 # ─── Per environment ─────────────────────────────────────────────────────────
 # The only lines that differ between develop and master. Keep them in this block.
-VITE_API_URL = "https://gnosis-staging.cosmolocal.credit"
-VITE_BRAND = "staging"
-VITE_PAPER_WALLET_ORIGIN = "https://test.cosmolocal.credit"
-VITE_RELAYER_URL = "https://gnosis-staging.cosmolocal.credit/api/v2/relayer"
-VITE_RELYING_PARTY_ID = "clc-admin-gnosis.pages.dev"
-VITE_STORAGE_URL = "https://gnosis-storage.cosmolocal.credit"
+VITE_API_URL = "https://api.cosmolocal.credit"
+VITE_BRAND = "prod"
+VITE_PAPER_WALLET_ORIGIN = "https://app.cosmolocal.credit"
+VITE_RELAYER_URL = "https://api.cosmolocal.credit/api/v2/relayer"
+VITE_RELYING_PARTY_ID = "clc-admin.pages.dev"
+VITE_STORAGE_URL = "https://storage.cosmolocal.credit"
 
 # ─── Shared ──────────────────────────────────────────────────────────────────
 # Identical on develop and master. Add new variables here, not above.
