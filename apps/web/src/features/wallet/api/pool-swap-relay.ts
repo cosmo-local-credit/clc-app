@@ -11,6 +11,7 @@ import type { RelayerClient } from "@clc/api/features/relayer/client";
 
 type RelayPoolBatchOptions = {
   senderAddress: `0x${string}`;
+  connectorId: string | undefined;
   includeAuthorization?: boolean;
   deadline?: string;
 };
@@ -86,6 +87,7 @@ function relayPoolCalls(
   return relayCaliburBatch(
     {
       senderAddress: input.senderAddress,
+      connectorId: input.connectorId,
       calls,
       includeAuthorization: input.includeAuthorization,
       deadline: input.deadline,

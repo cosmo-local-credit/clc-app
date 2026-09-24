@@ -50,7 +50,13 @@ describe("relayCaliburBatch", () => {
 
     await expect(
       relayCaliburBatch(
-        { senderAddress: USER, calls: CALLS, includeAuthorization: true, deadline: "123" },
+        {
+          senderAddress: USER,
+          connectorId: "private-key",
+          calls: CALLS,
+          includeAuthorization: true,
+          deadline: "123",
+        },
         client,
       ),
     ).resolves.toEqual({ trackingId: "tracking-1", signatureType: "secp256k1" });
@@ -107,7 +113,15 @@ describe("relayCaliburBatch", () => {
     });
 
     await expect(
-      relayCaliburBatch({ senderAddress: USER, calls: CALLS, includeAuthorization: true }, client),
+      relayCaliburBatch(
+        {
+          senderAddress: USER,
+          connectorId: "calibur-webauthn",
+          calls: CALLS,
+          includeAuthorization: true,
+        },
+        client,
+      ),
     ).resolves.toEqual({ trackingId: "tracking-1", signatureType: "webauthn" });
 
     expect(client.getEOANonce).not.toHaveBeenCalled();
@@ -134,5 +148,38 @@ describe("relayCaliburBatch", () => {
         authorization: undefined,
       }),
     );
+  });
+
+  // A passkey linked from a paper-wallet session is stored before the connector
+  // switch completes. If that switch fails, the session is still the paper
+  // wallet's, and a credential on disk must not change how it signs.
+  it("keeps signing with the paper key while connected through it, even with a passkey stored", async () => {
+    const client = createClientStub();
+    storePrivateKey(PRIVATE_KEY);
+    storeWebAuthnCredential({
+      credentialId: "AQIDBA",
+      keyHash: `0x${"aa".repeat(32)}`,
+      publicKeyX: "1",
+      publicKeyY: "2",
+      address: USER,
+    });
+
+    await expect(
+      relayCaliburBatch({ senderAddress: USER, connectorId: "private-key", calls: CALLS }, client),
+    ).resolves.toEqual({ trackingId: "tracking-1", signatureType: "secp256k1" });
+    expect(requestWebAuthnAssertion).not.toHaveBeenCalled();
+    expect(client.relay).toHaveBeenCalledWith(
+      expect.objectContaining({ signatureType: "secp256k1" }),
+    );
+  });
+
+  it("refuses to sign without a connected wallet", async () => {
+    const client = createClientStub();
+    storePrivateKey(PRIVATE_KEY);
+
+    await expect(
+      relayCaliburBatch({ senderAddress: USER, connectorId: undefined, calls: CALLS }, client),
+    ).rejects.toThrow(/no wallet is connected/i);
+    expect(client.relay).not.toHaveBeenCalled();
   });
 });
