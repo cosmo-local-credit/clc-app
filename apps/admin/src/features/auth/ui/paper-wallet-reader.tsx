@@ -6,8 +6,8 @@
  * machine than to hold it up to a webcam. Camera is offered second for the case
  * where they do.
  *
- * `html5-qrcode` is imported lazily. It is the largest dependency this route
- * touches, and an operator signing in with a passkey never needs it.
+ * Decoding is zxing-wasm, whose binary is fetched on the first scan, so an
+ * operator signing in with a passkey never downloads it.
  *
  * apps/web has its own scanner. That one is phone-shaped — it prefers the rear
  * camera, its controls are 44px touch targets, and its copy goes through lingui.
@@ -15,16 +15,14 @@
  * decode is a browser capability an app owns.
  */
 
-import { type ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { FiCamera, FiLoader, FiUpload } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
-
-type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
+import { QrCameraError, startQrCamera } from "#/lib/qr-camera";
+import { decodeQrImageFile } from "#/lib/qr-decode";
 
 type ReaderMode = "choose" | "camera";
-
-const READER_ELEMENT_ID = "admin-paper-wallet-reader";
 
 export function PaperWalletReader({
   onDecoded,
@@ -36,27 +34,63 @@ export function PaperWalletReader({
   const [mode, setMode] = useState<ReaderMode>("choose");
   const [error, setError] = useState<string | null>(null);
   const [cameraStarting, setCameraStarting] = useState(false);
-  const readerRef = useRef<Html5QrcodeType | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Incremented on teardown. In-flight async work captures the current epoch and
-  // bails out when it no longer matches, so a decode that resolves after the
-  // operator moved on cannot sign them in.
+  // Incremented on teardown. An in-flight upload decode captures the current
+  // epoch and bails out when it no longer matches, so a decode that resolves
+  // after the operator moved on cannot sign them in.
   const epochRef = useRef(0);
 
   useEffect(() => {
     return () => {
       epochRef.current += 1;
-      teardown(readerRef.current);
-      readerRef.current = null;
     };
   }, []);
 
+  const onCameraDecoded = useEffectEvent((text: string) => {
+    setMode("choose");
+    onDecoded(text);
+  });
+
+  const onCameraError = useEffectEvent((err: unknown) => {
+    const kind = err instanceof QrCameraError ? err.kind : "failed";
+    setMode("choose");
+    setError(
+      kind === "denied"
+        ? "Camera access was denied. Upload an image of the wallet instead."
+        : kind === "no-camera"
+          ? "No camera found on this machine. Upload an image instead."
+          : "Could not start the camera. Upload an image of the wallet instead.",
+    );
+  });
+
+  // The camera runs exactly while camera mode is shown. Leaving the mode or
+  // unmounting aborts it, which releases the stream wherever it has got to.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "camera" || !video) return;
+
+    const controller = new AbortController();
+    setCameraStarting(true);
+    // No facingMode: a desktop has one webcam facing the operator, and that is
+    // the one they will hold the wallet up to.
+    startQrCamera(video, { onDecoded: onCameraDecoded, signal: controller.signal })
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) onCameraError(err);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCameraStarting(false);
+      });
+
+    return () => {
+      controller.abort();
+      setCameraStarting(false);
+    };
+  }, [mode]);
+
   const stopCamera = useCallback(() => {
     epochRef.current += 1;
-    teardown(readerRef.current);
-    readerRef.current = null;
-    setCameraStarting(false);
     setMode("choose");
   }, []);
 
@@ -68,92 +102,44 @@ export function PaperWalletReader({
       setError(null);
       const epoch = ++epochRef.current;
 
-      const { Html5Qrcode } = await import("html5-qrcode");
-      if (epochRef.current !== epoch) return;
-
-      const reader = new Html5Qrcode(READER_ELEMENT_ID);
-      readerRef.current = reader;
-
       try {
-        const decoded = await reader.scanFile(file, false);
+        const decoded = await decodeQrImageFile(file);
         if (epochRef.current !== epoch) return;
+        if (decoded === null) throw new Error("No QR code in image");
         onDecoded(decoded);
       } catch {
         if (epochRef.current !== epoch) return;
         setError("No QR code found in that image. Try a clearer scan or photo.");
       } finally {
-        if (epochRef.current === epoch) {
-          readerRef.current = null;
-          // Cleared so selecting the same file again re-fires onChange.
-          if (fileInputRef.current) fileInputRef.current.value = "";
-        }
+        // Cleared so selecting the same file again re-fires onChange.
+        if (epochRef.current === epoch && fileInputRef.current) fileInputRef.current.value = "";
       }
     },
     [onDecoded],
   );
 
-  const handleCamera = useCallback(async () => {
+  const handleCamera = useCallback(() => {
     setError(null);
-    setCameraStarting(true);
     setMode("camera");
-    const epoch = ++epochRef.current;
-
-    const { Html5Qrcode } = await import("html5-qrcode");
-    if (epochRef.current !== epoch) return;
-
-    const reader = new Html5Qrcode(READER_ELEMENT_ID);
-    readerRef.current = reader;
-
-    try {
-      const cameras = await Html5Qrcode.getCameras();
-      if (epochRef.current !== epoch) return;
-
-      if (!cameras.length) {
-        setError("No camera found on this machine. Upload an image instead.");
-        setMode("choose");
-        return;
-      }
-
-      // First device, not a rear-camera search: a desktop has one webcam facing
-      // the operator, and that is the one they will hold the wallet up to.
-      await reader.start(
-        cameras[0].id,
-        { fps: 10, qrbox: { width: 260, height: 260 } },
-        (decodedText) => {
-          if (epochRef.current !== epoch) return;
-          onDecoded(decodedText);
-          void reader.stop().then(() => reader.clear());
-          readerRef.current = null;
-        },
-        () => {},
-      );
-    } catch (err) {
-      if (epochRef.current !== epoch) return;
-      readerRef.current = null;
-      setMode("choose");
-      setError(
-        err instanceof DOMException && err.name === "NotAllowedError"
-          ? "Camera access was denied. Upload an image of the wallet instead."
-          : "Could not start the camera. Upload an image of the wallet instead.",
-      );
-    } finally {
-      if (epochRef.current === epoch) setCameraStarting(false);
-    }
-  }, [onDecoded]);
+  }, []);
 
   return (
     <div className="space-y-3">
-      {/*
-        Mount point for html5-qrcode. Kept in the DOM while choosing, because
-        scanFile needs the element to attach its canvas to.
-      */}
-      <div
-        id={READER_ELEMENT_ID}
-        className={mode === "camera" ? "border-border bg-muted border" : "sr-only size-0"}
-      />
-
       {mode === "camera" ? (
         <div className="space-y-3">
+          <div className="border-border relative flex aspect-video items-center justify-center overflow-hidden border bg-black">
+            <video
+              ref={videoRef}
+              className="absolute inset-0 size-full object-contain"
+              muted
+              playsInline
+              aria-hidden
+            />
+            {cameraStarting ? null : (
+              // An aiming guide only: the whole frame is read.
+              <div className="relative aspect-square h-3/5 border-2 border-white/90 shadow-[0_0_0_9999px_rgb(0_0_0/0.4)]" />
+            )}
+          </div>
           {cameraStarting ? (
             <div className="border-border bg-card text-muted-foreground flex h-16 items-center justify-center gap-2 border text-sm">
               <FiLoader className="size-4 animate-spin" />
@@ -186,12 +172,7 @@ export function PaperWalletReader({
             <FiUpload />
             Upload paper wallet image
           </Button>
-          <Button
-            variant="outline"
-            className="w-full"
-            disabled={disabled}
-            onClick={() => void handleCamera()}
-          >
+          <Button variant="outline" className="w-full" disabled={disabled} onClick={handleCamera}>
             <FiCamera />
             Scan with camera
           </Button>
@@ -205,18 +186,4 @@ export function PaperWalletReader({
       ) : null}
     </div>
   );
-}
-
-function teardown(reader: Html5QrcodeType | null) {
-  if (!reader) return;
-  if (reader.isScanning) {
-    reader
-      .stop()
-      .then(() => reader.clear())
-      .catch(() => {});
-    return;
-  }
-  try {
-    reader.clear();
-  } catch {}
 }
