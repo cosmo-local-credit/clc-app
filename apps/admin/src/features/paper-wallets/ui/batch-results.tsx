@@ -74,6 +74,7 @@ export function BatchResults({
   wallets,
   phase,
   encrypted,
+  toEncrypt,
   renderStage,
   rendered,
   pdfDownloaded,
@@ -85,6 +86,7 @@ export function BatchResults({
   wallets: BatchWallet[];
   phase: BatchPhase;
   encrypted: number;
+  toEncrypt: number;
   renderStage: "preparing" | "cards" | "assembling" | null;
   rendered: number;
   pdfDownloaded: boolean;
@@ -100,7 +102,7 @@ export function BatchResults({
 
   const progress =
     phase === "encrypting"
-      ? `Encrypting keys… ${encrypted} / ${wallets.length}`
+      ? `Encrypting keys… ${encrypted} / ${toEncrypt}`
       : phase === "registering"
         ? `Registering accounts… ${ready + failed} / ${wallets.length}`
         : renderStage === "preparing"

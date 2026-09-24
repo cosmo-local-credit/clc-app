@@ -32,19 +32,23 @@ export type PaperWalletCsvRow = {
   /** 1-based line in the file, for pointing an operator at the bad row. */
   line: number;
   recipient: PaperWalletRecipient;
+  /** BIP38 passphrase for this card's QR; empty prints the raw key. */
+  password: string;
   errors: string[];
 };
+
+const MIN_PAPER_WALLET_PASSWORD = 6;
 
 export type PaperWalletCsvResult =
   | { ok: true; rows: PaperWalletCsvRow[] }
   | { ok: false; error: string };
 
 export const PAPER_WALLET_CSV_TEMPLATE =
-  "name,email,phone,country,currency\n" +
-  "Jane Doe,jane.doe@example.com,+254712345678,KE,KES\n" +
-  "John Doe,,+254722000111,KE,\n";
+  "name,email,phone,country,currency,password\n" +
+  "Jane Doe,jane.doe@example.com,+254712345678,KE,KES,sunflower\n" +
+  "John Doe,,+254722000111,KE,,\n";
 
-const HEADER_ALIASES: Record<string, keyof PaperWalletRecipient> = {
+const HEADER_ALIASES: Record<string, keyof PaperWalletRecipient | "password"> = {
   name: "name",
   full_name: "name",
   email: "email",
@@ -57,6 +61,8 @@ const HEADER_ALIASES: Record<string, keyof PaperWalletRecipient> = {
   currency: "currency",
   currency_code: "currency",
   preferred_currency: "currency",
+  password: "password",
+  passphrase: "password",
 };
 
 /**
@@ -147,7 +153,8 @@ export function parsePaperWalletCsv(text: string): PaperWalletCsvResult {
   if (!columns.some(Boolean)) {
     return {
       ok: false,
-      error: "No recognised columns. Use the template: name, email, phone, country, currency.",
+      error:
+        "No recognised columns. Use the template: name, email, phone, country, currency, password.",
     };
   }
 
@@ -155,9 +162,14 @@ export function parsePaperWalletCsv(text: string): PaperWalletCsvResult {
   records.slice(1).forEach((cells, index) => {
     if (cells.every((cell) => cell.trim() === "")) return;
     const recipient: PaperWalletRecipient = { ...EMPTY_PAPER_WALLET_RECIPIENT };
+    let password = "";
     columns.forEach((key, column) => {
       if (!key) return;
       const value = (cells[column] ?? "").trim();
+      if (key === "password") {
+        password = value;
+        return;
+      }
       recipient[key] =
         key === "country" || key === "currency"
           ? value.toUpperCase()
@@ -165,7 +177,11 @@ export function parsePaperWalletCsv(text: string): PaperWalletCsvResult {
             ? value.toLowerCase()
             : value;
     });
-    rows.push({ line: index + 2, recipient, errors: validateRecipient(recipient) });
+    const errors = validateRecipient(recipient);
+    if (password && password.length < MIN_PAPER_WALLET_PASSWORD) {
+      errors.push(`Password must be at least ${MIN_PAPER_WALLET_PASSWORD} characters`);
+    }
+    rows.push({ line: index + 2, recipient, password, errors });
   });
 
   if (rows.length === 0) return { ok: false, error: "The file has a header but no rows." };

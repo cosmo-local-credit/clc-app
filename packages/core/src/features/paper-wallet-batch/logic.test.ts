@@ -52,6 +52,16 @@ describe("parsePaperWalletCsv", () => {
     expect(result.rows[2]).toMatchObject({ line: 5, errors: ["Same email as line 3"] });
   });
 
+  it("reads a per-row password and keeps it off the recipient", () => {
+    const result = parsePaperWalletCsv("name,passphrase\nA, sunflower \nB,\nC,short\n");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.rows.map((row) => row.password)).toEqual(["sunflower", "", "short"]);
+    expect(result.rows[0]?.recipient).not.toHaveProperty("password");
+    expect(result.rows[1]?.errors).toEqual([]);
+    expect(result.rows[2]?.errors).toEqual(["Password must be at least 6 characters"]);
+  });
+
   it("rejects files without recognised columns or rows", () => {
     expect(parsePaperWalletCsv("")).toMatchObject({ ok: false });
     expect(parsePaperWalletCsv("foo,bar\n1,2\n")).toMatchObject({ ok: false });

@@ -36,6 +36,7 @@ describe("BatchResults PDF progress", () => {
       wallets,
       phase: "done" as const,
       encrypted: 0,
+      toEncrypt: 0,
       rendered: 0,
       pdfDownloaded: false,
       ...actions,

@@ -10,9 +10,10 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { clcApi } from "#/lib/api";
 import { CHAIN_ID } from "#/lib/chain";
 import { PAPER_WALLET_ORIGIN } from "#/lib/paper-wallet";
-import { encryptKeys } from "./encrypt-keys";
+import { type EncryptJob, encryptKeys } from "./encrypt-keys";
 
-export type Protection = { kind: "password"; passphrase: string } | { kind: "none" };
+/** One card to issue. A null passphrase puts the raw key in the QR. */
+export type BatchEntry = { recipient: PaperWalletRecipient; passphrase: string | null };
 
 type BatchWalletStatus = "queued" | "registering" | "ready" | "failed";
 
@@ -49,6 +50,7 @@ export function usePaperWalletBatch() {
   const [wallets, setWallets] = useState<BatchWallet[]>([]);
   const [phase, setPhase] = useState<BatchPhase>("idle");
   const [encrypted, setEncrypted] = useState(0);
+  const [toEncrypt, setToEncrypt] = useState(0);
   const [fatalError, setFatalError] = useState<string | null>(null);
 
   const patch = useCallback((id: number, update: Partial<BatchWallet>) => {
@@ -96,15 +98,20 @@ export function usePaperWalletBatch() {
   );
 
   const start = useCallback(
-    async (recipients: readonly PaperWalletRecipient[], protection: Protection) => {
+    async (entries: readonly BatchEntry[]) => {
       setFatalError(null);
       setEncrypted(0);
       keysRef.current = new Map();
       qrUrlsRef.current = new Map();
-      const created: BatchWallet[] = recipients.map((recipient, id) => {
+      const jobs: EncryptJob[] = [];
+      const jobWallets: number[] = [];
+      const created: BatchWallet[] = entries.map(({ recipient, passphrase }, id) => {
         const privateKey = generatePrivateKey();
         keysRef.current.set(id, privateKey);
-        if (protection.kind === "none") {
+        if (passphrase) {
+          jobs.push({ privateKey, passphrase });
+          jobWallets.push(id);
+        } else {
           qrUrlsRef.current.set(id, buildPaperWalletUrl(PAPER_WALLET_ORIGIN, privateKey));
         }
         return {
@@ -115,18 +122,18 @@ export function usePaperWalletBatch() {
         };
       });
       setWallets(created);
+      setToEncrypt(jobs.length);
 
-      if (protection.kind === "password") {
+      if (jobs.length > 0) {
         setPhase("encrypting");
         try {
-          await encryptKeys(
-            created.map((wallet) => keysRef.current.get(wallet.id) as `0x${string}`),
-            protection.passphrase,
-            (index, payload) => {
-              qrUrlsRef.current.set(index, buildPaperWalletUrl(PAPER_WALLET_ORIGIN, payload));
-              setEncrypted((count) => count + 1);
-            },
-          );
+          await encryptKeys(jobs, (index, payload) => {
+            qrUrlsRef.current.set(
+              jobWallets[index] as number,
+              buildPaperWalletUrl(PAPER_WALLET_ORIGIN, payload),
+            );
+            setEncrypted((count) => count + 1);
+          });
         } catch (error) {
           // Nothing has been registered yet, so there is nothing to strand.
           keysRef.current = new Map();
@@ -155,6 +162,7 @@ export function usePaperWalletBatch() {
     qrUrlsRef.current = new Map();
     setWallets([]);
     setEncrypted(0);
+    setToEncrypt(0);
     setFatalError(null);
     setPhase("idle");
   }, []);
@@ -168,5 +176,15 @@ export function usePaperWalletBatch() {
     [],
   );
 
-  return { wallets, phase, encrypted, fatalError, start, retryFailed, reset, qrUrlFor };
+  return {
+    wallets,
+    phase,
+    encrypted,
+    toEncrypt,
+    fatalError,
+    start,
+    retryFailed,
+    reset,
+    qrUrlFor,
+  };
 }

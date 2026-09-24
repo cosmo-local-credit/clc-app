@@ -3,7 +3,6 @@ import {
   formatCsv,
   MAX_PAPER_WALLET_BATCH,
   type PaperWalletCsvRow,
-  type PaperWalletRecipient,
 } from "@clc/core/features/paper-wallet-batch/logic";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -31,7 +30,7 @@ import { CardPreview } from "./ui/card-preview";
 import { CsvSource } from "./ui/csv-source";
 import type { PaperWalletCardDesign } from "./ui/paper-wallet-card";
 import { type ProtectionDraft, ProtectionFields, protectionError } from "./ui/protection-fields";
-import { usePaperWalletBatch } from "./use-paper-wallet-batch";
+import { type BatchEntry, usePaperWalletBatch } from "./use-paper-wallet-batch";
 
 const SOURCE_LABELS: Record<PaperWalletSource, string> = {
   blank: "Blank wallets",
@@ -101,27 +100,25 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
     Number.isInteger(countValue) && countValue >= 1 && countValue <= MAX_PAPER_WALLET_BATCH
       ? null
       : `Enter a whole number from 1 to ${MAX_PAPER_WALLET_BATCH}.`;
-  const recipients: PaperWalletRecipient[] =
+  const batchPassphrase = protection.kind === "password" ? protection.passphrase : null;
+  const entries: BatchEntry[] =
     search.source === "blank"
       ? countError
         ? []
         : Array.from({ length: countValue }, () => ({
-            ...EMPTY_PAPER_WALLET_RECIPIENT,
-            name: printedName.trim(),
+            recipient: { ...EMPTY_PAPER_WALLET_RECIPIENT, name: printedName.trim() },
+            passphrase: batchPassphrase,
           }))
-      : (csvRows ?? []).filter((row) => row.errors.length === 0).map((row) => row.recipient);
-  const passwordError = protectionError(protection);
-  const canStart = recipients.length > 0 && !passwordError;
+      : (csvRows ?? [])
+          .filter((row) => row.errors.length === 0)
+          .map((row) => ({ recipient: row.recipient, passphrase: row.password || null }));
+  const passwordError = search.source === "blank" ? protectionError(protection) : null;
+  const canStart = entries.length > 0 && !passwordError;
 
   function start() {
     if (!canStart) return;
     setPdfDownloaded(false);
-    void batch.start(
-      recipients,
-      protection.kind === "password"
-        ? { kind: "password", passphrase: protection.passphrase }
-        : { kind: "none" },
-    );
+    void batch.start(entries);
   }
 
   async function downloadPdf() {
@@ -199,6 +196,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           wallets={batch.wallets}
           phase={batch.phase}
           encrypted={batch.encrypted}
+          toEncrypt={batch.toEncrypt}
           renderStage={renderStage}
           rendered={rendered}
           pdfDownloaded={pdfDownloaded}
@@ -291,9 +289,11 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
               <CardDesignFields value={design} onChange={setDesign} />
             </section>
 
-            <section className="border border-border bg-card p-4">
-              <ProtectionFields value={protection} onChange={setProtection} />
-            </section>
+            {search.source === "blank" ? (
+              <section className="border border-border bg-card p-4">
+                <ProtectionFields value={protection} onChange={setProtection} />
+              </section>
+            ) : null}
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <label
@@ -312,7 +312,7 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
                   <p className="text-destructive text-xs">{passwordError}</p>
                 ) : null}
                 <Button type="button" disabled={!canStart} onClick={start}>
-                  Generate {recipients.length || ""} wallet{recipients.length === 1 ? "" : "s"}
+                  Generate {entries.length || ""} wallet{entries.length === 1 ? "" : "s"}
                 </Button>
               </div>
             </div>
@@ -324,7 +324,9 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
           <aside className="xl:sticky xl:top-6 xl:self-start">
             <CardPreview
               name={
-                search.source === "blank" ? printedName.trim() : (recipients[0]?.name ?? "Jane Doe")
+                search.source === "blank"
+                  ? printedName.trim()
+                  : (entries[0]?.recipient.name ?? "Jane Doe")
               }
               design={design}
             />

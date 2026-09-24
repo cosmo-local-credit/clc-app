@@ -29,6 +29,11 @@ const columns: Array<ColumnDef<PaperWalletCsvRow>> = [
   { id: "country", header: "Country", accessorFn: (row) => row.recipient.country },
   { id: "currency", header: "Currency", accessorFn: (row) => row.recipient.currency },
   {
+    id: "password",
+    header: "Password",
+    accessorFn: (row) => (row.password ? "Set" : "—"),
+  },
+  {
     id: "issues",
     header: "Issues",
     accessorFn: (row) => row.errors.length,

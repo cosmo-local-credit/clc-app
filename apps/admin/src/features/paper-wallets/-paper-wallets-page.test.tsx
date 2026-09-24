@@ -23,6 +23,7 @@ vi.mock("./use-paper-wallet-batch", () => ({
     wallets: mocks.wallets,
     phase: mocks.phase,
     encrypted: 0,
+    toEncrypt: 0,
     fatalError: null,
     start: mocks.start,
     retryFailed: vi.fn(),
@@ -56,19 +57,17 @@ describe("PaperWalletsPage", () => {
     fireEvent.change(screen.getByLabelText("Confirm password"), { target: { value: "sunflower" } });
     fireEvent.click(generate);
 
-    expect(mocks.start).toHaveBeenCalledWith(expect.any(Array), {
-      kind: "password",
-      passphrase: "sunflower",
-    });
-    expect(mocks.start.mock.calls[0]?.[0]).toHaveLength(10);
+    const entries = mocks.start.mock.calls[0]?.[0];
+    expect(entries).toHaveLength(10);
+    expect(entries[0]).toMatchObject({ passphrase: "sunflower" });
   });
 
-  it("issues only the valid rows of an uploaded CSV", async () => {
+  it("issues only the valid rows of an uploaded CSV, each with its own password", async () => {
     render(<PaperWalletsPage search={{ source: "csv" }} />);
-    fireEvent.click(screen.getByRole("button", { name: "No password" }));
+    expect(screen.queryByText("QR protection")).toBeNull();
 
     const file = new File(
-      ["name,phone,country\nAmina,+254712345678,KE\nBad,0712,KE\nBaraka,,\n"],
+      ["name,phone,country,password\nAmina,+254712345678,KE,sunflower\nBad,0712,KE,\nBaraka,,,\n"],
       "people.csv",
       { type: "text/csv" },
     );
@@ -78,13 +77,17 @@ describe("PaperWalletsPage", () => {
     expect(screen.getByText(/with issues, skipped/)).toBeTruthy();
     fireEvent.click(generate);
 
-    expect(mocks.start).toHaveBeenCalledWith(
-      [
-        expect.objectContaining({ name: "Amina", phone: "+254712345678", country: "KE" }),
-        expect.objectContaining({ name: "Baraka" }),
-      ],
-      { kind: "none" },
-    );
+    expect(mocks.start).toHaveBeenCalledWith([
+      {
+        recipient: expect.objectContaining({
+          name: "Amina",
+          phone: "+254712345678",
+          country: "KE",
+        }),
+        passphrase: "sunflower",
+      },
+      { recipient: expect.objectContaining({ name: "Baraka" }), passphrase: null },
+    ]);
   });
 
   it("shows PDF progress from click through worker assembly", async () => {

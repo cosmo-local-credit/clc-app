@@ -23,6 +23,9 @@ const recipients = [
   { ...EMPTY_PAPER_WALLET_RECIPIENT, name: "C" },
 ];
 
+const entries = (passphrase: string | null) =>
+  recipients.map((recipient) => ({ recipient, passphrase }));
+
 describe("usePaperWalletBatch", () => {
   beforeEach(() => {
     mocks.provision.mockReset();
@@ -32,7 +35,7 @@ describe("usePaperWalletBatch", () => {
 
   it("registers every wallet and keeps raw-key QR links out of state", async () => {
     const { result } = renderHook(() => usePaperWalletBatch());
-    await act(() => result.current.start(recipients, { kind: "none" }));
+    await act(() => result.current.start(entries(null)));
 
     expect(result.current.phase).toBe("done");
     expect(result.current.wallets.map((wallet) => wallet.status)).toEqual([
@@ -52,19 +55,45 @@ describe("usePaperWalletBatch", () => {
   });
 
   it("encrypts with the batch password before registering", async () => {
-    mocks.encryptKeys.mockImplementation(async (keys: string[], _passphrase, onEncrypted) => {
-      keys.forEach((_, index) => onEncrypted(index, `6Pencrypted${index}`));
+    mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
+      jobs.forEach((_, index) => onEncrypted(index, `6Pencrypted${index}`));
     });
     const { result } = renderHook(() => usePaperWalletBatch());
-    await act(() => result.current.start(recipients, { kind: "password", passphrase: "secret1" }));
+    await act(() => result.current.start(entries("secret1")));
 
-    expect(mocks.encryptKeys).toHaveBeenCalledWith(
-      expect.any(Array),
-      "secret1",
-      expect.any(Function),
-    );
+    expect(mocks.encryptKeys.mock.calls[0]?.[0]).toEqual([
+      expect.objectContaining({ passphrase: "secret1" }),
+      expect.objectContaining({ passphrase: "secret1" }),
+      expect.objectContaining({ passphrase: "secret1" }),
+    ]);
     expect(result.current.encrypted).toBe(3);
+    expect(result.current.toEncrypt).toBe(3);
     expect(result.current.qrUrlFor(2)).toBe("https://app.test/?w=6Pencrypted2");
+  });
+
+  it("encrypts only the wallets that carry their own password", async () => {
+    mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
+      jobs.forEach((_, index) => onEncrypted(index, `6Pencrypted${index}`));
+    });
+    const { result } = renderHook(() => usePaperWalletBatch());
+    await act(() =>
+      result.current.start([
+        { recipient: recipients[0]!, passphrase: "alpha1" },
+        { recipient: recipients[1]!, passphrase: null },
+        { recipient: recipients[2]!, passphrase: "gamma3" },
+      ]),
+    );
+
+    expect(mocks.encryptKeys.mock.calls[0]?.[0]).toEqual([
+      expect.objectContaining({ passphrase: "alpha1" }),
+      expect.objectContaining({ passphrase: "gamma3" }),
+    ]);
+    expect(result.current.toEncrypt).toBe(2);
+    expect(result.current.qrUrlFor(0)).toBe("https://app.test/?w=6Pencrypted0");
+    expect(result.current.qrUrlFor(2)).toBe("https://app.test/?w=6Pencrypted1");
+    const rawKey = mocks.provision.mock.calls.find(([input]) => input.recipient.name === "B")?.[0]
+      .privateKey as string;
+    expect(result.current.qrUrlFor(1)).toBe(`https://app.test/?w=${rawKey}`);
   });
 
   it("marks a refused signup as failed and retries only the failures", async () => {
@@ -73,7 +102,7 @@ describe("usePaperWalletBatch", () => {
       return { address: privateKey };
     });
     const { result } = renderHook(() => usePaperWalletBatch());
-    await act(() => result.current.start(recipients, { kind: "none" }));
+    await act(() => result.current.start(entries(null)));
 
     expect(result.current.wallets[1]).toMatchObject({
       status: "failed",
@@ -90,7 +119,7 @@ describe("usePaperWalletBatch", () => {
   it("abandons the batch when encryption fails, before anything is registered", async () => {
     mocks.encryptKeys.mockRejectedValue(new Error("out of memory"));
     const { result } = renderHook(() => usePaperWalletBatch());
-    await act(() => result.current.start(recipients, { kind: "password", passphrase: "secret1" }));
+    await act(() => result.current.start(entries("secret1")));
 
     expect(result.current.phase).toBe("idle");
     expect(result.current.wallets).toEqual([]);
