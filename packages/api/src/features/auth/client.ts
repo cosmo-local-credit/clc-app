@@ -57,6 +57,31 @@ export type SessionResult = {
   role?: string;
 };
 
+/**
+ * Where a passkey's registration stands in clc-core.
+ *
+ * Only `active` signs in: the registration transaction succeeded on chain.
+ * `pending` has been relayed and is waiting on that transaction; `failed` means
+ * it reverted or was dropped. `legacy` rows predate confirmation tracking and
+ * are awaiting clc-core's one-time chain check, which leaves the ones it could
+ * not confirm `unverified`.
+ */
+export type WebAuthnCredentialState = "pending" | "active" | "failed" | "legacy" | "unverified";
+
+export type WebAuthnCredentialSummary = {
+  credentialId: string;
+  state: WebAuthnCredentialState;
+  createdAt: string;
+  /** Set only while `pending`, so a client that reloaded can resume following it. */
+  trackingId: string | null;
+};
+
+/** `GET /auth/webauthn/credentials` — scoped by clc-core to the session's wallet. */
+export type WebAuthnCredentialsResult = {
+  address: string;
+  credentials: WebAuthnCredentialSummary[];
+};
+
 export type ProfilePayload = {
   name: string;
   email: string;
@@ -233,6 +258,7 @@ export type AuthClient = {
   signinWithWebAuthn(payload: WebAuthnAssertionPayload): Promise<WebAuthnSigninResult>;
   logout(): Promise<void>;
   getSession(): Promise<SessionResult | null>;
+  getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult>;
   submitProfile(payload: ProfilePayload): Promise<SavedProfile>;
   getProfile(): Promise<ProfileResult>;
   getStorageToken(): Promise<StorageTokenResult>;
@@ -303,6 +329,12 @@ export function createAuthClient(http: HttpClient): AuthClient {
 
     async getSession(): Promise<SessionResult | null> {
       return http.request<SessionResult | null>("/auth/session", { method: "GET" });
+    },
+
+    async getWebAuthnCredentials(): Promise<WebAuthnCredentialsResult> {
+      return http.request<WebAuthnCredentialsResult>("/auth/webauthn/credentials", {
+        method: "GET",
+      });
     },
 
     // Returns the saved row rather than discarding it, so a caller can seed the

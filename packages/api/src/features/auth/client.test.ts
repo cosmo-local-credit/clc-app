@@ -154,6 +154,42 @@ describe("getSession", () => {
   });
 });
 
+describe("getWebAuthnCredentials", () => {
+  it("GETs the session-scoped credential list and unwraps the envelope", async () => {
+    const result = {
+      address: "0x1234567890123456789012345678901234567890",
+      credentials: [
+        {
+          credentialId: "cred-1",
+          state: "pending",
+          createdAt: "2026-09-24T00:00:00Z",
+          trackingId: "t-1",
+        },
+      ],
+    };
+    const fetchMock = mockFetch({ status: 200, body: { ok: true, result } });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.getWebAuthnCredentials()).resolves.toEqual(result);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.test/auth/webauthn/credentials",
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it("surfaces a missing session as unauthenticated rather than an empty list", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch({
+        status: 401,
+        body: { ok: false, code: "E06", description: "a user session is required" },
+      }),
+    );
+
+    await expect(api.getWebAuthnCredentials()).rejects.toMatchObject({ kind: "unauthenticated" });
+  });
+});
+
 describe("signinWithWebAuthn", () => {
   const assertion = {
     credentialId: "cred-1",
