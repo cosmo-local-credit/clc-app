@@ -16,6 +16,41 @@ function response(result: unknown) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("vocabulary client", () => {
+  it.each(["tag", "unit"] as const)("renames a %s through its PUT endpoint", async (kind) => {
+    const fetchMock = vi.fn().mockResolvedValue(response({ value: "New value" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.renameValue(kind, "Old value", "New value");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `https://api.test/api/v2/admin/vocabulary/${kind === "tag" ? "tags" : "units"}`,
+      expect.objectContaining({
+        method: "PUT",
+        cache: "no-store",
+        body: JSON.stringify({ value: "Old value", replacement: "New value" }),
+      }),
+    );
+  });
+
+  it("propagates a rename conflict to the editor", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 409,
+        statusText: "Conflict",
+        text: async () =>
+          JSON.stringify({
+            ok: false,
+            description: "a vocabulary value with this name already exists",
+          }),
+      }),
+    );
+    await expect(api.renameValue("tag", "Old", "Existing")).rejects.toThrow(
+      "a vocabulary value with this name already exists",
+    );
+  });
+
   it("loads dynamic offering units", async () => {
     vi.stubGlobal(
       "fetch",

@@ -45,6 +45,14 @@ export function createVocabularyClient(http: HttpClient) {
       };
     },
 
+    async renameValue(kind: "tag" | "unit", value: string, replacement: string): Promise<void> {
+      await http.request(`/api/v2/admin/vocabulary/${kind === "tag" ? "tags" : "units"}`, {
+        method: "PUT",
+        cache: "no-store",
+        body: JSON.stringify({ value, replacement }),
+      });
+    },
+
     async deleteTag(value: string, signal?: AbortSignal): Promise<CustomTagVocabulary> {
       const result = await http.request<{
         value?: unknown;

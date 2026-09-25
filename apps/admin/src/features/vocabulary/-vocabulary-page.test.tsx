@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   getCustomVocabulary: vi.fn(),
   deleteTag: vi.fn(),
   deleteUnit: vi.fn(),
+  renameValue: vi.fn(),
   success: vi.fn(),
 }));
 
@@ -15,6 +16,7 @@ vi.mock("#/lib/api", () => ({
       getCustomVocabulary: mocks.getCustomVocabulary,
       deleteTag: mocks.deleteTag,
       deleteUnit: mocks.deleteUnit,
+      renameValue: mocks.renameValue,
     },
   },
 }));
@@ -56,6 +58,7 @@ beforeEach(() => {
   mocks.getCustomVocabulary.mockReset().mockResolvedValue({ tags: [tag()], units: [unit()] });
   mocks.deleteTag.mockReset().mockResolvedValue(tag());
   mocks.deleteUnit.mockReset().mockResolvedValue(unit());
+  mocks.renameValue.mockReset().mockResolvedValue(undefined);
   mocks.success.mockReset();
 });
 
@@ -92,6 +95,107 @@ describe("the vocabulary tables", () => {
 
     expect(await screen.findByText("Could not load vocabulary")).toBeTruthy();
     expect(screen.getByText("vocabulary is unavailable")).toBeTruthy();
+  });
+});
+
+describe("renaming a value", () => {
+  it.each([
+    ["tag", "Urban Farming", "  Community   Gardens  ", "Community Gardens", "Tag renamed."],
+    ["unit", "Produce Crate", "  kWh  ", "kWh", "Unit renamed."],
+  ])(
+    "saves a %s and refreshes the displayed vocabulary",
+    async (kind, value, draft, replacement, message) => {
+      renderPage();
+      fireEvent.click(await screen.findByRole("button", { name: `Edit ${value}` }));
+      const invalidate = vi.spyOn(queryClient, "invalidateQueries");
+      fireEvent.change(screen.getByRole("textbox", { name: `New ${kind}` }), {
+        target: { value: draft },
+      });
+      expect(mocks.renameValue).not.toHaveBeenCalled();
+      mocks.getCustomVocabulary.mockResolvedValue({
+        tags: [tag({ value: kind === "tag" ? replacement : "Urban Farming" })],
+        units: [unit({ value: kind === "unit" ? replacement : "Produce Crate" })],
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(mocks.renameValue).toHaveBeenCalledWith(kind, value, replacement));
+      await waitFor(() => expect(mocks.success).toHaveBeenCalledWith(message));
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["clc"] });
+      expect(await screen.findByRole("button", { name: `Edit ${replacement}` })).toBeTruthy();
+      expect(mocks.deleteTag).not.toHaveBeenCalled();
+      expect(mocks.deleteUnit).not.toHaveBeenCalled();
+    },
+  );
+
+  it("cancels without saving and restores the original value on reopening", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Discard this" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(mocks.renameValue).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Edit Urban Farming" }));
+    expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Urban Farming");
+  });
+
+  it.each([
+    ["Urban Farming", "Urban Farming"],
+    ["Urban Farming", "   "],
+    ["Urban Farming", "food, water"],
+    ["Urban Farming", "a".repeat(101)],
+    ["Produce Crate", "a".repeat(33)],
+  ])("prevents saving %s as an unchanged or invalid value %s", async (value, draft) => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: `Edit ${value}` }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: draft } });
+    const save = screen.getByRole("button", { name: "Save" }) as HTMLButtonElement;
+    expect(save.disabled).toBe(true);
+    fireEvent.submit(save.closest("form")!);
+    expect(mocks.renameValue).not.toHaveBeenCalled();
+  });
+
+  it("shows a refused rename and lets the admin correct and retry it", async () => {
+    mocks.renameValue.mockRejectedValueOnce(
+      new Error(
+        "This tag is being used by an unfinished voucher or pool deployment. Please try again after the deployment finishes.",
+      ),
+    );
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Gardens" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "Please try again after the deployment finishes.",
+    );
+    expect((screen.getByRole("textbox") as HTMLInputElement).value).toBe("Gardens");
+    expect(mocks.success).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Community Gardens" } });
+    expect(screen.queryByRole("alert")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("Tag renamed."));
+    expect(mocks.renameValue).toHaveBeenLastCalledWith("tag", "Urban Farming", "Community Gardens");
+  });
+
+  it("disables the editor and prevents duplicate submissions while saving", async () => {
+    let finish!: () => void;
+    mocks.renameValue.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    renderPage();
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Urban Farming" }));
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "Gardens" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    const saving = await screen.findByRole("button", { name: "Saving…" });
+    expect((saving as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "Cancel" }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    expect((screen.getByRole("textbox") as HTMLInputElement).disabled).toBe(true);
+    fireEvent.submit(saving.closest("form")!);
+    expect(mocks.renameValue).toHaveBeenCalledTimes(1);
+    finish();
+    await waitFor(() => expect(mocks.success).toHaveBeenCalledWith("Tag renamed."));
   });
 });
 
