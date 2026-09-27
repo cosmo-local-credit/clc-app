@@ -26,6 +26,13 @@ const mocks = vi.hoisted(() => ({
     isPending: boolean;
   },
   searchResults: [] as { id: string; address: string; name: string; symbol: string }[],
+  suggestions: {
+    issued: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
+    holdings: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
   membership: { data: false as boolean | undefined, isPending: false },
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
@@ -53,6 +60,10 @@ vi.mock("#/features/home/hooks/use-voucher-search", () => ({
     status: "ready",
     retry: vi.fn(),
   }),
+}));
+
+vi.mock("#/features/pools/hooks/use-approval-suggestions", () => ({
+  useApprovalSuggestions: () => mocks.suggestions,
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -143,12 +154,26 @@ function renderSheet(node: ReactNode) {
   return render(<>{node}</>);
 }
 
+/** Search results stay hidden until the field has a real term. */
+function searchVouchers(dialog: HTMLElement, term = "ju") {
+  fireEvent.change(within(dialog).getByLabelText("Search vouchers"), {
+    target: { value: term },
+  });
+}
+
 beforeEach(() => {
   mocks.relay.mockReset();
   mocks.relay.mockResolvedValue({ trackingId: "t1", txHash: `0x${"ab".repeat(32)}` });
   mocks.quoterKind = { kind: "relative", isPending: false };
   mocks.membership = { data: false, isPending: false };
   mocks.searchResults = [];
+  mocks.suggestions = {
+    issued: [],
+    holdings: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  };
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
 });
@@ -175,6 +200,7 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
     fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
 
     // The equation reads in the pool's unit of account, not the voucher's.
@@ -220,6 +246,7 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
     fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
 
     expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("1");
@@ -259,6 +286,7 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
     fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
 
     expect(within(dialog).queryByLabelText("Exchange rate")).toBeNull();
@@ -268,7 +296,19 @@ describe("PoolVoucherSheet approving", () => {
     ).toBe(true);
   });
 
-  it("keeps vouchers the pool already holds out of the picker", async () => {
+  it("offers likely vouchers before a search, and keeps pool members out of the results", async () => {
+    const issued = "0x1111000000000000000000000000000000000001" as const;
+    const held = "0x2222000000000000000000000000000000000002" as const;
+    mocks.suggestions = {
+      issued: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
+      holdings: [
+        { id: "own-again", address: issued, name: "Will", symbol: "WLLR" },
+        { id: "held", address: held, name: "Sarafu", symbol: "SRF" },
+      ],
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
     mocks.searchResults = [
       { id: "m1", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
       { id: "m2", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
@@ -286,7 +326,22 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    const issuedGroup = within(within(dialog).getByRole("region", { name: "Vouchers you issued" }));
+    const heldGroup = within(within(dialog).getByRole("region", { name: "Vouchers you hold" }));
+    const poolGroup = within(within(dialog).getByRole("region", { name: "In this pool" }));
+    expect(issuedGroup.getByRole("button", { name: /Will/ })).toBeTruthy();
+    expect(heldGroup.getByRole("button", { name: /Sarafu/ })).toBeTruthy();
+    expect(heldGroup.queryByRole("button", { name: /Will/ })).toBeNull();
+    expect(poolGroup.getByRole("button", { name: /Pepas Voucher/ })).toBeTruthy();
+    expect(within(dialog).queryByRole("button", { name: /Juan's Voucher/ })).toBeNull();
+
+    const text = dialog.textContent ?? "";
+    expect(text.indexOf("Vouchers you issued")).toBeLessThan(text.indexOf("Vouchers you hold"));
+    expect(text.indexOf("Vouchers you hold")).toBeLessThan(text.indexOf("In this pool"));
+
+    searchVouchers(dialog);
     expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: /Will/ })).toBeNull();
     expect(within(dialog).getByRole("button", { name: /Juan's Voucher/ })).toBeTruthy();
   });
 });
@@ -410,6 +465,7 @@ describe("PoolVoucherSheet registration", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog, "pl");
     fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
     expect(within(dialog).getByText(/already allows PLKD/)).toBeTruthy();
 
@@ -438,6 +494,7 @@ describe("PoolVoucherSheet registration", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog, "pl");
     fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
     expect(
       (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
