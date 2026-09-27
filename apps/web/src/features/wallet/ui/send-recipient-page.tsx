@@ -120,7 +120,9 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       {showRecent ? (
         <RecentRecipients
           recipients={recent}
-          pending={transfersQuery.isPending}
+          // A guest has no activity to read, and a read that never runs stays
+          // pending — the list would say "Loading" forever.
+          pending={wallet !== undefined && transfersQuery.isPending}
           failed={transfersQuery.isError}
           onRetry={() => {
             void transfersQuery.refetch();

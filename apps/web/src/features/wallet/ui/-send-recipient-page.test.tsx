@@ -4,9 +4,12 @@ import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const navigate = vi.fn();
+const { storageOwner } = vi.hoisted(() => ({
+  storageOwner: { current: "0xabc0000000000000000000000000000000000123" },
+}));
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
-  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+  useStorageOwner: () => storageOwner.current,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -28,6 +31,7 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
 }));
 
 import { upsertAddressBookRecipient } from "#/features/wallet/api/address-book-storage";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { SendRecipientPage } from "./send-recipient-page";
 
 const OWNER = "0xabc0000000000000000000000000000000000123";
@@ -182,6 +186,24 @@ describe("SendRecipientPage", () => {
         }) as HTMLInputElement
       ).value,
     ).toBe("0xa316408425cF17F1827483dee621c6C3A9B5fad4");
+  });
+
+  it("does not wait on activity a guest cannot have", async () => {
+    storageOwner.current = GUEST_STORAGE_OWNER;
+    const fetcher = vi.fn((_url: string) =>
+      Promise.resolve(createJsonResponse({ ok: true, result: {} })),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
+
+      await screen.findByRole("textbox", { name: /recipient ens, phone or address/i });
+      expect(screen.queryByText("Loading activity…")).toBeNull();
+      expect(screen.queryByRole("region", { name: "Recent recipients" })).toBeNull();
+      expect(fetcher.mock.calls.some(([url]) => String(url).includes("/transfers"))).toBe(false);
+    } finally {
+      storageOwner.current = OWNER;
+    }
   });
 
   it("selects a recent person paid from activity", async () => {

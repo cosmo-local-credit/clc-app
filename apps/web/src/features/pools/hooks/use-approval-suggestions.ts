@@ -1,4 +1,4 @@
-import { accountKeys } from "@clc/api/features/accounts/queries";
+import { accountTokensPageQueryOptions } from "@clc/api/features/accounts/queries";
 import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -36,15 +36,9 @@ export function useApprovalSuggestions() {
     enabled: Boolean(owner),
   });
 
-  const heldQuery = useQuery({
-    queryKey: accountKeys.tokens(owner ?? "none", SUGGESTION_PAGE_SIZE),
-    queryFn: () =>
-      accountsClient.getAccountTokens({
-        address: owner ?? "",
-        perPage: SUGGESTION_PAGE_SIZE,
-      }),
-    enabled: Boolean(owner),
-  });
+  const heldQuery = useQuery(
+    accountTokensPageQueryOptions(accountsClient, owner, SUGGESTION_PAGE_SIZE),
+  );
 
   return {
     issued: (issuedQuery.data?.vouchers ?? []).flatMap((voucher) => {

@@ -96,10 +96,15 @@ export function AllVouchersPage() {
   const vouchers =
     vouchersQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
   const voucherGroups = usePartitionedVouchers(vouchers, address);
-  const ownersFailed = vouchers.length > 0 && voucherGroups.failed;
-  const ownersPending = vouchers.length > 0 && voucherGroups.pending && !voucherGroups.failed;
-  const vouchersReady =
-    vouchersQuery.isSuccess && vouchers.length > 0 && !ownersPending && !ownersFailed;
+  // Rows are grouped as their owners arrive. The list waits, or fails, as a
+  // whole only until the first one lands; after that the rows a new page or a
+  // poll adds wait in a status tile, so Load more does not blank the list.
+  const resolved = voucherGroups.holdings.length + voucherGroups.issued.length > 0;
+  const unresolved = voucherGroups.pending || voucherGroups.failed;
+  const ownersPending = vouchers.length > 0 && !resolved && voucherGroups.pending;
+  const ownersFailed =
+    vouchers.length > 0 && !resolved && !voucherGroups.pending && voucherGroups.failed;
+  const vouchersReady = vouchersQuery.isSuccess && vouchers.length > 0 && resolved;
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const renderGroup = (list: typeof vouchers) =>
     list.map((voucher, index) => (
@@ -176,7 +181,7 @@ export function AllVouchersPage() {
               </div>
             </section>
           ) : null}
-          {voucherGroups.issued.length > 0 || !vouchersQuery.hasNextPage ? (
+          {voucherGroups.issued.length > 0 || (!vouchersQuery.hasNextPage && !unresolved) ? (
             <section aria-labelledby="your-vouchers-title">
               <h2 id="your-vouchers-title" className="font-heading mb-2 text-base font-semibold">
                 <Trans>Your Vouchers</Trans>
@@ -191,6 +196,32 @@ export function AllVouchersPage() {
                 )}
               </div>
             </section>
+          ) : null}
+          {unresolved ? (
+            <div className="border-border bg-card space-y-2 border p-3">
+              {voucherGroups.pending ? (
+                <p className="text-muted-foreground text-sm">
+                  <Trans>Loading vouchers…</Trans>
+                </p>
+              ) : null}
+              {voucherGroups.failed ? (
+                <>
+                  <p className="text-muted-foreground text-sm">
+                    <Trans>Some vouchers couldn't load.</Trans>
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-card h-9"
+                    onClick={() => {
+                      void voucherGroups.refetch();
+                    }}
+                  >
+                    <Trans>Try again</Trans>
+                  </Button>
+                </>
+              ) : null}
+            </div>
           ) : null}
         </div>
       )}
