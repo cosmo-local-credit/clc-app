@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
@@ -40,33 +40,68 @@ function renderWithQueryClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 }
 
-function mockLatestTokens() {
+const USDT = {
+  id: 1043746,
+  tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
+  tokenSymbol: "USD₮",
+  tokenName: "Tether USD",
+  tokenDecimals: 6,
+  balance: "1234567",
+  iconUrl: "https://content.sarafu.network/voucher/icon.jpg",
+  lastDateBlock: "2026-07-01T12:20:29Z",
+};
+
+const ISSUED = {
+  id: 1043747,
+  tokenAddress: "0x1111111111111111111111111111111111111111",
+  tokenSymbol: "WLLR",
+  tokenName: "Will",
+  tokenDecimals: 6,
+  balance: "5000000",
+  iconUrl: null,
+  lastDateBlock: "2026-07-02T12:20:29Z",
+};
+
+function jsonResponse(result: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 200 ? "" : "Error",
+    text: () => Promise.resolve(JSON.stringify({ ok: status === 200, result })),
+  };
+}
+
+/**
+ * Account balances, plus one catalog detail per token. The detail is what says
+ * who issued it; without this branch every voucher read is answered with the
+ * balance payload and the list never settles.
+ */
+function mockLatestTokens({
+  tokens = [USDT],
+  owners = {},
+  detailStatus = 200,
+}: {
+  tokens?: readonly unknown[];
+  owners?: Readonly<Record<string, string | null>>;
+  detailStatus?: number;
+} = {}) {
   vi.stubGlobal(
     "fetch",
-    vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      statusText: "",
-      text: () =>
-        Promise.resolve(
-          JSON.stringify({
-            ok: true,
-            result: {
-              tokens: [
-                {
-                  id: 1043746,
-                  tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
-                  tokenSymbol: "USD₮",
-                  tokenName: "Tether USD",
-                  tokenDecimals: 6,
-                  balance: "1234567",
-                  iconUrl: "https://content.sarafu.network/voucher/icon.jpg",
-                  lastDateBlock: "2026-07-01T12:20:29Z",
-                },
-              ],
-            },
+    vi.fn().mockImplementation((url: string | URL) => {
+      const href = String(url);
+      if (href.includes("/api/v2/vouchers/")) {
+        if (detailStatus !== 200) return Promise.resolve(jsonResponse(null, detailStatus));
+        const address = decodeURIComponent(
+          href.split("/api/v2/vouchers/")[1]?.split("?")[0] ?? "",
+        ).toLowerCase();
+        const ownerAddress = address in owners ? owners[address] : OTHER;
+        return Promise.resolve(
+          jsonResponse({
+            voucher: { id: address, address, chainId: 100, ownerAddress, kind: "voucher" },
           }),
-        ),
+        );
+      }
+      return Promise.resolve(jsonResponse({ tokens }));
     }),
   );
 }
@@ -167,6 +202,43 @@ describe("WalletPage", () => {
       'img[src="https://content.sarafu.network/voucher/icon.jpg"]',
     );
     expect(logo?.getAttribute("loading")).toBe("lazy");
+  });
+
+  it("lists vouchers the account issued separately from the ones it holds", async () => {
+    mockLatestTokens({
+      tokens: [USDT, ISSUED],
+      owners: { [ISSUED.tokenAddress]: ADDRESS, [USDT.tokenAddress.toLowerCase()]: OTHER },
+    });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
+    const issued = within(screen.getByRole("region", { name: "Your Vouchers" }));
+    expect(holdings.getByText("USD₮")).toBeTruthy();
+    expect(holdings.queryByText("WLLR")).toBeNull();
+    expect(issued.getByText("WLLR")).toBeTruthy();
+    expect(issued.getByText("5")).toBeTruthy();
+    expect(issued.queryByText("USD₮")).toBeNull();
+
+    const text = document.body.textContent ?? "";
+    expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("Your Vouchers"));
+  });
+
+  it("treats a token the catalog does not list as a holding", async () => {
+    mockLatestTokens({ detailStatus: 404 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
+    expect(holdings.getByText("USD₮")).toBeTruthy();
+    expect(screen.getByText("You didn't issue any of these.")).toBeTruthy();
+  });
+
+  it("does not file balances while the catalog read is down", async () => {
+    mockLatestTokens({ detailStatus: 500 });
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Couldn't load vouchers.")).toBeTruthy();
+    expect(screen.queryByText("USD₮")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
   });
 
   it("offers voucher creation when the wallet is empty", async () => {
