@@ -29,7 +29,7 @@ function WalletAmountInput({
       aria-label={label}
       value={value}
       onChange={(event) => onValueChange(event.target.value)}
-      className="truncate px-2 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight"
+      className="truncate px-2 text-right font-heading text-[1.375rem] font-semibold leading-none tracking-tight"
     />
   );
 }

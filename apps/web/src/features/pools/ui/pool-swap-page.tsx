@@ -1,4 +1,4 @@
-import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -37,7 +37,7 @@ import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-dele
 import { cn } from "#/lib/utils";
 
 export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const receiveLabel = t`You receive`;
   const sendLabel = t`You send`;
   const navigate = useNavigate();
@@ -59,6 +59,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const [fromMaxAmountRaw, setFromMaxAmountRaw] = useState<string | null>(null);
   const [toAmount, setToAmount] = useState("");
   const [quoteMode, setQuoteMode] = useState<PoolSwapQuoteMode>("exact-output");
+  const [focusedField, setFocusedField] = useState<"from" | "to" | null>(null);
   const [picker, setPicker] = useState<null | { field: "from" | "to" }>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -111,21 +112,51 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
     tokenInDecimals: selectedFrom?.decimals ?? 18,
     tokenOutDecimals: selectedTo?.decimals ?? 18,
   });
-  const displayedFromAmount = quoteMode === "exact-input" ? fromAmount : (quote.data?.amount ?? "");
-  const displayedToAmount = quoteMode === "exact-output" ? toAmount : (quote.data?.amount ?? "");
-  const displayedFromAmountNumber = Number(displayedFromAmount);
-  const displayedToAmountNumber = Number(displayedToAmount);
-  const rate =
-    Number.isFinite(displayedFromAmountNumber) &&
-    displayedFromAmountNumber > 0 &&
-    Number.isFinite(displayedToAmountNumber)
-      ? (displayedToAmountNumber / displayedFromAmountNumber).toFixed(3)
-      : "—";
+  const fromDecimals = selectedFrom?.decimals ?? null;
+  const toDecimals = selectedTo?.decimals ?? null;
+  const quoteFromAmount =
+    quote.data && fromDecimals !== null
+      ? formatTokenAmountFixed(quote.data.amountInRaw, fromDecimals, 2)
+      : "";
+  const quoteToAmount =
+    quote.data && toDecimals !== null
+      ? formatTokenAmountFixed(quote.data.amountOutRaw, toDecimals, 2)
+      : "";
+  const localizedQuoteFromAmount =
+    quote.data && fromDecimals !== null
+      ? formatTokenAmountFixed(quote.data.amountInRaw, fromDecimals, 2, i18n.locale)
+      : "";
+  const localizedQuoteToAmount =
+    quote.data && toDecimals !== null
+      ? formatTokenAmountFixed(quote.data.amountOutRaw, toDecimals, 2, i18n.locale)
+      : "";
+  const editableFromAmount = quoteMode === "exact-input" ? fromAmount : quoteFromAmount;
+  const editableToAmount = quoteMode === "exact-output" ? toAmount : quoteToAmount;
+  const settledFromAmount =
+    quoteMode === "exact-input"
+      ? fixedEnteredAmount(fromAmount, fromDecimals, i18n.locale)
+      : localizedQuoteFromAmount;
+  const settledToAmount =
+    quoteMode === "exact-output"
+      ? fixedEnteredAmount(toAmount, toDecimals, i18n.locale)
+      : localizedQuoteToAmount;
+  const displayedFromAmount = focusedField === "from" ? editableFromAmount : settledFromAmount;
+  const displayedToAmount = focusedField === "to" ? editableToAmount : settledToAmount;
+
+  let rate = "—";
+  if (quote.data && fromDecimals !== null && toDecimals !== null) {
+    const amountInRaw = BigInt(quote.data.amountInRaw);
+    if (amountInRaw > 0n) {
+      const rateRaw =
+        (BigInt(quote.data.amountOutRaw) * 10n ** BigInt(fromDecimals) * 100n) /
+        (amountInRaw * 10n ** BigInt(toDecimals));
+      rate = formatTokenAmountFixed(rateRaw.toString(), 2, 2, i18n.locale);
+    }
+  }
 
   // The pair-specific maximum combines the holder balance, the input deposit
   // headroom, and output liquidity converted through the pool's gross quoter.
   // While that boundary is absent or refreshing, no fallback Max is shown.
-  const fromDecimals = selectedFrom?.decimals ?? null;
   const maximumRaw = maximum.data?.maxAmountInRaw;
   const maxFromRaw =
     !reads.isFetching &&
@@ -136,23 +167,38 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       : null;
   const maxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
-      ? formatTokenAmount(maxFromRaw, fromDecimals)
+      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2)
+      : undefined;
+  const localizedMaxFromAmount =
+    maxFromRaw !== null && fromDecimals !== null
+      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, i18n.locale)
       : undefined;
 
   let exceedsBalance = false;
-  if (selectedFrom && displayedFromAmount) {
+  if (selectedFrom && editableFromAmount) {
     try {
       const displayedFromAmountRaw =
         quoteMode === "exact-output" && quote.data
-          ? quote.data.amountRaw
-          : (fromMaxAmountRaw ??
-            parseTokenAmount(displayedFromAmount, selectedFrom.decimals ?? 18));
+          ? quote.data.amountInRaw
+          : (fromMaxAmountRaw ?? parseTokenAmount(fromAmount, selectedFrom.decimals ?? 18));
       exceedsBalance = BigInt(displayedFromAmountRaw) > BigInt(selectedFrom.balanceRaw);
     } catch {
       exceedsBalance = false;
     }
   }
   const exceedsDepositCap = quote.data?.exceedsDepositCap === true;
+  const localizedAmounts = {
+    depositHeadroom:
+      quote.data?.depositHeadroomRaw !== null &&
+      quote.data?.depositHeadroomRaw !== undefined &&
+      fromDecimals !== null
+        ? formatTokenAmountFixed(quote.data.depositHeadroomRaw, fromDecimals, 2, i18n.locale)
+        : null,
+    availableAmountOut:
+      quote.data && toDecimals !== null
+        ? formatTokenAmountFixed(quote.data.availableAmountOutRaw, toDecimals, 2, i18n.locale)
+        : null,
+  };
   const hasSwappableFrom = swapTokens.some((token) => token.canSwapIn);
   const isValidAmount =
     !!address &&
@@ -192,6 +238,13 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           token={selectedTo?.token}
           amount={displayedToAmount}
           autoFocus
+          onFocus={() => setFocusedField("to")}
+          onBlur={() => {
+            if (quoteMode === "exact-output") {
+              setToAmount(fixedEnteredAmount(toAmount, toDecimals));
+            }
+            setFocusedField((current) => (current === "to" ? null : current));
+          }}
           onAmountChange={(amount) => {
             setQuoteMode("exact-output");
             setFromMaxAmountRaw(null);
@@ -204,8 +257,15 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           label={sendLabel}
           token={selectedFrom?.token}
           amount={displayedFromAmount}
-          max={maxFromAmount}
+          max={localizedMaxFromAmount}
           invalid={exceedsBalance || exceedsDepositCap}
+          onFocus={() => setFocusedField("from")}
+          onBlur={() => {
+            if (quoteMode === "exact-input") {
+              setFromAmount(fixedEnteredAmount(fromAmount, fromDecimals));
+            }
+            setFocusedField((current) => (current === "from" ? null : current));
+          }}
           onAmountChange={(amount) => {
             setQuoteMode("exact-input");
             setFromMaxAmountRaw(null);
@@ -300,11 +360,11 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         </p>
       ) : exceedsDepositCap ? (
         <p role="alert" className="mt-2 text-destructive text-xs">
-          {quote.data?.depositHeadroom === "0.00" ? (
+          {quote.data?.depositHeadroomRaw === "0" ? (
             <Trans>This pool can't take any more {selectedFrom?.token.symbol} right now.</Trans>
           ) : (
             <Trans>
-              This pool can only take {quote.data?.depositHeadroom} more{" "}
+              This pool can only take {localizedAmounts.depositHeadroom} more{" "}
               {selectedFrom?.token.symbol} right now.
             </Trans>
           )}
@@ -318,7 +378,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
             <Trans>This pool has no {selectedTo?.token.symbol} available to swap.</Trans>
           ) : (
             <Trans>
-              This pool only has {quote.data.availableAmountOut} {selectedTo?.token.symbol}{" "}
+              This pool only has {localizedAmounts.availableAmountOut} {selectedTo?.token.symbol}{" "}
               available to swap.
             </Trans>
           )}
@@ -355,6 +415,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         selectedId={selectedFrom?.id}
         isPending={tokensPending}
         isError={tokensError}
+        locale={i18n.locale}
         onSelect={(token) => {
           setFromMaxAmountRaw(null);
           if (token.id === selectedTo?.id) setToTokenId(selectedFrom?.id);
@@ -372,14 +433,15 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         selectedId={selectedTo?.id}
         isPending={tokensPending}
         isError={tokensError}
+        locale={i18n.locale}
         onSelect={(token) => setToTokenId(token.id)}
       />
       <SwapConfirmationSheet
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        fromAmount={displayedFromAmount}
+        fromAmount={localizedQuoteFromAmount}
         fromSymbol={selectedFrom?.token.symbol ?? ""}
-        toAmount={displayedToAmount}
+        toAmount={localizedQuoteToAmount}
         toSymbol={selectedTo?.token.symbol ?? ""}
         poolName={pool.name}
         error={
@@ -413,6 +475,8 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           const tokenOut = selectedTo.token.contractAddress;
           if (
             !isAddress(pool.address) ||
+            selectedFrom.decimals === null ||
+            selectedTo.decimals === null ||
             !tokenIn ||
             !isAddress(tokenIn) ||
             !tokenOut ||
@@ -431,14 +495,24 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
             })
             .catch(() => null);
           if (!result) return;
+          const confirmedSendAmount = formatTokenAmountFixed(
+            refreshed.data.amountInRaw,
+            selectedFrom.decimals,
+            2,
+          );
+          const confirmedReceiveAmount = formatTokenAmountFixed(
+            refreshed.data.amountOutRaw,
+            selectedTo.decimals,
+            2,
+          );
           void navigate({
             to: "/pools/$poolAddress/swap/receipt",
             params: { poolAddress },
             search: {
               trackingId: result.trackingId,
-              sendAmount: displayedFromAmount,
+              sendAmount: confirmedSendAmount,
               sendSymbol: selectedFrom.token.symbol,
-              receiveAmount: displayedToAmount,
+              receiveAmount: confirmedReceiveAmount,
               receiveSymbol: selectedTo.token.symbol,
               receiveToken: tokenOut,
               poolName: pool.name,
@@ -485,11 +559,11 @@ function SwapConfirmationSheet({
           </SheetHeader>
           <div className="px-6 pb-2">
             <div className="border border-border bg-card">
-              <SwapConfirmationRow label={<Trans>From</Trans>}>
-                {fromAmount} {fromSymbol}
-              </SwapConfirmationRow>
-              <SwapConfirmationRow label={<Trans>To</Trans>}>
+              <SwapConfirmationRow label={<Trans>You receive</Trans>}>
                 {toAmount} {toSymbol}
+              </SwapConfirmationRow>
+              <SwapConfirmationRow label={<Trans>You send</Trans>}>
+                {fromAmount} {fromSymbol}
               </SwapConfirmationRow>
               <SwapConfirmationRow label={<Trans>Pool</Trans>} last>
                 {poolName}
@@ -552,6 +626,8 @@ function SwapField({
   autoFocus = false,
   max,
   invalid = false,
+  onFocus,
+  onBlur,
   onAmountChange,
   onMax,
   onSelect,
@@ -563,6 +639,8 @@ function SwapField({
   autoFocus?: boolean;
   max?: string;
   invalid?: boolean;
+  onFocus: () => void;
+  onBlur: () => void;
   onAmountChange: (amount: string) => void;
   onMax?: () => void;
   onSelect: () => void;
@@ -588,18 +666,18 @@ function SwapField({
           </Button>
         ) : null}
       </div>
-      <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-center gap-2.5">
+      <div className="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-2.5">
         <button
           type="button"
           onClick={onSelect}
-          className="flex h-9 min-w-0 items-center gap-1.5 border border-border bg-card px-2"
+          className="flex h-9 items-center gap-1.5 border border-border bg-card px-2"
         >
           {token ? (
             <TokenLogo token={token} size={24} />
           ) : (
             <span className="size-6 shrink-0 rounded-full bg-muted" />
           )}
-          <span className="min-w-0 flex-1 truncate text-left text-sm font-bold">
+          <span className="shrink-0 whitespace-nowrap text-left text-sm font-bold">
             {token?.symbol ?? "—"}
           </span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -608,7 +686,12 @@ function SwapField({
           id={id}
           label={label}
           value={amount}
-          onValueChange={(value) => onAmountChange(sanitizeAmount(value))}
+          onValueChange={(value) => {
+            onFocus();
+            onAmountChange(sanitizeAmount(value));
+          }}
+          onFocus={onFocus}
+          onBlur={onBlur}
           autoFocus={autoFocus}
           aria-invalid={invalid}
         />
@@ -634,6 +717,7 @@ function PoolTokenPickerSheet({
   selectedId,
   isPending,
   isError,
+  locale,
   onSelect,
 }: {
   open: boolean;
@@ -644,6 +728,7 @@ function PoolTokenPickerSheet({
   selectedId?: string;
   isPending: boolean;
   isError: boolean;
+  locale: string;
   onSelect: (token: PoolSwapToken) => void;
 }) {
   const selectable = (token: PoolSwapToken) =>
@@ -688,6 +773,7 @@ function PoolTokenPickerSheet({
                     variant={variant}
                     selected={token.id === selectedId}
                     disabled={!selectable(token)}
+                    locale={locale}
                     onSelect={() => {
                       onSelect(token);
                       onOpenChange(false);
@@ -709,16 +795,19 @@ function PoolTokenPickerRow({
   variant,
   selected,
   disabled,
+  locale,
   onSelect,
 }: {
   token: PoolSwapToken;
   variant: "from" | "to";
   selected: boolean;
   disabled: boolean;
+  locale: string;
   onSelect: () => void;
 }) {
   const amountRaw = variant === "from" ? token.balanceRaw : token.liquidityRaw;
-  const amount = token.decimals === null ? "—" : formatTokenAmount(amountRaw, token.decimals);
+  const amount =
+    token.decimals === null ? "—" : formatTokenAmountFixed(amountRaw, token.decimals, 2, locale);
 
   return (
     <button
@@ -791,6 +880,15 @@ function SwapShell({ fallbackTo, message }: { fallbackTo: string; message: strin
       <p className="mt-4 text-muted-foreground text-sm">{message}</p>
     </div>
   );
+}
+
+function fixedEnteredAmount(amount: string, decimals: number | null, locale?: string): string {
+  if (!amount || decimals === null) return amount;
+  try {
+    return formatTokenAmountFixed(parseTokenAmount(amount, decimals), decimals, 2, locale);
+  } catch {
+    return amount;
+  }
 }
 
 function isPositiveRawAmount(value: string): boolean {

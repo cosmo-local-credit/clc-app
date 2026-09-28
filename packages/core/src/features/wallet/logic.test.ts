@@ -25,6 +25,20 @@ describe("formatTokenAmountFixed", () => {
     expect(formatTokenAmountFixed("2000000", 6, 2)).toBe("2.00");
     expect(formatTokenAmountFixed("5", 0, 2)).toBe("5.00");
   });
+
+  it.each([
+    ["en", "10,000.00"],
+    ["sw", "10,000.00"],
+    ["sr", "10.000,00"],
+  ])("groups fixed amounts for the %s locale", (locale, expected) => {
+    expect(formatTokenAmountFixed("10000000000", 6, 2, locale)).toBe(expected);
+  });
+
+  it("groups values beyond Number's safe integer range without losing precision", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "en")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
 });
 
 describe("parseTokenAmount", () => {
