@@ -22,6 +22,7 @@ import {
   type PoolSwapQuoteMode,
   usePoolSwapQuote,
 } from "#/features/pools/hooks/use-pool-swap-quote";
+import { usePoolSwapMaximum } from "#/features/pools/hooks/use-pool-swap-maximum";
 import { usePoolSwapTokenReads } from "#/features/pools/hooks/use-pool-swap-tokens";
 import { usePoolSwapTransfer } from "#/features/pools/hooks/use-pool-swap-transfer";
 import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
@@ -84,6 +85,20 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       ? undefined
       : defaultPoolSwapTo(swapTokens, pool, vouchers, selectedFrom?.id));
 
+  const maximum = usePoolSwapMaximum({
+    poolAddress: pool?.address,
+    quoterAddress: pool?.quoterAddress,
+    tokenIn: selectedFrom?.token.contractAddress,
+    tokenOut: selectedTo?.token.contractAddress,
+    walletBalanceRaw: selectedFrom?.balanceRaw,
+    // Null is genuinely uncapped. An unrecorded limiter value is unknown, so
+    // Max stays hidden rather than pretending the wallet balance will settle.
+    depositHeadroomRaw:
+      selectedFrom?.cap.kind === "unrecorded" ? undefined : selectedFrom?.depositHeadroomRaw,
+    availableAmountOutRaw: selectedTo?.liquidityRaw,
+    blockNumber: reads.blockNumber,
+  });
+
   const sourceAmount = quoteMode === "exact-input" ? fromAmount : toAmount;
   const quote = usePoolSwapQuote({
     mode: quoteMode,
@@ -107,13 +122,17 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       ? (displayedToAmountNumber / displayedFromAmountNumber).toFixed(3)
       : "—";
 
-  // The largest input this pool will actually settle: your balance, or the room
-  // left under its deposit cap, whichever runs out first. Max above the cap hands
-  // the holder an amount guaranteed to revert `LimitExceeded`.
+  // The pair-specific maximum combines the holder balance, the input deposit
+  // headroom, and output liquidity converted through the pool's gross quoter.
+  // While that boundary is absent or refreshing, no fallback Max is shown.
   const fromDecimals = selectedFrom?.decimals ?? null;
+  const maximumRaw = maximum.data?.maxAmountInRaw;
   const maxFromRaw =
-    selectedFrom && fromDecimals !== null
-      ? smallerRawAmount(selectedFrom.balanceRaw, selectedFrom.depositHeadroomRaw)
+    !reads.isFetching &&
+    !maximum.isFetching &&
+    maximumRaw !== undefined &&
+    isPositiveRawAmount(maximumRaw)
+      ? maximumRaw
       : null;
   const maxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
@@ -774,15 +793,11 @@ function SwapShell({ fallbackTo, message }: { fallbackTo: string; message: strin
   );
 }
 
-/** The binding constraint of the two, where both are known. */
-function smallerRawAmount(balanceRaw: string, headroomRaw: string | null): string | null {
+function isPositiveRawAmount(value: string): boolean {
   try {
-    const balance = BigInt(balanceRaw);
-    if (headroomRaw === null) return balance.toString();
-    const headroom = BigInt(headroomRaw);
-    return (balance < headroom ? balance : headroom).toString();
+    return BigInt(value) > 0n;
   } catch {
-    return null;
+    return false;
   }
 }
 
