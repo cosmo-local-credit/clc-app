@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -77,6 +77,47 @@ function accountToken(id: number) {
   };
 }
 
+const OTHER_OWNER = "0x9999999999999999999999999999999999999999";
+
+/**
+ * Token pages and catalog details are different reads. A detail answered with
+ * a token page never resolves an owner, and the list stays on the error state.
+ * Details default to another issuer so rows land under Holdings.
+ */
+function mockAccountReads(
+  tokenPages: readonly unknown[],
+  owners: Readonly<Record<string, string>> = {},
+  details: Readonly<Record<string, () => Promise<unknown>>> = {},
+) {
+  let tokenCalls = 0;
+  const fetcher = vi.fn().mockImplementation((url: string | URL) => {
+    const href = String(url);
+    if (href.includes("/api/v2/vouchers/")) {
+      const address = decodeURIComponent(
+        href.split("/api/v2/vouchers/")[1]?.split("?")[0] ?? "",
+      ).toLowerCase();
+      const detail = details[address];
+      if (detail) return detail();
+      return Promise.resolve(
+        successResponse({
+          voucher: {
+            id: address,
+            address,
+            chainId: 100,
+            ownerAddress: owners[address] ?? OTHER_OWNER,
+            kind: "voucher",
+          },
+        }),
+      );
+    }
+    const page = tokenPages[Math.min(tokenCalls, tokenPages.length - 1)];
+    tokenCalls += 1;
+    return Promise.resolve(page);
+  });
+  vi.stubGlobal("fetch", fetcher);
+  return fetcher;
+}
+
 beforeEach(() => {
   useConnectionMock.mockReturnValue({ address: ADDRESS });
 });
@@ -88,10 +129,7 @@ afterEach(() => {
 
 describe("AllVouchersPage", () => {
   it("opens voucher creation from the standard title-row button", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(successResponse({ tokens: [accountToken(1)] })),
-    );
+    mockAccountReads([successResponse({ tokens: [accountToken(1)] })]);
     renderWithQueryClient(<AllVouchersPage />);
 
     await screen.findByText("Voucher 1");
@@ -104,8 +142,7 @@ describe("AllVouchersPage", () => {
 
   it("shows account vouchers and expands a voucher link", async () => {
     const token = accountToken(1);
-    const fetcher = vi.fn().mockResolvedValue(successResponse({ tokens: [token], last: 1 }));
-    vi.stubGlobal("fetch", fetcher);
+    const fetcher = mockAccountReads([successResponse({ tokens: [token], last: 1 })]);
     renderWithQueryClient(<AllVouchersPage />);
 
     const voucherRow = await screen.findByRole("button", { name: /voucher 1/i });
@@ -142,11 +179,10 @@ describe("AllVouchersPage", () => {
 
   it("appends the next voucher page and stops at the end", async () => {
     const firstPage = Array.from({ length: 20 }, (_, index) => accountToken(index + 1));
-    const fetcher = vi
-      .fn()
-      .mockResolvedValueOnce(successResponse({ tokens: firstPage, first: 1, last: 20 }))
-      .mockResolvedValueOnce(successResponse({ tokens: [accountToken(21)], first: 21, last: 21 }));
-    vi.stubGlobal("fetch", fetcher);
+    const fetcher = mockAccountReads([
+      successResponse({ tokens: firstPage, first: 1, last: 20 }),
+      successResponse({ tokens: [accountToken(21)], first: 21, last: 21 }),
+    ]);
     renderWithQueryClient(<AllVouchersPage />);
 
     expect(await screen.findByText("Voucher 1")).toBeTruthy();
@@ -154,10 +190,70 @@ describe("AllVouchersPage", () => {
 
     expect(await screen.findByText("Voucher 21")).toBeTruthy();
     await waitFor(() => expect(screen.queryByRole("button", { name: /load more/i })).toBeNull());
-    expect(fetcher).toHaveBeenNthCalledWith(
-      2,
+    const tokenCalls = fetcher.mock.calls.filter(([url]) => String(url).includes("/tokens"));
+    expect(tokenCalls[1]?.[0]).toEqual(
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20&cursor=20&next=true`),
+    );
+    expect(tokenCalls[1]?.[1]).toEqual(
       expect.objectContaining({ method: "GET", cache: "no-store" }),
     );
   }, 10_000);
+
+  it("keeps the loaded page on screen while the next page's issuers load", async () => {
+    const firstPage = Array.from({ length: 20 }, (_, index) => accountToken(index + 1));
+    const next = accountToken(21);
+    mockAccountReads(
+      [
+        successResponse({ tokens: firstPage, first: 1, last: 20 }),
+        successResponse({ tokens: [next], first: 21, last: 21 }),
+      ],
+      {},
+      { [next.tokenAddress]: () => new Promise(() => {}) },
+    );
+    renderWithQueryClient(<AllVouchersPage />);
+
+    expect(await screen.findByText("Voucher 1")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /load more/i }));
+
+    expect(await screen.findByText("Loading vouchers…")).toBeTruthy();
+    expect(screen.getByText("Voucher 1")).toBeTruthy();
+    expect(screen.queryByText("Voucher 21")).toBeNull();
+  }, 10_000);
+
+  it("lists the vouchers that resolved when one issuer read fails", async () => {
+    const good = accountToken(1);
+    const bad = accountToken(2);
+    const fetcher = mockAccountReads(
+      [successResponse({ tokens: [good, bad], last: 2 })],
+      {},
+      { [bad.tokenAddress]: () => Promise.resolve(errorResponse()) },
+    );
+    renderWithQueryClient(<AllVouchersPage />);
+
+    expect(await screen.findByText("Some vouchers couldn't load.")).toBeTruthy();
+    expect(screen.getByText("Voucher 1")).toBeTruthy();
+    expect(screen.queryByText("Voucher 2")).toBeNull();
+    // Your Vouchers would claim none were issued while one row is unresolved.
+    expect(screen.queryByText("You haven't issued a voucher yet.")).toBeNull();
+
+    const detailCalls = () =>
+      fetcher.mock.calls.filter(([url]) => String(url).includes("/api/v2/vouchers/"));
+    const before = detailCalls().length;
+    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+    // Only the failed read is repeated.
+    await waitFor(() => expect(detailCalls().length).toBe(before + 1));
+    expect(String(detailCalls().at(-1)?.[0])).toContain(bad.tokenAddress);
+  });
+
+  it("puts a voucher this account issued under Your Vouchers", async () => {
+    const token = accountToken(7);
+    mockAccountReads([successResponse({ tokens: [token], last: 7 })], {
+      [token.tokenAddress]: ADDRESS,
+    });
+    renderWithQueryClient(<AllVouchersPage />);
+
+    const issued = within(await screen.findByRole("region", { name: "Your Vouchers" }));
+    expect(issued.getByText("Voucher 7")).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "Holdings" })).toBeNull();
+  });
 });
