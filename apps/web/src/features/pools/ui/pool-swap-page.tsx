@@ -2,12 +2,11 @@ import { formatTokenAmount, parseTokenAmount } from "@clc/core/features/wallet/l
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { RiArrowDownLine, RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
+import { RiArrowDownSLine, RiArrowUpLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
 import {
   SheetBackdrop,
   SheetContent,
@@ -17,7 +16,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { SignHint, TokenLogo, type WalletToken } from "#/components/wallet";
+import { SignHint, TokenLogo, type WalletToken, WalletAmountInput } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import {
   type PoolSwapQuoteMode,
@@ -38,6 +37,8 @@ import { cn } from "#/lib/utils";
 
 export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const { t } = useLingui();
+  const receiveLabel = t`You receive`;
+  const sendLabel = t`You send`;
   const navigate = useNavigate();
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
@@ -56,7 +57,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const [fromAmount, setFromAmount] = useState("");
   const [fromMaxAmountRaw, setFromMaxAmountRaw] = useState<string | null>(null);
   const [toAmount, setToAmount] = useState("");
-  const [quoteMode, setQuoteMode] = useState<PoolSwapQuoteMode>("exact-input");
+  const [quoteMode, setQuoteMode] = useState<PoolSwapQuoteMode>("exact-output");
   const [picker, setPicker] = useState<null | { field: "from" | "to" }>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -167,7 +168,21 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
 
       <div className="relative grid grid-rows-2 gap-1">
         <SwapField
-          label={t`From`}
+          id="swap-receive-amount"
+          label={receiveLabel}
+          token={selectedTo?.token}
+          amount={displayedToAmount}
+          autoFocus
+          onAmountChange={(amount) => {
+            setQuoteMode("exact-output");
+            setFromMaxAmountRaw(null);
+            setToAmount(amount);
+          }}
+          onSelect={() => setPicker({ field: "to" })}
+        />
+        <SwapField
+          id="swap-send-amount"
+          label={sendLabel}
           token={selectedFrom?.token}
           amount={displayedFromAmount}
           max={maxFromAmount}
@@ -185,17 +200,6 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           }}
           onSelect={() => setPicker({ field: "from" })}
         />
-        <SwapField
-          label={t`To`}
-          token={selectedTo?.token}
-          amount={displayedToAmount}
-          onAmountChange={(amount) => {
-            setQuoteMode("exact-output");
-            setFromMaxAmountRaw(null);
-            setToAmount(amount);
-          }}
-          onSelect={() => setPicker({ field: "to" })}
-        />
         <button
           type="button"
           aria-label={t`Reverse swap direction`}
@@ -211,7 +215,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           }}
           className="absolute top-1/2 left-1/2 z-10 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-background bg-foreground text-background disabled:opacity-50"
         >
-          <RiArrowDownLine className="size-4" aria-hidden="true" />
+          <RiArrowUpLine className="size-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -327,7 +331,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           if (!open) setPicker(null);
         }}
         variant="from"
-        title={t`From`}
+        title={sendLabel}
         tokens={swapTokens}
         selectedId={selectedFrom?.id}
         isPending={tokensPending}
@@ -344,7 +348,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           if (!open) setPicker(null);
         }}
         variant="to"
-        title={t`To`}
+        title={receiveLabel}
         tokens={swapTokens.filter((token) => token.id !== selectedFrom?.id)}
         selectedId={selectedTo?.id}
         isPending={tokensPending}
@@ -522,18 +526,22 @@ function SwapConfirmationRow({
 }
 
 function SwapField({
+  id,
   label,
   token,
   amount,
+  autoFocus = false,
   max,
   invalid = false,
   onAmountChange,
   onMax,
   onSelect,
 }: {
+  id: string;
   label: string;
   token: WalletToken | undefined;
   amount: string;
+  autoFocus?: boolean;
   max?: string;
   invalid?: boolean;
   onAmountChange: (amount: string) => void;
@@ -547,7 +555,9 @@ function SwapField({
       className="grid h-full min-h-28 grid-rows-[1.75rem_1fr] border border-border bg-card p-3.5"
     >
       <div className="flex items-start justify-between">
-        <span className="text-muted-foreground text-xs">{label}</span>
+        <label htmlFor={id} className="text-muted-foreground text-xs">
+          {label}
+        </label>
         {max !== undefined ? (
           <Button
             variant="ghost"
@@ -575,13 +585,13 @@ function SwapField({
           </span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
         </button>
-        <Input
+        <WalletAmountInput
+          id={id}
+          label={label}
           value={amount}
-          onChange={(event) => onAmountChange(sanitizeAmount(event.target.value))}
-          inputMode="decimal"
-          aria-label={label}
+          onValueChange={(value) => onAmountChange(sanitizeAmount(value))}
+          autoFocus={autoFocus}
           aria-invalid={invalid}
-          className="h-9 w-full truncate border-0 bg-card px-0 text-right font-heading text-[1.625rem] font-semibold leading-none tracking-tight shadow-none focus-visible:border-0"
         />
       </div>
     </div>
