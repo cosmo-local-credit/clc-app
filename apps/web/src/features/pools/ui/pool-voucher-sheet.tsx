@@ -363,7 +363,7 @@ function PoolVoucherForm({
                         onChange={field.handleChange}
                         onBlur={field.handleBlur}
                         error={getFieldError(field.state.meta.errors)}
-                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers? Zero accepts no deposits yet.`}
+                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers?`}
                         placeholder="0"
                       />
                     )}

@@ -367,6 +367,12 @@ describe("PoolVoucherSheet managing", () => {
     const dialog = await screen.findByRole("dialog");
     expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("2.5");
     expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("500");
+    expect(
+      within(dialog).getByText(
+        "How much value in KES can be swapped from the pool using PEPAS vouchers?",
+      ),
+    ).toBeTruthy();
+    expect(within(dialog).queryByText(/Zero accepts no deposits yet/)).toBeNull();
   });
 
   it("re-signs only what the steward changed", async () => {
