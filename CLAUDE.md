@@ -257,6 +257,14 @@ Inputs use default `h-9`; don't override with `h-11`.
 Never use `bg-background` or `bg-transparent` for interactive elements (inputs,
 buttons) placed on the gray page background — they become invisible.
 
+**Wallet amount inputs:** New or migrated transactional amount controls use
+`WalletAmountInput` from `#/components/wallet`. The component owns the square
+white surface, visible border, amount typography, placeholder, and focus,
+invalid, and disabled states. Screens continue to own token selection, parsing,
+sanitization, precision, quoting, and validation. Do not add new borderless or
+transparent composite amount inputs. Pool Swap uses this pattern; Send, Add
+stables, and Withdraw remain legacy migrations tracked by issue #52.
+
 **Self-check before writing any layout:**
 
 > "Would this look like a card floating in the middle of a phone screen?"
