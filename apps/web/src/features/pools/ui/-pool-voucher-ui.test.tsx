@@ -1,4 +1,5 @@
 import {
+  poolQuoterReverseValueForAbi,
   swapPoolGetQuoteAbi,
   swapRouterQuoteExactInputAbi,
   swapRouterQuoteExactOutputAbi,
@@ -12,6 +13,7 @@ const {
   holderBalances,
   navigate,
   poolLiquidityBalance,
+  poolQuoteRate,
   poolTreasuryState,
   poolTokenLimit,
   poolTransfers,
@@ -26,6 +28,7 @@ const {
   holderBalances: { value: {} as Record<string, bigint> },
   navigate: vi.fn(),
   poolLiquidityBalance: { value: 1_000_000_000n },
+  poolQuoteRate: { numerator: 2n, denominator: 1n },
   poolTreasuryState: {
     balances: {} as Record<string, bigint>,
     fees: {} as Record<string, bigint>,
@@ -246,6 +249,7 @@ function mockPoolRequests({
             unitOfAccount: "USD",
             limiterAddress: LIMITER_ADDRESS,
             quoterAddress: QUOTER_ADDRESS,
+            feesDecoupled: poolTreasuryState.feesDecoupled,
             // Recorded, so the holdings panel does not have to probe for it.
             // Only a RelativeQuoter exposes a readable rate, and without one
             // the panel declines to value the pool rather than assume parity.
@@ -273,6 +277,8 @@ function tokenLimitOf(token: unknown): bigint {
 
 beforeEach(() => {
   poolLiquidityBalance.value = 1_000_000_000n;
+  poolQuoteRate.numerator = 2n;
+  poolQuoteRate.denominator = 1n;
   poolTreasuryState.balances = {
     [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
     [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
@@ -302,9 +308,9 @@ beforeEach(() => {
               index % 4 === 0
                 ? (holderBalances.value[contract.address.toLowerCase()] ?? 0n)
                 : index % 4 === 1
-                  ? 30_000_000n
+                  ? (poolTreasuryState.balances[contract.address.toLowerCase()] ?? 30_000_000n)
                   : index % 4 === 2
-                    ? 0n
+                    ? (poolTreasuryState.fees[String(contract.args?.[0]).toLowerCase()] ?? 0n)
                     : tokenLimitOf(contract.args?.[0]),
           })),
         );
@@ -341,7 +347,11 @@ beforeEach(() => {
       if (allowFailure) {
         return Promise.resolve(contracts.map(() => ({ status: "success", result: 2_000_000n })));
       }
-      return Promise.resolve([poolLiquidityBalance.value, false, 0n]);
+      return Promise.resolve([
+        poolLiquidityBalance.value,
+        poolTreasuryState.feesDecoupled,
+        poolTreasuryState.fees[String(contracts[2]?.args?.[0]).toLowerCase()] ?? 0n,
+      ]);
     },
   );
   publicClientCall.mockImplementation(({ data }: { data: Hex }) => {
@@ -351,7 +361,7 @@ beforeEach(() => {
         data: encodeFunctionResult({
           abi: swapRouterQuoteExactInputAbi,
           functionName: "quoteExactInput",
-          result: decoded.args[1] * 2n,
+          result: (decoded.args[1] * poolQuoteRate.numerator) / poolQuoteRate.denominator,
         }),
       });
     } catch {
@@ -361,18 +371,32 @@ beforeEach(() => {
           data: encodeFunctionResult({
             abi: swapRouterQuoteExactOutputAbi,
             functionName: "quoteExactOutput",
-            result: decoded.args[1] / 2n,
+            result: (decoded.args[1] * poolQuoteRate.denominator) / poolQuoteRate.numerator,
           }),
         });
       } catch {
-        const decoded = decodeFunctionData({ abi: swapPoolGetQuoteAbi, data });
-        return Promise.resolve({
-          data: encodeFunctionResult({
-            abi: swapPoolGetQuoteAbi,
-            functionName: "getQuote",
-            result: decoded.args[2] * 2n,
-          }),
-        });
+        try {
+          const decoded = decodeFunctionData({ abi: poolQuoterReverseValueForAbi, data });
+          const scaled = decoded.args[2] * poolQuoteRate.denominator;
+          return Promise.resolve({
+            data: encodeFunctionResult({
+              abi: poolQuoterReverseValueForAbi,
+              functionName: "reverseValueFor",
+              result:
+                scaled / poolQuoteRate.numerator +
+                (scaled % poolQuoteRate.numerator === 0n ? 0n : 1n),
+            }),
+          });
+        } catch {
+          const decoded = decodeFunctionData({ abi: swapPoolGetQuoteAbi, data });
+          return Promise.resolve({
+            data: encodeFunctionResult({
+              abi: swapPoolGetQuoteAbi,
+              functionName: "getQuote",
+              result: (decoded.args[2] * poolQuoteRate.numerator) / poolQuoteRate.denominator,
+            }),
+          });
+        }
       }
     }
   });
@@ -747,6 +771,40 @@ describe("pool voucher UI", () => {
     });
   });
 
+  it("clamps Max to output liquidity after converting it into the input voucher", async () => {
+    poolQuoteRate.numerator = 1n;
+    poolTreasuryState.balances[TTX_ADDRESS.toLowerCase()] = 55_000_000n;
+    poolLiquidityBalance.value = 55_000_000n;
+    mockPoolRequests({ usdcBalance: "995000000" });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const max = await screen.findByRole("button", { name: /max 55$/i });
+    expect(screen.queryByRole("button", { name: /max 995$/i })).toBeNull();
+    fireEvent.click(max);
+
+    await waitFor(() => {
+      expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe(
+        "55",
+      );
+      expect((screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement).value).toBe(
+        "55.00",
+      );
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+  });
+
+  it("excludes reserved output fees from the liquidity available to Max", async () => {
+    poolQuoteRate.numerator = 1n;
+    poolTreasuryState.feesDecoupled = true;
+    poolTreasuryState.balances[TTX_ADDRESS.toLowerCase()] = 100_000_000n;
+    poolTreasuryState.fees[TTX_ADDRESS.toLowerCase()] = 45_000_000n;
+    poolLiquidityBalance.value = 100_000_000n;
+    mockPoolRequests({ usdcBalance: "995000000" });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    expect(await screen.findByRole("button", { name: /max 55$/i })).toBeTruthy();
+  });
+
   it("opens an in-place confirmation sheet instead of a review page", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
@@ -1039,6 +1097,9 @@ describe("pool voucher UI", () => {
     // Reversing is offered only once both sides are known to be swappable, so the
     // selections have to have settled before the button means anything.
     await within(screen.getByRole("group", { name: "You send" })).findByText("USDC");
+    await within(screen.getByRole("group", { name: "You send" })).findByRole("button", {
+      name: /max 12\.34/i,
+    });
     fireEvent.change(fromInput, { target: { value: "17.25" } });
     await waitFor(() => expect(toInput.value).toBe("34.50"));
     const amountsBefore = [fromInput.value, toInput.value];
@@ -1051,7 +1112,12 @@ describe("pool voucher UI", () => {
     ).toBeTruthy();
     expect([fromInput.value, toInput.value]).toEqual(amountsBefore);
     expect(
-      within(screen.getByRole("group", { name: "You send" })).getByRole("button", {
+      within(screen.getByRole("group", { name: "You send" })).queryByRole("button", {
+        name: /max 12\.34/i,
+      }),
+    ).toBeNull();
+    expect(
+      await within(screen.getByRole("group", { name: "You send" })).findByRole("button", {
         name: /max 9/i,
       }),
     ).toBeTruthy();

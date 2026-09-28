@@ -112,6 +112,10 @@ vi.mock("#/features/pools/hooks/use-pool-swap-quote", () => ({
   }),
 }));
 
+vi.mock("#/features/pools/hooks/use-pool-swap-maximum", () => ({
+  usePoolSwapMaximum: () => ({ data: undefined, isFetching: false }),
+}));
+
 vi.mock("#/features/pools/hooks/use-pool-swap-transfer", () => ({
   usePoolSwapTransfer: () => ({
     error: null,
