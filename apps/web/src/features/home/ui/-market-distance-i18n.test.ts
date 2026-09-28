@@ -38,6 +38,13 @@ describe("translated distance labels", () => {
     expect(kilometres({ value: "12.4" })).toBe("12.4 km");
   });
 
+  it("renders French", async () => {
+    await activateLocale("fr");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
+  });
+
   it("renders Swahili with the unit before the number", async () => {
     await activateLocale("sw");
 
@@ -60,6 +67,11 @@ describe("translated distance labels", () => {
   });
 
   it("keeps every locale's kind labels translated", async () => {
+    await activateLocale("fr");
+    expect(i18n._(msg`Goods`)).toBe("Biens");
+    expect(i18n._(msg`Services`)).toBe("Services");
+    expect(i18n._(msg`Voucher`)).toBe("Bon d’échange");
+
     await activateLocale("sw");
     expect(i18n._(msg`Goods`)).toBe("Bidhaa");
     expect(i18n._(msg`Services`)).toBe("Huduma");
@@ -72,13 +84,13 @@ describe("translated distance labels", () => {
   });
 
   it("translates the market load error, retry, and empty states", async () => {
-    for (const locale of ["sr", "sw"] as const) {
+    for (const locale of ["fr", "sr", "sw"] as const) {
       await activateLocale(locale);
       for (const message of [
         msg`Could not load vouchers.`,
         msg`Retry`,
         msg`No vouchers to show yet.`,
-        msg`The map is unavailable on this device. Browse vouchers as a list instead.`,
+        msg`The map is not supported on this device.`,
       ]) {
         const translated = i18n._(message);
         expect(translated).not.toBe("");
