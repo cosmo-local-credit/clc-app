@@ -15,8 +15,19 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["sr-Cyrl-RS"])).toBe("sr");
   });
 
+  it("matches generic and region-tagged French locales", () => {
+    expect(matchSupportedLocale(["fr"])).toBe("fr");
+    expect(matchSupportedLocale(["fr-FR"])).toBe("fr");
+    expect(matchSupportedLocale(["fr-CD"])).toBe("fr");
+    expect(matchSupportedLocale(["fr_CA"])).toBe("fr");
+  });
+
+  it("honors French in the preferred-language order", () => {
+    expect(matchSupportedLocale(["de-DE", "fr-CA", "en-US"])).toBe("fr");
+  });
+
   it("falls back to the default locale when nothing matches", () => {
-    expect(matchSupportedLocale(["fr", "de"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["de", "es"])).toBe(DEFAULT_LOCALE);
   });
 
   it("falls back to the default locale for an empty list", () => {

@@ -106,11 +106,31 @@ describe("translateValidationError", () => {
     );
   });
 
-  it("keeps every known validation error wired to a translated catalog message", async () => {
-    await activateLocale("sr");
+  it("translates known validation errors into French", async () => {
+    await activateLocale("fr");
 
-    for (const error of knownErrors) {
-      expect(translateValidationError(error, i18n)).not.toBe(error);
+    expect(translateValidationError("Choose a location", i18n)).toBe("Choisissez un emplacement");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "Numéro de téléphone non valide",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Le nom du bon d’échange est requis",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Le nom du bassin est requis",
+    );
+    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
+      "Acceptez la licence SPROUT pour publier votre bassin",
+    );
+  });
+
+  it("keeps every known validation error wired to a translated catalog message", async () => {
+    for (const locale of ["fr", "sr", "sw"] as const) {
+      await activateLocale(locale);
+
+      for (const error of knownErrors) {
+        expect(translateValidationError(error, i18n)).not.toBe(error);
+      }
     }
   });
 
