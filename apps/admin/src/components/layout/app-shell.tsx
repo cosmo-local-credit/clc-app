@@ -4,7 +4,6 @@ import {
   HiOutlineCollection,
   HiOutlineHome,
   HiOutlineNewspaper,
-  HiOutlineQrcode,
   HiOutlineSwitchHorizontal,
   HiOutlineTag,
   HiOutlineTicket,
@@ -36,7 +35,6 @@ type NavPath =
   | "/pools"
   | "/vouchers"
   | "/users"
-  | "/paper-wallets"
   | "/posts"
   | "/vocabulary"
   | "/transactions"
@@ -62,7 +60,6 @@ const navItems: Array<{
 }> = [
   { to: "/", label: "Dashboard", icon: HiOutlineHome, exact: true },
   { to: "/users", label: "Accounts", icon: HiOutlineUsers },
-  { to: "/paper-wallets", label: "Paper wallets", icon: HiOutlineQrcode },
   { to: "/pools", label: "Pools", icon: HiOutlineCollection },
   { to: "/vouchers", label: "Vouchers", icon: HiOutlineTicket },
   { to: "/posts", label: "Posts", icon: HiOutlineNewspaper },

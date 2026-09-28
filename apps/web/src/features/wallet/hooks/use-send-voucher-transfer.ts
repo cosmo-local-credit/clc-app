@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { useConnection } from "wagmi";
 
 import {
   relayVoucherTransfer,
@@ -11,9 +10,7 @@ import { RELAYER_URL } from "#/lib/relayer-config";
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export function useSendVoucherTransfer() {
-  const { connector } = useConnection();
   return useMutation({
-    mutationFn: (input: Omit<RelayVoucherTransferInput, "connectorId">) =>
-      relayVoucherTransfer({ ...input, connectorId: connector?.id }, relayerClient),
+    mutationFn: (input: RelayVoucherTransferInput) => relayVoucherTransfer(input, relayerClient),
   });
 }

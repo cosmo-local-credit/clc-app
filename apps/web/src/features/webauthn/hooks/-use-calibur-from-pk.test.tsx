@@ -4,12 +4,6 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { RelayerClient } from "@clc/api/features/relayer/client";
-
-const { readCaliburDelegation } = vi.hoisted(() => ({
-  readCaliburDelegation: vi.fn(),
-}));
-vi.mock("#/features/webauthn/api/calibur-delegation", () => ({ readCaliburDelegation }));
-
 import { useCaliburFromPk } from "./use-calibur-from-pk";
 
 const FAKE_PK =
@@ -39,7 +33,6 @@ function createWrapper() {
 
 describe("useCaliburFromPk", () => {
   beforeEach(() => {
-    readCaliburDelegation.mockReset().mockResolvedValue(false);
     Object.defineProperty(window, "isSecureContext", {
       configurable: true,
       value: true,

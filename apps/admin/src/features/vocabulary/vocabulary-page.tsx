@@ -108,7 +108,10 @@ export function VocabularyPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Vocabulary" />
+      <PageHeader
+        title="Vocabulary"
+        description="Custom tags and offering units added through catalog forms. Built-in values are protected."
+      />
 
       {vocabulary.isPending ? (
         <LoadingBlock rows={5} />
@@ -116,22 +119,36 @@ export function VocabularyPage() {
         <PageState title="Could not load vocabulary" message={vocabulary.error.message} />
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">
-          <VocabularySection title="Custom tags">
+          <VocabularySection
+            title="Custom tags"
+            description="Deleting a tag removes it from every voucher, pool, post, offering, and pending deployment."
+          >
             <DataTable
               columns={tagColumns}
               data={vocabulary.data.tags}
               emptyState={
-                <EmptyState title="No custom tags" icon={<HiOutlineTag className="size-5" />} />
+                <EmptyState
+                  title="No custom tags"
+                  description="Tags added by users will appear here."
+                  icon={<HiOutlineTag className="size-5" />}
+                />
               }
             />
           </VocabularySection>
 
-          <VocabularySection title="Custom offering units">
+          <VocabularySection
+            title="Custom offering units"
+            description="Deleting a unit clears it from affected offerings without deleting those offerings."
+          >
             <DataTable
               columns={unitColumns}
               data={vocabulary.data.units}
               emptyState={
-                <EmptyState title="No custom units" icon={<HiOutlineTag className="size-5" />} />
+                <EmptyState
+                  title="No custom units"
+                  description="Offering units added by users will appear here."
+                  icon={<HiOutlineTag className="size-5" />}
+                />
               }
             />
           </VocabularySection>
@@ -151,12 +168,23 @@ export function VocabularyPage() {
   );
 }
 
-function VocabularySection({ title, children }: { title: string; children: React.ReactNode }) {
+function VocabularySection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="space-y-3">
-      <h2 className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
-        {title}
-      </h2>
+      <div>
+        <h2 className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
+          {title}
+        </h2>
+        <p className="mt-1 text-muted-foreground text-sm">{description}</p>
+      </div>
       {children}
     </section>
   );
@@ -181,7 +209,9 @@ function DeleteVocabularyDialog({
       <DialogContent className="rounded-none" showCloseButton={!pending}>
         <DialogHeader>
           <DialogTitle>Delete “{target?.row.value}”?</DialogTitle>
-          <DialogDescription>This cannot be undone.</DialogDescription>
+          <DialogDescription>
+            This cannot be undone. The value can be added again by a later catalog write.
+          </DialogDescription>
         </DialogHeader>
 
         {details.length > 0 ? (

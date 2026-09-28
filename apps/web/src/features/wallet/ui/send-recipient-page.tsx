@@ -11,15 +11,8 @@ import {
 import { type Recipient } from "#/components/wallet/wallet-data";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
-import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
-import {
-  useAddressBookRecipients,
-  useUpsertAddressBookRecipient,
-} from "#/features/wallet/hooks/use-address-book";
-import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
-import { recentSendRecipients } from "#/features/wallet/logic/recent-send-recipients";
+import { useUpsertAddressBookRecipient } from "#/features/wallet/hooks/use-address-book";
 import { AddressBookSheet } from "./address-book-sheet";
-import { RecentRecipientRow } from "./recent-recipient-row";
 import { RecipientAddressCard } from "./recipient-address-card";
 
 export function SendRecipientPage({ token, amount }: { token?: string; amount?: string }) {
@@ -33,27 +26,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   // `home-page.tsx` uses for `locationOwner`.
   const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
-  const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
-  const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
-  const addressBook = useAddressBookRecipients(owner);
-  const labels = new Map(
-    (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry.label]),
-  );
-  const recent = recentSendRecipients(
-    transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [],
-    wallet,
-  ).map((address): Recipient => {
-    const saved = labels.get(address.toLowerCase());
-    const named = saved !== undefined && !saved.toLowerCase().startsWith("0x");
-    return {
-      id: address.toLowerCase(),
-      label: named ? saved : address,
-      address,
-      seed: named ? saved : address,
-    };
-  });
   const recipient = selectedRecipient ?? resolvedRecipient;
-  const showRecent = query.trim() === "";
 
   function handleSelectRecipient(recipient: Recipient) {
     if (recipient.address) {
@@ -117,20 +90,6 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
         />
       </div>
 
-      {showRecent ? (
-        <RecentRecipients
-          recipients={recent}
-          // A guest has no activity to read, and a read that never runs stays
-          // pending — the list would say "Loading" forever.
-          pending={wallet !== undefined && transfersQuery.isPending}
-          failed={transfersQuery.isError}
-          onRetry={() => {
-            void transfersQuery.refetch();
-          }}
-          onSelect={handleSelectRecipient}
-        />
-      ) : null}
-
       <Button
         variant="outline"
         className="mb-3 h-11 w-full justify-between"
@@ -166,62 +125,5 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
         owner={owner}
       />
     </div>
-  );
-}
-
-function RecentRecipients({
-  recipients,
-  pending,
-  failed,
-  onRetry,
-  onSelect,
-}: {
-  recipients: readonly Recipient[];
-  pending: boolean;
-  failed: boolean;
-  onRetry: () => void;
-  onSelect: (recipient: Recipient) => void;
-}) {
-  if (!pending && !failed && recipients.length === 0) return null;
-
-  return (
-    <section aria-labelledby="recent-recipients" className="mb-3 space-y-1">
-      <p id="recent-recipients" className="text-muted-foreground text-xs">
-        <Trans>Recent recipients</Trans>
-      </p>
-      {pending ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Loading activity…</Trans>
-        </p>
-      ) : null}
-      {failed ? (
-        <div className="space-y-2">
-          <p role="alert" className="text-destructive text-sm">
-            <Trans>Couldn't load activity.</Trans>
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
-            <Trans>Try again</Trans>
-          </Button>
-        </div>
-      ) : null}
-      {recipients.length > 0 ? (
-        <ul className="border border-border bg-card">
-          {recipients.map((recipient, index) => (
-            <li
-              key={recipient.id}
-              className={index < recipients.length - 1 ? "border-b border-border" : undefined}
-            >
-              <RecentRecipientRow recipient={recipient} onSelect={() => onSelect(recipient)} />
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </section>
   );
 }

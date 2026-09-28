@@ -52,25 +52,3 @@ function extractPaperWalletPayload(
 
   return { ok: true, payload: trimmed };
 }
-
-/** The QR payload on every paper wallet: a link that opens the app and imports the key. */
-export function buildPaperWalletUrl(origin: string, payload: string): string {
-  return `${origin.replace(/\/+$/, "")}/?w=${encodeURIComponent(payload)}`;
-}
-
-/**
- * Signup requires a name and a unique email, but a paper wallet can be issued
- * before its holder has given either. These stand in until the holder edits
- * their profile, and `profileGaps` treats both as missing.
- */
-export const PAPER_WALLET_PLACEHOLDER_NAME = "Paper wallet";
-
-const PLACEHOLDER_EMAIL_DOMAIN = "@clc.local";
-
-export function placeholderSignupEmail(address: string): string {
-  return `pending+${address.replace(/^0x/i, "").toLowerCase()}${PLACEHOLDER_EMAIL_DOMAIN}`;
-}
-
-export function isPlaceholderSignupEmail(email: string | null | undefined): boolean {
-  return (email ?? "").trim().toLowerCase().endsWith(PLACEHOLDER_EMAIL_DOMAIN);
-}

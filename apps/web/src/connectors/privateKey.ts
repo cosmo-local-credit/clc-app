@@ -41,12 +41,10 @@ export function getStoredAddress(): string | null {
   return localStorage.getItem(ADDRESS_KEY);
 }
 
-export const PRIVATE_KEY_CONNECTOR_ID = "private-key";
-
 export function privateKeyConnector() {
   return createConnector(((config) => {
     return {
-      id: PRIVATE_KEY_CONNECTOR_ID,
+      id: "private-key",
       name: "Private Key",
       type: "privateKey" as const,
 

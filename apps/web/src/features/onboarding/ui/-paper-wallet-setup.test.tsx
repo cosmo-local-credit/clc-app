@@ -2,9 +2,8 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { mockExport, mockExportSheet, FAKE_QR_DATA_URL, FAKE_ADDRESS } = vi.hoisted(() => ({
+const { mockExport, FAKE_QR_DATA_URL, FAKE_ADDRESS } = vi.hoisted(() => ({
   mockExport: vi.fn().mockResolvedValue(new Blob(["png"], { type: "image/png" })),
-  mockExportSheet: vi.fn().mockResolvedValue(new Blob(["pdf"], { type: "application/pdf" })),
   FAKE_QR_DATA_URL: "data:image/png;base64,fakeqrcode",
   FAKE_ADDRESS: "0x37f944fe60D10350a2AAFBAf14FaA824811153a2" as `0x${string}`,
 }));
@@ -17,7 +16,6 @@ vi.mock("qrcode", () => ({
 
 vi.mock("./paper-wallet-export", () => ({
   exportPaperWallet: mockExport,
-  exportPaperWalletSheet: mockExportSheet,
 }));
 
 // Prevent actual anchor download during tests
@@ -212,38 +210,6 @@ describe("usePaperWalletSetup", () => {
     expect(mockAnchorClick).toHaveBeenCalled();
     expect(createObjectURL).toHaveBeenCalled();
     expect(share).not.toHaveBeenCalled();
-  });
-
-  it("downloads the A4 sheet as a PDF without opening the print dialog", async () => {
-    setShareSupport(null);
-    const print = vi.spyOn(window, "print").mockImplementation(() => undefined);
-    const onDownloaded = vi.fn();
-    render(
-      <HookRenderer
-        address={FAKE_ADDRESS}
-        qrUrl="https://cosmolocal.credit/?w=0xabc"
-        defaultName="Alice"
-        onDownloaded={onDownloaded}
-        render={(s) => (
-          <>
-            {s.card}
-            {s.downloadButton}
-          </>
-        )}
-      />,
-    );
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: /printable a4 sheet/i }));
-    });
-
-    expect(mockExportSheet).toHaveBeenCalledWith(
-      expect.any(HTMLDivElement),
-      "https://cosmolocal.credit/?w=0xabc",
-    );
-    expect(mockAnchorClick).toHaveBeenCalled();
-    expect(print).not.toHaveBeenCalled();
-    expect(onDownloaded).toHaveBeenCalled();
   });
 
   it("shares the PNG only when Share card is tapped", async () => {

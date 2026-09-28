@@ -1,6 +1,5 @@
 import type { PoolRouteHop } from "@clc/core/features/pool-swaps/logic";
 import { useMutation } from "@tanstack/react-query";
-import { useConnection } from "wagmi";
 
 import {
   relayPoolSwapExactInput,
@@ -21,12 +20,10 @@ export type PoolSwapTransferInput = {
 };
 
 export function usePoolSwapTransfer() {
-  const { connector } = useConnection();
   return useMutation({
     mutationFn: (input: PoolSwapTransferInput) => {
       const relayInput = {
         senderAddress: input.senderAddress,
-        connectorId: connector?.id,
         path: input.path,
         hopAmountIns: input.hopAmountIns,
         includeAuthorization: input.includeAuthorization,

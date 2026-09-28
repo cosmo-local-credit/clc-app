@@ -128,7 +128,7 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
     <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <div className="flex items-center gap-2 self-center">
-          {/* Same per-brand mark the favicon uses — green on prod, red on staging. */}
+          {/* Same per-brand mark the favicon uses — green on prod, blue on staging. */}
           <img src={`${BRAND_ICON_BASE}/logo.svg`} alt="" className="size-6" />
           <span className="font-heading font-semibold tracking-tight">CLC Admin</span>
         </div>

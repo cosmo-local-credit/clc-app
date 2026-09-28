@@ -47,7 +47,7 @@ const relayerClient = createRelayerClient(RELAYER_URL);
  */
 export function usePoolAdminRelay() {
   const queryClient = useQueryClient();
-  const { address, connector } = useConnection();
+  const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address as `0x${string}` | undefined);
 
   return useMutation({
@@ -59,7 +59,6 @@ export function usePoolAdminRelay() {
       const { trackingId } = await relayCaliburBatch(
         {
           senderAddress: address,
-          connectorId: connector?.id,
           calls,
           includeAuthorization: delegationStatus === "not-delegated",
         },

@@ -93,7 +93,7 @@ export function DashboardPage({
         </Alert>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-6 gap-3">
         <MetricCard
           label="Pools"
           value={stats?.pools ?? 0}

@@ -6,14 +6,12 @@ import { CHAIN_ID } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { clearWebAuthnCredential, getWebAuthnCredential } from "#/lib/webauthn-storage";
 
-export const CALIBUR_WEBAUTHN_CONNECTOR_ID = "calibur-webauthn";
-
 export function caliburWebAuthnConnector() {
   return createConnector(((config) => {
     const client = createRelayerClient(RELAYER_URL);
 
     return {
-      id: CALIBUR_WEBAUTHN_CONNECTOR_ID,
+      id: "calibur-webauthn",
       name: "Passkey (WebAuthn)",
       type: "caliburWebAuthn" as const,
 

@@ -117,20 +117,6 @@ const stateTones: Record<string, StateTone> = {
     label: "underpriced",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
-  // A bulk-issued paper wallet, while its account is being created.
-  registering: {
-    label: "registering",
-    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
-    pulse: true,
-  },
-  registered: {
-    label: "registered",
-    className: "border-state-active/30 bg-state-active/10 text-state-active",
-  },
-  failed: {
-    label: "failed",
-    className: "border-destructive/30 bg-destructive/10 text-destructive",
-  },
   UNKNOWN_RPC_ERROR: {
     label: "rpc error",
     className: "border-destructive/30 bg-destructive/10 text-destructive",

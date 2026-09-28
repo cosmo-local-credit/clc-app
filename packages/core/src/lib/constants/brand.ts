@@ -1,5 +1,5 @@
 /**
- * Deploy brand: prod is green, staging is red.
+ * Deploy brand: prod is green, staging is blue.
  *
  * One codebase serves both environments and `VITE_BRAND` is the only thing that
  * tells them apart at build time, so every surface that has to name a colour in
@@ -15,7 +15,7 @@ export type Brand = "prod" | "staging";
 
 export const BRAND_PRIMARY_COLOR: Record<Brand, { light: string; dark: string }> = {
   prod: { light: "#007a55", dark: "#009268" },
-  staging: { light: "#e7000b", dark: "#fb2c36" },
+  staging: { light: "#1762b8", dark: "#3178d0" },
 };
 
 /**

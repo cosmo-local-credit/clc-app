@@ -31,14 +31,6 @@ declare module "@tanstack/react-table" {
 }
 
 /**
- * One array for every unsorted render. TanStack Table memoises the sorted rows on
- * the sort state's identity, and recomputing them queues a page-index reset that
- * sets table state; a fresh `[]` per render turns that into a render loop that
- * runs for as long as the table is mounted.
- */
-const UNSORTED: SortingState = [];
-
-/**
  * Sortable table over a fully-loaded page of rows.
  *
  * Sorting reorders **the fetched page only**. No clc-core list endpoint accepts a
@@ -100,7 +92,7 @@ export function DataTable<TData>({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting: sorting ?? UNSORTED },
+    state: { sorting: sorting ?? [] },
     // The rows are sorted here, not upstream: no endpoint accepts a sort, so the
     // fetched page is reordered locally from the caller's sort state.
     getCoreRowModel: getCoreRowModel(),

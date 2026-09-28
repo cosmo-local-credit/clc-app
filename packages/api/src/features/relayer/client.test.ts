@@ -138,36 +138,6 @@ describe("recoverWebAuthn", () => {
     ).rejects.toThrow("not_found");
   });
 
-  it("keeps a conflict's result so a pending registration can be followed", async () => {
-    mockFetch(
-      {
-        ok: false,
-        code: "E16",
-        description: "webauthn registration is already pending",
-        result: { state: "pending", trackingId: "t-1" },
-      },
-      409,
-    );
-    await expect(
-      client.relay({
-        userAddress: "0x1234567890123456789012345678901234567890",
-        signedBatch: {
-          batchedCall: { calls: [], revertOnFailure: true },
-          nonce: "0",
-          keyHash: `0x${"00".repeat(32)}`,
-          executor: "0x1234567890123456789012345678901234567890",
-          deadline: "0",
-        },
-        signature: "0x",
-        signatureType: "secp256k1",
-      }),
-    ).rejects.toMatchObject({
-      code: "conflict",
-      status: 409,
-      result: { state: "pending", trackingId: "t-1" },
-    });
-  });
-
   it("throws a typed error when the backend returns 401", async () => {
     mockFetch({ ok: false, description: "Verification failed", errorCode: "E15" }, 401);
     await expect(

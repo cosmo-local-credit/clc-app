@@ -601,27 +601,17 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const receiveField = await screen.findByRole("group", { name: "You receive" });
-    const sendField = screen.getByRole("group", { name: "You send" });
-    const receiveInput = within(receiveField).getByRole("textbox", {
-      name: "You receive",
-    }) as HTMLInputElement;
-    const sendInput = within(sendField).getByRole("textbox", {
-      name: "You send",
-    }) as HTMLInputElement;
+    const fromField = await screen.findByRole("group", { name: "From" });
+    const toField = screen.getByRole("group", { name: "To" });
 
-    expect(await within(receiveField).findByText("TTX")).toBeTruthy();
-    expect(await within(sendField).findByText("USDC")).toBeTruthy();
-    expect(await within(sendField).findByRole("button", { name: /max 12\.34/i })).toBeTruthy();
-    expect(screen.getAllByRole("textbox")).toEqual([receiveInput, sendInput]);
-    expect(receiveInput.value).toBe("");
-    expect(sendInput.value).toBe("");
-    expect(receiveInput.placeholder).toBe("0.00");
-    expect(sendInput.placeholder).toBe("0.00");
-    expect(document.activeElement).toBe(receiveInput);
-    expect(receiveField.className).toBe(sendField.className);
-    expect(receiveInput.className).toBe(sendInput.className);
-    expect(receiveField.parentElement?.className).toContain("grid-rows-2");
+    expect(await within(fromField).findByText("USDC")).toBeTruthy();
+    expect(await within(toField).findByText("TTX")).toBeTruthy();
+    expect(await within(fromField).findByRole("button", { name: /max 12\.34/i })).toBeTruthy();
+    expect(fromField.className).toBe(toField.className);
+    expect(
+      (within(fromField).getByRole("textbox", { name: "From" }) as HTMLElement).className,
+    ).toBe((within(toField).getByRole("textbox", { name: "To" }) as HTMLElement).className);
+    expect(fromField.parentElement?.className).toContain("grid-rows-2");
     // The pool's own catalog row supplies the icon. clc-core enriches an account
     // token's `iconUrl` from the same `vouchers.icon_url` column, so the two
     // agree in production and only the fixtures tell them apart — but the swap
@@ -631,14 +621,12 @@ describe("pool voucher UI", () => {
     expect(document.querySelector('img[src="https://pool.example/ttx.png"]')).toBeTruthy();
   });
 
-  it("updates You receive from the real exact-input quote when You send changes", async () => {
+  it("updates To from the real exact-input quote when From changes", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
-    const toInput = screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "10" } });
 
     await waitFor(() => expect(toInput.value).toBe("20.00"));
@@ -653,14 +641,12 @@ describe("pool voucher UI", () => {
     );
   });
 
-  it("quotes only the settled send amount while the user types", async () => {
+  it("quotes only the settled From amount while the user types", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
-    const toInput = screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
     // The field opens empty now, so the settled state this asserts against has to
     // be typed rather than assumed.
     fireEvent.change(fromInput, { target: { value: "25" } });
@@ -677,14 +663,14 @@ describe("pool voucher UI", () => {
     expect(publicClientCall).toHaveBeenCalledTimes(2);
   });
 
-  it("starts in exact-output mode and updates You send when You receive changes", async () => {
+  it("updates From from the real exact-output quote when To changes", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const toInput = (await screen.findByRole("textbox", {
-      name: "You receive",
-    })) as HTMLInputElement;
-    const fromInput = screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
+    fireEvent.change(fromInput, { target: { value: "25" } });
+    await waitFor(() => expect(toInput.value).toBe("50.00"));
     fireEvent.change(toInput, { target: { value: "8" } });
 
     await waitFor(() => {
@@ -702,9 +688,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
 
     expect(await screen.findByText(/this pool has no ttx available to swap/i)).toBeTruthy();
@@ -716,23 +700,19 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
 
     expect(await screen.findByText(/this pool only has 1\.00 ttx available to swap/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
-  it("prevents swapping more than the selected send balance and Max requotes it", async () => {
+  it("prevents swapping more than the selected From balance and Max requotes it", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
-    const toInput = screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "25" } });
     await waitFor(() => expect(toInput.value).toBe("50.00"));
     expect(screen.getByText(/amount exceeds your balance/i)).toBeTruthy();
@@ -751,9 +731,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -770,9 +748,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -824,16 +800,14 @@ describe("pool voucher UI", () => {
     });
   });
 
-  it("relays the required send amount for an exact-output swap", async () => {
+  it("relays the required From amount for an exact-output swap", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const toInput = (await screen.findByRole("textbox", {
-      name: "You receive",
-    })) as HTMLInputElement;
+    const toInput = (await screen.findByRole("textbox", { name: "To" })) as HTMLInputElement;
     fireEvent.change(toInput, { target: { value: "8" } });
     await waitFor(() => {
-      expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe(
+      expect((screen.getByRole("textbox", { name: "From" }) as HTMLInputElement).value).toBe(
         "4.00",
       );
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -861,9 +835,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -882,9 +854,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     fireEvent.change(fromInput, { target: { value: "1" } });
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -899,7 +869,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+    fireEvent.change(await screen.findByRole("textbox", { name: "From" }), {
       target: { value: "1" },
     });
 
@@ -907,17 +877,16 @@ describe("pool voucher UI", () => {
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
-  it("offers every voucher you hold in the You send picker, not just the first one", async () => {
+  it("offers every voucher you hold in the From picker, not just the first one", async () => {
     // The reported bug: the picker listed the pool's catalog rows and preselected
     // whichever happened to be first, so a holder saw one voucher — often one
     // they held none of — instead of their own shelf.
     mockPoolRequests({ withUnheldVoucher: true });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromField = await screen.findByRole("group", { name: "You send" });
+    const fromField = await screen.findByRole("group", { name: "From" });
     await within(fromField).findByText("USDC");
     fireEvent.click(within(fromField).getByRole("button", { name: "USDC" }));
-    expect(screen.getByRole("heading", { name: "You send" })).toBeTruthy();
 
     const rows = await screen.findAllByRole("button", { name: /USDC|TTX|RAMBO/ });
     // Held first, largest holding leading: 12.34 USDC, then 9 TTX, then the one
@@ -938,7 +907,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests({ withUnheldVoucher: true });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromField = await screen.findByRole("group", { name: "You send" });
+    const fromField = await screen.findByRole("group", { name: "From" });
     await within(fromField).findByText("USDC");
     fireEvent.click(within(fromField).getByRole("button", { name: "USDC" }));
 
@@ -952,11 +921,9 @@ describe("pool voucher UI", () => {
     mockPoolRequests({ usdcBalance: "1000000" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromField = await screen.findByRole("group", { name: "You send" });
+    const fromField = await screen.findByRole("group", { name: "From" });
     expect(await within(fromField).findByText("TTX")).toBeTruthy();
-    expect(
-      within(screen.getByRole("group", { name: "You receive" })).getByText("USDC"),
-    ).toBeTruthy();
+    expect(within(screen.getByRole("group", { name: "To" })).getByText("USDC")).toBeTruthy();
   });
 
   it("says when the pool is full of a voucher instead of quietly dropping it", async () => {
@@ -966,7 +933,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromField = await screen.findByRole("group", { name: "You send" });
+    const fromField = await screen.findByRole("group", { name: "From" });
     // USDC is the larger holding but cannot be deposited, so TTX leads instead.
     expect(await within(fromField).findByText("TTX")).toBeTruthy();
     fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
@@ -983,9 +950,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
     expect(await screen.findByRole("button", { name: /max 4$/i })).toBeTruthy();
 
     fireEvent.change(fromInput, { target: { value: "10" } });
@@ -999,14 +964,13 @@ describe("pool voucher UI", () => {
     });
   });
 
-  it("offers the pool's liquidity in the You receive picker, minus the send token", async () => {
+  it("offers the pool's liquidity in the To picker, minus whatever From is", async () => {
     mockPoolRequests({ withUnheldVoucher: true });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const toField = await screen.findByRole("group", { name: "You receive" });
+    const toField = await screen.findByRole("group", { name: "To" });
     await within(toField).findByText("TTX");
     fireEvent.click(within(toField).getByRole("button", { name: "TTX" }));
-    expect(screen.getByRole("heading", { name: "You receive" })).toBeTruthy();
 
     const rows = await screen.findAllByRole("button", { name: /USDC|TTX|RAMBO/ });
     // USDC is the selected From, so it cannot also be the output.
@@ -1032,26 +996,21 @@ describe("pool voucher UI", () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
-    const toInput = screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement;
+    const fromInput = (await screen.findByRole("textbox", { name: "From" })) as HTMLInputElement;
+    const toInput = screen.getByRole("textbox", { name: "To" }) as HTMLInputElement;
     // Reversing is offered only once both sides are known to be swappable, so the
     // selections have to have settled before the button means anything.
-    await within(screen.getByRole("group", { name: "You send" })).findByText("USDC");
+    await within(screen.getByRole("group", { name: "From" })).findByText("USDC");
     fireEvent.change(fromInput, { target: { value: "17.25" } });
-    await waitFor(() => expect(toInput.value).toBe("34.50"));
     const amountsBefore = [fromInput.value, toInput.value];
 
     fireEvent.click(screen.getByRole("button", { name: /reverse swap direction/i }));
 
-    expect(within(screen.getByRole("group", { name: "You send" })).getByText("TTX")).toBeTruthy();
-    expect(
-      within(screen.getByRole("group", { name: "You receive" })).getByText("USDC"),
-    ).toBeTruthy();
+    expect(within(screen.getByRole("group", { name: "From" })).getByText("TTX")).toBeTruthy();
+    expect(within(screen.getByRole("group", { name: "To" })).getByText("USDC")).toBeTruthy();
     expect([fromInput.value, toInput.value]).toEqual(amountsBefore);
     expect(
-      within(screen.getByRole("group", { name: "You send" })).getByRole("button", {
+      within(screen.getByRole("group", { name: "From" })).getByRole("button", {
         name: /max 9/i,
       }),
     ).toBeTruthy();

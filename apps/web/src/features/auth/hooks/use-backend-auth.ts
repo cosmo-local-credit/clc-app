@@ -1,5 +1,4 @@
 import type { ProfileInput } from "@clc/core/features/signup/logic";
-import { placeholderSignupEmail } from "@clc/core/features/wallet/paper-wallet";
 import { useLingui } from "@lingui/react/macro";
 import { useMutation } from "@tanstack/react-query";
 import { signMessage } from "wagmi/actions";
@@ -76,7 +75,8 @@ export function useBackendSignup() {
       const signer = privateKeySigner(privateKey);
       const signed = await signSiweMessage(authClient, signer, siweRequest("Sign up for CLC App"));
 
-      const email = profile.email.trim() || placeholderSignupEmail(signer.address);
+      const email =
+        profile.email.trim() || `pending+${signer.address.slice(2).toLowerCase()}@clc.local`;
 
       const result = await authClient.signupWithSiwe({
         ...signed,
