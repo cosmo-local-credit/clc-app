@@ -2,6 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
+import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -37,18 +38,26 @@ export function SwapReceiptPage({
   poolAddress: string;
   details: SwapReceiptSearch;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(details.trackingId ?? null, {
     queryKey: "pool-swap-relay-track",
     queryFn: async (trackingId) => (await relayerClient.trackRelay(trackingId)).result,
   });
+  const localizedReceiveAmount = details.receiveAmount
+    ? localizeCanonicalAmount(details.receiveAmount, i18n.locale)
+    : null;
+  const localizedSendAmount = details.sendAmount
+    ? localizeCanonicalAmount(details.sendAmount, i18n.locale)
+    : null;
   const amountLabel =
-    details.receiveAmount && details.receiveSymbol
-      ? `${details.receiveAmount} ${details.receiveSymbol}`
+    localizedReceiveAmount && details.receiveSymbol
+      ? `${localizedReceiveAmount} ${details.receiveSymbol}`
       : null;
   const sentLabel =
-    details.sendAmount && details.sendSymbol ? `${details.sendAmount} ${details.sendSymbol}` : null;
+    localizedSendAmount && details.sendSymbol
+      ? `${localizedSendAmount} ${details.sendSymbol}`
+      : null;
   const exitReceipt = () => {
     void navigate({
       to: "/pools/$poolAddress",
@@ -125,14 +134,14 @@ export function SwapReceiptPage({
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <ReceiptHeader title={t`Swapped`} />
       <div className="my-5 border border-border bg-card">
-        {sentLabel ? (
-          <ReceiptRow label={<Trans>From</Trans>}>
-            <SignedAmount direction="out" amount={sentLabel} />
+        {amountLabel ? (
+          <ReceiptRow label={<Trans>You receive</Trans>}>
+            <SignedAmount direction="in" amount={amountLabel} />
           </ReceiptRow>
         ) : null}
-        {amountLabel ? (
-          <ReceiptRow label={<Trans>To</Trans>}>
-            <SignedAmount direction="in" amount={amountLabel} />
+        {sentLabel ? (
+          <ReceiptRow label={<Trans>You send</Trans>}>
+            <SignedAmount direction="out" amount={sentLabel} />
           </ReceiptRow>
         ) : null}
         {details.poolName ? (
@@ -293,4 +302,12 @@ function formatSubmittedAt(value: string): string {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
     date,
   );
+}
+
+function localizeCanonicalAmount(amount: string, locale: string): string {
+  try {
+    return formatTokenAmountFixed(parseTokenAmount(amount, 2), 2, 2, locale);
+  } catch {
+    return amount;
+  }
 }

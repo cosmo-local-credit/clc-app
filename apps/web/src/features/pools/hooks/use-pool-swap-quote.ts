@@ -52,37 +52,37 @@ export function usePoolSwapQuote(input: {
   tokenOutDecimals: number;
 }) {
   const client = useClient();
-  const [debouncedSource, setDebouncedSource] = useState({
-    mode: input.mode,
-    amount: input.amount,
-  });
-  const isDebouncing =
-    debouncedSource.mode !== input.mode || debouncedSource.amount !== input.amount;
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setDebouncedSource({ mode: input.mode, amount: input.amount });
-    }, 250);
-    return () => window.clearTimeout(timeout);
-  }, [input.amount, input.mode]);
   const sourceDecimals =
     input.mode === "exact-input" ? input.tokenInDecimals : input.tokenOutDecimals;
-  const amountRaw = useMemo(() => {
-    if (debouncedSource.mode !== input.mode || debouncedSource.amount !== input.amount) {
-      return undefined;
-    }
+  const sourceAmountRaw = useMemo(() => {
     if (input.mode === "exact-input" && input.amountRawOverride) {
       return /^\d+$/.test(input.amountRawOverride) && BigInt(input.amountRawOverride) > 0n
         ? input.amountRawOverride
         : undefined;
     }
-    if (!debouncedSource.amount.trim()) return undefined;
+    if (!input.amount.trim()) return undefined;
     try {
-      const parsed = parseTokenAmount(debouncedSource.amount, sourceDecimals);
+      const parsed = parseTokenAmount(input.amount, sourceDecimals);
       return BigInt(parsed) > 0n ? parsed : undefined;
     } catch {
       return undefined;
     }
-  }, [debouncedSource, input.amount, input.amountRawOverride, input.mode, sourceDecimals]);
+  }, [input.amount, input.amountRawOverride, input.mode, sourceDecimals]);
+  const [debouncedSource, setDebouncedSource] = useState({
+    mode: input.mode,
+    amountRaw: sourceAmountRaw,
+  });
+  const isDebouncing =
+    debouncedSource.mode !== input.mode || debouncedSource.amountRaw !== sourceAmountRaw;
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSource({ mode: input.mode, amountRaw: sourceAmountRaw });
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [input.mode, sourceAmountRaw]);
+  // Cosmetic normalization (for example `1` -> `1.00`) represents the same
+  // raw amount, so it neither restarts the debounce nor spends another RPC.
+  const amountRaw = debouncedSource.mode === input.mode ? debouncedSource.amountRaw : undefined;
   const poolAddress =
     input.poolAddress && isAddress(input.poolAddress) ? input.poolAddress : undefined;
   const tokenIn = input.tokenIn && isAddress(input.tokenIn) ? input.tokenIn : undefined;
