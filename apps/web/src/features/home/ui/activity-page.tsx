@@ -1,7 +1,7 @@
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiChat1Line } from "react-icons/ri";
+import { RiArrowLeftDownLine, RiArrowRightUpLine } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
 import { EllipsizedAddress, TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
@@ -89,19 +89,8 @@ export function ActivityPage({ address }: { address?: string }) {
                 <Icon className="size-3.5" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-1.5 text-sm font-medium">
+                <p className="text-sm font-medium">
                   {incoming ? <Trans>Received</Trans> : <Trans>Sent</Trans>}
-                  {transfer.hasNote ? (
-                    <>
-                      <RiChat1Line
-                        className="size-3.5 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                      <span className="sr-only">
-                        <Trans>Has a message</Trans>
-                      </span>
-                    </>
-                  ) : null}
                 </p>
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
                   {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}

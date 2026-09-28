@@ -19,12 +19,6 @@ vi.mock("./notification-settings-section", () => ({
   ),
 }));
 
-vi.mock("./passkey-settings-section", () => ({
-  PasskeySettingsSection: ({ address }: { address?: string }) => (
-    <div data-testid="passkey-settings" data-address={address} />
-  ),
-}));
-
 vi.mock("./account-settings-section", () => ({
   AccountSettingsSection: () => <div data-testid="account-settings" />,
 }));
@@ -42,20 +36,6 @@ describe("SettingsPage", () => {
       />,
     );
     expect(screen.getAllByText(/0xabcdef1234567890abcdef1234567890abcdef12/i)).toHaveLength(2);
-  });
-
-  it("puts the sign-in methods section on the connected wallet", () => {
-    render(
-      <SettingsPage
-        address="0xabcdef1234567890abcdef1234567890abcdef12"
-        delegationStatus="checking"
-        isSigningOut={false}
-        onSignOut={vi.fn()}
-      />,
-    );
-    expect(screen.getByTestId("passkey-settings").dataset.address).toBe(
-      "0xabcdef1234567890abcdef1234567890abcdef12",
-    );
   });
 
   it("renders the preferences section with the theme selector", () => {

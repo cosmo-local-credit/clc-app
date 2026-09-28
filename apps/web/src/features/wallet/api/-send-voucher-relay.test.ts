@@ -61,7 +61,6 @@ describe("relayVoucherTransfer", () => {
       relayVoucherTransfer(
         {
           senderAddress: USER,
-          connectorId: "private-key",
           tokenAddress: TOKEN,
           recipientAddress: RECIPIENT,
           amountRaw: "2130000",
@@ -92,7 +91,7 @@ describe("relayVoucherTransfer", () => {
     );
   });
 
-  it("signs with the passkey when connected through the passkey connector", async () => {
+  it("prefers a stored WebAuthn credential over the private key", async () => {
     const client = createClientStub();
     storePrivateKey(PRIVATE_KEY);
     storeWebAuthnCredential({
@@ -124,7 +123,6 @@ describe("relayVoucherTransfer", () => {
       relayVoucherTransfer(
         {
           senderAddress: USER,
-          connectorId: "calibur-webauthn",
           tokenAddress: TOKEN,
           recipientAddress: RECIPIENT,
           amountRaw: "2130000",

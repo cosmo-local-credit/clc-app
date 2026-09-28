@@ -1,7 +1,7 @@
 import { useLingui } from "@lingui/react/macro";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FiDownload, FiLoader, FiPrinter, FiShare2 } from "react-icons/fi";
+import { FiDownload, FiLoader, FiShare2 } from "react-icons/fi";
 
 import { Button } from "#/components/ui/button";
 import { PaperWalletCard } from "./paper-wallet-card";
@@ -12,7 +12,7 @@ import {
   PAPER_WALLET_WIDTH,
 } from "./paper-wallet-constants";
 import { PaperWalletCustomizer } from "./paper-wallet-customizer";
-import { exportPaperWallet, exportPaperWalletSheet } from "./paper-wallet-export";
+import { exportPaperWallet } from "./paper-wallet-export";
 import type { PaperWalletCustomization } from "./paper-wallet-types";
 
 /**
@@ -29,10 +29,7 @@ export type UsePaperWalletSetupProps = {
   qrUrl: string;
   defaultName: string;
   downloadDisabled?: boolean;
-  /**
-   * Called after a download starts (card or A4 sheet), a share succeeds, or an
-   * iOS save image is shown.
-   */
+  /** Called after a download starts, a share succeeds, or an iOS save image is shown. */
   onDownloaded?: () => void;
 };
 
@@ -68,7 +65,6 @@ export function usePaperWalletSetup({
   }));
   const [previewScale, setPreviewScale] = useState(PAPER_WALLET_PREVIEW_SCALE);
   const [downloading, setDownloading] = useState(false);
-  const [printing, setPrinting] = useState(false);
   const [shareSupported, setShareSupported] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   /** The rendered PNG, shown for long-press saving in an installed iOS PWA. */
@@ -182,45 +178,6 @@ export function usePaperWalletSetup({
     }
   }
 
-  /**
-   * Saves the card on an A4 sheet with cut marks, for printing later. It is a
-   * download, not a print: the holder may not be near a printer now.
-   */
-  async function handlePrintSheet() {
-    if (!cardRef.current) return;
-    setPrinting(true);
-    setDownloadError(null);
-    try {
-      const fileName = `clc-wallet-${address.slice(2, 10)}-a4.pdf`;
-      const blob = await exportPaperWalletSheet(cardRef.current, contentRef.current.qrUrl);
-      const file = new File([blob], fileName, { type: "application/pdf" });
-
-      // An installed iOS app ignores download anchors; the share sheet offers
-      // Save to Files and Print instead.
-      if (isIosInstalledApp() && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file] });
-        onDownloaded?.();
-        return;
-      }
-
-      const url = URL.createObjectURL(file);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      onDownloaded?.();
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) {
-        setDownloadError(t`Could not save the printable sheet. Try again.`);
-      }
-    } finally {
-      setPrinting(false);
-    }
-  }
-
   async function handleShare() {
     if (!cardRef.current) return;
     setDownloading(true);
@@ -278,41 +235,25 @@ export function usePaperWalletSetup({
 
   const downloadButton = (
     <div>
-      <div className="mt-4 grid grid-cols-[1fr_auto] gap-3">
-        <Button
-          className="h-11 w-full"
-          onClick={handleDownload}
-          disabled={downloading || printing || downloadDisabled}
-          aria-label={t`Download card`}
-        >
-          {downloading ? (
-            <FiLoader className="mr-2 size-4 animate-spin" />
-          ) : (
-            <FiDownload className="mr-2 size-4" />
-          )}
-          {downloading ? t`Preparing...` : t`Download card`}
-        </Button>
-        <Button
-          variant="outline"
-          className="h-11 px-4"
-          onClick={() => void handlePrintSheet()}
-          disabled={downloading || printing || downloadDisabled}
-          aria-label={t`Save printable A4 sheet`}
-        >
-          {printing ? (
-            <FiLoader className="mr-2 size-4 animate-spin" />
-          ) : (
-            <FiPrinter className="mr-2 size-4" />
-          )}
-          {t`Print`}
-        </Button>
-      </div>
+      <Button
+        className="mt-4 h-11 w-full"
+        onClick={handleDownload}
+        disabled={downloading || downloadDisabled}
+        aria-label={t`Download card`}
+      >
+        {downloading ? (
+          <FiLoader className="mr-2 size-4 animate-spin" />
+        ) : (
+          <FiDownload className="mr-2 size-4" />
+        )}
+        {downloading ? t`Preparing...` : t`Download card`}
+      </Button>
       {shareSupported ? (
         <Button
           variant="outline"
           className="mt-3 h-11 w-full"
           onClick={() => void handleShare()}
-          disabled={downloading || printing || downloadDisabled}
+          disabled={downloading || downloadDisabled}
         >
           <FiShare2 className="mr-2 size-4" />
           {t`Share card`}

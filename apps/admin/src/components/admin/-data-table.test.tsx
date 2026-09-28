@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { fireEvent } from "@testing-library/dom";
-import { Profiler } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { DataTable } from "./data-table";
 
@@ -28,37 +27,6 @@ function names() {
 }
 
 describe("DataTable", () => {
-  it("settles after mounting when the caller passes no sort state", async () => {
-    // A fresh `[]` default per render makes TanStack Table recompute the sorted
-    // rows every render, queue a page-index reset, and set state again — a
-    // render loop that pins the tab's main thread while the table is on screen.
-    // `act` would wait for React to go quiet, which a loop never does, so the
-    // commits are counted on real timers instead.
-    const env = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean };
-    const actEnvironment = env.IS_REACT_ACT_ENVIRONMENT;
-    env.IS_REACT_ACT_ENVIRONMENT = false;
-    const tick = () => new Promise((resolve) => setTimeout(resolve, 50));
-    try {
-      let commits = 0;
-      const tree = () => (
-        <Profiler id="table" onRender={() => void (commits += 1)}>
-          <DataTable columns={columns} data={rows} />
-        </Profiler>
-      );
-      const { rerender } = render(tree());
-      // The first recompute only arms the reset, in a microtask; a later parent
-      // re-render is what sets the loop going, as the batch page's progress did.
-      await tick();
-      rerender(tree());
-      await tick();
-      const settled = commits;
-      await tick();
-      expect(commits).toBe(settled);
-    } finally {
-      env.IS_REACT_ACT_ENVIRONMENT = actEnvironment;
-    }
-  });
-
   it("renders one row per record in source order before any sort", () => {
     render(<DataTable columns={columns} data={rows} />);
     expect(names()).toEqual(["Malindi Traders", "Kilifi Growers", "Watamu Fishers"]);

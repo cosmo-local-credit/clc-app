@@ -9,7 +9,10 @@ export function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Settings" />
+      <PageHeader
+        title="Settings"
+        description="Console preferences for this device. They are not shared with other operators."
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

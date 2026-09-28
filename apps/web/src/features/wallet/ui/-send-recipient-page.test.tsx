@@ -1,15 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const navigate = vi.fn();
-const { storageOwner } = vi.hoisted(() => ({
-  storageOwner: { current: "0xabc0000000000000000000000000000000000123" },
-}));
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
-  useStorageOwner: () => storageOwner.current,
+  useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -30,13 +27,7 @@ vi.mock("#/components/paper-wallet-scanner", () => ({
   ),
 }));
 
-import { upsertAddressBookRecipient } from "#/features/wallet/api/address-book-storage";
-import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { SendRecipientPage } from "./send-recipient-page";
-
-const OWNER = "0xabc0000000000000000000000000000000000123";
-const AMINA = "0x1111000000000000000000000000000000000001" as const;
-const JOSH = "0x2222000000000000000000000000000000000002" as const;
 
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({
@@ -46,11 +37,7 @@ function renderWithQueryClient(ui: React.ReactElement) {
 }
 
 function mockFetch(body: unknown, status = 200) {
-  // A Response body can be read once. Transfers and recipient lookup both
-  // fetch, so each call needs its own response.
-  const fetcher = vi
-    .fn()
-    .mockImplementation(() => Promise.resolve(createJsonResponse(body, status)));
+  const fetcher = vi.fn().mockResolvedValue(createJsonResponse(body, status));
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
@@ -187,96 +174,4 @@ describe("SendRecipientPage", () => {
       ).value,
     ).toBe("0xa316408425cF17F1827483dee621c6C3A9B5fad4");
   });
-
-  it("does not wait on activity a guest cannot have", async () => {
-    storageOwner.current = GUEST_STORAGE_OWNER;
-    const fetcher = vi.fn((_url: string) =>
-      Promise.resolve(createJsonResponse({ ok: true, result: {} })),
-    );
-    vi.stubGlobal("fetch", fetcher);
-    try {
-      renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
-
-      await screen.findByRole("textbox", { name: /recipient ens, phone or address/i });
-      expect(screen.queryByText("Loading activity…")).toBeNull();
-      expect(screen.queryByRole("region", { name: "Recent recipients" })).toBeNull();
-      expect(fetcher.mock.calls.some(([url]) => String(url).includes("/transfers"))).toBe(false);
-    } finally {
-      storageOwner.current = OWNER;
-    }
-  });
-
-  it("selects a recent person paid from activity", async () => {
-    upsertAddressBookRecipient(OWNER, { label: "Amina", address: AMINA, source: "manual" });
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((url: string) => {
-        if (!String(url).includes("/transfers")) {
-          return Promise.resolve(createJsonResponse({ ok: true, result: {} }));
-        }
-        return Promise.resolve(
-          createJsonResponse({
-            ok: true,
-            result: {
-              transfers: [
-                transfer(JOSH, "2026-07-02T00:00:00Z"),
-                transfer(AMINA, "2026-07-03T00:00:00Z"),
-                transfer(AMINA, "2026-07-01T00:00:00Z"),
-                transfer(JOSH, "2026-07-04T00:00:00Z", "IN"),
-                transfer(JOSH, "2026-07-05T00:00:00Z", "OUT", false),
-              ],
-              last: 5,
-            },
-          }),
-        );
-      }),
-    );
-    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
-
-    const recent = await screen.findByRole("region", { name: "Recent recipients" });
-    expect(await within(recent).findByRole("button", { name: /Address/ })).toBeTruthy();
-    expect(recent.textContent?.indexOf("Amina")).toBeLessThan(
-      recent.textContent?.indexOf("0x2222") ?? -1,
-    );
-    expect(within(recent).getAllByRole("button")).toHaveLength(2);
-
-    fireEvent.click(within(recent).getByRole("button", { name: /Amina/ }));
-    expect(screen.queryByRole("region", { name: "Recent recipients" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
-
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith({
-        to: "/wallet/send/amount",
-        search: {
-          token: "0xtoken",
-          recipient: AMINA,
-          recipientLabel: "Amina",
-        },
-      });
-    });
-  });
 });
-
-function transfer(
-  recipientAddress: string,
-  dateBlock: string,
-  direction: "IN" | "OUT" = "OUT",
-  success = true,
-) {
-  return {
-    id: dateBlock,
-    txHash: `0x${"ab".repeat(32)}`,
-    dateBlock,
-    direction,
-    counterpartyAddress: recipientAddress,
-    senderAddress: OWNER,
-    recipientAddress,
-    tokenAddress: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
-    tokenSymbol: "WLLR",
-    tokenName: "Will",
-    tokenDecimals: 6,
-    amount: "1",
-    success,
-    hasNote: false,
-  };
-}

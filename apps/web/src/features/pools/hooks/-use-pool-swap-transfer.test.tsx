@@ -14,10 +14,6 @@ vi.mock("#/features/wallet/api/pool-swap-relay", () => ({
   relayPoolSwapExactOutput: exactOutputRelay,
 }));
 
-vi.mock("wagmi", () => ({
-  useConnection: () => ({ connector: { id: "private-key" } }),
-}));
-
 vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => relayerClient,
 }));
@@ -59,7 +55,6 @@ describe("usePoolSwapTransfer", () => {
     expect(exactInputRelay).toHaveBeenCalledWith(
       {
         senderAddress: SENDER,
-        connectorId: "private-key",
         path,
         hopAmountIns: ["125"],
         includeAuthorization: true,
@@ -85,7 +80,6 @@ describe("usePoolSwapTransfer", () => {
     expect(exactOutputRelay).toHaveBeenCalledWith(
       {
         senderAddress: SENDER,
-        connectorId: "private-key",
         path,
         hopAmountIns: ["250"],
         includeAuthorization: undefined,

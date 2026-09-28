@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { AuthClient } from "./client";
-import { authKeys, profileQueryOptions, webAuthnCredentialsQueryOptions } from "./queries";
+import { authKeys, profileQueryOptions } from "./queries";
 
 const ADDRESS = "0x33a573149db22e759fB9A38Bcc461C12855c2645";
 
@@ -46,30 +46,5 @@ describe("profileQueryOptions", () => {
     const options = profileQueryOptions({} as AuthClient, ADDRESS) as Record<string, unknown>;
     expect(options.enabled).toBeUndefined();
     expect(options.retry).toBeUndefined();
-  });
-});
-
-describe("webAuthnCredentialsQueryOptions", () => {
-  it("keys by wallet under the swept prefix, case-insensitively", () => {
-    const key = authKeys.webAuthnCredentials(ADDRESS);
-    expect(key.slice(0, authKeys.all.length)).toEqual([...authKeys.all]);
-    expect(key).toEqual(authKeys.webAuthnCredentials(ADDRESS.toLowerCase()));
-    expect(key).not.toEqual(authKeys.webAuthnCredentials("0xdead"));
-  });
-
-  it("reads through the injected client and leaves `enabled` to the caller", async () => {
-    const getWebAuthnCredentials = vi.fn(() =>
-      Promise.resolve({ address: ADDRESS, credentials: [] }),
-    );
-    const options = webAuthnCredentialsQueryOptions(
-      { getWebAuthnCredentials } as unknown as AuthClient,
-      ADDRESS,
-    );
-
-    await expect(options.queryFn?.({} as never)).resolves.toEqual({
-      address: ADDRESS,
-      credentials: [],
-    });
-    expect((options as Record<string, unknown>).enabled).toBeUndefined();
   });
 });

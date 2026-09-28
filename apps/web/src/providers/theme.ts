@@ -9,7 +9,7 @@ export const THEME_STORAGE_KEY = "clc.theme";
 // Mirrors the --primary token in styles.css for each scheme. Used for the
 // PWA <meta name="theme-color">, which needs a concrete sRGB value (oklch is
 // not reliably honored there across browsers). Follows VITE_BRAND so the
-// Android status bar is green on prod and red on staging.
+// Android status bar is green on prod and blue on staging.
 const THEME_COLOR: Record<Theme, string> = BRAND_THEME_COLOR;
 
 // Inline <head> script (as a string) injected in __root.tsx. Runs synchronously
