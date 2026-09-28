@@ -23,6 +23,8 @@ export const authKeys = {
   all: ["clc", "auth"] as const,
   profile: (address?: string) =>
     ["clc", "auth", "profile", address?.toLowerCase() ?? "current"] as const,
+  webAuthnCredentials: (address: string) =>
+    ["clc", "auth", "webauthn-credentials", address.toLowerCase()] as const,
 } as const;
 
 /**
@@ -37,5 +39,25 @@ export function profileQueryOptions(auth: AuthClient, address?: string) {
     queryKey: authKeys.profile(address),
     queryFn: () => auth.getProfile(),
     staleTime: 60_000,
+  });
+}
+
+/**
+ * The passkeys clc-core has mapped to the signed-in wallet.
+ *
+ * This is the account's record, not the device's: a passkey made on another
+ * phone leaves nothing in local storage, so linked status must come from here.
+ * clc-core scopes the answer to the session's address; the key carries the
+ * address too, so a wallet switch never reads the previous account's entry, and
+ * it sits under `["clc", …]` so the identity-boundary sweep drops it.
+ *
+ * Like `profileQueryOptions`, `enabled` is the caller's: the request is only
+ * meaningful once a session for this exact address exists.
+ */
+export function webAuthnCredentialsQueryOptions(auth: AuthClient, address: string) {
+  return queryOptions({
+    queryKey: authKeys.webAuthnCredentials(address),
+    queryFn: () => auth.getWebAuthnCredentials(),
+    staleTime: 30_000,
   });
 }

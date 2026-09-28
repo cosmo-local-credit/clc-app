@@ -161,7 +161,7 @@ describe("pool swap navigation", () => {
 
     // The amount field opens empty, so the swap has to be sized before the CTA
     // enables — the screen no longer seeds a figure the holder did not choose.
-    fireEvent.change(await screen.findByRole("textbox", { name: "From" }), {
+    fireEvent.change(await screen.findByRole("textbox", { name: "You receive" }), {
       target: { value: "25" },
     });
     await waitFor(() => {

@@ -50,7 +50,7 @@ export const accountWalletQueryKeys = {
     accountKeys.transfersInfinite(normalizeAddress(address), perPage),
 };
 
-/** Backs the wallet screen's "Your Vouchers" list — the one live balance poll. */
+/** Backs the wallet balance list — the one live balance poll. The screen splits it. */
 export function useLatestAccountTokens(address: string | undefined) {
   return useQuery({
     ...latestAccountTokensQueryOptions(accountsClient, address),

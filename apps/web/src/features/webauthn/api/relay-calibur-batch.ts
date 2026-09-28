@@ -10,7 +10,8 @@ import { resolveRelyingPartyId } from "@clc/core/features/webauthn/rp-id";
 import { encodeAbiParameters, hexToBytes, parseSignature } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { getStoredKey } from "#/connectors/privateKey";
+import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
+import { getStoredKey, PRIVATE_KEY_CONNECTOR_ID } from "#/connectors/privateKey";
 import { requestWebAuthnAssertion } from "#/features/webauthn/hooks/credential";
 import { CHAIN_ID, CHAIN_ID_BIGINT } from "#/lib/chain";
 import { CALIBUR_ADDRESS } from "#/lib/relayer-config";
@@ -22,6 +23,13 @@ const RELYING_PARTY_ID = resolveRelyingPartyId(import.meta.env.VITE_RELYING_PART
 
 export type RelayCaliburBatchInput = {
   senderAddress: `0x${string}`;
+  /**
+   * The wagmi connector the wallet is connected through (`useConnection()`),
+   * which decides the signer. Required, not defaulted: guessing from whichever
+   * secret is on disk is how a stored passkey could take over signing for a
+   * session still connected through its paper wallet.
+   */
+  connectorId: string | undefined;
   calls: CaliburCall[];
   includeAuthorization?: boolean;
   deadline?: string;
@@ -44,8 +52,15 @@ export async function relayCaliburBatch(
   const executor = relayerAddress as `0x${string}`;
   const deadline = input.deadline ?? "0";
 
-  const credential = getWebAuthnCredential();
-  if (credential) {
+  // The signer follows the connector the wallet is connected through, never
+  // whichever secret happens to be on disk. Linking a passkey from a paper-wallet
+  // session stores the new credential before the connector switch completes; if
+  // that switch fails, the session stays on the paper wallet and must keep
+  // signing with it rather than silently moving to the passkey.
+  const { connectorId } = input;
+  if (connectorId === CALIBUR_WEBAUTHN_CONNECTOR_ID) {
+    const credential = getWebAuthnCredential();
+    if (!credential) throw new Error("No passkey is stored for this wallet.");
     if (credential.stale) throw new Error("Credential is stale; re-authenticate");
     if (credential.address.toLowerCase() !== input.senderAddress.toLowerCase()) {
       throw new Error("Stored passkey does not match the connected wallet.");
@@ -74,6 +89,10 @@ export async function relayCaliburBatch(
       authorization: undefined,
     });
     return { trackingId: result.trackingId, signatureType: "webauthn" };
+  }
+
+  if (connectorId !== PRIVATE_KEY_CONNECTOR_ID) {
+    throw new Error("No wallet is connected to sign this transaction.");
   }
 
   const privateKey = getStoredKey();

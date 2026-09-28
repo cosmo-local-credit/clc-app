@@ -5,9 +5,15 @@ type OKResponse<T> = { ok: true; description?: string; result: T };
 
 export class RelayerError extends Error {
   constructor(
-    public readonly code: "not_found" | "verification_failed" | "server_error",
+    public readonly code: "not_found" | "verification_failed" | "conflict" | "server_error",
     public readonly description: string,
     public readonly status: number,
+    /**
+     * Machine-readable detail a few errors carry. A `409` for a passkey whose
+     * registration is still pending holds its `trackingId`, to follow instead of
+     * relaying again.
+     */
+    public readonly result?: Record<string, unknown>,
   ) {
     super(code);
   }
@@ -102,8 +108,10 @@ async function handleResponse<T>(res: Response): Promise<OKResponse<T>> {
         ? "not_found"
         : res.status === 401
           ? "verification_failed"
-          : "server_error";
-    throw new RelayerError(code, json?.description ?? "Unknown error", res.status);
+          : res.status === 409
+            ? "conflict"
+            : "server_error";
+    throw new RelayerError(code, json?.description ?? "Unknown error", res.status, json?.result);
   }
   return json as OKResponse<T>;
 }

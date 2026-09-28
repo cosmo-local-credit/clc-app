@@ -151,7 +151,7 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
 
 function createUserMarker(): HTMLDivElement {
   const marker = document.createElement("div");
-  // `bg-primary` follows `data-brand`: green on prod, blue on staging, and the
+  // `bg-primary` follows `data-brand`: green on prod, red on staging, and the
   // dark-scheme variant of the same token. The white ring is the stroke that
   // keeps the dot readable on the basemap. No pulse.
   marker.className = "size-3 rounded-full bg-primary ring-2 ring-white";

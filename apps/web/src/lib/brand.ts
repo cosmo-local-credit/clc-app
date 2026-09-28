@@ -1,7 +1,7 @@
 import { type Brand, BRAND_PRIMARY_COLOR, resolveBrand } from "@clc/core/lib/constants/brand";
 
 /**
- * Deploy brand: prod is green, staging is blue.
+ * Deploy brand: prod is green, staging is red.
  *
  * Resolved once from `VITE_BRAND` because the palette is a property of the
  * build, not of the running session. Pages inlines the variable from wrangler
@@ -14,7 +14,7 @@ export const BRAND: Brand = resolveBrand(import.meta.env.VITE_BRAND as string | 
 export const BRAND_THEME_COLOR = BRAND_PRIMARY_COLOR[BRAND];
 
 /**
- * Installable icons are per brand so an installed staging app is blue on the
+ * Installable icons are per brand so an installed staging app is red on the
  * home screen and in the task switcher, not merely inside its own chrome. Both
  * sets ship; the build picks one by path rather than by swapping files, so
  * `develop` and `master` keep identical trees outside the two Wrangler configs.

@@ -33,6 +33,13 @@ type AccountTransfer = {
   tokenDecimals: number;
   amount: string;
   success: boolean;
+  /**
+   * Whether this transfer carries a private attachment (a message and/or
+   * shared contact details) the caller is allowed to read. The backend joins
+   * it in from clc-core's own database; the transfer rows themselves come from
+   * the federation indexer, which knows nothing about attachments.
+   */
+  hasNote: boolean;
 };
 
 export type AccountTransfersResult = {
