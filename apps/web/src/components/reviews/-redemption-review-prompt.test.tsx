@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import type { ReviewAccess } from "@clc/core/features/reviews/logic";
 
 const mocks = vi.hoisted(() => ({
-  owner: "0x1111111111111111111111111111111111111111",
+  owner: "0x11111111111111111111111111111111111111111",
   access: undefined as ReviewAccess | undefined,
   saveReview: vi.fn(),
 }));
