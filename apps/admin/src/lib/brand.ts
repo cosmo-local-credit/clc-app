@@ -1,7 +1,7 @@
 import { type Brand, BRAND_PRIMARY_COLOR, resolveBrand } from "@clc/core/lib/constants/brand";
 
 /**
- * Deploy brand: prod is green, staging is blue.
+ * Deploy brand: prod is green, staging is red.
  *
  * Same contract as apps/web — the two apps cannot import each other, so both
  * resolve the shared palette in `@clc/core` and the console and the PWA read as

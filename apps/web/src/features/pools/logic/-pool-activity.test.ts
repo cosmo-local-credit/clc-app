@@ -33,6 +33,7 @@ function transfer(overrides: Partial<PoolTransfer> = {}): PoolTransfer {
     tokenDecimals: 6,
     amount: "1000000",
     success: true,
+    hasNote: false,
     ...overrides,
   };
 }

@@ -51,6 +51,7 @@ describe("pool swap relays", () => {
       relayPoolDeposit(
         {
           senderAddress: USER,
+          connectorId: "private-key",
           poolAddress: POOL_1,
           tokenAddress: TOKEN_A,
           amountRaw: "1000",
@@ -80,6 +81,7 @@ describe("pool swap relays", () => {
     await relayPoolSwapExactInput(
       {
         senderAddress: USER,
+        connectorId: "private-key",
         path: [
           { poolAddress: POOL_1, tokenIn: TOKEN_A, tokenOut: TOKEN_B },
           { poolAddress: POOL_2, tokenIn: TOKEN_B, tokenOut: TOKEN_C },
@@ -115,6 +117,7 @@ describe("pool swap relays", () => {
       relayPoolSwapExactOutput(
         {
           senderAddress: USER,
+          connectorId: "private-key",
           path: [{ poolAddress: POOL_1, tokenIn: TOKEN_A, tokenOut: TOKEN_B }],
           hopAmountIns: ["250"],
         },

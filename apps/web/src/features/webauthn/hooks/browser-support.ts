@@ -1,6 +1,6 @@
 type WebAuthnOperation = "create" | "get";
 
-function getWebAuthnSupportError(operation: WebAuthnOperation): string | null {
+export function getWebAuthnSupportError(operation: WebAuthnOperation): string | null {
   if (typeof window === "undefined" || typeof navigator === "undefined") {
     return "Passkeys are only available in a browser.";
   }
