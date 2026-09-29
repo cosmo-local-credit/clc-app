@@ -12,6 +12,7 @@ export type BuildVoucherTransferCallInput = {
 
 export type RelayVoucherTransferInput = BuildVoucherTransferCallInput & {
   senderAddress: `0x${string}`;
+  connectorId: string | undefined;
   includeAuthorization?: boolean;
 };
 
@@ -41,6 +42,7 @@ export async function relayVoucherTransfer(
   return relayCaliburBatch(
     {
       senderAddress: input.senderAddress,
+      connectorId: input.connectorId,
       calls: [call],
       includeAuthorization: input.includeAuthorization,
     },

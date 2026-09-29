@@ -23,7 +23,7 @@ describe("resolveBrand", () => {
 describe("BRAND_PRIMARY_COLOR", () => {
   it("gives each brand a light and dark sRGB primary", () => {
     expect(BRAND_PRIMARY_COLOR.prod.light).toBe("#007a55");
-    expect(BRAND_PRIMARY_COLOR.staging.light).toBe("#1762b8");
+    expect(BRAND_PRIMARY_COLOR.staging.light).toBe("#e7000b");
     expect(BRAND_PRIMARY_COLOR.prod.dark).not.toBe(BRAND_PRIMARY_COLOR.staging.dark);
   });
 });

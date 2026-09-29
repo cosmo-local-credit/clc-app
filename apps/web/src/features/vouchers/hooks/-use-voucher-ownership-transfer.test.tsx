@@ -10,6 +10,10 @@ const { relayCaliburBatch, relayerClient } = vi.hoisted(() => ({
 
 vi.mock("#/features/webauthn/api/relay-calibur-batch", () => ({ relayCaliburBatch }));
 
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ connector: { id: "private-key" } }),
+}));
+
 vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => relayerClient,
 }));
@@ -45,6 +49,7 @@ describe("useVoucherOwnershipTransfer", () => {
     expect(relayCaliburBatch).toHaveBeenCalledWith(
       {
         senderAddress: OWNER,
+        connectorId: "private-key",
         calls: [expect.objectContaining({ to: TOKEN, value: "0" })],
         includeAuthorization: true,
       },

@@ -21,6 +21,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
+import { CALIBUR_WEBAUTHN_CONNECTOR_ID } from "#/connectors/calibur-webauthn";
 import { clearPrivateKey, storePrivateKey } from "#/connectors/privateKey";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
@@ -202,7 +203,7 @@ export function SignInPanel({
       // Already on the passkey connector (e.g. expired-cookie re-auth): the
       // fresh assertion refreshed the session, no reconnect needed. Otherwise
       // drop any other active connector and connect Calibur.
-      if (connector?.id !== "calibur-webauthn") {
+      if (connector?.id !== CALIBUR_WEBAUTHN_CONNECTOR_ID) {
         await dropActiveConnection();
         await connectAction(wagmiConfig, { connector: caliburConnector });
       }

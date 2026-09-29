@@ -9,6 +9,7 @@ import { Button } from "#/components/ui/button";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { AccountSettingsSection } from "./account-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
+import { PasskeySettingsSection } from "./passkey-settings-section";
 
 export function SettingsPage({
   address,
@@ -35,6 +36,8 @@ export function SettingsPage({
       </div>
 
       <AccountSettingsSection />
+
+      <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
 
       <InstallAppLink />
 

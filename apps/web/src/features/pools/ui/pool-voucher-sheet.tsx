@@ -1,5 +1,4 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
-import type { MarketVoucher } from "@clc/api/features/market/client";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
   buildAddPoolVoucherCalls,
@@ -35,14 +34,20 @@ import {
   useVoucherSearch,
   VOUCHER_SEARCH_MIN_CHARS,
 } from "#/features/home/hooks/use-voucher-search";
+import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import { usePoolQuoterKind, type PoolQuoterKind } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTokenMembership } from "#/features/pools/hooks/use-pool-registry";
+import {
+  type ApprovalCandidate,
+  suggestApprovalVouchers,
+  toApprovalCandidate,
+} from "#/features/pools/logic/approval-suggestions";
 
 /**
  * The voucher a steward is configuring, whichever screen they came from.
  *
- * Approving searches the catalog and yields a `MarketVoucher`; managing starts
+ * Approving picks a catalog or balance row; managing starts
  * from a row the pool already holds, which carries its own decimals and cap.
  * Reducing both to this shape keeps one form rather than two.
  */
@@ -137,7 +142,7 @@ function PoolVoucherForm({
   const { t } = useLingui();
   const quoter = usePoolQuoterKind(pool);
   const relay = usePoolAdminRelay();
-  const [picked, setPicked] = useState<MarketVoucher | null>(null);
+  const [picked, setPicked] = useState<ApprovalCandidate | null>(null);
   const [confirmingRemoval, setConfirmingRemoval] = useState(false);
 
   // Only the picked voucher's decimals are missing — a pool row already carries
@@ -358,7 +363,7 @@ function PoolVoucherForm({
                         onChange={field.handleChange}
                         onBlur={field.handleBlur}
                         error={getFieldError(field.state.meta.errors)}
-                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers? Zero accepts no deposits yet.`}
+                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers?`}
                         placeholder="0"
                       />
                     )}
@@ -594,26 +599,50 @@ function SelectedVoucher({
 }
 
 /**
- * Candidates come from the catalog search endpoint rather than an in-memory
- * list, so the picker answers for the whole catalog. Vouchers the pool already
- * allows are removed: `TokenUniqueSymbolIndex.add` reverts on a token the
- * registry holds, which would take the rate and limit in the same batch with it.
+ * Before a search, offer the vouchers a steward can name without typing:
+ * ones they issued, ones they hold, and ones this pool already allows.
+ *
+ * Search stays the way to reach every other voucher. Pool members stay out of
+ * those results — `TokenUniqueSymbolIndex.add` reverts on a token the registry
+ * holds, which would take the rate and limit in the same batch — but they stay
+ * in the idle list, because choosing one updates the rate and limit instead.
  */
 function VoucherPicker({
   excluded,
   onSelect,
 }: {
   excluded: PoolVoucher[];
-  onSelect: (voucher: MarketVoucher) => void;
+  onSelect: (voucher: ApprovalCandidate) => void;
 }) {
   const { t } = useLingui();
   const [query, setQuery] = useState("");
   const search = useVoucherSearch(query, setQuery, true);
-  const held = new Set(excluded.map((voucher) => voucher.tokenAddress.toLowerCase()));
-  const results = search.results.filter((voucher) => !held.has(voucher.address.toLowerCase()));
+  const suggestions = useApprovalSuggestions();
+  const term = query.trim();
+  const searching = term.length >= VOUCHER_SEARCH_MIN_CHARS;
+  const inPool = excluded.flatMap((voucher) => {
+    const candidate = toApprovalCandidate({
+      id: voucher.id,
+      address: voucher.tokenAddress,
+      name: voucher.name,
+      symbol: voucher.symbol,
+    });
+    return candidate ? [candidate] : [];
+  });
+  const suggested = suggestApprovalVouchers({
+    issued: suggestions.isPending ? [] : suggestions.issued,
+    holdings: suggestions.isPending ? [] : suggestions.holdings,
+    inPool,
+  });
+  const held = new Set(inPool.map((voucher) => voucher.address.toLowerCase()));
+  const results = search.results.flatMap((voucher) => {
+    if (held.has(voucher.address.toLowerCase())) return [];
+    const candidate = toApprovalCandidate(voucher);
+    return candidate ? [candidate] : [];
+  });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="relative">
         <RiSearchLine
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -628,12 +657,38 @@ function VoucherPicker({
         />
       </div>
 
-      {query.trim().length > 0 && query.trim().length < VOUCHER_SEARCH_MIN_CHARS ? (
+      {term.length > 0 && !searching ? (
         <p className="text-muted-foreground text-xs">
           <Trans>Type at least two characters.</Trans>
         </p>
       ) : null}
 
+      {searching ? (
+        <SearchResults search={search} results={results} onSelect={onSelect} />
+      ) : (
+        <SuggestionLists
+          suggested={suggested}
+          pending={suggestions.isPending}
+          failed={suggestions.isError}
+          onRetry={suggestions.refetch}
+          onSelect={onSelect}
+        />
+      )}
+    </div>
+  );
+}
+
+function SearchResults({
+  search,
+  results,
+  onSelect,
+}: {
+  search: ReturnType<typeof useVoucherSearch>;
+  results: readonly ApprovalCandidate[];
+  onSelect: (voucher: ApprovalCandidate) => void;
+}) {
+  return (
+    <div className="space-y-2">
       {search.status === "searching" ? (
         <p className="text-muted-foreground text-xs">
           <Trans>Searching…</Trans>
@@ -664,33 +719,101 @@ function VoucherPicker({
       ) : null}
 
       {results.length > 0 ? (
-        <ul className="max-h-64 overflow-y-auto border border-border bg-card">
-          {results.map((voucher, index) => (
-            <li key={voucher.id}>
-              <button
-                type="button"
-                onClick={() => onSelect(voucher)}
-                className={[
-                  "flex w-full items-center gap-3 p-3 text-left",
-                  index === results.length - 1 ? "" : "border-b border-border",
-                ].join(" ")}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold text-sm tracking-tight">
-                    {voucher.name}
-                  </span>
-                  <span className="block font-mono text-muted-foreground text-xs">
-                    {formatVoucherAddress(voucher.address)}
-                  </span>
-                </span>
-                <Badge variant="outline" className="shrink-0 font-mono text-[0.625rem]">
-                  {voucher.symbol}
-                </Badge>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="max-h-64 overflow-y-auto">
+          <CandidateList candidates={results} onSelect={onSelect} />
+        </div>
       ) : null}
     </div>
+  );
+}
+
+function SuggestionLists({
+  suggested,
+  pending,
+  failed,
+  onRetry,
+  onSelect,
+}: {
+  suggested: ReturnType<typeof suggestApprovalVouchers>;
+  pending: boolean;
+  failed: boolean;
+  onRetry: () => void;
+  onSelect: (voucher: ApprovalCandidate) => void;
+}) {
+  const groups = [
+    { id: "issued", label: <Trans>Vouchers you issued</Trans>, rows: suggested.issued },
+    { id: "holdings", label: <Trans>Vouchers you hold</Trans>, rows: suggested.holdings },
+    { id: "pool", label: <Trans>In this pool</Trans>, rows: suggested.inPool },
+  ].filter((group) => group.rows.length > 0);
+
+  return (
+    <div className="space-y-3">
+      {pending ? (
+        <p className="text-muted-foreground text-xs">
+          <Trans>Loading vouchers…</Trans>
+        </p>
+      ) : null}
+      {failed ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-destructive text-sm">
+            <Trans>Couldn't load vouchers.</Trans>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 bg-card"
+            onClick={onRetry}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+      {groups.map((group) => (
+        <section key={group.id} aria-labelledby={`approve-${group.id}`} className="space-y-1">
+          <p id={`approve-${group.id}`} className="text-muted-foreground text-xs">
+            {group.label}
+          </p>
+          <CandidateList candidates={group.rows} onSelect={onSelect} />
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function CandidateList({
+  candidates,
+  onSelect,
+}: {
+  candidates: readonly ApprovalCandidate[];
+  onSelect: (voucher: ApprovalCandidate) => void;
+}) {
+  return (
+    <ul className="border border-border bg-card">
+      {candidates.map((voucher, index) => (
+        <li key={voucher.address}>
+          <button
+            type="button"
+            onClick={() => onSelect(voucher)}
+            className={[
+              "flex w-full items-center gap-3 p-3 text-left",
+              index === candidates.length - 1 ? "" : "border-b border-border",
+            ].join(" ")}
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold text-sm tracking-tight">
+                {voucher.name}
+              </span>
+              <span className="block font-mono text-muted-foreground text-xs">
+                {formatVoucherAddress(voucher.address)}
+              </span>
+            </span>
+            <Badge variant="outline" className="shrink-0 font-mono text-[0.625rem]">
+              {voucher.symbol}
+            </Badge>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

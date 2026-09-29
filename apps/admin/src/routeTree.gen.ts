@@ -13,6 +13,7 @@ import { Route as ShellRouteImport } from './routes/_shell'
 import { Route as ShellIndexRouteImport } from './routes/_shell/index'
 import { Route as ShellVocabularyRouteImport } from './routes/_shell/vocabulary'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
+import { Route as ShellPaperWalletsRouteImport } from './routes/_shell/paper-wallets'
 import { Route as ShellSplatRouteImport } from './routes/_shell/$'
 import { Route as ShellVouchersIndexRouteImport } from './routes/_shell/vouchers/index'
 import { Route as ShellUsersIndexRouteImport } from './routes/_shell/users/index'
@@ -48,6 +49,11 @@ const ShellVocabularyRoute = ShellVocabularyRouteImport.update({
 const ShellSettingsRoute = ShellSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellPaperWalletsRoute = ShellPaperWalletsRouteImport.update({
+  id: '/paper-wallets',
+  path: '/paper-wallets',
   getParentRoute: () => ShellRoute,
 } as any)
 const ShellSplatRoute = ShellSplatRouteImport.update({
@@ -140,6 +146,7 @@ const ShellPostsReportIdEditRoute = ShellPostsReportIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof ShellIndexRoute
   '/$': typeof ShellSplatRoute
+  '/paper-wallets': typeof ShellPaperWalletsRoute
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
   '/pools/$address': typeof ShellPoolsAddressRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof ShellSplatRoute
+  '/paper-wallets': typeof ShellPaperWalletsRoute
   '/settings': typeof ShellSettingsRoute
   '/vocabulary': typeof ShellVocabularyRoute
   '/': typeof ShellIndexRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_shell': typeof ShellRouteWithChildren
   '/_shell/$': typeof ShellSplatRoute
+  '/_shell/paper-wallets': typeof ShellPaperWalletsRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/vocabulary': typeof ShellVocabularyRoute
   '/_shell/': typeof ShellIndexRoute
@@ -210,6 +219,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/paper-wallets'
     | '/settings'
     | '/vocabulary'
     | '/pools/$address'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/paper-wallets'
     | '/settings'
     | '/vocabulary'
     | '/'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_shell'
     | '/_shell/$'
+    | '/_shell/paper-wallets'
     | '/_shell/settings'
     | '/_shell/vocabulary'
     | '/_shell/'
@@ -307,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof ShellSettingsRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/paper-wallets': {
+      id: '/_shell/paper-wallets'
+      path: '/paper-wallets'
+      fullPath: '/paper-wallets'
+      preLoaderRoute: typeof ShellPaperWalletsRouteImport
       parentRoute: typeof ShellRoute
     }
     '/_shell/$': {
@@ -433,6 +452,7 @@ declare module '@tanstack/react-router' {
 
 interface ShellRouteChildren {
   ShellSplatRoute: typeof ShellSplatRoute
+  ShellPaperWalletsRoute: typeof ShellPaperWalletsRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellVocabularyRoute: typeof ShellVocabularyRoute
   ShellIndexRoute: typeof ShellIndexRoute
@@ -456,6 +476,7 @@ interface ShellRouteChildren {
 
 const ShellRouteChildren: ShellRouteChildren = {
   ShellSplatRoute: ShellSplatRoute,
+  ShellPaperWalletsRoute: ShellPaperWalletsRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellVocabularyRoute: ShellVocabularyRoute,
   ShellIndexRoute: ShellIndexRoute,

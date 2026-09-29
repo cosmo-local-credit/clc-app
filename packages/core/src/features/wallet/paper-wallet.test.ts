@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vite-plus/test";
-import { parsePaperWalletImportPayload } from "./paper-wallet";
+import {
+  buildPaperWalletUrl,
+  isPlaceholderSignupEmail,
+  parsePaperWalletImportPayload,
+  placeholderSignupEmail,
+} from "./paper-wallet";
 
 const RAW_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const BARE_RAW_KEY = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
@@ -53,5 +58,22 @@ describe("parsePaperWalletImportPayload", () => {
 
   it("returns invalid for random text", () => {
     expect(parsePaperWalletImportPayload("not-a-paper-wallet").type).toBe("invalid");
+  });
+});
+
+describe("buildPaperWalletUrl", () => {
+  it("joins the origin without doubling slashes and encodes the payload", () => {
+    expect(buildPaperWalletUrl("https://app.example/", "6P+/")).toBe(
+      "https://app.example/?w=6P%2B%2F",
+    );
+  });
+});
+
+describe("placeholderSignupEmail", () => {
+  it("derives a unique lower-case address the app recognises", () => {
+    const email = placeholderSignupEmail("0xABCDEF");
+    expect(email).toBe("pending+abcdef@clc.local");
+    expect(isPlaceholderSignupEmail(email)).toBe(true);
+    expect(isPlaceholderSignupEmail("a@b.co")).toBe(false);
   });
 });

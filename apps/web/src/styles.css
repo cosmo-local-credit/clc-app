@@ -87,18 +87,18 @@
 	--sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Staging brand. Prod (the :root / .dark defaults above) is green. */
+/* Staging brand, red. Prod (the :root / .dark defaults above) is green. */
 :root[data-brand="staging"] {
-	--primary: oklch(0.501 0.153 255.522);
+	--primary: oklch(0.577 0.245 27.325);
 	--primary-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.501 0.153 255.522);
+	--sidebar-primary: oklch(0.577 0.245 27.325);
 	--sidebar-primary-foreground: oklch(0.985 0 0);
 }
 
 .dark[data-brand="staging"] {
-	--primary: oklch(0.573 0.153 255.522);
+	--primary: oklch(0.637 0.237 25.331);
 	--primary-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.573 0.153 255.522);
+	--sidebar-primary: oklch(0.637 0.237 25.331);
 	--sidebar-primary-foreground: oklch(0.985 0 0);
 }
 

@@ -257,6 +257,14 @@ Inputs use default `h-9`; don't override with `h-11`.
 Never use `bg-background` or `bg-transparent` for interactive elements (inputs,
 buttons) placed on the gray page background — they become invisible.
 
+**Wallet amount inputs:** New or migrated transactional amount controls use
+`WalletAmountInput` from `#/components/wallet`. The component owns the square
+white surface, visible border, amount typography, placeholder, and focus,
+invalid, and disabled states. Screens continue to own token selection, parsing,
+sanitization, precision, quoting, and validation. Do not add new borderless or
+transparent composite amount inputs. Pool Swap uses this pattern; Send, Add
+stables, and Withdraw remain legacy migrations tracked by issue #52.
+
 **Self-check before writing any layout:**
 
 > "Would this look like a card floating in the middle of a phone screen?"
@@ -269,7 +277,7 @@ buttons) placed on the gray page background — they become invisible.
 Desktop-first back office for stewards and operators. Look and feel is drawn
 from `~/wafer-labs/wafer-ui` (unrelated project, same stack): **Lyra** — square
 corners, dense zinc surfaces, mono numerals, restrained status colour. `--primary`
-follows `VITE_BRAND` (green on prod, blue on staging) so both apps on one
+follows `VITE_BRAND` (green on prod, red on staging) so both apps on one
 environment read as one product.
 
 What differs from `apps/web`:
@@ -358,17 +366,28 @@ file's `name` binds it to one project:
 | Admin host                 | `admin.cosmolocal.credit`   | `admin.test.cosmolocal.credit`     |
 | API                        | `api.cosmolocal.credit`     | `gnosis-staging.cosmolocal.credit` |
 | Storage                    | `storage.cosmolocal.credit` | `gnosis-storage.cosmolocal.credit` |
-| `VITE_BRAND`               | `prod` (green)              | `staging` (blue)                   |
+| `VITE_BRAND`               | `prod` (green)              | `staging` (red)                    |
 | `VITE_FULL_REACT_ERRORS`   | `false`                     | `true`                             |
 | Relying party              | `cosmolocal.credit`         | `test.cosmolocal.credit`           |
 
-**Merging the Wrangler files onto the other branch renames that branch's Pages
-projects out from under themselves.** Promote `develop` → `master` for code;
-rewrite the Wrangler `name` and URLs in the same push so HEAD is always valid
-for that branch.
+**The two copies of each Wrangler file differ only in `name` and in their
+"Per environment" blocks.** Every other line, comments included, is identical
+on both branches, so a develop → master merge that touches a shared line (a new
+shared variable, a comment) leaves master's values alone without a conflict.
+Keep it that way:
+
+- A new variable that is the same everywhere goes in the "Shared" block, on
+  develop only. It reaches master with the next promote.
+- A variable whose value differs goes in the "Per environment" block, committed
+  on **both** branches with each branch's own value. Committing it on develop
+  alone makes the next promote conflict — or, worse, take develop's value.
+- Never resolve a Wrangler conflict by merging `master` into `develop` (GitHub's
+  "Resolve conflicts" button does exactly that). It records master as the new
+  merge base, and the next promote then silently carries staging's `name` and
+  URLs onto master. Resolve on the master side, keeping master's lines.
 
 `VITE_BRAND` selects the primary colour at build time (`data-brand` on `<html>`).
-Green is the product brand (prod); blue marks staging.
+Green is the product brand (prod); red marks staging.
 
 #### The brand reaches past CSS — icons, manifest, status bar
 
@@ -377,7 +396,7 @@ outside the page — home-screen icon, install splash, task switcher, Android
 status bar, browser tab — names a colour in sRGB and has to be selected by the
 build. The palette is one table, `BRAND_PRIMARY_COLOR` in
 `@clc/core/lib/constants/brand`, resolved by each app's `#/lib/brand` through
-`resolveBrand`. Nothing else may hardcode `#007a55` or `#1762b8`, and unset
+`resolveBrand`. Nothing else may hardcode `#007a55` or `#e7000b`, and unset
 `VITE_BRAND` is prod: a misconfigured production deploy must not look like
 staging.
 
@@ -406,7 +425,7 @@ mark. `apps/admin` uses the square tile (`rx="0"`) and needs only `logo.svg` and
 
 **Do not patch `public/` after the build.** The previous mechanism rewrote
 `manifest.json`'s `theme_color` in a `closeBundle` hook; Nitro copies `public/`
-into the output later, so the file was still green in a blue staging build while
+into the output later, so the file was still green in a staging build while
 the `<head>` meta was correct. `apps/web/src/lib/-brand.test.ts` pins the
 manifests to the palette so that cannot come back.
 
