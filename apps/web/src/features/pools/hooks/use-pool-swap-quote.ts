@@ -13,12 +13,11 @@ import { call, getBlockNumber, multicall } from "viem/actions";
 import { useClient } from "wagmi";
 
 import {
+  SWAP_ROUTER_ADDRESS,
   quotePoolGrossAmountOut,
   quoteRouteExactInput,
   quoteRouteExactOutput,
 } from "#/features/wallet/api/pool-swap-quotes";
-
-const SWAP_ROUTER_ADDRESS = "0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC" as const;
 
 export type PoolSwapQuoteMode = "exact-input" | "exact-output";
 

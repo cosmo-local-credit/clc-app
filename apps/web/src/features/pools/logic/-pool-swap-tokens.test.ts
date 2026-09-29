@@ -6,6 +6,7 @@ import {
   buildPoolSwapTokens,
   defaultPoolSwapFrom,
   defaultPoolSwapTo,
+  poolVouchersFromRegistry,
 } from "./pool-swap-tokens";
 
 const POOL = "0xdD97a5282D11e55d7271d466C80963d6793B276f" as const;
@@ -316,5 +317,89 @@ describe("defaultPoolSwapTo", () => {
     });
 
     expect(defaultPoolSwapTo(tokens, basePool, vouchers)?.token.symbol).toBe("SAR");
+  });
+});
+
+describe("poolVouchersFromRegistry", () => {
+  it("returns the catalog untouched for a pool with no registry", () => {
+    const catalog = [voucher({ tokenAddress: KAW })];
+
+    expect(poolVouchersFromRegistry({ catalog, registry: null })).toBe(catalog);
+  });
+
+  it("lists a registry member the catalog never projected", () => {
+    // The seeded default voucher: on chain from `initialize`, absent from the
+    // catalog's pool voucher list.
+    const merged = poolVouchersFromRegistry({
+      catalog: [voucher({ id: "v1", tokenAddress: KAW, symbol: "KAW" })],
+      registry: [KAW, PLK],
+      metadata: new Map([[PLK.toLowerCase(), { symbol: "PLK", name: "Plank", decimals: 18 }]]),
+    });
+
+    expect(merged.map((entry) => entry.symbol)).toEqual(["KAW", "PLK"]);
+    expect(merged[1]).toMatchObject({
+      tokenAddress: PLK,
+      name: "Plank",
+      decimals: 18,
+      isAllowed: true,
+      tokenLimit: null,
+    });
+  });
+
+  it("keeps the catalog's richer record where both sources know a token", () => {
+    const catalogEntry = voucher({ id: "v1", tokenAddress: KAW, iconUrl: "https://x/kaw.png" });
+
+    const merged = poolVouchersFromRegistry({
+      catalog: [catalogEntry],
+      registry: [KAW.toLowerCase()],
+      metadata: new Map([[KAW.toLowerCase(), { symbol: "ZZZ", name: "Other", decimals: 2 }]]),
+    });
+
+    expect(merged).toEqual([catalogEntry]);
+  });
+
+  it("drops a catalog voucher the registry does not admit", () => {
+    // `SwapPool` runs `have(token)` on both legs, so offering it would only
+    // produce a signature that reverts `UnauthorizedToken`.
+    const merged = poolVouchersFromRegistry({
+      catalog: [voucher({ tokenAddress: KAW }), voucher({ id: "v2", tokenAddress: SAR })],
+      registry: [SAR],
+    });
+
+    expect(merged.map((entry) => entry.tokenAddress)).toEqual([SAR]);
+  });
+
+  it("lists a member with unreadable metadata as unsizable rather than omitting it", () => {
+    const [entry] = poolVouchersFromRegistry({ catalog: [], registry: [PLK] });
+
+    expect(entry).toMatchObject({ tokenAddress: PLK, decimals: null });
+    expect(entry?.symbol).toBe("0xCcC000…000003");
+    expect(entry?.name).toBe("0xCcC000…000003");
+  });
+
+  it("lists a duplicated registry entry once", () => {
+    const merged = poolVouchersFromRegistry({
+      catalog: [],
+      registry: [PLK, PLK.toLowerCase()],
+    });
+
+    expect(merged).toHaveLength(1);
+  });
+
+  it("returns nothing for a registry that admits nothing", () => {
+    expect(
+      poolVouchersFromRegistry({ catalog: [voucher({ tokenAddress: KAW })], registry: [] }),
+    ).toEqual([]);
+  });
+
+  it("builds swap tokens whose unsized rows are listed but not selectable", () => {
+    const merged = poolVouchersFromRegistry({ catalog: [], registry: [PLK] });
+    const [token] = buildPoolSwapTokens({
+      pool: pool({ limiterAddress: null }),
+      vouchers: merged,
+      reads: new Map([[PLK.toLowerCase(), reads({ holderBalanceRaw: "5", poolBalanceRaw: "9" })]]),
+    });
+
+    expect(token).toMatchObject({ decimals: null, canSwapIn: false, canSwapOut: false });
   });
 });

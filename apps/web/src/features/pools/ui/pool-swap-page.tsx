@@ -1,7 +1,7 @@
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { RiArrowDownSLine, RiArrowUpLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -25,7 +25,7 @@ import {
 import { usePoolSwapMaximum } from "#/features/pools/hooks/use-pool-swap-maximum";
 import { usePoolSwapTokenReads } from "#/features/pools/hooks/use-pool-swap-tokens";
 import { usePoolSwapTransfer } from "#/features/pools/hooks/use-pool-swap-transfer";
-import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
+import { usePoolSwapVouchers } from "#/features/pools/hooks/use-pool-swap-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import {
   type PoolSwapToken,
@@ -46,10 +46,10 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const swapTransfer = usePoolSwapTransfer();
   const poolQuery = useUserPoolByAddress(poolAddress);
   const pool = poolQuery.data;
-  // Drained rather than paged: a picker that stops at the first page tells a
-  // holder this pool does not take their voucher, and offers nothing to correct
-  // that impression with.
-  const vouchersQuery = usePoolVouchersWithStatus(pool, { all: true });
+  // The pool's registry decides the menu, not the catalog. A picker built from the
+  // catalog's projection omits members it has not indexed, and tells a holder this
+  // pool does not take a voucher it does.
+  const vouchersQuery = usePoolSwapVouchers(pool);
   const vouchers = vouchersQuery.vouchers;
   const reads = usePoolSwapTokenReads(pool, vouchers, address);
 
@@ -166,15 +166,43 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
 
   // The pair-specific maximum combines the holder balance, the input deposit
   // headroom, and output liquidity converted through the pool's gross quoter.
-  // While that boundary is absent or refreshing, no fallback Max is shown.
+  // Fees come out of the output leg, so they lower what arrives, not what may be
+  // sent. Until that boundary is known for this pair no fallback Max is shown; a
+  // refresh keeps the last answer for the same pair rather than blinking it out.
   const maximumRaw = maximum.data?.maxAmountInRaw;
   const maxFromRaw =
-    !reads.isFetching &&
-    !maximum.isFetching &&
-    maximumRaw !== undefined &&
-    isPositiveRawAmount(maximumRaw)
-      ? maximumRaw
+    maximumRaw !== undefined && isPositiveRawAmount(maximumRaw) ? maximumRaw : null;
+  const maxReceiveRaw = maximum.data?.maxAmountOutRaw;
+  const maxReceiveAmount =
+    maxReceiveRaw && toDecimals !== null && isPositiveRawAmount(maxReceiveRaw)
+      ? formatTokenAmountFixed(maxReceiveRaw, toDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
       : null;
+  const receiveSymbol = selectedTo?.token.symbol ?? "";
+  // The receive hint and Max are the same request: spend the pinned raw maximum.
+  // Filling the receive side by typing its figure back in would round the send
+  // side up by a wei and could overrun the balance.
+  const applyMax = () => {
+    if (!maxFromAmount || maxFromRaw === null) return;
+    setQuoteMode("exact-input");
+    setFromMaxAmountRaw(maxFromRaw);
+    setFromAmount(maxFromAmount);
+  };
+
+  // What the pool and the protocol keep: the gross quote less the net the holder
+  // receives, both from the contract, in the voucher being received.
+  let feeAmount: string | null = null;
+  if (quote.data && toDecimals !== null) {
+    const grossOut = BigInt(quote.data.grossAmountOutRaw);
+    const netOut = BigInt(quote.data.amountOutRaw);
+    if (grossOut >= netOut) {
+      feeAmount = formatTokenAmountFixed(
+        (grossOut - netOut).toString(),
+        toDecimals,
+        2,
+        i18n.locales?.[0] ?? i18n.locale,
+      );
+    }
+  }
   const maxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
       ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2)
@@ -251,13 +279,22 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         <Trans>Swap</Trans>
       </h1>
 
-      <div className="relative grid grid-rows-2 gap-1">
+      <div className="mt-1">
         <SwapField
           id="swap-receive-amount"
+          emphasis="primary"
           label={receiveLabel}
           token={selectedTo?.token}
           amount={displayedToAmount}
           autoFocus
+          onHint={applyMax}
+          hint={
+            maxReceiveAmount ? (
+              <Trans>
+                You can receive up to {maxReceiveAmount} {receiveSymbol}
+              </Trans>
+            ) : null
+          }
           onFocus={() => setFocusedField("to")}
           onBlur={() => {
             if (quoteMode === "exact-output") {
@@ -272,8 +309,28 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           }}
           onSelect={() => setPicker({ field: "to" })}
         />
+        <div className="flex justify-center py-1.5">
+          <button
+            type="button"
+            aria-label={t`Reverse swap direction`}
+            // Reversing is only offered where the reversed pair is itself swappable
+            // — the To voucher has to be one you hold, and the From one the pool can
+            // pay out.
+            disabled={!selectedFrom?.canSwapOut || !selectedTo?.canSwapIn}
+            onClick={() => {
+              if (!selectedFrom || !selectedTo) return;
+              setFromMaxAmountRaw(null);
+              setFromTokenId(selectedTo.id);
+              setToTokenId(selectedFrom.id);
+            }}
+            className="flex size-11 items-center justify-center rounded-full border-2 border-background bg-foreground text-background disabled:opacity-50"
+          >
+            <RiArrowUpLine className="size-4" aria-hidden="true" />
+          </button>
+        </div>
         <SwapField
           id="swap-send-amount"
+          emphasis="secondary"
           label={sendLabel}
           token={selectedFrom?.token}
           amount={displayedFromAmount}
@@ -291,31 +348,9 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
             setFromMaxAmountRaw(null);
             setFromAmount(amount);
           }}
-          onMax={() => {
-            if (!maxFromAmount || maxFromRaw === null) return;
-            setQuoteMode("exact-input");
-            setFromMaxAmountRaw(maxFromRaw);
-            setFromAmount(maxFromAmount);
-          }}
+          onMax={applyMax}
           onSelect={() => setPicker({ field: "from" })}
         />
-        <button
-          type="button"
-          aria-label={t`Reverse swap direction`}
-          // Reversing is only offered where the reversed pair is itself swappable
-          // — the To voucher has to be one you hold, and the From one the pool can
-          // pay out.
-          disabled={!selectedFrom?.canSwapOut || !selectedTo?.canSwapIn}
-          onClick={() => {
-            if (!selectedFrom || !selectedTo) return;
-            setFromMaxAmountRaw(null);
-            setFromTokenId(selectedTo.id);
-            setToTokenId(selectedFrom.id);
-          }}
-          className="absolute top-1/2 left-1/2 z-10 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-background bg-foreground text-background disabled:opacity-50"
-        >
-          <RiArrowUpLine className="size-4" aria-hidden="true" />
-        </button>
       </div>
 
       <div className="mt-3 border border-border bg-card">
@@ -331,8 +366,8 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           <span className="text-muted-foreground text-xs">
             <Trans>Fees</Trans>
           </span>
-          <span className="font-mono text-xs font-semibold">
-            <Trans>Fee calculated at confirmation</Trans>
+          <span dir="ltr" className="font-mono text-xs font-semibold">
+            {feeAmount !== null ? `${feeAmount} ${receiveSymbol}` : "—"}
           </span>
         </div>
       </div>
@@ -351,7 +386,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
             size="sm"
             className="h-9 bg-card"
             onClick={() => {
-              void vouchersQuery.refetch();
+              vouchersQuery.refetch();
               void reads.refetch();
             }}
           >
@@ -638,14 +673,27 @@ function SwapConfirmationRow({
   );
 }
 
+/**
+ * One side of the swap: a voucher selector and its amount, on the page's own
+ * background. The amount's outline is the only box — a panel around it would nest
+ * one bordered surface inside another.
+ *
+ * `primary` is the figure the screen is about (what you receive) and leads with a
+ * heading-weight label and the larger amount; `secondary` is the figure that
+ * follows from it. Both share one selector column so the two vouchers line up
+ * whatever their symbols are.
+ */
 function SwapField({
   id,
+  emphasis,
   label,
   token,
   amount,
   autoFocus = false,
   max,
   invalid = false,
+  hint,
+  onHint,
   onFocus,
   onBlur,
   onAmountChange,
@@ -653,12 +701,15 @@ function SwapField({
   onSelect,
 }: {
   id: string;
+  emphasis: "primary" | "secondary";
   label: string;
   token: WalletToken | undefined;
   amount: string;
   autoFocus?: boolean;
   max?: string;
   invalid?: boolean;
+  hint?: ReactNode;
+  onHint?: () => void;
   onFocus: () => void;
   onBlur: () => void;
   onAmountChange: (amount: string) => void;
@@ -666,13 +717,16 @@ function SwapField({
   onSelect: () => void;
 }) {
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className="grid h-full min-h-28 grid-rows-[1.75rem_1fr] border border-border bg-card p-3.5"
-    >
-      <div className="flex items-start justify-between">
-        <label htmlFor={id} className="text-muted-foreground text-xs">
+    <div role="group" aria-label={label}>
+      <div className="mb-1.5 flex min-h-7 items-center justify-between">
+        <label
+          htmlFor={id}
+          className={
+            emphasis === "primary"
+              ? "font-heading text-base font-semibold"
+              : "text-muted-foreground text-xs"
+          }
+        >
           {label}
         </label>
         {max !== undefined ? (
@@ -686,25 +740,29 @@ function SwapField({
           </Button>
         ) : null}
       </div>
-      <div className="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-2.5">
+      <div className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-stretch gap-2">
         <button
           type="button"
           onClick={onSelect}
-          className="flex h-9 items-center gap-1.5 border border-border bg-card px-2"
+          className="flex min-h-9 items-center gap-1.5 border border-border bg-card px-2"
         >
           {token ? (
             <TokenLogo token={token} size={24} />
           ) : (
             <span className="size-6 shrink-0 rounded-full bg-muted" />
           )}
-          <span dir="ltr" className="shrink-0 whitespace-nowrap text-start text-sm font-bold">
+          <span
+            dir="ltr"
+            className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start text-sm font-bold"
+          >
             {token?.symbol ?? "—"}
           </span>
-          <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
+          <RiArrowDownSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
         <WalletAmountInput
           id={id}
           label={label}
+          emphasis={emphasis}
           value={amount}
           onValueChange={(value) => {
             onFocus();
@@ -716,6 +774,19 @@ function SwapField({
           aria-invalid={invalid}
         />
       </div>
+      {hint ? (
+        onHint ? (
+          <button
+            type="button"
+            onClick={onHint}
+            className="mt-1 min-h-9 text-start text-muted-foreground text-xs underline underline-offset-2"
+          >
+            {hint}
+          </button>
+        ) : (
+          <p className="mt-1.5 text-muted-foreground text-xs">{hint}</p>
+        )
+      ) : null}
     </div>
   );
 }

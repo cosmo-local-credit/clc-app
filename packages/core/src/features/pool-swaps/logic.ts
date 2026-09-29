@@ -10,6 +10,9 @@ export const erc20AllowanceAbi = parseAbi([
 export const erc20BalanceOfAbi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
 ]);
+export const erc20SymbolAbi = parseAbi(["function symbol() view returns (string)"]);
+export const erc20NameAbi = parseAbi(["function name() view returns (string)"]);
+export const erc20DecimalsAbi = parseAbi(["function decimals() view returns (uint8)"]);
 
 export const swapPoolDepositAbi = parseAbi(["function deposit(address token, uint256 value)"]);
 export const swapPoolWithdrawToSenderAbi = parseAbi([

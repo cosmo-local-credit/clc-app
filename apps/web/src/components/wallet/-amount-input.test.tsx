@@ -55,4 +55,30 @@ describe("WalletAmountInput", () => {
     expect(input.disabled).toBe(true);
     expect(input.className).toContain("disabled:opacity-50");
   });
+
+  it("sizes the amount by emphasis, keeping the outlined white surface", () => {
+    const noop = vi.fn();
+    render(
+      <>
+        <WalletAmountInput label="Primary" value="" onValueChange={noop} emphasis="primary" />
+        <WalletAmountInput label="Secondary" value="" onValueChange={noop} emphasis="secondary" />
+        <WalletAmountInput label="Plain" value="" onValueChange={noop} />
+      </>,
+    );
+
+    const primary = screen.getByRole("textbox", { name: "Primary" });
+    const secondary = screen.getByRole("textbox", { name: "Secondary" });
+    const plain = screen.getByRole("textbox", { name: "Plain" });
+
+    expect(primary.className).toContain("h-12");
+    expect(primary.className).toContain("text-[1.5rem]");
+    expect(primary.className).not.toContain("h-9");
+    expect(secondary.className).toContain("text-[1rem]");
+    expect(plain.className).toContain("text-[1.375rem]");
+    for (const input of [primary, secondary, plain]) {
+      expect(input.className).toContain("border-input");
+      expect(input.className).toContain("bg-card");
+      expect(input.className).toContain("rounded-none");
+    }
+  });
 });

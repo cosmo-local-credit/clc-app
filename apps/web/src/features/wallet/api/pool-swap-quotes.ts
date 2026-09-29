@@ -9,6 +9,13 @@ import {
 } from "@clc/core/features/pool-swaps/logic";
 import { decodeFunctionResult, encodeFunctionData, type Address, type Hex } from "viem";
 
+/**
+ * `SwapRouter` on Gnosis. Stateless: it only chains each pool's own
+ * `getAmountOut` / `getAmountIn`, so its figures already carry every pool fee and
+ * the protocol fee.
+ */
+export const SWAP_ROUTER_ADDRESS = "0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC" as const;
+
 export type PoolQuoteClient = {
   call(this: void, args: { to: Address; data: Hex; blockNumber?: bigint }): Promise<{ data?: Hex }>;
 };

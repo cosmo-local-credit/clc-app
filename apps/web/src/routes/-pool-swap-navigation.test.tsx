@@ -44,8 +44,8 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
-  usePoolVouchersWithStatus: () => ({
+vi.mock("#/features/pools/hooks/use-pool-swap-vouchers", () => ({
+  usePoolSwapVouchers: () => ({
     vouchers: [
       {
         id: "1",

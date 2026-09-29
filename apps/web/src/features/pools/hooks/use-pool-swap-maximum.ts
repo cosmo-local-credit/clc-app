@@ -7,10 +7,21 @@ import { isAddress, zeroAddress } from "viem";
 import { call } from "viem/actions";
 import { useClient } from "wagmi";
 
-import { quotePoolGrossInputCeiling } from "#/features/wallet/api/pool-swap-quotes";
+import {
+  SWAP_ROUTER_ADDRESS,
+  quotePoolGrossInputCeiling,
+  quoteRouteExactInput,
+} from "#/features/wallet/api/pool-swap-quotes";
 
 export type PoolSwapMaximum = {
   maxAmountInRaw: string;
+  /**
+   * What the holder receives for spending `maxAmountInRaw`, after the pool fee and
+   * the protocol fee — the router's own `quoteExactInput`, not an estimate. Null
+   * where the contract will not quote it (a fee configuration it rejects, or a net
+   * of zero); the send ceiling stands regardless.
+   */
+  maxAmountOutRaw: string | null;
   liquidityInputCeilingRaw: string;
   blockNumber: bigint;
 };
@@ -34,6 +45,13 @@ const poolSwapMaximumQueryKeys = {
  * Converts the selected output voucher's already-read liquidity into an input
  * ceiling, then combines it with the already-read wallet and deposit bounds.
  * It deliberately performs no balance, fee, or limiter reads of its own.
+ *
+ * Fees never reduce what can be sent: `SwapPool` takes the pool fee and the
+ * protocol fee out of the output leg, and it checks liquidity against the gross
+ * quoted value before either comes off. The ceiling is therefore the wallet
+ * balance, the deposit headroom, and the input whose gross quote fits the
+ * available output, whichever runs out first. What the fees do change is what
+ * arrives, which is why the net receive at that ceiling is quoted alongside it.
  */
 export function usePoolSwapMaximum(input: {
   poolAddress: string | undefined;
@@ -116,7 +134,24 @@ export function usePoolSwapMaximum(input: {
       if (maxAmountInRaw === null) {
         throw new Error("Pool swap maximum contains an invalid raw amount.");
       }
-      return { maxAmountInRaw, liquidityInputCeilingRaw, blockNumber: input.blockNumber };
+      const maxAmountOutRaw =
+        BigInt(maxAmountInRaw) === 0n
+          ? "0"
+          : await quoteRouteExactInput(
+              { call: (args) => call(client, args) },
+              {
+                routerAddress: SWAP_ROUTER_ADDRESS,
+                path: [{ poolAddress, tokenIn, tokenOut }],
+                amountInRaw: maxAmountInRaw,
+                blockNumber: input.blockNumber,
+              },
+            ).catch(() => null);
+      return {
+        maxAmountInRaw,
+        maxAmountOutRaw,
+        liquidityInputCeilingRaw,
+        blockNumber: input.blockNumber,
+      };
     },
     enabled:
       !!client &&
@@ -129,6 +164,21 @@ export function usePoolSwapMaximum(input: {
       input.availableAmountOutRaw !== undefined &&
       input.blockNumber !== undefined &&
       inputUpperBoundRaw !== null,
+    // A newer block re-keys the query. Between the two the previous answer for the
+    // same pair stands rather than making Max blink out on every refresh; it is
+    // only a hint, since Max pins its amount and the swap is re-quoted at the
+    // confirming block. A different pair is a different question, so its answer
+    // is never lent.
+    placeholderData: (previousData, previousQuery) => {
+      const previous = previousQuery?.queryKey[1] as
+        | { poolAddress: string; tokenIn: string; tokenOut: string }
+        | undefined;
+      return previous?.poolAddress === (poolAddress ?? "none") &&
+        previous.tokenIn === (tokenIn ?? "none") &&
+        previous.tokenOut === (tokenOut ?? "none")
+        ? previousData
+        : undefined;
+    },
     retry: false,
     staleTime: 15_000,
   });

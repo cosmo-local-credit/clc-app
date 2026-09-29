@@ -13,12 +13,15 @@ const {
   holderBalances,
   navigate,
   poolLiquidityBalance,
+  poolNetFee,
   poolQuoteRate,
+  poolRegistry,
   poolTreasuryState,
   poolTokenLimit,
   poolTransfers,
   publicClientCall,
   publicClientMulticall,
+  publicClientRead,
   swapMutateAsync,
   swapTransferState,
 } = vi.hoisted(() => ({
@@ -29,6 +32,18 @@ const {
   navigate: vi.fn(),
   poolLiquidityBalance: { value: 1_000_000_000n },
   poolQuoteRate: { numerator: 2n, denominator: 1n },
+  /** Pool fee plus protocol fee, in ppm, taken out of an exact-input quote's output. */
+  poolNetFee: { ppm: 0n },
+  /**
+   * The pool's `TokenUniqueSymbolIndex`. Unset, the pool has no registry and the
+   * catalog is the whole menu; set, `entries` is what the chain admits and
+   * `metadata` what those tokens report about themselves.
+   */
+  poolRegistry: {
+    address: null as string | null,
+    entries: [] as string[],
+    metadata: {} as Record<string, { symbol: string; name: string; decimals: number }>,
+  },
   poolTreasuryState: {
     balances: {} as Record<string, bigint>,
     fees: {} as Record<string, bigint>,
@@ -42,6 +57,7 @@ const {
   poolTokenLimit: { overrides: {} as Record<string, bigint>, fallback: 1_000_000_000n },
   publicClientCall: vi.fn(),
   publicClientMulticall: vi.fn(),
+  publicClientRead: vi.fn(),
   poolTransfers: { value: [] as Array<Record<string, unknown>> },
   swapMutateAsync: vi.fn(),
   swapTransferState: { error: null as Error | null, isPending: false },
@@ -71,6 +87,7 @@ vi.mock("viem/actions", () => ({
   call: (_client: unknown, args: unknown) => publicClientCall(args),
   getBlockNumber: () => Promise.resolve(100n),
   multicall: (_client: unknown, args: unknown) => publicClientMulticall(args),
+  readContract: (_client: unknown, args: unknown) => publicClientRead(args),
 }));
 
 vi.mock("wagmi", () => ({
@@ -97,6 +114,8 @@ const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const USDC_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
 const RAMBO_ADDRESS = "0x5555555555555555555555555555555555555555";
+const PLANK_ADDRESS = "0x6666666666666666666666666666666666666666";
+const REGISTRY_ADDRESS = "0x7777777777777777777777777777777777777777";
 const LIMITER_ADDRESS = "0x3333333333333333333333333333333333333333";
 const QUOTER_ADDRESS = "0x4444444444444444444444444444444444444444";
 
@@ -257,6 +276,7 @@ function mockPoolRequests({
             limiterAddress: LIMITER_ADDRESS,
             quoterAddress: QUOTER_ADDRESS,
             feesDecoupled: poolTreasuryState.feesDecoupled,
+            ...(poolRegistry.address ? { tokenRegistryAddress: poolRegistry.address } : {}),
             // Recorded, so the holdings panel does not have to probe for it.
             // Only a RelativeQuoter exposes a readable rate, and without one
             // the panel declines to value the pool rather than assume parity.
@@ -286,6 +306,14 @@ beforeEach(() => {
   poolLiquidityBalance.value = 1_000_000_000n;
   poolQuoteRate.numerator = 2n;
   poolQuoteRate.denominator = 1n;
+  poolNetFee.ppm = 0n;
+  poolRegistry.address = null;
+  poolRegistry.entries = [];
+  poolRegistry.metadata = {};
+  publicClientRead.mockImplementation(({ functionName }: { functionName: string }) => {
+    if (functionName === "entryCount") return Promise.resolve(BigInt(poolRegistry.entries.length));
+    return Promise.reject(new Error(`Unexpected read: ${functionName}`));
+  });
   poolTreasuryState.balances = {
     [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
     [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
@@ -305,6 +333,25 @@ beforeEach(() => {
       allowFailure: boolean;
       contracts: Array<{ address: string; functionName: string; args?: readonly unknown[] }>;
     }) => {
+      // The registry's members, by index, at one block.
+      if (!allowFailure && contracts[0]?.functionName === "entry") {
+        return Promise.resolve(poolRegistry.entries);
+      }
+      // What a token the catalog does not know says about itself: symbol, name,
+      // decimals — three to a token.
+      if (allowFailure && contracts[0]?.functionName === "symbol") {
+        return Promise.resolve(
+          contracts.map((contract) => {
+            const meta = poolRegistry.metadata[contract.address.toLowerCase()];
+            const field = { symbol: meta?.symbol, name: meta?.name, decimals: meta?.decimals }[
+              contract.functionName as "symbol" | "name" | "decimals"
+            ];
+            return field === undefined
+              ? { status: "failure" }
+              : { status: "success", result: field };
+          }),
+        );
+      }
       // The swap screen's per-voucher reads: holder balance, pool balance, fees,
       // limiter cap — four to a voucher, in that order.
       if (allowFailure && contracts[3]?.functionName === "limitOf") {
@@ -368,7 +415,10 @@ beforeEach(() => {
         data: encodeFunctionResult({
           abi: swapRouterQuoteExactInputAbi,
           functionName: "quoteExactInput",
-          result: (decoded.args[1] * poolQuoteRate.numerator) / poolQuoteRate.denominator,
+          result:
+            (((decoded.args[1] * poolQuoteRate.numerator) / poolQuoteRate.denominator) *
+              (1_000_000n - poolNetFee.ppm)) /
+            1_000_000n,
         }),
       });
     } catch {
@@ -414,6 +464,7 @@ afterEach(() => {
   navigate.mockReset();
   publicClientCall.mockReset();
   publicClientMulticall.mockReset();
+  publicClientRead.mockReset();
   swapMutateAsync.mockReset();
 });
 
@@ -650,9 +701,18 @@ describe("pool voucher UI", () => {
     expect(receiveInput.placeholder).toBe("0.00");
     expect(sendInput.placeholder).toBe("0.00");
     expect(document.activeElement).toBe(receiveInput);
-    expect(receiveField.className).toBe(sendField.className);
-    expect(receiveInput.className).toBe(sendInput.className);
-    expect(receiveField.parentElement?.className).toContain("grid-rows-2");
+    // You receive is the figure the screen is about and You send follows from it,
+    // so they are deliberately not twins: the receive amount is larger and taller.
+    expect(receiveInput.className).toContain("h-12");
+    expect(receiveInput.className).toContain("text-[1.5rem]");
+    expect(sendInput.className).toContain("text-[1rem]");
+    expect(sendInput.className).not.toContain("h-12");
+    expect(
+      receiveField.compareDocumentPosition(sendField) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // The input's own outline is the only box: no panel is drawn around it.
+    expect(receiveField.className).not.toContain("border");
+    expect(sendField.className).not.toContain("border");
     // The pool's own catalog row supplies the icon. clc-core enriches an account
     // token's `iconUrl` from the same `vouchers.icon_url` column, so the two
     // agree in production and only the fixtures tell them apart — but the swap
@@ -662,18 +722,23 @@ describe("pool voucher UI", () => {
     expect(document.querySelector('img[src="https://pool.example/ttx.png"]')).toBeTruthy();
   });
 
-  it("keeps the complete six-character voucher symbol visible", async () => {
+  it("keeps a six-character voucher symbol whole in selectors of one shared width", async () => {
     mockPoolRequests({ usdcSymbol: "WLLS22", ttxSymbol: "WLLR22" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
     const sendField = await screen.findByRole("group", { name: "You send" });
-    const symbol = await within(sendField).findByText("WLLS22");
+    const receiveField = screen.getByRole("group", { name: "You receive" });
+    const sendSymbol = await within(sendField).findByText("WLLS22");
+    const receiveSymbol = await within(receiveField).findByText("WLLR22");
 
-    expect(symbol.className).toContain("whitespace-nowrap");
-    expect(symbol.className).not.toContain("truncate");
-    expect(symbol.parentElement?.parentElement?.className).toContain(
-      "grid-cols-[max-content_minmax(0,1fr)]",
-    );
+    // A symbol is never clipped at this width, and the two selectors are the same
+    // width whatever their symbols are: a fixed column, not `max-content`.
+    expect(sendSymbol.className).not.toContain("truncate");
+    const sendRow = sendSymbol.parentElement?.parentElement;
+    const receiveRow = receiveSymbol.parentElement?.parentElement;
+    expect(sendRow?.className).toContain("grid-cols-[8.5rem_minmax(0,1fr)]");
+    expect(receiveRow?.className).toBe(sendRow?.className);
+    expect(sendSymbol.parentElement?.className).toBe(receiveSymbol.parentElement?.className);
   });
 
   it("updates You receive from the real exact-input quote when You send changes", async () => {
@@ -1120,6 +1185,106 @@ describe("pool voucher UI", () => {
     // — their own balance is irrelevant on this side.
     expect(rows.every((row) => row.textContent?.includes("30.00"))).toBe(true);
     expect(rows.some((row) => row.textContent?.includes("RAMBO"))).toBe(true);
+  });
+
+  it("offers a voucher the pool's registry admits even though the catalog never listed it", async () => {
+    // The catalog is a projection and omits members — a token seeded when the pool
+    // was published, or one the indexer has not reached. The registry is what
+    // `SwapPool` checks, so it decides the menu.
+    poolRegistry.address = REGISTRY_ADDRESS;
+    poolRegistry.entries = [USDC_ADDRESS, TTX_ADDRESS, PLANK_ADDRESS];
+    poolRegistry.metadata = {
+      [PLANK_ADDRESS.toLowerCase()]: { symbol: "PLANK", name: "Plank Token", decimals: 6 },
+    };
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const toField = await screen.findByRole("group", { name: "You receive" });
+    await within(toField).findByText("TTX");
+    fireEvent.click(within(toField).getByRole("button", { name: "TTX" }));
+
+    const plank = await screen.findByRole("button", { name: /PLANK/ });
+    expect(plank.textContent).toContain("Plank Token");
+    expect(plank.textContent).toContain("30.00");
+    expect(plank.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("drops a catalog voucher the registry does not admit", async () => {
+    // `SwapPool` runs `have(token)` on both legs, so offering it would only cost the
+    // holder a signature that reverts `UnauthorizedToken`.
+    poolRegistry.address = REGISTRY_ADDRESS;
+    poolRegistry.entries = [USDC_ADDRESS, TTX_ADDRESS];
+    mockPoolRequests({ withUnheldVoucher: true });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const sendField = await screen.findByRole("group", { name: "You send" });
+    await within(sendField).findByText("USDC");
+    fireEvent.click(within(sendField).getByRole("button", { name: "USDC" }));
+
+    const rows = await screen.findAllByRole("button", { name: /USDC|TTX|RAMBO/ });
+    expect(rows.some((row) => row.textContent?.includes("RAMBO"))).toBe(false);
+  });
+
+  it("says the registry could not be read instead of showing a shorter menu", async () => {
+    poolRegistry.address = REGISTRY_ADDRESS;
+    poolRegistry.entries = [USDC_ADDRESS, TTX_ADDRESS];
+    mockPoolRequests();
+    publicClientRead.mockRejectedValue(new Error("rpc down"));
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    expect(await screen.findByText(/couldn't check which vouchers this pool takes/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("shows the fees the pool and protocol take, in the voucher you receive", async () => {
+    poolNetFee.ppm = 20_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "25" },
+    });
+
+    // 25 USDC is 50.00 TTX gross; 2% comes off, so 49.00 arrives and 1.00 is fees.
+    await waitFor(() =>
+      expect((screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement).value).toBe(
+        "49.00",
+      ),
+    );
+    expect(screen.getByText("Fees").parentElement?.textContent).toContain("1.00 TTX");
+    expect(screen.queryByText(/fee calculated at confirmation/i)).toBeNull();
+  });
+
+  it("states the most you can receive once every fee is out", async () => {
+    poolNetFee.ppm = 20_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    // Max send is the 12.34 USDC held (24.68 TTX gross, under the pool's 30.00),
+    // and the contract's own net figure for that is 2% lower.
+    expect(await screen.findByText(/you can receive up to 24\.18 TTX/i)).toBeTruthy();
+  });
+
+  it("fills the most you can receive when the hint is tapped, spending the pinned maximum", async () => {
+    poolNetFee.ppm = 20_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /you can receive up to 24\.18 TTX/i }),
+    );
+
+    // Same request as Max on the send side, so the amount sent is the exact raw
+    // maximum and never a rounded-up figure that could overrun the balance.
+    await waitFor(() => {
+      expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe(
+        "12.34",
+      );
+      expect((screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement).value).toBe(
+        "24.18",
+      );
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
   });
 
   it("says so when you hold nothing this pool takes", async () => {
