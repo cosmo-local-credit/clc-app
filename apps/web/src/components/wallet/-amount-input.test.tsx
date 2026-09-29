@@ -56,27 +56,30 @@ describe("WalletAmountInput", () => {
     expect(input.className).toContain("disabled:opacity-50");
   });
 
-  it("sizes the amount by emphasis, keeping the outlined white surface", () => {
+  it("outlines a highlighted amount in the brand colour without changing its size", () => {
     const noop = vi.fn();
     render(
       <>
-        <WalletAmountInput label="Primary" value="" onValueChange={noop} emphasis="primary" />
-        <WalletAmountInput label="Secondary" value="" onValueChange={noop} emphasis="secondary" />
+        <WalletAmountInput label="Highlighted" value="" onValueChange={noop} highlighted />
         <WalletAmountInput label="Plain" value="" onValueChange={noop} />
       </>,
     );
 
-    const primary = screen.getByRole("textbox", { name: "Primary" });
-    const secondary = screen.getByRole("textbox", { name: "Secondary" });
+    const highlighted = screen.getByRole("textbox", { name: "Highlighted" });
     const plain = screen.getByRole("textbox", { name: "Plain" });
 
-    expect(primary.className).toContain("text-[1.5rem]");
-    expect(secondary.className).toContain("text-[1rem]");
-    expect(plain.className).toContain("text-[1.375rem]");
-    for (const input of [primary, secondary, plain]) {
-      // Inputs keep the standard height; emphasis is type size alone.
+    // The outline holds while focused, rather than falling back to the neutral
+    // focus border the moment someone starts typing.
+    expect(highlighted.className).toContain("border-primary");
+    expect(highlighted.className).toContain("focus-visible:border-primary");
+    expect(highlighted.className).not.toContain("border-input");
+    expect(plain.className).toContain("border-input");
+    expect(plain.className).not.toContain("border-primary");
+    // An invalid amount still reads as invalid.
+    expect(highlighted.className).toContain("aria-invalid:border-destructive");
+    for (const input of [highlighted, plain]) {
       expect(input.className).toContain("h-9");
-      expect(input.className).toContain("border-input");
+      expect(input.className).toContain("text-[1.375rem]");
       expect(input.className).toContain("bg-card");
       expect(input.className).toContain("rounded-none");
     }

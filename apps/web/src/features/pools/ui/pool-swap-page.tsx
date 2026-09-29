@@ -2,7 +2,7 @@ import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wal
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useMemo, useState } from "react";
-import { RiArrowDownSLine, RiArrowUpLine, RiCheckLine } from "react-icons/ri";
+import { RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
 import { useConnection } from "wagmi";
 
@@ -279,10 +279,10 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         <Trans>Swap</Trans>
       </h1>
 
-      <div className="mt-1">
+      <div className="mt-1 space-y-3">
         <SwapField
           id="swap-receive-amount"
-          emphasis="primary"
+          highlighted
           label={receiveLabel}
           token={selectedTo?.token}
           amount={displayedToAmount}
@@ -310,28 +310,8 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           }}
           onSelect={() => setPicker({ field: "to" })}
         />
-        <div className="flex justify-center py-1.5">
-          <button
-            type="button"
-            aria-label={t`Reverse swap direction`}
-            // Reversing is only offered where the reversed pair is itself swappable
-            // — the To voucher has to be one you hold, and the From one the pool can
-            // pay out.
-            disabled={!selectedFrom?.canSwapOut || !selectedTo?.canSwapIn}
-            onClick={() => {
-              if (!selectedFrom || !selectedTo) return;
-              setFromMaxAmountRaw(null);
-              setFromTokenId(selectedTo.id);
-              setToTokenId(selectedFrom.id);
-            }}
-            className="flex size-11 items-center justify-center rounded-full border-2 border-background bg-foreground text-background disabled:opacity-50"
-          >
-            <RiArrowUpLine className="size-4" aria-hidden="true" />
-          </button>
-        </div>
         <SwapField
           id="swap-send-amount"
-          emphasis="secondary"
           label={sendLabel}
           token={selectedFrom?.token}
           amount={displayedFromAmount}
@@ -680,14 +660,13 @@ function SwapConfirmationRow({
  * background. The amount's outline is the only box — a panel around it would nest
  * one bordered surface inside another.
  *
- * `primary` is the figure the screen is about (what you receive) and leads with a
- * heading-weight label and the larger amount; `secondary` is the figure that
- * follows from it. Both share one selector column so the two vouchers line up
- * whatever their symbols are.
+ * Both sides are the same size and share one selector column, so the two
+ * vouchers line up whatever their symbols are. `highlighted` outlines the amount
+ * in the brand colour: the side a holder is expected to fill in.
  */
 function SwapField({
   id,
-  emphasis,
+  highlighted = false,
   label,
   token,
   amount,
@@ -704,7 +683,7 @@ function SwapField({
   onSelect,
 }: {
   id: string;
-  emphasis: "primary" | "secondary";
+  highlighted?: boolean;
   label: string;
   token: WalletToken | undefined;
   amount: string;
@@ -724,14 +703,7 @@ function SwapField({
   return (
     <div role="group" aria-label={label}>
       <div className="mb-1.5 flex min-h-7 items-center justify-between">
-        <label
-          htmlFor={id}
-          className={
-            emphasis === "primary"
-              ? "font-heading text-base font-semibold"
-              : "text-muted-foreground text-xs"
-          }
-        >
+        <label htmlFor={id} className="text-muted-foreground text-xs">
           {label}
         </label>
         {max !== undefined ? (
@@ -768,7 +740,7 @@ function SwapField({
         <WalletAmountInput
           id={id}
           label={label}
-          emphasis={emphasis}
+          highlighted={highlighted}
           value={amount}
           onValueChange={(value) => {
             onFocus();

@@ -3,20 +3,6 @@ import type * as React from "react";
 import { Input } from "#/components/ui/input";
 import { cn } from "#/lib/utils";
 
-/**
- * Where the amount sits in a screen's hierarchy. Left unset it is the standard
- * wallet amount; `primary` is the one figure a screen is about, `secondary` the
- * one that follows from it. Only the type size changes: the outlined white
- * surface and the input's standard height are the same throughout.
- */
-type WalletAmountEmphasis = "primary" | "secondary";
-
-const EMPHASIS_CLASS: Record<WalletAmountEmphasis | "default", string> = {
-  primary: "text-[1.5rem]",
-  secondary: "text-[1rem]",
-  default: "text-[1.375rem]",
-};
-
 type WalletAmountInputProps = Omit<
   React.ComponentProps<typeof Input>,
   "aria-label" | "className" | "defaultValue" | "onChange" | "value"
@@ -24,7 +10,12 @@ type WalletAmountInputProps = Omit<
   label: string;
   value: string;
   onValueChange: (value: string) => void;
-  emphasis?: WalletAmountEmphasis;
+  /**
+   * The amount a screen wants filled in, where it has more than one: outlined in
+   * the brand colour instead of the neutral border, focused or not. Size and type
+   * stay the same, so two amounts on one screen still read as a pair.
+   */
+  highlighted?: boolean;
 };
 
 function WalletAmountInput({
@@ -34,7 +25,7 @@ function WalletAmountInput({
   type = "text",
   inputMode = "decimal",
   placeholder = "0.00",
-  emphasis,
+  highlighted = false,
   ...props
 }: WalletAmountInputProps) {
   return (
@@ -48,8 +39,8 @@ function WalletAmountInput({
       value={value}
       onChange={(event) => onValueChange(event.target.value)}
       className={cn(
-        "truncate px-2 text-end font-heading font-semibold leading-none tracking-tight",
-        EMPHASIS_CLASS[emphasis ?? "default"],
+        "truncate px-2 text-end font-heading text-[1.375rem] font-semibold leading-none tracking-tight",
+        highlighted && "border-primary focus-visible:border-primary",
       )}
     />
   );

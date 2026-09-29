@@ -720,13 +720,19 @@ describe("pool voucher UI", () => {
     expect(receiveInput.placeholder).toBe("0.00");
     expect(sendInput.placeholder).toBe("0.00");
     expect(document.activeElement).toBe(receiveInput);
-    // You receive is the figure the screen is about and You send follows from it,
-    // so they are deliberately not twins: the receive amount is set larger. Both
-    // keep the standard input height.
-    expect(receiveInput.className).toContain("text-[1.5rem]");
-    expect(sendInput.className).toContain("text-[1rem]");
-    expect(receiveInput.className).toContain("h-9");
-    expect(sendInput.className).toContain("h-9");
+    // The two sides are twins in size and type. You receive is the one to fill
+    // in, so it alone is outlined in the brand colour.
+    for (const input of [receiveInput, sendInput]) {
+      expect(input.className).toContain("h-9");
+      expect(input.className).toContain("text-[1.375rem]");
+    }
+    expect(receiveInput.className).toContain("border-primary");
+    expect(sendInput.className).not.toContain("border-primary");
+    expect(within(receiveField).getByText("You receive").className).toBe(
+      within(sendField).getByText("You send").className,
+    );
+    // A swap runs one way, receive-first: there is no control to flip it.
+    expect(screen.queryByRole("button", { name: /reverse swap direction/i })).toBeNull();
     expect(
       receiveField.compareDocumentPosition(sendField) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -1400,42 +1406,5 @@ describe("pool voucher UI", () => {
 
     expect(await screen.findByText(/you don't hold any voucher this pool takes/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("reverses the selected vouchers without changing either amount", async () => {
-    mockPoolRequests();
-    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
-
-    const fromInput = (await screen.findByRole("textbox", {
-      name: "You send",
-    })) as HTMLInputElement;
-    const toInput = screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement;
-    // Reversing is offered only once both sides are known to be swappable, so the
-    // selections have to have settled before the button means anything.
-    await within(screen.getByRole("group", { name: "You send" })).findByText("USDC");
-    await within(screen.getByRole("group", { name: "You send" })).findByRole("button", {
-      name: /max 12\.34/i,
-    });
-    fireEvent.change(fromInput, { target: { value: "17.25" } });
-    await waitFor(() => expect(toInput.value).toBe("34.50"));
-    const amountsBefore = [fromInput.value, toInput.value];
-
-    fireEvent.click(screen.getByRole("button", { name: /reverse swap direction/i }));
-
-    expect(within(screen.getByRole("group", { name: "You send" })).getByText("TTX")).toBeTruthy();
-    expect(
-      within(screen.getByRole("group", { name: "You receive" })).getByText("USDC"),
-    ).toBeTruthy();
-    expect([fromInput.value, toInput.value]).toEqual(amountsBefore);
-    expect(
-      within(screen.getByRole("group", { name: "You send" })).queryByRole("button", {
-        name: /max 12\.34/i,
-      }),
-    ).toBeNull();
-    expect(
-      await within(screen.getByRole("group", { name: "You send" })).findByRole("button", {
-        name: /max 9/i,
-      }),
-    ).toBeTruthy();
   });
 });
