@@ -543,6 +543,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                       >
                         <Input
                           id="pool-swap-fee"
+                          dir="ltr"
                           inputMode="decimal"
                           value={field.state.value}
                           onChange={(event) => {
@@ -753,6 +754,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   >
                     <Input
                       id="pool-email"
+                      dir="ltr"
                       type="email"
                       autoComplete="email"
                       value={field.state.value}
@@ -777,6 +779,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   >
                     <Input
                       id="pool-website"
+                      dir="ltr"
                       type="url"
                       inputMode="url"
                       autoComplete="url"
@@ -905,6 +908,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                             <div className="mt-1.5">
                               <Input
                                 id="pool-terms-url"
+                                dir="ltr"
                                 type="url"
                                 inputMode="url"
                                 autoComplete="url"

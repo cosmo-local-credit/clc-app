@@ -4,9 +4,13 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { multicallMock } = vi.hoisted(() => ({ multicallMock: vi.fn() }));
+const { getBlockNumberMock, multicallMock } = vi.hoisted(() => ({
+  getBlockNumberMock: vi.fn(),
+  multicallMock: vi.fn(),
+}));
 
 vi.mock("viem/actions", () => ({
+  getBlockNumber: (_client: unknown) => getBlockNumberMock(),
   multicall: (_client: unknown, args: unknown) => multicallMock(args),
 }));
 
@@ -36,11 +40,13 @@ function voucher(tokenAddress: string): PoolVoucher {
 }
 
 beforeEach(() => {
+  getBlockNumberMock.mockResolvedValue(77n);
   multicallMock.mockResolvedValue([]);
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  getBlockNumberMock.mockReset();
   multicallMock.mockReset();
 });
 
@@ -57,10 +63,18 @@ describe("usePoolSwapTokenReads", () => {
 
     await waitFor(() => expect(result.current.data).toBeTruthy());
     expect(multicallMock).toHaveBeenCalledOnce();
-    const [[{ allowFailure, contracts }]] = multicallMock.mock.calls as Array<
-      [{ allowFailure: boolean; contracts: Array<{ functionName: string; args?: unknown[] }> }]
+    const [[{ allowFailure, blockNumber, contracts }]] = multicallMock.mock.calls as Array<
+      [
+        {
+          allowFailure: boolean;
+          blockNumber: bigint;
+          contracts: Array<{ functionName: string; args?: unknown[] }>;
+        },
+      ]
     >;
     expect(allowFailure).toBe(true);
+    expect(blockNumber).toBe(77n);
+    expect(result.current.blockNumber).toBe(77n);
     expect(contracts.map((contract) => contract.functionName)).toEqual([
       "balanceOf",
       "balanceOf",

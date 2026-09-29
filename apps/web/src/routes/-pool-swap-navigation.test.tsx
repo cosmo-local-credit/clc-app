@@ -18,6 +18,7 @@ const { quoteData, swapMutateAsync } = vi.hoisted(() => ({
     availableAmountOut: "1000.00",
     availableAmountOutRaw: "1000000000",
     grossAmountOutRaw: "50000000",
+    feeAmountRaw: "0",
     hasLiquidity: true,
     blockNumber: 100n,
   },
@@ -44,8 +45,8 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
-  usePoolVouchersWithStatus: () => ({
+vi.mock("#/features/pools/hooks/use-pool-swap-vouchers", () => ({
+  usePoolSwapVouchers: () => ({
     vouchers: [
       {
         id: "1",
@@ -110,6 +111,10 @@ vi.mock("#/features/pools/hooks/use-pool-swap-quote", () => ({
     isPlaceholderData: false,
     refetch: () => Promise.resolve({ data: quoteData, isError: false }),
   }),
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-swap-maximum", () => ({
+  usePoolSwapMaximum: () => ({ data: undefined, isFetching: false }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-swap-transfer", () => ({

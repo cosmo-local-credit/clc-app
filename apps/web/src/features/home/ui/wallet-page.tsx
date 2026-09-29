@@ -25,7 +25,7 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
       key={token.id}
       type="button"
       className={[
-        "flex w-full items-center gap-3 p-3 text-left",
+        "flex w-full items-center gap-3 p-3 text-start",
         index < list.length - 1 ? "border-b border-border" : "",
       ].join(" ")}
       onClick={() => {
@@ -41,7 +41,7 @@ function WalletVoucherRows({ tokens }: { tokens: readonly WalletToken[] }) {
         <p className="text-sm font-bold tracking-tight">{token.symbol}</p>
         <p className="text-muted-foreground truncate text-xs">{token.name}</p>
       </div>
-      <div className="shrink-0 text-right">
+      <div className="shrink-0 text-end">
         <p className="font-heading text-sm font-semibold tracking-tight">{token.amount}</p>
       </div>
     </button>
@@ -325,7 +325,7 @@ export function WalletPage({ address }: { address?: string }) {
               to="/pools/$poolAddress"
               params={{ poolAddress: pool.address }}
               className={[
-                "flex w-full items-center gap-3 p-3 text-left active:bg-muted",
+                "flex w-full items-center gap-3 p-3 text-start active:bg-muted",
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
             >
@@ -341,7 +341,7 @@ export function WalletPage({ address }: { address?: string }) {
                 </p>
               </div>
               <RiArrowRightSLine
-                className="text-muted-foreground size-5 shrink-0"
+                className="rtl:-scale-x-100 text-muted-foreground size-5 shrink-0"
                 aria-hidden="true"
               />
             </Link>

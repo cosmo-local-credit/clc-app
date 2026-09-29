@@ -147,7 +147,7 @@ describe("SwapReceiptPage", () => {
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(TX_HASH));
   });
 
-  it("spells out the chain result as a debited From and a credited To", () => {
+  it("shows the received amount before the sent amount with matching labels", () => {
     useOtxTracking.mockReturnValue({
       outcome: {
         kind: "success",
@@ -166,8 +166,33 @@ describe("SwapReceiptPage", () => {
 
     render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
 
+    const receiveRow = screen.getByText("You receive").parentElement;
+    const sendRow = screen.getByText("You send").parentElement;
+    expect(receiveRow?.nextElementSibling).toBe(sendRow);
     expect(screen.getByText("−1.00 USDC").parentElement?.className).toContain("text-destructive");
     expect(screen.getByText("+2.00 TTX").parentElement?.className).toContain("text-primary");
+  });
+
+  it("groups receipt displays while keeping the send prefill canonical", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{
+          ...details,
+          sendAmount: "1000.00",
+          receiveAmount: "10000.00",
+          receiveToken: TTX_ADDRESS,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("+10,000.00 TTX")).toBeTruthy();
+    expect(screen.getByText("−1,000.00 USDC")).toBeTruthy();
+    const send = screen.getByRole("link", { name: /send ttx/i });
+    const target = new URL(send.getAttribute("href") ?? "", "https://example.test");
+    expect(target.searchParams.get("amount")).toBe("10000.00");
   });
 
   it("shows the backend on-chain failure instead of a successful receipt", () => {

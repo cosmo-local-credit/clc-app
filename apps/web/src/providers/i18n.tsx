@@ -1,6 +1,7 @@
 import {
   activateLocale,
   DEFAULT_LOCALE,
+  getLocaleDirection,
   i18n,
   isSupportedLocale,
   matchSupportedLocale,
@@ -92,6 +93,7 @@ function readStoredLocale(): SupportedLocale {
 function persistLocale(locale: SupportedLocale) {
   if (typeof document !== "undefined") {
     document.documentElement.lang = locale;
+    document.documentElement.dir = getLocaleDirection(locale);
   }
 
   writeLocalStorageLocale(locale);
@@ -105,6 +107,7 @@ export function AppI18nProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLocaleRef = useRef<SupportedLocale>(DEFAULT_LOCALE);
+  const rollbackRef = useRef(false);
 
   // Restore persisted locale after hydration to avoid server/client mismatch.
   useEffect(() => {
@@ -114,8 +117,10 @@ export function AppI18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    const isRollback = rollbackRef.current;
+    rollbackRef.current = false;
     setLoading(true);
-    setError(null);
+    if (!isRollback) setError(null);
     void activateLocale(locale)
       .then(() => {
         if (cancelled) return;
@@ -124,6 +129,7 @@ export function AppI18nProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (cancelled) return;
+        rollbackRef.current = true;
         setError("Unable to load language. Reverted to English.");
         setLocaleState(activeLocaleRef.current);
       })

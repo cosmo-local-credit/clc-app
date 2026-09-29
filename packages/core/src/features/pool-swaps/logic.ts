@@ -10,6 +10,9 @@ export const erc20AllowanceAbi = parseAbi([
 export const erc20BalanceOfAbi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
 ]);
+export const erc20SymbolAbi = parseAbi(["function symbol() view returns (string)"]);
+export const erc20NameAbi = parseAbi(["function name() view returns (string)"]);
+export const erc20DecimalsAbi = parseAbi(["function decimals() view returns (uint8)"]);
 
 export const swapPoolDepositAbi = parseAbi(["function deposit(address token, uint256 value)"]);
 export const swapPoolWithdrawToSenderAbi = parseAbi([
@@ -30,6 +33,9 @@ export const swapPoolGetAmountInAbi = parseAbi([
 ]);
 export const swapPoolGetQuoteAbi = parseAbi([
   "function getQuote(address outToken, address inToken, uint256 amount) returns (uint256)",
+]);
+export const poolQuoterReverseValueForAbi = parseAbi([
+  "function reverseValueFor(address outToken, address inToken, uint256 value) returns (uint256)",
 ]);
 export const swapPoolGetFeeAbi = parseAbi([
   "function getFee(address inToken, address outToken, uint256 value) view returns (uint256)",
@@ -72,6 +78,44 @@ export function poolAvailableLiquidityRaw(input: {
   }
   if (!input.feesDecoupled) return balance.toString();
   return (balance > fees ? balance - fees : 0n).toString();
+}
+
+/** The holder/cap ceiling before output-token liquidity is considered. */
+export function poolSwapInputUpperBoundRaw(input: {
+  walletBalanceRaw: string;
+  depositHeadroomRaw: string | null;
+}): string | null {
+  return minimumRawAmount(input.walletBalanceRaw, input.depositHeadroomRaw);
+}
+
+/**
+ * The largest raw input bounded by everything a single-pool swap can exhaust.
+ *
+ * A null deposit headroom means the pool is uncapped. Callers must withhold this
+ * calculation when a limiter exists but its cap could not be read; treating an
+ * unknown cap as uncapped would present a Max amount that can revert.
+ */
+export function poolSwapMaxInputRaw(input: {
+  walletBalanceRaw: string;
+  depositHeadroomRaw: string | null;
+  liquidityInputCeilingRaw: string;
+}): string | null {
+  const inputUpperBoundRaw = poolSwapInputUpperBoundRaw(input);
+  if (inputUpperBoundRaw === null) return null;
+  return minimumRawAmount(inputUpperBoundRaw, input.liquidityInputCeilingRaw);
+}
+
+function minimumRawAmount(leftRaw: string, rightRaw: string | null): string | null {
+  try {
+    const left = BigInt(leftRaw);
+    if (left < 0n) return null;
+    if (rightRaw === null) return left.toString();
+    const right = BigInt(rightRaw);
+    if (right < 0n) return null;
+    return (left < right ? left : right).toString();
+  } catch {
+    return null;
+  }
 }
 
 const RELAYER_CALL_LIMIT = 16;

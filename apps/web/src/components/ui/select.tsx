@@ -79,7 +79,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
     <Select.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default select-none items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden",
+        "relative flex w-full cursor-default select-none items-center gap-2 rounded-sm py-1.5 pe-8 ps-2 text-sm outline-hidden",
         "focus:bg-accent focus:text-accent-foreground",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
@@ -88,7 +88,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
     >
       <span
         data-slot="select-item-indicator"
-        className="absolute right-2 flex size-3.5 items-center justify-center"
+        className="absolute end-2 flex size-3.5 items-center justify-center"
       >
         <Select.ItemIndicator>
           <CheckIcon className="size-4" />

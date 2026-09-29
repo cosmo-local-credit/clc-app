@@ -149,6 +149,7 @@ export const PaperWalletCard = forwardRef<HTMLDivElement, PaperWalletCardProps>(
               {/* Description — rendered only when non-empty */}
               {showDescription ? (
                 <span
+                  dir="auto"
                   data-slot="description"
                   className="line-clamp-2"
                   style={{

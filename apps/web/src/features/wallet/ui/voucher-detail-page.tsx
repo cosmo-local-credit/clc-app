@@ -604,7 +604,7 @@ function VoucherActivityPanel({
               key={`${transfer.txHash}-${transfer.id}`}
               type="button"
               className={[
-                "flex w-full items-center gap-2.5 p-3 text-left",
+                "flex w-full items-center gap-2.5 p-3 text-start",
                 index < list.length - 1 ? "border-b border-border" : "",
               ].join(" ")}
               onClick={() => setSelectedTransfer(transfer)}
@@ -712,7 +712,11 @@ function VoucherInfoPanel({
               </Trans>
             </p>
           ) : null}
-          {description ? <p className="text-sm leading-relaxed">{description}</p> : null}
+          {description ? (
+            <p dir="auto" className="text-sm leading-relaxed">
+              {description}
+            </p>
+          ) : null}
         </div>
       ) : null}
 

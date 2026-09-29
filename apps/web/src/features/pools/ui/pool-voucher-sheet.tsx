@@ -551,6 +551,7 @@ function RateRow({
         </label>
         <Input
           id={id}
+          dir="ltr"
           inputMode="decimal"
           value={value}
           placeholder={placeholder}
@@ -645,7 +646,7 @@ function VoucherPicker({
     <div className="space-y-3">
       <div className="relative">
         <RiSearchLine
-          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          className="pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
           aria-hidden="true"
         />
         <Input
@@ -653,7 +654,7 @@ function VoucherPicker({
           placeholder={t`Name, symbol or address`}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="pl-9"
+          className="ps-9"
         />
       </div>
 
@@ -796,7 +797,7 @@ function CandidateList({
             type="button"
             onClick={() => onSelect(voucher)}
             className={[
-              "flex w-full items-center gap-3 p-3 text-left",
+              "flex w-full items-center gap-3 p-3 text-start",
               index === candidates.length - 1 ? "" : "border-b border-border",
             ].join(" ")}
           >

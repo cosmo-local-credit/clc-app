@@ -29,6 +29,17 @@ export const tokenIndexRemoveAbi = parseAbi(["function remove(address token) ret
  * `TokenAlreadyExists`, and the batch is relayed `revertOnFailure`.
  */
 export const tokenIndexHaveAbi = parseAbi(["function have(address token) view returns (bool)"]);
+/**
+ * Enumeration of the registry, `entry` being zero-based over `entryCount`.
+ *
+ * Together they are the only complete answer to "which vouchers does this pool
+ * admit": every swap and deposit runs `have(token)` against this registry, so
+ * the set they list is exactly the set `SwapPool` will accept.
+ */
+export const tokenIndexEntryCountAbi = parseAbi(["function entryCount() view returns (uint256)"]);
+export const tokenIndexEntryAbi = parseAbi([
+  "function entry(uint256 index) view returns (address)",
+]);
 
 export const limiterSetLimitForAbi = parseAbi([
   "function setLimitFor(address token, address holder, uint256 value)",

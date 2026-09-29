@@ -107,7 +107,7 @@ export function SettingsPage({
           onClick={onSignOut}
           disabled={isSigningOut}
         >
-          <RiLogoutBoxRLine className="mr-2 size-4" aria-hidden="true" />
+          <RiLogoutBoxRLine className="me-2 size-4" aria-hidden="true" />
           {isSigningOut ? <Trans>Signing out...</Trans> : <Trans>Sign out</Trans>}
         </Button>
       </section>

@@ -166,7 +166,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
       {mode === "choose" ? (
         <div className="space-y-2">
           <Button className="h-11 w-full" onClick={handleCameraScan} disabled={cameraStarting}>
-            <RiCameraLine className="mr-2 size-4" />
+            <RiCameraLine className="me-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
@@ -177,7 +177,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               setError(null);
             }}
           >
-            <RiUploadLine className="mr-2 size-4" />
+            <RiUploadLine className="me-2 size-4" />
             <Trans>Upload Image</Trans>
           </Button>
         </div>
@@ -200,7 +200,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
                     setError(null);
                   }}
                 >
-                  <RiUploadLine className="mr-2 size-4" />
+                  <RiUploadLine className="me-2 size-4" />
                   <Trans>Upload Image Instead</Trans>
                 </Button>
               ) : null}
@@ -225,7 +225,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             className="h-11 w-full"
             onClick={() => fileInputRef.current?.click()}
           >
-            <RiUploadLine className="mr-2 size-4" />
+            <RiUploadLine className="me-2 size-4" />
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}

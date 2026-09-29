@@ -426,6 +426,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   >
                     <Input
                       id="voucher-supply"
+                      dir="ltr"
                       inputMode="decimal"
                       value={field.state.value}
                       onChange={(event) => field.handleChange(event.target.value)}
@@ -546,8 +547,9 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                               <div className="relative">
                                 <Input
                                   id="voucher-price"
+                                  dir="ltr"
                                   inputMode="decimal"
-                                  className="pr-16"
+                                  className="pe-16"
                                   value={field.state.value}
                                   onChange={(event) => field.handleChange(event.target.value)}
                                   onBlur={field.handleBlur}
@@ -555,7 +557,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                                 />
                                 <span
                                   data-slot="voucher-price-unit"
-                                  className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted-foreground text-sm"
+                                  className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-muted-foreground text-sm"
                                   aria-hidden="true"
                                 >
                                   {unit}
@@ -704,6 +706,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   >
                     <Input
                       id="voucher-email"
+                      dir="ltr"
                       type="email"
                       autoComplete="email"
                       value={field.state.value}
@@ -728,6 +731,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   >
                     <Input
                       id="voucher-website"
+                      dir="ltr"
                       type="url"
                       inputMode="url"
                       autoComplete="url"
@@ -858,6 +862,7 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                             <div className="mt-1.5">
                               <Input
                                 id="voucher-terms-url"
+                                dir="ltr"
                                 type="url"
                                 inputMode="url"
                                 autoComplete="url"

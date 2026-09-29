@@ -2,6 +2,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
+import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -37,18 +38,26 @@ export function SwapReceiptPage({
   poolAddress: string;
   details: SwapReceiptSearch;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(details.trackingId ?? null, {
     queryKey: "pool-swap-relay-track",
     queryFn: async (trackingId) => (await relayerClient.trackRelay(trackingId)).result,
   });
+  const localizedReceiveAmount = details.receiveAmount
+    ? localizeCanonicalAmount(details.receiveAmount, i18n.locales?.[0] ?? i18n.locale)
+    : null;
+  const localizedSendAmount = details.sendAmount
+    ? localizeCanonicalAmount(details.sendAmount, i18n.locales?.[0] ?? i18n.locale)
+    : null;
   const amountLabel =
-    details.receiveAmount && details.receiveSymbol
-      ? `${details.receiveAmount} ${details.receiveSymbol}`
+    localizedReceiveAmount && details.receiveSymbol
+      ? `${localizedReceiveAmount} ${details.receiveSymbol}`
       : null;
   const sentLabel =
-    details.sendAmount && details.sendSymbol ? `${details.sendAmount} ${details.sendSymbol}` : null;
+    localizedSendAmount && details.sendSymbol
+      ? `${localizedSendAmount} ${details.sendSymbol}`
+      : null;
   const exitReceipt = () => {
     void navigate({
       to: "/pools/$poolAddress",
@@ -125,19 +134,19 @@ export function SwapReceiptPage({
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <ReceiptHeader title={t`Swapped`} />
       <div className="my-5 border border-border bg-card">
-        {sentLabel ? (
-          <ReceiptRow label={<Trans>From</Trans>}>
-            <SignedAmount direction="out" amount={sentLabel} />
+        {amountLabel ? (
+          <ReceiptRow label={<Trans>You receive</Trans>}>
+            <SignedAmount direction="in" amount={amountLabel} />
           </ReceiptRow>
         ) : null}
-        {amountLabel ? (
-          <ReceiptRow label={<Trans>To</Trans>}>
-            <SignedAmount direction="in" amount={amountLabel} />
+        {sentLabel ? (
+          <ReceiptRow label={<Trans>You send</Trans>}>
+            <SignedAmount direction="out" amount={sentLabel} />
           </ReceiptRow>
         ) : null}
         {details.poolName ? (
           <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-right text-xs font-semibold">
+            <span className="min-w-0 break-words text-end text-xs font-semibold">
               {details.poolName}
             </span>
           </ReceiptRow>
@@ -146,7 +155,7 @@ export function SwapReceiptPage({
           <ReceiptRow label={<Trans>Transaction</Trans>}>
             <button
               type="button"
-              className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+              className="flex min-w-0 items-center gap-1.5 bg-card text-end"
               aria-label={t`Copy transaction hash`}
               onClick={() => copy(txHash)}
             >
@@ -163,7 +172,7 @@ export function SwapReceiptPage({
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
             <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
-              {formatSubmittedAt(submittedAt)}
+              {formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)}
             </time>
           </ReceiptRow>
         ) : null}
@@ -226,7 +235,7 @@ function ReceiptShell({
       <div className="my-5 border border-border bg-card">
         {poolName ? (
           <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-right text-xs font-semibold">{poolName}</span>
+            <span className="min-w-0 break-words text-end text-xs font-semibold">{poolName}</span>
           </ReceiptRow>
         ) : null}
         <StatusRow status={status} />
@@ -287,10 +296,16 @@ function StatusRow({ status }: { status: React.ReactNode }) {
   );
 }
 
-function formatSubmittedAt(value: string): string {
+function formatSubmittedAt(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-    date,
-  );
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
+
+function localizeCanonicalAmount(amount: string, locale: string): string {
+  try {
+    return formatTokenAmountFixed(parseTokenAmount(amount, 2), 2, 2, locale);
+  } catch {
+    return amount;
+  }
 }

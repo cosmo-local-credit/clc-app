@@ -101,9 +101,9 @@ export function EncryptedPaperWalletImportForm({
 
       <Button type="submit" disabled={!passphrase.trim() || decrypting} className="h-11 w-full">
         {decrypting ? (
-          <FiLoader className="mr-2 size-4 animate-spin" />
+          <FiLoader className="me-2 size-4 animate-spin" />
         ) : (
-          <FiLock className="mr-2 size-4" />
+          <FiLock className="me-2 size-4" />
         )}
         {decrypting ? t`Unlocking...` : t`Unlock and import`}
       </Button>

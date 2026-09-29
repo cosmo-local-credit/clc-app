@@ -56,8 +56,9 @@ export function SignedAmount({
   const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
   return (
     <span
+      dir="ltr"
       className={cn(
-        "inline-flex min-w-0 items-center gap-1.5 text-right font-mono text-xs font-semibold",
+        "inline-flex min-w-0 items-center gap-1.5 text-end font-mono text-xs font-semibold",
         incoming ? "text-primary" : "text-destructive",
         className,
       )}

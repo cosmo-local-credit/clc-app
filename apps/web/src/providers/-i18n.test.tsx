@@ -4,6 +4,15 @@ import Cookies from "js-cookie";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+const localeModuleMocks = vi.hoisted(() => ({
+  activateLocale: vi.fn<(_locale: string) => Promise<void>>(),
+}));
+
+vi.mock("@clc/i18n/index", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/i18n/index")>();
+  return { ...actual, activateLocale: localeModuleMocks.activateLocale };
+});
+
 vi.unmock("#/providers/i18n");
 
 const { AppI18nProvider, useLocale } = await import("#/providers/i18n");
@@ -35,8 +44,23 @@ function LocaleProbe() {
       <output aria-label="locale">{locale}</output>
       <output aria-label="loading">{loading ? "loading" : "idle"}</output>
       <output aria-label="error">{error ?? "none"}</output>
+      <button type="button" onClick={() => setLocale("en")}>
+        English
+      </button>
+      <button type="button" onClick={() => setLocale("ar")}>
+        العربية
+      </button>
       <button type="button" onClick={() => setLocale("sw")}>
         Kiswahili
+      </button>
+      <button type="button" onClick={() => setLocale("es")}>
+        Español
+      </button>
+      <button type="button" onClick={() => setLocale("fr")}>
+        Français
+      </button>
+      <button type="button" onClick={() => setLocale("pt")}>
+        Português
       </button>
       <button type="button" onClick={() => setLocale("sr")}>
         Српски
@@ -51,6 +75,8 @@ function renderProvider(children: ReactNode = <LocaleProbe />) {
 
 describe("AppI18nProvider", () => {
   beforeEach(() => {
+    localeModuleMocks.activateLocale.mockReset();
+    localeModuleMocks.activateLocale.mockResolvedValue(undefined);
     Object.defineProperty(window, "localStorage", {
       value: originalLocalStorage,
       configurable: true,
@@ -58,6 +84,7 @@ describe("AppI18nProvider", () => {
     localStorage.clear();
     Cookies.remove("clc_locale", { path: "/" });
     document.documentElement.lang = DEFAULT_LOCALE;
+    document.documentElement.dir = "ltr";
   });
 
   afterEach(() => {
@@ -121,8 +148,57 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects French from a region-tagged device language", async () => {
+    setNavigatorLanguages(["fr-CD", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fr");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("fr");
+    });
+  });
+
+  it("detects Spanish from a region-tagged device language", async () => {
+    setNavigatorLanguages(["es-MX", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("es");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("es");
+    });
+  });
+
+  it("detects Portuguese from a region-tagged device language", async () => {
+    setNavigatorLanguages(["pt-MZ", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("pt");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("pt");
+    });
+  });
+
+  it("detects Arabic from a region-tagged device language and applies RTL", async () => {
+    setNavigatorLanguages(["ar-EG", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("ar");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("ar");
+      expect(document.documentElement.lang).toBe("ar");
+      expect(document.documentElement.dir).toBe("rtl");
+    });
+  });
+
   it("falls back to the default locale when the device language is unsupported", () => {
-    setNavigatorLanguages(["fr-FR"]);
+    setNavigatorLanguages(["de-DE"]);
 
     renderProvider();
 
@@ -151,6 +227,97 @@ describe("AppI18nProvider", () => {
     expect(screen.getByLabelText("locale").textContent).toBe("sw");
     expect(document.documentElement.lang).toBe("sw");
     expect(localStorage.getItem("clc.locale")).toBe("sw");
+  });
+
+  it("persists a French locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Français" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fr");
+    expect(document.documentElement.lang).toBe("fr");
+    expect(localStorage.getItem("clc.locale")).toBe("fr");
+    expect(Cookies.get("clc_locale")).toBe("fr");
+  });
+
+  it("persists a Spanish locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Español" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("es");
+    expect(document.documentElement.lang).toBe("es");
+    expect(localStorage.getItem("clc.locale")).toBe("es");
+    expect(Cookies.get("clc_locale")).toBe("es");
+  });
+
+  it("persists a Portuguese locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Português" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("pt");
+    expect(document.documentElement.lang).toBe("pt");
+    expect(localStorage.getItem("clc.locale")).toBe("pt");
+    expect(Cookies.get("clc_locale")).toBe("pt");
+  });
+
+  it("persists Arabic and restores LTR when English is selected", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "العربية" }));
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("locale").textContent).toBe("ar");
+      expect(document.documentElement.lang).toBe("ar");
+      expect(document.documentElement.dir).toBe("rtl");
+      expect(localStorage.getItem("clc.locale")).toBe("ar");
+      expect(Cookies.get("clc_locale")).toBe("ar");
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "English" }));
+    });
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("keeps the previous language and direction when Arabic activation fails", async () => {
+    renderProvider();
+    await waitFor(() => expect(screen.getByLabelText("loading").textContent).toBe("idle"));
+
+    localeModuleMocks.activateLocale.mockRejectedValueOnce(new Error("catalog unavailable"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "العربية" }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("locale").textContent).toBe("en");
+      expect(screen.getByLabelText("error").textContent).toBe(
+        "Unable to load language. Reverted to English.",
+      );
+      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.dir).toBe("ltr");
+      expect(localStorage.getItem("clc.locale")).toBe("en");
+    });
   });
 
   it("persists a Serbian locale selection", async () => {

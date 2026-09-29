@@ -327,6 +327,7 @@ function OfferingForm({
                         the database as the exact text that was typed. */}
                     <Input
                       id={priceField.name}
+                      dir="ltr"
                       inputMode="decimal"
                       autoComplete="off"
                       className="min-w-0 flex-1 bg-card font-mono"

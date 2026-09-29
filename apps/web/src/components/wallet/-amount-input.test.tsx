@@ -16,6 +16,7 @@ describe("WalletAmountInput", () => {
     const input = screen.getByRole("textbox", { name: "Amount to receive" }) as HTMLInputElement;
     expect(input.type).toBe("text");
     expect(input.inputMode).toBe("decimal");
+    expect(input.dir).toBe("ltr");
     expect(input.placeholder).toBe("0.00");
     expect(input.value).toBe("");
 
@@ -43,6 +44,7 @@ describe("WalletAmountInput", () => {
     expect(input.className).toContain("rounded-none");
     expect(input.className).toContain("border-input");
     expect(input.className).toContain("bg-card");
+    expect(input.className).toContain("text-[1.375rem]");
     expect(input.className).toContain("focus-visible:border-foreground");
     expect(input.className).toContain("aria-invalid:border-destructive");
 
@@ -52,5 +54,31 @@ describe("WalletAmountInput", () => {
 
     expect(input.disabled).toBe(true);
     expect(input.className).toContain("disabled:opacity-50");
+  });
+
+  it("sizes the amount by emphasis, keeping the outlined white surface", () => {
+    const noop = vi.fn();
+    render(
+      <>
+        <WalletAmountInput label="Primary" value="" onValueChange={noop} emphasis="primary" />
+        <WalletAmountInput label="Secondary" value="" onValueChange={noop} emphasis="secondary" />
+        <WalletAmountInput label="Plain" value="" onValueChange={noop} />
+      </>,
+    );
+
+    const primary = screen.getByRole("textbox", { name: "Primary" });
+    const secondary = screen.getByRole("textbox", { name: "Secondary" });
+    const plain = screen.getByRole("textbox", { name: "Plain" });
+
+    expect(primary.className).toContain("text-[1.5rem]");
+    expect(secondary.className).toContain("text-[1rem]");
+    expect(plain.className).toContain("text-[1.375rem]");
+    for (const input of [primary, secondary, plain]) {
+      // Inputs keep the standard height; emphasis is type size alone.
+      expect(input.className).toContain("h-9");
+      expect(input.className).toContain("border-input");
+      expect(input.className).toContain("bg-card");
+      expect(input.className).toContain("rounded-none");
+    }
   });
 });

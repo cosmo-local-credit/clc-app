@@ -57,7 +57,7 @@ export function WithdrawSheet({
   disabledReason: string | null;
   entryDisabled: boolean;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const queryClient = useQueryClient();
 
   // Undefined on a chain with no offramp wired up, which also leaves `eligible`
@@ -244,7 +244,7 @@ export function WithdrawSheet({
                         type="button"
                         onClick={() => onSelectToken(token.tokenAddress)}
                         className={cn(
-                          "flex w-full items-center gap-3 px-3 py-2.5 text-left enabled:active:bg-muted",
+                          "flex w-full items-center gap-3 px-3 py-2.5 text-start enabled:active:bg-muted",
                           index < list.length - 1 && "border-b border-border",
                         )}
                       >
@@ -277,6 +277,7 @@ export function WithdrawSheet({
                     <div className="flex items-baseline gap-1.5">
                       <input
                         id="withdraw-amount"
+                        dir="ltr"
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
@@ -286,7 +287,7 @@ export function WithdrawSheet({
                         size={Math.max(amount.length, 2)}
                         aria-invalid={amount !== "" && !hasValidAmount}
                         className={cn(
-                          "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                          "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                           amount !== "" && !hasValidAmount && "text-destructive",
                         )}
                       />
@@ -294,7 +295,7 @@ export function WithdrawSheet({
                         type="button"
                         disabled={!hasRate || maxKes <= 0}
                         onClick={() => setAmount(maxKes.toString())}
-                        className="ml-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
+                        className="ms-1 font-semibold text-primary text-xs hover:underline disabled:opacity-50"
                       >
                         <Trans>Max</Trans>
                       </button>
@@ -307,7 +308,7 @@ export function WithdrawSheet({
                     </span>
                     <span className="font-mono text-xs font-semibold">
                       {selected && hasValidAmount
-                        ? `≈ ${tokenToSend.toLocaleString(undefined, {
+                        ? `≈ ${tokenToSend.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                             maximumFractionDigits: 4,
                           })} ${selected.symbol}`
                         : "—"}

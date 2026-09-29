@@ -262,6 +262,7 @@ function VoucherMintSheet({
                   >
                     <Input
                       id="voucher-mint-amount"
+                      dir="ltr"
                       inputMode="decimal"
                       placeholder="0"
                       value={field.state.value}

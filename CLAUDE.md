@@ -282,15 +282,15 @@ environment read as one product.
 
 What differs from `apps/web`:
 
-|                        | `apps/web`          | `apps/admin`                                              |
-| ---------------------- | ------------------- | --------------------------------------------------------- |
-| Viewport               | 360–430px only      | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
-| Breakpoint overrides   | Banned              | Required — tables and metric grids reflow                 |
-| `<Card>` as page shell | Banned              | Still banned; screens are shell + sections                |
-| Navigation             | Bottom nav          | Collapsible sidebar + `⌘K` palette                        |
-| Dark mode              | Zustand theme store | Same pattern, key `clc.admin.theme`                       |
-| i18n                   | lingui, en + sw     | None — English only, no `<Trans>`                         |
-| Service worker         | Serwist             | Never. Not a PWA                                          |
+|                        | `apps/web`                               | `apps/admin`                                              |
+| ---------------------- | ---------------------------------------- | --------------------------------------------------------- |
+| Viewport               | 360–430px only                           | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
+| Breakpoint overrides   | Banned                                   | Required — tables and metric grids reflow                 |
+| `<Card>` as page shell | Banned                                   | Still banned; screens are shell + sections                |
+| Navigation             | Bottom nav                               | Collapsible sidebar + `⌘K` palette                        |
+| Dark mode              | Zustand theme store                      | Same pattern, key `clc.admin.theme`                       |
+| i18n                   | lingui, ar + en + es + fr + pt + sr + sw | None — English only, no `<Trans>`                         |
+| Service worker         | Serwist                                  | Never. Not a PWA                                          |
 
 Shared with `apps/web`: square corners, flat surfaces (no
 `shadow-lg`/`backdrop-blur`), `bg-card` for anything sitting on `bg-background`,
@@ -645,7 +645,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{en,sw}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,en,es,fr,pt,sr,sw}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -656,6 +656,16 @@ Skipping this leaves the new keys out of the catalogs: English silently falls
 back to the source text, but every other locale (e.g. `sw`) is left untranslated.
 Then fill in the new `msgstr ""` entries in each non-English catalog. This was
 the `7f5ba80` regression fix — keep it intact.
+
+Arabic uses the `ar` catalog with `ar-u-nu-arab` for Intl formatting. The web
+app sets `dir="rtl"` only after that catalog activates successfully and restores
+`dir="ltr"` for every other locale. Use logical inline-direction utilities
+(`start`/`end`, `ms`/`me`, `ps`/`pe`, `border-s`/`border-e`) for web layout;
+physical left/right is reserved for geometry that must not mirror. Addresses,
+hashes, token symbols, URLs, phone numbers, and editable canonical amounts stay
+`dir="ltr"` and isolated. User-authored descriptions, notes, and Markdown use
+`dir="auto"`. Arabic human-facing numbers use Arabic-Indic digits, while URL,
+query, contract, and input values remain canonical ASCII.
 
 ### Client / server / URL state
 

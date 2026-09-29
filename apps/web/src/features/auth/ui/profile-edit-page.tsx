@@ -213,6 +213,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 </label>
                 <Input
                   id="profile-email"
+                  dir="ltr"
                   type="email"
                   autoComplete="email"
                   placeholder="you@example.com"
@@ -285,7 +286,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="profile-bio" className="font-medium text-sm">
                   <Trans>Bio</Trans>
-                  <span className="ml-1 font-normal text-muted-foreground">
+                  <span className="ms-1 font-normal text-muted-foreground">
                     <Trans>Optional</Trans>
                   </span>
                 </label>
@@ -314,12 +315,13 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="profile-website" className="font-medium text-sm">
                   <Trans>Website</Trans>
-                  <span className="ml-1 font-normal text-muted-foreground">
+                  <span className="ms-1 font-normal text-muted-foreground">
                     <Trans>Optional</Trans>
                   </span>
                 </label>
                 <Input
                   id="profile-website"
+                  dir="ltr"
                   type="url"
                   autoComplete="url"
                   inputMode="url"
@@ -385,7 +387,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
             disabled={!canSubmit || isSubmitting || avatarBusy}
             className="h-11 w-full"
           >
-            {isSubmitting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
+            {isSubmitting ? <LoaderCircle className="me-2 size-4 animate-spin" /> : null}
             {avatarBusy ? t`Uploading photo…` : isSubmitting ? t`Saving…` : t`Save changes`}
           </Button>
         )}

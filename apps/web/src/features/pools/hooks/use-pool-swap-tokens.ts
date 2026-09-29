@@ -3,7 +3,7 @@ import { limiterLimitOfAbi } from "@clc/core/features/pool-admin/logic";
 import { erc20BalanceOfAbi, swapPoolFeesAbi } from "@clc/core/features/pool-swaps/logic";
 import { useQuery } from "@tanstack/react-query";
 import { isAddress } from "viem";
-import { multicall } from "viem/actions";
+import { getBlockNumber, multicall } from "viem/actions";
 import { useClient } from "wagmi";
 
 import type { PoolSwapTokenReads } from "#/features/pools/logic/pool-swap-tokens";
@@ -56,14 +56,16 @@ export function usePoolSwapTokenReads(
     .map((address) => address.toLowerCase())
     .sort();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: poolSwapTokenQueryKeys.reads(poolAddress ?? "none", holder ?? "none", tokenAddresses),
     queryFn: async () => {
       if (!client || !poolAddress || !holder) {
         throw new Error("The pool swap token read is missing a client.");
       }
+      const blockNumber = await getBlockNumber(client);
       const results = await multicall(client, {
         allowFailure: true,
+        blockNumber,
         contracts: tokenAddresses.flatMap((address) => [
           {
             address: address as `0x${string}`,
@@ -95,25 +97,30 @@ export function usePoolSwapTokenReads(
         ]),
       });
 
-      return new Map<string, PoolSwapTokenReads>(
-        tokenAddresses.map((address, index) => {
-          const base = index * READS_PER_VOUCHER;
-          return [
-            address,
-            {
-              holderBalanceRaw: rawAmount(results[base]),
-              poolBalanceRaw: rawAmount(results[base + 1]),
-              feesRaw: rawAmount(results[base + 2]),
-              limitRaw: limiterAddress ? optionalRawAmount(results[base + 3]) : null,
-            },
-          ];
-        }),
-      );
+      return {
+        blockNumber,
+        reads: new Map<string, PoolSwapTokenReads>(
+          tokenAddresses.map((address, index) => {
+            const base = index * READS_PER_VOUCHER;
+            return [
+              address,
+              {
+                holderBalanceRaw: rawAmount(results[base]),
+                poolBalanceRaw: rawAmount(results[base + 1]),
+                feesRaw: rawAmount(results[base + 2]),
+                limitRaw: limiterAddress ? optionalRawAmount(results[base + 3]) : null,
+              },
+            ];
+          }),
+        ),
+      };
     },
     enabled: !!client && !!poolAddress && !!holder && tokenAddresses.length > 0,
     retry: false,
     staleTime: 15_000,
   });
+
+  return { ...query, data: query.data?.reads, blockNumber: query.data?.blockNumber };
 }
 
 type MulticallEntry = { status: "success"; result: unknown } | { status: "failure" } | undefined;
