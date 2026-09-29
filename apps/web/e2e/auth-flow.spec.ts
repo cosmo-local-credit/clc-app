@@ -14,6 +14,7 @@ import percySnapshot from "@percy/playwright";
 import {
   completeProfileStep,
   connectViaOnboarding,
+  downloadPaperWallet,
   expect,
   gotoHydrated,
   signOut,
@@ -117,6 +118,7 @@ test.describe("paper wallet step", () => {
   });
 
   test("download card triggers a PNG download (TC-08)", async ({ page }) => {
+    await page.getByLabel("Protect paper wallet with a password").uncheck();
     const [download] = await Promise.all([
       page.waitForEvent("download", { timeout: 10_000 }),
       page.getByRole("button", { name: "Download card" }).click(),
@@ -125,21 +127,28 @@ test.describe("paper wallet step", () => {
     expect(download.suggestedFilename()).toMatch(/^clc-wallet-.*\.png$/);
   });
 
-  test('"Continue" is disabled until key is acknowledged (TC-09)', async ({ page }) => {
+  test('"Continue" requires both key acknowledgement and platform terms (TC-09)', async ({
+    page,
+  }) => {
     const continueBtn = page.getByRole("button", {
       name: /Continue with paper wallet only|Continue to wallet/,
     });
 
-    // Button should be disabled before checking the ack box
+    await expect(continueBtn).toBeDisabled();
+    await downloadPaperWallet(page);
     await expect(continueBtn).toBeDisabled();
 
-    // After checking, it should be enabled
     await page.getByLabel("I have saved this key").check();
+    await expect(continueBtn).toBeDisabled();
+
+    await page.getByRole("checkbox", { name: "Accept Terms and Conditions" }).check();
     await expect(continueBtn).toBeEnabled();
   });
 
   test("connects and navigates home (TC-10)", async ({ page }) => {
+    await downloadPaperWallet(page);
     await page.getByLabel("I have saved this key").check();
+    await page.getByRole("checkbox", { name: "Accept Terms and Conditions" }).check();
 
     const continueBtn = page.getByRole("button", {
       name: /Continue with paper wallet only|Continue to wallet/,

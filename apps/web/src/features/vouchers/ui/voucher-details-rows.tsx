@@ -4,10 +4,7 @@ import { useLingui } from "@lingui/react/macro";
 
 import { InfoRow } from "#/components/ui/info-row";
 
-type VoucherDetails = Omit<
-  VoucherCreateInput,
-  "location" | "acceptedTerms" | "acceptedPathLicense"
-> & {
+type VoucherDetails = Omit<VoucherCreateInput, "location" | "acceptedTerms"> & {
   location?: VoucherCreateInput["location"];
 };
 

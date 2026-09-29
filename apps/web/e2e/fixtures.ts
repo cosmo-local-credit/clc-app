@@ -1,4 +1,7 @@
 import { test as base, type Page } from "@playwright/test";
+import { fileURLToPath } from "node:url";
+
+const PROFILE_PHOTO = fileURLToPath(new URL("../public/brand/prod/icon-192.png", import.meta.url));
 
 /**
  * Navigate and wait for the client to hydrate.
@@ -36,8 +39,10 @@ export async function gotoHydrated(page: Page, path: string): Promise<void> {
  * result, then waits for the reverse-geocode to resolve before submitting.
  */
 export async function completeProfileStep(page: Page): Promise<void> {
-  await gotoHydrated(page, "/onboarding");
+  await gotoHydrated(page, "/onboarding?step=profile");
 
+  await page.getByLabel("Choose a profile photo").setInputFiles(PROFILE_PHOTO);
+  await page.getByRole("button", { name: "Use photo" }).click();
   await page.getByLabel("Name").fill("Test User");
   await page.getByLabel("Email").fill("test@example.com");
 
@@ -57,9 +62,29 @@ export async function completeProfileStep(page: Page): Promise<void> {
     .catch(() => undefined);
 
   await page.getByRole("button", { name: "Continue" }).click();
-  await page
-    .getByRole("heading", { name: "Your paper wallet" })
-    .waitFor({ state: "visible", timeout: 15_000 });
+
+  const walletHeading = page.getByRole("heading", { name: "Your paper wallet" });
+  const paperOnly = page.getByRole("radio", { name: "Paper wallet only" });
+  const nextStep = await Promise.race([
+    walletHeading.waitFor({ state: "visible", timeout: 15_000 }).then(() => "wallet" as const),
+    paperOnly.waitFor({ state: "visible", timeout: 15_000 }).then(() => "method" as const),
+  ]);
+  if (nextStep === "method") {
+    await paperOnly.check();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await walletHeading.waitFor({ state: "visible", timeout: 15_000 });
+  }
+}
+
+/** Disable optional QR encryption and download the card so wallet continuation can unlock. */
+export async function downloadPaperWallet(page: Page): Promise<void> {
+  const protection = page.getByLabel("Protect paper wallet with a password");
+  if (await protection.isChecked()) await protection.uncheck();
+
+  await Promise.all([
+    page.waitForEvent("download", { timeout: 10_000 }),
+    page.getByRole("button", { name: "Download card" }).click(),
+  ]);
 }
 
 /**
@@ -69,9 +94,11 @@ export async function completeProfileStep(page: Page): Promise<void> {
  */
 export async function connectViaOnboarding(page: Page): Promise<void> {
   await completeProfileStep(page);
+  await downloadPaperWallet(page);
 
-  // Acknowledge key saved
+  // Acknowledge key saved and explicitly accept the platform terms.
   await page.getByLabel("I have saved this key").check();
+  await page.getByRole("checkbox", { name: "Accept Terms and Conditions" }).check();
 
   // Click the paper-wallet-only continue button
   const continueButton = page.getByRole("button", {

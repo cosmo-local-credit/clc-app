@@ -7,6 +7,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { connect } from "wagmi/actions";
 
 import { OnboardingMenu } from "#/components/language-selector";
+import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Button } from "#/components/ui/button";
 import { StepProgress } from "#/components/ui/step-progress";
 import { BackChevron } from "#/components/wallet/wallet-layout";
@@ -81,6 +82,7 @@ export function OnboardingWalletStep({
   });
 
   const [acked, setAcked] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [caliburConnecting, setCaliburConnecting] = useState(false);
   const [pendingMethod, setPendingMethod] = useState<"passkey" | "paper" | null>(null);
@@ -358,7 +360,11 @@ export function OnboardingWalletStep({
   }
 
   const formBlocked =
-    !acked || !paperWalletDownloaded || !paperWalletReady || paperWalletEncrypting;
+    !acked ||
+    !acceptedTerms ||
+    !paperWalletDownloaded ||
+    !paperWalletReady ||
+    paperWalletEncrypting;
   const workInProgress =
     isRegistering || isUpgrading || connecting || isDelegating || caliburPending;
   const linkBusy =
@@ -431,6 +437,12 @@ export function OnboardingWalletStep({
         ) : null}
 
         <div className="mt-4 space-y-3">
+          <TermsAcceptanceField
+            id="signup-terms"
+            checked={acceptedTerms}
+            onCheckedChange={setAcceptedTerms}
+          />
+
           {backendSignup.error ? (
             <p className="text-destructive text-xs">
               {backendSignup.error instanceof BackendApiError

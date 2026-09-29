@@ -25,7 +25,6 @@ const knownErrors = [
   "Choose an expiration date",
   "Expiration date must be in the future",
   "Accept the terms to publish your voucher",
-  "Accept the PATH License to publish your voucher",
   "Pool name is required",
   "Pool name must be 80 characters or fewer",
   "Pool shortcode is required",
@@ -35,7 +34,6 @@ const knownErrors = [
   "Pool description must be 500 characters or fewer",
   "Swap fee must be a number from 0 to 100",
   "Accept the terms to publish your pool",
-  "Accept the SPROUT License to publish your pool",
   "Choose rates you set or equal value when the unit has no price feed",
   "Message must be 500 characters or fewer",
   "Add a message or choose profile details",
@@ -87,9 +85,6 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "Jina la puli linahitajika",
     );
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Kubali Leseni ya SPROUT ili kuchapisha puli yako",
-    );
   });
 
   it("translates known validation errors into Serbian", async () => {
@@ -101,9 +96,6 @@ describe("translateValidationError", () => {
       "Прихватите услове да бисте објавили ваучер",
     );
     expect(translateValidationError("Pool name is required", i18n)).toBe("Назив пула је обавезан");
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Прихватите SPROUT лиценцу да бисте објавили пул",
-    );
   });
 
   it("translates known validation errors into French", async () => {
@@ -118,9 +110,6 @@ describe("translateValidationError", () => {
     );
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "Le nom du bassin est requis",
-    );
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Acceptez la licence SPROUT pour publier votre bassin",
     );
   });
 
@@ -137,9 +126,6 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "El nombre del fondo es obligatorio",
     );
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Acepte la licencia SPROUT para publicar su fondo",
-    );
   });
 
   it("translates known validation errors into Arabic", async () => {
@@ -149,9 +135,6 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Invalid phone number", i18n)).toBe("رقم الهاتف غير صالح");
     expect(translateValidationError("Voucher name is required", i18n)).toBe("اسم القسيمة مطلوب");
     expect(translateValidationError("Pool name is required", i18n)).toBe("اسم الصندوق مطلوب");
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "اقبل ترخيص SPROUT لنشر صندوقك",
-    );
   });
 
   it("translates known validation errors into Portuguese", async () => {
@@ -166,9 +149,6 @@ describe("translateValidationError", () => {
     );
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "O nome do fundo é obrigatório",
-    );
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Aceite a licença SPROUT para publicar o seu fundo",
     );
   });
 

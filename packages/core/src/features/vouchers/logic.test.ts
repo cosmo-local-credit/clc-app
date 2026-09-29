@@ -35,7 +35,6 @@ const validVoucher: VoucherCreateInput = {
   iconUrl: "",
   bannerUrl: "",
   acceptedTerms: true,
-  acceptedPathLicense: true,
 };
 
 describe("voucherCreateSchema", () => {
@@ -98,15 +97,10 @@ describe("voucherCreateSchema", () => {
     ).toBe(false);
   });
 
-  it("requires both legal agreements", () => {
+  it("requires the platform terms agreement", () => {
     const withoutTerms = voucherCreateSchema.safeParse({ ...validVoucher, acceptedTerms: false });
-    const withoutPathLicense = voucherCreateSchema.safeParse({
-      ...validVoucher,
-      acceptedPathLicense: false,
-    });
 
     expect(withoutTerms.success).toBe(false);
-    expect(withoutPathLicense.success).toBe(false);
   });
 
   it("accepts blank or HTTP voucher image URLs", () => {

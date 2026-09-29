@@ -133,7 +133,6 @@ describe("PoolDeploymentReceiptPage", () => {
       phone: "",
       terms: "",
       acceptedTerms: true,
-      acceptedSproutLicense: true,
     });
     state.trackingOutcome = { kind: "error", error: "Transaction failed on-chain (REVERTED)." };
     state.trackingData = {
@@ -175,7 +174,6 @@ describe("PoolDeploymentReceiptPage", () => {
       phone: "+254712345678",
       terms: "https://kilifi.example/terms",
       acceptedTerms: true,
-      acceptedSproutLicense: true,
     });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
     state.contract = {

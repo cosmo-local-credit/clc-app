@@ -383,25 +383,19 @@ describe("CreatePoolFlow", () => {
     );
   });
 
-  it("requires both linked legal agreements before publishing", () => {
+  it("requires the linked platform terms before publishing", () => {
     renderFlow(<CreatePoolFlow step="review" />);
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
-    const sproutLicense = screen.getByRole("checkbox", { name: "Accept SPROUT License" });
     const publish = screen.getByRole("button", { name: "Confirm & Publish" });
 
     expect(screen.getByRole("link", { name: "Terms and Conditions" }).getAttribute("href")).toBe(
-      "https://grassecon.org/pages/terms-and-conditions",
+      "https://docs.cosmolocal.credit/governance/terms",
     );
-    expect(screen.getByRole("link", { name: "SPROUT License" }).getAttribute("href")).toBe(
-      "https://docs.grassecon.org/commons/sprout/",
-    );
+    expect(screen.queryByText("SPROUT License")).toBeNull();
     expect((publish as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(terms);
-    expect((publish as HTMLButtonElement).disabled).toBe(true);
-
-    fireEvent.click(sproutLicense);
     expect((publish as HTMLButtonElement).disabled).toBe(false);
   });
 

@@ -9,7 +9,6 @@ import {
   poolDescriptionSchema,
   poolFeeAddressSchema,
   poolNameSchema,
-  poolSproutLicenseSchema,
   poolSwapFeeSchema,
   poolSymbolSchema,
   poolTermsSchema,
@@ -35,7 +34,7 @@ import { toast } from "sonner";
 import { getAddress } from "viem";
 import { useConnection } from "wagmi";
 
-import { AgreementField } from "#/components/ui/agreement-field";
+import { TermsAcceptanceField } from "#/components/terms-acceptance-field";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
@@ -72,15 +71,11 @@ import { PoolDetailsRows } from "./pool-details-rows";
 
 export type PoolCreateStep = "pool" | "place" | "review";
 
-type PoolFormValues = Omit<
-  PoolCreateInput,
-  "location" | "acceptedTerms" | "acceptedSproutLicense"
-> & {
+type PoolFormValues = Omit<PoolCreateInput, "location" | "acceptedTerms"> & {
   location: LocationInput | undefined;
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
   acceptedTerms: boolean;
-  acceptedSproutLicense: boolean;
 };
 
 const DEFAULT_VALUES: PoolFormValues = {
@@ -101,7 +96,6 @@ const DEFAULT_VALUES: PoolFormValues = {
   termsMode: "url",
   imageUrl: "",
   acceptedTerms: false,
-  acceptedSproutLicense: false,
 };
 
 /** The text fields a saved profile can seed, all of which default to "". */
@@ -979,48 +973,12 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <div className="mt-3.5 space-y-3">
               <form.Field name="acceptedTerms" validators={{ onSubmit: poolTermsSchema }}>
                 {(field) => (
-                  <AgreementField
+                  <TermsAcceptanceField
                     id="pool-terms"
                     checked={field.state.value}
                     onCheckedChange={field.handleChange}
                     error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Trans>Accept</Trans>{" "}
-                    <a
-                      href="https://grassecon.org/pages/terms-and-conditions"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-foreground underline underline-offset-2"
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <Trans>Terms and Conditions</Trans>
-                    </a>
-                  </AgreementField>
-                )}
-              </form.Field>
-
-              <form.Field
-                name="acceptedSproutLicense"
-                validators={{ onSubmit: poolSproutLicenseSchema }}
-              >
-                {(field) => (
-                  <AgreementField
-                    id="pool-sprout-license"
-                    checked={field.state.value}
-                    onCheckedChange={field.handleChange}
-                    error={getFieldError(field.state.meta.errors)}
-                  >
-                    <Trans>Accept</Trans>{" "}
-                    <a
-                      href="https://docs.grassecon.org/commons/sprout/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-foreground underline underline-offset-2"
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <Trans>SPROUT License</Trans>
-                    </a>
-                  </AgreementField>
+                  />
                 )}
               </form.Field>
             </div>
@@ -1028,25 +986,15 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
             <div className="mt-auto pt-6">
               <form.Subscribe
                 selector={(state) =>
-                  [
-                    state.isSubmitting,
-                    state.values.pricing,
-                    state.values.acceptedTerms,
-                    state.values.acceptedSproutLicense,
-                  ] as const
+                  [state.isSubmitting, state.values.pricing, state.values.acceptedTerms] as const
                 }
               >
-                {([isSubmitting, pricing, acceptedTerms, acceptedSproutLicense]) => (
+                {([isSubmitting, pricing, acceptedTerms]) => (
                   <>
                     <Button
                       type="submit"
                       className="h-11 w-full"
-                      disabled={
-                        !acceptedTerms ||
-                        !acceptedSproutLicense ||
-                        isSubmitting ||
-                        deployPool.isPending
-                      }
+                      disabled={!acceptedTerms || isSubmitting || deployPool.isPending}
                     >
                       {isSubmitting || deployPool.isPending ? (
                         <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
