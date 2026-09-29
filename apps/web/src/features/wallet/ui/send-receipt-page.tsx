@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
+import { RedemptionReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Field } from "#/components/ui/field";
@@ -64,12 +65,14 @@ function CopyableMono({
 }
 
 export function SendReceiptPage({
+  token,
   trackingId,
   recipient,
   amount,
   symbol,
   returnPool,
 }: {
+  token?: string;
   trackingId?: string;
   recipient?: string;
   amount?: string;
@@ -193,6 +196,7 @@ export function SendReceiptPage({
       </div>
 
       {txHash && toAddress ? <SendSharePanel txHash={txHash} recipientAddress={toAddress} /> : null}
+      {token && recipient ? <RedemptionReviewPrompt address={token} recipient={recipient} /> : null}
 
       <div className="flex-1" />
 

@@ -53,6 +53,12 @@ vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
 }));
 
+vi.mock("#/components/reviews/redemption-review-prompt", () => ({
+  RedemptionReviewPrompt: ({ address }: { address: string }) => (
+    <div data-testid="review-prompt">{address}</div>
+  ),
+}));
+
 import { SendReceiptPage } from "./send-receipt-page";
 
 const RECIPIENT = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
@@ -76,6 +82,23 @@ afterEach(() => {
 });
 
 describe("SendReceiptPage", () => {
+  it("shows the review prompt only after a successful transfer", () => {
+    const props = {
+      token: "0x1111111111111111111111111111111111111111",
+      recipient: RECIPIENT,
+      trackingId: "tracking-1",
+    };
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+    const view = render(<SendReceiptPage {...props} />);
+    expect(screen.queryByTestId("review-prompt")).toBeNull();
+    useOtxTracking.mockReturnValue({ outcome: { kind: "error", error: "Reverted" } });
+    view.rerender(<SendReceiptPage {...props} />);
+    expect(screen.queryByTestId("review-prompt")).toBeNull();
+    useOtxTracking.mockReturnValue({ outcome: { kind: "success", otx: { txHash: TX_HASH } } });
+    view.rerender(<SendReceiptPage {...props} />);
+    expect(screen.getByTestId("review-prompt").textContent).toBe(props.token);
+  });
+
   it("shows a pending on-chain confirmation state while polling the relayer endpoint", async () => {
     useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
     trackRelay.mockResolvedValue({ result: { otx: [] } });

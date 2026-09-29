@@ -95,6 +95,14 @@ const mocks = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
+  VoucherReviewsPanel: ({ address }: { address: string }) => (
+    <div role="tabpanel" aria-labelledby="voucher-tab-reviews" data-address={address}>
+      Voucher reviews
+    </div>
+  ),
+}));
+
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: mocks.address }),
 }));
@@ -824,7 +832,7 @@ describe("VoucherDetailPage", () => {
   it("preserves the reviews panel alongside the posts tab", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="reviews" />);
 
-    expect(screen.getByText("Reviews for this voucher will appear here.")).toBeTruthy();
+    expect(screen.getByText("Voucher reviews")).toBeTruthy();
     expect(screen.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(
       "voucher-tab-reviews",
     );
