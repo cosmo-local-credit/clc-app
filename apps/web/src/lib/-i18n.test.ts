@@ -2,6 +2,10 @@ import { activateLocale, i18n } from "@clc/i18n/index";
 import { msg } from "@lingui/core/macro";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
+function maxAmount(max: string): string {
+  return i18n._(msg`Max ${max}`);
+}
+
 describe("i18n catalogs", () => {
   afterEach(async () => {
     await activateLocale("en");
@@ -22,13 +26,7 @@ describe("i18n catalogs", () => {
     expect(i18n._(msg`Pools`)).toBe("Bassins");
     expect(i18n._(msg`Wallet`)).toBe("Portefeuille");
     expect(i18n._(msg`Swap`)).toBe("Échanger");
-    expect(
-      i18n._({
-        id: "Max {max}",
-        message: "Max {max}",
-        values: { max: "55,00" },
-      }),
-    ).toBe("Max 55,00");
+    expect(maxAmount("55,00")).toBe("Max 55,00");
     expect(
       i18n._({
         id: "{count, plural, one {# voucher} other {# vouchers}}",
@@ -43,6 +41,32 @@ describe("i18n catalogs", () => {
         values: { count: 3 },
       }),
     ).toBe("3 bons d’échange");
+  });
+
+  it("activates the Spanish catalog on demand", async () => {
+    await activateLocale("es");
+
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Elija una ubicación",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Fondos");
+    expect(i18n._(msg`Wallet`)).toBe("Billetera");
+    expect(i18n._(msg`Swap`)).toBe("Intercambiar");
+    expect(maxAmount("55,00")).toBe("Máx. 55,00");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 1 },
+      }),
+    ).toBe("1 vale");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 3 },
+      }),
+    ).toBe("3 vales");
   });
 
   it("activates the Serbian Ijekavian catalog on demand", async () => {

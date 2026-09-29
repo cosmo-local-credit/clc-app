@@ -124,8 +124,26 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Spanish", async () => {
+    await activateLocale("es");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Elija una ubicación");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "El número de teléfono no es válido",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "El nombre del vale es obligatorio",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "El nombre del fondo es obligatorio",
+    );
+    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
+      "Acepte la licencia SPROUT para publicar su fondo",
+    );
+  });
+
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["fr", "sr", "sw"] as const) {
+    for (const locale of ["es", "fr", "sr", "sw"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

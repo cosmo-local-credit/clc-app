@@ -38,6 +38,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("sw")}>
         Kiswahili
       </button>
+      <button type="button" onClick={() => setLocale("es")}>
+        Español
+      </button>
       <button type="button" onClick={() => setLocale("fr")}>
         Français
       </button>
@@ -136,6 +139,18 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects Spanish from a region-tagged device language", async () => {
+    setNavigatorLanguages(["es-MX", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("es");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("es");
+    });
+  });
+
   it("falls back to the default locale when the device language is unsupported", () => {
     setNavigatorLanguages(["de-DE"]);
 
@@ -182,6 +197,22 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("fr");
     expect(localStorage.getItem("clc.locale")).toBe("fr");
     expect(Cookies.get("clc_locale")).toBe("fr");
+  });
+
+  it("persists a Spanish locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Español" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("es");
+    expect(document.documentElement.lang).toBe("es");
+    expect(localStorage.getItem("clc.locale")).toBe("es");
+    expect(Cookies.get("clc_locale")).toBe("es");
   });
 
   it("persists a Serbian locale selection", async () => {
