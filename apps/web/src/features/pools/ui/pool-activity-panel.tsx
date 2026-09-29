@@ -134,7 +134,7 @@ function ActivityRow({
       type="button"
       onClick={onOpen}
       className={[
-        "flex w-full items-center gap-2.5 p-3 text-left",
+        "flex w-full items-center gap-2.5 p-3 text-start",
         isLast ? "" : "border-b border-border",
       ].join(" ")}
     >
@@ -162,7 +162,7 @@ function ActivityRow({
         </p>
       </div>
 
-      <span className="shrink-0 text-right">
+      <span className="shrink-0 text-end">
         <EntryAmount entry={entry} />
       </span>
     </button>

@@ -140,7 +140,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
           <RiGroupLine className="size-4" aria-hidden="true" />
           <Trans>Address book</Trans>
         </span>
-        <RiArrowRightSLine className="size-4" aria-hidden="true" />
+        <RiArrowRightSLine className="rtl:-scale-x-100 size-4" aria-hidden="true" />
       </Button>
 
       {recipient ? (

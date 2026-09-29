@@ -53,7 +53,7 @@ export function CatalogSearchField({
   return (
     <div className="relative">
       <RiSearchLine
-        className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+        className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
       />
       <Input
@@ -62,7 +62,7 @@ export function CatalogSearchField({
         onChange={(event) => filter.setTerm(event.target.value)}
         aria-label={label}
         placeholder={label}
-        className="appearance-none rounded-none bg-card pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+        className="appearance-none rounded-none bg-card ps-9 pe-9 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
       />
       {filter.term !== "" ? (
         <Button
@@ -70,7 +70,7 @@ export function CatalogSearchField({
           size="icon"
           onClick={filter.clearTerm}
           aria-label={t`Clear search`}
-          className="absolute top-1/2 right-1 -translate-y-1/2 border-0 bg-transparent text-muted-foreground before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
+          className="absolute top-1/2 end-1 -translate-y-1/2 border-0 bg-transparent text-muted-foreground before:absolute before:-inset-y-1 before:inset-x-0 before:content-[''] hover:bg-transparent hover:text-foreground focus-visible:border-transparent focus-visible:bg-transparent"
         >
           <RiCloseLine className="size-4" aria-hidden="true" />
         </Button>
@@ -333,13 +333,13 @@ export function CatalogFilterSheet({
                       ))}
                       <div className="relative w-full">
                         <RiSearchLine
-                          className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                          className="absolute top-1/2 start-3 size-4 -translate-y-1/2 text-muted-foreground"
                           aria-hidden="true"
                         />
                         <ComboboxInput
                           placeholder={t`Search vouchers`}
                           aria-label={t`Search voucher filters`}
-                          className="pl-9"
+                          className="ps-9"
                         />
                       </div>
                     </ComboboxChips>

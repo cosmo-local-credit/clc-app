@@ -124,21 +124,31 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       : "";
   const localizedQuoteFromAmount =
     quote.data && fromDecimals !== null
-      ? formatTokenAmountFixed(quote.data.amountInRaw, fromDecimals, 2, i18n.locale)
+      ? formatTokenAmountFixed(
+          quote.data.amountInRaw,
+          fromDecimals,
+          2,
+          i18n.locales?.[0] ?? i18n.locale,
+        )
       : "";
   const localizedQuoteToAmount =
     quote.data && toDecimals !== null
-      ? formatTokenAmountFixed(quote.data.amountOutRaw, toDecimals, 2, i18n.locale)
+      ? formatTokenAmountFixed(
+          quote.data.amountOutRaw,
+          toDecimals,
+          2,
+          i18n.locales?.[0] ?? i18n.locale,
+        )
       : "";
   const editableFromAmount = quoteMode === "exact-input" ? fromAmount : quoteFromAmount;
   const editableToAmount = quoteMode === "exact-output" ? toAmount : quoteToAmount;
   const settledFromAmount =
     quoteMode === "exact-input"
-      ? fixedEnteredAmount(fromAmount, fromDecimals, i18n.locale)
+      ? fixedEnteredAmount(fromAmount, fromDecimals, i18n.locales?.[0] ?? i18n.locale)
       : localizedQuoteFromAmount;
   const settledToAmount =
     quoteMode === "exact-output"
-      ? fixedEnteredAmount(toAmount, toDecimals, i18n.locale)
+      ? fixedEnteredAmount(toAmount, toDecimals, i18n.locales?.[0] ?? i18n.locale)
       : localizedQuoteToAmount;
   const displayedFromAmount = focusedField === "from" ? editableFromAmount : settledFromAmount;
   const displayedToAmount = focusedField === "to" ? editableToAmount : settledToAmount;
@@ -150,7 +160,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       const rateRaw =
         (BigInt(quote.data.amountOutRaw) * 10n ** BigInt(fromDecimals) * 100n) /
         (amountInRaw * 10n ** BigInt(toDecimals));
-      rate = formatTokenAmountFixed(rateRaw.toString(), 2, 2, i18n.locale);
+      rate = formatTokenAmountFixed(rateRaw.toString(), 2, 2, i18n.locales?.[0] ?? i18n.locale);
     }
   }
 
@@ -171,7 +181,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       : undefined;
   const localizedMaxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
-      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, i18n.locale)
+      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
       : undefined;
 
   let exceedsBalance = false;
@@ -192,11 +202,21 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       quote.data?.depositHeadroomRaw !== null &&
       quote.data?.depositHeadroomRaw !== undefined &&
       fromDecimals !== null
-        ? formatTokenAmountFixed(quote.data.depositHeadroomRaw, fromDecimals, 2, i18n.locale)
+        ? formatTokenAmountFixed(
+            quote.data.depositHeadroomRaw,
+            fromDecimals,
+            2,
+            i18n.locales?.[0] ?? i18n.locale,
+          )
         : null,
     availableAmountOut:
       quote.data && toDecimals !== null
-        ? formatTokenAmountFixed(quote.data.availableAmountOutRaw, toDecimals, 2, i18n.locale)
+        ? formatTokenAmountFixed(
+            quote.data.availableAmountOutRaw,
+            toDecimals,
+            2,
+            i18n.locales?.[0] ?? i18n.locale,
+          )
         : null,
   };
   const hasSwappableFrom = swapTokens.some((token) => token.canSwapIn);
@@ -303,7 +323,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           <span className="text-muted-foreground text-xs">
             <Trans>Rate</Trans>
           </span>
-          <span className="font-mono text-xs font-semibold">
+          <span dir="ltr" className="font-mono text-xs font-semibold">
             1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
           </span>
         </div>
@@ -415,7 +435,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         selectedId={selectedFrom?.id}
         isPending={tokensPending}
         isError={tokensError}
-        locale={i18n.locale}
+        locale={i18n.locales?.[0] ?? i18n.locale}
         onSelect={(token) => {
           setFromMaxAmountRaw(null);
           if (token.id === selectedTo?.id) setToTokenId(selectedFrom?.id);
@@ -433,7 +453,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         selectedId={selectedTo?.id}
         isPending={tokensPending}
         isError={tokensError}
-        locale={i18n.locale}
+        locale={i18n.locales?.[0] ?? i18n.locale}
         onSelect={(token) => setToTokenId(token.id)}
       />
       <SwapConfirmationSheet
@@ -611,7 +631,7 @@ function SwapConfirmationRow({
       )}
     >
       <span className="text-muted-foreground text-xs">{label}</span>
-      <span className="min-w-0 break-words text-right font-mono text-xs font-semibold">
+      <span dir="ltr" className="min-w-0 break-words text-end font-mono text-xs font-semibold">
         {children}
       </span>
     </div>
@@ -677,7 +697,7 @@ function SwapField({
           ) : (
             <span className="size-6 shrink-0 rounded-full bg-muted" />
           )}
-          <span className="shrink-0 whitespace-nowrap text-left text-sm font-bold">
+          <span dir="ltr" className="shrink-0 whitespace-nowrap text-start text-sm font-bold">
             {token?.symbol ?? "—"}
           </span>
           <RiArrowDownSLine className="size-4 text-muted-foreground" aria-hidden="true" />
@@ -814,7 +834,7 @@ function PoolTokenPickerRow({
       type="button"
       disabled={disabled}
       className={cn(
-        "flex w-full items-center gap-3 px-4 py-3 text-left active:bg-muted",
+        "flex w-full items-center gap-3 px-4 py-3 text-start active:bg-muted",
         selected && "bg-muted/60",
         disabled && "opacity-45",
       )}
@@ -826,7 +846,9 @@ function PoolTokenPickerRow({
         <p className="truncate text-muted-foreground text-xs">{token.token.name}</p>
         <PoolTokenPickerReason token={token} variant={variant} />
       </div>
-      <span className="shrink-0 font-mono text-xs font-semibold">{amount}</span>
+      <span dir="ltr" className="shrink-0 font-mono text-xs font-semibold">
+        {amount}
+      </span>
       {selected ? (
         <RiCheckLine className="size-5 shrink-0 text-primary" aria-hidden="true" />
       ) : null}

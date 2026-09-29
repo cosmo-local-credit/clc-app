@@ -114,7 +114,7 @@ export function PostAttachmentFields({
                 aria-label={t`Remove link ${index + 1}`}
                 onClick={() => onChange(attachments.filter((_, position) => position !== index))}
               >
-                <FaTrash aria-hidden className="mr-2 size-3" />
+                <FaTrash aria-hidden className="me-2 size-3" />
                 <Trans>Remove</Trans>
               </Button>
             </li>
@@ -128,6 +128,7 @@ export function PostAttachmentFields({
             className="bg-card"
             inputMode="url"
             aria-label={t`Add a link`}
+            dir="ltr"
             placeholder="https://"
             value={draft}
             disabled={disabled}

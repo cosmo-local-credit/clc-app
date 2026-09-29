@@ -5,6 +5,7 @@ import { cn } from "#/lib/utils.ts";
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input
+      dir="auto"
       type={type}
       data-slot="input"
       className={cn(

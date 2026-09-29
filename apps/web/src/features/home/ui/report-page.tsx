@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiCloseLine, RiNavigationLine } from "react-icons/ri";
 
 import { formatByteSize } from "@clc/core/features/reports/logic";
+import { getLocaleDirection, type SupportedLocale } from "@clc/i18n/locales";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import {
@@ -59,7 +60,7 @@ export function ReportPage({ reportId }: { reportId: string }) {
   }
   if (!report) return <ReportShell message={t`Post not found.`} />;
 
-  const updated = formatReportDate(report.updatedAt, i18n.locale);
+  const updated = formatReportDate(report.updatedAt, i18n.locales?.[0] ?? i18n.locale);
   const hasCoordinates = typeof report.lat === "number" && typeof report.lng === "number";
   const coordinateLabel = hasCoordinates ? `${report.lat}, ${report.lng}` : null;
   const locationLabel = locationQuery.data?.locationName ?? report.locationName ?? coordinateLabel;
@@ -120,7 +121,10 @@ export function ReportPage({ reportId }: { reportId: string }) {
         ) : null}
 
         {report.description ? (
-          <p className="whitespace-pre-wrap text-[0.9375rem] leading-6 [overflow-wrap:anywhere]">
+          <p
+            dir="auto"
+            className="whitespace-pre-wrap text-[0.9375rem] leading-6 [overflow-wrap:anywhere]"
+          >
             {report.description}
           </p>
         ) : null}
@@ -145,7 +149,8 @@ export function ReportPage({ reportId }: { reportId: string }) {
  * carousel at that same index.
  */
 function ReportGallery({ images, title }: { images: ReportImage[]; title: string }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const direction = getLocaleDirection(i18n.locale as SupportedLocale);
   const [api, setApi] = useState<CarouselApi>();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const current = useCarouselPosition(api, 1);
@@ -171,10 +176,15 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
 
   return (
     <>
-      <Carousel setApi={setApi} opts={{ align: "start" }} aria-label={t`Report images`}>
-        <CarouselContent className="-ml-2">
+      <Carousel
+        setApi={setApi}
+        opts={{ align: "start" }}
+        direction={direction}
+        aria-label={t`Report images`}
+      >
+        <CarouselContent className="-ms-2">
           {images.map((image, index) => (
-            <CarouselItem key={image.url} className="pl-2">
+            <CarouselItem key={image.url} className="ps-2">
               <ReportSlide
                 image={image}
                 title={title}
@@ -187,15 +197,15 @@ function ReportGallery({ images, title }: { images: ReportImage[]; title: string
 
         <CarouselPrevious
           label={t`Previous image`}
-          className="left-2 size-11 border-transparent bg-background/80 text-foreground"
+          className="start-2 size-11 border-transparent bg-background/80 text-foreground"
         />
         <CarouselNext
           label={t`Next image`}
-          className="right-2 size-11 border-transparent bg-background/80 text-foreground"
+          className="end-2 size-11 border-transparent bg-background/80 text-foreground"
         />
         <p
           aria-live="polite"
-          className="absolute right-2 bottom-2 bg-background/80 px-2 py-0.5 font-mono text-[0.6875rem] font-semibold tabular-nums"
+          className="absolute end-2 bottom-2 bg-background/80 px-2 py-0.5 font-mono text-[0.6875rem] font-semibold tabular-nums"
         >
           <Trans>
             {current} / {images.length}
@@ -224,7 +234,7 @@ function ReportSlide({
     <button
       type="button"
       aria-label={t`View image full screen`}
-      className="relative block h-56 w-full overflow-hidden bg-muted text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      className="relative block h-56 w-full overflow-hidden bg-muted text-start outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       onClick={onOpen}
     >
       <ProgressiveImage
@@ -275,7 +285,7 @@ function ReportImageViewer({
 
           <DialogClose
             aria-label={t`Close`}
-            className="absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 z-10 flex size-11 items-center justify-center border border-white/30 bg-black/70 text-white outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="absolute top-[max(0.75rem,env(safe-area-inset-top))] end-3 z-10 flex size-11 items-center justify-center border border-white/30 bg-black/70 text-white outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <RiCloseLine className="size-6" aria-hidden="true" />
           </DialogClose>
@@ -294,7 +304,8 @@ function FullScreenCarousel({
   title: string;
   initialIndex: number;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const direction = getLocaleDirection(i18n.locale as SupportedLocale);
   const [api, setApi] = useState<CarouselApi>();
   const current = useCarouselPosition(api, initialIndex + 1, false);
 
@@ -302,27 +313,28 @@ function FullScreenCarousel({
     <Carousel
       setApi={setApi}
       opts={{ align: "start", startIndex: initialIndex }}
+      direction={direction}
       aria-label={t`Report images`}
       className="h-dvh"
     >
-      <CarouselContent className="ml-0 h-dvh">
+      <CarouselContent className="ms-0 h-dvh">
         {images.map((image, index) => (
-          <CarouselItem key={image.url} className="h-dvh pl-0">
+          <CarouselItem key={image.url} className="h-dvh ps-0">
             <FullScreenImage image={image} title={title} eager={index === initialIndex} />
           </CarouselItem>
         ))}
       </CarouselContent>
       <CarouselPrevious
         label={t`Previous image`}
-        className="left-3 size-11 border-white/30 bg-black/70 text-white"
+        className="start-3 size-11 border-white/30 bg-black/70 text-white"
       />
       <CarouselNext
         label={t`Next image`}
-        className="right-3 size-11 border-white/30 bg-black/70 text-white"
+        className="end-3 size-11 border-white/30 bg-black/70 text-white"
       />
       <p
         aria-live="polite"
-        className="absolute right-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 font-mono text-white text-xs tabular-nums"
+        className="absolute end-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/70 px-2 py-1 font-mono text-white text-xs tabular-nums"
       >
         <Trans>
           {current} / {images.length}
@@ -380,7 +392,11 @@ function useCarouselPosition(
 
 function ReportDetails({ report }: { report: ReportDetail }) {
   const { t, i18n } = useLingui();
-  const period = formatReportPeriod(report.periodFrom, report.periodTo, i18n.locale);
+  const period = formatReportPeriod(
+    report.periodFrom,
+    report.periodTo,
+    i18n.locales?.[0] ?? i18n.locale,
+  );
   const hasDetails = Boolean(period || report.hostName || report.participants || report.timeTaken);
   if (!hasDetails) return null;
 
@@ -498,7 +514,7 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
               {voucher.symbol}
             </Badge>
             <RiArrowRightSLine
-              className="size-4 shrink-0 text-muted-foreground"
+              className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
           </Link>
@@ -510,7 +526,7 @@ function RelatedVouchers({ report }: { report: ReportDetail }) {
 
 function ReportProvenance({ report }: { report: ReportDetail }) {
   const { t, i18n } = useLingui();
-  const created = formatReportDate(report.createdAt, i18n.locale);
+  const created = formatReportDate(report.createdAt, i18n.locales?.[0] ?? i18n.locale);
 
   return (
     <section aria-labelledby="report-provenance-heading">

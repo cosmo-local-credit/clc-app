@@ -31,7 +31,7 @@ function VoucherRow({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center gap-2.5 p-3 text-left"
+        className="flex w-full items-center gap-2.5 p-3 text-start"
       >
         <TokenLogo token={voucher} size={36} />
         <div className="min-w-0 flex-1">
@@ -68,7 +68,7 @@ function VoucherRow({
               preload="intent"
             >
               <Trans>View voucher</Trans>
-              <RiArrowRightSLine className="size-4" aria-hidden="true" />
+              <RiArrowRightSLine className="rtl:-scale-x-100 size-4" aria-hidden="true" />
             </Link>
           </Button>
         </div>

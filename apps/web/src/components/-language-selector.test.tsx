@@ -21,10 +21,12 @@ vi.mock("#/components/ui/select", () => ({
     value,
     onValueChange,
     children,
+    items: _items,
   }: {
     value: string;
     onValueChange?: (v: string) => void;
     children: React.ReactNode;
+    items?: Record<string, string>;
   }) => (
     <select value={value} aria-label="Language" onChange={(e) => onValueChange?.(e.target.value)}>
       {children}
@@ -33,8 +35,18 @@ vi.mock("#/components/ui/select", () => ({
   SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SelectValue: () => null,
   SelectContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  SelectItem: ({ value, children }: { value: string; children: React.ReactNode }) => (
-    <option value={value}>{children}</option>
+  SelectItem: ({
+    value,
+    children,
+    dir,
+  }: {
+    value: string;
+    children: React.ReactNode;
+    dir?: "ltr" | "rtl";
+  }) => (
+    <option value={value} dir={dir}>
+      {children}
+    </option>
   ),
 }));
 
@@ -50,18 +62,38 @@ describe("LanguageSelector", () => {
     setLocale.mockClear();
   });
 
-  it("shows English, Spanish, French, Portuguese, Serbian, and Kiswahili locale choices", () => {
+  it("shows English, Arabic, Spanish, French, Portuguese, Serbian, and Kiswahili locale choices", () => {
     renderSelector();
     const select = screen.getByRole("combobox", {
       name: /language/i,
     }) as HTMLSelectElement;
     expect(select.value).toBe("en");
+    expect(select.selectedOptions[0]?.text).toBe("English");
     expect(screen.getByRole("option", { name: "English" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "العربية" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Español" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Français" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Português" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Српски" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Kiswahili" })).toBeTruthy();
+    expect([...select.options].map((option) => option.text)).toEqual([
+      "English",
+      "العربية",
+      "Español",
+      "Français",
+      "Português",
+      "Српски",
+      "Kiswahili",
+    ]);
+    expect(screen.getByRole("option", { name: "العربية" }).getAttribute("dir")).toBe("rtl");
+  });
+
+  it("requests a locale change when the user selects Arabic", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "ar" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("ar");
   });
 
   it("requests a locale change when the user selects Spanish", () => {

@@ -164,7 +164,7 @@ function HoldingRow({
             </p>
           )}
         </div>
-        <div className="shrink-0 text-right">
+        <div className="shrink-0 text-end">
           {/* Value in the pool's unit of account leads, with the voucher's own
               amount beneath it. The conversion is exact — the same arithmetic
               the limiter applies — so it carries no approximation sign. */}

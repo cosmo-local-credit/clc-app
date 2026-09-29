@@ -202,12 +202,12 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
               skipNextSearchRef.current = false;
               setQuery(event.target.value);
             }}
-            className="bg-card pr-10"
+            className="bg-card pe-10"
             aria-invalid={!!shownError}
           />
           <button
             type="button"
-            className="absolute top-1/2 right-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
+            className="absolute top-1/2 end-1 flex size-7 -translate-y-1/2 items-center justify-center rounded-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground"
             onClick={geolocation.request}
             disabled={geoUnavailable || geoRequesting}
             aria-label={geoUnavailable ? t`Location unavailable` : t`Use my location`}
@@ -231,7 +231,7 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
                 type="button"
                 role="option"
                 aria-selected="false"
-                className="block w-full px-3 py-2 text-left text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                className="block w-full px-3 py-2 text-start text-sm hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
                 onClick={() => {
                   setSearchQueryFromLocation(suggestion.address);
                   placePin(suggestion.lat, suggestion.lng, {

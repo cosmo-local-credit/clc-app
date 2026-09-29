@@ -16,6 +16,7 @@ describe("WalletAmountInput", () => {
     const input = screen.getByRole("textbox", { name: "Amount to receive" }) as HTMLInputElement;
     expect(input.type).toBe("text");
     expect(input.inputMode).toBe("decimal");
+    expect(input.dir).toBe("ltr");
     expect(input.placeholder).toBe("0.00");
     expect(input.value).toBe("");
 

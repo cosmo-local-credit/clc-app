@@ -134,11 +134,11 @@ const editorTheme: EditorThemeClasses = {
   list: {
     listitem: "leading-6 [overflow-wrap:anywhere]",
     nested: { listitem: "list-none" },
-    ol: "my-2 list-decimal space-y-1 pl-5",
-    ul: "my-2 list-disc space-y-1 pl-5",
+    ol: "my-2 list-decimal space-y-1 ps-5",
+    ul: "my-2 list-disc space-y-1 ps-5",
   },
   paragraph: "leading-6 [overflow-wrap:anywhere]",
-  quote: "my-2 border-l-2 border-border pl-3 text-muted-foreground",
+  quote: "my-2 border-s-2 border-border ps-3 text-muted-foreground",
   text: {
     bold: "font-semibold",
     code: "bg-muted px-1 py-0.5 font-mono text-[0.8125rem]",
@@ -194,6 +194,7 @@ export function MarkdownEditorLexical(props: MarkdownEditorProps) {
           <RichTextPlugin
             contentEditable={
               <ContentEditable
+                dir="auto"
                 id={id}
                 aria-label={props["aria-label"]}
                 aria-labelledby={props["aria-labelledby"]}
@@ -201,7 +202,7 @@ export function MarkdownEditorLexical(props: MarkdownEditorProps) {
                 aria-multiline
                 aria-placeholder={placeholderText}
                 placeholder={
-                  <p className="pointer-events-none absolute top-2 left-3 text-muted-foreground text-sm">
+                  <p className="pointer-events-none absolute top-2 start-3 text-muted-foreground text-sm">
                     {placeholderText}
                   </p>
                 }
@@ -570,6 +571,7 @@ function MarkdownToolbar({ disabled }: { disabled: boolean }) {
           <Input
             id={linkInputId}
             ref={linkInputRef}
+            dir="ltr"
             type="url"
             inputMode="url"
             value={linkUrl}

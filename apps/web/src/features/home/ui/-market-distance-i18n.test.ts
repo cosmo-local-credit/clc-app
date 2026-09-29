@@ -12,7 +12,10 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 // the same `{0} m` / `{0} km` message ids these catalogs actually carry. A
 // bare identifier would generate `{value} m` and silently miss the catalog.
 function metres(distance: { value: number }): string {
-  return i18n._(msg`${distance.value} m`);
+  const localized = {
+    value: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(distance.value),
+  };
+  return i18n._(msg`${localized.value} m`);
 }
 
 function kilometres(distance: { value: string }): string {
@@ -29,6 +32,13 @@ describe("translated distance labels", () => {
 
     expect(metres({ value: 300 })).toBe("300 m");
     expect(kilometres({ value: "12.4" })).toBe("12.4 km");
+  });
+
+  it("renders Arabic with Arabic-Indic digits and the translated unit", async () => {
+    await activateLocale("ar");
+
+    expect(metres({ value: 300 })).toBe("٣٠٠ م");
+    expect(kilometres({ value: "١٢٫٤" })).toBe("١٢٫٤ كم");
   });
 
   it("renders Spanish", async () => {
@@ -108,7 +118,7 @@ describe("translated distance labels", () => {
   });
 
   it("translates the market load error, retry, and empty states", async () => {
-    for (const locale of ["es", "fr", "pt", "sr", "sw"] as const) {
+    for (const locale of ["ar", "es", "fr", "pt", "sr", "sw"] as const) {
       await activateLocale(locale);
       for (const message of [
         msg`Could not load vouchers.`,

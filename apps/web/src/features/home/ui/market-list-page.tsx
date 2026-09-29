@@ -244,7 +244,10 @@ function MarketVoucherRow({
           ) : null}
         </span>
       </span>
-      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine
+        className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

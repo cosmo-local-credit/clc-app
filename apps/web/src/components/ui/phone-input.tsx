@@ -57,6 +57,7 @@ export function PhoneInputField({
   return (
     <>
       <div
+        dir="ltr"
         className={cn(
           "flex h-9 w-full border border-input bg-card transition-[border-color]",
           "focus-within:border-foreground",
@@ -69,7 +70,7 @@ export function PhoneInputField({
           aria-label={`Country: ${country}`}
           onClick={() => setSheetOpen(true)}
           className={cn(
-            "flex shrink-0 items-center gap-1 border-input border-r px-3",
+            "flex shrink-0 items-center gap-1 border-input border-e px-3",
             "text-foreground text-sm transition-colors hover:bg-muted",
           )}
         >

@@ -285,6 +285,7 @@ function WithdrawLiquidityForm({
             <div className="flex gap-2">
               <Input
                 id="pool-withdraw-amount"
+                dir="ltr"
                 inputMode="decimal"
                 value={amount}
                 placeholder="0"
@@ -492,6 +493,7 @@ function FeeSettingsForm({
         >
           <Input
             id="pool-fee-percent"
+            dir="ltr"
             inputMode="decimal"
             value={feePercent}
             placeholder="0"
@@ -576,7 +578,7 @@ function TokenChooser({
               onClick={() => onSelect(address)}
               aria-pressed={isSelected}
               className={[
-                "flex w-full items-center gap-3 p-3 text-left",
+                "flex w-full items-center gap-3 p-3 text-start",
                 index === vouchers.length - 1 ? "" : "border-b border-border",
                 isSelected ? "bg-muted" : "",
               ].join(" ")}

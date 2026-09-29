@@ -216,6 +216,7 @@ export function OnboardingProfileForm({
                     </label>
                     <Input
                       id="onb-email"
+                      dir="ltr"
                       type="email"
                       autoComplete="email"
                       placeholder="you@example.com"
@@ -297,7 +298,7 @@ export function OnboardingProfileForm({
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-bio" className="font-medium text-sm">
                       <Trans>Bio</Trans>
-                      <span className="ml-1 font-normal text-muted-foreground">
+                      <span className="ms-1 font-normal text-muted-foreground">
                         <Trans>Optional</Trans>
                       </span>
                     </label>
@@ -328,12 +329,13 @@ export function OnboardingProfileForm({
                   <div className="flex flex-col gap-1.5">
                     <label htmlFor="onb-website" className="font-medium text-sm">
                       <Trans>Website</Trans>
-                      <span className="ml-1 font-normal text-muted-foreground">
+                      <span className="ms-1 font-normal text-muted-foreground">
                         <Trans>Optional</Trans>
                       </span>
                     </label>
                     <Input
                       id="onb-website"
+                      dir="ltr"
                       type="url"
                       autoComplete="url"
                       inputMode="url"
@@ -388,7 +390,7 @@ export function OnboardingProfileForm({
                 disabled={isSubmitting || !isStorageConfigured}
                 className="h-11 w-full"
               >
-                {isSubmitting ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
+                {isSubmitting ? <LoaderCircle className="me-2 size-4 animate-spin" /> : null}
                 {isSubmitting ? t`Saving…` : t`Continue`}
               </Button>
             )}

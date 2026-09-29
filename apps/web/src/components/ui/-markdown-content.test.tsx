@@ -32,6 +32,7 @@ describe("MarkdownContent", () => {
   it("renders semantic elements for headings, emphasis, lists and quotes", () => {
     const { container } = render(<MarkdownContent>{FIXTURE}</MarkdownContent>);
 
+    expect(container.firstElementChild?.getAttribute("dir")).toBe("auto");
     // A body heading starts at h3: the screen title owns the h1.
     expect(container.querySelector("h1")).toBeNull();
     expect(container.querySelector("h3")?.textContent).toBe("Harvest report");
@@ -70,6 +71,7 @@ describe("MarkdownContent", () => {
     const pre = container.querySelector("pre");
 
     expect(pre?.textContent).toContain("git show 0xa1b2c3");
+    expect(pre?.getAttribute("dir")).toBe("ltr");
     expect(pre?.className).toContain("overflow-x-auto");
 
     const inline = [...container.querySelectorAll("code")].find((code) =>

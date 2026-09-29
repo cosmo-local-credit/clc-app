@@ -45,10 +45,10 @@ export function SwapReceiptPage({
     queryFn: async (trackingId) => (await relayerClient.trackRelay(trackingId)).result,
   });
   const localizedReceiveAmount = details.receiveAmount
-    ? localizeCanonicalAmount(details.receiveAmount, i18n.locale)
+    ? localizeCanonicalAmount(details.receiveAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
   const localizedSendAmount = details.sendAmount
-    ? localizeCanonicalAmount(details.sendAmount, i18n.locale)
+    ? localizeCanonicalAmount(details.sendAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
   const amountLabel =
     localizedReceiveAmount && details.receiveSymbol
@@ -146,7 +146,7 @@ export function SwapReceiptPage({
         ) : null}
         {details.poolName ? (
           <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-right text-xs font-semibold">
+            <span className="min-w-0 break-words text-end text-xs font-semibold">
               {details.poolName}
             </span>
           </ReceiptRow>
@@ -155,7 +155,7 @@ export function SwapReceiptPage({
           <ReceiptRow label={<Trans>Transaction</Trans>}>
             <button
               type="button"
-              className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+              className="flex min-w-0 items-center gap-1.5 bg-card text-end"
               aria-label={t`Copy transaction hash`}
               onClick={() => copy(txHash)}
             >
@@ -172,7 +172,7 @@ export function SwapReceiptPage({
         {submittedAt ? (
           <ReceiptRow label={<Trans>Submitted</Trans>}>
             <time className="font-mono text-xs font-semibold" dateTime={submittedAt}>
-              {formatSubmittedAt(submittedAt)}
+              {formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)}
             </time>
           </ReceiptRow>
         ) : null}
@@ -235,7 +235,7 @@ function ReceiptShell({
       <div className="my-5 border border-border bg-card">
         {poolName ? (
           <ReceiptRow label={<Trans>Pool</Trans>}>
-            <span className="min-w-0 break-words text-right text-xs font-semibold">{poolName}</span>
+            <span className="min-w-0 break-words text-end text-xs font-semibold">{poolName}</span>
           </ReceiptRow>
         ) : null}
         <StatusRow status={status} />
@@ -296,12 +296,10 @@ function StatusRow({ status }: { status: React.ReactNode }) {
   );
 }
 
-function formatSubmittedAt(value: string): string {
+function formatSubmittedAt(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
-    date,
-  );
+  return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
 function localizeCanonicalAmount(amount: string, locale: string): string {

@@ -166,7 +166,7 @@ function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
       to="/pools/$poolAddress"
       params={{ poolAddress: pool.address }}
       className={[
-        "flex w-full items-center gap-3 p-3 text-left active:bg-muted",
+        "flex w-full items-center gap-3 p-3 text-start active:bg-muted",
         isLast ? "" : "border-b border-border",
       ].join(" ")}
     >
@@ -193,7 +193,10 @@ function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
           </span>
         ) : null}
       </div>
-      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine
+        className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

@@ -166,7 +166,7 @@ export function PasskeySettingsSection({
 
       {canLink ? (
         <Button className="h-11 w-full" onClick={passkey.link} disabled={disabled}>
-          <RiFingerprintLine className="mr-2 size-4" aria-hidden="true" />
+          <RiFingerprintLine className="me-2 size-4" aria-hidden="true" />
           {passkey.busy ? <Trans>Linking passkey…</Trans> : <Trans>Link a passkey</Trans>}
         </Button>
       ) : null}

@@ -375,6 +375,7 @@ export function VoucherDeploymentReceiptPage({
             <Field label={t`Create vouchers`} htmlFor="voucher-supply" error={supplyError}>
               <Input
                 id="voucher-supply"
+                dir="ltr"
                 inputMode="decimal"
                 value={supply}
                 onChange={(event) => {

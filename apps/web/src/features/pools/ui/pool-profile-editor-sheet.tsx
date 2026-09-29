@@ -306,6 +306,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             >
               <Input
                 id="pool-email"
+                dir="ltr"
                 type="email"
                 autoComplete="email"
                 value={field.state.value}
@@ -327,6 +328,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
             >
               <Input
                 id="pool-website"
+                dir="ltr"
                 type="url"
                 inputMode="url"
                 autoComplete="url"
@@ -444,6 +446,7 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                       <div className="mt-1.5">
                         <Input
                           id="pool-terms-url"
+                          dir="ltr"
                           type="url"
                           inputMode="url"
                           autoComplete="url"

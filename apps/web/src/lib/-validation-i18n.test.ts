@@ -142,6 +142,18 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Arabic", async () => {
+    await activateLocale("ar");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("اختر موقعًا");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("رقم الهاتف غير صالح");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("اسم القسيمة مطلوب");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("اسم الصندوق مطلوب");
+    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
+      "اقبل ترخيص SPROUT لنشر صندوقك",
+    );
+  });
+
   it("translates known validation errors into Portuguese", async () => {
     await activateLocale("pt");
 
@@ -161,7 +173,7 @@ describe("translateValidationError", () => {
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["es", "fr", "pt", "sr", "sw"] as const) {
+    for (const locale of ["ar", "es", "fr", "pt", "sr", "sw"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

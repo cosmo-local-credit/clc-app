@@ -155,7 +155,7 @@ export function MarketPage({
         <div className="flex items-center gap-2">
           <Button asChild className="pointer-events-auto h-11 flex-1">
             <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
-              <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
+              <RiListUnordered className="me-2 size-4" aria-hidden="true" />
               <Trans>Browse all</Trans>
             </Link>
           </Button>
@@ -198,7 +198,7 @@ function MarketPreview({
       params={{ voucherAddress: voucher.address }}
       aria-label={voucher.name}
       className={[
-        "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
+        "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-start",
         offsetForBanner
           ? "top-[calc(env(safe-area-inset-top)+4.75rem)]"
           : "top-[calc(env(safe-area-inset-top)+1rem)]",
@@ -237,7 +237,10 @@ function MarketPreview({
           ) : null}
         </span>
       </span>
-      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine
+        className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

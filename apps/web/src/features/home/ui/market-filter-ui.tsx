@@ -127,7 +127,7 @@ export function MarketFilterSummary({ filter }: { filter: CatalogFilterControls 
   if (summary === "") return null;
 
   return (
-    <div className="pointer-events-auto flex items-center gap-1 border border-border bg-card pl-3">
+    <div className="pointer-events-auto flex items-center gap-1 border border-border bg-card ps-3">
       <Link
         to="/"
         search={(previous) => ({ ...previous, tab: "market", view: "list" })}

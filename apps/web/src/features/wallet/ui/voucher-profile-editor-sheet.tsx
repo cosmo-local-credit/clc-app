@@ -222,6 +222,7 @@ function VoucherProfileForm({
               >
                 <Input
                   id="voucher-price"
+                  dir="ltr"
                   inputMode="decimal"
                   value={field.state.value}
                   onChange={(event) => field.handleChange(event.target.value)}
@@ -332,6 +333,7 @@ function VoucherProfileForm({
             >
               <Input
                 id="voucher-email"
+                dir="ltr"
                 type="email"
                 autoComplete="email"
                 value={field.state.value}
@@ -353,6 +355,7 @@ function VoucherProfileForm({
             >
               <Input
                 id="voucher-website"
+                dir="ltr"
                 type="url"
                 inputMode="url"
                 autoComplete="url"
@@ -450,6 +453,7 @@ function VoucherProfileForm({
                       <div className="mt-1.5">
                         <Input
                           id="voucher-terms-url"
+                          dir="ltr"
                           type="url"
                           inputMode="url"
                           autoComplete="url"
