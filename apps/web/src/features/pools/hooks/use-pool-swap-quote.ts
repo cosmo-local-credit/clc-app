@@ -126,11 +126,21 @@ export function usePoolSwapQuote(input: {
             );
       const amountInRaw = input.mode === "exact-input" ? amountRaw : quotedAmountRaw;
       const amountOutRaw = input.mode === "exact-input" ? quotedAmountRaw : amountRaw;
-      const [grossAmountOutRaw, poolState, depositState] = await Promise.all([
+      const [grossAmountOutRaw, netAmountOutRaw, poolState, depositState] = await Promise.all([
         quotePoolGrossAmountOut(
           { call: (args) => call(client, args) },
           { poolAddress, tokenIn, tokenOut, amountInRaw, blockNumber },
         ),
+        // What spending `amountInRaw` actually delivers. In exact-input mode that is
+        // the quote itself; in exact-output mode `getAmountIn` rounds the input up
+        // (ceiling division, then +1 wei), so the swap delivers a little more than
+        // was asked, and the fees are what that input's gross quote loses.
+        input.mode === "exact-input"
+          ? amountOutRaw
+          : quoteRouteExactInput(
+              { call: (args) => call(client, args) },
+              { routerAddress: SWAP_ROUTER_ADDRESS, path, amountInRaw, blockNumber },
+            ),
         multicall(client, {
           allowFailure: false,
           blockNumber,
@@ -200,12 +210,19 @@ export function usePoolSwapQuote(input: {
             ).toString();
       const quotedDecimals =
         input.mode === "exact-input" ? input.tokenOutDecimals : input.tokenInDecimals;
+      const feeAmountRaw = BigInt(grossAmountOutRaw) - BigInt(netAmountOutRaw);
       return {
         amountRaw: quotedAmountRaw,
         amount: formatTokenAmountFixed(quotedAmountRaw, quotedDecimals, 2),
         amountInRaw,
         amountOutRaw,
         grossAmountOutRaw,
+        /**
+         * What the pool and the protocol keep, in the output voucher: the gross quote
+         * for the input spent less what that input delivers. Null if the two ever
+         * disagree in sign, rather than a negative fee.
+         */
+        feeAmountRaw: feeAmountRaw >= 0n ? feeAmountRaw.toString() : null,
         availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
           availableAmountOutRaw,

@@ -5,7 +5,13 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { decodeFunctionData, encodeFunctionResult, type Hex } from "viem";
+import {
+  CallExecutionError,
+  ExecutionRevertedError,
+  decodeFunctionData,
+  encodeFunctionResult,
+  type Hex,
+} from "viem";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { callMock } = vi.hoisted(() => ({ callMock: vi.fn() }));
@@ -101,13 +107,27 @@ describe("usePoolSwapMaximum", () => {
 
   it("still offers the maximum when the net receive cannot be quoted", async () => {
     // FeeTooHigh and a zero net both revert `getAmountOut`. The send ceiling is
-    // still what it is; only the receive figure is unknown.
-    mockQuotes(() => new Error("execution reverted"));
+    // still what it is; only the receive figure is unknown. Shaped as viem's
+    // `call` reports a revert from both Gnosis RPCs.
+    mockQuotes(
+      () => new CallExecutionError(new ExecutionRevertedError({ message: "FeeTooHigh()" }), {}),
+    );
 
     const { result } = renderMaximum();
 
     await waitFor(() => expect(result.current.data?.maxAmountInRaw).toBe("55"));
     expect(result.current.data?.maxAmountOutRaw).toBeNull();
+  });
+
+  it("fails rather than passing a failed read off as a quote the contract refused", async () => {
+    // A timeout is no answer about the contract, and caching it as one would hide
+    // the receive figure for the rest of the block.
+    mockQuotes(() => new Error("request timed out"));
+
+    const { result } = renderMaximum();
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.data).toBeUndefined();
   });
 
   it("does not quote a receive amount for a maximum of nothing", async () => {

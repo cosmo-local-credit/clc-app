@@ -10,7 +10,7 @@ import {
   erc20SymbolAbi,
 } from "@clc/core/features/pool-swaps/logic";
 import { useQuery } from "@tanstack/react-query";
-import { isAddress } from "viem";
+import { isAddress, zeroAddress } from "viem";
 import { getBlockNumber, multicall, readContract } from "viem/actions";
 import { useClient } from "wagmi";
 
@@ -73,6 +73,20 @@ export function usePoolTokenMembership(
 }
 
 /**
+ * The registry `SwapPool` consults, or null for a pool without one.
+ *
+ * Unset and the zero address are the same pool to the contract:
+ * `mustAllowedToken` returns early on `address(0)` and admits anything. Any other
+ * value is a registry, whether or not it reads as a usable address — callers
+ * that decide "is there a registry" and callers that read it must agree, or one
+ * waits forever on a query the other never enables.
+ */
+export function poolTokenRegistryAddress(pool: UserPool | null | undefined): string | null {
+  const address = pool?.tokenRegistryAddress;
+  return address && address.toLowerCase() !== zeroAddress ? address : null;
+}
+
+/**
  * Every token the pool's registry admits, in registry order.
  *
  * The complete membership, where the catalog's voucher list is only what clc-core
@@ -81,20 +95,21 @@ export function usePoolTokenMembership(
  * `allowFailure: false` makes an unreadable entry fail the list: a shorter list
  * presented as complete is the bug this hook exists to close.
  *
- * Idle for a pool with no registry, which admits anything.
+ * Idle for a pool with no registry, which admits anything. A registry address
+ * that is not a usable address is an error, not "no registry".
  */
 export function usePoolRegistryTokens(pool: UserPool | null | undefined) {
   const client = useClient();
-  const registryAddress =
-    pool?.tokenRegistryAddress && isAddress(pool.tokenRegistryAddress)
-      ? pool.tokenRegistryAddress
-      : undefined;
+  const registryAddress = poolTokenRegistryAddress(pool);
 
   return useQuery({
     queryKey: poolRegistryQueryKeys.entries(registryAddress ?? "none"),
     queryFn: async () => {
       if (!client || !registryAddress) {
         throw new Error("The registry enumeration is missing a client.");
+      }
+      if (!isAddress(registryAddress)) {
+        throw new Error("The pool's registry address is not a valid address.");
       }
       const blockNumber = await getBlockNumber(client);
       const count = await readContract(client, {

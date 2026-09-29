@@ -5,14 +5,16 @@ import {
   swapRouterQuoteExactOutputAbi,
 } from "@clc/core/features/pool-swaps/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { decodeFunctionData, encodeFunctionResult, type Hex } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const {
+  chainHead,
   holderBalances,
   navigate,
   poolLiquidityBalance,
+  poolExactOutputRounding,
   poolNetFee,
   poolQuoteRate,
   poolRegistry,
@@ -25,6 +27,8 @@ const {
   swapMutateAsync,
   swapTransferState,
 } = vi.hoisted(() => ({
+  /** The block every read is pinned to; moving it re-keys every pinned query. */
+  chainHead: { value: 100n },
   // What the wallet holds of each voucher, on chain. The swap screen reads this
   // per voucher rather than from the indexer's holdings page, so a voucher the
   // holder has not moved lately cannot fall off a page and read as a zero.
@@ -34,6 +38,12 @@ const {
   poolQuoteRate: { numerator: 2n, denominator: 1n },
   /** Pool fee plus protocol fee, in ppm, taken out of an exact-input quote's output. */
   poolNetFee: { ppm: 0n },
+  /**
+   * What `getAmountIn`'s trailing +1 wei adds to an exact-output input, in raw
+   * input units. Zero by default; raised to make that rounding show at two
+   * decimals, as it does for a voucher with few of them.
+   */
+  poolExactOutputRounding: { raw: 0n },
   /**
    * The pool's `TokenUniqueSymbolIndex`. Unset, the pool has no registry and the
    * catalog is the whole menu; set, `entries` is what the chain admits and
@@ -85,7 +95,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("viem/actions", () => ({
   call: (_client: unknown, args: unknown) => publicClientCall(args),
-  getBlockNumber: () => Promise.resolve(100n),
+  getBlockNumber: () => Promise.resolve(chainHead.value),
   multicall: (_client: unknown, args: unknown) => publicClientMulticall(args),
   readContract: (_client: unknown, args: unknown) => publicClientRead(args),
 }));
@@ -131,11 +141,14 @@ function mockPoolRequests({
   // A voucher the pool takes and the holder has none of — off by default so the
   // holdings and offerings assertions keep their two-voucher arithmetic.
   withUnheldVoucher = false,
+  catalogFails = false,
 }: {
   usdcBalance?: string;
   usdcSymbol?: string;
   ttxSymbol?: string;
   withUnheldVoucher?: boolean;
+  /** The pool's catalog voucher list cannot be read. */
+  catalogFails?: boolean;
 } = {}) {
   holderBalances.value = {
     [USDC_ADDRESS.toLowerCase()]: BigInt(usdcBalance),
@@ -146,6 +159,7 @@ function mockPoolRequests({
     vi.fn((input: RequestInfo | URL) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes(`/api/v2/pools/${POOL_ADDRESS}/vouchers`)) {
+        if (catalogFails) return Promise.reject(new Error("catalog down"));
         return Promise.resolve(
           response({
             vouchers: [
@@ -307,6 +321,8 @@ beforeEach(() => {
   poolQuoteRate.numerator = 2n;
   poolQuoteRate.denominator = 1n;
   poolNetFee.ppm = 0n;
+  poolExactOutputRounding.raw = 0n;
+  chainHead.value = 100n;
   poolRegistry.address = null;
   poolRegistry.entries = [];
   poolRegistry.metadata = {};
@@ -424,11 +440,14 @@ beforeEach(() => {
     } catch {
       try {
         const decoded = decodeFunctionData({ abi: swapRouterQuoteExactOutputAbi, data });
+        // Grossed up for the fees with ceiling division, as `getAmountIn` does.
+        const scaledOut = decoded.args[1] * poolQuoteRate.denominator * 1_000_000n;
+        const perInput = poolQuoteRate.numerator * (1_000_000n - poolNetFee.ppm);
         return Promise.resolve({
           data: encodeFunctionResult({
             abi: swapRouterQuoteExactOutputAbi,
             functionName: "quoteExactOutput",
-            result: (decoded.args[1] * poolQuoteRate.denominator) / poolQuoteRate.numerator,
+            result: (scaledOut + perInput - 1n) / perInput + poolExactOutputRounding.raw,
           }),
         });
       } catch {
@@ -702,11 +721,12 @@ describe("pool voucher UI", () => {
     expect(sendInput.placeholder).toBe("0.00");
     expect(document.activeElement).toBe(receiveInput);
     // You receive is the figure the screen is about and You send follows from it,
-    // so they are deliberately not twins: the receive amount is larger and taller.
-    expect(receiveInput.className).toContain("h-12");
+    // so they are deliberately not twins: the receive amount is set larger. Both
+    // keep the standard input height.
     expect(receiveInput.className).toContain("text-[1.5rem]");
     expect(sendInput.className).toContain("text-[1rem]");
-    expect(sendInput.className).not.toContain("h-12");
+    expect(receiveInput.className).toContain("h-9");
+    expect(sendInput.className).toContain("h-9");
     expect(
       receiveField.compareDocumentPosition(sendField) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -823,10 +843,22 @@ describe("pool voucher UI", () => {
       expect(fromInput.value).toBe("4.00");
       expect(toInput.value).toBe("8");
     });
-    const call = publicClientCall.mock.calls.at(-2)?.[0] as { data: Hex };
-    expect(
-      decodeFunctionData({ abi: swapRouterQuoteExactOutputAbi, data: call.data }).args,
-    ).toEqual([[{ pool: POOL_ADDRESS, tokenIn: USDC_ADDRESS, tokenOut: TTX_ADDRESS }], 8_000_000n]);
+    const exactOutputCalls = publicClientCall.mock.calls.flatMap(([call]) => {
+      try {
+        return [
+          decodeFunctionData({
+            abi: swapRouterQuoteExactOutputAbi,
+            data: (call as { data: Hex }).data,
+          }).args,
+        ];
+      } catch {
+        return [];
+      }
+    });
+    expect(exactOutputCalls.at(-1)).toEqual([
+      [{ pool: POOL_ADDRESS, tokenIn: USDC_ADDRESS, tokenOut: TTX_ADDRESS }],
+      8_000_000n,
+    ]);
   });
 
   it("blocks a quoted swap when the pool has no output-token liquidity", async () => {
@@ -1285,6 +1317,78 @@ describe("pool voucher UI", () => {
       );
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
     });
+  });
+
+  it("counts the fees on what an exact-output swap spends, not on the amount asked for", async () => {
+    // `getAmountIn` rounds the input up, so the swap delivers a little more than
+    // was asked. Exaggerated here to half a USDC so it shows at two decimals.
+    poolNetFee.ppm = 20_000n;
+    poolExactOutputRounding.raw = 500_000n;
+    mockPoolRequests({ usdcBalance: "20000000" });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You receive" }), {
+      target: { value: "24.5" },
+    });
+
+    // 24.50 TTX net is 25.00 gross, so 12.50 USDC, rounded up to 13.00. That input
+    // is 26.00 TTX gross and delivers 25.48, so the fees are 0.52 — not the 1.50
+    // between its gross and the amount asked for.
+    await waitFor(() =>
+      expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe(
+        "13.00",
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Fees").parentElement?.textContent).toContain("0.52 TTX"),
+    );
+  });
+
+  it("keeps Max in view while a newer block is read, but will not spend the old figure", async () => {
+    mockPoolRequests();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PoolSwapPage poolAddress={POOL_ADDRESS} />
+      </QueryClientProvider>,
+    );
+
+    const max = await screen.findByRole("button", { name: /max 12\.34/i });
+    const hint = await screen.findByRole("button", { name: /you can receive up to 24\.68 TTX/i });
+    expect(max.hasAttribute("disabled")).toBe(false);
+    expect(hint.hasAttribute("disabled")).toBe(false);
+
+    // The next block's maximum never settles, so the last one is what shows. The
+    // pin would outlive the refresh, so a balance that fell meanwhile would leave
+    // it above what the swap can carry.
+    chainHead.value = 101n;
+    publicClientCall.mockImplementation(() => new Promise(() => {}));
+    await act(() => queryClient.invalidateQueries({ queryKey: ["pool-swap-tokens"] }));
+
+    await waitFor(() => expect(max.hasAttribute("disabled")).toBe(true));
+    expect(max.textContent).toContain("12.34");
+    expect(hint.hasAttribute("disabled")).toBe(true);
+    fireEvent.click(max);
+    expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe("");
+  });
+
+  it("still lists every registry member when the catalog cannot be read", async () => {
+    // With a registry the catalog only decorates the menu. The chain names every
+    // member, so losing the catalog costs icons, not vouchers — and is no error.
+    poolRegistry.address = REGISTRY_ADDRESS;
+    poolRegistry.entries = [USDC_ADDRESS, TTX_ADDRESS];
+    poolRegistry.metadata = {
+      [USDC_ADDRESS.toLowerCase()]: { symbol: "USDC", name: "USD Coin", decimals: 6 },
+      [TTX_ADDRESS.toLowerCase()]: { symbol: "TTX", name: "Trade Token", decimals: 6 },
+    };
+    mockPoolRequests({ catalogFails: true });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    await within(await screen.findByRole("group", { name: "You send" })).findByText("USDC");
+    expect(
+      within(screen.getByRole("group", { name: "You receive" })).getByText("TTX"),
+    ).toBeTruthy();
+    expect(screen.queryByText(/couldn't check which vouchers this pool takes/i)).toBeNull();
   });
 
   it("says so when you hold nothing this pool takes", async () => {

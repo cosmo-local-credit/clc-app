@@ -178,35 +178,35 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
       ? formatTokenAmountFixed(maxReceiveRaw, toDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
       : null;
   const receiveSymbol = selectedTo?.token.symbol ?? "";
+  const maxFromAmount =
+    maxFromRaw !== null && fromDecimals !== null
+      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2)
+      : undefined;
+  // A lent answer from the previous block may be showing. It is fine to read, but
+  // not to spend: the pin outlives the refresh, so a balance, cap or liquidity
+  // that has since fallen would leave it above what the swap can carry.
+  const maxSettled = !maximum.isPlaceholderData;
   // The receive hint and Max are the same request: spend the pinned raw maximum.
   // Filling the receive side by typing its figure back in would round the send
   // side up by a wei and could overrun the balance.
   const applyMax = () => {
-    if (!maxFromAmount || maxFromRaw === null) return;
+    if (!maxSettled || !maxFromAmount || maxFromRaw === null) return;
     setQuoteMode("exact-input");
     setFromMaxAmountRaw(maxFromRaw);
     setFromAmount(maxFromAmount);
   };
 
-  // What the pool and the protocol keep: the gross quote less the net the holder
-  // receives, both from the contract, in the voucher being received.
-  let feeAmount: string | null = null;
-  if (quote.data && toDecimals !== null) {
-    const grossOut = BigInt(quote.data.grossAmountOutRaw);
-    const netOut = BigInt(quote.data.amountOutRaw);
-    if (grossOut >= netOut) {
-      feeAmount = formatTokenAmountFixed(
-        (grossOut - netOut).toString(),
-        toDecimals,
-        2,
-        i18n.locales?.[0] ?? i18n.locale,
-      );
-    }
-  }
-  const maxFromAmount =
-    maxFromRaw !== null && fromDecimals !== null
-      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2)
-      : undefined;
+  // What the pool and the protocol keep, from the contract, in the voucher being
+  // received.
+  const feeAmount =
+    quote.data && quote.data.feeAmountRaw !== null && toDecimals !== null
+      ? formatTokenAmountFixed(
+          quote.data.feeAmountRaw,
+          toDecimals,
+          2,
+          i18n.locales?.[0] ?? i18n.locale,
+        )
+      : null;
   const localizedMaxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
       ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
@@ -288,6 +288,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           amount={displayedToAmount}
           autoFocus
           onHint={applyMax}
+          actionsDisabled={!maxSettled}
           hint={
             maxReceiveAmount ? (
               <Trans>
@@ -335,6 +336,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           token={selectedFrom?.token}
           amount={displayedFromAmount}
           max={localizedMaxFromAmount}
+          actionsDisabled={!maxSettled}
           invalid={exceedsBalance || exceedsDepositCap}
           onFocus={() => setFocusedField("from")}
           onBlur={() => {
@@ -691,6 +693,7 @@ function SwapField({
   amount,
   autoFocus = false,
   max,
+  actionsDisabled = false,
   invalid = false,
   hint,
   onHint,
@@ -707,6 +710,8 @@ function SwapField({
   amount: string;
   autoFocus?: boolean;
   max?: string;
+  /** Max and the hint stay visible but cannot be tapped, while their figure is a stale one. */
+  actionsDisabled?: boolean;
   invalid?: boolean;
   hint?: ReactNode;
   onHint?: () => void;
@@ -733,6 +738,7 @@ function SwapField({
           <Button
             variant="ghost"
             size="sm"
+            disabled={actionsDisabled}
             onClick={onMax}
             className="font-mono text-[0.6875rem] font-semibold"
           >
@@ -778,8 +784,9 @@ function SwapField({
         onHint ? (
           <button
             type="button"
+            disabled={actionsDisabled}
             onClick={onHint}
-            className="mt-1 min-h-9 text-start text-muted-foreground text-xs underline underline-offset-2"
+            className="mt-1 min-h-9 text-start text-muted-foreground text-xs underline underline-offset-2 disabled:opacity-50"
           >
             {hint}
           </button>

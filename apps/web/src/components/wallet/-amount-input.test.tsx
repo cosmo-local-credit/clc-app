@@ -70,12 +70,12 @@ describe("WalletAmountInput", () => {
     const secondary = screen.getByRole("textbox", { name: "Secondary" });
     const plain = screen.getByRole("textbox", { name: "Plain" });
 
-    expect(primary.className).toContain("h-12");
     expect(primary.className).toContain("text-[1.5rem]");
-    expect(primary.className).not.toContain("h-9");
     expect(secondary.className).toContain("text-[1rem]");
     expect(plain.className).toContain("text-[1.375rem]");
     for (const input of [primary, secondary, plain]) {
+      // Inputs keep the standard height; emphasis is type size alone.
+      expect(input.className).toContain("h-9");
       expect(input.className).toContain("border-input");
       expect(input.className).toContain("bg-card");
       expect(input.className).toContain("rounded-none");

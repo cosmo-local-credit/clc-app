@@ -3,7 +3,7 @@ import {
   poolSwapMaxInputRaw,
 } from "@clc/core/features/pool-swaps/logic";
 import { useQuery } from "@tanstack/react-query";
-import { isAddress, zeroAddress } from "viem";
+import { BaseError, ExecutionRevertedError, isAddress, zeroAddress } from "viem";
 import { call } from "viem/actions";
 import { useClient } from "wagmi";
 
@@ -18,8 +18,9 @@ export type PoolSwapMaximum = {
   /**
    * What the holder receives for spending `maxAmountInRaw`, after the pool fee and
    * the protocol fee — the router's own `quoteExactInput`, not an estimate. Null
-   * where the contract will not quote it (a fee configuration it rejects, or a net
-   * of zero); the send ceiling stands regardless.
+   * where the contract reverts rather than quote it (a fee configuration it
+   * rejects, or a net of zero); the send ceiling stands regardless. A read that
+   * fails for any other reason fails the whole maximum, as the reads before it do.
    */
   maxAmountOutRaw: string | null;
   liquidityInputCeilingRaw: string;
@@ -145,7 +146,15 @@ export function usePoolSwapMaximum(input: {
                 amountInRaw: maxAmountInRaw,
                 blockNumber: input.blockNumber,
               },
-            ).catch(() => null);
+            ).catch((error: unknown) => {
+              if (
+                error instanceof BaseError &&
+                error.walk((cause) => cause instanceof ExecutionRevertedError)
+              ) {
+                return null;
+              }
+              throw error;
+            });
       return {
         maxAmountInRaw,
         maxAmountOutRaw,

@@ -2,6 +2,7 @@ import type { UserPool } from "@clc/api/features/pools/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
+import { zeroAddress } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { getBlockNumberMock, multicallMock, readContractMock } = vi.hoisted(() => ({
@@ -23,6 +24,8 @@ import { usePoolRegistryTokens, usePoolTokenMetadata } from "./use-pool-registry
 const REGISTRY = "0x7777777777777777777777777777777777777777" as const;
 const KAW = "0xAaA0000000000000000000000000000000000001" as const;
 const PLK = "0xccc0000000000000000000000000000000000003" as const;
+/** `0x765DE816…` with its checksum broken by lowercasing `DE`. */
+const MISCHECKSUMMED = "0x765de816845861e75A25fCA122bb6898B8B1282a" as const;
 
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -97,6 +100,29 @@ describe("usePoolRegistryTokens", () => {
     );
 
     expect(result.current.fetchStatus).toBe("idle");
+    expect(readContractMock).not.toHaveBeenCalled();
+  });
+
+  it("is idle for a pool whose registry is the zero address, which SwapPool reads as none", () => {
+    const { result } = renderHook(
+      () => usePoolRegistryTokens(pool({ tokenRegistryAddress: zeroAddress })),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(readContractMock).not.toHaveBeenCalled();
+  });
+
+  it("reports a registry address it cannot use as an error rather than waiting on it", async () => {
+    // A mixed-case address with a wrong checksum passes the API's hex check but
+    // not viem's. Left disabled, the query would stay pending — and the menu with
+    // it — forever.
+    const { result } = renderHook(
+      () => usePoolRegistryTokens(pool({ tokenRegistryAddress: MISCHECKSUMMED })),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
     expect(readContractMock).not.toHaveBeenCalled();
   });
 

@@ -1,6 +1,7 @@
 import type { UserPool } from "@clc/api/features/pools/client";
 
 import {
+  poolTokenRegistryAddress,
   usePoolRegistryTokens,
   usePoolTokenMetadata,
 } from "#/features/pools/hooks/use-pool-registry";
@@ -17,12 +18,15 @@ import { poolVouchersFromRegistry } from "#/features/pools/logic/pool-swap-token
  * not know is described by its own contract.
  *
  * An unreadable registry is an error, never a silent fallback to the catalog: a
- * partial menu reads as "this pool doesn't take my voucher".
+ * partial menu reads as "this pool doesn't take my voucher". A failed catalog is
+ * not, where there is a registry: the chain then describes every member and the
+ * menu is complete, only without icons. Without a registry the catalog is the
+ * whole list, and its failure is the list's.
  */
 export function usePoolSwapVouchers(pool: UserPool | null | undefined) {
   const catalog = usePoolVouchersWithStatus(pool, { all: true });
   const registry = usePoolRegistryTokens(pool);
-  const hasRegistry = !!pool?.tokenRegistryAddress;
+  const hasRegistry = poolTokenRegistryAddress(pool) !== null;
 
   const catalogAddresses = new Set(
     catalog.vouchers.map((voucher) => voucher.tokenAddress.toLowerCase()),
@@ -37,6 +41,11 @@ export function usePoolSwapVouchers(pool: UserPool | null | undefined) {
   const registryPending = hasRegistry && registry.isPending;
   const registryError = hasRegistry && registry.isError;
   const metadataPending = undescribed.length > 0 && metadata.isPending;
+  // The chain names every member the catalog lacks — every member, once the
+  // catalog has failed. Unanswered, those rows cannot be sized, and a menu of
+  // unusable rows is the same gap the registry read exists to close.
+  const metadataError = undescribed.length > 0 && metadata.isError;
+  const catalogError = catalog.isError && !hasRegistry;
 
   return {
     vouchers:
@@ -48,7 +57,7 @@ export function usePoolSwapVouchers(pool: UserPool | null | undefined) {
             metadata: metadata.data,
           }),
     isPending: catalog.isPending || registryPending || metadataPending,
-    isError: catalog.isError || registryError,
+    isError: catalogError || registryError || metadataError,
     refetch: () => {
       void catalog.refetch();
       void registry.refetch();

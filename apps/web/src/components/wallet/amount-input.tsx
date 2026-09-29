@@ -6,12 +6,13 @@ import { cn } from "#/lib/utils";
 /**
  * Where the amount sits in a screen's hierarchy. Left unset it is the standard
  * wallet amount; `primary` is the one figure a screen is about, `secondary` the
- * one that follows from it. The outlined white surface is the same throughout.
+ * one that follows from it. Only the type size changes: the outlined white
+ * surface and the input's standard height are the same throughout.
  */
 type WalletAmountEmphasis = "primary" | "secondary";
 
 const EMPHASIS_CLASS: Record<WalletAmountEmphasis | "default", string> = {
-  primary: "h-12 text-[1.5rem]",
+  primary: "text-[1.5rem]",
   secondary: "text-[1rem]",
   default: "text-[1.375rem]",
 };
