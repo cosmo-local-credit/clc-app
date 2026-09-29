@@ -279,7 +279,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
         <Trans>Swap</Trans>
       </h1>
 
-      <div className="mt-1 space-y-3">
+      <div className="mt-1 space-y-2">
         <SwapField
           id="swap-receive-amount"
           highlighted
@@ -703,7 +703,7 @@ function SwapField({
   return (
     <div role="group" aria-label={label}>
       <div className="mb-1.5 flex min-h-7 items-center justify-between">
-        <label htmlFor={id} className="text-muted-foreground text-xs">
+        <label htmlFor={id} className="font-heading text-base font-semibold">
           {label}
         </label>
         {max !== undefined ? (
@@ -754,11 +754,13 @@ function SwapField({
       </div>
       {hint ? (
         onHint ? (
+          // The tap area reaches past the line of text, so a thumb can hit it without
+          // the hint pushing the next field down.
           <button
             type="button"
             disabled={actionsDisabled}
             onClick={onHint}
-            className="mt-1 min-h-9 text-start text-muted-foreground text-xs underline underline-offset-2 disabled:opacity-50"
+            className="relative mt-1.5 text-start text-muted-foreground text-xs underline underline-offset-2 before:absolute before:inset-x-0 before:-inset-y-2.5 disabled:opacity-50"
           >
             {hint}
           </button>
