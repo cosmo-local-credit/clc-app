@@ -193,7 +193,6 @@ describe("VoucherDeploymentReceiptPage", () => {
       phone: "+254712345678",
       terms: "https://kilifi.example/terms",
       acceptedTerms: true,
-      acceptedPathLicense: true,
     });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
     state.contract = {
@@ -295,7 +294,6 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       phone: "",
       terms: "",
       acceptedTerms: true,
-      acceptedPathLicense: true,
     });
     renderReceipt();
 

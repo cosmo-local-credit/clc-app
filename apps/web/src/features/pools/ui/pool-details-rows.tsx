@@ -6,7 +6,7 @@ import { CopyableInfoValue } from "#/components/ui/copyable-info-value";
 import { InfoRow } from "#/components/ui/info-row";
 import { EllipsizedAddress } from "#/components/wallet";
 
-type PoolDetails = Omit<PoolCreateInput, "location" | "acceptedTerms" | "acceptedSproutLicense"> & {
+type PoolDetails = Omit<PoolCreateInput, "location" | "acceptedTerms"> & {
   location?: PoolCreateInput["location"];
 };
 

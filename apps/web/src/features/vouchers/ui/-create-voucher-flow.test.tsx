@@ -381,7 +381,6 @@ describe("CreateVoucherFlow", () => {
     expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
 
     fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
     await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
     expect(deployMutateAsync.mock.calls[0]?.[0]).toMatchObject({
@@ -416,7 +415,6 @@ describe("CreateVoucherFlow", () => {
     );
     view.rerender(<CreateVoucherFlow step="review" />);
     fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
-    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
 
     await waitFor(() => expect(deployMutateAsync).toHaveBeenCalled());
@@ -448,25 +446,19 @@ describe("CreateVoucherFlow", () => {
     );
   });
 
-  it("requires both linked legal agreements before publishing", () => {
+  it("requires the linked platform terms before publishing", () => {
     renderFlow(<CreateVoucherFlow step="review" />);
 
     const terms = screen.getByRole("checkbox", { name: "Accept Terms and Conditions" });
-    const pathLicense = screen.getByRole("checkbox", { name: "Accept PATH License" });
     const publish = screen.getByRole("button", { name: "Confirm & Publish" });
 
     expect(screen.getByRole("link", { name: "Terms and Conditions" }).getAttribute("href")).toBe(
-      "https://grassecon.org/pages/terms-and-conditions",
+      "https://docs.cosmolocal.credit/governance/terms",
     );
-    expect(screen.getByRole("link", { name: "PATH License" }).getAttribute("href")).toBe(
-      "https://docs.grassecon.org/commons/path/",
-    );
+    expect(screen.queryByText("PATH License")).toBeNull();
     expect((publish as HTMLButtonElement).disabled).toBe(true);
 
     fireEvent.click(terms);
-    expect((publish as HTMLButtonElement).disabled).toBe(true);
-
-    fireEvent.click(pathLicense);
     expect((publish as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -520,8 +512,6 @@ describe("CreateVoucherFlow", () => {
 
     const publish = screen.getByRole("button", { name: "Confirm & Publish" });
     fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
-    expect((publish as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
     expect((publish as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(publish);
 
@@ -773,7 +763,6 @@ describe("CreateVoucherFlow", () => {
         terms: "",
         iconUrl: "",
         acceptedTerms: true,
-        acceptedPathLicense: true,
       });
       renderFlow(<CreateVoucherFlow step="voucher" />);
 
@@ -814,7 +803,6 @@ describe("CreateVoucherFlow", () => {
 
       view.rerender(<CreateVoucherFlow step="review" />);
       fireEvent.click(screen.getByRole("checkbox", { name: "Accept Terms and Conditions" }));
-      fireEvent.click(screen.getByRole("checkbox", { name: "Accept PATH License" }));
       fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
 
       await waitFor(() =>

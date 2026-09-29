@@ -129,11 +129,6 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Accept the terms to publish your voucher",
         message: "Accept the terms to publish your voucher",
       });
-    case "Accept the PATH License to publish your voucher":
-      return i18n._({
-        id: "Accept the PATH License to publish your voucher",
-        message: "Accept the PATH License to publish your voucher",
-      });
     case "Pool name is required":
       return i18n._({
         id: "Pool name is required",
@@ -183,11 +178,6 @@ export function translateValidationError(error: string, i18n: I18n) {
       return i18n._({
         id: "Accept the terms to publish your pool",
         message: "Accept the terms to publish your pool",
-      });
-    case "Accept the SPROUT License to publish your pool":
-      return i18n._({
-        id: "Accept the SPROUT License to publish your pool",
-        message: "Accept the SPROUT License to publish your pool",
       });
     case "Choose rates you set or equal value when the unit has no price feed":
       return i18n._({
