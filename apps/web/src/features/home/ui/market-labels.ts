@@ -22,14 +22,18 @@ export function useMarketKindLabel(kind: MarketVoucherKind): string {
  * centroids are useful camera fallbacks, but would fabricate user proximity.
  */
 export function useMarketDistanceLabel(from: Coordinates | null, to: Coordinates): string | null {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   if (!from) return null;
 
   try {
     const distance = formatDistance(haversineMeters(from, to));
-    return distance.unit === "m"
-      ? t`${distance.value} m`
-      : t`${distance.value.toFixed(distance.fractionDigits)} km`;
+    const localized = {
+      value: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale, {
+        minimumFractionDigits: distance.fractionDigits,
+        maximumFractionDigits: distance.fractionDigits,
+      }).format(distance.value),
+    };
+    return distance.unit === "m" ? t`${localized.value} m` : t`${localized.value} km`;
   } catch {
     return null;
   }

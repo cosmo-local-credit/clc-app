@@ -31,6 +31,7 @@ type CarouselProps = {
   opts?: CarouselOptions;
   plugins?: CarouselPlugin;
   orientation?: "horizontal" | "vertical";
+  direction?: "ltr" | "rtl";
   setApi?: (api: CarouselApi) => void;
 };
 
@@ -53,6 +54,7 @@ function useCarousel() {
 
 export function Carousel({
   orientation = "horizontal",
+  direction = "ltr",
   opts,
   setApi,
   plugins,
@@ -61,7 +63,7 @@ export function Carousel({
   ...props
 }: ComponentProps<"div"> & CarouselProps) {
   const [carouselRef, api] = useEmblaCarousel(
-    { ...opts, axis: orientation === "horizontal" ? "x" : "y" },
+    { ...opts, axis: orientation === "horizontal" ? "x" : "y", direction },
     plugins,
   );
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -80,13 +82,21 @@ export function Carousel({
     (event: KeyboardEvent<HTMLDivElement>) => {
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        scrollPrev();
+        if (direction === "rtl") {
+          scrollNext();
+        } else {
+          scrollPrev();
+        }
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
-        scrollNext();
+        if (direction === "rtl") {
+          scrollPrev();
+        } else {
+          scrollNext();
+        }
       }
     },
-    [scrollPrev, scrollNext],
+    [direction, scrollPrev, scrollNext],
   );
 
   useEffect(() => {
@@ -118,6 +128,7 @@ export function Carousel({
       }}
     >
       <div
+        dir={direction}
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
         role="region"
@@ -137,7 +148,7 @@ export function CarouselContent({ className, ...props }: ComponentProps<"div">) 
   return (
     <div ref={carouselRef} className="overflow-hidden" data-slot="carousel-content">
       <div
-        className={cn("flex", orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col", className)}
+        className={cn("flex", orientation === "horizontal" ? "-ms-4" : "-mt-4 flex-col", className)}
         {...props}
       />
     </div>
@@ -154,7 +165,7 @@ export function CarouselItem({ className, ...props }: ComponentProps<"div">) {
       data-slot="carousel-item"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "pl-4" : "pt-4",
+        orientation === "horizontal" ? "ps-4" : "pt-4",
         className,
       )}
       {...props}
@@ -179,7 +190,7 @@ export function CarouselPrevious({
       className={cn(
         "absolute rounded-full",
         orientation === "horizontal"
-          ? "-left-12 top-1/2 -translate-y-1/2"
+          ? "-start-12 top-1/2 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className,
       )}
@@ -187,7 +198,7 @@ export function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft />
+      <ArrowLeft className="rtl:-scale-x-100" />
       <span className="sr-only">{label}</span>
     </Button>
   );
@@ -210,7 +221,7 @@ export function CarouselNext({
       className={cn(
         "absolute rounded-full",
         orientation === "horizontal"
-          ? "-right-12 top-1/2 -translate-y-1/2"
+          ? "-end-12 top-1/2 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className,
       )}
@@ -218,7 +229,7 @@ export function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight />
+      <ArrowRight className="rtl:-scale-x-100" />
       <span className="sr-only">{label}</span>
     </Button>
   );

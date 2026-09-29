@@ -41,7 +41,7 @@ export function ActionRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-11 w-full items-center gap-3 border-b border-border p-3 text-left last:border-b-0"
+      className="flex min-h-11 w-full items-center gap-3 border-b border-border p-3 text-start last:border-b-0"
     >
       <span className={destructive ? "text-destructive" : "text-muted-foreground"}>{icon}</span>
       <span
@@ -55,7 +55,10 @@ export function ActionRow({
       {value ? (
         <span className="shrink-0 font-mono text-muted-foreground text-xs">{value}</span>
       ) : null}
-      <RiArrowRightSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine
+        className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
     </button>
   );
 }

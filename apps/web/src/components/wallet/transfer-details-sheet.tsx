@@ -147,7 +147,10 @@ function PrivateShareSection({ query }: { query: ReturnType<typeof useSendShare>
         </div>
 
         {share.note ? (
-          <p className="whitespace-pre-wrap break-words border-l-2 border-primary pl-3 text-sm">
+          <p
+            dir="auto"
+            className="whitespace-pre-wrap break-words border-s-2 border-primary ps-3 text-sm"
+          >
             {share.note}
           </p>
         ) : null}
@@ -182,7 +185,7 @@ function PrivateShareSection({ query }: { query: ReturnType<typeof useSendShare>
                 <span className="shrink-0 text-muted-foreground">
                   <Trans>Location</Trans>
                 </span>
-                <span className="text-right font-semibold">
+                <span className="text-end font-semibold">
                   {share.sharedBy.location.locationName}
                 </span>
               </div>

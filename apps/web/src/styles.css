@@ -7,6 +7,13 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Machine-readable LTR fragments and auto-directed user content must not leak
+ * their bidi ordering into surrounding Arabic UI. */
+[dir="ltr"]:not(html),
+[dir="auto"] {
+	unicode-bidi: isolate;
+}
+
 :root {
 	--bottom-nav-offset: 0px;
 	--background: oklch(0.965 0 0);

@@ -41,7 +41,7 @@ export function ReportList({
       {reports.map((report, index) => {
         const extraTags = report.tags.length - VISIBLE_TAGS;
         const extraVouchers = report.vouchers.length - VISIBLE_VOUCHERS;
-        const updated = formatReportDate(report.updatedAt, i18n.locale);
+        const updated = formatReportDate(report.updatedAt, i18n.locales?.[0] ?? i18n.locale);
 
         return (
           <Link
@@ -105,7 +105,7 @@ export function ReportList({
                   </time>
                 ) : null}
                 {report.vouchers.length > 0 ? (
-                  <span className="ml-auto flex h-full min-w-0 items-center justify-end gap-1">
+                  <span className="ms-auto flex h-full min-w-0 items-center justify-end gap-1">
                     {report.vouchers.slice(0, VISIBLE_VOUCHERS).map((voucher) => (
                       <Badge
                         key={voucher.address}

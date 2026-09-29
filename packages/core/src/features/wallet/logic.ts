@@ -108,8 +108,17 @@ export function formatTokenAmountFixed(
   if (!locale) return `${formattedWhole}.${fixedFraction}`;
 
   // Group the whole as a BigInt so a wallet balance can never cross through
-  // Number and lose raw-unit precision. The fraction is already exact text;
-  // only the locale's decimal separator needs to be joined to it.
+  // Number and lose raw-unit precision. Localize the already-exact fraction
+  // one digit at a time so non-Latin numbering systems keep the same guarantee.
+  const fractionFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  });
+  const localizedDigits = Array.from({ length: 10 }, (_, digit) => fractionFormatter.format(digit));
+  const localizedFraction = fixedFraction.replace(
+    /\d/g,
+    (digit) => localizedDigits[digit.charCodeAt(0) - 48] ?? digit,
+  );
   const decimalSeparator =
     new Intl.NumberFormat(locale, {
       maximumFractionDigits: 1,
@@ -119,7 +128,7 @@ export function formatTokenAmountFixed(
       .formatToParts(1.1)
       .find((part) => part.type === "decimal")?.value ?? ".";
 
-  return `${formattedWhole}${decimalSeparator}${fixedFraction}`;
+  return `${formattedWhole}${decimalSeparator}${localizedFraction}`;
 }
 
 export function parseTokenAmount(amount: string, decimals: number): string {

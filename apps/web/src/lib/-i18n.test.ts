@@ -95,6 +95,31 @@ describe("i18n catalogs", () => {
     ).toBe("3 vales");
   });
 
+  it("activates the Arabic catalog with Arabic-Indic formatting and all plural forms", async () => {
+    await activateLocale("ar");
+
+    expect(i18n.locales).toEqual(["ar-u-nu-arab"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("اختر موقعًا");
+    expect(i18n._(msg`Pools`)).toBe("الصناديق");
+    expect(i18n._(msg`Wallet`)).toBe("المحفظة");
+    expect(i18n._(msg`Swap`)).toBe("مبادلة");
+    expect(i18n._(msg`Redeem`)).toBe("استرداد");
+
+    const voucherCount = (count: number) =>
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count },
+      });
+
+    expect(voucherCount(0)).toBe("لا قسائم");
+    expect(voucherCount(1)).toBe("قسيمة واحدة");
+    expect(voucherCount(2)).toBe("قسيمتان");
+    expect(voucherCount(3)).toBe("٣ قسائم");
+    expect(voucherCount(11)).toBe("١١ قسيمة");
+    expect(voucherCount(100)).toBe("١٠٠ قسيمة");
+  });
+
   it("activates the Serbian Ijekavian catalog on demand", async () => {
     await activateLocale("sr");
 

@@ -14,7 +14,7 @@ export function RecentRecipientRow({
   const { t } = useLingui();
 
   return (
-    <button type="button" onClick={onSelect} className="flex w-full items-center p-3 text-left">
+    <button type="button" onClick={onSelect} className="flex w-full items-center p-3 text-start">
       <div className="min-w-0 flex-1">
         <p className="break-all font-medium text-sm">
           {recipient.address && recipient.label.startsWith("0x") ? t`Address` : recipient.label}
@@ -28,7 +28,7 @@ export function RecentRecipientRow({
         )}
       </div>
       <RiArrowRightSLine
-        className="ml-2 size-4 shrink-0 text-muted-foreground"
+        className="rtl:-scale-x-100 ms-2 size-4 shrink-0 text-muted-foreground"
         aria-hidden="true"
       />
     </button>

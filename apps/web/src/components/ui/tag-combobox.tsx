@@ -157,7 +157,7 @@ export function TagCombobox({
             {canAddCustom ? (
               <button
                 type="button"
-                className="mt-1 w-full border border-border bg-card px-3 py-3 text-left text-sm"
+                className="mt-1 w-full border border-border bg-card px-3 py-3 text-start text-sm"
                 onClick={addCustomValue}
               >
                 {t`Add “${customValue}”`}

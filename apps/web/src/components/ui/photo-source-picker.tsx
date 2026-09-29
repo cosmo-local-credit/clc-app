@@ -82,7 +82,7 @@ export function PhotoSourcePicker({
         onClick={() => setOpen(true)}
         className="h-11 bg-card"
       >
-        <FaCamera aria-hidden className="mr-2 size-4" />
+        <FaCamera aria-hidden className="me-2 size-4" />
         {buttonLabel}
       </Button>
 
@@ -102,7 +102,7 @@ export function PhotoSourcePicker({
                 className="h-11 w-full bg-card"
                 onClick={() => openInput(cameraInputRef.current)}
               >
-                <FaCamera aria-hidden className="mr-2 size-4" />
+                <FaCamera aria-hidden className="me-2 size-4" />
                 {t`Take photo`}
               </Button>
               <Button
@@ -111,7 +111,7 @@ export function PhotoSourcePicker({
                 className="h-11 w-full bg-card"
                 onClick={() => openInput(libraryInputRef.current)}
               >
-                <FaImages aria-hidden className="mr-2 size-4" />
+                <FaImages aria-hidden className="me-2 size-4" />
                 {t`Choose from photos`}
               </Button>
               <Button

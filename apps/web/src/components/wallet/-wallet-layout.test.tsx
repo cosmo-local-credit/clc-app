@@ -31,6 +31,13 @@ vi.mock("@tanstack/react-router", () => ({
 import { BackChevron } from "./wallet-layout";
 
 describe("BackChevron", () => {
+  it("marks the semantic back arrow to mirror in RTL", () => {
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(<BackChevron label="Market" to="/" />);
+
+    expect(container.querySelector("svg")?.getAttribute("class")).toContain("rtl:-scale-x-100");
+  });
+
   it("hydrates without changing element type when client history can go back", async () => {
     mocks.back.mockReset();
     mocks.canGoBack = false;

@@ -22,7 +22,7 @@ export function InstallInstructions() {
         </p>
       ) : null}
       {platform === "apple" ? (
-        <ol className="list-decimal space-y-3 pl-5">
+        <ol className="list-decimal space-y-3 ps-5">
           <li>
             <Trans>Open this page in Safari or Chrome and tap Share.</Trans>
           </li>
@@ -34,7 +34,7 @@ export function InstallInstructions() {
           </li>
         </ol>
       ) : platform === "android" ? (
-        <ol className="list-decimal space-y-3 pl-5">
+        <ol className="list-decimal space-y-3 ps-5">
           <li>
             <Trans>Open this page in Chrome.</Trans>
           </li>

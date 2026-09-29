@@ -458,7 +458,7 @@ export function OnboardingWalletStep({
                 onClick={() => void handleLinkPasskey()}
                 disabled={linkBusy}
               >
-                <ProviderIcon className="mr-2 size-4" />
+                <ProviderIcon className="me-2 size-4" />
                 {passkeyRegistered && (linkConnectError || sessionError)
                   ? t`Retry ${providerLabel} connection`
                   : t`Link wallet to ${providerLabel}`}

@@ -95,7 +95,10 @@ export function PoolDetailPage({
             <h1 className="truncate font-heading text-[1.375rem] font-bold leading-tight">
               {pool.name}
             </h1>
-            <p className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words">
+            <p
+              dir="auto"
+              className="mt-1 line-clamp-3 overflow-hidden text-muted-foreground text-xs break-words"
+            >
               {pool.description}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">

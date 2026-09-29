@@ -311,7 +311,7 @@ export function SignInPanel({
               onClick={() => void signInWithPasskey()}
               disabled={isSigningIn}
             >
-              {isSigningIn ? null : <ProviderIcon className="mr-2 size-4" />}
+              {isSigningIn ? null : <ProviderIcon className="me-2 size-4" />}
               {isSigningIn ? t`Connecting...` : t`Continue with ${providerLabel}`}
             </Button>
           ) : null}
@@ -323,7 +323,7 @@ export function SignInPanel({
               setError(null);
             }}
           >
-            <TbScan className="mr-2 size-4" />
+            <TbScan className="me-2 size-4" />
             <Trans>Continue with Paper Wallet</Trans>
           </Button>
 
@@ -348,7 +348,7 @@ export function SignInPanel({
                 setError(null);
               }}
             >
-              <FiKey className="mr-2 size-4" />
+              <FiKey className="me-2 size-4" />
               <Trans>Private key</Trans>
             </Button>
           ) : null}
@@ -385,7 +385,7 @@ export function SignInPanel({
             aria-label={t`Private key`}
           />
           <Button type="submit" disabled={!pkInput.trim()} className="h-11 w-full">
-            <FiKey className="mr-2 size-4" />
+            <FiKey className="me-2 size-4" />
             <Trans>Sign in with private key</Trans>
           </Button>
         </form>

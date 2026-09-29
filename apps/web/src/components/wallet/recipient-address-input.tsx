@@ -142,6 +142,7 @@ export function RecipientAddressInput({
       <div className="flex gap-2">
         <Input
           id={id}
+          dir="ltr"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onBlur={onBlur}
@@ -171,6 +172,7 @@ export function RecipientAddressInput({
           {ensSuggestions.map((suggestion) => (
             <button
               key={suggestion}
+              dir="ltr"
               type="button"
               className="border border-border bg-card px-2.5 py-1.5 font-mono text-xs"
               disabled={disabled}

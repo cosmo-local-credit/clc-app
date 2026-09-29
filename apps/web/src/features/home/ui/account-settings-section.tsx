@@ -31,7 +31,10 @@ export function AccountSettingsSection() {
           <p className="truncate font-medium text-sm">{name || t`Your profile`}</p>
           <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
         </div>
-        <RiArrowRightSLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <RiArrowRightSLine
+          className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
+          aria-hidden="true"
+        />
       </Link>
     </section>
   );

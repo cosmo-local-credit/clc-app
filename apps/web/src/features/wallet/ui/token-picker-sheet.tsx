@@ -52,7 +52,7 @@ export function TokenPickerSheet({
                   type="button"
                   onClick={() => handleSelect(token)}
                   className={cn(
-                    "flex w-full items-center gap-3 px-2 py-3 text-left",
+                    "flex w-full items-center gap-3 px-2 py-3 text-start",
                     index < list.length - 1 && "border-b border-border",
                   )}
                 >
@@ -61,7 +61,7 @@ export function TokenPickerSheet({
                     <p className="font-bold text-sm tracking-tight">{token.symbol}</p>
                     <p className="truncate text-muted-foreground text-xs">{token.name}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-heading font-semibold text-sm tracking-tight">
                       {token.amount}
                     </p>

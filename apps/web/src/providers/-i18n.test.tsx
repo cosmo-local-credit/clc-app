@@ -4,6 +4,15 @@ import Cookies from "js-cookie";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+const localeModuleMocks = vi.hoisted(() => ({
+  activateLocale: vi.fn<(_locale: string) => Promise<void>>(),
+}));
+
+vi.mock("@clc/i18n/index", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@clc/i18n/index")>();
+  return { ...actual, activateLocale: localeModuleMocks.activateLocale };
+});
+
 vi.unmock("#/providers/i18n");
 
 const { AppI18nProvider, useLocale } = await import("#/providers/i18n");
@@ -35,6 +44,12 @@ function LocaleProbe() {
       <output aria-label="locale">{locale}</output>
       <output aria-label="loading">{loading ? "loading" : "idle"}</output>
       <output aria-label="error">{error ?? "none"}</output>
+      <button type="button" onClick={() => setLocale("en")}>
+        English
+      </button>
+      <button type="button" onClick={() => setLocale("ar")}>
+        العربية
+      </button>
       <button type="button" onClick={() => setLocale("sw")}>
         Kiswahili
       </button>
@@ -60,6 +75,8 @@ function renderProvider(children: ReactNode = <LocaleProbe />) {
 
 describe("AppI18nProvider", () => {
   beforeEach(() => {
+    localeModuleMocks.activateLocale.mockReset();
+    localeModuleMocks.activateLocale.mockResolvedValue(undefined);
     Object.defineProperty(window, "localStorage", {
       value: originalLocalStorage,
       configurable: true,
@@ -67,6 +84,7 @@ describe("AppI18nProvider", () => {
     localStorage.clear();
     Cookies.remove("clc_locale", { path: "/" });
     document.documentElement.lang = DEFAULT_LOCALE;
+    document.documentElement.dir = "ltr";
   });
 
   afterEach(() => {
@@ -166,6 +184,19 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects Arabic from a region-tagged device language and applies RTL", async () => {
+    setNavigatorLanguages(["ar-EG", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("ar");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("ar");
+      expect(document.documentElement.lang).toBe("ar");
+      expect(document.documentElement.dir).toBe("rtl");
+    });
+  });
+
   it("falls back to the default locale when the device language is unsupported", () => {
     setNavigatorLanguages(["de-DE"]);
 
@@ -244,6 +275,49 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("pt");
     expect(localStorage.getItem("clc.locale")).toBe("pt");
     expect(Cookies.get("clc_locale")).toBe("pt");
+  });
+
+  it("persists Arabic and restores LTR when English is selected", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "العربية" }));
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("locale").textContent).toBe("ar");
+      expect(document.documentElement.lang).toBe("ar");
+      expect(document.documentElement.dir).toBe("rtl");
+      expect(localStorage.getItem("clc.locale")).toBe("ar");
+      expect(Cookies.get("clc_locale")).toBe("ar");
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "English" }));
+    });
+    await waitFor(() => {
+      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("keeps the previous language and direction when Arabic activation fails", async () => {
+    renderProvider();
+    await waitFor(() => expect(screen.getByLabelText("loading").textContent).toBe("idle"));
+
+    localeModuleMocks.activateLocale.mockRejectedValueOnce(new Error("catalog unavailable"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "العربية" }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("locale").textContent).toBe("en");
+      expect(screen.getByLabelText("error").textContent).toBe(
+        "Unable to load language. Reverted to English.",
+      );
+      expect(document.documentElement.lang).toBe("en");
+      expect(document.documentElement.dir).toBe("ltr");
+      expect(localStorage.getItem("clc.locale")).toBe("en");
+    });
   });
 
   it("persists a Serbian locale selection", async () => {

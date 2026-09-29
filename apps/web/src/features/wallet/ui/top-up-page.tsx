@@ -125,7 +125,7 @@ export function TopUpPage() {
           <button
             type="button"
             onClick={() => setAddStablesOpen(true)}
-            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left active:bg-muted"
+            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-start active:bg-muted"
           >
             <PretiumLogo />
             <div className="min-w-0 flex-1">
@@ -137,7 +137,7 @@ export function TopUpPage() {
               </p>
             </div>
             <RiArrowRightSLine
-              className="size-4 shrink-0 text-muted-foreground"
+              className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
           </button>
@@ -153,7 +153,7 @@ export function TopUpPage() {
           <button
             type="button"
             onClick={() => setWithdrawOpen(true)}
-            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-left active:bg-muted"
+            className="flex w-full items-center gap-3 border border-border bg-card p-4 text-start active:bg-muted"
           >
             <PretiumLogo />
             <div className="min-w-0 flex-1">
@@ -165,7 +165,7 @@ export function TopUpPage() {
               </p>
             </div>
             <RiArrowRightSLine
-              className="size-4 shrink-0 text-muted-foreground"
+              className="rtl:-scale-x-100 size-4 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
           </button>
@@ -253,7 +253,7 @@ function AddStablesSheet({
   hasValidAmount: boolean;
   canContinue: boolean;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const [amountFocused, setAmountFocused] = useState(false);
   const ratesQuery = usePretiumRates(open);
   const triggerOnramp = useTriggerPretiumOnramp();
@@ -329,6 +329,7 @@ function AddStablesSheet({
                 <div className="relative flex items-baseline gap-1.5">
                   <input
                     id="topup-amount"
+                    dir="ltr"
                     type="text"
                     inputMode="decimal"
                     value={amount}
@@ -340,7 +341,7 @@ function AddStablesSheet({
                     disabled={entryDisabled}
                     aria-invalid={amount !== "" && !hasValidAmount}
                     className={cn(
-                      "bg-transparent text-right font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
+                      "bg-transparent text-end font-mono text-sm font-semibold caret-primary outline-none placeholder:text-muted-foreground [field-sizing:content]",
                       amount !== "" && !hasValidAmount && "text-destructive",
                       entryDisabled && "opacity-50",
                     )}
@@ -371,7 +372,7 @@ function AddStablesSheet({
                   {ratesQuery.isPending ? (
                     <span className="text-muted-foreground">…</span>
                   ) : approxUsdt !== null ? (
-                    `≈ ${approxUsdt.toLocaleString(undefined, {
+                    `≈ ${approxUsdt.toLocaleString(i18n.locales?.[0] ?? i18n.locale, {
                       maximumFractionDigits: 2,
                     })} ${ONRAMP_ASSET_LABEL}`
                   ) : (
@@ -436,6 +437,8 @@ function PretiumHistory({
   onSelectOnramp: (transaction: PretiumCashTransaction) => void;
   onSelectOfframp: (transaction: PretiumCashTransaction) => void;
 }) {
+  const { i18n } = useLingui();
+
   return (
     <section aria-labelledby="pretium-history-title" className="space-y-2">
       <h2 id="pretium-history-title" className="font-heading font-semibold text-base">
@@ -486,7 +489,7 @@ function PretiumHistory({
                 onSelectOfframp(transaction);
               }}
               className={cn(
-                "flex w-full items-center gap-2.5 p-3 text-left enabled:active:bg-muted",
+                "flex w-full items-center gap-2.5 p-3 text-start enabled:active:bg-muted",
                 index < list.length - 1 && "border-b border-border",
               )}
             >
@@ -506,7 +509,7 @@ function PretiumHistory({
                   {incoming ? <Trans>Onramp</Trans> : <Trans>Offramp</Trans>}
                 </p>
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
-                  {formatCashDate(transaction.createdAt)}
+                  {formatCashDate(transaction.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                 </p>
               </div>
               <span className="shrink-0 font-mono text-xs font-semibold">
@@ -529,7 +532,7 @@ function OnrampDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const isComplete = onramp ? isCompletePretiumStatus(onramp.status) : false;
   const hasTxHash = !!onramp?.txHash;
   const explorerUrl = hasTxHash ? explorerTxUrl(CHAIN_INFO, onramp?.txHash ?? "") : "#";
@@ -586,7 +589,7 @@ function OnrampDetailsSheet({
                     <Trans>Date</Trans>
                   </span>
                   <time className="font-mono text-xs font-semibold" dateTime={onramp.createdAt}>
-                    {formatCashDate(onramp.createdAt)}
+                    {formatCashDate(onramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
@@ -639,7 +642,7 @@ function OfframpDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const isComplete = offramp ? isCompletePretiumStatus(offramp.status) : false;
   const hasTxHash = !!offramp?.txHash;
   const hasMpesaConfirmation = !!offramp?.mpesaConfirmation;
@@ -723,7 +726,7 @@ function OfframpDetailsSheet({
                     <Trans>Date</Trans>
                   </span>
                   <time className="font-mono text-xs font-semibold" dateTime={offramp.createdAt}>
-                    {formatCashDate(offramp.createdAt)}
+                    {formatCashDate(offramp.createdAt, i18n.locales?.[0] ?? i18n.locale)}
                   </time>
                 </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
@@ -779,7 +782,7 @@ function CopyableIdentifier({
   return (
     <button
       type="button"
-      className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+      className="flex min-w-0 items-center gap-1.5 bg-card text-end"
       aria-label={label}
       title={value}
       onClick={() => onCopy(value)}
@@ -833,9 +836,9 @@ function formatHistoryKes(transaction: PretiumCashTransaction): string {
   return transaction.amountKes.split(".")[0] || transaction.amountKes;
 }
 
-function formatCashDate(date: string): string {
+function formatCashDate(date: string, locale: string): string {
   if (!date) return "—";
   const value = new Date(date);
   if (Number.isNaN(value.getTime())) return "—";
-  return value.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return value.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }

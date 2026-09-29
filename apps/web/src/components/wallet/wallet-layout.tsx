@@ -25,12 +25,12 @@ export function BackChevron({
   const router = useRouter();
   const canGoBack = useCanGoBack();
   const classes = cn(
-    "-ml-1.5 flex h-11 items-center gap-1.5 px-1.5 font-medium text-muted-foreground text-sm",
+    "-ms-1.5 flex h-11 items-center gap-1.5 px-1.5 font-medium text-muted-foreground text-sm",
     className,
   );
   const content = (
     <>
-      <RiArrowLeftLine className="size-3.5" aria-hidden="true" />
+      <RiArrowLeftLine className="rtl:-scale-x-100 size-3.5" aria-hidden="true" />
       {label}
     </>
   );
