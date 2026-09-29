@@ -50,7 +50,7 @@ describe("LanguageSelector", () => {
     setLocale.mockClear();
   });
 
-  it("shows English, Spanish, French, Serbian, and Kiswahili locale choices", () => {
+  it("shows English, Spanish, French, Portuguese, Serbian, and Kiswahili locale choices", () => {
     renderSelector();
     const select = screen.getByRole("combobox", {
       name: /language/i,
@@ -59,6 +59,7 @@ describe("LanguageSelector", () => {
     expect(screen.getByRole("option", { name: "English" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Español" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Français" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Português" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Српски" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Kiswahili" })).toBeTruthy();
   });
@@ -77,6 +78,14 @@ describe("LanguageSelector", () => {
       target: { value: "fr" },
     });
     expect(setLocale).toHaveBeenCalledWith("fr");
+  });
+
+  it("requests a locale change when the user selects Portuguese", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "pt" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("pt");
   });
 
   it("requests a locale change when the user selects Kiswahili", () => {

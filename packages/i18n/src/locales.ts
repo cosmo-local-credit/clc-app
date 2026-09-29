@@ -1,6 +1,6 @@
 export const DEFAULT_LOCALE = "en";
 
-const SUPPORTED_LOCALES = ["en", "es", "fr", "sr", "sw"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "fr", "pt", "sr", "sw"] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -14,6 +14,7 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
   { code: "en", label: "English", nativeLabel: "English" },
   { code: "es", label: "Spanish", nativeLabel: "Español" },
   { code: "fr", label: "French", nativeLabel: "Français" },
+  { code: "pt", label: "Portuguese", nativeLabel: "Português" },
   { code: "sr", label: "Serbian", nativeLabel: "Српски" },
   { code: "sw", label: "Kiswahili", nativeLabel: "Kiswahili" },
 ];
