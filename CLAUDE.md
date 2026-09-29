@@ -282,15 +282,15 @@ environment read as one product.
 
 What differs from `apps/web`:
 
-|                        | `apps/web`                     | `apps/admin`                                              |
-| ---------------------- | ------------------------------ | --------------------------------------------------------- |
-| Viewport               | 360–430px only                 | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
-| Breakpoint overrides   | Banned                         | Required — tables and metric grids reflow                 |
-| `<Card>` as page shell | Banned                         | Still banned; screens are shell + sections                |
-| Navigation             | Bottom nav                     | Collapsible sidebar + `⌘K` palette                        |
-| Dark mode              | Zustand theme store            | Same pattern, key `clc.admin.theme`                       |
-| i18n                   | lingui, en + es + fr + sr + sw | None — English only, no `<Trans>`                         |
-| Service worker         | Serwist                        | Never. Not a PWA                                          |
+|                        | `apps/web`                          | `apps/admin`                                              |
+| ---------------------- | ----------------------------------- | --------------------------------------------------------- |
+| Viewport               | 360–430px only                      | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
+| Breakpoint overrides   | Banned                              | Required — tables and metric grids reflow                 |
+| `<Card>` as page shell | Banned                              | Still banned; screens are shell + sections                |
+| Navigation             | Bottom nav                          | Collapsible sidebar + `⌘K` palette                        |
+| Dark mode              | Zustand theme store                 | Same pattern, key `clc.admin.theme`                       |
+| i18n                   | lingui, en + es + fr + pt + sr + sw | None — English only, no `<Trans>`                         |
+| Service worker         | Serwist                             | Never. Not a PWA                                          |
 
 Shared with `apps/web`: square corners, flat surfaces (no
 `shadow-lg`/`backdrop-blur`), `bg-card` for anything sitting on `bg-background`,
@@ -645,7 +645,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{en,es,fr,sr,sw}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{en,es,fr,pt,sr,sw}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).

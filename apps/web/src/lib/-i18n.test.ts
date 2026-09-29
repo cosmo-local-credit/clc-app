@@ -69,6 +69,32 @@ describe("i18n catalogs", () => {
     ).toBe("3 vales");
   });
 
+  it("activates the Portuguese catalog on demand", async () => {
+    await activateLocale("pt");
+
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Escolha uma localização",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Fundos");
+    expect(i18n._(msg`Wallet`)).toBe("Carteira");
+    expect(i18n._(msg`Swap`)).toBe("Trocar");
+    expect(maxAmount("55,00")).toBe("Máx. 55,00");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 1 },
+      }),
+    ).toBe("1 vale");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 3 },
+      }),
+    ).toBe("3 vales");
+  });
+
   it("activates the Serbian Ijekavian catalog on demand", async () => {
     await activateLocale("sr");
 

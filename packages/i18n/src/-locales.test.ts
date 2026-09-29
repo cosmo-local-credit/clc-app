@@ -38,8 +38,21 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["de-DE", "fr-CA", "en-US"])).toBe("fr");
   });
 
+  it("matches generic and region-tagged Portuguese locales", () => {
+    expect(matchSupportedLocale(["pt"])).toBe("pt");
+    expect(matchSupportedLocale(["pt-BR"])).toBe("pt");
+    expect(matchSupportedLocale(["pt-PT"])).toBe("pt");
+    expect(matchSupportedLocale(["pt-AO"])).toBe("pt");
+    expect(matchSupportedLocale(["pt-MZ"])).toBe("pt");
+    expect(matchSupportedLocale(["pt_CV"])).toBe("pt");
+  });
+
+  it("honors Portuguese in the preferred-language order", () => {
+    expect(matchSupportedLocale(["de-DE", "pt-AO", "es-ES"])).toBe("pt");
+  });
+
   it("falls back to the default locale when nothing matches", () => {
-    expect(matchSupportedLocale(["de", "pt"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["de", "it"])).toBe(DEFAULT_LOCALE);
   });
 
   it("falls back to the default locale for an empty list", () => {
@@ -49,6 +62,7 @@ describe("matchSupportedLocale", () => {
   it("is case-insensitive", () => {
     expect(matchSupportedLocale(["SW"])).toBe("sw");
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
+    expect(matchSupportedLocale(["PT-br"])).toBe("pt");
   });
 
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
