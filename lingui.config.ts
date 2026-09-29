@@ -2,7 +2,7 @@ import { defineConfig } from "@lingui/cli";
 
 export default defineConfig({
   sourceLocale: "en",
-  locales: ["en", "fr", "sr", "sw"],
+  locales: ["en", "es", "fr", "sr", "sw"],
   catalogs: [
     {
       // Anchor to <rootDir> (absolute) so the @lingui/vite-plugin catalog loader
