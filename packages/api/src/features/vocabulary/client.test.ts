@@ -59,20 +59,27 @@ describe("vocabulary client", () => {
     await expect(api.getOfferingUnits()).resolves.toEqual(["kg", "Produce Crate"]);
   });
 
-  it("normalizes custom vocabulary usage counts", async () => {
+  it("normalizes vocabulary usage counts and keeps built-ins apart", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
         response({
-          tags: [{ value: "Urban Farming", vouchers: 2, posts: 1 }],
-          units: [{ value: "Produce Crate", offerings: 3 }],
+          tags: [
+            { value: "Urban Farming", isCustom: true, vouchers: 2, posts: 1 },
+            { value: "Agriculture", isCustom: false, pools: 1 },
+          ],
+          units: [
+            { value: "Produce Crate", isCustom: true, offerings: 3 },
+            { value: "kg", isCustom: false },
+          ],
         }),
       ),
     );
-    await expect(api.getCustomVocabulary()).resolves.toEqual({
+    await expect(api.getVocabulary()).resolves.toEqual({
       tags: [
         {
           value: "Urban Farming",
+          isCustom: true,
           deployedTokens: 0,
           deployedPools: 0,
           vouchers: 2,
@@ -81,9 +88,34 @@ describe("vocabulary client", () => {
           offerings: 0,
           total: 3,
         },
+        {
+          value: "Agriculture",
+          isCustom: false,
+          deployedTokens: 0,
+          deployedPools: 0,
+          vouchers: 0,
+          pools: 1,
+          posts: 0,
+          offerings: 0,
+          total: 1,
+        },
       ],
-      units: [{ value: "Produce Crate", offerings: 3, total: 3 }],
+      units: [
+        { value: "Produce Crate", isCustom: true, offerings: 3, total: 3 },
+        { value: "kg", isCustom: false, offerings: 0, total: 0 },
+      ],
     });
+  });
+
+  // Only an explicit false is a built-in; a missing flag must never make a
+  // custom value undeletable.
+  it("treats a row without the flag as custom", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(response({ tags: [{ value: "Urban Farming" }], units: [] })),
+    );
+    const { tags } = await api.getVocabulary();
+    expect(tags[0]?.isCustom).toBe(true);
   });
 
   it("sends destructive cleanup as a JSON DELETE", async () => {

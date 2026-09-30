@@ -4,7 +4,7 @@ import type { VocabularyClient } from "./client";
 export const vocabularyKeys = {
   all: ["clc", "vocabulary"] as const,
   offeringUnits: () => ["clc", "vocabulary", "offering-units"] as const,
-  custom: () => ["clc", "vocabulary", "custom"] as const,
+  admin: () => ["clc", "vocabulary", "admin"] as const,
 } as const;
 
 export function offeringUnitsQueryOptions(vocabulary: VocabularyClient) {
@@ -15,9 +15,9 @@ export function offeringUnitsQueryOptions(vocabulary: VocabularyClient) {
   });
 }
 
-export function customVocabularyQueryOptions(vocabulary: VocabularyClient) {
+export function adminVocabularyQueryOptions(vocabulary: VocabularyClient) {
   return queryOptions({
-    queryKey: vocabularyKeys.custom(),
-    queryFn: ({ signal }) => vocabulary.getCustomVocabulary(signal),
+    queryKey: vocabularyKeys.admin(),
+    queryFn: ({ signal }) => vocabulary.getVocabulary(signal),
   });
 }
