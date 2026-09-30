@@ -1,13 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  RiExternalLinkLine,
-  RiFileTextLine,
-  RiInformationLine,
-  RiMapPin2Line,
-  RiMenuLine,
-} from "react-icons/ri";
+import { RiExternalLinkLine, RiFileTextLine, RiInformationLine, RiMenuLine } from "react-icons/ri";
 
 import { LanguageSelector } from "#/components/language-selector";
 import { ThemeSelector } from "#/components/theme-selector";
@@ -20,21 +13,11 @@ import {
   PopoverTrigger,
 } from "#/components/ui/popover";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
-import { cn } from "#/lib/utils";
-
-export type SavedLocationAction =
-  | { status: "available"; onSelect: () => void }
-  | { status: "loading" | "missing" | "error" };
-
-export type AppMenuProps = {
-  savedLocation?: SavedLocationAction;
-  className?: string;
-};
 
 const actionClassName =
   "flex min-h-11 w-full items-center gap-3 px-3 py-2 text-start text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring";
 
-export function AppMenu({ savedLocation, className }: AppMenuProps) {
+export function AppMenu({ className }: { className?: string }) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
 
@@ -95,13 +78,6 @@ export function AppMenu({ savedLocation, className }: AppMenuProps) {
             <LanguageSelector />
           </div>
 
-          {savedLocation ? (
-            <>
-              <div className="my-1 h-px bg-border" />
-              <SavedLocationRow action={savedLocation} onClose={close} />
-            </>
-          ) : null}
-
           <div className="my-1 h-px bg-border" />
 
           <a
@@ -124,49 +100,5 @@ export function AppMenu({ savedLocation, className }: AppMenuProps) {
         </PopoverContent>
       </PopoverRoot>
     </div>
-  );
-}
-
-function SavedLocationRow({
-  action,
-  onClose,
-}: {
-  action: SavedLocationAction;
-  onClose: () => void;
-}) {
-  if (action.status === "available") {
-    return (
-      <button
-        type="button"
-        className={actionClassName}
-        onClick={() => {
-          action.onSelect();
-          onClose();
-        }}
-      >
-        <RiMapPin2Line className="size-5 shrink-0" aria-hidden="true" />
-        <Trans>Go to saved location</Trans>
-      </button>
-    );
-  }
-
-  if (action.status === "missing") {
-    return (
-      <Link to="/settings/profile" className={actionClassName} onClick={onClose}>
-        <RiMapPin2Line className="size-5 shrink-0" aria-hidden="true" />
-        <Trans>Set saved location</Trans>
-      </Link>
-    );
-  }
-
-  return (
-    <button type="button" className={cn(actionClassName, "cursor-not-allowed opacity-50")} disabled>
-      <RiMapPin2Line className="size-5 shrink-0" aria-hidden="true" />
-      {action.status === "error" ? (
-        <Trans>Saved location unavailable</Trans>
-      ) : (
-        <Trans>Go to saved location</Trans>
-      )}
-    </button>
   );
 }

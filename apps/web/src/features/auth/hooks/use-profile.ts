@@ -11,13 +11,16 @@ import { authClient } from "#/lib/api/auth";
  * added here are web-only. `enabled` because a profile cannot be requested before a
  * wallet is connected, and `retry: false` because the failure that matters is a 404
  * for an address with no profile yet — replaying it just delays the signup prompt.
+ *
+ * A caller that renders for guests too passes `enabled: false` until there is a
+ * session: a connected wallet alone is not one.
  */
-export function useAuthProfile() {
+export function useAuthProfile({ enabled = true }: { enabled?: boolean } = {}) {
   const { address } = useConnection();
 
   return useQuery({
     ...profileQueryOptions(authClient, address),
-    enabled: !!address,
+    enabled: enabled && !!address,
     retry: false,
   });
 }

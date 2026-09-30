@@ -79,14 +79,7 @@ const {
       refetch: vi.fn(),
     },
   },
-  lastAppMenuProps: {
-    current: null as {
-      className?: string;
-      savedLocation?:
-        | { status: "available"; onSelect: () => void }
-        | { status: "loading" | "missing" | "error" };
-    } | null,
-  },
+  lastAppMenuProps: { current: null as Record<string, unknown> | null },
   profileRequests: { current: 0 },
   profileResult: {
     current: {
@@ -108,42 +101,32 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  CAMERA_RANK: {
+    explicit: 0,
+    savedProfile: 1,
+    liveGps: 2,
+    persistedGps: 3,
+    ipCity: 4,
+    countryDefault: 5,
+  },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
-  useAuthProfile: () => {
-    profileRequests.current += 1;
-    return profileResult.current;
+  // Disabled calls are what a guest makes: counted, they would mean a request.
+  useAuthProfile: ({ enabled = true }: { enabled?: boolean } = {}) => {
+    if (enabled) profileRequests.current += 1;
+    return enabled ? profileResult.current : { data: undefined, isPending: true, isError: false };
   },
 }));
 
 vi.mock("#/components/app-menu", () => ({
-  AppMenu: (props: {
-    className?: string;
-    savedLocation?:
-      | { status: "available"; onSelect: () => void }
-      | { status: "loading" | "missing" | "error" };
-  }) => {
+  AppMenu: (props: { className?: string }) => {
     lastAppMenuProps.current = props;
     return (
       <div data-testid="app-menu" className={props.className}>
         <button type="button">Open menu</button>
-        {props.savedLocation?.status === "available" ? (
-          <button type="button" onClick={props.savedLocation.onSelect}>
-            Go to saved location
-          </button>
-        ) : null}
-        {props.savedLocation?.status === "missing" ? (
-          <a href="/settings/profile">Set saved location</a>
-        ) : null}
-        {props.savedLocation?.status === "loading" || props.savedLocation?.status === "error" ? (
-          <button type="button" disabled>
-            Saved location unavailable
-          </button>
-        ) : null}
       </div>
     );
   },
@@ -333,80 +316,87 @@ describe("MarketPage guest entry", () => {
     ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
   });
 
-  it("does not request a private profile or show a location action for guests", () => {
+  it("does not request a private profile for guests, or hand the menu a location action", () => {
     renderPage();
 
     expect(profileRequests.current).toBe(0);
-    expect(lastAppMenuProps.current?.savedLocation).toBeUndefined();
+    expect(lastAppMenuProps.current).toEqual({ className: expect.any(String) });
   });
 });
 
 describe("MarketPage saved profile location", () => {
-  it("moves to valid profile coordinates with an explicit camera without changing the live marker", () => {
-    const userLocation = { lat: -1.2, lng: 36.7 };
-    cameraResult.current = { ...cameraResult.current, userLocation };
-    profileResult.current = {
-      data: { geoLat: -4.0435, geoLng: 39.6682 },
-      isPending: false,
-      isError: false,
+  const SAVED = { geoLat: -4.0435, geoLng: 39.6682 };
+  const liveFix = { lat: -1.2, lng: 36.7 };
+
+  it("opens on the saved location, ranked above a live fix, without moving the live marker", () => {
+    cameraResult.current = {
+      ...cameraResult.current,
+      camera: { ...liveFix, zoom: 14, rank: 2 },
+      userLocation: liveFix,
     };
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Go to saved location" }));
-
-    expect(lastMapProps.current?.camera).toEqual({
-      lat: -4.0435,
-      lng: 39.6682,
-      zoom: 14,
-      rank: 0,
-    });
-    expect(lastMapProps.current?.userLocation).toEqual(userLocation);
-    expect(mockRequestLocation).not.toHaveBeenCalled();
+    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 1 });
+    expect(lastMapProps.current?.userLocation).toEqual(liveFix);
   });
 
-  it("creates a fresh explicit camera on every saved-location press", () => {
-    profileResult.current = {
-      data: { geoLat: -4.0435, geoLng: 39.6682 },
-      isPending: false,
-      isError: false,
-    };
+  it("stays on the saved location while the location button's request is pending", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
-
-    const button = screen.getByRole("button", { name: "Go to saved location" });
-    fireEvent.click(button);
-    const firstCamera = lastMapProps.current?.camera;
-    fireEvent.click(button);
-
-    expect(lastMapProps.current?.camera).toEqual(firstCamera);
-    expect(lastMapProps.current?.camera).not.toBe(firstCamera);
-  });
-
-  it("returns to the existing current-location flow from a profile camera", () => {
-    profileResult.current = {
-      data: { geoLat: -4.0435, geoLng: 39.6682 },
-      isPending: false,
-      isError: false,
-    };
-    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
-    fireEvent.click(screen.getByRole("button", { name: "Go to saved location" }));
 
     fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
 
     expect(mockRequestLocation).toHaveBeenCalledTimes(1);
-    expect(lastMapProps.current?.camera).toBeNull();
+    expect(lastMapProps.current?.camera).toMatchObject({ lat: -4.0435, lng: 39.6682 });
+  });
+
+  it("moves to the live location once the location button yields an explicit fix", () => {
+    const explicit: MarketCamera = { ...liveFix, zoom: 14, rank: 0 };
+    cameraResult.current = { ...cameraResult.current, camera: explicit, userLocation: liveFix };
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toBe(explicit);
+  });
+
+  it("keeps one camera identity across renders, so the map does not re-apply it", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    const { rerender } = renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+    const first = lastMapProps.current?.camera;
+
+    rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <MarketPage isAuthenticated locationOwner="0xabc" />
+      </QueryClientProvider>,
+    );
+
+    expect(lastMapProps.current?.camera).toBe(first);
   });
 
   it.each([
-    [{ data: undefined, isPending: true, isError: false }, "loading"],
-    [{ data: undefined, isPending: false, isError: true }, "error"],
-    [{ data: {}, isPending: false, isError: false }, "missing"],
-    [{ data: { geoLat: 91, geoLng: 10 }, isPending: false, isError: false }, "missing"],
-    [{ data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false }, "missing"],
-  ] as const)("maps profile state to the %s location action", (result, status) => {
+    ["pending", { data: undefined, isPending: true, isError: false }],
+    ["failed", { data: undefined, isPending: false, isError: true }],
+    ["missing", { data: {}, isPending: false, isError: false }],
+    ["out of range", { data: { geoLat: 91, geoLng: 10 }, isPending: false, isError: false }],
+    [
+      "not a number",
+      { data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false },
+    ],
+  ] as const)("falls back to the automatic camera when the saved location is %s", (_, result) => {
+    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 2 };
+    cameraResult.current = { ...cameraResult.current, camera: automatic };
     profileResult.current = result;
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
-    expect(lastAppMenuProps.current?.savedLocation?.status).toBe(status);
+    expect(lastMapProps.current?.camera).toBe(automatic);
+  });
+
+  it("ignores a profile location for a guest", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage();
+
+    expect(lastMapProps.current?.camera).toBeNull();
   });
 });
 

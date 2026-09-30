@@ -4,20 +4,24 @@ import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
-import { AppMenu, type SavedLocationAction } from "#/components/app-menu";
+import { AppMenu } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { REAL_FIX_ZOOM, useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import {
+  CAMERA_RANK,
+  REAL_FIX_ZOOM,
+  useMarketCamera,
+} from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
-import { EXPLICIT_CAMERA_RANK, type MarketCamera, type MarketViewport } from "./market-map";
+import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
@@ -39,15 +43,26 @@ export function MarketPage({
     locationStatus,
     requestLocation,
   } = useMarketCamera(locationOwner);
-  const [savedCamera, setSavedCamera] = useState<{
-    scope: string;
-    camera: MarketCamera;
-  } | null>(null);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
+  // The map opens on the profile's saved location. It outranks every automatic
+  // source, so only the location button's explicit fix takes the map off it.
+  const profileQuery = useAuthProfile({ enabled: isAuthenticated });
+  const saved = isAuthenticated ? profileCoordinates(profileQuery.data) : null;
+  const savedLat = saved?.lat;
+  const savedLng = saved?.lng;
+  const savedCamera = useMemo<MarketCamera | null>(
+    () =>
+      savedLat !== undefined && savedLng !== undefined
+        ? { lat: savedLat, lng: savedLng, zoom: REAL_FIX_ZOOM, rank: CAMERA_RANK.savedProfile }
+        : null,
+    [savedLat, savedLng],
+  );
   const camera =
-    isAuthenticated && savedCamera?.scope === locationOwner ? savedCamera.camera : automaticCamera;
+    automaticCamera?.rank === CAMERA_RANK.explicit
+      ? automaticCamera
+      : (savedCamera ?? automaticCamera);
 
   const filter = useMarketFilter(useStorageOwner());
   const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
@@ -91,25 +106,6 @@ export function MarketPage({
     setViewport(settled);
   }, []);
 
-  const handleGoToSavedLocation = useCallback(
-    (coordinates: Coordinates) => {
-      setSavedCamera({
-        scope: locationOwner,
-        camera: {
-          ...coordinates,
-          zoom: REAL_FIX_ZOOM,
-          rank: EXPLICIT_CAMERA_RANK,
-        },
-      });
-    },
-    [locationOwner],
-  );
-
-  const handleRequestLocation = useCallback(() => {
-    setSavedCamera(null);
-    requestLocation();
-  }, [requestLocation]);
-
   const notice = useMarketFilterNotice(filter, error, retry);
 
   const isEmpty =
@@ -135,10 +131,7 @@ export function MarketPage({
         />
       </Suspense>
 
-      <MarketAppMenu
-        isAuthenticated={isAuthenticated}
-        onGoToSavedLocation={handleGoToSavedLocation}
-      />
+      <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
 
       {selectedVoucher ? <MarketPreview voucher={selectedVoucher} realFix={realFix} /> : null}
 
@@ -202,7 +195,7 @@ export function MarketPage({
               locationStatus === "denied" ||
               locationStatus === "unavailable"
             }
-            onClick={handleRequestLocation}
+            onClick={requestLocation}
           >
             <RiFocus3Line className="size-5" aria-hidden="true" />
           </Button>
@@ -269,50 +262,6 @@ function MarketPreview({
         aria-hidden="true"
       />
     </Link>
-  );
-}
-
-function MarketAppMenu({
-  isAuthenticated,
-  onGoToSavedLocation,
-}: {
-  isAuthenticated: boolean;
-  onGoToSavedLocation: (coordinates: Coordinates) => void;
-}) {
-  if (!isAuthenticated) {
-    return <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />;
-  }
-
-  return <AuthenticatedMarketAppMenu onGoToSavedLocation={onGoToSavedLocation} />;
-}
-
-function AuthenticatedMarketAppMenu({
-  onGoToSavedLocation,
-}: {
-  onGoToSavedLocation: (coordinates: Coordinates) => void;
-}) {
-  const profileQuery = useAuthProfile();
-  const coordinates = profileCoordinates(profileQuery.data);
-
-  let savedLocation: SavedLocationAction;
-  if (profileQuery.isPending) {
-    savedLocation = { status: "loading" };
-  } else if (profileQuery.isError) {
-    savedLocation = { status: "error" };
-  } else if (coordinates) {
-    savedLocation = {
-      status: "available",
-      onSelect: () => onGoToSavedLocation(coordinates),
-    };
-  } else {
-    savedLocation = { status: "missing" };
-  }
-
-  return (
-    <AppMenu
-      className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30"
-      savedLocation={savedLocation}
-    />
   );
 }
 

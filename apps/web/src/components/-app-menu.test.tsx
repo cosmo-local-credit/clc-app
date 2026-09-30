@@ -1,5 +1,5 @@
 import type { SupportedLocale } from "@clc/i18n/locales";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -17,14 +17,6 @@ vi.mock("#/providers/i18n", () => ({
     loading: false,
     error: null,
   }),
-}));
-
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ to, children, ...props }: { to: string; children: ReactNode }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
 }));
 
 vi.mock("#/components/ui/select", () => ({
@@ -115,40 +107,10 @@ describe("AppMenu", () => {
     expect(screen.getByText("About")).toBeTruthy();
   });
 
-  it("omits the saved-location row when no action is supplied", async () => {
+  it("has no saved-location row", async () => {
     render(<AppMenu />);
     await openMenu();
 
     expect(screen.queryByText(/saved location/i)).toBeNull();
-  });
-
-  it("runs an available saved-location action and closes", async () => {
-    const onSelect = vi.fn();
-    render(<AppMenu savedLocation={{ status: "available", onSelect }} />);
-    await openMenu();
-
-    fireEvent.click(screen.getByRole("button", { name: "Go to saved location" }));
-
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(screen.queryByText("About")).toBeNull());
-  });
-
-  it("links a missing saved location to profile editing", async () => {
-    render(<AppMenu savedLocation={{ status: "missing" }} />);
-    await openMenu();
-
-    expect(screen.getByRole("link", { name: "Set saved location" }).getAttribute("href")).toBe(
-      "/settings/profile",
-    );
-  });
-
-  it.each([
-    ["loading", "Go to saved location"],
-    ["error", "Saved location unavailable"],
-  ] as const)("disables the %s saved-location state", async (status, label) => {
-    render(<AppMenu savedLocation={{ status }} />);
-    await openMenu();
-
-    expect((screen.getByRole("button", { name: label }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
