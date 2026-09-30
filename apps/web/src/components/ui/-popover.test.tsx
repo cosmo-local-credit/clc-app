@@ -53,4 +53,14 @@ describe("Popover", () => {
     expect(popup?.className).toContain("max-h-[var(--available-height)]");
     expect(popup?.parentElement?.getAttribute("data-align")).toBe("start");
   });
+
+  it("transitions the scale it enters and leaves with, so closing does not snap", async () => {
+    render(<TestPopover />);
+    fireEvent.click(screen.getByRole("button", { name: "Open tools" }));
+
+    // Tailwind 4 compiles `scale-95` to the `scale` property, not `transform`.
+    const popup = (await screen.findByText("First action")).parentElement;
+    expect(popup?.className).toContain("data-[ending-style]:scale-95");
+    expect(popup?.className).toContain("transition-[opacity,scale]");
+  });
 });

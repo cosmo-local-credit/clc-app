@@ -43,9 +43,13 @@ function PopoverContent({
           data-slot="popover-content"
           className={cn(
             "max-h-[var(--available-height)] overflow-y-auto rounded-none border border-border bg-popover p-4 text-popover-foreground outline-none",
-            "transition-[transform,opacity] duration-150",
+            // Tailwind 4's `scale-*` sets the standalone `scale` property, so the
+            // transition must name `scale`: listing `transform` leaves it to snap in
+            // one frame and only the fade animates. Both stay on the compositor.
+            "origin-[var(--transform-origin)] transition-[opacity,scale] duration-150 ease-out",
             "data-[starting-style]:scale-95 data-[starting-style]:opacity-0",
             "data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
+            "data-[ending-style]:duration-100 data-[ending-style]:ease-in",
             className,
           )}
           {...props}
