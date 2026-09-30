@@ -6,28 +6,10 @@
  * codes (Chrome on Android and macOS), camera frames go to it instead, and an
  * upload zxing misses gets a second read from it.
  *
- * The .wasm binary is served from this origin and fetched on the first decode,
- * so it costs nothing until a scanner is used. It comes from the same package
- * as the JS that loads it: a binary from another zxing-wasm version fails every
- * decode.
+ * The fallback JS and same-origin .wasm binary load only when zxing is needed.
+ * The binary comes from the same package as the JS that loads it: a binary
+ * from another zxing-wasm version fails every decode.
  */
-
-import { prepareZXingModule, type ReaderOptions, readBarcodes } from "zxing-wasm/reader";
-import zxingWasmUrl from "zxing-wasm/reader/zxing_reader.wasm?url";
-
-prepareZXingModule({
-  overrides: {
-    locateFile: (path: string, prefix: string) =>
-      path.endsWith(".wasm") ? zxingWasmUrl : prefix + path,
-  },
-});
-
-const READER_OPTIONS: ReaderOptions = {
-  formats: ["QRCode"],
-  maxNumberOfSymbols: 1,
-  // The raw payload, not a human-readable rendering of it.
-  textMode: "Plain",
-};
 
 /** Camera frames are decoded at most this large; a 4K frame costs time and gains nothing. */
 const MAX_FRAME_SIDE = 1280;
@@ -54,8 +36,8 @@ async function nativeQrDetector(): Promise<NativeBarcodeDetector | null> {
 }
 
 async function readQr(pixels: ImageData): Promise<string | null> {
-  const results = await readBarcodes(pixels, READER_OPTIONS);
-  return results.find((result) => result.isValid)?.text ?? null;
+  const { readQrWithZXing } = await import("./qr-zxing");
+  return readQrWithZXing(pixels);
 }
 
 async function detectNatively(

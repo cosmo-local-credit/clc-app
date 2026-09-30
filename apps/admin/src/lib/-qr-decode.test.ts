@@ -8,6 +8,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { createQrFrameReader, decodeQrImageFile } from "#/lib/qr-decode";
 
+const { readBarcodes } = vi.hoisted(() => ({
+  readBarcodes: vi.fn<typeof ZXingReader.readBarcodes>(),
+}));
+
 // The real binary, handed over directly: tests have no server to fetch it from.
 vi.mock("zxing-wasm/reader", async (importOriginal) => {
   const actual = await importOriginal<typeof ZXingReader>();
@@ -17,6 +21,7 @@ vi.mock("zxing-wasm/reader", async (importOriginal) => {
   const wasmBinary = wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength);
   return {
     ...actual,
+    readBarcodes: readBarcodes.mockImplementation(actual.readBarcodes),
     prepareZXingModule: () => actual.prepareZXingModule({ overrides: { wasmBinary } }),
   };
 });
@@ -54,6 +59,7 @@ class NativeDetectorStub {
 }
 
 beforeEach(() => {
+  readBarcodes.mockClear();
   // jsdom rasterises nothing, so both halves of the browser's image pipeline
   // are node-canvas here: decoding the file, and drawing it to read pixels.
   vi.stubGlobal("createImageBitmap", async (file: Blob) =>
@@ -101,6 +107,7 @@ describe("decodeQrImageFile", () => {
       EXPECTED["paper-wallet-1280.jpeg"],
     );
     expect(NativeDetectorStub.detect).not.toHaveBeenCalled();
+    expect(readBarcodes).toHaveBeenCalledOnce();
   });
 
   it("resolves null when the native detector fails too", async () => {
@@ -152,6 +159,7 @@ describe("createQrFrameReader", () => {
 
     await expect(read(video)).resolves.toBe("0xnative");
     expect(NativeDetectorStub.detect).toHaveBeenCalledWith(video);
+    expect(readBarcodes).not.toHaveBeenCalled();
   });
 
   it("ignores a native detector without QR support", async () => {
@@ -163,6 +171,7 @@ describe("createQrFrameReader", () => {
       EXPECTED["paper-wallet-1280.jpeg"],
     );
     expect(NativeDetectorStub.detect).not.toHaveBeenCalled();
+    expect(readBarcodes).toHaveBeenCalledOnce();
   });
 
   it("falls back to zxing for good once the native detector throws", async () => {
