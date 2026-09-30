@@ -1,13 +1,12 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { RiFingerprintLine, RiQrCodeLine } from "react-icons/ri";
+import { RiFingerprintLine } from "react-icons/ri";
 
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { useLinkPasskey } from "#/features/webauthn/hooks/use-link-passkey";
 
 /**
- * Settings' "Sign-in methods": the paper card, which always works, and the
- * account's passkey as clc-core records it.
+ * Settings' "Sign-in methods": the account's passkey as clc-core records it.
  *
  * "Google" / "Apple ID" is only the label of the platform prompt the device
  * will show; what gets linked is a platform passkey, not an OAuth account.
@@ -57,7 +56,7 @@ export function PasskeySettingsSection({
       description = !passkey.isPaperSession
         ? t`No passkey is linked to this wallet.`
         : passkey.supported
-          ? t`Sign in with your device's screen lock instead of your paper card. Your device will ask through ${platformLabel}.`
+          ? t`Link your passkey (${platformLabel})`
           : t`Linking a passkey works in Safari or Chrome on iPhone and Chrome on Android. Your paper wallet keeps working here.`;
       badge = { label: t`Not linked`, linked: false };
       break;
@@ -114,22 +113,6 @@ export function PasskeySettingsSection({
         <Trans>Sign-in methods</Trans>
       </h2>
       <div className="border border-border bg-card p-4">
-        <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center bg-muted text-foreground">
-            <RiQrCodeLine className="size-5" aria-hidden="true" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-sm">
-              <Trans>Paper wallet card</Trans>
-            </p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              <Trans>Always works to sign in and recover this wallet. Keep it safe.</Trans>
-            </p>
-          </div>
-        </div>
-
-        <div className="-mx-4 my-3 h-px bg-border" />
-
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center bg-muted text-foreground">

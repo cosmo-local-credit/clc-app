@@ -423,9 +423,9 @@ msgid "Already have an account?"
 msgstr "¿Ya tiene una cuenta?"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:126
-msgid "Always works to sign in and recover this wallet. Keep it safe."
-msgstr "Siempre funciona para iniciar sesión y recuperar esta billetera. "
-"Manténgala segura."
+#~ msgid "Always works to sign in and recover this wallet. Keep it safe."
+#~ msgstr "Siempre funciona para iniciar sesión y recuperar esta billetera. "
+#~ "Manténgala segura."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:78
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
@@ -672,7 +672,7 @@ msgid "Checking notification support on this device."
 msgstr "Comprobando la compatibilidad de las notificaciones con este "
 "dispositivo."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "Comprobando el estado de la clave de acceso…"
 
@@ -684,8 +684,8 @@ msgstr "Comprobando la cantidad emitida…"
 msgid "Checking which vouchers this pool takes…"
 msgstr "Comprobando qué vales acepta este fondo…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:33
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:54
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:122
 msgid "Checking…"
 msgstr "Comprobando…"
@@ -905,15 +905,15 @@ msgstr "Confirmar intercambio"
 msgid "Confirmed"
 msgstr "Confirmado"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:50
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
 msgid "Confirming"
 msgstr "Confirmando"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:48
 msgid "Confirming your passkey on the network. This can take a minute."
 msgstr "Confirmando su clave de acceso en la red. Esto puede tardar un minuto."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:77
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:76
 msgid "Confirming your passkey on the network…"
 msgstr "Confirmando su clave de acceso en la red…"
 
@@ -943,7 +943,7 @@ msgstr "Conectando la billetera..."
 msgid "Connecting..."
 msgstr "Conectando..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:176
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
 #: apps/web/src/routes/__root.tsx:312
 msgid "Connecting…"
 msgstr "Conectando…"
@@ -1862,7 +1862,7 @@ msgstr "Filtros"
 msgid "Finding location"
 msgstr "Buscando ubicación"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:71
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:70
 msgid "Follow the prompt on your device…"
 msgstr "Siga la solicitud en su dispositivo…"
 
@@ -2128,7 +2128,7 @@ msgstr "Vincular {providerLabel}"
 msgid "Link {providerLabel}?"
 msgstr "¿Vincular {providerLabel}?"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
 msgid "Link a passkey"
 msgstr "Vincular una clave de acceso"
 
@@ -2163,8 +2163,12 @@ msgstr "Enlace a los términos que se aplican a este vale"
 msgid "Link wallet to {providerLabel}"
 msgstr "Vincular billetera con {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:42
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:46
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:59
+msgid "Link your passkey ({platformLabel})"
+msgstr "Vincule su clave de acceso ({platformLabel})"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:41
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:45
 msgid "Linked"
 msgstr "Vinculado"
 
@@ -2172,7 +2176,7 @@ msgstr "Vinculado"
 msgid "Linked vouchers"
 msgstr "Vales vinculados"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
 "Android. Your paper wallet keeps working here."
 msgstr "La vinculación de una clave de acceso funciona en Safari o Chrome en "
@@ -2183,11 +2187,11 @@ msgstr "La vinculación de una clave de acceso funciona en Safari o Chrome en "
 msgid "Linking passkey..."
 msgstr "Vinculando clave de acceso..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
 msgid "Linking passkey…"
 msgstr "Vinculando clave de acceso…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:104
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
 msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "No se pudo vincular la clave de acceso. Su billetera de papel no ha "
 "cambiado."
@@ -2655,7 +2659,7 @@ msgstr "No hay límite de depósito"
 msgid "No offerings yet"
 msgstr "Todavía no hay ofertas"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:58
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
 msgid "No passkey is linked to this wallet."
 msgstr "No hay ninguna clave de acceso vinculada a esta billetera."
 
@@ -2763,7 +2767,7 @@ msgstr "No aprobado"
 msgid "Not held"
 msgstr "Sin saldo"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:62
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
 msgid "Not linked"
 msgstr "No vinculado"
 
@@ -2951,7 +2955,6 @@ msgstr "Billetera de papel"
 msgid "Paper Wallet"
 msgstr "Billetera de papel"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:123
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
 msgid "Paper wallet card"
 msgstr "Tarjeta de billetera de papel"
@@ -2974,11 +2977,11 @@ msgstr "Participantes"
 msgid "Participants must be 100 characters or fewer"
 msgstr "La lista de participantes debe tener 100 caracteres o menos"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:140
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:123
 msgid "Passkey"
 msgstr "Clave de acceso"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:95
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:94
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "Se canceló la creación de la clave de acceso. Su billetera de papel no "
 "ha cambiado."
@@ -2995,7 +2998,7 @@ msgstr "Clave de acceso vinculada… Confirmando en la cadena…"
 msgid "Passkey linked, but wallet connection failed."
 msgstr "La clave de acceso se vinculó, pero falló la conexión con la billetera."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 msgid "Passkey status could not be checked."
 msgstr "No se pudo comprobar el estado de la clave de acceso."
 
@@ -3287,7 +3290,7 @@ msgid "Preparing..."
 msgstr "Preparando…"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:83
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:82
 msgid "Preparing…"
 msgstr "Preparando…"
 
@@ -3550,7 +3553,7 @@ msgstr "Canjeable en nuestro puesto durante los días de mercado…"
 msgid "Redo"
 msgstr "Rehacer"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:74
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
 msgstr "Registrando su clave de acceso…"
 
@@ -3690,7 +3693,7 @@ msgstr "Reintentar"
 msgid "Retry {providerLabel} connection"
 msgstr "Reintentar la conexión con {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:176
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
 msgid "Retry connection"
 msgstr "Reintentar la conexión"
 
@@ -4036,11 +4039,11 @@ msgid "Sign in with private key"
 msgstr "Inicie sesión con una clave privada"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
-msgid "Sign in with your device's screen lock instead of your paper card. Your "
-"device will ask through {platformLabel}."
-msgstr "Inicie sesión con el bloqueo de pantalla de su dispositivo en lugar de "
-"usar la tarjeta de papel. Su dispositivo se lo solicitará mediante "
-"{platformLabel}."
+#~ msgid "Sign in with your device's screen lock instead of your paper card. Your "
+#~ "device will ask through {platformLabel}."
+#~ msgstr "Inicie sesión con el bloqueo de pantalla de su dispositivo en lugar de "
+#~ "usar la tarjeta de papel. Su dispositivo se lo solicitará mediante "
+#~ "{platformLabel}."
 
 #: apps/web/src/features/home/ui/settings-page.tsx:111
 msgid "Sign out"
@@ -4050,7 +4053,7 @@ msgstr "Cerrar sesión"
 msgid "Sign-in method"
 msgstr "Método de inicio de sesión"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:114
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 msgid "Sign-in methods"
 msgstr "Métodos de inicio de sesión"
 
@@ -4215,7 +4218,7 @@ msgstr "Cambiar de billetera"
 msgid "Switch wallet?"
 msgstr "¿Quiere cambiar de billetera?"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:80
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:79
 msgid "Switching to your passkey…"
 msgstr "Cambiando a su clave de acceso…"
 
@@ -4361,7 +4364,7 @@ msgstr "El mapa no es compatible con este dispositivo."
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "El nuevo propietario puede crear vales y transferir la titularidad."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:41
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:40
 msgid "The passkey on this device is linked. Switch to it to sign with your "
 "passkey."
 msgstr "La clave de acceso de este dispositivo está vinculada. Úsela para "
@@ -4427,7 +4430,7 @@ msgid "This browser cannot store notification registration safely."
 msgstr "Este navegador no puede almacenar de forma segura la suscripción a las "
 "notificaciones."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:89
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
 msgstr "Este dispositivo no tiene la clave de su billetera de papel. Inicie "
@@ -4628,7 +4631,7 @@ msgstr "Viaje"
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
 #: apps/web/src/features/home/ui/activity-page.tsx:60
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:163
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:77
 #: apps/web/src/features/home/ui/wallet-page.tsx:215
@@ -5137,7 +5140,7 @@ msgstr "Anual"
 msgid "Yes"
 msgstr "Sí"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:40
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:39
 msgid "You are signed in with the passkey on this device."
 msgstr "Ha iniciado sesión con la clave de acceso de este dispositivo."
 
@@ -5193,7 +5196,7 @@ msgstr "Recibirá"
 msgid "You'll send"
 msgstr "Enviará"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:45
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:44
 msgid "Your account has a passkey, but it is not on this device. Your paper "
 "card still works here. Adding another passkey is not available yet."
 msgstr "Su cuenta tiene una clave de acceso, pero no está en este dispositivo. "
@@ -5219,17 +5222,17 @@ msgstr "Su nombre"
 msgid "Your paper wallet"
 msgstr "Su billetera de papel"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 msgid "Your passkey is being verified."
 msgstr "Se está verificando su clave de acceso."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:101
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
 msgid "Your passkey is linked, but the app could not switch to it. Your paper "
 "wallet is still connected."
 msgstr "Su clave de acceso está vinculada, pero la aplicación no pudo "
 "activarla. Su billetera de papel sigue conectada."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:98
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
 msgid "Your passkey is still confirming. You can keep using your paper wallet "
 "meanwhile."
 msgstr "Su clave de acceso sigue pendiente de confirmación. Mientras tanto, "
@@ -5267,7 +5270,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 msgstr "Su billetera se usa de forma predeterminada. Introduzca otra dirección "
 "para enviar allí las comisiones de intercambio."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:92
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
 msgid "Your wallet or session changed. Sign in again, then retry."
 msgstr "Su billetera o su sesión han cambiado. Inicie sesión de nuevo y vuelva "
 "a intentarlo."

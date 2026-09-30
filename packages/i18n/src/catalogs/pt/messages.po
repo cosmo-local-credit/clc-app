@@ -423,9 +423,9 @@ msgid "Already have an account?"
 msgstr "Já tem uma conta?"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:126
-msgid "Always works to sign in and recover this wallet. Keep it safe."
-msgstr "Permite sempre iniciar sessão e recuperar esta carteira. Guarde-a em "
-"segurança."
+#~ msgid "Always works to sign in and recover this wallet. Keep it safe."
+#~ msgstr "Permite sempre iniciar sessão e recuperar esta carteira. Guarde-a em "
+#~ "segurança."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:78
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
@@ -671,7 +671,7 @@ msgstr "A verificar o estado de emissão"
 msgid "Checking notification support on this device."
 msgstr "A testar a compatibilidade das notificações com este dispositivo."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "A verificar o estado da chave de acesso…"
 
@@ -683,8 +683,8 @@ msgstr "A verificar a quantidade emitida…"
 msgid "Checking which vouchers this pool takes…"
 msgstr "A verificar quais vales este fundo aceita…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:33
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:54
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:122
 msgid "Checking…"
 msgstr "A verificar…"
@@ -904,15 +904,15 @@ msgstr "Confirmar a troca"
 msgid "Confirmed"
 msgstr "Confirmado"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:50
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
 msgid "Confirming"
 msgstr "A confirmar"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:49
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:48
 msgid "Confirming your passkey on the network. This can take a minute."
 msgstr "A confirmar a sua chave de acesso na rede. Isto pode demorar um minuto."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:77
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:76
 msgid "Confirming your passkey on the network…"
 msgstr "A confirmar a sua chave de acesso na rede…"
 
@@ -942,7 +942,7 @@ msgstr "A ligar a carteira..."
 msgid "Connecting..."
 msgstr "A ligar..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:176
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
 #: apps/web/src/routes/__root.tsx:312
 msgid "Connecting…"
 msgstr "A ligar…"
@@ -1861,7 +1861,7 @@ msgstr "Filtros"
 msgid "Finding location"
 msgstr "À procura da localização"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:71
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:70
 msgid "Follow the prompt on your device…"
 msgstr "Siga o pedido no seu dispositivo…"
 
@@ -2126,7 +2126,7 @@ msgstr "Associar {providerLabel}"
 msgid "Link {providerLabel}?"
 msgstr "Associar {providerLabel}?"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
 msgid "Link a passkey"
 msgstr "Associar uma chave de acesso"
 
@@ -2161,8 +2161,12 @@ msgstr "Ligação para os termos aplicáveis a este vale"
 msgid "Link wallet to {providerLabel}"
 msgstr "Associar a carteira a {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:42
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:46
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:59
+msgid "Link your passkey ({platformLabel})"
+msgstr "Associe a sua chave de acesso ({platformLabel})"
+
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:41
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:45
 msgid "Linked"
 msgstr "Associado"
 
@@ -2170,7 +2174,7 @@ msgstr "Associado"
 msgid "Linked vouchers"
 msgstr "Vales associados"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
 msgid "Linking a passkey works in Safari or Chrome on iPhone and Chrome on "
 "Android. Your paper wallet keeps working here."
 msgstr "A associação de uma chave de acesso funciona no Safari ou Chrome no "
@@ -2181,11 +2185,11 @@ msgstr "A associação de uma chave de acesso funciona no Safari ou Chrome no "
 msgid "Linking passkey..."
 msgstr "A associar a chave de acesso..."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:170
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:153
 msgid "Linking passkey…"
 msgstr "A associar a chave de acesso…"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:104
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:103
 msgid "Linking the passkey failed. Your paper wallet is unchanged."
 msgstr "Não foi possível associar a chave de acesso. A sua carteira de papel "
 "não foi alterada."
@@ -2653,7 +2657,7 @@ msgstr "Não há limite de depósito"
 msgid "No offerings yet"
 msgstr "Ainda não há ofertas"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:58
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:57
 msgid "No passkey is linked to this wallet."
 msgstr "Não há nenhuma chave de acesso ligada a esta carteira."
 
@@ -2760,7 +2764,7 @@ msgstr "Não aprovado"
 msgid "Not held"
 msgstr "Sem saldo"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:62
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:61
 msgid "Not linked"
 msgstr "Não ligado"
 
@@ -2948,7 +2952,6 @@ msgstr "Carteira de papel"
 msgid "Paper Wallet"
 msgstr "Carteira de papel"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:123
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:327
 msgid "Paper wallet card"
 msgstr "Cartão de carteira de papel"
@@ -2971,11 +2974,11 @@ msgstr "Participantes"
 msgid "Participants must be 100 characters or fewer"
 msgstr "A lista de participantes deve ter 100 caracteres ou menos"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:140
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:123
 msgid "Passkey"
 msgstr "Chave de acesso"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:95
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:94
 msgid "Passkey creation was cancelled. Your paper wallet is unchanged."
 msgstr "A criação da chave de acesso foi cancelada. A sua carteira de papel não "
 "mudou."
@@ -2992,7 +2995,7 @@ msgstr "Chave de acesso associada... A confirmar na blockchain..."
 msgid "Passkey linked, but wallet connection failed."
 msgstr "A chave de acesso foi ligada, mas a ligação com a carteira falhou."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:36
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:35
 msgid "Passkey status could not be checked."
 msgstr "Não foi possível verificar o estado da chave de acesso."
 
@@ -3283,7 +3286,7 @@ msgid "Preparing..."
 msgstr "A preparar..."
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:83
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:82
 msgid "Preparing…"
 msgstr "A preparar…"
 
@@ -3545,7 +3548,7 @@ msgstr "Pode ser resgatado na nossa banca nos dias de mercado..."
 msgid "Redo"
 msgstr "Refazer"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:74
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
 msgstr "A registar a sua chave de acesso…"
 
@@ -3685,7 +3688,7 @@ msgstr "Tentar novamente"
 msgid "Retry {providerLabel} connection"
 msgstr "Tentar novamente a ligação a {providerLabel}"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:176
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
 msgid "Retry connection"
 msgstr "Tentar novamente a ligação"
 
@@ -4031,10 +4034,10 @@ msgid "Sign in with private key"
 msgstr "Inicie sessão com uma chave privada"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:60
-msgid "Sign in with your device's screen lock instead of your paper card. Your "
-"device will ask through {platformLabel}."
-msgstr "Inicie sessão com o bloqueio de ecrã do dispositivo em vez do cartão de "
-"papel. O pedido aparecerá através de {platformLabel}."
+#~ msgid "Sign in with your device's screen lock instead of your paper card. Your "
+#~ "device will ask through {platformLabel}."
+#~ msgstr "Inicie sessão com o bloqueio de ecrã do dispositivo em vez do cartão de "
+#~ "papel. O pedido aparecerá através de {platformLabel}."
 
 #: apps/web/src/features/home/ui/settings-page.tsx:111
 msgid "Sign out"
@@ -4044,7 +4047,7 @@ msgstr "Terminar sessão"
 msgid "Sign-in method"
 msgstr "Método de autenticação"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:114
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:113
 msgid "Sign-in methods"
 msgstr "Métodos de autenticação"
 
@@ -4209,7 +4212,7 @@ msgstr "Mudar de carteira"
 msgid "Switch wallet?"
 msgstr "Quer mudar de carteira?"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:80
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:79
 msgid "Switching to your passkey…"
 msgstr "A mudar para a sua chave de acesso…"
 
@@ -4355,7 +4358,7 @@ msgstr "O mapa não é compatível com este dispositivo."
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "O novo proprietário pode criar vales e transferir a propriedade."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:41
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:40
 msgid "The passkey on this device is linked. Switch to it to sign with your "
 "passkey."
 msgstr "A chave de acesso deste dispositivo está associada. Mude para ela para "
@@ -4420,7 +4423,7 @@ msgid "This browser cannot store notification registration safely."
 msgstr "Este navegador não consegue guardar o registo de notificações em "
 "segurança."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:89
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
 msgstr "Este dispositivo não tem a chave da sua carteira de papel. Inicie "
@@ -4620,7 +4623,7 @@ msgstr "Viagem"
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
 #: apps/web/src/features/home/ui/activity-page.tsx:60
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:163
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
 #: apps/web/src/features/home/ui/wallet-page.tsx:77
 #: apps/web/src/features/home/ui/wallet-page.tsx:215
@@ -5129,7 +5132,7 @@ msgstr "Anual"
 msgid "Yes"
 msgstr "Sim"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:40
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:39
 msgid "You are signed in with the passkey on this device."
 msgstr "Iniciou sessão com a chave de acesso deste dispositivo."
 
@@ -5185,7 +5188,7 @@ msgstr "Receberá"
 msgid "You'll send"
 msgstr "Enviará"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:45
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:44
 msgid "Your account has a passkey, but it is not on this device. Your paper "
 "card still works here. Adding another passkey is not available yet."
 msgstr "A sua conta tem uma chave de acesso, mas não está neste dispositivo. O "
@@ -5211,17 +5214,17 @@ msgstr "O seu nome"
 msgid "Your paper wallet"
 msgstr "A sua carteira de papel"
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:52
 msgid "Your passkey is being verified."
 msgstr "A sua chave de acesso está a ser verificada."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:101
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:100
 msgid "Your passkey is linked, but the app could not switch to it. Your paper "
 "wallet is still connected."
 msgstr "A sua chave de acesso está ligada, mas a aplicação não pôde ativá-la. A "
 "sua carteira de papel continua ligada."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:98
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:97
 msgid "Your passkey is still confirming. You can keep using your paper wallet "
 "meanwhile."
 msgstr "A sua chave de acesso ainda está a ser confirmada. Entretanto, pode "
@@ -5259,7 +5262,7 @@ msgid "Your wallet by default. Enter another address to send the swap fees "
 msgstr "A sua carteira é usada por omissão. Indique outro endereço para enviar "
 "as taxas de troca."
 
-#: apps/web/src/features/home/ui/passkey-settings-section.tsx:92
+#: apps/web/src/features/home/ui/passkey-settings-section.tsx:91
 msgid "Your wallet or session changed. Sign in again, then retry."
 msgstr "A sua carteira ou sessão mudou. Inicie sessão novamente e tente outra "
 "vez."

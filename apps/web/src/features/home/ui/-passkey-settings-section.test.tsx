@@ -31,10 +31,11 @@ function setHook(overrides: Record<string, unknown>) {
 beforeEach(() => setHook({}));
 
 describe("PasskeySettingsSection", () => {
-  it("offers a 44px link action to a paper-wallet session and keeps the paper card visible", () => {
+  it("offers a 44px link action to a paper-wallet session, naming the platform prompt", () => {
     render(<PasskeySettingsSection address={ADDRESS} isSigningOut={false} />);
     expect(screen.getByRole("heading", { name: /sign-in methods/i })).toBeTruthy();
-    expect(screen.getByText(/paper wallet card/i)).toBeTruthy();
+    expect(screen.getByText("Link your passkey (Google)")).toBeTruthy();
+    expect(screen.queryByText(/paper wallet card/i)).toBeNull();
     const button = screen.getByRole("button", { name: /link a passkey/i });
     expect(button.className).toContain("h-11");
     fireEvent.click(button);
