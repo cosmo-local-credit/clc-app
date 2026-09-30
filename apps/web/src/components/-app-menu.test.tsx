@@ -37,11 +37,17 @@ vi.mock("#/components/ui/select", () => ({
   ),
   SelectTrigger: ({
     children,
+    className,
     "aria-label": ariaLabel,
   }: {
     children: ReactNode;
+    className?: string;
     "aria-label"?: string;
-  }) => <span aria-label={ariaLabel}>{children}</span>,
+  }) => (
+    <span aria-label={ariaLabel} className={className}>
+      {children}
+    </span>
+  ),
   SelectValue: () => null,
   SelectContent: ({ children }: { children: ReactNode }) => <>{children}</>,
   SelectItem: ({ value, children }: { value: string; children: ReactNode }) => (
@@ -105,6 +111,16 @@ describe("AppMenu", () => {
     fireEvent.change(language!, { target: { value: "it" } });
     expect(setLocale).toHaveBeenCalledWith("it");
     expect(screen.getByText("About")).toBeTruthy();
+  });
+
+  it("gives the theme and language selectors one width", async () => {
+    render(<AppMenu />);
+    await openMenu();
+
+    const theme = screen.getByLabelText("Theme", { selector: "span" });
+    const language = screen.getByLabelText("Language", { selector: "span" });
+    expect(theme.className).toContain("w-32");
+    expect(language.className).toBe(theme.className);
   });
 
   it("has no saved-location row", async () => {

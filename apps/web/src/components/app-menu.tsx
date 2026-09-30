@@ -14,6 +14,9 @@ import {
 } from "#/components/ui/popover";
 import { PLATFORM_ABOUT_URL, PLATFORM_TERMS_URL } from "#/lib/legal";
 
+/** One width for both selectors, so neither reads as the longer control. */
+const SELECTOR_TRIGGER_CLASS_NAME = "w-32";
+
 const actionClassName =
   "flex min-h-11 w-full items-center gap-3 px-3 py-2 text-start text-sm outline-none transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring";
 
@@ -69,13 +72,13 @@ export function AppMenu({ className }: { className?: string }) {
             <span className="text-sm">
               <Trans>Theme</Trans>
             </span>
-            <ThemeSelector />
+            <ThemeSelector triggerClassName={SELECTOR_TRIGGER_CLASS_NAME} />
           </div>
           <div className="flex min-h-11 items-start justify-between gap-3 px-3 py-2">
             <span className="pt-2 text-sm">
               <Trans>Language</Trans>
             </span>
-            <LanguageSelector />
+            <LanguageSelector triggerClassName={SELECTOR_TRIGGER_CLASS_NAME} />
           </div>
 
           <div className="my-1 h-px bg-border" />

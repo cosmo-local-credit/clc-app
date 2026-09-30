@@ -8,13 +8,14 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { ThemeToggle } from "#/components/theme-selector";
+import { cn } from "#/lib/utils";
 import { useLocale } from "#/providers/i18n";
 
 const LOCALE_LABELS = Object.fromEntries(
   LOCALE_OPTIONS.map((option) => [option.code, option.nativeLabel]),
 );
 
-export function LanguageSelector() {
+export function LanguageSelector({ triggerClassName }: { triggerClassName?: string }) {
   const { t } = useLingui();
   const { locale, setLocale, loading, error } = useLocale();
 
@@ -30,7 +31,10 @@ export function LanguageSelector() {
       >
         <SelectTrigger
           aria-label={t`Language`}
-          className="h-9 w-auto border-border font-medium text-foreground text-xs"
+          className={cn(
+            "h-9 w-auto border-border font-medium text-foreground text-xs",
+            triggerClassName,
+          )}
         >
           <SelectValue />
         </SelectTrigger>

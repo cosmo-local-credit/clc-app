@@ -8,9 +8,10 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { Toggle } from "#/components/ui/toggle";
+import { cn } from "#/lib/utils";
 import { type Theme, useHydratedTheme } from "#/providers/theme";
 
-export function ThemeSelector() {
+export function ThemeSelector({ triggerClassName }: { triggerClassName?: string }) {
   const { t } = useLingui();
   const { theme, setTheme } = useHydratedTheme();
 
@@ -21,6 +22,7 @@ export function ThemeSelector() {
 
   return (
     <SelectRoot
+      items={Object.fromEntries(options.map((option) => [option.value, option.label]))}
       value={theme}
       onValueChange={(next) => {
         if (next === "light" || next === "dark") setTheme(next);
@@ -28,7 +30,10 @@ export function ThemeSelector() {
     >
       <SelectTrigger
         aria-label={t`Theme`}
-        className="h-9 w-auto border-border font-medium text-foreground text-xs"
+        className={cn(
+          "h-9 w-auto border-border font-medium text-foreground text-xs",
+          triggerClassName,
+        )}
       >
         <SelectValue />
       </SelectTrigger>
