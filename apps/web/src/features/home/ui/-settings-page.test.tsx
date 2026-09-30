@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
+
 vi.mock("#/components/install-app-link", () => ({
   InstallAppLink: () => <a href="/install">Install CLC</a>,
 }));
@@ -24,6 +26,18 @@ vi.mock("./account-settings-section", () => ({
 const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {
+  it("links to About Cosmo-Local Credit immediately above Account", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+
+    const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
+    const account = screen.getByTestId("account-settings");
+
+    expect(about.getAttribute("href")).toBe(PLATFORM_ABOUT_URL);
+    expect(about.getAttribute("target")).toBe("_blank");
+    expect(about.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(about.compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("shows the connected address", () => {
     render(
       <SettingsPage
