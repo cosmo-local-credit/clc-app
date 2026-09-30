@@ -713,7 +713,7 @@ describe("pool voucher UI", () => {
 
     expect(await within(receiveField).findByText("TTX")).toBeTruthy();
     expect(await within(sendField).findByText("USDC")).toBeTruthy();
-    expect(await within(sendField).findByRole("button", { name: /max 12\.34/i })).toBeTruthy();
+    expect(await within(sendField).findByRole("button", { name: /max 12\.34 USDC/i })).toBeTruthy();
     expect(screen.getAllByRole("textbox")).toEqual([receiveInput, sendInput]);
     expect(receiveInput.value).toBe("");
     expect(sendInput.value).toBe("");
@@ -908,7 +908,7 @@ describe("pool voucher UI", () => {
     expect(screen.getByText(/amount exceeds your balance/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
 
-    fireEvent.click(screen.getByRole("button", { name: /max 12\.34/i }));
+    fireEvent.click(screen.getByRole("button", { name: /max 12\.34 USDC/i }));
 
     await waitFor(() => {
       expect(fromInput.value).toBe("12.34");
@@ -924,8 +924,8 @@ describe("pool voucher UI", () => {
     mockPoolRequests({ usdcBalance: "995000000" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    const max = await screen.findByRole("button", { name: /max 55\.00$/i });
-    expect(screen.queryByRole("button", { name: /max 995\.00$/i })).toBeNull();
+    const max = await screen.findByRole("button", { name: /max 55\.00 USDC$/i });
+    expect(screen.queryByRole("button", { name: /max 995\.00 USDC$/i })).toBeNull();
     fireEvent.click(max);
 
     await waitFor(() => {
@@ -948,7 +948,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests({ usdcBalance: "995000000" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    expect(await screen.findByRole("button", { name: /max 55\.00$/i })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /max 55\.00 USDC$/i })).toBeTruthy();
   });
 
   it("opens an in-place confirmation sheet instead of a review page", async () => {
@@ -1018,7 +1018,7 @@ describe("pool voucher UI", () => {
     mockPoolRequests({ usdcBalance: "12345678" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    fireEvent.click(await screen.findByRole("button", { name: /max 12\.34/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /max 12\.34 USDC/i }));
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
     });
@@ -1194,13 +1194,13 @@ describe("pool voucher UI", () => {
     const fromInput = (await screen.findByRole("textbox", {
       name: "You send",
     })) as HTMLInputElement;
-    expect(await screen.findByRole("button", { name: /max 4\.00$/i })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /max 4\.00 USDC$/i })).toBeTruthy();
 
     fireEvent.change(fromInput, { target: { value: "10" } });
     expect(await screen.findByText(/this pool can only take 4\.00 more usdc/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
 
-    fireEvent.click(screen.getByRole("button", { name: /max 4\.00$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /max 4\.00 USDC$/i }));
     await waitFor(() => {
       expect(fromInput.value).toBe("4.00");
       expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
@@ -1300,17 +1300,18 @@ describe("pool voucher UI", () => {
 
     // Max send is the 12.34 USDC held (24.68 TTX gross, under the pool's 30.00),
     // and the contract's own net figure for that is 2% lower.
-    expect(await screen.findByText(/you can receive up to 24\.18 TTX/i)).toBeTruthy();
+    const receiveField = await screen.findByRole("group", { name: "You receive" });
+    expect(
+      await within(receiveField).findByRole("button", { name: /max 24\.18 TTX/i }),
+    ).toBeTruthy();
   });
 
-  it("fills the most you can receive when the hint is tapped, spending the pinned maximum", async () => {
+  it("fills the most you can receive when its Max is tapped, spending the pinned maximum", async () => {
     poolNetFee.ppm = 20_000n;
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: /you can receive up to 24\.18 TTX/i }),
-    );
+    fireEvent.click(await screen.findByRole("button", { name: /max 24\.18 TTX/i }));
 
     // Same request as Max on the send side, so the amount sent is the exact raw
     // maximum and never a rounded-up figure that could overrun the balance.
@@ -1359,10 +1360,10 @@ describe("pool voucher UI", () => {
       </QueryClientProvider>,
     );
 
-    const max = await screen.findByRole("button", { name: /max 12\.34/i });
-    const hint = await screen.findByRole("button", { name: /you can receive up to 24\.68 TTX/i });
+    const max = await screen.findByRole("button", { name: /max 12\.34 USDC/i });
+    const receiveMax = await screen.findByRole("button", { name: /max 24\.68 TTX/i });
     expect(max.hasAttribute("disabled")).toBe(false);
-    expect(hint.hasAttribute("disabled")).toBe(false);
+    expect(receiveMax.hasAttribute("disabled")).toBe(false);
 
     // The next block's maximum never settles, so the last one is what shows. The
     // pin would outlive the refresh, so a balance that fell meanwhile would leave
@@ -1373,7 +1374,7 @@ describe("pool voucher UI", () => {
 
     await waitFor(() => expect(max.hasAttribute("disabled")).toBe(true));
     expect(max.textContent).toContain("12.34");
-    expect(hint.hasAttribute("disabled")).toBe(true);
+    expect(receiveMax.hasAttribute("disabled")).toBe(true);
     fireEvent.click(max);
     expect((screen.getByRole("textbox", { name: "You send" }) as HTMLInputElement).value).toBe("");
   });

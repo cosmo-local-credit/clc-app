@@ -1,7 +1,7 @@
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { type ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { RiArrowDownSLine, RiCheckLine } from "react-icons/ri";
 import { isAddress } from "viem";
 import { useConnection } from "wagmi";
@@ -186,7 +186,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   // not to spend: the pin outlives the refresh, so a balance, cap or liquidity
   // that has since fallen would leave it above what the swap can carry.
   const maxSettled = !maximum.isPlaceholderData;
-  // The receive hint and Max are the same request: spend the pinned raw maximum.
+  // Max on either side is the same request: spend the pinned raw maximum.
   // Filling the receive side by typing its figure back in would round the send
   // side up by a wei and could overrun the balance.
   const applyMax = () => {
@@ -287,15 +287,8 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
           token={selectedTo?.token}
           amount={displayedToAmount}
           autoFocus
-          onHint={applyMax}
+          max={maxReceiveAmount ?? undefined}
           actionsDisabled={!maxSettled}
-          hint={
-            maxReceiveAmount ? (
-              <Trans>
-                You can receive up to {maxReceiveAmount} {receiveSymbol}
-              </Trans>
-            ) : null
-          }
           onFocus={() => setFocusedField("to")}
           onBlur={() => {
             if (quoteMode === "exact-output") {
@@ -308,6 +301,7 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
             setFromMaxAmountRaw(null);
             setToAmount(amount);
           }}
+          onMax={applyMax}
           onSelect={() => setPicker({ field: "to" })}
         />
         <SwapField
@@ -674,8 +668,6 @@ function SwapField({
   max,
   actionsDisabled = false,
   invalid = false,
-  hint,
-  onHint,
   onFocus,
   onBlur,
   onAmountChange,
@@ -689,17 +681,16 @@ function SwapField({
   amount: string;
   autoFocus?: boolean;
   max?: string;
-  /** Max and the hint stay visible but cannot be tapped, while their figure is a stale one. */
+  /** Max stays visible but cannot be tapped while its figure is a stale one. */
   actionsDisabled?: boolean;
   invalid?: boolean;
-  hint?: ReactNode;
-  onHint?: () => void;
   onFocus: () => void;
   onBlur: () => void;
   onAmountChange: (amount: string) => void;
   onMax?: () => void;
   onSelect: () => void;
 }) {
+  const symbol = token?.symbol ?? "";
   return (
     <div role="group" aria-label={label}>
       <div className="mb-1.5 flex min-h-7 items-center justify-between">
@@ -714,7 +705,9 @@ function SwapField({
             onClick={onMax}
             className="font-mono text-[0.6875rem] font-semibold"
           >
-            <Trans>Max {max}</Trans>
+            <Trans>
+              Max {max} {symbol}
+            </Trans>
           </Button>
         ) : null}
       </div>
@@ -752,22 +745,6 @@ function SwapField({
           aria-invalid={invalid}
         />
       </div>
-      {hint ? (
-        onHint ? (
-          // The tap area reaches past the line of text, so a thumb can hit it without
-          // the hint pushing the next field down.
-          <button
-            type="button"
-            disabled={actionsDisabled}
-            onClick={onHint}
-            className="relative mt-1.5 text-start text-muted-foreground text-xs underline underline-offset-2 before:absolute before:inset-x-0 before:-inset-y-2.5 disabled:opacity-50"
-          >
-            {hint}
-          </button>
-        ) : (
-          <p className="mt-1.5 text-muted-foreground text-xs">{hint}</p>
-        )
-      ) : null}
     </div>
   );
 }
