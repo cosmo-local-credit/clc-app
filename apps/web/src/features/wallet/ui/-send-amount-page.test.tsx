@@ -179,6 +179,7 @@ describe("SendAmountPage", () => {
         to: "/wallet/send/receipt",
         search: {
           trackingId: "tracking-1",
+          token: USDC,
           recipient: RECIPIENT,
           amount: "5",
           symbol: "USDC",
@@ -319,6 +320,7 @@ describe("SendAmountPage", () => {
       to: "/wallet/send/receipt",
       search: {
         trackingId: "tracking-1",
+        token: USDC,
         recipient: RECIPIENT,
         amount: "2.13",
         symbol: "USDC",

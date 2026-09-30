@@ -5,6 +5,11 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { SendReceiptPage } from "#/features/wallet/ui";
 
 const searchSchema = z.object({
+  token: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/)
+    .optional()
+    .catch(undefined),
   trackingId: z.string().optional().catch(undefined),
   recipient: z.string().optional().catch(undefined),
   amount: z.string().optional().catch(undefined),
@@ -19,10 +24,11 @@ export const Route = createFileRoute("/wallet/send/receipt")({
 });
 
 function SendReceiptRoute() {
-  const { trackingId, recipient, amount, symbol, returnPool } = Route.useSearch();
+  const { trackingId, recipient, amount, symbol, token, returnPool } = Route.useSearch();
   return (
     <AuthenticatedRoute>
       <SendReceiptPage
+        token={token}
         trackingId={trackingId}
         recipient={recipient}
         amount={amount}

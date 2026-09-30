@@ -310,6 +310,7 @@ export function SendAmountPage({
             to: "/wallet/send/receipt",
             search: {
               trackingId: result.trackingId,
+              token: tokenAddress,
               recipient: recipientAddress,
               amount,
               symbol: selectedToken.symbol,

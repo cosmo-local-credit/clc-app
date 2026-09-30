@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { ReportList } from "#/components/reports/report-list";
 import { InfoRow } from "#/components/ui/info-row";
 import { MarkdownContent } from "#/components/ui/markdown-content";
@@ -383,23 +384,11 @@ export function VoucherDetailPage({
         />
       ) : null}
       {activeTab === "reviews" ? (
-        <EmptyTabPanel tab="reviews">
-          <Trans>Reviews for this voucher will appear here.</Trans>
-        </EmptyTabPanel>
+        <VoucherReviewsPanel
+          key={contractAddress ?? voucherAddress}
+          address={contractAddress ?? voucherAddress}
+        />
       ) : null}
-    </div>
-  );
-}
-
-function EmptyTabPanel({ tab, children }: { tab: "reviews"; children: ReactNode }) {
-  return (
-    <div
-      id={`voucher-panel-${tab}`}
-      role="tabpanel"
-      aria-labelledby={`voucher-tab-${tab}`}
-      className="border border-border bg-card p-4 text-muted-foreground text-sm"
-    >
-      {children}
     </div>
   );
 }
