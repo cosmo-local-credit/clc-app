@@ -1,6 +1,5 @@
 import { Trans } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
-import { RiExternalLinkLine, RiInformationLine } from "react-icons/ri";
 
 import { OnboardingMenu } from "#/components/language-selector";
 import { InstallAppLink } from "#/components/install-app-link";
@@ -35,21 +34,20 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
             <Trans>Cosmo-Local Credit</Trans>
           </h1>
           <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
-            <Trans>Route redeemable claims across curated markets with shared standards.</Trans>
+            <Trans>Route redeemable claims across curated markets with shared standards.</Trans>{" "}
+            <a
+              href={PLATFORM_ABOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              <Trans>About Cosmo-Local Credit</Trans>
+            </a>
           </p>
         </div>
       </div>
 
       <div className="mt-auto space-y-3 pt-8 pb-2">
-        <Button asChild variant="outline" className="h-11 w-full justify-start gap-3">
-          <a href={PLATFORM_ABOUT_URL} target="_blank" rel="noopener noreferrer">
-            <RiInformationLine className="size-4 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1 text-start">
-              <Trans>About Cosmo-Local Credit</Trans>
-            </span>
-            <RiExternalLinkLine className="size-4 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
-          </a>
-        </Button>
         <Button className="h-11 w-full" onClick={() => go("profile")}>
           <Trans>Create account</Trans>
         </Button>

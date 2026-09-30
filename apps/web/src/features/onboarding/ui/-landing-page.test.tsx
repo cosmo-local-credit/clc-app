@@ -31,18 +31,17 @@ beforeEach(() => {
 });
 
 describe("LandingPage", () => {
-  it("links to About Cosmo-Local Credit immediately above Create account", () => {
+  it("links to About Cosmo-Local Credit at the end of the introduction", () => {
     render(<LandingPage />);
 
     const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
-    const createAccount = screen.getByRole("button", { name: "Create account" });
 
     expect(about.getAttribute("href")).toBe(PLATFORM_ABOUT_URL);
     expect(about.getAttribute("target")).toBe("_blank");
     expect(about.getAttribute("rel")).toBe("noopener noreferrer");
-    expect(
-      about.compareDocumentPosition(createAccount) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(about.closest("p")?.textContent).toBe(
+      "Route redeemable claims across curated markets with shared standards. About Cosmo-Local Credit",
+    );
   });
 
   it("shows branding, onboarding menu, and the two identity buttons", () => {
