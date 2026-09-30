@@ -95,6 +95,34 @@ describe("i18n catalogs", () => {
     ).toBe("3 vales");
   });
 
+  it("activates the Italian catalog on demand", async () => {
+    await activateLocale("it");
+
+    expect(i18n.locales).toEqual(["it"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Scelga una posizione",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Fondi");
+    expect(i18n._(msg`Wallet`)).toBe("Portafoglio");
+    expect(i18n._(msg`Swap`)).toBe("Scambiare");
+    expect(i18n._(msg`Redeem`)).toBe("Riscattare");
+    expect(maxAmount("55,00")).toBe("Max 55,00");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 1 },
+      }),
+    ).toBe("1 buono");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 3 },
+      }),
+    ).toBe("3 buoni");
+  });
+
   it("activates the Arabic catalog with Arabic-Indic formatting and all plural forms", async () => {
     await activateLocale("ar");
 

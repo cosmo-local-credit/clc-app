@@ -62,6 +62,18 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["de-DE", "fr-CA", "en-US"])).toBe("fr");
   });
 
+  it("matches generic and region-tagged Italian locales", () => {
+    expect(matchSupportedLocale(["it"])).toBe("it");
+    expect(matchSupportedLocale(["it-IT"])).toBe("it");
+    expect(matchSupportedLocale(["it-CH"])).toBe("it");
+    expect(matchSupportedLocale(["it-SM"])).toBe("it");
+    expect(matchSupportedLocale(["it_VA"])).toBe("it");
+  });
+
+  it("honors Italian in the preferred-language order", () => {
+    expect(matchSupportedLocale(["de-DE", "it-CH", "fr-FR"])).toBe("it");
+  });
+
   it("matches generic and region-tagged Portuguese locales", () => {
     expect(matchSupportedLocale(["pt"])).toBe("pt");
     expect(matchSupportedLocale(["pt-BR"])).toBe("pt");
@@ -76,7 +88,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("falls back to the default locale when nothing matches", () => {
-    expect(matchSupportedLocale(["de", "it"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["de", "ja"])).toBe(DEFAULT_LOCALE);
   });
 
   it("falls back to the default locale for an empty list", () => {
@@ -87,6 +99,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["AR-eg"])).toBe("ar");
     expect(matchSupportedLocale(["SW"])).toBe("sw");
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
+    expect(matchSupportedLocale(["IT-ch"])).toBe("it");
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
   });
 
