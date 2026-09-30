@@ -62,7 +62,7 @@ describe("LanguageSelector", () => {
     setLocale.mockClear();
   });
 
-  it("shows English, Arabic, Spanish, French, Italian, Portuguese, Serbian, and Kiswahili locale choices", () => {
+  it("shows English, Arabic, Dzongkha, Spanish, French, Italian, Portuguese, Serbian, and Kiswahili locale choices", () => {
     renderSelector();
     const select = screen.getByRole("combobox", {
       name: /language/i,
@@ -71,6 +71,7 @@ describe("LanguageSelector", () => {
     expect(select.selectedOptions[0]?.text).toBe("English");
     expect(screen.getByRole("option", { name: "English" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "العربية" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "རྫོང་ཁ" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Español" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Français" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Italiano" })).toBeTruthy();
@@ -80,6 +81,7 @@ describe("LanguageSelector", () => {
     expect([...select.options].map((option) => option.text)).toEqual([
       "English",
       "العربية",
+      "རྫོང་ཁ",
       "Español",
       "Français",
       "Italiano",
@@ -96,6 +98,14 @@ describe("LanguageSelector", () => {
       target: { value: "ar" },
     });
     expect(setLocale).toHaveBeenCalledWith("ar");
+  });
+
+  it("requests a locale change when the user selects Dzongkha", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "dz" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("dz");
   });
 
   it("requests a locale change when the user selects Spanish", () => {

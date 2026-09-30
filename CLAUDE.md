@@ -282,15 +282,15 @@ environment read as one product.
 
 What differs from `apps/web`:
 
-|                        | `apps/web`                                    | `apps/admin`                                              |
-| ---------------------- | --------------------------------------------- | --------------------------------------------------------- |
-| Viewport               | 360–430px only                                | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
-| Breakpoint overrides   | Banned                                        | Required — tables and metric grids reflow                 |
-| `<Card>` as page shell | Banned                                        | Still banned; screens are shell + sections                |
-| Navigation             | Bottom nav                                    | Collapsible sidebar + `⌘K` palette                        |
-| Dark mode              | Zustand theme store                           | Same pattern, key `clc.admin.theme`                       |
-| i18n                   | lingui, ar + en + es + fr + it + pt + sr + sw | None — English only, no `<Trans>`                         |
-| Service worker         | Serwist                                       | Never. Not a PWA                                          |
+|                        | `apps/web`                                         | `apps/admin`                                              |
+| ---------------------- | -------------------------------------------------- | --------------------------------------------------------- |
+| Viewport               | 360–430px only                                     | Desktop; `sm:`/`md:`/`lg:`/`xl:` all allowed and expected |
+| Breakpoint overrides   | Banned                                             | Required — tables and metric grids reflow                 |
+| `<Card>` as page shell | Banned                                             | Still banned; screens are shell + sections                |
+| Navigation             | Bottom nav                                         | Collapsible sidebar + `⌘K` palette                        |
+| Dark mode              | Zustand theme store                                | Same pattern, key `clc.admin.theme`                       |
+| i18n                   | lingui, ar + dz + en + es + fr + it + pt + sr + sw | None — English only, no `<Trans>`                         |
+| Service worker         | Serwist                                            | Never. Not a PWA                                          |
 
 Shared with `apps/web`: square corners, flat surfaces (no
 `shadow-lg`/`backdrop-blur`), `bg-card` for anything sitting on `bg-background`,
@@ -645,7 +645,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{ar,en,es,fr,it,pt,sr,sw}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,dz,en,es,fr,it,pt,sr,sw}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -666,6 +666,12 @@ hashes, token symbols, URLs, phone numbers, and editable canonical amounts stay
 `dir="ltr"` and isolated. User-authored descriptions, notes, and Markdown use
 `dir="auto"`. Arabic human-facing numbers use Arabic-Indic digits, while URL,
 query, contract, and input values remain canonical ASCII.
+
+Dzongkha uses the `dz` catalog, stays `ltr`, and uses its CLDR-native Tibetan
+digits for localized display numbers. Its CLDR plural rule has only the `other`
+category. Editable amounts and machine-readable values remain canonical ASCII.
+The existing font stacks rely on platform Tibetan-script fallback; do not add a
+font dependency solely for Dzongkha.
 
 ### Client / server / URL state
 

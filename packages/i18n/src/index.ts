@@ -20,6 +20,7 @@ export {
 
 const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages }>> = {
   ar: () => import("./catalogs/ar/messages.po"),
+  dz: () => import("./catalogs/dz/messages.po"),
   en: async () => ({ messages: enMessages }),
   es: () => import("./catalogs/es/messages.po"),
   fr: () => import("./catalogs/fr/messages.po"),
