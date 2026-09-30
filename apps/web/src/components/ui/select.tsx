@@ -54,7 +54,7 @@ function SelectContent({
 }) {
   return (
     <Select.Portal>
-      <Select.Positioner>
+      <Select.Positioner className="isolate z-50">
         <Select.Popup
           data-slot="select-content"
           className={cn(
