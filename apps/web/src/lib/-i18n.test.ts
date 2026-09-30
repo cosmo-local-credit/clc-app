@@ -161,6 +161,22 @@ describe("i18n catalogs", () => {
     expect(i18n._(msg`Switch wallet`)).toBe("Промијени новчаник");
   });
 
+  it.each([
+    ["ar", "فتح القائمة", "الانتقال إلى الموقع المحفوظ", "شروط الخدمة"],
+    ["es", "Abrir menú", "Ir a la ubicación guardada", "Términos del servicio"],
+    ["fr", "Ouvrir le menu", "Accéder à l’emplacement enregistré", "Conditions d’utilisation"],
+    ["it", "Apra il menu", "Vada alla posizione salvata", "Termini di servizio"],
+    ["pt", "Abrir menu", "Ir para a localização guardada", "Termos de Serviço"],
+    ["sr", "Отвори мени", "Иди на сачувану локацију", "Услови коришћења"],
+    ["sw", "Fungua menyu", "Nenda kwenye eneo lililohifadhiwa", "Masharti ya Huduma"],
+  ] as const)("translates the reusable app menu into %s", async (locale, open, location, terms) => {
+    await activateLocale(locale);
+
+    expect(i18n._(msg`Open menu`)).toBe(open);
+    expect(i18n._(msg`Go to saved location`)).toBe(location);
+    expect(i18n._(msg`Terms of Service`)).toBe(terms);
+  });
+
   it("falls back to English as the base locale", async () => {
     await activateLocale("en");
 

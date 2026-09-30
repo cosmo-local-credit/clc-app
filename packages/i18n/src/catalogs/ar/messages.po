@@ -182,7 +182,7 @@ msgstr "يتوفر {withdrawable} {0}. تبقى الرسوم المخصصة لل
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
 #. placeholder {2}: rate.unit
-#: apps/web/src/features/home/ui/market-page.tsx:224
+#: apps/web/src/features/home/ui/market-page.tsx:251
 msgid "1 {0} = {1} {2}"
 msgstr "1 {0} = {1} {2}"
 
@@ -227,6 +227,10 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 "your voucher, you are committing to provide them with your offers."
 msgstr "تعمل القسيمة مثل بطاقة هدية لعروضك. عندما يسترد شخص قسيمتك، فإنك تلتزم "
 "بتقديم عروضك له."
+
+#: apps/web/src/components/app-menu.tsx:78
+msgid "About"
+msgstr "حول"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
 msgid "Accept"
@@ -448,6 +452,11 @@ msgstr "أي عنصر محدد"
 msgid "App installation"
 msgstr "تثبيت التطبيق"
 
+#: apps/web/src/components/app-menu.tsx:63
+#: apps/web/src/components/app-menu.tsx:66
+msgid "App menu"
+msgstr "قائمة التطبيق"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "تطبيق"
@@ -530,7 +539,7 @@ msgstr "يجب ألا تتجاوز النبذة 500 حرف"
 msgid "Bold"
 msgstr "عريض"
 
-#: apps/web/src/features/home/ui/market-page.tsx:159
+#: apps/web/src/features/home/ui/market-page.tsx:193
 msgid "Browse all"
 msgstr "تصفح الكل"
 
@@ -769,7 +778,7 @@ msgstr "مسح"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:39
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:158
-#: apps/web/src/features/home/ui/market-page.tsx:144
+#: apps/web/src/features/home/ui/market-page.tsx:178
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -799,6 +808,10 @@ msgstr "إغلاق"
 #: apps/web/src/components/catalog-filter-controls.tsx:571
 msgid "Close filters"
 msgstr "إغلاق عوامل التصفية"
+
+#: apps/web/src/components/app-menu.tsx:122
+msgid "Close menu"
+msgstr "إغلاق القائمة"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
@@ -1833,7 +1846,7 @@ msgstr "تصفية القسائم"
 msgid "Filters"
 msgstr "عوامل التصفية"
 
-#: apps/web/src/features/home/ui/market-page.tsx:63
+#: apps/web/src/features/home/ui/market-page.tsx:79
 msgid "Finding location"
 msgstr "جارٍ تحديد الموقع"
 
@@ -1859,6 +1872,11 @@ msgstr "من"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:408
 msgid "Go back to sign in"
 msgstr "العودة إلى تسجيل الدخول"
+
+#: apps/web/src/components/app-menu.tsx:148
+#: apps/web/src/components/app-menu.tsx:168
+msgid "Go to saved location"
+msgstr "الانتقال إلى الموقع المحفوظ"
 
 #: apps/web/src/features/home/ui/market-labels.ts:12
 msgid "Goods"
@@ -2038,6 +2056,7 @@ msgstr "احتفاظ"
 msgid "Kilogram"
 msgstr "كيلوغرام"
 
+#: apps/web/src/components/app-menu.tsx:93
 #: apps/web/src/components/language-selector.tsx:32
 msgid "Language"
 msgstr "اللغة"
@@ -2292,7 +2311,7 @@ msgstr "جارٍ التحميل…"
 msgid "Location"
 msgstr "الموقع"
 
-#: apps/web/src/features/home/ui/market-page.tsx:65
+#: apps/web/src/features/home/ui/market-page.tsx:81
 msgid "Location denied"
 msgstr "رُفض إذن الموقع"
 
@@ -2301,7 +2320,7 @@ msgid "Location map"
 msgstr "خريطة الموقع"
 
 #: apps/web/src/components/ui/location-picker.tsx:213
-#: apps/web/src/features/home/ui/market-page.tsx:67
+#: apps/web/src/features/home/ui/market-page.tsx:83
 msgid "Location unavailable"
 msgstr "الموقع غير متاح"
 
@@ -2676,12 +2695,12 @@ msgstr "لا توجد قسائم تطابق ذلك البحث."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
-#: apps/web/src/features/home/ui/market-page.tsx:141
+#: apps/web/src/features/home/ui/market-page.tsx:175
 msgid "No vouchers match this search."
 msgstr "لا توجد قسائم تطابق هذا البحث."
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:167
-#: apps/web/src/features/home/ui/market-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:182
 msgid "No vouchers to show yet."
 msgstr "لا توجد قسائم لعرضها بعد."
 
@@ -2839,6 +2858,10 @@ msgstr "تفاصيل شراء الرصيد"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:821
 msgid "Open in Maps"
 msgstr "فتح في الخرائط"
+
+#: apps/web/src/components/app-menu.tsx:54
+msgid "Open menu"
+msgstr "فتح القائمة"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -3685,6 +3708,10 @@ msgid "Save this card securely. If you use a password, keep it separately. "
 msgstr "احفظ هذه البطاقة بأمان. إذا استخدمت كلمة مرور، فاحتفظ بها منفصلة. يمكن "
 "لأي شخص لديه رمز QR غير محمي الوصول إلى المحفظة."
 
+#: apps/web/src/components/app-menu.tsx:166
+msgid "Saved location unavailable"
+msgstr "الموقع المحفوظ غير متاح"
+
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:283
 msgid "Saved. Your post is awaiting approval again."
 msgstr "تم الحفظ. منشورك ينتظر الموافقة مرة أخرى."
@@ -3888,6 +3915,10 @@ msgstr "تعذّر التحقق من الجلسة. حاول مرة أخرى."
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:380
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "حدّد مستلمًا للرسوم قبل تحصيلها، وإلا فلن يجد الصندوق جهة يدفع لها."
+
+#: apps/web/src/components/app-menu.tsx:157
+msgid "Set saved location"
+msgstr "تعيين الموقع المحفوظ"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:511
 msgid "Setting up your wallet..."
@@ -4225,6 +4256,10 @@ msgstr "الشروط"
 msgid "Terms and Conditions"
 msgstr "الأحكام والشروط"
 
+#: apps/web/src/components/app-menu.tsx:116
+msgid "Terms of Service"
+msgstr "شروط الخدمة"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:909
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:453
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:866
@@ -4328,6 +4363,7 @@ msgstr "فشلت المعاملة."
 msgid "The voucher could not be published."
 msgstr "تعذّر نشر القسيمة."
 
+#: apps/web/src/components/app-menu.tsx:87
 #: apps/web/src/components/theme-selector.tsx:30
 msgid "Theme"
 msgstr "المظهر"
@@ -4679,7 +4715,7 @@ msgstr "جارٍ التحميل…"
 msgid "Use “{unit}”"
 msgstr "استخدام «{unit}»"
 
-#: apps/web/src/features/home/ui/market-page.tsx:68
+#: apps/web/src/features/home/ui/market-page.tsx:84
 msgid "Use current location"
 msgstr "استخدام الموقع الحالي"
 
