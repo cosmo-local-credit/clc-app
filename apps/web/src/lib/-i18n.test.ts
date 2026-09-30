@@ -21,6 +21,7 @@ describe("i18n catalogs", () => {
 
   it.each([
     ["ar", "لا توجد مراجعات بعد."],
+    ["dz", "ད་ཚུན་བསྐྱར་ཞིབ་མེད།"],
     ["en", "No reviews yet."],
     ["es", "Aún no hay reseñas."],
     ["fr", "Aucun avis pour le moment."],
@@ -146,6 +147,58 @@ describe("i18n catalogs", () => {
         values: { count: 3 },
       }),
     ).toBe("3 buoni");
+  });
+
+  it("activates the Dzongkha catalog with Tibetan formatting and its single plural form", async () => {
+    await activateLocale("dz");
+
+    expect(i18n.locales).toEqual(["dz"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།",
+    );
+    expect(i18n._(msg`Pools`)).toBe("མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ།");
+    expect(i18n._(msg`Wallet`)).toBe("དངུལ་ཁུག");
+    expect(i18n._(msg`Swap`)).toBe("བརྗེ་ལེན།");
+    expect(i18n._(msg`Redeem`)).toBe("བསྐྱར་ཉོ།");
+    expect(i18n._(msg`Open menu`)).toBe("དཀར་ཆག་ཁ་ཕྱེ།");
+    expect(i18n._(msg`Terms of Service`)).toBe("ཞབས་ཏོག་གི་ཁ་ཚིག");
+
+    const pluralMessages = [
+      {
+        message: "{count, plural, one {# pool} other {# pools}}",
+        variable: "count",
+        noun: "མཉམ་སྤྱོད་དངུལ་ཁུངས",
+      },
+      {
+        message: "{requested, plural, one {# filter} other {# filters}}",
+        variable: "requested",
+        noun: "ཚགས་མ",
+      },
+      {
+        message: "{count, plural, one {# tag} other {# tags}}",
+        variable: "count",
+        noun: "ངོ་རྟགས",
+      },
+      {
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        variable: "count",
+        noun: "འཛིན་ཤོག",
+      },
+      {
+        message: "{count, plural, one {# post} other {# posts}}",
+        variable: "count",
+        noun: "གསལ་བསྒྲགས",
+      },
+    ] as const;
+
+    for (const { message, variable, noun } of pluralMessages) {
+      for (const count of [0, 1, 2, 3, 11, 100]) {
+        const localizedCount = new Intl.NumberFormat("dz").format(count);
+        expect(i18n._({ id: message, message, values: { [variable]: count } })).toBe(
+          `${localizedCount} ${noun}`,
+        );
+      }
+    }
   });
 
   it("activates the Arabic catalog with Arabic-Indic formatting and all plural forms", async () => {

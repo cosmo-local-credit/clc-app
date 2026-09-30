@@ -1,6 +1,6 @@
 export const DEFAULT_LOCALE = "en";
 
-const SUPPORTED_LOCALES = ["ar", "en", "es", "fr", "it", "pt", "sr", "sw"] as const;
+const SUPPORTED_LOCALES = ["ar", "dz", "en", "es", "fr", "it", "pt", "sr", "sw"] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -22,6 +22,13 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
     nativeLabel: "العربية",
     direction: "rtl",
     intlLocale: "ar-u-nu-arab",
+  },
+  {
+    code: "dz",
+    label: "Dzongkha",
+    nativeLabel: "རྫོང་ཁ",
+    direction: "ltr",
+    intlLocale: "dz",
   },
   { code: "es", label: "Spanish", nativeLabel: "Español", direction: "ltr", intlLocale: "es" },
   { code: "fr", label: "French", nativeLabel: "Français", direction: "ltr", intlLocale: "fr" },

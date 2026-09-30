@@ -137,6 +137,15 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe("اسم الصندوق مطلوب");
   });
 
+  it("translates known validation errors into Dzongkha", async () => {
+    await activateLocale("dz");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("ཆ་གནས་མེད་པའི་ཁ་པར་ཨང་།");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("འཛིན་ཤོག་མིང་དགོ");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("དངུལ་ཁུངས་མིང་དགོ");
+  });
+
   it("translates known validation errors into Portuguese", async () => {
     await activateLocale("pt");
 
@@ -168,7 +177,7 @@ describe("translateValidationError", () => {
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "es", "fr", "it", "pt", "sr", "sw"] as const) {
+    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

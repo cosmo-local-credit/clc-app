@@ -50,6 +50,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("ar")}>
         العربية
       </button>
+      <button type="button" onClick={() => setLocale("dz")}>
+        རྫོང་ཁ
+      </button>
       <button type="button" onClick={() => setLocale("sw")}>
         Kiswahili
       </button>
@@ -214,6 +217,19 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects Dzongkha from a script-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["dz-Tibt-BT", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("dz");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("dz");
+      expect(document.documentElement.lang).toBe("dz");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
   it("falls back to the default locale when the device language is unsupported", () => {
     setNavigatorLanguages(["de-DE"]);
 
@@ -293,6 +309,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("it");
     expect(Cookies.get("clc_locale")).toBe("it");
+  });
+
+  it("persists a Dzongkha locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "རྫོང་ཁ" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("dz");
+    expect(document.documentElement.lang).toBe("dz");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("dz");
+    expect(Cookies.get("clc_locale")).toBe("dz");
   });
 
   it("persists a Portuguese locale selection", async () => {

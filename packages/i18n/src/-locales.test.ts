@@ -39,6 +39,22 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["sr-Cyrl-RS"])).toBe("sr");
   });
 
+  it("matches generic, regional, and script-tagged Dzongkha locales", () => {
+    expect(matchSupportedLocale(["dz"])).toBe("dz");
+    expect(matchSupportedLocale(["dz-BT"])).toBe("dz");
+    expect(matchSupportedLocale(["dz-Tibt-BT"])).toBe("dz");
+    expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
+  });
+
+  it("honors Dzongkha in the preferred-language order", () => {
+    expect(matchSupportedLocale(["de-DE", "dz-BT", "en-US"])).toBe("dz");
+  });
+
+  it("exposes Dzongkha direction and numbering metadata", () => {
+    expect(getLocaleDirection("dz")).toBe("ltr");
+    expect(getLocaleFormattingLocale("dz")).toBe("dz");
+  });
+
   it("matches generic and region-tagged Spanish locales", () => {
     expect(matchSupportedLocale(["es"])).toBe("es");
     expect(matchSupportedLocale(["es-ES"])).toBe("es");
@@ -97,6 +113,7 @@ describe("matchSupportedLocale", () => {
 
   it("is case-insensitive", () => {
     expect(matchSupportedLocale(["AR-eg"])).toBe("ar");
+    expect(matchSupportedLocale(["DZ-bt"])).toBe("dz");
     expect(matchSupportedLocale(["SW"])).toBe("sw");
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
     expect(matchSupportedLocale(["IT-ch"])).toBe("it");
@@ -105,6 +122,7 @@ describe("matchSupportedLocale", () => {
 
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
     expect(matchSupportedLocale(["sw_KE", "en_US"])).toBe("sw");
+    expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
   });
 
   it("trims surrounding whitespace", () => {
