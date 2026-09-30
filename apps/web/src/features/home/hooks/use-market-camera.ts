@@ -22,7 +22,7 @@ export const CAMERA_RANK = {
   countryDefault: 4,
 } as const;
 
-const REAL_FIX_ZOOM = 14;
+export const REAL_FIX_ZOOM = 14;
 
 type Coordinates = { lat: number; lng: number };
 

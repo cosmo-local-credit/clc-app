@@ -178,7 +178,7 @@ msgstr "{withdrawable} {0} disponibili. Le commissioni trattenute per la "
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
 #. placeholder {2}: rate.unit
-#: apps/web/src/features/home/ui/market-page.tsx:224
+#: apps/web/src/features/home/ui/market-page.tsx:253
 msgid "1 {0} = {1} {2}"
 msgstr "1 {0} = {1} {2}"
 
@@ -227,6 +227,10 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 msgstr "Un buono funziona come una carta regalo per le sue offerte. Quando "
 "qualcuno riscatta il suo buono, lei si impegna a fornire quanto "
 "offerto."
+
+#: apps/web/src/components/app-menu.tsx:78
+msgid "About"
+msgstr "Informazioni"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
 msgid "Accept"
@@ -449,6 +453,11 @@ msgstr "Uno qualsiasi tra quelli selezionati"
 msgid "App installation"
 msgstr "Installazione dell’app"
 
+#: apps/web/src/components/app-menu.tsx:63
+#: apps/web/src/components/app-menu.tsx:66
+msgid "App menu"
+msgstr "Menu dell’app"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "Applichi"
@@ -531,7 +540,7 @@ msgstr "La biografia deve contenere al massimo 500 caratteri"
 msgid "Bold"
 msgstr "Grassetto"
 
-#: apps/web/src/features/home/ui/market-page.tsx:159
+#: apps/web/src/features/home/ui/market-page.tsx:195
 msgid "Browse all"
 msgstr "Sfogli tutto"
 
@@ -772,7 +781,7 @@ msgstr "Cancelli"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:39
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:158
-#: apps/web/src/features/home/ui/market-page.tsx:144
+#: apps/web/src/features/home/ui/market-page.tsx:180
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -802,6 +811,10 @@ msgstr "Chiuda"
 #: apps/web/src/components/catalog-filter-controls.tsx:571
 msgid "Close filters"
 msgstr "Chiuda i filtri"
+
+#: apps/web/src/components/app-menu.tsx:128
+msgid "Close menu"
+msgstr "Chiuda il menu"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
@@ -1844,7 +1857,7 @@ msgstr "Filtri i buoni"
 msgid "Filters"
 msgstr "Filtri"
 
-#: apps/web/src/features/home/ui/market-page.tsx:63
+#: apps/web/src/features/home/ui/market-page.tsx:79
 msgid "Finding location"
 msgstr "Ricerca della posizione"
 
@@ -1870,6 +1883,11 @@ msgstr "Da"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:408
 msgid "Go back to sign in"
 msgstr "Torni all’accesso"
+
+#: apps/web/src/components/app-menu.tsx:154
+#: apps/web/src/components/app-menu.tsx:178
+msgid "Go to saved location"
+msgstr "Vada alla posizione salvata"
 
 #: apps/web/src/features/home/ui/market-labels.ts:12
 msgid "Goods"
@@ -2053,6 +2071,7 @@ msgstr "Mantenga"
 msgid "Kilogram"
 msgstr "Chilogrammo"
 
+#: apps/web/src/components/app-menu.tsx:96
 #: apps/web/src/components/language-selector.tsx:32
 msgid "Language"
 msgstr "Lingua"
@@ -2309,7 +2328,7 @@ msgstr "Caricamento…"
 msgid "Location"
 msgstr "Posizione"
 
-#: apps/web/src/features/home/ui/market-page.tsx:65
+#: apps/web/src/features/home/ui/market-page.tsx:81
 msgid "Location denied"
 msgstr "Accesso alla posizione negato"
 
@@ -2318,7 +2337,7 @@ msgid "Location map"
 msgstr "Mappa della posizione"
 
 #: apps/web/src/components/ui/location-picker.tsx:213
-#: apps/web/src/features/home/ui/market-page.tsx:67
+#: apps/web/src/features/home/ui/market-page.tsx:83
 msgid "Location unavailable"
 msgstr "Posizione non disponibile"
 
@@ -2694,12 +2713,12 @@ msgstr "Nessun buono corrisponde a questa ricerca."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
-#: apps/web/src/features/home/ui/market-page.tsx:141
+#: apps/web/src/features/home/ui/market-page.tsx:177
 msgid "No vouchers match this search."
 msgstr "Nessun buono corrisponde a questa ricerca."
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:167
-#: apps/web/src/features/home/ui/market-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:184
 msgid "No vouchers to show yet."
 msgstr "Nessun buono da mostrare per ora."
 
@@ -2860,6 +2879,10 @@ msgstr "Dettagli della conversione in entrata"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:821
 msgid "Open in Maps"
 msgstr "Apra in Mappe"
+
+#: apps/web/src/components/app-menu.tsx:54
+msgid "Open menu"
+msgstr "Apra il menu"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -3714,6 +3737,10 @@ msgstr "Conservi questa carta al sicuro. Se usa una password, la conservi "
 "separatamente. Chiunque disponga di un codice QR non protetto può "
 "accedere al portafoglio."
 
+#: apps/web/src/components/app-menu.tsx:176
+msgid "Saved location unavailable"
+msgstr "La posizione salvata non è disponibile"
+
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:283
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Salvato. La pubblicazione è nuovamente in attesa di approvazione."
@@ -3919,6 +3946,10 @@ msgstr "Non è stato possibile verificare la sessione. Riprovi."
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "Imposti un destinatario delle commissioni prima della riscossione, "
 "altrimenti il fondo non saprà a chi versarle."
+
+#: apps/web/src/components/app-menu.tsx:163
+msgid "Set saved location"
+msgstr "Imposti la posizione salvata"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:511
 msgid "Setting up your wallet..."
@@ -4257,6 +4288,10 @@ msgstr "Termini"
 msgid "Terms and Conditions"
 msgstr "Termini e condizioni"
 
+#: apps/web/src/components/app-menu.tsx:119
+msgid "Terms of Service"
+msgstr "Termini di servizio"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:909
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:453
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:866
@@ -4363,6 +4398,7 @@ msgstr "La transazione non è riuscita."
 msgid "The voucher could not be published."
 msgstr "Non è stato possibile pubblicare il buono."
 
+#: apps/web/src/components/app-menu.tsx:90
 #: apps/web/src/components/theme-selector.tsx:30
 msgid "Theme"
 msgstr "Tema"
@@ -4721,7 +4757,7 @@ msgstr "Caricamento…"
 msgid "Use “{unit}”"
 msgstr "Usi “{unit}”"
 
-#: apps/web/src/features/home/ui/market-page.tsx:68
+#: apps/web/src/features/home/ui/market-page.tsx:84
 msgid "Use current location"
 msgstr "Usi la posizione corrente"
 

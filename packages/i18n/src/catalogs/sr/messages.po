@@ -177,7 +177,7 @@ msgstr "Доступно: {withdrawable} {0}. Накнаде задржане з
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: rate.value
 #. placeholder {2}: rate.unit
-#: apps/web/src/features/home/ui/market-page.tsx:224
+#: apps/web/src/features/home/ui/market-page.tsx:253
 msgid "1 {0} = {1} {2}"
 msgstr "1 {0} = {1} {2}"
 
@@ -223,6 +223,10 @@ msgid "A voucher acts like a gift card for your offers. When someone redeems "
 "your voucher, you are committing to provide them with your offers."
 msgstr "Ваучер служи као поклон-картица за вашу понуду. Када неко искористи ваш "
 "ваучер, обавезујете се да му пружите понуђену робу или услуге."
+
+#: apps/web/src/components/app-menu.tsx:78
+msgid "About"
+msgstr "О апликацији"
 
 #: apps/web/src/components/terms-acceptance-field.tsx:29
 msgid "Accept"
@@ -445,6 +449,11 @@ msgstr "Било која изабрана"
 msgid "App installation"
 msgstr "Инсталација апликације"
 
+#: apps/web/src/components/app-menu.tsx:63
+#: apps/web/src/components/app-menu.tsx:66
+msgid "App menu"
+msgstr "Мени апликације"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "Примени"
@@ -527,7 +536,7 @@ msgstr "Биографија може имати највише 500 знаков
 msgid "Bold"
 msgstr "Подебљано"
 
-#: apps/web/src/features/home/ui/market-page.tsx:159
+#: apps/web/src/features/home/ui/market-page.tsx:195
 msgid "Browse all"
 msgstr "Прегледајте све"
 
@@ -766,7 +775,7 @@ msgstr "Обриши"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:39
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:158
-#: apps/web/src/features/home/ui/market-page.tsx:144
+#: apps/web/src/features/home/ui/market-page.tsx:180
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -796,6 +805,10 @@ msgstr "Затвори"
 #: apps/web/src/components/catalog-filter-controls.tsx:571
 msgid "Close filters"
 msgstr "Затвори филтере"
+
+#: apps/web/src/components/app-menu.tsx:128
+msgid "Close menu"
+msgstr "Затвори мени"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:150
 msgid "Close paper wallet scanner"
@@ -1835,7 +1848,7 @@ msgstr "Филтрирај ваучере"
 msgid "Filters"
 msgstr "Филтери"
 
-#: apps/web/src/features/home/ui/market-page.tsx:63
+#: apps/web/src/features/home/ui/market-page.tsx:79
 msgid "Finding location"
 msgstr "Проналажење локације"
 
@@ -1861,6 +1874,11 @@ msgstr "Од"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:408
 msgid "Go back to sign in"
 msgstr "Вратите се на пријаву"
+
+#: apps/web/src/components/app-menu.tsx:154
+#: apps/web/src/components/app-menu.tsx:178
+msgid "Go to saved location"
+msgstr "Иди на сачувану локацију"
 
 #: apps/web/src/features/home/ui/market-labels.ts:12
 msgid "Goods"
@@ -2043,6 +2061,7 @@ msgstr "Задржи"
 msgid "Kilogram"
 msgstr "Килограм"
 
+#: apps/web/src/components/app-menu.tsx:96
 #: apps/web/src/components/language-selector.tsx:32
 msgid "Language"
 msgstr "Језик"
@@ -2299,7 +2318,7 @@ msgstr "Учитавање…"
 msgid "Location"
 msgstr "Локација"
 
-#: apps/web/src/features/home/ui/market-page.tsx:65
+#: apps/web/src/features/home/ui/market-page.tsx:81
 msgid "Location denied"
 msgstr "Приступ локацији је одбијен"
 
@@ -2308,7 +2327,7 @@ msgid "Location map"
 msgstr "Мапа локације"
 
 #: apps/web/src/components/ui/location-picker.tsx:213
-#: apps/web/src/features/home/ui/market-page.tsx:67
+#: apps/web/src/features/home/ui/market-page.tsx:83
 msgid "Location unavailable"
 msgstr "Локација није доступна"
 
@@ -2683,12 +2702,12 @@ msgstr "Ниједан ваучер не одговара тој претраз�
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
-#: apps/web/src/features/home/ui/market-page.tsx:141
+#: apps/web/src/features/home/ui/market-page.tsx:177
 msgid "No vouchers match this search."
 msgstr "Нема ваучера који одговарају овој претрази."
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:167
-#: apps/web/src/features/home/ui/market-page.tsx:148
+#: apps/web/src/features/home/ui/market-page.tsx:184
 msgid "No vouchers to show yet."
 msgstr "Још нема ваучера за приказ."
 
@@ -2849,6 +2868,10 @@ msgstr "Детаљи уплате"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:821
 msgid "Open in Maps"
 msgstr "Отвори у мапама"
+
+#: apps/web/src/components/app-menu.tsx:54
+msgid "Open menu"
+msgstr "Отвори мени"
 
 #: apps/web/src/components/install-instructions.tsx:19
 msgid "Open this link in your phone's browser first. Use Chrome on Android or "
@@ -3701,6 +3724,10 @@ msgid "Save this card securely. If you use a password, keep it separately. "
 msgstr "Sačuvajte ovu karticu na sigurnom. Ako koristite lozinku, čuvajte je "
 "odvojeno. Svako ko ima nezaštićen QR kod može pristupiti novčaniku."
 
+#: apps/web/src/components/app-menu.tsx:176
+msgid "Saved location unavailable"
+msgstr "Сачувана локација није доступна"
+
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:283
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Сачувано. Ваша објава поново чека одобрење."
@@ -3905,6 +3932,10 @@ msgstr "Sesija nije mogla biti verifikovana. Pokušajte ponovo."
 msgid "Set a fee recipient before collecting, or the pool has nowhere to pay."
 msgstr "Поставите примаоца накнада прије наплате, иначе пул нема гдје да "
 "исплати."
+
+#: apps/web/src/components/app-menu.tsx:163
+msgid "Set saved location"
+msgstr "Подеси сачувану локацију"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:511
 msgid "Setting up your wallet..."
@@ -4242,6 +4273,10 @@ msgstr "Услови"
 msgid "Terms and Conditions"
 msgstr "Услови и одредбе"
 
+#: apps/web/src/components/app-menu.tsx:119
+msgid "Terms of Service"
+msgstr "Услови коришћења"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:909
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:453
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:866
@@ -4345,6 +4380,7 @@ msgstr "Трансакција није успјела."
 msgid "The voucher could not be published."
 msgstr "Ваучер није могао бити објављен."
 
+#: apps/web/src/components/app-menu.tsx:90
 #: apps/web/src/components/theme-selector.tsx:30
 msgid "Theme"
 msgstr "Тема"
@@ -4699,7 +4735,7 @@ msgstr "Отпремање…"
 msgid "Use “{unit}”"
 msgstr "Користи „{unit}”"
 
-#: apps/web/src/features/home/ui/market-page.tsx:68
+#: apps/web/src/features/home/ui/market-page.tsx:84
 msgid "Use current location"
 msgstr "Користи тренутну локацију"
 

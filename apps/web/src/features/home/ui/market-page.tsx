@@ -4,34 +4,50 @@ import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
+import { AppMenu, type SavedLocationAction } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
-import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { REAL_FIX_ZOOM, useMarketCamera } from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
-import type { MarketViewport } from "./market-map";
+import { EXPLICIT_CAMERA_RANK, type MarketCamera, type MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
 
 export function MarketPage({
   onboardingBanner,
+  isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
   onboardingBanner?: ReactNode;
+  isAuthenticated?: boolean;
   locationOwner?: string;
 }) {
   const { t } = useLingui();
-  const { camera, realFix, userLocation, locationStatus, requestLocation } =
-    useMarketCamera(locationOwner);
+  const {
+    camera: automaticCamera,
+    realFix,
+    userLocation,
+    locationStatus,
+    requestLocation,
+  } = useMarketCamera(locationOwner);
+  const [savedCamera, setSavedCamera] = useState<{
+    scope: string;
+    camera: MarketCamera;
+  } | null>(null);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  const camera =
+    isAuthenticated && savedCamera?.scope === locationOwner ? savedCamera.camera : automaticCamera;
 
   const filter = useMarketFilter(useStorageOwner());
   const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
@@ -75,6 +91,25 @@ export function MarketPage({
     setViewport(settled);
   }, []);
 
+  const handleGoToSavedLocation = useCallback(
+    (coordinates: Coordinates) => {
+      setSavedCamera({
+        scope: locationOwner,
+        camera: {
+          ...coordinates,
+          zoom: REAL_FIX_ZOOM,
+          rank: EXPLICIT_CAMERA_RANK,
+        },
+      });
+    },
+    [locationOwner],
+  );
+
+  const handleRequestLocation = useCallback(() => {
+    setSavedCamera(null);
+    requestLocation();
+  }, [requestLocation]);
+
   const notice = useMarketFilterNotice(filter, error, retry);
 
   const isEmpty =
@@ -100,16 +135,15 @@ export function MarketPage({
         />
       </Suspense>
 
-      {selectedVoucher ? (
-        <MarketPreview
-          voucher={selectedVoucher}
-          realFix={realFix}
-          offsetForBanner={!!onboardingBanner}
-        />
-      ) : null}
+      <MarketAppMenu
+        isAuthenticated={isAuthenticated}
+        onGoToSavedLocation={handleGoToSavedLocation}
+      />
+
+      {selectedVoucher ? <MarketPreview voucher={selectedVoucher} realFix={realFix} /> : null}
 
       {onboardingBanner ? (
-        <div className="pointer-events-none absolute inset-x-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 px-4">
+        <div className="pointer-events-none absolute start-[4.75rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
           {onboardingBanner}
         </div>
       ) : null}
@@ -168,7 +202,7 @@ export function MarketPage({
               locationStatus === "denied" ||
               locationStatus === "unavailable"
             }
-            onClick={requestLocation}
+            onClick={handleRequestLocation}
           >
             <RiFocus3Line className="size-5" aria-hidden="true" />
           </Button>
@@ -181,11 +215,9 @@ export function MarketPage({
 function MarketPreview({
   voucher,
   realFix,
-  offsetForBanner,
 }: {
   voucher: MarketVoucher;
   realFix: Coordinates | null;
-  offsetForBanner: boolean;
 }) {
   const kindLabel = useMarketKindLabel(voucher.kind);
   const distanceLabel = useMarketDistanceLabel(realFix, voucher);
@@ -197,12 +229,7 @@ function MarketPreview({
       to="/vouchers/$voucherAddress"
       params={{ voucherAddress: voucher.address }}
       aria-label={voucher.name}
-      className={[
-        "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-start",
-        offsetForBanner
-          ? "top-[calc(env(safe-area-inset-top)+4.75rem)]"
-          : "top-[calc(env(safe-area-inset-top)+1rem)]",
-      ].join(" ")}
+      className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-start"
     >
       <VoucherAvatar
         address={voucher.address}
@@ -243,4 +270,68 @@ function MarketPreview({
       />
     </Link>
   );
+}
+
+function MarketAppMenu({
+  isAuthenticated,
+  onGoToSavedLocation,
+}: {
+  isAuthenticated: boolean;
+  onGoToSavedLocation: (coordinates: Coordinates) => void;
+}) {
+  if (!isAuthenticated) {
+    return <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />;
+  }
+
+  return <AuthenticatedMarketAppMenu onGoToSavedLocation={onGoToSavedLocation} />;
+}
+
+function AuthenticatedMarketAppMenu({
+  onGoToSavedLocation,
+}: {
+  onGoToSavedLocation: (coordinates: Coordinates) => void;
+}) {
+  const profileQuery = useAuthProfile();
+  const coordinates = profileCoordinates(profileQuery.data);
+
+  let savedLocation: SavedLocationAction;
+  if (profileQuery.isPending) {
+    savedLocation = { status: "loading" };
+  } else if (profileQuery.isError) {
+    savedLocation = { status: "error" };
+  } else if (coordinates) {
+    savedLocation = {
+      status: "available",
+      onSelect: () => onGoToSavedLocation(coordinates),
+    };
+  } else {
+    savedLocation = { status: "missing" };
+  }
+
+  return (
+    <AppMenu
+      className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30"
+      savedLocation={savedLocation}
+    />
+  );
+}
+
+function profileCoordinates(
+  profile: { geoLat?: number | null; geoLng?: number | null } | null | undefined,
+): Coordinates | null {
+  const lat = profile?.geoLat;
+  const lng = profile?.geoLng;
+  if (
+    typeof lat !== "number" ||
+    !Number.isFinite(lat) ||
+    lat < -90 ||
+    lat > 90 ||
+    typeof lng !== "number" ||
+    !Number.isFinite(lng) ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return null;
+  }
+  return { lat, lng };
 }

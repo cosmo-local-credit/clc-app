@@ -83,6 +83,7 @@ export function HomePage({
         marketView === "map" ? (
           <MarketPage
             onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+            isAuthenticated={isAuthenticated}
             locationOwner={locationOwner}
           />
         ) : (

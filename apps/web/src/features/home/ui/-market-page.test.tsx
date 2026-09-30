@@ -40,6 +40,9 @@ const {
   routeSearch,
   mockNavigate,
   filteredResult,
+  lastAppMenuProps,
+  profileRequests,
+  profileResult,
 } = vi.hoisted(() => ({
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
@@ -76,6 +79,22 @@ const {
       refetch: vi.fn(),
     },
   },
+  lastAppMenuProps: {
+    current: null as {
+      className?: string;
+      savedLocation?:
+        | { status: "available"; onSelect: () => void }
+        | { status: "loading" | "missing" | "error" };
+    } | null,
+  },
+  profileRequests: { current: 0 },
+  profileResult: {
+    current: {
+      data: undefined as { geoLat?: number | null; geoLng?: number | null } | undefined,
+      isPending: false,
+      isError: false,
+    },
+  },
 }));
 
 function scalar(key: string, value: unknown): string {
@@ -90,7 +109,44 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => {
+    profileRequests.current += 1;
+    return profileResult.current;
+  },
+}));
+
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: (props: {
+    className?: string;
+    savedLocation?:
+      | { status: "available"; onSelect: () => void }
+      | { status: "loading" | "missing" | "error" };
+  }) => {
+    lastAppMenuProps.current = props;
+    return (
+      <div data-testid="app-menu" className={props.className}>
+        <button type="button">Open menu</button>
+        {props.savedLocation?.status === "available" ? (
+          <button type="button" onClick={props.savedLocation.onSelect}>
+            Go to saved location
+          </button>
+        ) : null}
+        {props.savedLocation?.status === "missing" ? (
+          <a href="/settings/profile">Set saved location</a>
+        ) : null}
+        {props.savedLocation?.status === "loading" || props.savedLocation?.status === "error" ? (
+          <button type="button" disabled>
+            Saved location unavailable
+          </button>
+        ) : null}
+      </div>
+    );
+  },
 }));
 
 vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
@@ -231,6 +287,13 @@ beforeEach(() => {
     isPlaceholderData: false,
     refetch: vi.fn(),
   };
+  lastAppMenuProps.current = null;
+  profileRequests.current = 0;
+  profileResult.current = {
+    data: undefined,
+    isPending: false,
+    isError: false,
+  };
 });
 
 describe("MarketPage location button", () => {
@@ -255,12 +318,95 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("floats the sign-in action at the top of the map", () => {
+  it("floats the app menu at logical top-start and reserves room beside it for sign-in", () => {
     renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
 
+    expect(screen.getByTestId("app-menu").className).toContain("start-4");
+    expect(screen.getByTestId("app-menu").className).toContain(
+      "top-[calc(env(safe-area-inset-top)+1rem)]",
+    );
+    expect(
+      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
+    ).toContain("start-[4.75rem]");
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
     ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+  });
+
+  it("does not request a private profile or show a location action for guests", () => {
+    renderPage();
+
+    expect(profileRequests.current).toBe(0);
+    expect(lastAppMenuProps.current?.savedLocation).toBeUndefined();
+  });
+});
+
+describe("MarketPage saved profile location", () => {
+  it("moves to valid profile coordinates with an explicit camera without changing the live marker", () => {
+    const userLocation = { lat: -1.2, lng: 36.7 };
+    cameraResult.current = { ...cameraResult.current, userLocation };
+    profileResult.current = {
+      data: { geoLat: -4.0435, geoLng: 39.6682 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Go to saved location" }));
+
+    expect(lastMapProps.current?.camera).toEqual({
+      lat: -4.0435,
+      lng: 39.6682,
+      zoom: 14,
+      rank: 0,
+    });
+    expect(lastMapProps.current?.userLocation).toEqual(userLocation);
+    expect(mockRequestLocation).not.toHaveBeenCalled();
+  });
+
+  it("creates a fresh explicit camera on every saved-location press", () => {
+    profileResult.current = {
+      data: { geoLat: -4.0435, geoLng: 39.6682 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    const button = screen.getByRole("button", { name: "Go to saved location" });
+    fireEvent.click(button);
+    const firstCamera = lastMapProps.current?.camera;
+    fireEvent.click(button);
+
+    expect(lastMapProps.current?.camera).toEqual(firstCamera);
+    expect(lastMapProps.current?.camera).not.toBe(firstCamera);
+  });
+
+  it("returns to the existing current-location flow from a profile camera", () => {
+    profileResult.current = {
+      data: { geoLat: -4.0435, geoLng: 39.6682 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+    fireEvent.click(screen.getByRole("button", { name: "Go to saved location" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
+
+    expect(mockRequestLocation).toHaveBeenCalledTimes(1);
+    expect(lastMapProps.current?.camera).toBeNull();
+  });
+
+  it.each([
+    [{ data: undefined, isPending: true, isError: false }, "loading"],
+    [{ data: undefined, isPending: false, isError: true }, "error"],
+    [{ data: {}, isPending: false, isError: false }, "missing"],
+    [{ data: { geoLat: 91, geoLng: 10 }, isPending: false, isError: false }, "missing"],
+    [{ data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false }, "missing"],
+  ] as const)("maps profile state to the %s location action", (result, status) => {
+    profileResult.current = result;
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastAppMenuProps.current?.savedLocation?.status).toBe(status);
   });
 });
 
@@ -327,6 +473,9 @@ describe("MarketPage preview", () => {
 
     expect(screen.getAllByText("Priscilah Malii").length).toBeGreaterThan(0);
     expect(screen.getByText("Goods")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Priscilah Malii" }).className).toContain(
+      "top-[calc(env(safe-area-inset-top)+4.75rem)]",
+    );
   });
 
   it.each([
