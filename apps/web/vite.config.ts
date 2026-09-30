@@ -82,10 +82,15 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     }),
     codecovVitePlugin({
       enableBundleAnalysis: process.env.CI === "true",
-      bundleName: "clc-web",
+      bundleName: "clc-web-client",
       uploadToken: process.env.CODECOV_TOKEN,
       gitService: "github",
-    }),
+    }).map((plugin): import("vite-plus").Plugin => ({
+      ...plugin,
+      // Client, SSR and Nitro all emit ESM. Sharing one report name lets a
+      // server upload replace the browser assets and creates false regressions.
+      applyToEnvironment: (environment) => environment.name === "client",
+    })),
   ];
 
   return { environments, resolve: { tsconfigPaths: true }, plugins };
