@@ -59,6 +59,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("fr")}>
         Français
       </button>
+      <button type="button" onClick={() => setLocale("it")}>
+        Italiano
+      </button>
       <button type="button" onClick={() => setLocale("pt")}>
         Português
       </button>
@@ -172,6 +175,20 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects Italian from a region-tagged device language", async () => {
+    setNavigatorLanguages(["it-CH", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("it");
+
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("it");
+      expect(document.documentElement.lang).toBe("it");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
   it("detects Portuguese from a region-tagged device language", async () => {
     setNavigatorLanguages(["pt-MZ", "en"]);
 
@@ -259,6 +276,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("es");
     expect(localStorage.getItem("clc.locale")).toBe("es");
     expect(Cookies.get("clc_locale")).toBe("es");
+  });
+
+  it("persists an Italian locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Italiano" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("it");
+    expect(document.documentElement.lang).toBe("it");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("it");
+    expect(Cookies.get("clc_locale")).toBe("it");
   });
 
   it("persists a Portuguese locale selection", async () => {
