@@ -6,6 +6,8 @@ import {
   buildPoolRouteCalls,
   buildPoolWithdrawCalls,
   erc20ApproveAbi,
+  poolSwapInputUpperBoundRaw,
+  poolSwapMaxInputRaw,
   swapPoolDepositAbi,
   swapPoolWithdrawAllFeesAbi,
   swapPoolWithdrawExactFeesAbi,
@@ -138,5 +140,61 @@ describe("pool swap call builders", () => {
     expect(
       decodeFunctionData({ abi: swapPoolWithdrawExactFeesAbi, data: exactFees[0].data }).args,
     ).toEqual([TOKEN_OUT, 77n]);
+  });
+});
+
+describe("pool swap maximum input", () => {
+  it("uses the wallet, deposit headroom, and liquidity ceiling as independent bounds", () => {
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "995",
+        depositHeadroomRaw: "1200",
+        liquidityInputCeilingRaw: "55",
+      }),
+    ).toBe("55");
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "40",
+        depositHeadroomRaw: "1200",
+        liquidityInputCeilingRaw: "55",
+      }),
+    ).toBe("40");
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "995",
+        depositHeadroomRaw: "25",
+        liquidityInputCeilingRaw: "55",
+      }),
+    ).toBe("25");
+  });
+
+  it("treats null headroom as uncapped and preserves zero bounds", () => {
+    expect(poolSwapInputUpperBoundRaw({ walletBalanceRaw: "995", depositHeadroomRaw: null })).toBe(
+      "995",
+    );
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "995",
+        depositHeadroomRaw: null,
+        liquidityInputCeilingRaw: "0",
+      }),
+    ).toBe("0");
+  });
+
+  it("returns no maximum for malformed or negative raw amounts", () => {
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "not-an-amount",
+        depositHeadroomRaw: null,
+        liquidityInputCeilingRaw: "55",
+      }),
+    ).toBeNull();
+    expect(
+      poolSwapMaxInputRaw({
+        walletBalanceRaw: "995",
+        depositHeadroomRaw: "-1",
+        liquidityInputCeilingRaw: "55",
+      }),
+    ).toBeNull();
   });
 });

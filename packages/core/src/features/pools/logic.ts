@@ -86,10 +86,6 @@ export const poolTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your pool",
 });
 
-export const poolSproutLicenseSchema = z.literal(true, {
-  error: "Accept the SPROUT License to publish your pool",
-});
-
 const poolUnitSchema = z.custom<UnitOfAccount>(isUnitOfAccount, {
   message: "Choose a currency",
 });
@@ -181,7 +177,6 @@ export function poolCreateSchemaForChain(chainId: number) {
       // selection, so these hold a stored URL or nothing.
       imageUrl: optionalStoredImageUrlSchema,
       acceptedTerms: poolTermsSchema,
-      acceptedSproutLicense: poolSproutLicenseSchema,
     })
     .superRefine((value, ctx) => {
       if (value.pricing !== "oracle" || hasPoolOracleBaseCurrency(value.unitOfAccount, chainId)) {

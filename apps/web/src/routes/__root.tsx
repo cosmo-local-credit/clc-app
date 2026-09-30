@@ -110,6 +110,7 @@ function AppContent() {
       <Web3Provider queryClient={queryClient}>
         <AppInner />
       </Web3Provider>
+      <AppToaster />
     </AppI18nProvider>
   );
 }
@@ -400,7 +401,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <html lang="en" data-brand={BRAND} suppressHydrationWarning>
+    <html lang="en" dir="ltr" data-brand={BRAND} suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: installBootstrapScript }} />
@@ -409,7 +410,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <AppToaster />
         {AppDevtools ? (
           <Suspense fallback={null}>
             <AppDevtools />

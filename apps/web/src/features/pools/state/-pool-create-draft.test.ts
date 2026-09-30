@@ -17,7 +17,6 @@ const submittedPool = {
   phone: "",
   terms: "",
   acceptedTerms: true as const,
-  acceptedSproutLicense: true as const,
 };
 
 afterEach(() => {

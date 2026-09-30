@@ -58,7 +58,7 @@ export function InstallPage() {
             else void router.navigate({ to: "/", search: { tab: "market" }, replace: true });
           }}
         >
-          <RiArrowLeftLine aria-hidden="true" />
+          <RiArrowLeftLine className="rtl:-scale-x-100" aria-hidden="true" />
           <Trans>Back</Trans>
         </Button>
         <LanguageSelector />

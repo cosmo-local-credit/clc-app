@@ -16,13 +16,18 @@ import { useIPCamera } from "./use-ip-camera";
 export const CAMERA_RANK = {
   /** The black location button — an explicit request, exempt from the latch. */
   explicit: EXPLICIT_CAMERA_RANK,
-  liveGps: 1,
-  persistedGps: 2,
-  ipCity: 3,
-  countryDefault: 4,
+  /**
+   * The location saved on the signed-in profile. The map opens there, and only
+   * the location button moves it to a live fix.
+   */
+  savedProfile: 1,
+  liveGps: 2,
+  persistedGps: 3,
+  ipCity: 4,
+  countryDefault: 5,
 } as const;
 
-const REAL_FIX_ZOOM = 14;
+export const REAL_FIX_ZOOM = 14;
 
 type Coordinates = { lat: number; lng: number };
 

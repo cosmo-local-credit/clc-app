@@ -5,6 +5,7 @@ import { OnboardingMenu } from "#/components/language-selector";
 import { InstallAppLink } from "#/components/install-app-link";
 import { Button } from "#/components/ui/button";
 import { CLCLogo } from "#/components/ui/clc-logo";
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { onboardingSearch } from "#/lib/onboarding-search";
 
 /**
@@ -33,7 +34,15 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
             <Trans>Cosmo-Local Credit</Trans>
           </h1>
           <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
-            <Trans>Route redeemable claims across curated markets with shared standards.</Trans>
+            <Trans>Route redeemable claims across curated markets with shared standards.</Trans>{" "}
+            <a
+              href={PLATFORM_ABOUT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline underline-offset-4 hover:text-primary"
+            >
+              <Trans>About Cosmo-Local Credit</Trans>
+            </a>
           </p>
         </div>
       </div>

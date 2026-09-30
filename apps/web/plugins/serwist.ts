@@ -82,6 +82,9 @@ async function buildServiceWorker(rootDir: string, production: boolean, brand: "
         globIgnores: [
           "_worker.js/**",
           "**/install-app-dialog-*.js",
+          // Native QR scanning never needs the ZXing fallback. Keep its JS on
+          // demand too; .wasm is already outside globPatterns above.
+          "**/qr-zxing-*.js",
           // Both brands' icon sets ship so develop and master keep identical
           // trees, but only the one this build resolved is ever requested.
           `brand/${brand === "staging" ? "prod" : "staging"}/**`,

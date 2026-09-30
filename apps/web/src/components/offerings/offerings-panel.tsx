@@ -219,7 +219,7 @@ function OfferingTile({
   const quantityNumber = quantity ? Number(quantity.value) : 0;
   const quantityValue =
     quantity && quantity.value.length > 6 && Number.isFinite(quantityNumber)
-      ? new Intl.NumberFormat(i18n.locale, {
+      ? new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale, {
           notation: "compact",
           maximumFractionDigits: 1,
         }).format(quantityNumber)
@@ -231,7 +231,7 @@ function OfferingTile({
     <div className="flex flex-col">
       <button
         type="button"
-        className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-left active:bg-muted"
+        className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-start active:bg-muted"
         aria-label={t`View offering details: ${offering.name}`}
         onClick={() => setDetailsOpen(true)}
       >
@@ -295,7 +295,7 @@ function OfferingTile({
         <span data-slot="offering-actions" className="flex border-x border-b border-border">
           <button
             type="button"
-            className="flex-1 border-r border-border bg-card py-2 text-[0.6875rem] font-semibold"
+            className="flex-1 border-e border-border bg-card py-2 text-[0.6875rem] font-semibold"
             onClick={() => management.onEdit(offering)}
           >
             <Trans>Edit</Trans>
@@ -420,7 +420,7 @@ function OfferingDetailsSheet({
 
             {offering.description ? (
               <div className="mx-6 mt-3 border border-border bg-card p-3">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
                   {offering.description}
                 </p>
               </div>

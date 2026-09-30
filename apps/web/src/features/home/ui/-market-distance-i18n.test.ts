@@ -12,7 +12,10 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 // the same `{0} m` / `{0} km` message ids these catalogs actually carry. A
 // bare identifier would generate `{value} m` and silently miss the catalog.
 function metres(distance: { value: number }): string {
-  return i18n._(msg`${distance.value} m`);
+  const localized = {
+    value: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(distance.value),
+  };
+  return i18n._(msg`${localized.value} m`);
 }
 
 function kilometres(distance: { value: string }): string {
@@ -31,11 +34,53 @@ describe("translated distance labels", () => {
     expect(kilometres({ value: "12.4" })).toBe("12.4 km");
   });
 
+  it("renders Arabic with Arabic-Indic digits and the translated unit", async () => {
+    await activateLocale("ar");
+
+    expect(metres({ value: 300 })).toBe("٣٠٠ م");
+    expect(kilometres({ value: "١٢٫٤" })).toBe("١٢٫٤ كم");
+  });
+
+  it("renders Dzongkha with Tibetan digits and the translated unit", async () => {
+    await activateLocale("dz");
+
+    expect(metres({ value: 300 })).toBe("མི་ཊར་ ༣༠༠");
+    expect(kilometres({ value: "༡༢.༤" })).toBe("ཀི་ལོ་མི་ཊར་ ༡༢.༤");
+  });
+
+  it("renders Spanish", async () => {
+    await activateLocale("es");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
+  });
+
   it("renders Serbian", async () => {
     await activateLocale("sr");
 
     expect(metres({ value: 300 })).toBe("300 m");
     expect(kilometres({ value: "12.4" })).toBe("12.4 km");
+  });
+
+  it("renders French", async () => {
+    await activateLocale("fr");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
+  });
+
+  it("renders Portuguese", async () => {
+    await activateLocale("pt");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
+  });
+
+  it("renders Italian", async () => {
+    await activateLocale("it");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
   });
 
   it("renders Swahili with the unit before the number", async () => {
@@ -60,6 +105,31 @@ describe("translated distance labels", () => {
   });
 
   it("keeps every locale's kind labels translated", async () => {
+    await activateLocale("dz");
+    expect(i18n._(msg`Goods`)).toBe("ཅ་དངོས།");
+    expect(i18n._(msg`Services`)).toBe("ཞབས་ཏོག་ཚུ།");
+    expect(i18n._(msg`Voucher`)).toBe("འཛིན་ཤོག");
+
+    await activateLocale("es");
+    expect(i18n._(msg`Goods`)).toBe("Bienes");
+    expect(i18n._(msg`Services`)).toBe("Servicios");
+    expect(i18n._(msg`Voucher`)).toBe("Vale");
+
+    await activateLocale("fr");
+    expect(i18n._(msg`Goods`)).toBe("Biens");
+    expect(i18n._(msg`Services`)).toBe("Services");
+    expect(i18n._(msg`Voucher`)).toBe("Bon d’échange");
+
+    await activateLocale("pt");
+    expect(i18n._(msg`Goods`)).toBe("Bens");
+    expect(i18n._(msg`Services`)).toBe("Serviços");
+    expect(i18n._(msg`Voucher`)).toBe("Vale");
+
+    await activateLocale("it");
+    expect(i18n._(msg`Goods`)).toBe("Beni");
+    expect(i18n._(msg`Services`)).toBe("Servizi");
+    expect(i18n._(msg`Voucher`)).toBe("Buono");
+
     await activateLocale("sw");
     expect(i18n._(msg`Goods`)).toBe("Bidhaa");
     expect(i18n._(msg`Services`)).toBe("Huduma");
@@ -72,13 +142,13 @@ describe("translated distance labels", () => {
   });
 
   it("translates the market load error, retry, and empty states", async () => {
-    for (const locale of ["sr", "sw"] as const) {
+    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw"] as const) {
       await activateLocale(locale);
       for (const message of [
         msg`Could not load vouchers.`,
         msg`Retry`,
         msg`No vouchers to show yet.`,
-        msg`The map is unavailable on this device. Browse vouchers as a list instead.`,
+        msg`The map is not supported on this device.`,
       ]) {
         const translated = i18n._(message);
         expect(translated).not.toBe("");

@@ -42,10 +42,6 @@ export const voucherTermsSchema = z.literal(true, {
   error: "Accept the terms to publish your voucher",
 });
 
-export const voucherPathLicenseSchema = z.literal(true, {
-  error: "Accept the PATH License to publish your voucher",
-});
-
 const voucherDisplayNameSchema = z
   .string()
   .trim()
@@ -150,7 +146,6 @@ export const voucherCreateSchema = voucherDetailsSchema
   .extend(voucherPlaceSchema.shape)
   .extend({
     acceptedTerms: voucherTermsSchema,
-    acceptedPathLicense: voucherPathLicenseSchema,
   })
   .superRefine((value, ctx) => {
     checkExpiryDate(value.voucherType, value.expiryDate, (message) =>

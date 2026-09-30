@@ -1,10 +1,11 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ChangeEvent, ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { RiCameraLine, RiCloseLine, RiLoader4Line, RiUploadLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
+import { QrCameraError, startQrCamera } from "#/lib/qr-camera";
+import { decodeQrImageFile } from "#/lib/qr-decode";
 
-type Html5QrcodeType = InstanceType<typeof import("html5-qrcode").Html5Qrcode>;
 type ScanMode = "choose" | "camera" | "upload";
 type ScanError = { type: "camera-denied"; message: string } | { type: "other"; message: string };
 
@@ -14,89 +15,72 @@ interface PaperWalletScannerProps {
   title?: ReactNode;
 }
 
-const SCANNER_ELEMENT_ID = "paper-wallet-scanner";
-
 export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalletScannerProps) {
   const { t } = useLingui();
   const [mode, setMode] = useState<ScanMode>("choose");
   const [error, setError] = useState<ScanError | null>(null);
   const [cameraStarting, setCameraStarting] = useState(false);
-  const scannerRef = useRef<Html5QrcodeType | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Incremented on cancel/unmount. In-flight async work captures the
+  // Incremented on cancel/unmount. An in-flight upload decode captures the
   // current epoch and bails out if it no longer matches.
   const epochRef = useRef(0);
 
   useEffect(() => {
     return () => {
       epochRef.current += 1;
-      teardownScanner(scannerRef.current);
-      scannerRef.current = null;
     };
   }, []);
 
-  const handleCameraScan = useCallback(async () => {
-    setError(null);
+  // Back to the choices once the camera has let go, so a payload the parent
+  // rejects leaves something to press rather than a dead preview.
+  const onCameraDecoded = useEffectEvent((text: string) => {
+    setMode("choose");
+    onKeyDecoded(text);
+  });
+
+  const onCameraError = useEffectEvent((err: unknown) => {
+    const kind = err instanceof QrCameraError ? err.kind : "failed";
+    setError(
+      kind === "denied"
+        ? { type: "camera-denied", message: t`Camera access denied.` }
+        : kind === "no-camera"
+          ? { type: "other", message: t`No camera found on this device.` }
+          : { type: "other", message: t`Failed to start camera.` },
+    );
+  });
+
+  // The camera runs exactly while camera mode is shown. Leaving the mode or
+  // unmounting aborts it, which releases the stream wherever it has got to.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (mode !== "camera" || !video) return;
+
+    const controller = new AbortController();
     setCameraStarting(true);
+    startQrCamera(video, {
+      facingMode: "environment",
+      onDecoded: onCameraDecoded,
+      signal: controller.signal,
+    })
+      .catch((err: unknown) => {
+        if (!controller.signal.aborted) onCameraError(err);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCameraStarting(false);
+      });
+
+    return () => {
+      controller.abort();
+      setCameraStarting(false);
+    };
+  }, [mode]);
+
+  const handleCameraScan = useCallback(() => {
+    setError(null);
     setMode("camera");
-    const epoch = ++epochRef.current;
-
-    const { Html5Qrcode } = await import("html5-qrcode");
-    if (epochRef.current !== epoch) return;
-
-    const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-    scannerRef.current = scanner;
-
-    try {
-      const devices = await Html5Qrcode.getCameras();
-      if (epochRef.current !== epoch) return;
-
-      if (!devices.length) {
-        setError({
-          type: "other",
-          message: t`No camera found on this device.`,
-        });
-        setCameraStarting(false);
-        return;
-      }
-
-      const backCamera =
-        devices.find(
-          (d) =>
-            d.label.toLowerCase().includes("back") ||
-            d.label.toLowerCase().includes("rear") ||
-            d.label.toLowerCase().includes("environment"),
-        ) ?? devices[0];
-
-      await scanner.start(
-        backCamera.id,
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          if (epochRef.current !== epoch) return;
-          onKeyDecoded(decodedText);
-          void scanner.stop().then(() => scanner.clear());
-          scannerRef.current = null;
-        },
-        () => {},
-      );
-    } catch (err) {
-      if (epochRef.current !== epoch) return;
-      scannerRef.current = null;
-      setError(
-        err instanceof DOMException && err.name === "NotAllowedError"
-          ? { type: "camera-denied", message: t`Camera access denied.` }
-          : {
-              type: "other",
-              message: err instanceof Error ? err.message : t`Failed to start camera.`,
-            },
-      );
-    } finally {
-      if (epochRef.current === epoch) {
-        setCameraStarting(false);
-      }
-    }
-  }, [onKeyDecoded, t]);
+  }, []);
 
   const handleFileUpload = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -106,15 +90,10 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
       setError(null);
       const epoch = ++epochRef.current;
 
-      const { Html5Qrcode } = await import("html5-qrcode");
-      if (epochRef.current !== epoch) return;
-
-      const scanner = new Html5Qrcode(SCANNER_ELEMENT_ID);
-      scannerRef.current = scanner;
-
       try {
-        const decoded = await scanner.scanFile(file, false);
+        const decoded = await decodeQrImageFile(file);
         if (epochRef.current !== epoch) return;
+        if (decoded === null) throw new Error("No QR code in image");
         onKeyDecoded(decoded);
       } catch {
         if (epochRef.current !== epoch) return;
@@ -123,10 +102,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
           message: t`No QR code found. Try again with a clearer image.`,
         });
       } finally {
-        if (epochRef.current === epoch) {
-          scannerRef.current = null;
-          if (fileInputRef.current) fileInputRef.current.value = "";
-        }
+        if (epochRef.current === epoch && fileInputRef.current) fileInputRef.current.value = "";
       }
     },
     [onKeyDecoded, t],
@@ -134,8 +110,6 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
 
   const handleCancel = useCallback(() => {
     epochRef.current += 1;
-    teardownScanner(scannerRef.current);
-    scannerRef.current = null;
     setError(null);
     setMode("choose");
   }, []);
@@ -154,19 +128,10 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
         </Button>
       </div>
 
-      {/*
-				Mount point for html5-qrcode. Kept in DOM during upload mode
-				so scanFile can access the internal canvas.
-			*/}
-      <div
-        id={SCANNER_ELEMENT_ID}
-        className={mode !== "camera" ? "sr-only size-0 overflow-hidden" : ""}
-      />
-
       {mode === "choose" ? (
         <div className="space-y-2">
           <Button className="h-11 w-full" onClick={handleCameraScan} disabled={cameraStarting}>
-            <RiCameraLine className="mr-2 size-4" />
+            <RiCameraLine className="me-2 size-4" />
             <Trans>Scan QR Code</Trans>
           </Button>
           <Button
@@ -177,18 +142,34 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
               setError(null);
             }}
           >
-            <RiUploadLine className="mr-2 size-4" />
+            <RiUploadLine className="me-2 size-4" />
             <Trans>Upload Image</Trans>
           </Button>
         </div>
       ) : mode === "camera" ? (
         <div className="space-y-3">
-          {cameraStarting ? (
-            <div className="flex h-[280px] items-center justify-center rounded-none border border-border bg-card">
-              <RiLoader4Line className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : null}
-          {error && !cameraStarting ? (
+          <div
+            className={
+              error
+                ? "hidden"
+                : "relative flex aspect-square items-center justify-center overflow-hidden border border-border bg-black"
+            }
+          >
+            <video
+              ref={videoRef}
+              className="absolute inset-0 size-full object-cover"
+              muted
+              playsInline
+              aria-hidden
+            />
+            {cameraStarting ? (
+              <RiLoader4Line className="relative size-6 animate-spin text-white/80" />
+            ) : (
+              // An aiming guide only: the whole frame is read.
+              <div className="relative aspect-square w-3/5 border-2 border-white/90 shadow-[0_0_0_9999px_rgb(0_0_0/0.4)]" />
+            )}
+          </div>
+          {error ? (
             <div className="space-y-2">
               <p className="text-destructive text-xs">{error.message}</p>
               {error.type === "camera-denied" ? (
@@ -200,7 +181,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
                     setError(null);
                   }}
                 >
-                  <RiUploadLine className="mr-2 size-4" />
+                  <RiUploadLine className="me-2 size-4" />
                   <Trans>Upload Image Instead</Trans>
                 </Button>
               ) : null}
@@ -225,7 +206,7 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
             className="h-11 w-full"
             onClick={() => fileInputRef.current?.click()}
           >
-            <RiUploadLine className="mr-2 size-4" />
+            <RiUploadLine className="me-2 size-4" />
             <Trans>Choose Image</Trans>
           </Button>
           {error ? <p className="text-destructive text-xs">{error.message}</p> : null}
@@ -236,18 +217,4 @@ export function PaperWalletScanner({ onKeyDecoded, onCancel, title }: PaperWalle
       ) : null}
     </div>
   );
-}
-
-function teardownScanner(scanner: Html5QrcodeType | null) {
-  if (!scanner) return;
-  if (scanner.isScanning) {
-    scanner
-      .stop()
-      .then(() => scanner.clear())
-      .catch(() => {});
-  } else {
-    try {
-      scanner.clear();
-    } catch {}
-  }
 }

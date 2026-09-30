@@ -35,7 +35,7 @@ function ComboboxChip({
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
       className={cn(
-        "inline-flex h-8 max-w-full shrink-0 items-center border border-border bg-card pl-3 font-semibold text-[11px] text-foreground",
+        "inline-flex h-8 max-w-full shrink-0 items-center border border-border bg-card ps-3 font-semibold text-[11px] text-foreground",
         "data-highlighted:border-foreground",
         className,
       )}
@@ -85,7 +85,7 @@ function ComboboxItem({ className, ...props }: ComboboxPrimitive.Item.Props) {
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
       className={cn(
-        "flex min-h-11 w-full select-none items-center gap-3 border-border border-b px-3 py-2 text-left outline-none last:border-b-0",
+        "flex min-h-11 w-full select-none items-center gap-3 border-border border-b px-3 py-2 text-start outline-none last:border-b-0",
         "data-highlighted:bg-muted data-disabled:pointer-events-none data-disabled:opacity-40",
         className,
       )}

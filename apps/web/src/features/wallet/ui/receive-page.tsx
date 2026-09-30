@@ -69,7 +69,7 @@ export function ReceivePage() {
         <button
           type="button"
           aria-label={t`Copy wallet address`}
-          className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-left"
+          className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
           onClick={() => copy(address)}
         >
           <HighlightAddress

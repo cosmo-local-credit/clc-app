@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 
 vi.mock("#/components/install-app-link", () => ({
   InstallAppLink: () => <a href="/install">Install CLC</a>,
@@ -30,6 +31,19 @@ beforeEach(() => {
 });
 
 describe("LandingPage", () => {
+  it("links to About Cosmo-Local Credit at the end of the introduction", () => {
+    render(<LandingPage />);
+
+    const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
+
+    expect(about.getAttribute("href")).toBe(PLATFORM_ABOUT_URL);
+    expect(about.getAttribute("target")).toBe("_blank");
+    expect(about.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(about.closest("p")?.textContent).toBe(
+      "Route redeemable claims across curated markets with shared standards. About Cosmo-Local Credit",
+    );
+  });
+
   it("shows branding, onboarding menu, and the two identity buttons", () => {
     render(<LandingPage />);
     expect(screen.getByRole("heading", { name: /cosmo-local credit/i })).toBeTruthy();

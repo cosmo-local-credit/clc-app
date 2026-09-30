@@ -5,6 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
 
+import { RedemptionReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
 import { Field } from "#/components/ui/field";
@@ -51,7 +52,7 @@ function CopyableMono({
   return (
     <button
       type="button"
-      className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+      className="flex min-w-0 items-center gap-1.5 bg-card text-end"
       aria-label={label}
       onClick={() => onCopy(value)}
     >
@@ -64,12 +65,14 @@ function CopyableMono({
 }
 
 export function SendReceiptPage({
+  token,
   trackingId,
   recipient,
   amount,
   symbol,
   returnPool,
 }: {
+  token?: string;
   trackingId?: string;
   recipient?: string;
   amount?: string;
@@ -84,7 +87,7 @@ export function SendReceiptPage({
    */
   returnPool?: string;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const navigate = useNavigate();
   const tracking = useOtxTracking(trackingId ?? null, {
     queryKey: "send-relay-track",
@@ -145,7 +148,9 @@ export function SendReceiptPage({
 
   const txHash = outcome.otx.txHash || null;
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
-  const submittedAt = outcome.otx.createdAt ? formatSubmittedAt(outcome.otx.createdAt) : null;
+  const submittedAt = outcome.otx.createdAt
+    ? formatSubmittedAt(outcome.otx.createdAt, i18n.locales?.[0] ?? i18n.locale)
+    : null;
 
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
@@ -191,6 +196,7 @@ export function SendReceiptPage({
       </div>
 
       {txHash && toAddress ? <SendSharePanel txHash={txHash} recipientAddress={toAddress} /> : null}
+      {token && recipient ? <RedemptionReviewPrompt address={token} recipient={recipient} /> : null}
 
       <div className="flex-1" />
 
@@ -470,10 +476,10 @@ function ReceiptShell({
   );
 }
 
-function formatSubmittedAt(value: string): string {
+function formatSubmittedAt(value: string, locale: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);

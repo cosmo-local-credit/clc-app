@@ -25,7 +25,6 @@ const knownErrors = [
   "Choose an expiration date",
   "Expiration date must be in the future",
   "Accept the terms to publish your voucher",
-  "Accept the PATH License to publish your voucher",
   "Pool name is required",
   "Pool name must be 80 characters or fewer",
   "Pool shortcode is required",
@@ -35,7 +34,6 @@ const knownErrors = [
   "Pool description must be 500 characters or fewer",
   "Swap fee must be a number from 0 to 100",
   "Accept the terms to publish your pool",
-  "Accept the SPROUT License to publish your pool",
   "Choose rates you set or equal value when the unit has no price feed",
   "Message must be 500 characters or fewer",
   "Add a message or choose profile details",
@@ -87,9 +85,6 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe(
       "Jina la puli linahitajika",
     );
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Kubali Leseni ya SPROUT ili kuchapisha puli yako",
-    );
   });
 
   it("translates known validation errors into Serbian", async () => {
@@ -101,16 +96,93 @@ describe("translateValidationError", () => {
       "Прихватите услове да бисте објавили ваучер",
     );
     expect(translateValidationError("Pool name is required", i18n)).toBe("Назив пула је обавезан");
-    expect(translateValidationError("Accept the SPROUT License to publish your pool", i18n)).toBe(
-      "Прихватите SPROUT лиценцу да бисте објавили пул",
+  });
+
+  it("translates known validation errors into French", async () => {
+    await activateLocale("fr");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Choisissez un emplacement");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "Numéro de téléphone non valide",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Le nom du bon d’échange est requis",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Le nom du bassin est requis",
+    );
+  });
+
+  it("translates known validation errors into Spanish", async () => {
+    await activateLocale("es");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Elija una ubicación");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "El número de teléfono no es válido",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "El nombre del vale es obligatorio",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "El nombre del fondo es obligatorio",
+    );
+  });
+
+  it("translates known validation errors into Arabic", async () => {
+    await activateLocale("ar");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("اختر موقعًا");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("رقم الهاتف غير صالح");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("اسم القسيمة مطلوب");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("اسم الصندوق مطلوب");
+  });
+
+  it("translates known validation errors into Dzongkha", async () => {
+    await activateLocale("dz");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("ཆ་གནས་མེད་པའི་ཁ་པར་ཨང་།");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("འཛིན་ཤོག་མིང་དགོ");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("དངུལ་ཁུངས་མིང་དགོ");
+  });
+
+  it("translates known validation errors into Portuguese", async () => {
+    await activateLocale("pt");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Escolha uma localização");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "O número de telefone não é válido",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "O nome do vale é obrigatório",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "O nome do fundo é obrigatório",
+    );
+  });
+
+  it("translates known validation errors into Italian", async () => {
+    await activateLocale("it");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Scelga una posizione");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "Il numero di telefono non è valido",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Il nome del buono è obbligatorio",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Il nome del fondo è obbligatorio",
     );
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    await activateLocale("sr");
+    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw"] as const) {
+      await activateLocale(locale);
 
-    for (const error of knownErrors) {
-      expect(translateValidationError(error, i18n)).not.toBe(error);
+      for (const error of knownErrors) {
+        expect(translateValidationError(error, i18n)).not.toBe(error);
+      }
     }
   });
 

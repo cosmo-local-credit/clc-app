@@ -1,6 +1,8 @@
 import {
+  poolQuoterReverseValueForAbi,
   swapPoolGetAmountInAbi,
   swapPoolGetAmountOutAbi,
+  swapPoolGetQuoteAbi,
   swapRouterQuoteExactInputAbi,
   swapRouterQuoteExactOutputAbi,
 } from "@clc/core/features/pool-swaps/logic";
@@ -9,6 +11,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import {
   deriveExactInputHopAmountIns,
   deriveExactOutputHopAmountIns,
+  quotePoolGrossInputCeiling,
   quoteRouteExactInput,
   quoteRouteExactOutput,
   type PoolQuoteClient,
@@ -20,6 +23,7 @@ const TOKEN_A = "0x3333333333333333333333333333333333333333" as const;
 const TOKEN_B = "0x4444444444444444444444444444444444444444" as const;
 const TOKEN_C = "0x5555555555555555555555555555555555555555" as const;
 const ROUTER = "0x6666666666666666666666666666666666666666" as const;
+const QUOTER = "0x7777777777777777777777777777777777777777" as const;
 
 const path = [
   { poolAddress: POOL_1, tokenIn: TOKEN_A, tokenOut: TOKEN_B },
@@ -116,5 +120,128 @@ describe("pool swap quote helpers", () => {
       ],
       100n,
     ]);
+  });
+
+  it("keeps the holder/cap upper bound when its gross quote fits liquidity", async () => {
+    const client: PoolQuoteClient = {
+      call: vi.fn().mockResolvedValue({
+        data: encodeFunctionResult({
+          abi: swapPoolGetQuoteAbi,
+          functionName: "getQuote",
+          result: 50n,
+        }),
+      }),
+    };
+
+    await expect(
+      quotePoolGrossInputCeiling(client, {
+        poolAddress: POOL_1,
+        quoterAddress: QUOTER,
+        tokenIn: TOKEN_A,
+        tokenOut: TOKEN_B,
+        availableAmountOutRaw: "55",
+        upperAmountInRaw: "25",
+        blockNumber: 100n,
+      }),
+    ).resolves.toBe("25");
+
+    expect(vi.mocked(client.call).mock.calls[0][0].blockNumber).toBe(100n);
+  });
+
+  it("uses the inverse quoter boundary and verifies both sides of its rounding", async () => {
+    const responses = [
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result: 2000n }),
+      encodeFunctionResult({
+        abi: poolQuoterReverseValueForAbi,
+        functionName: "reverseValueFor",
+        result: 28n,
+      }),
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result: 54n }),
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result: 56n }),
+    ];
+    const client: PoolQuoteClient = {
+      call: vi.fn().mockImplementation(async () => ({ data: responses.shift() as Hex })),
+    };
+
+    await expect(
+      quotePoolGrossInputCeiling(client, {
+        poolAddress: POOL_1,
+        quoterAddress: QUOTER,
+        tokenIn: TOKEN_A,
+        tokenOut: TOKEN_B,
+        availableAmountOutRaw: "55",
+        upperAmountInRaw: "1000",
+        blockNumber: 100n,
+      }),
+    ).resolves.toBe("27");
+
+    const calls = vi.mocked(client.call).mock.calls;
+    expect(calls.every(([call]) => call.blockNumber === 100n)).toBe(true);
+    expect(calls[1][0].to).toBe(QUOTER);
+    expect(
+      decodeFunctionData({ abi: poolQuoterReverseValueForAbi, data: calls[1][0].data }).args,
+    ).toEqual([TOKEN_B, TOKEN_A, 56n]);
+  });
+
+  it("uses raw-unit parity for a pool without a quoter", async () => {
+    const responses = [100n, 55n, 56n].map((result) =>
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result }),
+    );
+    const client: PoolQuoteClient = {
+      call: vi.fn().mockImplementation(async () => ({ data: responses.shift() as Hex })),
+    };
+
+    await expect(
+      quotePoolGrossInputCeiling(client, {
+        poolAddress: POOL_1,
+        tokenIn: TOKEN_A,
+        tokenOut: TOKEN_B,
+        availableAmountOutRaw: "55",
+        upperAmountInRaw: "100",
+      }),
+    ).resolves.toBe("55");
+    expect(client.call).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns zero without quoting when no output liquidity is available", async () => {
+    const client: PoolQuoteClient = { call: vi.fn() };
+
+    await expect(
+      quotePoolGrossInputCeiling(client, {
+        poolAddress: POOL_1,
+        quoterAddress: QUOTER,
+        tokenIn: TOKEN_A,
+        tokenOut: TOKEN_B,
+        availableAmountOutRaw: "0",
+        upperAmountInRaw: "100",
+      }),
+    ).resolves.toBe("0");
+    expect(client.call).not.toHaveBeenCalled();
+  });
+
+  it("rejects an inverse boundary that the pool does not verify", async () => {
+    const responses = [
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result: 2000n }),
+      encodeFunctionResult({
+        abi: poolQuoterReverseValueForAbi,
+        functionName: "reverseValueFor",
+        result: 28n,
+      }),
+      encodeFunctionResult({ abi: swapPoolGetQuoteAbi, functionName: "getQuote", result: 56n }),
+    ];
+    const client: PoolQuoteClient = {
+      call: vi.fn().mockImplementation(async () => ({ data: responses.shift() as Hex })),
+    };
+
+    await expect(
+      quotePoolGrossInputCeiling(client, {
+        poolAddress: POOL_1,
+        quoterAddress: QUOTER,
+        tokenIn: TOKEN_A,
+        tokenOut: TOKEN_B,
+        availableAmountOutRaw: "55",
+        upperAmountInRaw: "1000",
+      }),
+    ).rejects.toThrow(/unsafe gross input ceiling/i);
   });
 });

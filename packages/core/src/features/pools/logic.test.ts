@@ -33,7 +33,6 @@ const validPool: PoolCreateInput = {
   phone: "+254712345678",
   terms: "https://kilifi.example/terms",
   acceptedTerms: true,
-  acceptedSproutLicense: true,
 };
 
 const OWNER = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";

@@ -162,7 +162,7 @@ export function ImageUploadField({
                 onChange(null);
               }}
             >
-              <FaTrash aria-hidden className="mr-2 size-4" />
+              <FaTrash aria-hidden className="me-2 size-4" />
               {t`Remove`}
             </Button>
           ) : hint ? (

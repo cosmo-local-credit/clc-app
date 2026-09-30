@@ -1,4 +1,5 @@
 import {
+  poolQuoterReverseValueForAbi,
   swapPoolGetAmountInAbi,
   swapPoolGetAmountOutAbi,
   swapPoolGetQuoteAbi,
@@ -7,6 +8,13 @@ import {
   type PoolRouteHop,
 } from "@clc/core/features/pool-swaps/logic";
 import { decodeFunctionResult, encodeFunctionData, type Address, type Hex } from "viem";
+
+/**
+ * `SwapRouter` on Gnosis. Stateless: it only chains each pool's own
+ * `getAmountOut` / `getAmountIn`, so its figures already carry every pool fee and
+ * the protocol fee.
+ */
+export const SWAP_ROUTER_ADDRESS = "0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC" as const;
 
 export type PoolQuoteClient = {
   call(this: void, args: { to: Address; data: Hex; blockNumber?: bigint }): Promise<{ data?: Hex }>;
@@ -35,6 +43,15 @@ export type PoolGrossAmountOutQuoteInput = QuoteAtBlock & {
   tokenOut: Address;
   tokenIn: Address;
   amountInRaw: string;
+};
+
+export type PoolGrossInputCeilingQuoteInput = QuoteAtBlock & {
+  poolAddress: Address;
+  quoterAddress?: Address;
+  tokenOut: Address;
+  tokenIn: Address;
+  availableAmountOutRaw: string;
+  upperAmountInRaw: string;
 };
 
 export type RouteExactInputQuoteInput = QuoteAtBlock & {
@@ -123,6 +140,79 @@ export async function quotePoolGrossAmountOut(
     data: requireCallData(result.data),
   });
   return grossAmountOut.toString();
+}
+
+/**
+ * Largest input at or below `upperAmountInRaw` whose gross pool quote fits the
+ * available output liquidity.
+ *
+ * Pool liquidity is checked before fees are deducted, so the router's
+ * exact-output quote (which targets a net amount) cannot answer this question.
+ * `reverseValueFor(available + 1) - 1` instead finds the last input before the
+ * first unsafe gross output, including integer plateaus caused by decimals and
+ * rate rounding. Both sides of that boundary are verified against SwapPool.
+ */
+export async function quotePoolGrossInputCeiling(
+  client: PoolQuoteClient,
+  input: PoolGrossInputCeilingQuoteInput,
+): Promise<string> {
+  const availableAmountOut = parseNonNegativeAmount(input.availableAmountOutRaw);
+  const upperAmountIn = parseNonNegativeAmount(input.upperAmountInRaw);
+  if (availableAmountOut === 0n || upperAmountIn === 0n) return "0";
+
+  const grossAtUpper = BigInt(
+    await quotePoolGrossAmountOut(client, {
+      poolAddress: input.poolAddress,
+      tokenOut: input.tokenOut,
+      tokenIn: input.tokenIn,
+      amountInRaw: upperAmountIn.toString(),
+      blockNumber: input.blockNumber,
+    }),
+  );
+  if (grossAtUpper <= availableAmountOut) return upperAmountIn.toString();
+
+  const liquidityInputCeiling = input.quoterAddress
+    ? await quoteQuoterInputForGrossOutput(client, {
+        quoterAddress: input.quoterAddress,
+        tokenOut: input.tokenOut,
+        tokenIn: input.tokenIn,
+        amountOutRaw: (availableAmountOut + 1n).toString(),
+        blockNumber: input.blockNumber,
+      }).then((firstUnsafeInput) => (firstUnsafeInput > 0n ? firstUnsafeInput - 1n : 0n))
+    : availableAmountOut;
+  const candidate = liquidityInputCeiling < upperAmountIn ? liquidityInputCeiling : upperAmountIn;
+
+  if (candidate > 0n) {
+    const grossAtCandidate = BigInt(
+      await quotePoolGrossAmountOut(client, {
+        poolAddress: input.poolAddress,
+        tokenOut: input.tokenOut,
+        tokenIn: input.tokenIn,
+        amountInRaw: candidate.toString(),
+        blockNumber: input.blockNumber,
+      }),
+    );
+    if (grossAtCandidate > availableAmountOut) {
+      throw new Error("Pool quoter returned an unsafe gross input ceiling.");
+    }
+  }
+
+  if (candidate < upperAmountIn) {
+    const grossAfterCandidate = BigInt(
+      await quotePoolGrossAmountOut(client, {
+        poolAddress: input.poolAddress,
+        tokenOut: input.tokenOut,
+        tokenIn: input.tokenIn,
+        amountInRaw: (candidate + 1n).toString(),
+        blockNumber: input.blockNumber,
+      }),
+    );
+    if (grossAfterCandidate <= availableAmountOut) {
+      throw new Error("Pool quoter did not return the maximum gross input ceiling.");
+    }
+  }
+
+  return candidate.toString();
 }
 
 export async function quoteRouteExactInput(
@@ -230,6 +320,37 @@ function parsePositiveAmount(value: string): bigint {
   const amount = BigInt(value);
   if (amount <= 0n) throw new Error("Pool amount must be positive.");
   return amount;
+}
+
+function parseNonNegativeAmount(value: string): bigint {
+  if (!/^\d+$/.test(value)) throw new Error("Pool amount must be a non-negative integer string.");
+  return BigInt(value);
+}
+
+async function quoteQuoterInputForGrossOutput(
+  client: PoolQuoteClient,
+  input: QuoteAtBlock & {
+    quoterAddress: Address;
+    tokenOut: Address;
+    tokenIn: Address;
+    amountOutRaw: string;
+  },
+): Promise<bigint> {
+  const data = encodeFunctionData({
+    abi: poolQuoterReverseValueForAbi,
+    functionName: "reverseValueFor",
+    args: [input.tokenOut, input.tokenIn, parsePositiveAmount(input.amountOutRaw)],
+  });
+  const result = await client.call({
+    to: input.quoterAddress,
+    data,
+    blockNumber: input.blockNumber,
+  });
+  return decodeFunctionResult({
+    abi: poolQuoterReverseValueForAbi,
+    functionName: "reverseValueFor",
+    data: requireCallData(result.data),
+  });
 }
 
 function requireCallData(data: Hex | undefined): Hex {

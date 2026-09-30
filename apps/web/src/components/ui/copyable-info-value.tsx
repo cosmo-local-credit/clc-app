@@ -14,7 +14,7 @@ export function CopyableInfoValue({
   return (
     <button
       type="button"
-      className="flex min-w-0 items-center gap-1.5 bg-card text-right"
+      className="flex min-w-0 items-center gap-1.5 bg-card text-end"
       aria-label={label}
       onClick={() => onCopy(value)}
     >

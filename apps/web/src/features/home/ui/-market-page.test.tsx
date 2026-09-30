@@ -40,6 +40,9 @@ const {
   routeSearch,
   mockNavigate,
   filteredResult,
+  lastAppMenuProps,
+  profileRequests,
+  profileResult,
 } = vi.hoisted(() => ({
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
@@ -76,6 +79,15 @@ const {
       refetch: vi.fn(),
     },
   },
+  lastAppMenuProps: { current: null as Record<string, unknown> | null },
+  profileRequests: { current: 0 },
+  profileResult: {
+    current: {
+      data: undefined as { geoLat?: number | null; geoLng?: number | null } | undefined,
+      isPending: false,
+      isError: false,
+    },
+  },
 }));
 
 function scalar(key: string, value: unknown): string {
@@ -89,8 +101,35 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  CAMERA_RANK: {
+    explicit: 0,
+    savedProfile: 1,
+    liveGps: 2,
+    persistedGps: 3,
+    ipCity: 4,
+    countryDefault: 5,
+  },
+  REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
+}));
+
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  // Disabled calls are what a guest makes: counted, they would mean a request.
+  useAuthProfile: ({ enabled = true }: { enabled?: boolean } = {}) => {
+    if (enabled) profileRequests.current += 1;
+    return enabled ? profileResult.current : { data: undefined, isPending: true, isError: false };
+  },
+}));
+
+vi.mock("#/components/app-menu", () => ({
+  AppMenu: (props: { className?: string }) => {
+    lastAppMenuProps.current = props;
+    return (
+      <div data-testid="app-menu" className={props.className}>
+        <button type="button">Open menu</button>
+      </div>
+    );
+  },
 }));
 
 vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
@@ -231,6 +270,13 @@ beforeEach(() => {
     isPlaceholderData: false,
     refetch: vi.fn(),
   };
+  lastAppMenuProps.current = null;
+  profileRequests.current = 0;
+  profileResult.current = {
+    data: undefined,
+    isPending: false,
+    isError: false,
+  };
 });
 
 describe("MarketPage location button", () => {
@@ -255,12 +301,102 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("floats the sign-in action at the top of the map", () => {
+  it("floats the app menu at logical top-start and reserves room beside it for sign-in", () => {
     renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
 
+    expect(screen.getByTestId("app-menu").className).toContain("start-4");
+    expect(screen.getByTestId("app-menu").className).toContain(
+      "top-[calc(env(safe-area-inset-top)+1rem)]",
+    );
+    expect(
+      screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
+    ).toContain("start-[4.75rem]");
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
     ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
+  });
+
+  it("does not request a private profile for guests, or hand the menu a location action", () => {
+    renderPage();
+
+    expect(profileRequests.current).toBe(0);
+    expect(lastAppMenuProps.current).toEqual({ className: expect.any(String) });
+  });
+});
+
+describe("MarketPage saved profile location", () => {
+  const SAVED = { geoLat: -4.0435, geoLng: 39.6682 };
+  const liveFix = { lat: -1.2, lng: 36.7 };
+
+  it("opens on the saved location, ranked above a live fix, without moving the live marker", () => {
+    cameraResult.current = {
+      ...cameraResult.current,
+      camera: { ...liveFix, zoom: 14, rank: 2 },
+      userLocation: liveFix,
+    };
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 1 });
+    expect(lastMapProps.current?.userLocation).toEqual(liveFix);
+  });
+
+  it("stays on the saved location while the location button's request is pending", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Use current location" }));
+
+    expect(mockRequestLocation).toHaveBeenCalledTimes(1);
+    expect(lastMapProps.current?.camera).toMatchObject({ lat: -4.0435, lng: 39.6682 });
+  });
+
+  it("moves to the live location once the location button yields an explicit fix", () => {
+    const explicit: MarketCamera = { ...liveFix, zoom: 14, rank: 0 };
+    cameraResult.current = { ...cameraResult.current, camera: explicit, userLocation: liveFix };
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toBe(explicit);
+  });
+
+  it("keeps one camera identity across renders, so the map does not re-apply it", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    const { rerender } = renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+    const first = lastMapProps.current?.camera;
+
+    rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <MarketPage isAuthenticated locationOwner="0xabc" />
+      </QueryClientProvider>,
+    );
+
+    expect(lastMapProps.current?.camera).toBe(first);
+  });
+
+  it.each([
+    ["pending", { data: undefined, isPending: true, isError: false }],
+    ["failed", { data: undefined, isPending: false, isError: true }],
+    ["missing", { data: {}, isPending: false, isError: false }],
+    ["out of range", { data: { geoLat: 91, geoLng: 10 }, isPending: false, isError: false }],
+    [
+      "not a number",
+      { data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false },
+    ],
+  ] as const)("falls back to the automatic camera when the saved location is %s", (_, result) => {
+    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 2 };
+    cameraResult.current = { ...cameraResult.current, camera: automatic };
+    profileResult.current = result;
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toBe(automatic);
+  });
+
+  it("ignores a profile location for a guest", () => {
+    profileResult.current = { data: SAVED, isPending: false, isError: false };
+    renderPage();
+
+    expect(lastMapProps.current?.camera).toBeNull();
   });
 });
 
@@ -327,6 +463,9 @@ describe("MarketPage preview", () => {
 
     expect(screen.getAllByText("Priscilah Malii").length).toBeGreaterThan(0);
     expect(screen.getByText("Goods")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Priscilah Malii" }).className).toContain(
+      "top-[calc(env(safe-area-inset-top)+4.75rem)]",
+    );
   });
 
   it.each([

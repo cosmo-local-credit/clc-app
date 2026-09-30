@@ -162,7 +162,7 @@ export function PostImageManager({
           disabled={disabled || busy || remaining <= 0}
           onClick={() => inputRef.current?.click()}
         >
-          <FaCamera aria-hidden className="mr-2 size-4" />
+          <FaCamera aria-hidden className="me-2 size-4" />
           {busy ? <Trans>Uploading…</Trans> : <Trans>Add photos</Trans>}
         </Button>
         <p className="text-muted-foreground text-xs tabular-nums">

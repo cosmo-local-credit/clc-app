@@ -41,6 +41,9 @@ jobs:
         working-directory: apps/web
         env:
           CI: "true"
+          # Compare production browser output across both branches. Staging's
+          # deployment still keeps its full React errors and unminified client.
+          VITE_FULL_REACT_ERRORS: "false"
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage — core

@@ -77,6 +77,7 @@ export function formatTokenAmountFixed(
   rawAmount: string,
   decimals: number,
   fractionDigits = 2,
+  locale?: string,
 ): string {
   assertRawTokenAmount(rawAmount);
   assertTokenDecimals(decimals);
@@ -86,8 +87,14 @@ export function formatTokenAmountFixed(
   const scale = 10n ** BigInt(decimals);
   const whole = amount / scale;
   const remainder = amount % scale;
+  const formattedWhole = locale
+    ? new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 0,
+        useGrouping: true,
+      }).format(whole)
+    : whole.toString();
 
-  if (fractionDigits === 0) return whole.toString();
+  if (fractionDigits === 0) return formattedWhole;
 
   const displayedFractionDigits = Math.min(decimals, fractionDigits);
   const fraction =
@@ -97,7 +104,31 @@ export function formatTokenAmountFixed(
           .toString()
           .padStart(displayedFractionDigits, "0");
 
-  return `${whole}.${fraction.padEnd(fractionDigits, "0")}`;
+  const fixedFraction = fraction.padEnd(fractionDigits, "0");
+  if (!locale) return `${formattedWhole}.${fixedFraction}`;
+
+  // Group the whole as a BigInt so a wallet balance can never cross through
+  // Number and lose raw-unit precision. Localize the already-exact fraction
+  // one digit at a time so non-Latin numbering systems keep the same guarantee.
+  const fractionFormatter = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    useGrouping: false,
+  });
+  const localizedDigits = Array.from({ length: 10 }, (_, digit) => fractionFormatter.format(digit));
+  const localizedFraction = fixedFraction.replace(
+    /\d/g,
+    (digit) => localizedDigits[digit.charCodeAt(0) - 48] ?? digit,
+  );
+  const decimalSeparator =
+    new Intl.NumberFormat(locale, {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 1,
+      useGrouping: false,
+    })
+      .formatToParts(1.1)
+      .find((part) => part.type === "decimal")?.value ?? ".";
+
+  return `${formattedWhole}${decimalSeparator}${localizedFraction}`;
 }
 
 export function parseTokenAmount(amount: string, decimals: number): string {

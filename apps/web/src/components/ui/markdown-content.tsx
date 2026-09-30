@@ -23,7 +23,7 @@ export function MarkdownContent({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-3 text-[0.9375rem] leading-6", className)}>
+    <div dir="auto" className={cn("space-y-3 text-[0.9375rem] leading-6", className)}>
       <Markdown components={components}>{children}</Markdown>
     </div>
   );
@@ -59,7 +59,7 @@ function Anchor({ href, children, ...props }: ComponentPropsWithoutRef<"a">) {
 function Table({ children }: { children?: ReactNode }) {
   return (
     <div className="-mx-6 overflow-x-auto px-6">
-      <table className="w-full min-w-full border-collapse text-left text-sm">{children}</table>
+      <table className="w-full min-w-full border-collapse text-start text-sm">{children}</table>
     </div>
   );
 }
@@ -71,6 +71,7 @@ function Code({ className, children, ...props }: ComponentPropsWithoutRef<"code"
   return (
     <code
       {...props}
+      dir="ltr"
       className={cn(
         "font-mono",
         block
@@ -107,11 +108,11 @@ const components: MarkdownComponents = {
     <h6 className="mt-4 font-heading text-sm font-semibold leading-snug">{children}</h6>
   ),
   p: ({ children }) => <p className={cn("leading-6", WRAP)}>{children}</p>,
-  ul: ({ children }) => <ul className="list-disc space-y-1 pl-5">{children}</ul>,
-  ol: ({ children }) => <ol className="list-decimal space-y-1 pl-5">{children}</ol>,
+  ul: ({ children }) => <ul className="list-disc space-y-1 ps-5">{children}</ul>,
+  ol: ({ children }) => <ol className="list-decimal space-y-1 ps-5">{children}</ol>,
   li: ({ children }) => <li className={cn("leading-6", WRAP)}>{children}</li>,
   blockquote: ({ children }) => (
-    <blockquote className="border-l-2 border-border pl-3 text-muted-foreground">
+    <blockquote className="border-s-2 border-border ps-3 text-muted-foreground">
       {children}
     </blockquote>
   ),
@@ -128,7 +129,9 @@ const components: MarkdownComponents = {
     </td>
   ),
   pre: ({ children }) => (
-    <pre className="overflow-x-auto border border-border bg-card p-3">{children}</pre>
+    <pre dir="ltr" className="overflow-x-auto border border-border bg-card p-3">
+      {children}
+    </pre>
   ),
   code: Code,
   hr: () => <hr className="border-border" />,

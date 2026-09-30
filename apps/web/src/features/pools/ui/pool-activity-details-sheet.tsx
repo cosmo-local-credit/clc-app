@@ -111,13 +111,13 @@ export function PoolActivityDetailsSheet({
                 )}
 
                 <DetailRow label={t`Voucher`}>
-                  <span className="min-w-0 break-words text-right text-xs font-semibold">
+                  <span className="min-w-0 break-words text-end text-xs font-semibold">
                     {entry.kind === "swap" ? entry.sent.tokenName : entry.leg.tokenName}
                   </span>
                 </DetailRow>
                 {entry.kind === "swap" ? (
                   <DetailRow label={t`Received voucher`}>
-                    <span className="min-w-0 break-words text-right text-xs font-semibold">
+                    <span className="min-w-0 break-words text-end text-xs font-semibold">
                       {entry.received.tokenName}
                     </span>
                   </DetailRow>

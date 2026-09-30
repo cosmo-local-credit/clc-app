@@ -8,15 +8,21 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { ThemeToggle } from "#/components/theme-selector";
+import { cn } from "#/lib/utils";
 import { useLocale } from "#/providers/i18n";
 
-export function LanguageSelector() {
+const LOCALE_LABELS = Object.fromEntries(
+  LOCALE_OPTIONS.map((option) => [option.code, option.nativeLabel]),
+);
+
+export function LanguageSelector({ triggerClassName }: { triggerClassName?: string }) {
   const { t } = useLingui();
   const { locale, setLocale, loading, error } = useLocale();
 
   return (
     <div className="flex flex-col items-end gap-1">
       <SelectRoot
+        items={LOCALE_LABELS}
         value={locale}
         disabled={loading}
         onValueChange={(nextLocale) => {
@@ -25,20 +31,23 @@ export function LanguageSelector() {
       >
         <SelectTrigger
           aria-label={t`Language`}
-          className="h-9 w-auto border-border font-medium text-foreground text-xs"
+          className={cn(
+            "h-9 w-auto border-border font-medium text-foreground text-xs",
+            triggerClassName,
+          )}
         >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {LOCALE_OPTIONS.map((option) => (
-            <SelectItem key={option.code} value={option.code}>
+            <SelectItem key={option.code} value={option.code} dir={option.direction}>
               {option.nativeLabel}
             </SelectItem>
           ))}
         </SelectContent>
       </SelectRoot>
       {error ? (
-        <p className="max-w-40 text-right text-[11px] text-destructive" role="alert">
+        <p className="max-w-40 text-end text-[11px] text-destructive" role="alert">
           {t`Unable to load language. Reverted to English.`}
         </p>
       ) : null}
@@ -49,7 +58,7 @@ export function LanguageSelector() {
 /** Top-right onboarding menu: change language and theme before signing in. */
 export function OnboardingMenu() {
   return (
-    <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-4 z-10 flex items-center gap-2">
+    <div className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] end-4 z-10 flex items-center gap-2">
       <ThemeToggle />
       <LanguageSelector />
     </div>

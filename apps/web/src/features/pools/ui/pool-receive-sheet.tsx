@@ -69,7 +69,7 @@ export function PoolReceiveSheet({
                 <button
                   type="button"
                   aria-label={t`Copy pool address`}
-                  className="flex min-h-11 w-full items-center justify-between gap-3 border border-border bg-card p-3 text-left"
+                  className="flex min-h-11 w-full items-center justify-between gap-3 border border-border bg-card p-3 text-start"
                   onClick={copy}
                 >
                   <HighlightAddress

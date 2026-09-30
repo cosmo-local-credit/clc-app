@@ -13,12 +13,11 @@ import { call, getBlockNumber, multicall } from "viem/actions";
 import { useClient } from "wagmi";
 
 import {
+  SWAP_ROUTER_ADDRESS,
   quotePoolGrossAmountOut,
   quoteRouteExactInput,
   quoteRouteExactOutput,
 } from "#/features/wallet/api/pool-swap-quotes";
-
-const SWAP_ROUTER_ADDRESS = "0x16e3F29dDe22eF75C081A764C4d200Cd48647bcC" as const;
 
 export type PoolSwapQuoteMode = "exact-input" | "exact-output";
 
@@ -52,37 +51,37 @@ export function usePoolSwapQuote(input: {
   tokenOutDecimals: number;
 }) {
   const client = useClient();
-  const [debouncedSource, setDebouncedSource] = useState({
-    mode: input.mode,
-    amount: input.amount,
-  });
-  const isDebouncing =
-    debouncedSource.mode !== input.mode || debouncedSource.amount !== input.amount;
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setDebouncedSource({ mode: input.mode, amount: input.amount });
-    }, 250);
-    return () => window.clearTimeout(timeout);
-  }, [input.amount, input.mode]);
   const sourceDecimals =
     input.mode === "exact-input" ? input.tokenInDecimals : input.tokenOutDecimals;
-  const amountRaw = useMemo(() => {
-    if (debouncedSource.mode !== input.mode || debouncedSource.amount !== input.amount) {
-      return undefined;
-    }
+  const sourceAmountRaw = useMemo(() => {
     if (input.mode === "exact-input" && input.amountRawOverride) {
       return /^\d+$/.test(input.amountRawOverride) && BigInt(input.amountRawOverride) > 0n
         ? input.amountRawOverride
         : undefined;
     }
-    if (!debouncedSource.amount.trim()) return undefined;
+    if (!input.amount.trim()) return undefined;
     try {
-      const parsed = parseTokenAmount(debouncedSource.amount, sourceDecimals);
+      const parsed = parseTokenAmount(input.amount, sourceDecimals);
       return BigInt(parsed) > 0n ? parsed : undefined;
     } catch {
       return undefined;
     }
-  }, [debouncedSource, input.amount, input.amountRawOverride, input.mode, sourceDecimals]);
+  }, [input.amount, input.amountRawOverride, input.mode, sourceDecimals]);
+  const [debouncedSource, setDebouncedSource] = useState({
+    mode: input.mode,
+    amountRaw: sourceAmountRaw,
+  });
+  const isDebouncing =
+    debouncedSource.mode !== input.mode || debouncedSource.amountRaw !== sourceAmountRaw;
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSource({ mode: input.mode, amountRaw: sourceAmountRaw });
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [input.mode, sourceAmountRaw]);
+  // Cosmetic normalization (for example `1` -> `1.00`) represents the same
+  // raw amount, so it neither restarts the debounce nor spends another RPC.
+  const amountRaw = debouncedSource.mode === input.mode ? debouncedSource.amountRaw : undefined;
   const poolAddress =
     input.poolAddress && isAddress(input.poolAddress) ? input.poolAddress : undefined;
   const tokenIn = input.tokenIn && isAddress(input.tokenIn) ? input.tokenIn : undefined;
@@ -127,11 +126,21 @@ export function usePoolSwapQuote(input: {
             );
       const amountInRaw = input.mode === "exact-input" ? amountRaw : quotedAmountRaw;
       const amountOutRaw = input.mode === "exact-input" ? quotedAmountRaw : amountRaw;
-      const [grossAmountOutRaw, poolState, depositState] = await Promise.all([
+      const [grossAmountOutRaw, netAmountOutRaw, poolState, depositState] = await Promise.all([
         quotePoolGrossAmountOut(
           { call: (args) => call(client, args) },
           { poolAddress, tokenIn, tokenOut, amountInRaw, blockNumber },
         ),
+        // What spending `amountInRaw` actually delivers. In exact-input mode that is
+        // the quote itself; in exact-output mode `getAmountIn` rounds the input up
+        // (ceiling division, then +1 wei), so the swap delivers a little more than
+        // was asked, and the fees are what that input's gross quote loses.
+        input.mode === "exact-input"
+          ? amountOutRaw
+          : quoteRouteExactInput(
+              { call: (args) => call(client, args) },
+              { routerAddress: SWAP_ROUTER_ADDRESS, path, amountInRaw, blockNumber },
+            ),
         multicall(client, {
           allowFailure: false,
           blockNumber,
@@ -201,12 +210,19 @@ export function usePoolSwapQuote(input: {
             ).toString();
       const quotedDecimals =
         input.mode === "exact-input" ? input.tokenOutDecimals : input.tokenInDecimals;
+      const feeAmountRaw = BigInt(grossAmountOutRaw) - BigInt(netAmountOutRaw);
       return {
         amountRaw: quotedAmountRaw,
         amount: formatTokenAmountFixed(quotedAmountRaw, quotedDecimals, 2),
         amountInRaw,
         amountOutRaw,
         grossAmountOutRaw,
+        /**
+         * What the pool and the protocol keep, in the output voucher: the gross quote
+         * for the input spent less what that input delivers. Null if the two ever
+         * disagree in sign, rather than a negative fee.
+         */
+        feeAmountRaw: feeAmountRaw >= 0n ? feeAmountRaw.toString() : null,
         availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
           availableAmountOutRaw,

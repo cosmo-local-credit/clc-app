@@ -1,4 +1,5 @@
 import type { PoolVoucher, UserPool } from "@clc/api/features/pools/client";
+import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import { poolAvailableLiquidityRaw } from "@clc/core/features/pool-swaps/logic";
 import {
   type PoolDepositCap,
@@ -46,6 +47,90 @@ export type PoolSwapToken = {
   /** Selectable as the output side: sizable, and the pool has something to pay out. */
   canSwapOut: boolean;
 };
+
+/** What the chain says about a token the catalog has no record of. Each field null when unreadable. */
+export type RegistryTokenMetadata = {
+  symbol: string | null;
+  name: string | null;
+  decimals: number | null;
+};
+
+/**
+ * The vouchers a pool admits, with its registry as the authority.
+ *
+ * `SwapPool` runs `have(token)` against the registry on both legs of a swap, so
+ * the registry's entries are exactly the tokens a swap can use. The catalog's
+ * pool voucher list is a projection of it and disagrees in both directions: a
+ * token seeded at `initialize` — usually the pool's own voucher — is a member the
+ * catalog never lists, and a row the catalog still lists may already be removed.
+ * Built from the catalog alone, the "You receive" menu silently omits members.
+ *
+ * Where the catalog knows a member its record is kept, for the icon and the
+ * description only it has. A member it does not know is listed from what the
+ * chain reports; a field the chain would not report stays null, which leaves
+ * that row visible but unsizable rather than absent.
+ *
+ * A null `registry` is a pool with no registry configured, which admits anything
+ * — the catalog is then the best list there is.
+ */
+export function poolVouchersFromRegistry({
+  catalog,
+  registry,
+  metadata,
+}: {
+  catalog: PoolVoucher[];
+  registry: readonly string[] | null;
+  metadata?: ReadonlyMap<string, RegistryTokenMetadata>;
+}): PoolVoucher[] {
+  if (registry === null) return catalog;
+
+  const known = new Map(catalog.map((voucher) => [voucher.tokenAddress.toLowerCase(), voucher]));
+  const seen = new Set<string>();
+  const vouchers: PoolVoucher[] = [];
+  for (const address of registry) {
+    const id = address.toLowerCase();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    vouchers.push(
+      known.get(id) ??
+        registryOnlyVoucher(address as PoolVoucher["tokenAddress"], metadata?.get(id)),
+    );
+  }
+  return vouchers;
+}
+
+function registryOnlyVoucher(
+  tokenAddress: PoolVoucher["tokenAddress"],
+  meta: RegistryTokenMetadata | undefined,
+): PoolVoucher {
+  const fallbackLabel = formatVoucherAddress(tokenAddress);
+  return {
+    id: `registry:${tokenAddress.toLowerCase()}`,
+    chainId: null,
+    name: meta?.name ?? meta?.symbol ?? fallbackLabel,
+    description: "",
+    symbol: meta?.symbol ?? fallbackLabel,
+    tokenAddress,
+    decimals: meta?.decimals ?? null,
+    ownerAddress: null,
+    voucherType: null,
+    voucherUoa: null,
+    voucherValue: null,
+    locationName: null,
+    iconUrl: null,
+    bannerUrl: null,
+    active: true,
+    internal: false,
+    isAllowed: true,
+    tokenLimit: null,
+    oracleFeedId: null,
+    oracleName: null,
+    oracleAddress: null,
+    offerCount: 0,
+    availableOfferCount: 0,
+    tags: [],
+  };
+}
 
 export type BuildPoolSwapTokensInput = {
   pool: UserPool;

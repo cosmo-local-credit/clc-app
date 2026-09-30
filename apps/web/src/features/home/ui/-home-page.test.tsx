@@ -48,12 +48,18 @@ vi.mock("./activity-page", () => ({
 vi.mock("./market-page", () => ({
   MarketPage: ({
     onboardingBanner,
+    isAuthenticated,
     locationOwner,
   }: {
     onboardingBanner?: ReactNode;
+    isAuthenticated?: boolean;
     locationOwner?: string;
   }) => (
-    <div data-testid="market-page" data-location-owner={locationOwner}>
+    <div
+      data-testid="market-page"
+      data-authenticated={isAuthenticated ? "true" : "false"}
+      data-location-owner={locationOwner}
+    >
       {onboardingBanner}
     </div>
   ),
@@ -147,6 +153,7 @@ describe("HomePage guest mode", () => {
   it("shows market and onboarding banner", () => {
     renderHome(<HomePage isAuthenticated={false} />);
     expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("false");
     expect(screen.getByTestId("onboarding-banner")).toBeTruthy();
   });
 
@@ -252,6 +259,7 @@ describe("HomePage location scope", () => {
     renderHome(<HomePage />);
 
     expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("0xabc");
+    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("true");
   });
 
   it("treats a connected wallet without a session as a guest", () => {

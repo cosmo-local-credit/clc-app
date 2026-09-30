@@ -1,12 +1,17 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { RiCheckboxCircleLine, RiLogoutBoxRLine, RiShieldFlashLine } from "react-icons/ri";
+import {
+  RiCheckboxCircleLine,
+  RiExternalLinkLine,
+  RiInformationLine,
+  RiLogoutBoxRLine,
+  RiShieldFlashLine,
+} from "react-icons/ri";
 
-import { LanguageSelector } from "#/components/language-selector";
 import { InstallAppLink } from "#/components/install-app-link";
-import { ThemeSelector } from "#/components/theme-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { AccountSettingsSection } from "./account-settings-section";
 import { NotificationSettingsSection } from "./notification-settings-section";
 import { PasskeySettingsSection } from "./passkey-settings-section";
@@ -35,32 +40,21 @@ export function SettingsPage({
         </p>
       </div>
 
+      <Button asChild variant="outline" className="h-11 w-full justify-start gap-3">
+        <a href={PLATFORM_ABOUT_URL} target="_blank" rel="noopener noreferrer">
+          <RiInformationLine className="size-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1 text-start">
+            <Trans>About Cosmo-Local Credit</Trans>
+          </span>
+          <RiExternalLinkLine className="size-4 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
+        </a>
+      </Button>
+
       <AccountSettingsSection />
 
       <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
 
       <InstallAppLink />
-
-      <section aria-labelledby="preferences-title" className="space-y-3">
-        <h2 id="preferences-title">
-          <Trans>Preferences</Trans>
-        </h2>
-        <div className="border border-border bg-card p-4">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Choose the app display language.</Trans>
-            </p>
-            <LanguageSelector />
-          </div>
-          <div className="-mx-4 my-3 h-px bg-border" />
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-muted-foreground text-sm">
-              <Trans>Choose between light and dark mode.</Trans>
-            </p>
-            <ThemeSelector />
-          </div>
-        </div>
-      </section>
 
       <NotificationSettingsSection walletAddress={address} />
 
@@ -107,7 +101,7 @@ export function SettingsPage({
           onClick={onSignOut}
           disabled={isSigningOut}
         >
-          <RiLogoutBoxRLine className="mr-2 size-4" aria-hidden="true" />
+          <RiLogoutBoxRLine className="me-2 size-4" aria-hidden="true" />
           {isSigningOut ? <Trans>Signing out...</Trans> : <Trans>Sign out</Trans>}
         </Button>
       </section>

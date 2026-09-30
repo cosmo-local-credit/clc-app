@@ -286,9 +286,9 @@ export function usePaperWalletSetup({
           aria-label={t`Download card`}
         >
           {downloading ? (
-            <FiLoader className="mr-2 size-4 animate-spin" />
+            <FiLoader className="me-2 size-4 animate-spin" />
           ) : (
-            <FiDownload className="mr-2 size-4" />
+            <FiDownload className="me-2 size-4" />
           )}
           {downloading ? t`Preparing...` : t`Download card`}
         </Button>
@@ -300,9 +300,9 @@ export function usePaperWalletSetup({
           aria-label={t`Save printable A4 sheet`}
         >
           {printing ? (
-            <FiLoader className="mr-2 size-4 animate-spin" />
+            <FiLoader className="me-2 size-4 animate-spin" />
           ) : (
-            <FiPrinter className="mr-2 size-4" />
+            <FiPrinter className="me-2 size-4" />
           )}
           {t`Print`}
         </Button>
@@ -314,7 +314,7 @@ export function usePaperWalletSetup({
           onClick={() => void handleShare()}
           disabled={downloading || printing || downloadDisabled}
         >
-          <FiShare2 className="mr-2 size-4" />
+          <FiShare2 className="me-2 size-4" />
           {t`Share card`}
         </Button>
       ) : null}

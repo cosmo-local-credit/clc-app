@@ -1,16 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
+import { PLATFORM_ABOUT_URL } from "#/lib/legal";
+
 vi.mock("#/components/install-app-link", () => ({
   InstallAppLink: () => <a href="/install">Install CLC</a>,
-}));
-
-vi.mock("#/components/language-selector", () => ({
-  LanguageSelector: () => <div data-testid="language-selector" />,
-}));
-
-vi.mock("#/components/theme-selector", () => ({
-  ThemeSelector: () => <div data-testid="theme-selector" />,
 }));
 
 vi.mock("./notification-settings-section", () => ({
@@ -32,6 +26,18 @@ vi.mock("./account-settings-section", () => ({
 const { SettingsPage } = await import("./settings-page");
 
 describe("SettingsPage", () => {
+  it("links to About Cosmo-Local Credit immediately above Account", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+
+    const about = screen.getByRole("link", { name: "About Cosmo-Local Credit" });
+    const account = screen.getByTestId("account-settings");
+
+    expect(about.getAttribute("href")).toBe(PLATFORM_ABOUT_URL);
+    expect(about.getAttribute("target")).toBe("_blank");
+    expect(about.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(about.compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("shows the connected address", () => {
     render(
       <SettingsPage
@@ -58,10 +64,10 @@ describe("SettingsPage", () => {
     );
   });
 
-  it("renders the preferences section with the theme selector", () => {
+  it("leaves theme and language to the app menu", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
-    expect(screen.getByRole("heading", { name: /preferences/i })).toBeTruthy();
-    expect(screen.getByTestId("theme-selector")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: /preferences/i })).toBeNull();
+    expect(screen.queryByRole("combobox", { name: /theme|language/i })).toBeNull();
   });
 
   it("shows 'No address available' when address is undefined", () => {

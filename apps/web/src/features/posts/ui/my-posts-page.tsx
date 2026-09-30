@@ -76,7 +76,7 @@ export function MyPostsPage() {
       {postsQuery.data && postsQuery.data.reports.length > 0 ? (
         <ul aria-label={t`My posts`} className="space-y-2">
           {postsQuery.data.reports.map((post) => (
-            <MyPostRow key={post.id} post={post} locale={i18n.locale} />
+            <MyPostRow key={post.id} post={post} locale={i18n.locales?.[0] ?? i18n.locale} />
           ))}
         </ul>
       ) : null}

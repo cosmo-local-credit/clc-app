@@ -490,6 +490,7 @@ function PostEditorForm({
                   <Input
                     id={field.name}
                     type="number"
+                    dir="ltr"
                     inputMode="numeric"
                     min={0}
                     step={1}

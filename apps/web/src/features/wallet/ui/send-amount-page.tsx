@@ -153,7 +153,7 @@ export function SendAmountPage({
         type="button"
         onClick={() => setPickerOpen(true)}
         disabled={!selectedToken}
-        className="mb-2.5 flex h-11 w-full items-center gap-2.5 border border-border bg-card px-3 text-left disabled:opacity-60"
+        className="mb-2.5 flex h-11 w-full items-center gap-2.5 border border-border bg-card px-3 text-start disabled:opacity-60"
       >
         {selectedToken ? (
           <>
@@ -210,6 +210,7 @@ export function SendAmountPage({
             <input
               id="send-amount"
               type="text"
+              dir="ltr"
               inputMode="decimal"
               autoFocus
               value={amount}
@@ -309,6 +310,7 @@ export function SendAmountPage({
             to: "/wallet/send/receipt",
             search: {
               trackingId: result.trackingId,
+              token: tokenAddress,
               recipient: recipientAddress,
               amount,
               symbol: selectedToken.symbol,

@@ -4,34 +4,65 @@ import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
+import { AppMenu } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
 import { VoucherAvatar } from "#/components/wallet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import type { MarketVoucher } from "@clc/api/features/market/client";
-import { useMarketCamera } from "#/features/home/hooks/use-market-camera";
+import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import {
+  CAMERA_RANK,
+  REAL_FIX_ZOOM,
+  useMarketCamera,
+} from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
-import type { MarketViewport } from "./market-map";
+import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
 
 type Coordinates = { lat: number; lng: number };
 
 export function MarketPage({
   onboardingBanner,
+  isAuthenticated = false,
   locationOwner = GUEST_STORAGE_OWNER,
 }: {
   onboardingBanner?: ReactNode;
+  isAuthenticated?: boolean;
   locationOwner?: string;
 }) {
   const { t } = useLingui();
-  const { camera, realFix, userLocation, locationStatus, requestLocation } =
-    useMarketCamera(locationOwner);
+  const {
+    camera: automaticCamera,
+    realFix,
+    userLocation,
+    locationStatus,
+    requestLocation,
+  } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+
+  // The map opens on the profile's saved location. It outranks every automatic
+  // source, so only the location button's explicit fix takes the map off it.
+  const profileQuery = useAuthProfile({ enabled: isAuthenticated });
+  const saved = isAuthenticated ? profileCoordinates(profileQuery.data) : null;
+  const savedLat = saved?.lat;
+  const savedLng = saved?.lng;
+  const savedCamera = useMemo<MarketCamera | null>(
+    () =>
+      savedLat !== undefined && savedLng !== undefined
+        ? { lat: savedLat, lng: savedLng, zoom: REAL_FIX_ZOOM, rank: CAMERA_RANK.savedProfile }
+        : null,
+    [savedLat, savedLng],
+  );
+  const camera =
+    automaticCamera?.rank === CAMERA_RANK.explicit
+      ? automaticCamera
+      : (savedCamera ?? automaticCamera);
 
   const filter = useMarketFilter(useStorageOwner());
   const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
@@ -100,16 +131,12 @@ export function MarketPage({
         />
       </Suspense>
 
-      {selectedVoucher ? (
-        <MarketPreview
-          voucher={selectedVoucher}
-          realFix={realFix}
-          offsetForBanner={!!onboardingBanner}
-        />
-      ) : null}
+      <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
+
+      {selectedVoucher ? <MarketPreview voucher={selectedVoucher} realFix={realFix} /> : null}
 
       {onboardingBanner ? (
-        <div className="pointer-events-none absolute inset-x-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 px-4">
+        <div className="pointer-events-none absolute start-[4.75rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
           {onboardingBanner}
         </div>
       ) : null}
@@ -155,7 +182,7 @@ export function MarketPage({
         <div className="flex items-center gap-2">
           <Button asChild className="pointer-events-auto h-11 flex-1">
             <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
-              <RiListUnordered className="mr-2 size-4" aria-hidden="true" />
+              <RiListUnordered className="me-2 size-4" aria-hidden="true" />
               <Trans>Browse all</Trans>
             </Link>
           </Button>
@@ -181,11 +208,9 @@ export function MarketPage({
 function MarketPreview({
   voucher,
   realFix,
-  offsetForBanner,
 }: {
   voucher: MarketVoucher;
   realFix: Coordinates | null;
-  offsetForBanner: boolean;
 }) {
   const kindLabel = useMarketKindLabel(voucher.kind);
   const distanceLabel = useMarketDistanceLabel(realFix, voucher);
@@ -197,12 +222,7 @@ function MarketPreview({
       to="/vouchers/$voucherAddress"
       params={{ voucherAddress: voucher.address }}
       aria-label={voucher.name}
-      className={[
-        "absolute inset-x-4 z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-left",
-        offsetForBanner
-          ? "top-[calc(env(safe-area-inset-top)+4.75rem)]"
-          : "top-[calc(env(safe-area-inset-top)+1rem)]",
-      ].join(" ")}
+      className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-start"
     >
       <VoucherAvatar
         address={voucher.address}
@@ -237,7 +257,30 @@ function MarketPreview({
           ) : null}
         </span>
       </span>
-      <RiArrowRightSLine className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <RiArrowRightSLine
+        className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
+        aria-hidden="true"
+      />
     </Link>
   );
+}
+
+function profileCoordinates(
+  profile: { geoLat?: number | null; geoLng?: number | null } | null | undefined,
+): Coordinates | null {
+  const lat = profile?.geoLat;
+  const lng = profile?.geoLng;
+  if (
+    typeof lat !== "number" ||
+    !Number.isFinite(lat) ||
+    lat < -90 ||
+    lat > 90 ||
+    typeof lng !== "number" ||
+    !Number.isFinite(lng) ||
+    lng < -180 ||
+    lng > 180
+  ) {
+    return null;
+  }
+  return { lat, lng };
 }
