@@ -126,6 +126,11 @@ msgstr "{0} ofertas"
 msgid "{0} removed from {1}."
 msgstr "{0} se eliminó de {1}."
 
+#. placeholder {0}: summary.total
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
+msgid "{0} reviews"
+msgstr "{0} reseñas"
+
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:239
 msgid "{0} updated."
@@ -170,6 +175,18 @@ msgstr "{completedCount} de {0} confirmados"
 msgid "{current} / {0}"
 msgstr "{current} / {0}"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:189
+msgid "{filter}-star reviews · newest first"
+msgstr "Reseñas de {filter} estrellas · más recientes primero"
+
+#: apps/web/src/components/reviews/review-editor.tsx:10
+msgid "{stars} out of 5 stars"
+msgstr "{stars} de 5 estrellas"
+
+#: apps/web/src/components/reviews/review-editor.tsx:70
+msgid "{value} stars"
+msgstr "{value} estrellas"
+
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:281
 msgid "{withdrawable} {0} available. Fees held for collection stay in the pool."
@@ -185,7 +202,7 @@ msgstr "1 {0} = {1} {2}"
 
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:710
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:699
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -287,7 +304,7 @@ msgstr "Activo"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:33
 #: apps/web/src/features/home/ui/activity-page.tsx:37
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:278
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:279
 msgid "Activity"
 msgstr "Actividad"
 
@@ -312,7 +329,7 @@ msgstr "Añada un número de teléfono a su perfil para usar MPESA."
 msgid "Add a photo"
 msgstr "Añadir una foto"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:298
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:302
 msgid "Add a private message"
 msgstr "Añadir un mensaje privado"
 
@@ -397,6 +414,12 @@ msgstr "Dirección copiada"
 msgid "Admin"
 msgstr "Administrador"
 
+#: apps/web/src/components/reviews/review-editor.tsx:114
+msgid "Admins will review your report. The review stays visible until they make "
+"a decision."
+msgstr "Los administradores revisarán tu reporte. La reseña seguirá visible "
+"hasta que tomen una decisión."
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:454
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:493
 msgid "Advanced"
@@ -413,6 +436,10 @@ msgstr "Opciones avanzadas"
 #: apps/web/src/features/home/ui/wallet-page.tsx:286
 msgid "All pools"
 msgstr "Todos los fondos"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:189
+msgid "All reviews · newest first"
+msgstr "Todas las reseñas · más recientes primero"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:447
 #: apps/web/src/components/catalog-filter-controls.tsx:537
@@ -437,8 +464,8 @@ msgstr "¿Ya tiene una cuenta?"
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:122
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:205
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:359
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:163
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:360
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:166
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:325
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:581
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:692
@@ -507,7 +534,7 @@ msgstr "Atrás"
 msgid "Back to market"
 msgstr "Volver al mercado"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:201
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 msgid "Back to pool"
 msgstr "Volver al fondo"
 
@@ -520,7 +547,7 @@ msgstr "Volver a los fondos"
 msgid "Bag"
 msgstr "Bolsa"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:224
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:225
 msgid "Balance"
 msgstr "Saldo"
 
@@ -572,6 +599,7 @@ msgid "Camera access denied."
 msgstr "Acceso a la cámara denegado."
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:494
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:619
@@ -579,7 +607,7 @@ msgstr "Acceso a la cámara denegado."
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
 #: apps/web/src/features/wallet/ui/offering-editor-sheet.tsx:397
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:390
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:391
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:501
@@ -664,7 +692,7 @@ msgstr "Comprobando disponibilidad…"
 msgid "Checking how this pool prices vouchers…"
 msgstr "Comprobando cómo valora los vales este fondo…"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:255
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:259
 msgid "Checking message availability…"
 msgstr "Comprobando la disponibilidad del mensaje…"
 
@@ -680,6 +708,10 @@ msgstr "Comprobando la compatibilidad de las notificaciones con este "
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "Comprobando el estado de la clave de acceso…"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
+msgid "Checking review eligibility…"
+msgstr "Comprobando si puedes dejar una reseña…"
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:434
 msgid "Checking supply…"
@@ -850,6 +882,10 @@ msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "Las comisiones de intercambio cobradas se pagan aquí. Su propia "
 "billetera es {0}."
 
+#: apps/web/src/components/reviews/review-editor.tsx:86
+msgid "Comment (optional)"
+msgstr "Comentario (opcional)"
+
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:135
 msgid "Community vouchers and their details."
 msgstr "Vales comunitarios y sus detalles."
@@ -881,7 +917,7 @@ msgstr "Confirmar y publicar"
 msgid "Confirm & Publish"
 msgstr "Confirmar y publicar"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:382
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:383
 msgid "Confirm and send"
 msgstr "Confirmar y enviar"
 
@@ -893,7 +929,7 @@ msgstr "Confirme Instalar o Añadir cuando se le solicite."
 msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:351
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:352
 msgid "Confirm send"
 msgstr "Confirmar envío"
 
@@ -906,7 +942,7 @@ msgstr "Confirmar intercambio"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:179
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:191
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:194
 msgid "Confirmed"
 msgstr "Confirmado"
 
@@ -1016,13 +1052,13 @@ msgstr "Continuar con billetera de papel"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:190
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:261
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:724
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:713
 msgid "Contract address"
 msgstr "Dirección del contrato"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:195
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:266
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:737
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:726
 msgid "Contract address copied"
 msgstr "Dirección del contrato copiada"
 
@@ -1032,7 +1068,7 @@ msgstr "Copiar"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:193
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:264
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:728
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:717
 msgid "Copy contract address"
 msgstr "Copiar la dirección del contrato"
 
@@ -1060,7 +1096,7 @@ msgstr "Copiar ID de Pretium"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:147
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:159
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:174
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:177
 msgid "Copy transaction hash"
 msgstr "Copiar hash de la transacción"
 
@@ -1100,13 +1136,17 @@ msgstr "No se pudo compartir la billetera de papel. Pruebe a descargarla."
 msgid "Could not upload your photo. Please try again."
 msgstr "No se pudo subir su foto. Inténtelo de nuevo."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:264
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:268
 msgid "Couldn't check message availability."
 msgstr "No se pudo comprobar la disponibilidad del mensaje."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:358
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "No se pudo comprobar qué vales acepta este fondo."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:130
+msgid "Couldn't check your review access."
+msgstr "No se pudo comprobar tu acceso a las reseñas."
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:34
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:40
@@ -1117,8 +1157,8 @@ msgstr "No se pudo copiar la dirección"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:195
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:266
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:732
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:738
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:721
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:727
 msgid "Couldn't copy contract address"
 msgstr "No se pudo copiar la dirección del contrato"
 
@@ -1146,8 +1186,8 @@ msgstr "No se pudo copiar el ID de Pretium"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:124
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:130
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:110
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:116
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:113
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:119
 msgid "Couldn't copy transaction hash"
 msgstr "No se pudo copiar el hash de la transacción"
 
@@ -1167,7 +1207,7 @@ msgstr "No se pudo identificar un país aquí. Pruebe con un punto cercano."
 #: apps/web/src/features/home/ui/activity-page.tsx:52
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:200
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:582
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:571
 msgid "Couldn't load activity."
 msgstr "No se pudo cargar la actividad."
 
@@ -1189,13 +1229,17 @@ msgid "Couldn't load pools."
 msgstr "No se pudieron cargar los fondos."
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:473
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
 msgid "Couldn't load posts."
 msgstr "No se pudieron cargar las publicaciones."
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:456
 msgid "Couldn't load Pretium history."
 msgstr "No se pudo cargar el historial de Pretium."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:68
+msgid "Couldn't load reviews."
+msgstr "No se pudieron cargar las reseñas."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:552
 msgid "Couldn't load tags."
@@ -1223,7 +1267,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "No se pudo cargar esta publicación. Solo puede editar las publicaciones "
 "que haya escrito."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:139
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:140
 msgid "Couldn't load this voucher."
 msgstr "No se pudo cargar este vale."
 
@@ -1315,13 +1359,21 @@ msgstr "No se pudo guardar su publicación."
 msgid "Couldn't save your profile."
 msgstr "No se pudo guardar su perfil."
 
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:72
+msgid "Couldn't save your review. Please try again."
+msgstr "No se pudo guardar tu reseña. Inténtalo de nuevo."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
+msgid "Couldn't save. Please try again."
+msgstr "No se pudo guardar. Inténtalo de nuevo."
+
 #: apps/web/src/components/catalog-filter-controls.tsx:367
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:702
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 msgid "Couldn't search vouchers."
 msgstr "No se pudieron buscar vales."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:371
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:375
 msgid "Couldn't share this message."
 msgstr "No se pudo compartir este mensaje."
 
@@ -1519,8 +1571,8 @@ msgstr "El nombre para mostrar debe tener 120 caracteres o menos"
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:89
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:246
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:201
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:468
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:472
 msgid "Done"
 msgstr "Hecho"
 
@@ -1621,6 +1673,14 @@ msgstr "Editar perfil"
 msgid "Edit voucher details"
 msgstr "Editar detalles del vale"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:228
+msgid "Edit your reply"
+msgstr "Editar tu respuesta"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:170
+msgid "Edit your review"
+msgstr "Editar tu reseña"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:162
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:212
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:224
@@ -1628,8 +1688,8 @@ msgstr "Editar detalles del vale"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:227
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:38
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:334
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:751
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:338
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:740
 msgid "Email"
 msgstr "Correo electrónico"
 
@@ -1882,7 +1942,7 @@ msgstr "Encuadre su foto"
 #: apps/web/src/features/home/ui/activity-page.tsx:107
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:126
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:625
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:614
 msgid "From"
 msgstr "De"
 
@@ -1954,6 +2014,10 @@ msgstr "¿Cómo deben coincidir las categorías?"
 msgid "How should vouchers match?"
 msgstr "¿Cómo deben coincidir los vales?"
 
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:63
+msgid "How was your experience?"
+msgstr "¿Cómo fue tu experiencia?"
+
 #: apps/web/src/components/auth/authenticated-route.tsx:75
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:57
 msgid "I already have an account"
@@ -2002,7 +2066,7 @@ msgstr "Inactivo"
 msgid "Increase quantity"
 msgstr "Aumentar cantidad"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:280
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:281
 msgid "Info"
 msgstr "Información"
 
@@ -2057,7 +2121,7 @@ msgstr "El número de teléfono no es válido"
 msgid "Is this a good or a service?"
 msgstr "¿Es un bien o un servicio?"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:793
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:782
 msgid "Issuer"
 msgstr "Emisor"
 
@@ -2081,6 +2145,10 @@ msgstr "Kilograma"
 #: apps/web/src/components/language-selector.tsx:33
 msgid "Language"
 msgstr "Idioma"
+
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:56
+msgid "Later"
+msgstr "Más tarde"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:235
@@ -2214,10 +2282,14 @@ msgstr "Litro"
 msgid "Load more"
 msgstr "Cargar más"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
+msgid "Load more reviews"
+msgstr "Cargar más reseñas"
+
 #: apps/web/src/features/home/ui/activity-page.tsx:46
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:194
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:576
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:565
 msgid "Loading activity…"
 msgstr "Cargando actividad…"
 
@@ -2251,8 +2323,8 @@ msgstr "Cargando mercado…"
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
 #: apps/web/src/features/pools/ui/pools-page.tsx:154
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:520
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:644
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:509
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
 msgid "Loading more…"
 msgstr "Cargando más…"
 
@@ -2275,14 +2347,18 @@ msgid "Loading post…"
 msgstr "Cargando publicación…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:448
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:466
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:437
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:455
 msgid "Loading posts…"
 msgstr "Cargando publicaciones…"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:124
 msgid "Loading private attachment…"
 msgstr "Cargando archivo adjunto privado…"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:62
+msgid "Loading reviews…"
+msgstr "Cargando reseñas…"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:698
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:265
@@ -2299,7 +2375,7 @@ msgstr "Cargando el editor…"
 msgid "Loading tokens…"
 msgstr "Cargando tokens…"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:135
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:136
 msgid "Loading voucher…"
 msgstr "Cargando vale…"
 
@@ -2325,6 +2401,7 @@ msgstr "Cargando sus publicaciones…"
 msgid "Loading your profile…"
 msgstr "Cargando su perfil…"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:236
 msgid "Loading…"
 msgstr "Cargando…"
@@ -2334,7 +2411,7 @@ msgstr "Cargando…"
 #: apps/web/src/features/home/ui/report-page.tsx:563
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:34
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:358
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:362
 msgid "Location"
 msgstr "Ubicación"
 
@@ -2399,7 +2476,7 @@ msgid "Markdown: **bold**, # headings, - lists, [links](https://…)"
 msgstr "Markdown: **negrita**, # encabezados, - listas, [enlaces](https://…)"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:38
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:104
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:105
 msgid "Market"
 msgstr "Mercado"
 
@@ -2433,7 +2510,7 @@ msgstr "Máx. {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "El contenido multimedia debe ser una URL http(s) de un archivo subido"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:311
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:315
 msgid "Message"
 msgstr "Mensaje"
 
@@ -2442,11 +2519,11 @@ msgstr "Mensaje"
 msgid "Message must be 500 characters or fewer"
 msgstr "El mensaje debe tener 500 caracteres o menos"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:290
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:294
 msgid "Message shared."
 msgstr "Mensaje compartido."
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:282
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:286
 msgid "Messages are available only for registered Cosmo users."
 msgstr "Los mensajes solo están disponibles para usuarios registrados de Cosmo."
 
@@ -2573,8 +2650,8 @@ msgid "Name, symbol or address"
 msgstr "Nombre, símbolo o dirección"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:169
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:177
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:453
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:180
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:457
 msgid "Network"
 msgstr "Red"
 
@@ -2620,7 +2697,7 @@ msgid "No {0} fees have accrued yet."
 msgstr "Todavía no se han acumulado comisiones de {0}."
 
 #: apps/web/src/features/home/ui/activity-page.tsx:66
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:596
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:585
 msgid "No activity yet."
 msgstr "Todavía no hay actividad."
 
@@ -2685,7 +2762,7 @@ msgid "No posts match this search."
 msgstr "Ninguna publicación coincide con esta búsqueda."
 
 #: apps/web/src/features/home/ui/posts-page.tsx:119
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:488
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:477
 msgid "No posts yet."
 msgstr "Todavía no hay publicaciones."
 
@@ -2693,6 +2770,15 @@ msgstr "Todavía no hay publicaciones."
 msgid "No QR code found. Try again with a clearer image."
 msgstr "No se encontró ningún código QR. Inténtelo de nuevo con una imagen más "
 "nítida."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:199
+msgid "No reviews with this rating."
+msgstr "No hay reseñas con esta calificación."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:77
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:199
+msgid "No reviews yet."
+msgstr "Aún no hay reseñas."
 
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:53
 msgid "No saved recipients yet."
@@ -2863,7 +2949,7 @@ msgid "Offering updated."
 msgstr "Oferta actualizada."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:33
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:276
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:277
 msgid "Offerings"
 msgstr "Ofertas"
 
@@ -2893,7 +2979,7 @@ msgid "Onramp details"
 msgstr "Detalles de la compra"
 
 #: apps/web/src/features/home/ui/report-page.tsx:582
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:821
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:810
 msgid "Open in Maps"
 msgstr "Abrir en Maps"
 
@@ -2939,7 +3025,7 @@ msgstr "Abriendo la billetera de papel..."
 msgid "Optional"
 msgstr "Opcional"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:319
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:323
 msgid "Optional message"
 msgstr "Mensaje opcional"
 
@@ -2947,6 +3033,10 @@ msgstr "Mensaje opcional"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:38
 msgid "Oracle pricing"
 msgstr "Precios del oráculo"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:215
+msgid "Owner reply"
+msgstr "Respuesta del propietario"
 
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:336
 msgid "Ownership transfer submitted."
@@ -3034,7 +3124,7 @@ msgstr "Las contraseñas no coinciden."
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:127
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:130
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:750
@@ -3046,8 +3136,8 @@ msgstr "Pendiente"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:346
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:775
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:764
 msgid "Phone"
 msgstr "Teléfono"
 
@@ -3098,7 +3188,7 @@ msgstr "Lugar"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:930
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:148
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:237
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:100
 msgid "Pool"
 msgstr "Fondo"
 
@@ -3264,12 +3354,12 @@ msgstr "Publicación actualizada."
 #: apps/web/src/features/home/ui/report-page.tsx:596
 #: apps/web/src/features/home/ui/report-page.tsx:615
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:492
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:285
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:481
 msgid "Posts"
 msgstr "Publicaciones"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:460
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:449
 msgid "Posts aren't available for this voucher."
 msgstr "Las publicaciones no están disponibles para este vale."
 
@@ -3477,6 +3567,10 @@ msgstr "En cola"
 msgid "Rate"
 msgstr "Tipo de cambio"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:89
+msgid "Ratings distribution"
+msgstr "Distribución de calificaciones"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:314
 msgid "Reading the current rate…"
 msgstr "Consultando el tipo de cambio actual…"
@@ -3493,10 +3587,14 @@ msgstr "Consultando la comisión de este fondo…"
 msgid "Reading…"
 msgstr "Consultando…"
 
+#: apps/web/src/components/reviews/review-editor.tsx:89
+msgid "Reason for reporting"
+msgstr "Motivo del reporte"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:94
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
 #: apps/web/src/features/wallet/ui/receive-page.tsx:51
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:262
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
 msgid "Receive"
 msgstr "Recibir"
 
@@ -3514,7 +3612,7 @@ msgid "Receive vouchers"
 msgstr "Recibir vales"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:622
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:611
 msgid "Received"
 msgstr "Recibido"
 
@@ -3532,7 +3630,7 @@ msgid "Recent voucher transfers for this wallet."
 msgstr "Transferencias recientes de vales para esta billetera."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:95
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:367
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:368
 msgid "Recipient"
 msgstr "Destinatario"
 
@@ -3549,9 +3647,17 @@ msgstr "Recomendado"
 msgid "Reconnect the wallet that published this voucher to mint."
 msgstr "Vuelva a conectar la billetera que publicó este vale para emitirlo."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:203
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:204
 msgid "Redeem"
 msgstr "Canjear"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:177
+msgid "Redeem this voucher again to update your review."
+msgstr "Canjea este vale de nuevo para actualizar tu reseña."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:178
+msgid "Redeem this voucher to leave a review within seven days."
+msgstr "Canjea este vale para dejar una reseña en un plazo de siete días."
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:832
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:438
@@ -3632,6 +3738,10 @@ msgstr "Si elimina {0}, ya no se podrá intercambiar hacia o desde este fondo. "
 msgid "Removing…"
 msgstr "Eliminando…"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:228
+msgid "Reply"
+msgstr "Responder"
+
 #: apps/web/src/features/home/ui/report-page.tsx:409
 msgid "Report details"
 msgstr "Detalles del informe"
@@ -3642,6 +3752,10 @@ msgstr "Detalles del informe"
 msgid "Report images"
 msgstr "Imágenes del informe"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:239
+msgid "Report inappropriate"
+msgstr "Reportar contenido inapropiado"
+
 #: apps/web/src/features/home/ui/report-page.tsx:412
 msgid "Report period"
 msgstr "Período del informe"
@@ -3649,6 +3763,10 @@ msgstr "Período del informe"
 #: apps/web/src/features/home/ui/report-page.tsx:537
 msgid "Report provenance"
 msgstr "Procedencia del informe"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:238
+msgid "Reported"
+msgstr "Reportado"
 
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 msgid "Required"
@@ -3692,8 +3810,8 @@ msgstr "Retirando…"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:222
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:671
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:273
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:146
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:277
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:147
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:307
 msgid "Retry"
 msgstr "Reintentar"
@@ -3712,23 +3830,27 @@ msgstr "Reintentar la conexión"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:113
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:136
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:140
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:139
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:143
 msgid "Reverted"
 msgstr "Revertido"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:282
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:283
 msgid "Reviews"
 msgstr "Reseñas"
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:387
-msgid "Reviews for this voucher will appear here."
-msgstr "Los comentarios para este vale aparecerán aquí."
+#~ msgid "Reviews for this voucher will appear here."
+#~ msgstr "Los comentarios para este vale aparecerán aquí."
 
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:38
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Intercambie vales entre mercados seleccionados que comparten las mismas "
 "normas."
+
+#: apps/web/src/components/reviews/review-editor.tsx:129
+msgid "Save"
+msgstr "Guardar"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:391
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:484
@@ -3762,6 +3884,7 @@ msgstr "Guarde esta tarjeta en un lugar seguro. Si usa una contraseña, "
 msgid "Saved. Your post is awaiting approval again."
 msgstr "Guardado. Su publicación está de nuevo pendiente de aprobación."
 
+#: apps/web/src/components/reviews/review-editor.tsx:129
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:391
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:394
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:482
@@ -3899,7 +4022,7 @@ msgstr "Venda monedas estables a cambio de dinero local."
 #: apps/web/src/features/home/ui/wallet-page.tsx:91
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:119
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:274
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:254
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:255
 msgid "Send"
 msgstr "Enviar"
 
@@ -3907,6 +4030,10 @@ msgstr "Enviar"
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
 msgid "Send {0}"
 msgstr "Enviar {0}"
+
+#: apps/web/src/components/reviews/review-editor.tsx:129
+msgid "Send report"
+msgstr "Enviar reporte"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:60
 msgid "Send supported vouchers to this pool address."
@@ -3921,17 +4048,17 @@ msgstr "Envíe este enlace para ayudar a otra persona a añadir CLC a su "
 msgid "Send to"
 msgstr "Enviar a"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:123
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:126
 msgid "Sending"
 msgstr "Enviando"
 
-#: apps/web/src/features/wallet/ui/send-amount-page.tsx:382
+#: apps/web/src/features/wallet/ui/send-amount-page.tsx:383
 msgid "Sending…"
 msgstr "Enviando…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:93
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:157
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:622
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:611
 msgid "Sent"
 msgstr "Enviado"
 
@@ -3979,7 +4106,7 @@ msgid "Settings"
 msgstr "Configuración"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:107
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:385
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
 msgid "Share"
 msgstr "Compartir"
 
@@ -4001,7 +4128,7 @@ msgstr "Compartir enlace de instalación"
 msgid "Shared by {0}"
 msgstr "Compartido por {0}"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:385
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:389
 msgid "Sharing…"
 msgstr "Compartiendo…"
 
@@ -4009,6 +4136,14 @@ msgstr "Compartiendo…"
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
 msgid "Shortcode"
 msgstr "Código corto"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
+msgid "Show {stars}-star reviews"
+msgstr "Mostrar reseñas de {stars} estrellas"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:193
+msgid "Show all"
+msgstr "Mostrar todas"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:470
 msgid "Shown on your voucher page"
@@ -4027,6 +4162,10 @@ msgstr "Se muestra a cualquier persona que se una a este fondo"
 msgid "Shown to anyone using this pool"
 msgstr "Se muestra a cualquier persona que use este fondo"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:121
+msgid "Sign in after redeeming this voucher to leave a review."
+msgstr "Inicia sesión después de canjear este vale para dejar una reseña."
+
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
 msgid "Sign in or sign up"
 msgstr "Inicie sesión o regístrese"
@@ -4035,11 +4174,11 @@ msgstr "Inicie sesión o regístrese"
 msgid "Sign in to continue"
 msgstr "Inicie sesión para continuar"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:571
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
 msgid "Sign in to view activity."
 msgstr "Inicie sesión para ver la actividad."
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:454
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:443
 msgid "Sign in to view posts."
 msgstr "Inicie sesión para ver las publicaciones."
 
@@ -4108,8 +4247,8 @@ msgstr "Comienza"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:67
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:292
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:189
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:458
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:192
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:462
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:681
 msgid "Status"
@@ -4120,7 +4259,7 @@ msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "Paso {clampedStep} de {clampedTotal}"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:173
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:181
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:184
 msgid "Submitted"
 msgstr "Enviado"
 
@@ -4295,8 +4434,8 @@ msgstr "Cuente a los demás sobre su negocio…"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:770
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:921
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:47
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:782
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:801
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:771
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:790
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:394
 msgid "Terms"
 msgstr "Condiciones"
@@ -4567,9 +4706,9 @@ msgstr "El título debe tener 200 caracteres o menos"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:128
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:168
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:449
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:625
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:171
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:453
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:614
 msgid "To"
 msgstr "A"
 
@@ -4596,7 +4735,7 @@ msgstr "Total"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:155
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:173
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:176
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
 msgid "Transaction"
@@ -4613,7 +4752,7 @@ msgstr "Hash de la transacción"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:56
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:129
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:115
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:118
 msgid "Transaction hash copied"
 msgstr "Hash de la transacción copiado"
 
@@ -4638,6 +4777,8 @@ msgstr "Viaje"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:62
 #: apps/web/src/features/home/ui/activity-page.tsx:60
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
@@ -4655,8 +4796,8 @@ msgstr "Viaje"
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:220
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:209
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:459
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:481
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:590
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:470
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
 msgid "Try again"
 msgstr "Inténtelo de nuevo"
@@ -4730,6 +4871,10 @@ msgstr "Actualizar la billetera de papel protegida"
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 msgid "Update your contact details and location."
 msgstr "Actualice sus datos de contacto y ubicación."
+
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:63
+msgid "Update your review"
+msgstr "Actualizar tu reseña"
 
 #: apps/web/src/features/home/ui/report-page.tsx:96
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
@@ -4866,7 +5011,7 @@ msgstr "vale"
 msgid "Voucher"
 msgstr "Vale"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:235
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:236
 msgid "Voucher actions"
 msgstr "Acciones del vale"
 
@@ -4897,7 +5042,7 @@ msgstr "La descripción del vale es obligatoria"
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "La descripción del vale debe tener 500 caracteres o menos"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:271
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:272
 msgid "Voucher details"
 msgstr "Detalles del vale"
 
@@ -4935,6 +5080,10 @@ msgstr "Registro de vales"
 msgid "Voucher retired."
 msgstr "Vale retirado."
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:206
+msgid "Voucher review"
+msgstr "Reseña del vale"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:399
 msgid "Voucher search results"
 msgstr "Resultados de búsqueda de vales"
@@ -4966,7 +5115,7 @@ msgstr "Faltan los datos de seguimiento del vale."
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:34
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:328
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:103
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:104
 msgid "Vouchers"
 msgstr "Vales"
 
@@ -4994,7 +5143,7 @@ msgid "Waiting for confirmation…"
 msgstr "Esperando confirmación…"
 
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:99
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:125
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:128
 msgid "Waiting for on-chain confirmation"
 msgstr "Esperando confirmación en cadena"
 
@@ -5012,7 +5161,7 @@ msgstr "Esperando la cadena…"
 #: apps/web/src/features/wallet/ui/receive-page.tsx:47
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:101
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:102
 msgid "Wallet"
 msgstr "Billetera"
 
@@ -5059,7 +5208,7 @@ msgstr "No se pudo verificar si ya se han emitido unidades de este vale."
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:72
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:41
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:760
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:749
 msgid "Website"
 msgstr "Sitio web"
 
@@ -5117,9 +5266,13 @@ msgstr "Retirar liquidez"
 msgid "Withdrawal submitted"
 msgstr "Solicitud de retiro enviada"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:512
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:501
 msgid "Write a post"
 msgstr "Escribir una publicación"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:170
+msgid "Write a review"
+msgstr "Escribir una reseña"
 
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:166
 msgid "Write here"
@@ -5161,6 +5314,17 @@ msgstr "Puede vincular hasta {max} vales."
 #~ msgid "You can receive up to {maxReceiveAmount} {receiveSymbol}"
 #~ msgstr "Puede recibir hasta {maxReceiveAmount} {receiveSymbol}"
 
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:138
+msgid "You can reply to reviews and report inappropriate content. You can edit "
+"only replies you wrote yourself."
+msgstr "Puedes responder a las reseñas y reportar contenido inapropiado. Solo "
+"puedes editar las respuestas que hayas escrito tú."
+
+#. placeholder {0}: new Date(viewer!.editableUntil!).toLocaleString()
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:161
+msgid "You can write or edit your review until {0}."
+msgstr "Puedes escribir o editar tu reseña hasta {0}."
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:258
 msgid "You didn't issue any of these."
 msgstr "No ha emitido ninguno de estos vales."
@@ -5168,6 +5332,10 @@ msgstr "No ha emitido ninguno de estos vales."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:378
 msgid "You don't hold any voucher this pool takes."
 msgstr "No posee ningún vale que acepte este fondo."
+
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:66
+msgid "You have seven days after redemption to write or edit your review."
+msgstr "Tienes siete días después del canje para escribir o editar tu reseña."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:313
 msgid "You haven't created a pool yet."
@@ -5227,6 +5395,12 @@ msgstr "Su pago de MPESA llegará en breve."
 msgid "Your name"
 msgstr "Su nombre"
 
+#: apps/web/src/components/reviews/review-editor.tsx:106
+msgid "Your name and wallet address will not be shown. Avoid including personal "
+"details in your comment."
+msgstr "No se mostrarán tu nombre ni la dirección de tu billetera. Evita "
+"incluir datos personales en tu comentario."
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:402
 msgid "Your paper wallet"
 msgstr "Su billetera de papel"
@@ -5258,6 +5432,32 @@ msgstr "Su perfil"
 #: apps/web/src/components/ui/avatar-picker.tsx:90
 msgid "Your profile photo"
 msgstr "Su foto de perfil"
+
+#: apps/web/src/components/reviews/review-editor.tsx:55
+msgid "Your rating"
+msgstr "Tu calificación"
+
+#: apps/web/src/components/reviews/review-editor.tsx:88
+msgid "Your reply"
+msgstr "Tu respuesta"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:152
+msgid "Your review"
+msgstr "Tu reseña"
+
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:43
+msgid "Your review has been saved."
+msgstr "Tu reseña se ha guardado."
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:145
+msgid "Your review was hidden by an admin."
+msgstr "Un administrador ha ocultado tu reseña."
+
+#: apps/web/src/components/reviews/redemption-review-prompt.tsx:50
+msgid "Your review will be available once this redemption is processed. You can "
+"also find it later in the voucher’s Reviews tab."
+msgstr "Podrás dejar tu reseña cuando se procese este canje. También podrás "
+"encontrarla más tarde en la pestaña Reseñas del vale."
 
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:657
 msgid "Your unsaved changes to this post will be lost."

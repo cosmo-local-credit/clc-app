@@ -11,6 +11,31 @@ describe("i18n catalogs", () => {
     await activateLocale("en");
   });
 
+  it("resolves the reported review IDs without development message fallbacks", async () => {
+    await activateLocale("en");
+    expect(i18n._({ id: "MUtNry", values: { 0: 0 } })).toBe("0 reviews");
+    expect(i18n._("hgG8Pq")).toBe("Redeem this voucher to leave a review within seven days.");
+    expect(i18n._("Pv07Of")).toBe("All reviews · newest first");
+    expect(i18n._("dEETgs")).toBe("No reviews yet.");
+  });
+
+  it.each([
+    ["ar", "لا توجد مراجعات بعد."],
+    ["en", "No reviews yet."],
+    ["es", "Aún no hay reseñas."],
+    ["fr", "Aucun avis pour le moment."],
+    ["it", "Non ci sono ancora recensioni."],
+    ["pt", "Ainda não há avaliações."],
+    ["sr", "Још нема рецензија."],
+    ["sw", "Bado hakuna maoni."],
+  ] as const)("loads the review empty state in %s", async (locale, emptyMessage) => {
+    await activateLocale(locale);
+    expect(i18n._("dEETgs")).toBe(emptyMessage);
+    for (const id of ["MUtNry", "hgG8Pq", "Pv07Of"]) {
+      expect(i18n._({ id, values: { 0: 0 } })).not.toBe(id);
+    }
+  });
+
   it("activates the Kiswahili catalog on demand", async () => {
     await activateLocale("sw");
 

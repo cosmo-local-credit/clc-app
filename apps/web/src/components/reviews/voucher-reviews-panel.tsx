@@ -72,13 +72,15 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
           </Button>
         </div>
       ) : null}
-      {summary ? (
+      {summary?.total === 0 ? (
+        <p className="border border-border bg-card p-4 text-sm text-muted-foreground">
+          <Trans>No reviews yet.</Trans>
+        </p>
+      ) : summary ? (
         <div className="border border-border bg-card p-4">
           <div className="flex items-center gap-5">
             <div className="shrink-0 text-center">
-              <p className="font-heading text-4xl font-bold">
-                {summary.total ? summary.average.toFixed(1) : "—"}
-              </p>
+              <p className="font-heading text-4xl font-bold">{summary.average.toFixed(1)}</p>
               <ReviewStars stars={Math.round(summary.average)} />
               <p className="mt-1 text-xs text-muted-foreground">
                 <Trans>{summary.total} reviews</Trans>
@@ -180,7 +182,7 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
         )}
       </div>
 
-      {summary ? (
+      {summary && summary.total > 0 ? (
         <>
           <div className="flex min-h-10 items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>

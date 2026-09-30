@@ -54,6 +54,46 @@ beforeEach(() => {
 });
 
 describe("voucher reviews", () => {
+  it("shows a simple empty state without ratings or sorting when no reviews exist", async () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.getReviews.mockResolvedValue({
+      reviews: [],
+      counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      average: 0,
+      total: 0,
+      next: null,
+    });
+    mount();
+    expect(await screen.findByText("No reviews yet.")).toBeTruthy();
+    expect(screen.queryByLabelText("Ratings distribution")).toBeNull();
+    expect(screen.queryByText("All reviews · newest first")).toBeNull();
+    expect(screen.queryByText("—")).toBeNull();
+    expect(
+      screen.getByText("Sign in after redeeming this voucher to leave a review."),
+    ).toBeTruthy();
+  });
+
+  it("lets an eligible redeemer write the first review", async () => {
+    mocks.getReviews.mockResolvedValue({
+      reviews: [],
+      counts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      average: 0,
+      total: 0,
+      next: null,
+    });
+    mount();
+    expect(await screen.findByText("No reviews yet.")).toBeTruthy();
+    fireEvent.click(await screen.findByRole("button", { name: "Write a review" }));
+    expect(screen.getByRole("radio", { name: "5 stars" })).toBeTruthy();
+  });
+
+  it("shows a load error instead of claiming there are no reviews", async () => {
+    mocks.getReviews.mockRejectedValue(new Error("offline"));
+    mount();
+    expect(await screen.findByText("Couldn't load reviews.")).toBeTruthy();
+    expect(screen.queryByText("No reviews yet.")).toBeNull();
+  });
+
   it("shows anonymous public cards and filters by histogram without hiding the summary", async () => {
     mocks.auth.isAuthenticated = false;
     mocks.getReviews.mockImplementation((_address, stars) =>
