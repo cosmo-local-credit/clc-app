@@ -5,7 +5,10 @@ import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { PoolDetailPage } from "#/features/pools/ui";
 
 const searchSchema = z.object({
-  tab: z.enum(["offerings", "vouchers", "holdings", "activity"]).optional().catch(undefined),
+  tab: z
+    .enum(["offerings", "vouchers", "holdings", "credit", "activity"])
+    .optional()
+    .catch(undefined),
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({

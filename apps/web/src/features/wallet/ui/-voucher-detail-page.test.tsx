@@ -126,6 +126,10 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
 }));
 
+vi.mock("#/features/wallet/hooks/use-address-book", () => ({
+  useAddressBookRecipients: () => ({ data: [] }),
+}));
+
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => mocks.profile,
 }));
