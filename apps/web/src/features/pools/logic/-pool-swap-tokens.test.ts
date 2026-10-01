@@ -277,6 +277,23 @@ describe("defaultPoolSwapFrom", () => {
 
     expect(defaultPoolSwapFrom(tokens)).toBeUndefined();
   });
+
+  it("skips a voucher already chosen for the other side", () => {
+    const tokens = buildPoolSwapTokens({
+      pool: pool({ limiterAddress: null }),
+      vouchers: [
+        voucher({ id: "v1", tokenAddress: KAW, symbol: "KAW" }),
+        voucher({ id: "v2", tokenAddress: SAR, symbol: "SAR" }),
+      ],
+      reads: new Map([
+        [KAW.toLowerCase(), reads({ holderBalanceRaw: "90000000" })],
+        [SAR.toLowerCase(), reads({ holderBalanceRaw: "8000000" })],
+      ]),
+    });
+
+    expect(defaultPoolSwapFrom(tokens)?.token.symbol).toBe("KAW");
+    expect(defaultPoolSwapFrom(tokens, KAW.toLowerCase())?.token.symbol).toBe("SAR");
+  });
 });
 
 describe("defaultPoolSwapTo", () => {
