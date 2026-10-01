@@ -110,7 +110,7 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
       <Progress
         value={100 - fillPercent}
         aria-label={t`${holding.name} available credit`}
-        className="h-1 w-full overflow-hidden bg-muted"
+        className="h-1.5 w-full overflow-hidden bg-muted"
       />
       <p className="mt-1 font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
         <Trans>

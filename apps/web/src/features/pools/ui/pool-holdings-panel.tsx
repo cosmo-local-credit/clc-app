@@ -93,7 +93,7 @@ function HoldingBar({ percent }: { percent: number | null }) {
       {/* A holding too small to show at this scale keeps a sliver, so a pool
           that holds a little of a voucher does not read as holding none. */}
       <div
-        className={["h-full bg-chart-2", percent > 0 ? "min-w-0.5" : ""].join(" ")}
+        className={["h-full bg-info", percent > 0 ? "min-w-0.5" : ""].join(" ")}
         style={{ width: `${percent}%` }}
       />
     </div>
