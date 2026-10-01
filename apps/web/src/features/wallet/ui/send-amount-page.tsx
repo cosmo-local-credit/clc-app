@@ -312,6 +312,7 @@ export function SendAmountPage({
               trackingId: result.trackingId,
               token: tokenAddress,
               recipient: recipientAddress,
+              recipientLabel,
               amount,
               symbol: selectedToken.symbol,
               returnPool,

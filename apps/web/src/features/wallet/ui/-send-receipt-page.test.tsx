@@ -92,6 +92,31 @@ afterEach(() => {
 });
 
 describe("SendReceiptPage", () => {
+  it("shows and shares the pool name passed from a deposit without an address-book entry", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        trackingId="tracking-1"
+        recipient={POOL_ADDRESS}
+        recipientLabel="Trade Pool"
+        amount="5"
+        symbol="USDC"
+        returnPool={POOL_ADDRESS}
+      />,
+    );
+
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    expect(share.mock.calls[0]?.[0].text).toContain("I sent 5 USDC to Trade Pool.");
+    Reflect.deleteProperty(navigator, "share");
+  });
+
   it("shares the receipt text with the recipient alias and explorer link", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { configurable: true, value: share });

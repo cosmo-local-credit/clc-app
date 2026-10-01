@@ -10,6 +10,10 @@ import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => ADDRESS.toLowerCase(),
+}));
+
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);

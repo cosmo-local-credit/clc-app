@@ -71,6 +71,7 @@ export function SendReceiptPage({
   token,
   trackingId,
   recipient,
+  recipientLabel: submittedRecipientLabel,
   amount,
   symbol,
   returnPool,
@@ -78,6 +79,7 @@ export function SendReceiptPage({
   token?: string;
   trackingId?: string;
   recipient?: string;
+  recipientLabel?: string;
   amount?: string;
   symbol?: string;
   /**
@@ -105,7 +107,8 @@ export function SendReceiptPage({
           (entry) =>
             entry.address.toLowerCase() === toAddress.toLowerCase() &&
             !entry.label.toLowerCase().startsWith("0x"),
-        )?.label ?? null);
+        )?.label ??
+        (submittedRecipientLabel?.trim() || null));
   const amountLabel = amount && symbol ? `${amount} ${symbol}` : null;
   const outcome = tracking.outcome;
   const exitReceipt = () => {
