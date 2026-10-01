@@ -104,7 +104,9 @@ export function MarketVoucherSheet({
           >
             <RiArrowLeftLine className="rtl:-scale-x-100 size-5" aria-hidden="true" />
           </Button>
-          <p className="min-w-0 flex-1 truncate font-heading font-semibold text-base">{name}</p>
+          <p dir="auto" className="min-w-0 flex-1 truncate font-heading font-semibold text-base">
+            {name}
+          </p>
           <ShareVoucherButton name={name} address={address} variant="icon" />
         </div>
       }
@@ -181,7 +183,10 @@ function VoucherCard({
               size={40}
             />
             <div className="flex min-w-0 flex-1 items-baseline gap-2">
-              <MapSheetTitle className="min-w-0 truncate font-heading font-semibold text-[1.375rem] leading-tight tracking-[-0.02em]">
+              <MapSheetTitle
+                dir="auto"
+                className="min-w-0 truncate font-heading font-semibold text-[1.375rem] leading-tight tracking-[-0.02em]"
+              >
                 {name}
               </MapSheetTitle>
               <span
@@ -207,13 +212,20 @@ function VoucherCard({
           <span className="inline-flex shrink-0 border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem]">
             {kindLabel}
           </span>
-          {place ? <span className="truncate">{place}</span> : null}
+          {place ? (
+            <span dir="auto" className="truncate">
+              {place}
+            </span>
+          ) : null}
         </MapSheetDescription>
         {rate ? (
           <p className="mt-1.5 truncate font-mono text-[0.6875rem] text-muted-foreground">
-            <Trans>
-              1 {symbol} = {rate.value} {rate.unit}
-            </Trans>
+            {/* An equation of symbols and figures reads left to right everywhere. */}
+            <span dir="ltr">
+              <Trans>
+                1 {symbol} = {rate.value} {rate.unit}
+              </Trans>
+            </span>
           </p>
         ) : null}
 
@@ -259,6 +271,7 @@ function VoucherCard({
         <HalfTier
           address={address}
           detail={detail}
+          expanded={snap === "full"}
           chainId={detail?.chainId ?? catalogVoucher?.chainId ?? CHAIN_ID}
           onOpenOfferings={() => onSnapChange("full")}
         />
@@ -276,11 +289,14 @@ function VoucherCard({
 function HalfTier({
   address,
   detail,
+  expanded,
   chainId,
   onOpenOfferings,
 }: {
   address: `0x${string}`;
   detail: MarketVoucherDetail | undefined;
+  /** At full the description reads in full here, and Overview leaves it out. */
+  expanded: boolean;
   chainId: number;
   onOpenOfferings: () => void;
 }) {
@@ -346,7 +362,7 @@ function HalfTier({
       ) : null}
 
       {description ? (
-        <p dir="auto" className="line-clamp-3 px-4 text-sm leading-relaxed">
+        <p dir="auto" className={cn("px-4 text-sm leading-relaxed", !expanded && "line-clamp-3")}>
           {description}
         </p>
       ) : null}
@@ -382,7 +398,9 @@ function HalfTier({
                     size={36}
                   />
                   <div className="min-w-0">
-                    <p className="truncate font-bold text-sm tracking-tight">{pool.name}</p>
+                    <p dir="auto" className="truncate font-bold text-sm tracking-tight">
+                      {pool.name}
+                    </p>
                     <p className="font-semibold text-[0.6875rem] text-primary">
                       {pool.voucherCount === 1 ? (
                         <Trans>1 voucher</Trans>

@@ -345,6 +345,17 @@ describe("MarketVoucherSheet full", () => {
     expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeTruthy();
   });
 
+  it("reads the description in full above the tabs and shows the rate once", async () => {
+    detailResult.current = detail();
+    renderSheet({ initialSnap: "full" });
+
+    await screen.findByRole("tab", { name: "Overview", selected: true });
+    const descriptions = screen.getAllByText("Fresh vegetables from the farm.");
+    expect(descriptions).toHaveLength(1);
+    expect(descriptions[0]!.className).not.toContain("line-clamp");
+    expect(screen.getAllByText("1 MALII = 10 KSH")).toHaveLength(1);
+  });
+
   it("shows the chosen tab's panel", async () => {
     detailResult.current = detail();
     renderSheet({ initialSnap: "full", voucherTab: "reviews" });

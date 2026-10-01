@@ -1,5 +1,4 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { formatVoucherRate } from "@clc/core/features/market/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 
@@ -103,10 +102,12 @@ export function MarketVoucherSheetFull({
             aria-labelledby="voucher-tab-overview"
             className="space-y-3"
           >
+            {/* The rate heads the card and the description reads in full above
+                the tabs, so Overview starts at the contact rows. */}
             <VoucherAbout
-              rate={formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null)}
+              rate={null}
               symbol={symbol}
-              description={detail?.description ?? null}
+              description={null}
               contractAddress={detail?.address ?? address}
               email={detail?.email ?? null}
               website={detail?.website ?? null}
