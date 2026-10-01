@@ -27,11 +27,11 @@ type PinShape = { radius: number; tail: number };
 
 /**
  * A Google Maps place pin: a disc that tapers to a short point at the
- * location it marks. 26 px across, 34 px when selected. Logical pixels.
+ * location it marks. 24 px across, 28 px when selected. Logical pixels.
  */
 export const markerPin = {
-  base: { radius: 13, tail: 6 },
-  selected: { radius: 17, tail: 8 },
+  base: { radius: 12, tail: 6 },
+  selected: { radius: 14, tail: 7 },
   /** Room around the artwork for the white stroke and the drop shadow. */
   padding: 3,
 } as const satisfies { base: PinShape; selected: PinShape; padding: number };

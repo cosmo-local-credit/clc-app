@@ -17,6 +17,7 @@ import {
   type MarketLocation,
   type MarketLocationKind,
 } from "./market-data";
+import { keepMarketLabelsInsideViewport } from "./market-label-edges";
 import {
   KIND_LABEL_COLOR,
   addMarketMarkerImages,
@@ -38,6 +39,7 @@ const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
 
 const LABEL_LAYER_ID = "market-point-labels";
+const SELECTED_LABEL_LAYER_ID = "market-point-selected-label";
 const CLUSTERS_LAYER_ID = "market-clusters";
 const CLUSTER_COUNT_LAYER_ID = "market-cluster-count";
 const UNCLUSTERED_LAYER_ID = "market-points";
@@ -57,6 +59,7 @@ const INTERACTIVE_LAYER_IDS = [
   SELECTED_LAYER_ID,
   SPIDER_POINT_LAYER_ID,
   LABEL_LAYER_ID,
+  SELECTED_LABEL_LAYER_ID,
 ];
 
 const VIEWPORT_SETTLE_MS = 400;
@@ -270,7 +273,7 @@ const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
   "text-halo-blur": 0.5,
 };
 
-/** Every lone pin is named, except the selected one: its overlay carries the name. */
+/** The selected voucher uses its own text layer, below every pin and badge. */
 function labelFilter(selectedId: string | null): FilterSpecification {
   return [
     "all",
@@ -337,6 +340,14 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: MARKET_SOURCE_ID,
     filter: labelFilter(null),
     layout: labelLayout(markerPin.base, LABEL_FONT),
+    paint: LABEL_PAINT,
+  });
+  map.addLayer({
+    id: SELECTED_LABEL_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: selectedFilter(null),
+    layout: labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
     paint: LABEL_PAINT,
   });
 
@@ -418,11 +429,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "icon-offset": PIN_OFFSET,
       "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      ...labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
-      // A name that cannot fit must not take the selected pin down with it.
-      "text-optional": true,
     },
-    paint: LABEL_PAINT,
   });
 
   map.addLayer({
@@ -529,6 +536,7 @@ export function MarketMap({
 
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    let removeLabelEdgeListeners: (() => void) | undefined;
 
     function handleMapClick(event: MapMouseEvent) {
       const [feature] = map.queryRenderedFeatures(event.point, {
@@ -597,6 +605,7 @@ export function MarketMap({
 
     function handleLoad() {
       addMarketLayers(map, stacksRef.current);
+      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map);
       loadedRef.current = true;
       setLoaded(true);
     }
@@ -616,6 +625,7 @@ export function MarketMap({
 
     return () => {
       clearTimeout(settleTimer);
+      removeLabelEdgeListeners?.();
       map.off("load", handleLoad);
       map.off("error", handleError);
       map.off("click", handleMapClick);
@@ -696,6 +706,7 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     map.setFilter(SELECTED_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setFilter(SELECTED_LABEL_LAYER_ID, selectedFilter(selectedLocationId));
     map.setFilter(LABEL_LAYER_ID, labelFilter(selectedLocationId));
     map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
       "case",

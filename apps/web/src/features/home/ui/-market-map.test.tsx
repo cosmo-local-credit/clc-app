@@ -80,6 +80,8 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     });
     hasImage = vi.fn((id: string) => this.images.has(id));
     remove = vi.fn();
+    removeImage = vi.fn((id: string) => this.images.delete(id));
+    getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -1313,9 +1315,13 @@ describe("MarketMap pins and names", () => {
   it("places names below every marker layer, so pins claim their space first", () => {
     renderMap(LOCATIONS);
     const ids = loadedMap().layers.map((layer) => layer.id);
-    const labels = ids.indexOf("market-point-labels");
+    const labels = Math.max(
+      ids.indexOf("market-point-labels"),
+      ids.indexOf("market-point-selected-label"),
+    );
 
-    expect(labels).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf("market-point-labels")).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf("market-point-selected-label")).toBeGreaterThanOrEqual(0);
     for (const id of [
       "market-clusters",
       "market-cluster-count",
@@ -1349,10 +1355,15 @@ describe("MarketMap pins and names", () => {
       ["==", ["get", "count"], 1],
       ["!=", ["get", "id"], "3"],
     ]);
-    const selected = layoutOf(map, "market-point-selected");
-    expect(selected["text-field"]).toEqual(["get", "name"]);
-    // A name with no room must not hide the selected pin along with it.
-    expect(selected["text-optional"]).toBe(true);
+    expect(map.setFilter).toHaveBeenCalledWith("market-point-selected-label", [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+      ["==", ["get", "id"], "3"],
+    ]);
+    expect(layoutOf(map, "market-point-selected-label")["text-field"]).toEqual(["get", "name"]);
+    // Text placement cannot hide or cover a marker in its separate layer.
+    expect(layoutOf(map, "market-point-selected")["text-field"]).toBeUndefined();
   });
 
   it("selects a voucher when its name is tapped", () => {
@@ -1372,7 +1383,7 @@ describe("MarketMap pins and names", () => {
     clickEmptyMap(map);
 
     expect(map.queryRenderedFeatures).toHaveBeenCalledWith(expect.anything(), {
-      layers: expect.arrayContaining(["market-point-labels"]),
+      layers: expect.arrayContaining(["market-point-labels", "market-point-selected-label"]),
     });
   });
 });
