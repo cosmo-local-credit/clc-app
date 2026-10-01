@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   accountKeys,
   accountTokensInfiniteQueryOptions,
@@ -68,6 +69,31 @@ export function useAccountTokensInfinite(
     ...walletAccountQueryFreshness,
     ...pollOptions(poll),
   });
+}
+
+/**
+ * Every positive indexed token balance for an account.
+ *
+ * The wallet home deliberately uses the five-token `latest` endpoint, while
+ * eligibility and picker decisions must not mistake an older holding for zero.
+ * This drains the existing cursor query and reports pending until the final
+ * page is present, matching the complete-list contract used by pool voucher
+ * pickers.
+ */
+export function useAllAccountTokens(address: string | undefined) {
+  const query = useAccountTokensInfinite(address, { perPage: 100 });
+  const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = query;
+
+  useEffect(() => {
+    if (isError || !hasNextPage || isFetchingNextPage) return;
+    void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage]);
+
+  return {
+    ...query,
+    tokens: query.data?.pages.flatMap((page) => page.tokens) ?? [],
+    isPending: query.isPending || hasNextPage || isFetchingNextPage,
+  };
 }
 
 export function useAccountTransfersInfinite(
