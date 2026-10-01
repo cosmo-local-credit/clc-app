@@ -136,6 +136,12 @@ vi.mock("#/features/home/ui/market-map.lazy", () => ({
   ),
 }));
 
+vi.mock("#/lib/api/pools", () => ({
+  poolsClient: {
+    getFilteredPools: async () => ({ pools: [], receivedCount: 0, first: 0, last: 0 }),
+  },
+}));
+
 // The app-owned client is the seam the code now goes through. Build it from
 // the already-mocked resource modules above so their overrides still apply.
 vi.mock("#/lib/api/market", async () => ({
@@ -144,6 +150,8 @@ vi.mock("#/lib/api/market", async () => ({
 
 import { MarketPage } from "#/features/home/ui/market-page";
 import { VoucherDetailPage, type VoucherOrigin } from "#/features/wallet/ui";
+import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
+import { parseHomeSearch } from "#/lib/navigation/home-tabs";
 
 const VOUCHER_ADDRESS = "0xAbC0000000000000000000000000000000000123";
 
@@ -176,9 +184,7 @@ function renderAt(initialPath: string) {
   const marketRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/",
-    validateSearch: (search): { tab?: string } => ({
-      tab: typeof search.tab === "string" ? search.tab : undefined,
-    }),
+    validateSearch: (search) => ({ ...parseHomeSearch(search), ...pickCatalogSearch(search) }),
     component: () => <MarketPage />,
   });
   const voucherRoute = createRoute({
@@ -241,6 +247,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** The card's own link to the page sits at its full tier. */
+async function openVoucherPageFromCard() {
+  fireEvent.click(screen.getByTestId("marker-2710"));
+  await screen.findByRole("dialog", { name: "Priscilah Malii" });
+  fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+  fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+  fireEvent.click(await screen.findByRole("link", { name: "Open voucher page" }));
+}
+
 describe("voucher navigation", () => {
   // Tabs are panels on one screen, not destinations: switching them replaces the
   // entry so a single Back leaves the voucher instead of retracing the tabs.
@@ -248,10 +263,7 @@ describe("voucher navigation", () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    fireEvent.click(screen.getByTestId("marker-2710"));
-    const card = await waitFor(() => screen.getByRole("link", { name: "Priscilah Malii" }));
-
-    fireEvent.click(card);
+    await openVoucherPageFromCard();
 
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
@@ -299,10 +311,7 @@ describe("voucher navigation", () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
-    fireEvent.click(screen.getByTestId("marker-2710"));
-    await waitFor(() => expect(getMarketVoucher).toHaveBeenCalledTimes(1));
-
-    fireEvent.click(screen.getByRole("link", { name: "Priscilah Malii" }));
+    await openVoucherPageFromCard();
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/"));
 
     // Rendered from cache: detail-backed info opens with no second request.

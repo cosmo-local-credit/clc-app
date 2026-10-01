@@ -469,15 +469,44 @@ describe("MarketPage data states", () => {
   });
 });
 
-describe("MarketPage preview", () => {
-  it("starts with nothing selected", () => {
+function detailFor(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDetail {
+  return {
+    id: "1",
+    chainId: 42220,
+    address: "0xAbC0000000000000000000000000000000000123",
+    name: "Priscilah Malii",
+    symbol: "MALII",
+    decimals: 6,
+    ownerAddress: null,
+    description: null,
+    voucherUoa: "KSH",
+    voucherValue: "10",
+    locationName: null,
+    lat: -1.29,
+    lng: 36.82,
+    email: null,
+    website: null,
+    phone: null,
+    terms: null,
+    iconUrl: "https://content.example/icon.jpg",
+    bannerUrl: null,
+    tags: [],
+    kind: "goods",
+    active: true,
+    ...overrides,
+  } as MarketVoucherDetail;
+}
+
+describe("MarketPage voucher card", () => {
+  it("starts with no card open", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
-    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(lastMapProps.current?.selectedLocationId).toBeNull();
   });
 
-  it("shows the voucher name and translated kind after a marker tap", () => {
+  it("opens the tapped voucher's card through the URL selection", () => {
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { name: "Priscilah Malii", kind: "goods" })],
@@ -486,11 +515,10 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.getAllByText("Priscilah Malii").length).toBeGreaterThan(0);
-    expect(screen.getByText("Goods")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Priscilah Malii" }).className).toContain(
-      "top-[calc(env(safe-area-inset-top)+4.75rem)]",
-    );
+    expect(selection.calls).toEqual([["select", "0xAbC0000000000000000000000000000000000123"]]);
+    const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
+    expect(within(card).getByText("Goods")).toBeTruthy();
+    expect(lastMapProps.current?.selectedLocationId).toBe("1");
   });
 
   it.each([
@@ -503,21 +531,18 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.getByText(label)).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).getByText(label)).toBeTruthy();
   });
 
-  it("links the selected voucher to its page", () => {
-    vouchersResult.current = {
-      ...vouchersResult.current,
-      vouchers: [voucher("1", { address: "0xAbC0000000000000000000000000000000000123" })],
-    };
+  it("no longer leaves the map when the card is tapped", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Voucher 1" });
-    expect(link.getAttribute("href")).toBe("/vouchers/0xAbC0000000000000000000000000000000000123");
-    expect(link.querySelector("a")).toBeNull();
+    expect(
+      within(screen.getByRole("dialog")).queryByRole("link", { name: "Voucher 1" }),
+    ).toBeNull();
   });
 
   it("shows the symbol beside the name", () => {
@@ -529,9 +554,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Priscilah Malii" });
-    expect(link.textContent).toContain("Priscilah Malii");
-    expect(link.textContent).toContain("MALII");
+    expect(screen.getByRole("dialog").textContent).toContain("MALII");
   });
 
   it("requests detail for the selected voucher and nothing before that", () => {
@@ -549,34 +572,7 @@ describe("MarketPage preview", () => {
   });
 
   it("adds the profile image and rate once detail arrives", () => {
-    detailResult.current = {
-      current: undefined,
-      ...detailResult.current,
-      data: {
-        id: "1",
-        chainId: 42220,
-        address: "0xAbC0000000000000000000000000000000000123",
-        name: "Priscilah Malii",
-        symbol: "MALII",
-        decimals: 6,
-        ownerAddress: null,
-        description: null,
-        voucherUoa: "KSH",
-        voucherValue: "10",
-        locationName: null,
-        lat: -1.29,
-        lng: 36.82,
-        email: null,
-        website: null,
-        phone: null,
-        terms: null,
-        iconUrl: "https://content.example/icon.jpg",
-        bannerUrl: null,
-        tags: [],
-        kind: "goods",
-        active: true,
-      },
-    } as typeof detailResult.current;
+    detailResult.current = { data: detailFor(), isPending: false };
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { symbol: "MALII" })],
@@ -585,9 +581,9 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Voucher 1" });
-    expect(link.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
-    expect(link.textContent).toContain("1 MALII = 10 KSH");
+    const card = screen.getByRole("dialog");
+    expect(card.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
+    expect(card.textContent).toContain("1 MALII = 10 KSH");
   });
 
   it("stays readable before detail resolves", () => {
@@ -600,15 +596,15 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Priscilah Malii" });
-    expect(link.textContent).toContain("Priscilah Malii");
-    expect(link.textContent).toContain("MALII");
-    expect(link.textContent).toContain("Goods");
-    expect(link.querySelector("img")).toBeNull();
-    expect(link.textContent).not.toContain("=");
+    const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
+    expect(card.textContent).toContain("MALII");
+    expect(card.textContent).toContain("Goods");
+    expect(card.querySelector("img")).toBeNull();
+    expect(card.textContent).not.toContain("=");
   });
 
-  it("clears the selection when a refreshed dataset drops the voucher", () => {
+  it("keeps the card when a refreshed catalog no longer holds the voucher", () => {
+    detailResult.current = { data: detailFor({ name: "Voucher 1" }), isPending: false };
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { rerender } = render(
@@ -617,16 +613,37 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
     fireEvent.click(screen.getByTestId("marker-1"));
-    expect(screen.getByRole("link", { name: "Voucher 1" })).toBeTruthy();
 
-    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("2")] };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("2", { address: "0xDef0000000000000000000000000000000000456" })],
+    };
     rerender(
       <QueryClientProvider client={client}>
-        <MarketPage key="same" />
+        <MarketPage />
       </QueryClientProvider>,
     );
 
-    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Voucher 1" })).toBeTruthy();
+    expect(lastMapProps.current?.selectedLocationId).toBeNull();
+  });
+
+  it("opens a deep-linked card before the catalog holds the voucher", () => {
+    selection.initial = "0xAbC0000000000000000000000000000000000123";
+    detailResult.current = { data: detailFor(), isPending: false };
+    renderPage();
+
+    expect(screen.getByRole("dialog", { name: "Priscilah Malii" })).toBeTruthy();
+  });
+
+  it("closes through the URL selection", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+
+    expect(selection.calls.at(-1)).toEqual(["close"]);
   });
 
   it("links Browse all to the marketplace list without rendering it over the map", () => {

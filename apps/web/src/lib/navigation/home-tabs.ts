@@ -35,9 +35,12 @@ export function parseMarketView(value: unknown): MarketView {
   return value === "list" ? "list" : "map";
 }
 
-/** A checksummed or lower-case address, or nothing. */
+/**
+ * An address, or nothing. The checksum is not enforced: a voucher the catalog
+ * spells in mixed case must still open its card.
+ */
 export function parseMarketVoucher(value: unknown): `0x${string}` | undefined {
-  return typeof value === "string" && isAddress(value) ? value : undefined;
+  return typeof value === "string" && isAddress(value, { strict: false }) ? value : undefined;
 }
 
 export function parseHomeSearch(

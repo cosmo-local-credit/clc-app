@@ -1,29 +1,26 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { formatVoucherRate } from "@clc/core/features/market/logic";
 import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiArrowRightSLine, RiFocus3Line, RiListUnordered } from "react-icons/ri";
+import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
-import { VoucherAvatar } from "#/components/wallet";
+import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
-import type { MarketVoucher } from "@clc/api/features/market/client";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
   CAMERA_RANK,
   REAL_FIX_ZOOM,
   useMarketCamera,
 } from "#/features/home/hooks/use-market-camera";
-import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useMarketVoucherSelection } from "#/features/home/hooks/use-market-voucher-selection";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
-import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
+import { MarketVoucherSheet } from "./market-voucher-sheet";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -85,11 +82,24 @@ export function MarketPage({
     return { key: catalog.filterKey, west, south, east, north };
   }, [filter.isFiltered, catalog.status, catalog.filterKey, vouchers]);
 
-  const selectedAddress = selection.voucher?.toLowerCase() ?? null;
-  const selectedVoucher = useMemo(
-    () => vouchers.find((voucher) => voucher.address.toLowerCase() === selectedAddress) ?? null,
-    [vouchers, selectedAddress],
+  // The card keeps the voucher it last showed while it animates closed.
+  const isCardOpen = selection.voucher !== null;
+  const [cardVoucher, setCardVoucher] = useState(selection.voucher);
+  const [wasCardOpen, setWasCardOpen] = useState(isCardOpen);
+  const [snap, setSnap] = useState<MapSheetSnap>("peek");
+  if (selection.voucher && selection.voucher !== cardVoucher) setCardVoucher(selection.voucher);
+  if (isCardOpen !== wasCardOpen) {
+    setWasCardOpen(isCardOpen);
+    // Every card opens at the peek, Forward and deep links included.
+    if (isCardOpen) setSnap("peek");
+  }
+
+  const cardAddress = cardVoucher?.toLowerCase() ?? null;
+  const cardCatalogVoucher = useMemo(
+    () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
+    [vouchers, cardAddress],
   );
+  const selectedLocationId = isCardOpen ? (cardCatalogVoucher?.id ?? null) : null;
 
   const locationButtonLabel =
     locationStatus === "requesting"
@@ -127,7 +137,7 @@ export function MarketPage({
       >
         <MarketMap
           locations={vouchers}
-          selectedLocationId={selectedVoucher?.id ?? null}
+          selectedLocationId={selectedLocationId}
           camera={camera}
           fitBounds={fitBounds}
           cameraScope={locationOwner}
@@ -140,8 +150,6 @@ export function MarketPage({
       </Suspense>
 
       <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
-
-      {selectedVoucher ? <MarketPreview voucher={selectedVoucher} realFix={realFix} /> : null}
 
       {onboardingBanner ? (
         <div className="pointer-events-none absolute start-[4.75rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
@@ -209,67 +217,20 @@ export function MarketPage({
           </Button>
         </div>
       </div>
+
+      {cardVoucher ? (
+        <MarketVoucherSheet
+          address={cardVoucher}
+          open={isCardOpen}
+          catalogVoucher={cardCatalogVoucher}
+          realFix={realFix}
+          snap={snap}
+          onSnapChange={setSnap}
+          voucherTab={selection.voucherTab ?? "overview"}
+          onClose={selection.close}
+        />
+      ) : null}
     </main>
-  );
-}
-
-function MarketPreview({
-  voucher,
-  realFix,
-}: {
-  voucher: MarketVoucher;
-  realFix: Coordinates | null;
-}) {
-  const kindLabel = useMarketKindLabel(voucher.kind);
-  const distanceLabel = useMarketDistanceLabel(realFix, voucher);
-  const { data: detail } = useMarketVoucherDetail(voucher.address);
-  const rate = formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null);
-
-  return (
-    <Link
-      to="/vouchers/$voucherAddress"
-      params={{ voucherAddress: voucher.address }}
-      aria-label={voucher.name}
-      className="absolute inset-x-4 top-[calc(env(safe-area-inset-top)+4.75rem)] z-20 flex items-center gap-3 border border-border bg-card px-4 py-3 text-start"
-    >
-      <VoucherAvatar
-        address={voucher.address}
-        symbol={voucher.symbol}
-        iconUrl={detail?.iconUrl ?? null}
-        size={40}
-      />
-      <span className="min-w-0 flex-1">
-        <span className="flex items-baseline gap-2">
-          <span className="min-w-0 truncate font-heading font-semibold text-sm">
-            {voucher.name}
-          </span>
-          <span className="shrink-0 font-medium font-mono text-[0.6875rem] text-muted-foreground">
-            {voucher.symbol}
-          </span>
-        </span>
-        {rate ? (
-          <span className="mt-0.5 block truncate font-mono text-[0.6875rem] text-muted-foreground">
-            <Trans>
-              1 {voucher.symbol} = {rate.value} {rate.unit}
-            </Trans>
-          </span>
-        ) : null}
-        <span className="mt-1 flex items-center gap-2">
-          <span className="inline-flex border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem] text-muted-foreground">
-            {kindLabel}
-          </span>
-          {distanceLabel ? (
-            <span className="truncate text-muted-foreground text-xs">{distanceLabel}</span>
-          ) : voucher.locationName ? (
-            <span className="truncate text-muted-foreground text-xs">{voucher.locationName}</span>
-          ) : null}
-        </span>
-      </span>
-      <RiArrowRightSLine
-        className="rtl:-scale-x-100 size-5 shrink-0 text-muted-foreground"
-        aria-hidden="true"
-      />
-    </Link>
   );
 }
 
