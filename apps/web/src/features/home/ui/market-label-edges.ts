@@ -2,59 +2,61 @@ import type MapLibreGL from "maplibre-gl";
 import type { GeoJSONSource } from "maplibre-gl";
 
 const SOURCE_ID = "market-label-edges";
-const VERTICAL_IMAGE_ID = "market-label-edge-vertical";
-const HORIZONTAL_IMAGE_ID = "market-label-edge-horizontal";
+const IMAGE_ID = "market-label-edge";
 // Cover MapLibre's 100 px collision margin outside the viewport, plus room
 // for long names. A small inset keeps the text halo inside the map too.
 const EDGE_DEPTH = 200;
 const EDGE_INSET = 2;
 
+type Obstacle = { x: number; y: number; anchor: "left" | "right" | "top" | "bottom" };
+
 /**
  * Variable text anchors test collisions, not viewport bounds. Transparent
  * symbols around the screen turn its edges into collision obstacles, so a
  * clipped name tries its other anchor or gives way. Pins still allow overlap.
+ *
+ * The obstacles only hold while the map is at rest. Each `setData` re-tiles the
+ * source and re-places every symbol, so following the camera frame by frame
+ * turns a pan into a slideshow. Geographic symbols cannot stay put on screen
+ * either: left in place they would slide inward and hide names in a band. So
+ * they lift when a move starts, names clip at the edge in motion as they do on
+ * any native map, and they return where the camera settles.
  */
 export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void {
-  let imageWidth = 0;
-  let imageHeight = 0;
-
-  function updateImages(width: number, height: number) {
-    if (width === imageWidth && height === imageHeight) return;
-    for (const id of [VERTICAL_IMAGE_ID, HORIZONTAL_IMAGE_ID]) {
-      if (map.hasImage(id)) map.removeImage(id);
-    }
-    map.addImage(VERTICAL_IMAGE_ID, {
-      width: EDGE_DEPTH,
-      height: height + EDGE_DEPTH * 2,
-      data: new Uint8Array(EDGE_DEPTH * (height + EDGE_DEPTH * 2) * 4),
-    });
-    map.addImage(HORIZONTAL_IMAGE_ID, {
-      width: width + EDGE_DEPTH * 2,
-      height: EDGE_DEPTH,
-      data: new Uint8Array((width + EDGE_DEPTH * 2) * EDGE_DEPTH * 4),
-    });
-    imageWidth = width;
-    imageHeight = height;
+  // One transparent pixel scaled to EDGE_DEPTH: the collision box grows with
+  // `icon-size`, while every rebuild packs a single pixel into the icon atlas
+  // instead of a viewport-sized bitmap.
+  if (!map.hasImage(IMAGE_ID)) {
+    map.addImage(IMAGE_ID, { width: 1, height: 1, data: new Uint8Array(4) });
   }
 
-  function collection() {
+  function obstacles(): Obstacle[] {
     const { clientWidth, clientHeight } = map.getCanvas();
     const width = Math.max(1, clientWidth);
     const height = Math.max(1, clientHeight);
-    updateImages(width, height);
-    const edges = [
-      { x: EDGE_INSET, y: height / 2, image: VERTICAL_IMAGE_ID, anchor: "right" },
-      { x: width - EDGE_INSET, y: height / 2, image: VERTICAL_IMAGE_ID, anchor: "left" },
-      { x: width / 2, y: EDGE_INSET, image: HORIZONTAL_IMAGE_ID, anchor: "bottom" },
-      { x: width / 2, y: height - EDGE_INSET, image: HORIZONTAL_IMAGE_ID, anchor: "top" },
-    ];
+    const result: Obstacle[] = [];
+    // The side columns run past both corners; the rows only span the width.
+    for (let top = -EDGE_DEPTH; top < height + EDGE_DEPTH; top += EDGE_DEPTH) {
+      const y = top + EDGE_DEPTH / 2;
+      result.push({ x: EDGE_INSET, y, anchor: "right" });
+      result.push({ x: width - EDGE_INSET, y, anchor: "left" });
+    }
+    for (let left = 0; left < width; left += EDGE_DEPTH) {
+      const x = left + EDGE_DEPTH / 2;
+      result.push({ x, y: EDGE_INSET, anchor: "bottom" });
+      result.push({ x, y: height - EDGE_INSET, anchor: "top" });
+    }
+    return result;
+  }
+
+  function collection() {
     return {
       type: "FeatureCollection" as const,
-      features: edges.map(({ x, y, image, anchor }) => {
+      features: obstacles().map(({ x, y, anchor }) => {
         const point = map.unproject([x, y]);
         return {
           type: "Feature" as const,
-          properties: { image, anchor },
+          properties: { anchor },
           geometry: { type: "Point" as const, coordinates: [point.lng, point.lat] },
         };
       }),
@@ -68,22 +70,30 @@ export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void 
     type: "symbol",
     source: SOURCE_ID,
     layout: {
-      "icon-image": ["get", "image"],
+      "icon-image": IMAGE_ID,
+      "icon-size": EDGE_DEPTH,
       "icon-anchor": ["get", "anchor"],
       "icon-padding": 0,
       "icon-allow-overlap": true,
     },
   });
 
-  function update() {
+  function lift() {
+    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    source?.setData({ type: "FeatureCollection", features: [] });
+  }
+
+  // `resize` needs no listener: a resize at rest fires its own `moveend`, and
+  // one during a gesture is picked up by the gesture's.
+  function settle() {
     const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
     source?.setData(collection());
   }
 
-  map.on("move", update);
-  map.on("resize", update);
+  map.on("movestart", lift);
+  map.on("moveend", settle);
   return () => {
-    map.off("move", update);
-    map.off("resize", update);
+    map.off("movestart", lift);
+    map.off("moveend", settle);
   };
 }

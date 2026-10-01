@@ -1388,6 +1388,78 @@ describe("MarketMap pins and names", () => {
   });
 });
 
+describe("MarketMap viewport edges", () => {
+  function edgeSource(map: ReturnType<typeof loadedMap>) {
+    const source = map.getSource("market-label-edges");
+    if (!source) throw new Error("expected the label edge source");
+    return source;
+  }
+
+  it("rings the viewport with collision obstacles once the map loads", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const layout = (map.getLayer("market-label-edges") as { layout?: Record<string, unknown> })
+      .layout;
+
+    // Two 200 px columns past both corners of a 360 x 640 canvas, two rows
+    // between them.
+    expect((edgeSource(map).spec.data as { features: unknown[] }).features).toHaveLength(16);
+    expect(layout?.["icon-allow-overlap"]).toBe(true);
+    expect(map.addImage).toHaveBeenCalledWith("market-label-edge", {
+      width: 1,
+      height: 1,
+      data: new Uint8Array(4),
+    });
+  });
+
+  it("never rebuilds the obstacles on a move frame", () => {
+    // A setData per frame re-tiled the source and re-placed every symbol on
+    // each frame of a pan: about a third of the frame rate, gone.
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    act(() => map.trigger("movestart"));
+    const source = edgeSource(map);
+    source.setData.mockClear();
+
+    act(() => {
+      for (let frame = 0; frame < 60; frame++) map.trigger("move");
+    });
+
+    expect(source.setData).not.toHaveBeenCalled();
+  });
+
+  it("lifts the obstacles while the map moves and restores them where it settles", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = edgeSource(map);
+    const ring = source.spec.data;
+    source.setData.mockClear();
+
+    act(() => map.trigger("movestart"));
+    expect(source.setData).toHaveBeenCalledTimes(1);
+    expect((source.spec.data as { features: unknown[] }).features).toHaveLength(0);
+
+    act(() => map.trigger("moveend"));
+    expect(source.setData).toHaveBeenCalledTimes(2);
+    expect(source.spec.data).toEqual(ring);
+  });
+
+  it("stops following the map after unmount", () => {
+    const { unmount } = renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = edgeSource(map);
+    unmount();
+    source.setData.mockClear();
+
+    act(() => {
+      map.trigger("movestart");
+      map.trigger("moveend");
+    });
+
+    expect(source.setData).not.toHaveBeenCalled();
+  });
+});
+
 describe("MarketMap style failure", () => {
   it("shows the unavailable surface when the style fails to load", () => {
     renderMap(LOCATIONS);
