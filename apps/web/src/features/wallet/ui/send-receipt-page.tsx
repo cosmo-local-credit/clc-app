@@ -14,12 +14,15 @@ import {
   EllipsizedAddress,
   FailureCross,
   PendingClock,
+  ShareReceiptButton,
   SignedAmount,
   StatusPill,
   SuccessCheck,
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
 import {
   useCreateSendShare,
   useSendShareEligibility,
@@ -94,6 +97,15 @@ export function SendReceiptPage({
     queryFn: async (nextTrackingId) => (await relayerClient.trackRelay(nextTrackingId)).result,
   });
   const toAddress = recipient ?? null;
+  const addressBook = useAddressBookRecipients(useStorageOwner());
+  const recipientAlias =
+    toAddress === null
+      ? null
+      : ((addressBook.data ?? []).find(
+          (entry) =>
+            entry.address.toLowerCase() === toAddress.toLowerCase() &&
+            !entry.label.toLowerCase().startsWith("0x"),
+        )?.label ?? null);
   const amountLabel = amount && symbol ? `${amount} ${symbol}` : null;
   const outcome = tracking.outcome;
   const exitReceipt = () => {
@@ -148,6 +160,7 @@ export function SendReceiptPage({
 
   const txHash = outcome.otx.txHash || null;
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
+  const recipientLabel = recipientAlias ?? toAddress;
   const submittedAt = outcome.otx.createdAt
     ? formatSubmittedAt(outcome.otx.createdAt, i18n.locales?.[0] ?? i18n.locale)
     : null;
@@ -165,6 +178,13 @@ export function SendReceiptPage({
         {amountLabel ? (
           <ReceiptRow label={t`Amount`}>
             <SignedAmount direction="out" amount={amountLabel} />
+          </ReceiptRow>
+        ) : null}
+        {recipientAlias ? (
+          <ReceiptRow label={t`Recipient`}>
+            <span className="min-w-0 break-words text-end text-xs font-semibold">
+              {recipientAlias}
+            </span>
           </ReceiptRow>
         ) : null}
         {toAddress ? (
@@ -199,6 +219,20 @@ export function SendReceiptPage({
       {token && recipient ? <RedemptionReviewPrompt address={token} recipient={recipient} /> : null}
 
       <div className="flex-1" />
+
+      {explorerUrl ? (
+        <ShareReceiptButton
+          className="mb-2.5 h-11 w-full"
+          title={t`Payment receipt`}
+          lines={[
+            amountLabel && recipientLabel
+              ? t`I sent ${amountLabel} to ${recipientLabel}.`
+              : t`I sent a payment.`,
+            ...(submittedAt ? [submittedAt] : []),
+          ]}
+          url={explorerUrl}
+        />
+      ) : null}
 
       <div className="flex gap-3">
         <Button className="h-11 flex-1" onClick={exitReceipt}>
