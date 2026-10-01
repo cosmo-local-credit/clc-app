@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
@@ -43,7 +43,12 @@ const {
   lastAppMenuProps,
   profileRequests,
   profileResult,
+  selection,
 } = vi.hoisted(() => ({
+  selection: {
+    initial: null as `0x${string}` | null,
+    calls: [] as [string, string?][],
+  },
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
   },
@@ -161,6 +166,24 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   },
 }));
 
+vi.mock("#/features/home/hooks/use-market-voucher-selection", () => ({
+  useMarketVoucherSelection: () => {
+    const [voucher, setVoucher] = useState(selection.initial);
+    return {
+      voucher,
+      voucherTab: undefined,
+      select: (address: `0x${string}`) => {
+        selection.calls.push(["select", address]);
+        setVoucher(address);
+      },
+      close: () => {
+        selection.calls.push(["close"]);
+        setVoucher(null);
+      },
+    };
+  },
+}));
+
 vi.mock("@tanstack/react-router", () => ({
   useSearch: () => routeSearch.current,
   useNavigate: () => mockNavigate,
@@ -263,6 +286,8 @@ beforeEach(() => {
     retry: mockRetry,
   };
   routeSearch.current = {};
+  selection.initial = null;
+  selection.calls = [];
   mockNavigate.mockReset();
   filteredResult.current = {
     data: undefined,

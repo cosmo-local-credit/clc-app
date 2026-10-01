@@ -17,6 +17,7 @@ import {
 } from "#/features/home/hooks/use-market-camera";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useMarketVoucherSelection } from "#/features/home/hooks/use-market-voucher-selection";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
@@ -44,7 +45,7 @@ export function MarketPage({
     requestLocation,
   } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const selection = useMarketVoucherSelection();
 
   // The map opens on the profile's saved location. It outranks every automatic
   // source, so only the location button's explicit fix takes the map off it.
@@ -84,9 +85,10 @@ export function MarketPage({
     return { key: catalog.filterKey, west, south, east, north };
   }, [filter.isFiltered, catalog.status, catalog.filterKey, vouchers]);
 
+  const selectedAddress = selection.voucher?.toLowerCase() ?? null;
   const selectedVoucher = useMemo(
-    () => vouchers.find((voucher) => voucher.id === selectedLocationId) ?? null,
-    [vouchers, selectedLocationId],
+    () => vouchers.find((voucher) => voucher.address.toLowerCase() === selectedAddress) ?? null,
+    [vouchers, selectedAddress],
   );
 
   const locationButtonLabel =
@@ -98,9 +100,14 @@ export function MarketPage({
           ? t`Location unavailable`
           : t`Use current location`;
 
-  const handleSelectLocation = useCallback((id: string) => {
-    setSelectedLocationId(id);
-  }, []);
+  const { select } = selection;
+  const handleSelectLocation = useCallback(
+    (id: string) => {
+      const voucher = vouchers.find((candidate) => candidate.id === id);
+      if (voucher) select(voucher.address);
+    },
+    [select, vouchers],
+  );
 
   const handleViewportSettled = useCallback((settled: MarketViewport) => {
     setViewport(settled);
@@ -120,12 +127,13 @@ export function MarketPage({
       >
         <MarketMap
           locations={vouchers}
-          selectedLocationId={selectedLocationId}
+          selectedLocationId={selectedVoucher?.id ?? null}
           camera={camera}
           fitBounds={fitBounds}
           cameraScope={locationOwner}
           userLocation={userLocation}
           onSelectLocation={handleSelectLocation}
+          onDeselect={selection.close}
           onViewportSettled={handleViewportSettled}
           className="absolute inset-0 h-full w-full"
         />

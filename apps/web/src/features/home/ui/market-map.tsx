@@ -142,6 +142,8 @@ type MarketMapProps = {
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
+  /** A tap on the map that lands on nothing. */
+  onDeselect?: () => void;
   onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
@@ -462,6 +464,7 @@ export function MarketMap({
   cameraScope,
   userLocation,
   onSelectLocation,
+  onDeselect,
   onViewportSettled,
   className,
 }: MarketMapProps) {
@@ -488,6 +491,8 @@ export function MarketMap({
   stacksRef.current = stacks;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
+  const onDeselectRef = useRef(onDeselect);
+  onDeselectRef.current = onDeselect;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
 
@@ -545,6 +550,7 @@ export function MarketMap({
 
       if (!feature) {
         setSpider(null);
+        onDeselectRef.current?.();
         return;
       }
 

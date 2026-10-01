@@ -1006,6 +1006,30 @@ describe("MarketMap click wiring", () => {
     expect([...map.layerHandlers.keys()].filter((key) => key.startsWith("click:"))).toEqual([]);
   });
 
+  it("reports a tap on empty map as a deselection, and a tap on a pin as a selection", () => {
+    const onSelect = vi.fn();
+    const onDeselect = vi.fn();
+    renderMap(LOCATIONS, { onSelectLocation: onSelect, onDeselect });
+    const map = loadedMap();
+
+    clickEmptyMap(map);
+    expect(onDeselect).toHaveBeenCalledTimes(1);
+
+    clickFeature(map, "market-points", { id: "2", count: 1 });
+    expect(onSelect).toHaveBeenCalledWith("2");
+    expect(onDeselect).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not deselect when a cluster is tapped", () => {
+    const onDeselect = vi.fn();
+    renderMap(LOCATIONS, { onDeselect });
+    const map = loadedMap();
+
+    clickFeature(map, "market-clusters", { cluster_id: 7, point_count: 3 });
+
+    expect(onDeselect).not.toHaveBeenCalled();
+  });
+
   it("opens the fan on a single real click without immediately closing it", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
