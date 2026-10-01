@@ -1,5 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { RiShareLine } from "react-icons/ri";
+import { useState } from "react";
+import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
 import { toast } from "sonner";
 
 import { Button } from "#/components/ui/button";
@@ -7,7 +8,7 @@ import { Button } from "#/components/ui/button";
 /**
  * Shares a confirmed receipt as text plus a block-explorer link.
  *
- * Prefers the native share sheet and falls back to copying the same text. The
+ * Prefers the native share sheet and offers a fresh copy tap if it fails. The
  * link rides in `text` rather than `url` so the clipboard fallback and share
  * targets that drop `url` (some messengers) both still carry it.
  */
@@ -23,6 +24,7 @@ export function ShareReceiptButton({
   className?: string;
 }) {
   const { t } = useLingui();
+  const [copyOnly, setCopyOnly] = useState(false);
   const text = [...lines, ...(url ? [url] : [])].join("\n");
 
   const copy = () => {
@@ -45,14 +47,34 @@ export function ShareReceiptButton({
       await navigator.share({ title, text });
     } catch (error) {
       // AbortError = user dismissed the sheet; not a failure worth surfacing.
-      if (error instanceof Error && error.name !== "AbortError") copy();
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
+        error.name === "AbortError"
+      )
+        return;
+      // Sharing consumes user activation. WebKit needs a new tap to write to
+      // the clipboard, so an automatic copy here would fail on iOS.
+      setCopyOnly(true);
     }
   };
 
   return (
-    <Button className={className} variant="outline" onClick={() => void share()}>
-      <RiShareLine className="size-4" aria-hidden="true" />
-      <Trans>Share receipt</Trans>
+    <Button
+      className={className}
+      variant="outline"
+      onClick={() => {
+        if (copyOnly) copy();
+        else void share();
+      }}
+    >
+      {copyOnly ? (
+        <RiFileCopyLine className="size-4" aria-hidden="true" />
+      ) : (
+        <RiShareLine className="size-4" aria-hidden="true" />
+      )}
+      {copyOnly ? <Trans>Copy receipt</Trans> : <Trans>Share receipt</Trans>}
     </Button>
   );
 }
