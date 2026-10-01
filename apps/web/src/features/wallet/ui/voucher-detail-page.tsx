@@ -21,9 +21,11 @@ import {
   RiDownloadLine,
   RiFileCopyLine,
   RiNavigationLine,
+  RiSearchLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 import { toast } from "sonner";
+import { isAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
@@ -691,6 +693,15 @@ function VoucherInfoPanel({
       className="space-y-3"
     >
       <VoucherContractActionsPanel {...contractActions} editable={editable} />
+
+      {contractAddress && isAddress(contractAddress, { strict: false }) ? (
+        <Button asChild variant="outline" className="h-11 w-full bg-card">
+          <Link to="/pools" search={{ out_voucher: contractAddress.toLowerCase() }}>
+            <RiSearchLine className="size-4" aria-hidden="true" />
+            <Trans>Find this voucher in a pool</Trans>
+          </Link>
+        </Button>
+      ) : null}
 
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">

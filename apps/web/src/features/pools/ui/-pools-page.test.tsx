@@ -10,11 +10,20 @@ const POOLS_FILTER_KEY = ownerScopedKey(
   CATALOG_FILTER_PREFERENCE_NAMES.pools,
 );
 
-const { creditableState, getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
+const { creditableState, outputState, getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
   creditableState: {
     current: {
       pools: [] as Array<{ address: string; name: string; voucherCount: number; tags: string[] }>,
       status: "ready" as "loading" | "ready" | "error",
+      isRefreshing: false,
+      hasVerificationGaps: false,
+      retry: vi.fn(),
+    },
+  },
+  outputState: {
+    current: {
+      pools: [] as Array<{ address: string; name: string; voucherCount: number; tags: string[] }>,
+      status: "idle" as "idle" | "loading" | "ready" | "error",
       isRefreshing: false,
       hasVerificationGaps: false,
       retry: vi.fn(),
@@ -35,6 +44,14 @@ vi.mock("wagmi", () => ({
 
 vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
   useCreditablePools: () => creditableState.current,
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
+  usePoolOutputAvailability: () => outputState.current,
+}));
+
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({ data: undefined }),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -72,6 +89,24 @@ import { PoolsPage } from "./pools-page";
 const POOL_TAG_FACETS = [
   { tag: "Food", count: 2 },
   { tag: "Growing", count: 0 },
+];
+const OUTPUT_VOUCHER = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363" as const;
+const OTHER_VOUCHER = "0x2000000000000000000000000000000000000002" as const;
+const POOL_VOUCHER_FACETS = [
+  {
+    chainId: 100,
+    address: OUTPUT_VOUCHER,
+    name: "Market Credit",
+    symbol: "MKT",
+    count: 2,
+  },
+  {
+    chainId: 100,
+    address: OTHER_VOUCHER,
+    name: "Harvest Credit",
+    symbol: "HRV",
+    count: 1,
+  },
 ];
 
 function jsonResponse(result: unknown) {
@@ -111,7 +146,13 @@ function mockPoolsList() {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("perPage=1&")) {
         return Promise.resolve(
-          jsonResponse({ pools: [], first: 0, last: 0, tagFacets: POOL_TAG_FACETS }),
+          jsonResponse({
+            pools: [],
+            first: 0,
+            last: 0,
+            tagFacets: POOL_TAG_FACETS,
+            voucherFacets: POOL_VOUCHER_FACETS,
+          }),
         );
       }
       if (url.includes("/api/v2/pools?")) {
@@ -150,6 +191,13 @@ afterEach(() => {
   creditableState.current = {
     pools: [],
     status: "ready",
+    isRefreshing: false,
+    hasVerificationGaps: false,
+    retry: vi.fn(),
+  };
+  outputState.current = {
+    pools: [],
+    status: "idle",
     isRefreshing: false,
     hasVerificationGaps: false,
     retry: vi.fn(),
@@ -364,6 +412,162 @@ describe("creditable pools", () => {
       await screen.findByText("Some pools couldn't be checked. Showing verified results."),
     ).toBeTruthy();
     expect(await screen.findByText("Trade Pool")).toBeTruthy();
+  });
+});
+
+describe("output voucher availability", () => {
+  it("shows only verified pools with the selected voucher available", async () => {
+    outputState.current = {
+      ...outputState.current,
+      status: "ready",
+      pools: [POOLS[1]!, POOLS[2]!],
+    };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+
+    expect(await screen.findByText("Solo Pool")).toBeTruthy();
+    expect(screen.getByText("Empty Pool")).toBeTruthy();
+    expect(screen.queryByText("Trade Pool")).toBeNull();
+    expect(screen.getByText("2 pools")).toBeTruthy();
+    expect(
+      (screen.getByRole("combobox", { name: "Output voucher" }) as HTMLInputElement).value,
+    ).toBe("Market Credit");
+  });
+
+  it("intersects Credit and output availability, then intersects the catalog search", async () => {
+    routeSearch.current = { q: "trade" };
+    creditableState.current = {
+      ...creditableState.current,
+      pools: [POOLS[0]!, POOLS[2]!],
+    };
+    outputState.current = {
+      ...outputState.current,
+      status: "ready",
+      pools: [POOLS[0]!, POOLS[1]!],
+    };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    expect(screen.queryByText("Solo Pool")).toBeNull();
+    expect(screen.queryByText("Empty Pool")).toBeNull();
+    expect(screen.getByText("1 pool")).toBeTruthy();
+  });
+
+  it("recomputes the automatic Credit default per output until the user changes it", async () => {
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
+    outputState.current = {
+      ...outputState.current,
+      status: "ready",
+      pools: [POOLS[1]!],
+    };
+    mockPoolsList();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(
+      <QueryClientProvider client={queryClient}>
+        <PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />
+      </QueryClientProvider>,
+    );
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    expect(credit.getAttribute("data-checked")).toBeNull();
+
+    outputState.current = { ...outputState.current, pools: [POOLS[0]!] };
+    view.rerender(
+      <QueryClientProvider client={queryClient}>
+        <PoolsPage outputVoucherSearch={OTHER_VOUCHER} />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+
+    fireEvent.click(credit);
+    expect(credit.getAttribute("data-checked")).toBeNull();
+    view.rerender(
+      <QueryClientProvider client={queryClient}>
+        <PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />
+      </QueryClientProvider>,
+    );
+    expect(credit.getAttribute("data-checked")).toBeNull();
+  });
+
+  it("updates only out_voucher when choosing or clearing a voucher", async () => {
+    outputState.current = { ...outputState.current, status: "ready" };
+    mockPoolsList();
+    const view = renderWithQueryClient(<PoolsPage />);
+    const selector = await screen.findByRole("combobox", { name: "Output voucher" });
+    fireEvent.click(selector);
+    const choice = await screen.findByRole("option", { name: "Harvest Credit HRV" });
+    fireEvent.pointerDown(choice, { pointerType: "touch" });
+    fireEvent.click(choice);
+
+    const selectCall = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(selectCall.search({ q: "trade", tags: "Food" })).toEqual({
+      q: "trade",
+      tags: "Food",
+      out_voucher: OTHER_VOUCHER,
+    });
+
+    navigate.mockReset();
+    view.rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <PoolsPage outputVoucherSearch={OTHER_VOUCHER} />
+      </QueryClientProvider>,
+    );
+    const selected = screen.getByRole("combobox", { name: "Output voucher" });
+    fireEvent.click(selected);
+    const all = await screen.findByRole("option", { name: "All Vouchers" });
+    fireEvent.pointerDown(all, { pointerType: "touch" });
+    fireEvent.click(all);
+    const clearCall = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(clearCall.search({ q: "trade", out_voucher: OTHER_VOUCHER })).toEqual({
+      q: "trade",
+      out_voucher: undefined,
+    });
+  });
+
+  it("does not restore saved facets over an explicit output-voucher deep link", async () => {
+    window.localStorage.setItem(
+      POOLS_FILTER_KEY,
+      JSON.stringify({
+        tags: ["Food"],
+        tagMatch: "any",
+        vouchers: [],
+        voucherMatch: "any",
+      }),
+    );
+    outputState.current = {
+      ...outputState.current,
+      status: "ready",
+      pools: [POOLS[1]!],
+    };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+
+    expect(await screen.findByText("Solo Pool")).toBeTruthy();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("never broadens an invalid or failed output filter to the normal catalog", async () => {
+    mockPoolsList();
+    const first = renderWithQueryClient(<PoolsPage outputVoucherSearch="not-an-address" />);
+    expect(await screen.findByText("This link contains an invalid output voucher.")).toBeTruthy();
+    expect(screen.queryByText("Trade Pool")).toBeNull();
+    first.unmount();
+
+    const retry = vi.fn();
+    outputState.current = { ...outputState.current, status: "error", retry };
+    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+    const alert = (await screen.findByText("Couldn't check voucher availability.")).parentElement!;
+    expect(alert.textContent).toContain("Couldn't check voucher availability.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(retry).toHaveBeenCalledOnce();
+    expect(screen.queryByText("Trade Pool")).toBeNull();
   });
 });
 

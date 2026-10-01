@@ -747,6 +747,9 @@ describe("VoucherDetailPage", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
     const panel = screen.getByRole("tabpanel");
+    expect(
+      within(panel).getByRole("link", { name: "Find this voucher in a pool" }).getAttribute("href"),
+    ).toBe(`/pools?out_voucher=${ADDRESS.toLowerCase()}`);
     const rate = within(panel).getByText("1 MALII = 10 KSH");
     expect(rate.className).toContain("text-sm");
     expect(rate.className).toContain("text-primary");

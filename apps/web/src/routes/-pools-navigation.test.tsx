@@ -76,11 +76,21 @@ vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
   }),
 }));
 
+vi.mock("#/features/pools/hooks/use-pool-output-availability", () => ({
+  usePoolOutputAvailability: (voucher: unknown) => ({
+    pools: [],
+    status: voucher ? "ready" : "idle",
+    isRefreshing: false,
+    hasVerificationGaps: false,
+    retry: vi.fn(),
+  }),
+}));
+
 import {
-  canonicalRedirectSearch,
-  type CatalogRouteSearch,
-  pickCatalogSearch,
-} from "#/lib/navigation/catalog-search";
+  canonicalPoolRedirectSearch,
+  type PoolRouteSearch,
+  pickPoolSearch,
+} from "#/lib/navigation/pool-search";
 import { WalletPage } from "#/features/home/ui/wallet-page";
 import { PoolDetailPage, PoolsPage } from "#/features/pools/ui";
 
@@ -102,13 +112,16 @@ function createTestRouter(initialEntry: string) {
   const poolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools",
-    validateSearch: (search): CatalogRouteSearch => pickCatalogSearch(search),
+    validateSearch: (search): PoolRouteSearch => pickPoolSearch(search),
     beforeLoad: ({ search }) => {
-      const next = canonicalRedirectSearch(search);
+      const next = canonicalPoolRedirectSearch(search);
       if (!next) return;
       throw redirect({ to: "/pools", search: next, replace: true });
     },
-    component: () => <PoolsPage />,
+    component: () => {
+      const { out_voucher: outputVoucherSearch } = poolsRoute.useSearch();
+      return <PoolsPage outputVoucherSearch={outputVoucherSearch} />;
+    },
   });
   const poolDetailRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -230,6 +243,32 @@ describe("pools navigation", () => {
 });
 
 describe("pools filter canonicalization through the router", () => {
+  it("canonicalizes an output-voucher address without changing the path", async () => {
+    const address = "0xd524d0ed7bc970185ed9c6c9a65a8a02e8897363";
+    const router = createTestRouter(`/pools?out_voucher=${address.toUpperCase()}`);
+    render(withQueryClient(<RouterProvider router={router} />));
+    await waitFor(() => expect(router.state.status).toBe("idle"));
+
+    expect(router.state.location.pathname).toBe("/pools");
+    expect(router.state.location.search.out_voucher).toBe(address);
+    expect(router.history.length).toBe(1);
+  });
+
+  it("keeps malformed and repeated output vouchers visible for explicit rejection", async () => {
+    const malformed = createTestRouter("/pools?out_voucher=not-an-address");
+    const first = render(withQueryClient(<RouterProvider router={malformed} />));
+    expect(await screen.findByText("This link contains an invalid output voucher.")).toBeTruthy();
+    expect(malformed.state.location.search.out_voucher).toBe("not-an-address");
+    first.unmount();
+
+    const repeated = createTestRouter(
+      `/pools?out_voucher=${POOL_ADDRESS}&out_voucher=${POOL_ADDRESS}`,
+    );
+    render(withQueryClient(<RouterProvider router={repeated} />));
+    expect(await screen.findByText("This link contains an invalid output voucher.")).toBeTruthy();
+    expect(repeated.state.location.search.out_voucher).toEqual([POOL_ADDRESS, POOL_ADDRESS]);
+  });
+
   it("rewrites a non-canonical Pools link in the address bar", async () => {
     const router = createTestRouter("/pools?q=%20%20food%20%20");
     render(withQueryClient(<RouterProvider router={router} />));

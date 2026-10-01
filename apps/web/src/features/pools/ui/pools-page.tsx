@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 import { useConnection } from "wagmi";
@@ -10,31 +10,50 @@ import { Checkbox } from "#/components/ui/checkbox";
 import { BackChevron, PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
 import { useCreditablePools } from "#/features/pools/hooks/use-creditable-pools";
-import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
+import { usePoolCatalog, usePoolFacetVocabulary } from "#/features/pools/hooks/use-filtered-pools";
+import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CHAIN_ID } from "#/lib/chain";
+import { parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
+import { PoolOutputVoucherFilter } from "./pool-output-voucher-filter";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
 type CreditChoice = {
   holder: string;
+  context: string;
   initialized: boolean;
   checked: boolean;
+  touched: boolean;
 };
 
-export function PoolsPage() {
+export function PoolsPage({
+  outputVoucherSearch,
+}: {
+  outputVoucherSearch?: string | readonly string[];
+}) {
   const { t, i18n } = useLingui();
+  const navigate = useNavigate();
   const { address } = useConnection();
+  const outputVoucherResult = parsePoolOutputVoucher(outputVoucherSearch);
+  const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
+  const outputFilterActive = outputVoucherAddress !== null;
+  const outputFilterInvalid = !outputVoucherResult.ok;
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.pools,
     useStorageOwner(),
-    { voucherRelationships: true },
+    {
+      voucherRelationships: true,
+      externalFilterActive: outputVoucherSearch !== undefined,
+    },
   );
   const poolsQuery = useUserPoolsInfinite(
     undefined,
@@ -61,6 +80,11 @@ export function PoolsPage() {
     filtersEverOpened,
   );
   const creditable = useCreditablePools(address);
+  const outputAvailability = usePoolOutputAvailability(
+    outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
+  );
+  const voucherVocabulary = usePoolFacetVocabulary(true);
+  const selectedVoucherDetail = useMarketVoucherDetail(outputVoucherAddress ?? undefined);
   const creditableAddresses = useMemo(
     () => new Set(creditable.pools.map((pool) => pool.address.toLowerCase())),
     [creditable.pools],
@@ -72,18 +96,68 @@ export function PoolsPage() {
         : creditable.pools,
     [catalog.pools, creditable.pools, creditableAddresses, filter.isFiltered],
   );
+  const outputAddresses = useMemo(
+    () => new Set(outputAvailability.pools.map((pool) => pool.address.toLowerCase())),
+    [outputAvailability.pools],
+  );
+  const creditableOutputPools = useMemo(
+    () =>
+      outputAvailability.pools.filter((pool) =>
+        creditableAddresses.has(pool.address.toLowerCase()),
+      ),
+    [creditableAddresses, outputAvailability.pools],
+  );
+  const specialPools = outputFilterActive ? creditableOutputPools : filteredCreditablePools;
+  const creditDefaultPools = outputFilterActive
+    ? filter.isFiltered
+      ? catalog.pools.filter(
+          (pool) =>
+            outputAddresses.has(pool.address.toLowerCase()) &&
+            creditableAddresses.has(pool.address.toLowerCase()),
+        )
+      : creditableOutputPools
+    : filteredCreditablePools;
   const holderKey = address?.toLowerCase() ?? "";
+  const creditContext = outputVoucherAddress ?? (outputFilterInvalid ? "invalid" : "all");
   const [creditChoice, setCreditChoice] = useState<CreditChoice | null>(null);
   const creditReadyForDefault =
     holderKey !== "" &&
     creditable.status === "ready" &&
+    (!outputFilterActive || outputAvailability.status === "ready") &&
+    !outputFilterInvalid &&
     catalog.status === "ready" &&
     !filter.isRestoringPreference &&
     filter.result.ok;
-  const creditChecked = creditChoice?.holder === holderKey && creditChoice.checked;
-  const pools = creditChecked ? filteredCreditablePools : catalog.pools;
-  const hasMore = !creditChecked && catalog.hasMore;
-  const isRefining = catalog.status === "refining" || filter.isDebouncing;
+  const creditChecked = Boolean(
+    creditChoice?.holder === holderKey &&
+    creditChoice.checked &&
+    (creditChoice.touched || creditChoice.context === creditContext),
+  );
+  const specialFilterActive = creditChecked || outputFilterActive;
+  const selectedSpecialPools = outputFilterActive
+    ? creditChecked
+      ? creditableOutputPools
+      : outputAvailability.pools
+    : specialPools;
+  const selectedSpecialAddresses = useMemo(
+    () => new Set(selectedSpecialPools.map((pool) => pool.address.toLowerCase())),
+    [selectedSpecialPools],
+  );
+  const pools = outputFilterInvalid
+    ? []
+    : specialFilterActive
+      ? filter.isFiltered
+        ? catalog.pools.filter((pool) => selectedSpecialAddresses.has(pool.address.toLowerCase()))
+        : selectedSpecialPools
+      : catalog.pools;
+  const hasMore = !specialFilterActive && !outputFilterInvalid && catalog.hasMore;
+  const isRefining =
+    catalog.status === "refining" ||
+    filter.isDebouncing ||
+    (outputFilterActive && outputAvailability.isRefreshing);
+  const outputReady = !outputFilterActive || outputAvailability.status === "ready";
+  const canShowResults =
+    catalog.status === "ready" && filter.result.ok && !outputFilterInvalid && outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
@@ -99,20 +173,33 @@ export function PoolsPage() {
       if (current?.holder !== holderKey) {
         return {
           holder: holderKey,
+          context: creditContext,
           initialized: creditReadyForDefault,
-          checked: creditReadyForDefault && filteredCreditablePools.length > 0,
+          checked: creditReadyForDefault && creditDefaultPools.length > 0,
+          touched: false,
+        };
+      }
+      if (!current.touched && current.context !== creditContext) {
+        return {
+          holder: holderKey,
+          context: creditContext,
+          initialized: creditReadyForDefault,
+          checked: creditReadyForDefault && creditDefaultPools.length > 0,
+          touched: false,
         };
       }
       if (!current.initialized && creditReadyForDefault) {
         return {
           holder: holderKey,
+          context: creditContext,
           initialized: true,
-          checked: filteredCreditablePools.length > 0,
+          checked: creditDefaultPools.length > 0,
+          touched: false,
         };
       }
       return current;
     });
-  }, [creditReadyForDefault, filteredCreditablePools.length, holderKey]);
+  }, [creditContext, creditDefaultPools.length, creditReadyForDefault, holderKey]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -161,6 +248,50 @@ export function PoolsPage() {
 
       <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
 
+      {outputFilterInvalid ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>This link contains an invalid output voucher.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={() =>
+              void navigate({
+                to: ".",
+                replace: true,
+                search: (previous) => ({ ...previous, out_voucher: undefined }),
+              })
+            }
+          >
+            <Trans>Clear filter</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {outputFilterActive && outputAvailability.status === "error" ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>Couldn't check voucher availability.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={outputAvailability.retry}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+
       {creditable.status === "error" ? (
         <div
           className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
@@ -180,7 +311,10 @@ export function PoolsPage() {
         </div>
       ) : null}
 
-      {creditable.status === "ready" && creditable.hasVerificationGaps ? (
+      {(creditable.status === "ready" && creditable.hasVerificationGaps) ||
+      (outputFilterActive &&
+        outputAvailability.status === "ready" &&
+        outputAvailability.hasVerificationGaps) ? (
         <div
           className="border border-border bg-card p-3 text-muted-foreground text-sm"
           role="status"
@@ -195,20 +329,36 @@ export function PoolsPage() {
         </div>
       ) : null}
 
+      {outputFilterActive && outputAvailability.status === "loading" ? (
+        <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
+          <Trans>Checking voucher availability…</Trans>
+        </div>
+      ) : null}
+
       {catalog.status === "ready" && filter.result.ok ? (
         <>
-          <div className="flex min-h-11 items-center justify-between gap-3">
-            <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
+          <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2">
+            <p className="shrink-0 font-medium text-sm tabular-nums">{resultCountLabel}</p>
             <label
               htmlFor="creditable-pools"
-              className="flex min-h-11 cursor-pointer items-center gap-2 text-sm"
+              className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-sm"
             >
               <Checkbox
                 id="creditable-pools"
                 checked={creditChecked}
-                disabled={creditable.status !== "ready"}
+                disabled={
+                  outputFilterInvalid ||
+                  creditable.status !== "ready" ||
+                  (outputFilterActive && outputAvailability.status !== "ready")
+                }
                 onCheckedChange={(checked) =>
-                  setCreditChoice({ holder: holderKey, initialized: true, checked })
+                  setCreditChoice({
+                    holder: holderKey,
+                    context: creditContext,
+                    initialized: true,
+                    checked,
+                    touched: true,
+                  })
                 }
               />
               <span>
@@ -225,11 +375,52 @@ export function PoolsPage() {
                 </span>
               ) : null}
             </label>
+            <PoolOutputVoucherFilter
+              facets={voucherVocabulary.data?.voucherFacets ?? []}
+              value={outputVoucherAddress}
+              fallbackLabel={selectedVoucherDetail.data?.name}
+              loading={voucherVocabulary.isPending}
+              onValueChange={(next) =>
+                void navigate({
+                  to: ".",
+                  search: (previous) => ({
+                    ...previous,
+                    out_voucher: next ?? undefined,
+                  }),
+                })
+              }
+            />
           </div>
-          {pools.length === 0 ? (
+          {voucherVocabulary.isError ? (
+            <div
+              className="flex items-center justify-between gap-3 border border-border bg-card p-3"
+              role="alert"
+            >
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load voucher choices.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0 bg-card"
+                onClick={() => void voucherVocabulary.refetch()}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {canShowResults && pools.length === 0 ? (
             <div className="space-y-3 border border-border bg-card p-3">
               <p className="text-muted-foreground text-sm">
-                {creditChecked && filter.isFiltered ? (
+                {creditChecked && outputFilterActive && filter.isFiltered ? (
+                  <Trans>No creditable pools with this voucher match these filters.</Trans>
+                ) : creditChecked && outputFilterActive ? (
+                  <Trans>No creditable pools have this voucher available.</Trans>
+                ) : outputFilterActive && filter.isFiltered ? (
+                  <Trans>No pools with this voucher match these filters.</Trans>
+                ) : outputFilterActive ? (
+                  <Trans>No pools have this voucher available.</Trans>
+                ) : creditChecked && filter.isFiltered ? (
                   <Trans>No creditable pools match this search.</Trans>
                 ) : creditChecked ? (
                   <Trans>No creditable pools are available.</Trans>
@@ -249,7 +440,7 @@ export function PoolsPage() {
         </>
       ) : null}
 
-      {pools.length > 0 ? (
+      {canShowResults && pools.length > 0 ? (
         <section
           className={[
             "border border-border bg-card",
