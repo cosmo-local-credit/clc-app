@@ -24,7 +24,7 @@ export type SpiderOffset = { dx: number; dy: number };
 const MAX_FAN_RADIUS = 168;
 
 /**
- * Marker artwork is 24 px. A sunflower's nearest-neighbour distance is about
+ * A fanned pin's disc is 24 px. A sunflower's nearest-neighbour distance is about
  * 1.77x the growth constant, so this spacing keeps legs ~29 px apart: tight
  * enough to fit a large fan, loose enough that icons never overlap.
  */

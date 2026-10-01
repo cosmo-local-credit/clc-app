@@ -4,8 +4,10 @@ import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-ma
 import type { MarketLocationKind } from "./market-data";
 import {
   addMarketMarkerImages,
+  KIND_LABEL_COLOR,
   MARKET_MARKER_KINDS,
   markerImageIds,
+  markerPin,
   resetMarketMarkerCache,
 } from "./market-markers";
 
@@ -113,6 +115,32 @@ describe("market marker images", () => {
       expect(base).toBeDefined();
       expect(selected).toBeDefined();
     }
+    const canvases = [...contexts.keys()];
+    const widths = new Set(canvases.map((canvas) => canvas.width));
+    expect(widths).toEqual(
+      new Set([
+        (markerPin.base.radius + markerPin.padding) * 2,
+        (markerPin.selected.radius + markerPin.padding) * 2,
+      ]),
+    );
+  });
+
+  it("draws a pin: a disc that tapers to a point below it", () => {
+    vi.stubGlobal("CSS", { supports: () => true });
+    const map = fakeMap();
+
+    addMarketMarkerImages(map as never);
+
+    for (const [canvas, record] of contexts) {
+      const [disc] = record.arcs;
+      const [tip] = record.lines;
+      if (!disc || !tip) throw new Error("expected a disc and a tip");
+      expect(tip.x).toBe(disc.x);
+      expect(tip.y).toBeGreaterThan(disc.y + disc.radius);
+      // The tip sits on the bottom of the artwork, inside the shadow margin.
+      expect(tip.y).toBe(canvas.height - markerPin.padding);
+      expect(canvas.height).toBeGreaterThan(canvas.width);
+    }
   });
 });
 
@@ -122,11 +150,11 @@ function rgbOf(hex: string): [number, number, number] {
 }
 
 describe("market marker colours", () => {
-  // Goods is red, services is purple, and a voucher with no offerings is
+  // Goods is blue, services is purple, and a voucher with no offerings is
   // orange. None of these may follow the brand primary: that colour belongs
-  // to the live-location dot, and it changes between prod and staging.
+  // to the live-location pin, and it changes between prod and staging.
   const EXPECTED: Record<MarketLocationKind, [number, number, number]> = {
-    goods: rgbOf("#dc2626"),
+    goods: rgbOf("#2563eb"),
     services: rgbOf("#7c3aed"),
     voucher: rgbOf("#ea580c"),
   };
@@ -143,6 +171,27 @@ describe("market marker colours", () => {
       const [r, g, b, a] = pixelOf(image);
       expect([r, g, b]).toEqual(EXPECTED[kind]);
       expect(a).toBe(255);
+    }
+  });
+
+  it("keeps goods off red, which staging's live-location pin uses", () => {
+    vi.stubGlobal("CSS", { supports: () => false });
+    const map = fakeMap();
+
+    addMarketMarkerImages(map as never);
+
+    const goods = map.images.get(markerImageIds.base.goods);
+    if (!goods) throw new Error("missing goods image");
+    const [r, g, b] = pixelOf(goods);
+    expect(b).toBeGreaterThan(r);
+    expect(b).toBeGreaterThan(g);
+  });
+
+  it("names each kind in a darker shade of its pin", () => {
+    for (const kind of MARKET_MARKER_KINDS) {
+      const pin = EXPECTED[kind].reduce((sum, channel) => sum + channel, 0);
+      const label = rgbOf(KIND_LABEL_COLOR[kind]).reduce((sum, channel) => sum + channel, 0);
+      expect(label).toBeLessThan(pin);
     }
   });
 

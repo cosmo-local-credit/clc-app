@@ -4,6 +4,7 @@ import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
   type FilterSpecification,
   type GeoJSONSource,
+  type LayerSpecification,
   type MapMouseEvent,
 } from "maplibre-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,7 +17,12 @@ import {
   type MarketLocation,
   type MarketLocationKind,
 } from "./market-data";
-import { addMarketMarkerImages, markerImageIds } from "./market-markers";
+import {
+  KIND_LABEL_COLOR,
+  addMarketMarkerImages,
+  markerImageIds,
+  markerPin,
+} from "./market-markers";
 import {
   type MarketStack,
   groupByProximity,
@@ -31,6 +37,7 @@ const DEFAULT_ZOOM = 12;
 const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
 
+const LABEL_LAYER_ID = "market-point-labels";
 const CLUSTERS_LAYER_ID = "market-clusters";
 const CLUSTER_COUNT_LAYER_ID = "market-cluster-count";
 const UNCLUSTERED_LAYER_ID = "market-points";
@@ -49,12 +56,51 @@ const INTERACTIVE_LAYER_IDS = [
   STACK_COUNT_LAYER_ID,
   SELECTED_LAYER_ID,
   SPIDER_POINT_LAYER_ID,
+  LABEL_LAYER_ID,
 ];
 
 const VIEWPORT_SETTLE_MS = 400;
 const BADGE_COLOR = "#1f2430";
 
+/** Font stacks the basemap style already uses, so names need no extra glyphs. */
+const LABEL_FONT = ["Inter Medium", "Noto Sans Medium"];
+const SELECTED_LABEL_FONT = ["Inter Semi Bold", "Noto Sans Semi Bold"];
+const LABEL_SIZE = 12;
+const LABEL_GAP = 5;
+const LABEL_PADDING = 1;
+
+/**
+ * Pins point at their location, so the image sits above the coordinate. The
+ * offset cancels the transparent padding under the tip.
+ */
+const PIN_OFFSET: [number, number] = [0, markerPin.padding];
+
+/**
+ * The pin image already carries a transparent margin, so its collision box
+ * gets no more. MapLibre's default of 2 px pushes the box past the gap to the
+ * pin's own name, and every name is then dropped as colliding with its pin.
+ */
+const PIN_COLLISION_PADDING = 0;
+
+/**
+ * A fanned pin is drawn with its disc on the end of its leg, at the 24 px the
+ * spiral spacing in `market-stacks` is laid out for.
+ */
+const FAN_PIN_SIZE = 24 / (markerPin.base.radius * 2);
+const FAN_PIN_OFFSET: [number, number] = [0, markerPin.base.tail / 2];
+
+/**
+ * Inflates a badge count's collision box to roughly the badge around it, so a
+ * name beside a nearby pin does not run underneath the badge.
+ */
+const BADGE_COLLISION_PADDING = 6;
+
+/** The Material place pin, the silhouette Google Maps drops on a location. */
+const USER_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="36" viewBox="4.25 1.25 15.5 21.5" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="currentColor" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="12" cy="9" r="2.75" fill="#000000" fill-opacity="0.3"/></svg>`;
+
 type UserLocation = { lat: number; lng: number };
+
+type SymbolLayer = Extract<LayerSpecification, { type: "symbol" }>;
 
 export type MarketCamera = {
   lat: number;
@@ -151,10 +197,12 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
 
 function createUserMarker(): HTMLDivElement {
   const marker = document.createElement("div");
-  // `bg-primary` follows `data-brand`: green on prod, red on staging, and the
-  // dark-scheme variant of the same token. The white ring is the stroke that
-  // keeps the dot readable on the basemap. No pulse.
-  marker.className = "size-3 rounded-full bg-primary ring-2 ring-white";
+  // `text-primary` follows `data-brand`: green on prod, red on staging, and the
+  // dark-scheme variant of the same token. The white stroke keeps the pin
+  // readable on the basemap, and its taller, glyph-free silhouette sets it
+  // apart from the voucher pins. No pulse.
+  marker.className = "text-primary drop-shadow-sm";
+  marker.innerHTML = USER_PIN_SVG;
   return marker;
 }
 
@@ -181,6 +229,54 @@ function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecific
     "voucher",
     ids.voucher,
     ids.voucher,
+  ];
+}
+
+/**
+ * A voucher's name, Google Maps style: beside the pin's disc in a darker shade
+ * of the pin, on the right where it fits and the left where it does not.
+ */
+function labelLayout(
+  shape: { radius: number; tail: number },
+  font: string[],
+): NonNullable<SymbolLayer["layout"]> {
+  // Offsets are in ems of the label size, measured from the pin's tip.
+  const x = (shape.radius + LABEL_GAP) / LABEL_SIZE;
+  const y = -(shape.radius + shape.tail) / LABEL_SIZE;
+  return {
+    "text-field": ["get", "name"],
+    "text-font": font,
+    "text-size": LABEL_SIZE,
+    "text-max-width": 8,
+    "text-line-height": 1.15,
+    "text-justify": "auto",
+    "text-variable-anchor-offset": ["left", [x, y], "right", [-x, y]],
+    "text-padding": LABEL_PADDING,
+  };
+}
+
+const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
+  "text-color": [
+    "match",
+    ["get", "kind"],
+    "goods",
+    KIND_LABEL_COLOR.goods,
+    "services",
+    KIND_LABEL_COLOR.services,
+    KIND_LABEL_COLOR.voucher,
+  ],
+  "text-halo-color": "#ffffff",
+  "text-halo-width": 1.5,
+  "text-halo-blur": 0.5,
+};
+
+/** Every lone pin is named, except the selected one: its overlay carries the name. */
+function labelFilter(selectedId: string | null): FilterSpecification {
+  return [
+    "all",
+    ["!", ["has", "point_count"]],
+    ["==", ["get", "count"], 1],
+    ["!=", ["get", "id"], selectedId ?? ""],
   ];
 }
 
@@ -232,6 +328,18 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
+  // Lowest of the market layers. MapLibre places symbols from the top layer
+  // down, so every pin and badge count above has claimed its space by the time
+  // names are placed: a name gives way to a pin and never runs under one.
+  map.addLayer({
+    id: LABEL_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: labelFilter(null),
+    layout: labelLayout(markerPin.base, LABEL_FONT),
+    paint: LABEL_PAINT,
+  });
+
   map.addLayer({
     id: CLUSTERS_LAYER_ID,
     type: "circle",
@@ -252,7 +360,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "text-field": countLabel("voucherCount"),
       "text-size": 11,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-padding": BADGE_COLLISION_PADDING,
     },
     paint: { "text-color": "#ffffff" },
   });
@@ -265,8 +373,10 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     layout: {
       "icon-image": kindMatchExpression(false),
       "icon-size": 1,
+      "icon-anchor": "bottom",
+      "icon-offset": PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
     },
   });
 
@@ -291,7 +401,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "text-field": countLabel("count"),
       "text-size": 11,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-padding": BADGE_COLLISION_PADDING,
     },
     paint: { "text-color": "#ffffff" },
   });
@@ -304,9 +414,15 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     layout: {
       "icon-image": kindMatchExpression(true),
       "icon-size": 1,
+      "icon-anchor": "bottom",
+      "icon-offset": PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
+      ...labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
+      // A name that cannot fit must not take the selected pin down with it.
+      "text-optional": true,
     },
+    paint: LABEL_PAINT,
   });
 
   map.addLayer({
@@ -323,9 +439,10 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     filter: ["==", ["geometry-type"], "Point"],
     layout: {
       "icon-image": kindMatchExpression(false),
-      "icon-size": 1,
+      "icon-size": FAN_PIN_SIZE,
+      "icon-offset": FAN_PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
     },
   });
 }
@@ -579,6 +696,7 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     map.setFilter(SELECTED_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setFilter(LABEL_LAYER_ID, labelFilter(selectedLocationId));
     map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
       "case",
       ["==", ["get", "id"], selectedLocationId ?? ""],
@@ -646,7 +764,7 @@ export function MarketMap({
       userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
       return;
     }
-    userMarkerRef.current = new MapLibreGL.Marker({ element: createUserMarker() })
+    userMarkerRef.current = new MapLibreGL.Marker({ element: createUserMarker(), anchor: "bottom" })
       .setLngLat([userLocation.lng, userLocation.lat])
       .addTo(map);
   }, [loaded, userLocation]);
