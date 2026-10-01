@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -20,6 +20,9 @@ type MapProps = {
   } | null;
   userLocation: { lat: number; lng: number } | null;
   onSelectLocation: (id: string) => void;
+  onDeselect?: () => void;
+  onUserPan?: () => void;
+  bottomInset?: number;
   onViewportSettled?: (viewport: {
     west: number;
     south: number;
@@ -108,11 +111,12 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: {
     explicit: 0,
-    savedProfile: 1,
-    liveGps: 2,
-    persistedGps: 3,
-    ipCity: 4,
-    countryDefault: 5,
+    selectedVoucher: 1,
+    savedProfile: 2,
+    liveGps: 3,
+    persistedGps: 4,
+    ipCity: 5,
+    countryDefault: 6,
   },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
@@ -162,7 +166,8 @@ vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOrigi
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: (address: string | undefined) => {
     detailRequests.current.push(address);
-    return detailResult.current;
+    // Disabled without an address, like the real query.
+    return address ? detailResult.current : { data: undefined, isPending: false };
   },
 }));
 
@@ -356,13 +361,13 @@ describe("MarketPage saved profile location", () => {
   it("opens on the saved location, ranked above a live fix, without moving the live marker", () => {
     cameraResult.current = {
       ...cameraResult.current,
-      camera: { ...liveFix, zoom: 14, rank: 2 },
+      camera: { ...liveFix, zoom: 14, rank: 3 },
       userLocation: liveFix,
     };
     profileResult.current = { data: SAVED, isPending: false, isError: false };
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
-    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 1 });
+    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 2 });
     expect(lastMapProps.current?.userLocation).toEqual(liveFix);
   });
 
@@ -409,7 +414,7 @@ describe("MarketPage saved profile location", () => {
       { data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false },
     ],
   ] as const)("falls back to the automatic camera when the saved location is %s", (_, result) => {
-    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 2 };
+    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 3 };
     cameraResult.current = { ...cameraResult.current, camera: automatic };
     profileResult.current = result;
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
@@ -642,6 +647,76 @@ describe("MarketPage voucher card", () => {
     fireEvent.click(screen.getByTestId("marker-1"));
 
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+
+    expect(selection.calls.at(-1)).toEqual(["close"]);
+  });
+
+  it("centres a shared link on its voucher, ahead of the saved location", () => {
+    selection.initial = "0xAbC0000000000000000000000000000000000123";
+    detailResult.current = { data: detailFor({ lat: -3.63, lng: 39.85 }), isPending: false };
+    profileResult.current = {
+      data: { geoLat: -4.0435, geoLng: 39.6682 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toEqual({ lat: -3.63, lng: 39.85, zoom: 14, rank: 1 });
+  });
+
+  it("keeps a camera already on the map when a card opens from a pin", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    detailResult.current = { data: detailFor(), isPending: false };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(lastMapProps.current?.camera).toBeNull();
+  });
+
+  it("moves the location button onto the card and hides the rest of the controls", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    expect(screen.getByRole("link", { name: /browse all/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
+    const location = screen.getByRole("button", { name: "Use current location" });
+    expect(screen.getByRole("dialog").contains(location)).toBe(true);
+  });
+
+  it("pads the map by the open card and drops the padding once it closes", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    expect(lastMapProps.current?.bottomInset).toBe(0);
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+    // jsdom lays nothing out, so the peek is its fallback height.
+    expect(lastMapProps.current?.bottomInset).toBe(160);
+
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+    expect(lastMapProps.current?.bottomInset).toBe(0);
+  });
+
+  it("collapses a half-height card to its peek when the map is dragged", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight * 0.55));
+
+    act(() => lastMapProps.current?.onUserPan?.());
+
+    expect(lastMapProps.current?.bottomInset).toBe(160);
+  });
+
+  it("closes the card on a tap on empty map", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    act(() => lastMapProps.current?.onDeselect?.());
 
     expect(selection.calls.at(-1)).toEqual(["close"]);
   });

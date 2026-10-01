@@ -36,7 +36,16 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
-  CAMERA_RANK: { explicit: 0, liveGps: 1, persistedGps: 2, ipCity: 3, countryDefault: 4 },
+  CAMERA_RANK: {
+    explicit: 0,
+    selectedVoucher: 1,
+    savedProfile: 2,
+    liveGps: 3,
+    persistedGps: 4,
+    ipCity: 5,
+    countryDefault: 6,
+  },
+  REAL_FIX_ZOOM: 14,
   useMarketCamera: () => ({
     camera: null,
     realFix: null,
