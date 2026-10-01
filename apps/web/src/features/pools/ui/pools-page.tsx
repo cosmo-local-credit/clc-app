@@ -1,30 +1,72 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
+import { useConnection } from "wagmi";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
+import { Checkbox } from "#/components/ui/checkbox";
 import { BackChevron, PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
-import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
+import { useCreditablePools } from "#/features/pools/hooks/use-creditable-pools";
+import { usePoolCatalog, usePoolFacetVocabulary } from "#/features/pools/hooks/use-filtered-pools";
+import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { CHAIN_ID } from "#/lib/chain";
+import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
+import { PoolOutputVoucherFilter } from "./pool-output-voucher-filter";
 
 const POOL_ROW_TAG_LIMIT = 3;
 
-export function PoolsPage() {
+type CreditChoice = {
+  holder: string;
+  context: string;
+  mode: "auto" | "on" | "off" | "invalid";
+  initialized: boolean;
+  checked: boolean;
+  touched: boolean;
+};
+
+export function PoolsPage({
+  creditableSearch,
+  outputVoucherSearch,
+}: {
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  outputVoucherSearch?: string | readonly string[];
+}) {
   const { t, i18n } = useLingui();
+  const navigate = useNavigate();
+  const { address } = useConnection();
+  const outputVoucherResult = parsePoolOutputVoucher(outputVoucherSearch);
+  const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
+  const outputFilterActive = outputVoucherAddress !== null;
+  const outputFilterInvalid = !outputVoucherResult.ok;
+  const creditableResult = parsePoolCreditable(creditableSearch);
+  const creditFilterInvalid = !creditableResult.ok;
+  const creditMode = creditFilterInvalid
+    ? "invalid"
+    : creditableResult.enabled === null
+      ? "auto"
+      : creditableResult.enabled
+        ? "on"
+        : "off";
+  const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.pools,
     useStorageOwner(),
-    { voucherRelationships: true },
+    {
+      voucherRelationships: true,
+      externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
+    },
   );
   const poolsQuery = useUserPoolsInfinite(
     undefined,
@@ -50,8 +92,91 @@ export function PoolsPage() {
     },
     filtersEverOpened,
   );
-  const pools = catalog.pools;
-  const isRefining = catalog.status === "refining" || filter.isDebouncing;
+  const creditable = useCreditablePools(address);
+  const outputAvailability = usePoolOutputAvailability(
+    outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
+  );
+  const voucherVocabulary = usePoolFacetVocabulary(true);
+  const selectedVoucherDetail = useMarketVoucherDetail(outputVoucherAddress ?? undefined);
+  const creditableAddresses = useMemo(
+    () => new Set(creditable.pools.map((pool) => pool.address.toLowerCase())),
+    [creditable.pools],
+  );
+  const filteredCreditablePools = useMemo(
+    () =>
+      filter.isFiltered
+        ? catalog.pools.filter((pool) => creditableAddresses.has(pool.address.toLowerCase()))
+        : creditable.pools,
+    [catalog.pools, creditable.pools, creditableAddresses, filter.isFiltered],
+  );
+  const outputAddresses = useMemo(
+    () => new Set(outputAvailability.pools.map((pool) => pool.address.toLowerCase())),
+    [outputAvailability.pools],
+  );
+  const creditableOutputPools = useMemo(
+    () =>
+      outputAvailability.pools.filter((pool) =>
+        creditableAddresses.has(pool.address.toLowerCase()),
+      ),
+    [creditableAddresses, outputAvailability.pools],
+  );
+  const specialPools = outputFilterActive ? creditableOutputPools : filteredCreditablePools;
+  const creditDefaultPools = outputFilterActive
+    ? filter.isFiltered
+      ? catalog.pools.filter(
+          (pool) =>
+            outputAddresses.has(pool.address.toLowerCase()) &&
+            creditableAddresses.has(pool.address.toLowerCase()),
+        )
+      : creditableOutputPools
+    : filteredCreditablePools;
+  const holderKey = address?.toLowerCase() ?? "";
+  const creditContext = outputVoucherAddress ?? (outputFilterInvalid ? "invalid" : "all");
+  const [creditChoice, setCreditChoice] = useState<CreditChoice | null>(null);
+  const creditReadyForDefault =
+    holderKey !== "" &&
+    creditable.status === "ready" &&
+    (!outputFilterActive || outputAvailability.status === "ready") &&
+    !outputFilterInvalid &&
+    catalog.status === "ready" &&
+    !filter.isRestoringPreference &&
+    filter.result.ok;
+  const creditChecked =
+    creditMode === "on"
+      ? creditReadyForDefault
+      : creditMode === "off" || creditMode === "invalid"
+        ? false
+        : Boolean(
+            creditChoice?.holder === holderKey &&
+            creditChoice.mode === "auto" &&
+            creditChoice.checked &&
+            (creditChoice.touched || creditChoice.context === creditContext),
+          );
+  const specialFilterActive = creditChecked || outputFilterActive;
+  const selectedSpecialPools = outputFilterActive
+    ? creditChecked
+      ? creditableOutputPools
+      : outputAvailability.pools
+    : specialPools;
+  const selectedSpecialAddresses = useMemo(
+    () => new Set(selectedSpecialPools.map((pool) => pool.address.toLowerCase())),
+    [selectedSpecialPools],
+  );
+  const pools = specialFilterInvalid
+    ? []
+    : specialFilterActive
+      ? filter.isFiltered
+        ? catalog.pools.filter((pool) => selectedSpecialAddresses.has(pool.address.toLowerCase()))
+        : selectedSpecialPools
+      : catalog.pools;
+  const hasMore = !specialFilterActive && !specialFilterInvalid && catalog.hasMore;
+  const isRefining =
+    catalog.status === "refining" ||
+    filter.isDebouncing ||
+    (outputFilterActive && outputAvailability.isRefreshing);
+  const outputReady = !outputFilterActive || outputAvailability.status === "ready";
+  const canShowResults =
+    catalog.status === "ready" && filter.result.ok && !specialFilterInvalid && outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
@@ -62,8 +187,56 @@ export function PoolsPage() {
   }, [clearCreateDraft]);
 
   useEffect(() => {
+    setCreditChoice((current) => {
+      if (holderKey === "") return null;
+      if (current?.holder !== holderKey || current.mode !== creditMode) {
+        if (creditMode !== "auto") {
+          return {
+            holder: holderKey,
+            context: creditContext,
+            mode: creditMode,
+            initialized: creditReadyForDefault,
+            checked: creditMode === "on" && creditReadyForDefault,
+            touched: false,
+          };
+        }
+        return {
+          holder: holderKey,
+          context: creditContext,
+          mode: "auto",
+          initialized: creditReadyForDefault,
+          checked: creditReadyForDefault && creditDefaultPools.length > 0,
+          touched: false,
+        };
+      }
+      if (creditMode !== "auto") return current;
+      if (!current.touched && current.context !== creditContext) {
+        return {
+          holder: holderKey,
+          context: creditContext,
+          mode: "auto",
+          initialized: creditReadyForDefault,
+          checked: creditReadyForDefault && creditDefaultPools.length > 0,
+          touched: false,
+        };
+      }
+      if (!current.initialized && creditReadyForDefault) {
+        return {
+          holder: holderKey,
+          context: creditContext,
+          mode: "auto",
+          initialized: true,
+          checked: creditDefaultPools.length > 0,
+          touched: false,
+        };
+      }
+      return current;
+    });
+  }, [creditContext, creditDefaultPools.length, creditMode, creditReadyForDefault, holderKey]);
+
+  useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !catalog.hasMore || typeof IntersectionObserver === "undefined") {
+    if (!target || !hasMore || typeof IntersectionObserver === "undefined") {
       return;
     }
 
@@ -75,7 +248,7 @@ export function PoolsPage() {
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [catalog.hasMore, catalog.isLoadingMore, catalog.loadMore]);
+  }, [catalog.isLoadingMore, catalog.loadMore, hasMore]);
 
   return (
     <div className="space-y-4">
@@ -108,19 +281,216 @@ export function PoolsPage() {
 
       <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
 
+      {outputFilterInvalid ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>This link contains an invalid output voucher.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={() =>
+              void navigate({
+                to: ".",
+                replace: true,
+                search: (previous) => ({ ...previous, out_voucher: undefined }),
+              })
+            }
+          >
+            <Trans>Clear filter</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {creditFilterInvalid ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>This link contains an invalid Credit filter.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={() =>
+              void navigate({
+                to: ".",
+                replace: true,
+                search: (previous) => ({ ...previous, creditable: undefined }),
+              })
+            }
+          >
+            <Trans>Clear filter</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {outputFilterActive && outputAvailability.status === "error" ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>Couldn't check voucher availability.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={outputAvailability.retry}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {creditable.status === "error" ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>Couldn't check creditable pools.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={creditable.retry}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {(creditable.status === "ready" && creditable.hasVerificationGaps) ||
+      (outputFilterActive &&
+        outputAvailability.status === "ready" &&
+        outputAvailability.hasVerificationGaps) ? (
+        <div
+          className="border border-border bg-card p-3 text-muted-foreground text-sm"
+          role="status"
+        >
+          <Trans>Some pools couldn't be checked. Showing verified results.</Trans>
+        </div>
+      ) : null}
+
       {catalog.status === "loading" ? (
         <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
           <Trans>Loading pools…</Trans>
         </div>
       ) : null}
 
+      {outputFilterActive && outputAvailability.status === "loading" ? (
+        <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
+          <Trans>Checking voucher availability…</Trans>
+        </div>
+      ) : null}
+
       {catalog.status === "ready" && filter.result.ok ? (
         <>
-          <p className="font-medium text-sm tabular-nums">{resultCountLabel}</p>
-          {pools.length === 0 ? (
+          <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2">
+            <p className="shrink-0 font-medium text-sm tabular-nums">{resultCountLabel}</p>
+            <label
+              htmlFor="creditable-pools"
+              className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-sm"
+            >
+              <Checkbox
+                id="creditable-pools"
+                checked={creditChecked}
+                disabled={
+                  specialFilterInvalid ||
+                  creditable.status !== "ready" ||
+                  (outputFilterActive && outputAvailability.status !== "ready")
+                }
+                onCheckedChange={(checked) => {
+                  setCreditChoice({
+                    holder: holderKey,
+                    context: creditContext,
+                    mode: creditMode,
+                    initialized: true,
+                    checked,
+                    touched: true,
+                  });
+                  void navigate({
+                    to: ".",
+                    search: (previous) => ({
+                      ...previous,
+                      creditable: checked,
+                    }),
+                  });
+                }}
+              />
+              <span>
+                <Trans>Credit</Trans>
+              </span>
+              {creditable.status === "loading" ? (
+                <span className="text-muted-foreground text-xs">
+                  <Trans>Checking…</Trans>
+                </span>
+              ) : null}
+              {creditable.isRefreshing ? (
+                <span className="sr-only">
+                  <Trans>Refreshing creditable pools…</Trans>
+                </span>
+              ) : null}
+            </label>
+            <PoolOutputVoucherFilter
+              facets={voucherVocabulary.data?.voucherFacets ?? []}
+              value={outputVoucherAddress}
+              fallbackLabel={selectedVoucherDetail.data?.name}
+              loading={voucherVocabulary.isPending}
+              onValueChange={(next) =>
+                void navigate({
+                  to: ".",
+                  search: (previous) => ({
+                    ...previous,
+                    out_voucher: next ?? undefined,
+                  }),
+                })
+              }
+            />
+          </div>
+          {voucherVocabulary.isError ? (
+            <div
+              className="flex items-center justify-between gap-3 border border-border bg-card p-3"
+              role="alert"
+            >
+              <p className="text-muted-foreground text-sm">
+                <Trans>Couldn't load voucher choices.</Trans>
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0 bg-card"
+                onClick={() => void voucherVocabulary.refetch()}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {canShowResults && pools.length === 0 ? (
             <div className="space-y-3 border border-border bg-card p-3">
               <p className="text-muted-foreground text-sm">
-                {filter.isFiltered ? (
+                {creditChecked && outputFilterActive && filter.isFiltered ? (
+                  <Trans>No creditable pools with this voucher match these filters.</Trans>
+                ) : creditChecked && outputFilterActive ? (
+                  <Trans>No creditable pools have this voucher available.</Trans>
+                ) : outputFilterActive && filter.isFiltered ? (
+                  <Trans>No pools with this voucher match these filters.</Trans>
+                ) : outputFilterActive ? (
+                  <Trans>No pools have this voucher available.</Trans>
+                ) : creditChecked && filter.isFiltered ? (
+                  <Trans>No creditable pools match this search.</Trans>
+                ) : creditChecked ? (
+                  <Trans>No creditable pools are available.</Trans>
+                ) : filter.isFiltered ? (
                   <Trans>No pools match this search.</Trans>
                 ) : (
                   <Trans>No pools yet.</Trans>
@@ -136,7 +506,7 @@ export function PoolsPage() {
         </>
       ) : null}
 
-      {pools.length > 0 ? (
+      {canShowResults && pools.length > 0 ? (
         <section
           className={[
             "border border-border bg-card",
