@@ -334,11 +334,12 @@ function VoucherRow({
       </Link>
       {/* Getting this voucher out of the pool is one tap from its row: the
           pool's swap opens with it already chosen under "You receive". A
-          sibling of the row link, not inside it — links do not nest. */}
+          sibling of the row link, not inside it — links do not nest. Filled in
+          the brand colour, like the pool's own Swap, so it does not read as
+          part of the white row. */}
       <Button
         asChild
-        variant="outline"
-        size="lg"
+        size="sm"
         className={["text-[0.6875rem] font-semibold", onManage ? "" : "me-3"].join(" ")}
       >
         <Link
