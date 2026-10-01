@@ -20,12 +20,15 @@ export const Route = createFileRoute("/_nav/pools/")({
 });
 
 function PoolsRoute() {
-  const { out_voucher: outputVoucherSearch } = Route.useSearch();
+  const { creditable: creditableSearch, out_voucher: outputVoucherSearch } = Route.useSearch();
   return (
     <AuthenticatedRoute>
       <div className="min-h-[100svh] bg-background text-foreground pb-bottom-nav">
         <main className="px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)]">
-          <PoolsPage outputVoucherSearch={outputVoucherSearch} />
+          <PoolsPage
+            creditableSearch={creditableSearch}
+            outputVoucherSearch={outputVoucherSearch}
+          />
         </main>
       </div>
     </AuthenticatedRoute>

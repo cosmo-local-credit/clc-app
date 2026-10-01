@@ -18,14 +18,12 @@ import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
   RiCoinLine,
-  RiDownloadLine,
   RiFileCopyLine,
+  RiGroupLine,
   RiNavigationLine,
-  RiSearchLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 import { toast } from "sonner";
-import { isAddress } from "viem";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
@@ -258,11 +256,14 @@ export function VoucherDetailPage({
             </span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
-          <Link to="/wallet/receive">
-            <RiDownloadLine className="size-4" aria-hidden="true" />
+        <Button asChild variant="info" className="h-14 flex-col gap-1 px-1">
+          <Link
+            to="/pools"
+            search={{ out_voucher: (contractAddress ?? voucherAddress).toLowerCase() }}
+          >
+            <RiGroupLine className="size-4" aria-hidden="true" />
             <span className="text-[0.6875rem] font-semibold">
-              <Trans>Receive</Trans>
+              <Trans>Pools</Trans>
             </span>
           </Link>
         </Button>
@@ -693,15 +694,6 @@ function VoucherInfoPanel({
       className="space-y-3"
     >
       <VoucherContractActionsPanel {...contractActions} editable={editable} />
-
-      {contractAddress && isAddress(contractAddress, { strict: false }) ? (
-        <Button asChild variant="outline" className="h-11 w-full bg-card">
-          <Link to="/pools" search={{ out_voucher: contractAddress.toLowerCase() }}>
-            <RiSearchLine className="size-4" aria-hidden="true" />
-            <Trans>Find this voucher in a pool</Trans>
-          </Link>
-        </Button>
-      ) : null}
 
       {rate || description ? (
         <div className="space-y-3 border border-border bg-card p-4">

@@ -350,6 +350,87 @@ describe("creditable pools", () => {
     expect(screen.queryByText("Trade Pool")).toBeNull();
   });
 
+  it("forces explicit Credit on even when the verified result is empty", async () => {
+    routeSearch.current = { creditable: "true" };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage creditableSearch="true" />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    expect(await screen.findByText("No creditable pools are available.")).toBeTruthy();
+    expect(screen.queryByText("Trade Pool")).toBeNull();
+  });
+
+  it("forces explicit Credit off even when creditable pools exist", async () => {
+    routeSearch.current = { creditable: "false" };
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage creditableSearch="false" />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    expect(credit.getAttribute("data-checked")).toBeNull();
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
+    expect(screen.getByText("Solo Pool")).toBeTruthy();
+  });
+
+  it("writes manual Credit changes to the URL while preserving other filters", async () => {
+    routeSearch.current = { q: "trade", out_voucher: OUTPUT_VOUCHER };
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
+    outputState.current = { ...outputState.current, status: "ready", pools: [POOLS[0]!] };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage outputVoucherSearch={OUTPUT_VOUCHER} />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    fireEvent.click(credit);
+
+    const call = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(call.search({ q: "trade", out_voucher: OUTPUT_VOUCHER })).toEqual({
+      q: "trade",
+      out_voucher: OUTPUT_VOUCHER,
+      creditable: false,
+    });
+  });
+
+  it("rejects an invalid Credit URL without showing the normal catalog", async () => {
+    routeSearch.current = { creditable: "yes" };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage creditableSearch="yes" />);
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toContain("This link contains an invalid Credit filter.");
+    expect(screen.queryByText("Trade Pool")).toBeNull();
+    fireEvent.click(within(alert).getByRole("button", { name: "Clear filter" }));
+    const call = navigate.mock.calls.at(-1)?.[0] as {
+      search: (previous: Record<string, unknown>) => Record<string, unknown>;
+    };
+    expect(call.search({ q: "trade", creditable: "yes" })).toEqual({
+      q: "trade",
+      creditable: undefined,
+    });
+  });
+
+  it("does not restore saved facets over an explicit Credit deep link", async () => {
+    window.localStorage.setItem(
+      POOLS_FILTER_KEY,
+      JSON.stringify({
+        tags: ["Food"],
+        tagMatch: "any",
+        vouchers: [],
+        voucherMatch: "any",
+      }),
+    );
+    routeSearch.current = { creditable: true };
+    creditableState.current = { ...creditableState.current, pools: [POOLS[1]!] };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage creditableSearch={true} />);
+
+    expect(await screen.findByText("Solo Pool")).toBeTruthy();
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it("keeps a manual choice for the current visit when verified data refreshes", async () => {
     creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
     mockPoolsList();

@@ -18,7 +18,7 @@ import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
 import { CHAIN_ID } from "#/lib/chain";
-import { parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
+import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/pool-search";
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
@@ -30,14 +30,17 @@ const POOL_ROW_TAG_LIMIT = 3;
 type CreditChoice = {
   holder: string;
   context: string;
+  mode: "auto" | "on" | "off" | "invalid";
   initialized: boolean;
   checked: boolean;
   touched: boolean;
 };
 
 export function PoolsPage({
+  creditableSearch,
   outputVoucherSearch,
 }: {
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
   outputVoucherSearch?: string | readonly string[];
 }) {
   const { t, i18n } = useLingui();
@@ -47,12 +50,22 @@ export function PoolsPage({
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
   const outputFilterInvalid = !outputVoucherResult.ok;
+  const creditableResult = parsePoolCreditable(creditableSearch);
+  const creditFilterInvalid = !creditableResult.ok;
+  const creditMode = creditFilterInvalid
+    ? "invalid"
+    : creditableResult.enabled === null
+      ? "auto"
+      : creditableResult.enabled
+        ? "on"
+        : "off";
+  const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
   const filter = usePersistedCatalogFilter(
     CATALOG_FILTER_PREFERENCE_NAMES.pools,
     useStorageOwner(),
     {
       voucherRelationships: true,
-      externalFilterActive: outputVoucherSearch !== undefined,
+      externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
     },
   );
   const poolsQuery = useUserPoolsInfinite(
@@ -128,11 +141,17 @@ export function PoolsPage({
     catalog.status === "ready" &&
     !filter.isRestoringPreference &&
     filter.result.ok;
-  const creditChecked = Boolean(
-    creditChoice?.holder === holderKey &&
-    creditChoice.checked &&
-    (creditChoice.touched || creditChoice.context === creditContext),
-  );
+  const creditChecked =
+    creditMode === "on"
+      ? creditReadyForDefault
+      : creditMode === "off" || creditMode === "invalid"
+        ? false
+        : Boolean(
+            creditChoice?.holder === holderKey &&
+            creditChoice.mode === "auto" &&
+            creditChoice.checked &&
+            (creditChoice.touched || creditChoice.context === creditContext),
+          );
   const specialFilterActive = creditChecked || outputFilterActive;
   const selectedSpecialPools = outputFilterActive
     ? creditChecked
@@ -143,21 +162,21 @@ export function PoolsPage({
     () => new Set(selectedSpecialPools.map((pool) => pool.address.toLowerCase())),
     [selectedSpecialPools],
   );
-  const pools = outputFilterInvalid
+  const pools = specialFilterInvalid
     ? []
     : specialFilterActive
       ? filter.isFiltered
         ? catalog.pools.filter((pool) => selectedSpecialAddresses.has(pool.address.toLowerCase()))
         : selectedSpecialPools
       : catalog.pools;
-  const hasMore = !specialFilterActive && !outputFilterInvalid && catalog.hasMore;
+  const hasMore = !specialFilterActive && !specialFilterInvalid && catalog.hasMore;
   const isRefining =
     catalog.status === "refining" ||
     filter.isDebouncing ||
     (outputFilterActive && outputAvailability.isRefreshing);
   const outputReady = !outputFilterActive || outputAvailability.status === "ready";
   const canShowResults =
-    catalog.status === "ready" && filter.result.ok && !outputFilterInvalid && outputReady;
+    catalog.status === "ready" && filter.result.ok && !specialFilterInvalid && outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
@@ -170,19 +189,32 @@ export function PoolsPage({
   useEffect(() => {
     setCreditChoice((current) => {
       if (holderKey === "") return null;
-      if (current?.holder !== holderKey) {
+      if (current?.holder !== holderKey || current.mode !== creditMode) {
+        if (creditMode !== "auto") {
+          return {
+            holder: holderKey,
+            context: creditContext,
+            mode: creditMode,
+            initialized: creditReadyForDefault,
+            checked: creditMode === "on" && creditReadyForDefault,
+            touched: false,
+          };
+        }
         return {
           holder: holderKey,
           context: creditContext,
+          mode: "auto",
           initialized: creditReadyForDefault,
           checked: creditReadyForDefault && creditDefaultPools.length > 0,
           touched: false,
         };
       }
+      if (creditMode !== "auto") return current;
       if (!current.touched && current.context !== creditContext) {
         return {
           holder: holderKey,
           context: creditContext,
+          mode: "auto",
           initialized: creditReadyForDefault,
           checked: creditReadyForDefault && creditDefaultPools.length > 0,
           touched: false,
@@ -192,6 +224,7 @@ export function PoolsPage({
         return {
           holder: holderKey,
           context: creditContext,
+          mode: "auto",
           initialized: true,
           checked: creditDefaultPools.length > 0,
           touched: false,
@@ -199,7 +232,7 @@ export function PoolsPage({
       }
       return current;
     });
-  }, [creditContext, creditDefaultPools.length, creditReadyForDefault, holderKey]);
+  }, [creditContext, creditDefaultPools.length, creditMode, creditReadyForDefault, holderKey]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -265,6 +298,31 @@ export function PoolsPage({
                 to: ".",
                 replace: true,
                 search: (previous) => ({ ...previous, out_voucher: undefined }),
+              })
+            }
+          >
+            <Trans>Clear filter</Trans>
+          </Button>
+        </div>
+      ) : null}
+
+      {creditFilterInvalid ? (
+        <div
+          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
+          role="alert"
+        >
+          <p className="text-sm">
+            <Trans>This link contains an invalid Credit filter.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={() =>
+              void navigate({
+                to: ".",
+                replace: true,
+                search: (previous) => ({ ...previous, creditable: undefined }),
               })
             }
           >
@@ -347,19 +405,27 @@ export function PoolsPage({
                 id="creditable-pools"
                 checked={creditChecked}
                 disabled={
-                  outputFilterInvalid ||
+                  specialFilterInvalid ||
                   creditable.status !== "ready" ||
                   (outputFilterActive && outputAvailability.status !== "ready")
                 }
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked) => {
                   setCreditChoice({
                     holder: holderKey,
                     context: creditContext,
+                    mode: creditMode,
                     initialized: true,
                     checked,
                     touched: true,
-                  })
-                }
+                  });
+                  void navigate({
+                    to: ".",
+                    search: (previous) => ({
+                      ...previous,
+                      creditable: checked,
+                    }),
+                  });
+                }}
               />
               <span>
                 <Trans>Credit</Trans>
