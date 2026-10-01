@@ -15,10 +15,13 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { EllipsizedAddress } from "./wallet-address";
+import { ShareReceiptButton } from "./share-receipt-button";
 
 export type TransferDetails = {
   txHash: string;
@@ -40,12 +43,26 @@ export function TransferDetailsSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const badge = transfer?.direction === "IN" ? t`Received voucher` : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
-  const transferDate = transfer ? formatTransferDate(transfer.dateBlock) : "";
+  const transferDate = transfer
+    ? formatTransferDate(transfer.dateBlock, i18n.locales?.[0] ?? i18n.locale)
+    : "";
   const explorerUrl = transfer ? explorerTxUrl(CHAIN_INFO, transfer.txHash) : "#";
   const shareQuery = useSendShare(transfer?.txHash ?? null, open && transfer?.success === true);
+  const addressBook = useAddressBookRecipients(useStorageOwner());
+  const recipientAlias = transfer
+    ? ((addressBook.data ?? []).find(
+        (entry) =>
+          entry.address.toLowerCase() === transfer.recipientAddress.toLowerCase() &&
+          !entry.label.toLowerCase().startsWith("0x"),
+      )?.label ?? null)
+    : null;
+  const recipientLabel = recipientAlias ?? transfer?.recipientAddress;
+  const amountLabel = transfer
+    ? `${formatTokenAmount(transfer.amount, transfer.tokenDecimals)} ${transfer.tokenSymbol}`
+    : "";
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -94,7 +111,12 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Recipient</Trans>
                   </span>
-                  <EllipsizedAddress address={transfer.recipientAddress} />
+                  <div className="flex min-w-0 flex-col items-end gap-1 text-end">
+                    {recipientAlias ? (
+                      <span className="break-words text-xs font-semibold">{recipientAlias}</span>
+                    ) : null}
+                    <EllipsizedAddress address={transfer.recipientAddress} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -103,6 +125,20 @@ export function TransferDetailsSheet({
           <PrivateShareSection query={shareQuery} />
 
           <SheetFooter className="px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            {transfer?.success && transfer.txHash ? (
+              <ShareReceiptButton
+                key={transfer.txHash}
+                className="h-11 w-full"
+                title={t`Payment receipt`}
+                lines={[
+                  transfer.direction === "OUT"
+                    ? t`I sent ${amountLabel} to ${recipientLabel}.`
+                    : t`I received ${amountLabel}.`,
+                  ...(transferDate ? [transferDate] : []),
+                ]}
+                url={explorerUrl}
+              />
+            ) : null}
             <Button asChild className="h-11 w-full">
               <a href={explorerUrl} target="_blank" rel="noreferrer">
                 <Trans>View on block explorer</Trans>
