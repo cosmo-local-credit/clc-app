@@ -71,6 +71,23 @@ afterEach(() => {
 });
 
 describe("SwapReceiptPage", () => {
+  it("shares the swap summary with the pool name and explorer link", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+    fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
+
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    const payload = share.mock.calls[0]?.[0] as { text: string };
+    expect(payload.text).toContain("1.00 USDC");
+    expect(payload.text).toContain("2.00 TTX");
+    expect(payload.text).toContain("Trade Pool");
+    expect(payload.text).toContain(TX_HASH);
+    Reflect.deleteProperty(navigator, "share");
+  });
+
   it("shows a swapping state while polling the relayer transaction", async () => {
     useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
     trackRelay.mockResolvedValue({ result: { otx: [] } });
