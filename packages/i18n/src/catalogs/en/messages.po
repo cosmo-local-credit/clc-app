@@ -37,6 +37,21 @@ msgstr "{count, plural, one {# voucher} other {# vouchers}}"
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, one {# post} other {# posts}}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:148
+#~ msgid "Pool shortcode is required"
+#~ msgstr "Pool shortcode is required"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:153
+#~ msgid "Pool shortcode must be 6 characters or fewer"
+#~ msgstr "Pool shortcode must be 6 characters or fewer"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+#~ msgid "Use only letters and numbers for the pool shortcode"
+#~ msgstr "Use only letters and numbers for the pool shortcode"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
@@ -1371,6 +1386,10 @@ msgstr "Couldn't start MPESA top up"
 msgid "Couldn't submit withdrawal"
 msgstr "Couldn't submit withdrawal"
 
+#: apps/web/src/components/ui/username-input.tsx:63
+msgid "Couldn't suggest a username. Please try again."
+msgstr "Couldn't suggest a username. Please try again."
+
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:339
 msgid "Couldn't transfer ownership."
 msgstr "Couldn't transfer ownership."
@@ -1712,6 +1731,10 @@ msgstr "Enter a link starting with http:// or https://"
 msgid "Enter a title for your post"
 msgstr "Enter a title for your post"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:112
+msgid "Enter a username, pool name, phone number or address."
+msgstr "Enter a username, pool name, phone number or address."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a valid date and time"
@@ -1740,8 +1763,8 @@ msgid "Enter an amount this voucher supports."
 msgstr "Enter an amount this voucher supports."
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
-msgid "Enter an ENS, phone number or address."
-msgstr "Enter an ENS, phone number or address."
+#~ msgid "Enter an ENS, phone number or address."
+#~ msgstr "Enter an ENS, phone number or address."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -1757,8 +1780,12 @@ msgid "Enter pool name"
 msgstr "Enter pool name"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
-msgid "Enter pool shortcode, eg. ABC1"
-msgstr "Enter pool shortcode, eg. ABC1"
+#~ msgid "Enter pool shortcode, eg. ABC1"
+#~ msgstr "Enter pool shortcode, eg. ABC1"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
+msgid "Enter pool symbol, eg. ABC1"
+msgstr "Enter pool symbol, eg. ABC1"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:280
@@ -1907,6 +1934,10 @@ msgstr "Filter vouchers"
 #: apps/web/src/components/catalog-filter-controls.tsx:243
 msgid "Filters"
 msgstr "Filters"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Finding a name…"
+msgstr "Finding a name…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:94
 msgid "Finding location"
@@ -2471,6 +2502,10 @@ msgstr "Marketplace vouchers"
 msgid "Match"
 msgstr "Match"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:191
+msgid "Matching recipients"
+msgstr "Matching recipients"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:300
 msgid "Max"
@@ -2718,6 +2753,10 @@ msgstr "No currencies found."
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
 msgid "No deposit limit"
 msgstr "No deposit limit"
+
+#: apps/web/src/components/wallet/recipient-address-input.tsx:220
+msgid "No matching recipients."
+msgstr "No matching recipients."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -3103,6 +3142,18 @@ msgstr "Passwords do not match."
 msgid "Pending"
 msgstr "Pending"
 
+#: apps/web/src/components/ui/username-input.tsx:47
+msgid "People can use this name to send vouchers to you. Leave blank to choose "
+"automatically."
+msgstr "People can use this name to send vouchers to you. Leave blank to choose "
+"automatically."
+
+#: apps/web/src/components/ui/username-input.tsx:48
+msgid "People can use this name to send vouchers to you. Leave blank to keep "
+"your current username."
+msgstr "People can use this name to send vouchers to you. Leave blank to keep "
+"your current username."
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:240
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
@@ -3251,18 +3302,22 @@ msgid "Pool received"
 msgstr "Pool received"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
-msgid "Pool Shortcode"
-msgstr "Pool Shortcode"
+#~ msgid "Pool Shortcode"
+#~ msgstr "Pool Shortcode"
 
-#. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
-msgid "Pool shortcode is required"
-msgstr "Pool shortcode is required"
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
+msgid "Pool symbol"
+msgstr "Pool symbol"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:153
-msgid "Pool shortcode must be 6 characters or fewer"
-msgstr "Pool shortcode must be 6 characters or fewer"
+msgid "Pool symbol is required"
+msgstr "Pool symbol is required"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+msgid "Pool symbol must be 6 characters or fewer"
+msgstr "Pool symbol must be 6 characters or fewer"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:724
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -3603,8 +3658,12 @@ msgid "Recipient"
 msgstr "Recipient"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:115
-msgid "Recipient ENS, phone or address"
-msgstr "Recipient ENS, phone or address"
+#~ msgid "Recipient ENS, phone or address"
+#~ msgstr "Recipient ENS, phone or address"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:122
+msgid "Recipient username, pool name, phone or address"
+msgstr "Recipient username, pool name, phone or address"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
 msgid "Recommended"
@@ -3946,6 +4005,10 @@ msgstr "Search your vouchers"
 msgid "Searching places…"
 msgstr "Searching places…"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:211
+msgid "Searching recipients…"
+msgstr "Searching recipients…"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:362
 msgid "Searching vouchers…"
 msgstr "Searching vouchers…"
@@ -4098,8 +4161,8 @@ msgstr "Sharing…"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
-msgid "Shortcode"
-msgstr "Shortcode"
+#~ msgid "Shortcode"
+#~ msgstr "Shortcode"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
 msgid "Show {stars}-star reviews"
@@ -4228,6 +4291,10 @@ msgstr "Submitted"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:335
 msgid "Submitting…"
 msgstr "Submitting…"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Suggest username"
+msgstr "Suggest username"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:469
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:508
@@ -4426,6 +4493,11 @@ msgid "That link has already been added."
 msgstr "That link has already been added."
 
 #. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:16
+msgid "That name or symbol is already taken"
+msgstr "That name or symbol is already taken"
+
+#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:143
 msgid "That pool name is already taken"
 msgstr "That pool name is already taken"
@@ -4438,6 +4510,11 @@ msgstr "That pool name was taken while you were filling this in."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:170
 msgid "That symbol is already in use."
 msgstr "That symbol is already in use."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:11
+msgid "That username or pool name is already taken"
+msgstr "That username or pool name is already taken"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:78
@@ -4891,9 +4968,9 @@ msgid "Use my location"
 msgstr "Use my location"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
-msgid "Use only letters and numbers for the pool shortcode"
-msgstr "Use only letters and numbers for the pool shortcode"
+#: apps/web/src/lib/validation-i18n.ts:163
+msgid "Use only letters and numbers for the pool symbol"
+msgstr "Use only letters and numbers for the pool symbol"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:93
@@ -4903,6 +4980,15 @@ msgstr "Use only letters and numbers for the voucher symbol"
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "Use photo"
+
+#: apps/web/src/components/ui/username-input.tsx:32
+msgid "Username"
+msgstr "Username"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:6
+msgid "Username must be 3–24 letters, digits or hyphens"
+msgstr "Username must be 3–24 letters, digits or hyphens"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"

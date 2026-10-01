@@ -38,6 +38,21 @@ msgstr "{count, plural, one {# buono} other {# buoni}}"
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, one {# pubblicazione} other {# pubblicazioni}}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:148
+#~ msgid "Pool shortcode is required"
+#~ msgstr "Il codice breve del fondo è obbligatorio"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:153
+#~ msgid "Pool shortcode must be 6 characters or fewer"
+#~ msgstr "Il codice breve del fondo deve contenere al massimo 6 caratteri"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+#~ msgid "Use only letters and numbers for the pool shortcode"
+#~ msgstr "Usi solo lettere e numeri per il codice breve del fondo"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
@@ -1386,6 +1401,10 @@ msgstr "Non è stato possibile avviare la ricarica MPESA"
 msgid "Couldn't submit withdrawal"
 msgstr "Non è stato possibile inviare il prelievo"
 
+#: apps/web/src/components/ui/username-input.tsx:63
+msgid "Couldn't suggest a username. Please try again."
+msgstr "Impossibile suggerire un nome utente. Riprova."
+
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:339
 msgid "Couldn't transfer ownership."
 msgstr "Non è stato possibile trasferire la proprietà."
@@ -1727,6 +1746,10 @@ msgstr "Inserisca un link che inizi con http:// o https://"
 msgid "Enter a title for your post"
 msgstr "Inserisca un titolo per la pubblicazione"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:112
+msgid "Enter a username, pool name, phone number or address."
+msgstr "Inserisci un nome utente, un nome del pool, un numero di telefono o un indirizzo."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a valid date and time"
@@ -1755,8 +1778,8 @@ msgid "Enter an amount this voucher supports."
 msgstr "Inserisca un importo supportato da questo buono."
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
-msgid "Enter an ENS, phone number or address."
-msgstr "Inserisca un ENS, un numero di telefono o un indirizzo."
+#~ msgid "Enter an ENS, phone number or address."
+#~ msgstr "Inserisca un ENS, un numero di telefono o un indirizzo."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -1772,8 +1795,12 @@ msgid "Enter pool name"
 msgstr "Inserisca il nome del fondo"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
-msgid "Enter pool shortcode, eg. ABC1"
-msgstr "Inserisca il codice breve del fondo, ad es. ABC1"
+#~ msgid "Enter pool shortcode, eg. ABC1"
+#~ msgstr "Inserisca il codice breve del fondo, ad es. ABC1"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
+msgid "Enter pool symbol, eg. ABC1"
+msgstr "Inserisci il simbolo del pool, ad esempio ABC1"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:280
@@ -1921,6 +1948,10 @@ msgstr "Filtri i buoni"
 #: apps/web/src/components/catalog-filter-controls.tsx:243
 msgid "Filters"
 msgstr "Filtri"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Finding a name…"
+msgstr "Ricerca di un nome…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:94
 msgid "Finding location"
@@ -2490,6 +2521,10 @@ msgstr "Buoni del mercato"
 msgid "Match"
 msgstr "Corrispondenza"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:191
+msgid "Matching recipients"
+msgstr "Destinatari corrispondenti"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:300
 msgid "Max"
@@ -2738,6 +2773,10 @@ msgstr "Nessuna valuta trovata."
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
 msgid "No deposit limit"
 msgstr "Nessun limite di deposito"
+
+#: apps/web/src/components/wallet/recipient-address-input.tsx:220
+msgid "No matching recipients."
+msgstr "Nessun destinatario corrispondente."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -3127,6 +3166,16 @@ msgstr "Le password non corrispondono."
 msgid "Pending"
 msgstr "In attesa"
 
+#: apps/web/src/components/ui/username-input.tsx:47
+msgid "People can use this name to send vouchers to you. Leave blank to choose "
+"automatically."
+msgstr "Le altre persone possono usare questo nome per inviarti buoni. Lascia vuoto per sceglierlo automaticamente."
+
+#: apps/web/src/components/ui/username-input.tsx:48
+msgid "People can use this name to send vouchers to you. Leave blank to keep "
+"your current username."
+msgstr "Le altre persone possono usare questo nome per inviarti buoni. Lascia vuoto per mantenere il tuo nome utente attuale."
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:240
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
@@ -3277,18 +3326,22 @@ msgid "Pool received"
 msgstr "Ricevuto dal fondo"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
-msgid "Pool Shortcode"
-msgstr "Codice breve del fondo"
+#~ msgid "Pool Shortcode"
+#~ msgstr "Codice breve del fondo"
 
-#. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
-msgid "Pool shortcode is required"
-msgstr "Il codice breve del fondo è obbligatorio"
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
+msgid "Pool symbol"
+msgstr "Simbolo del pool"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:153
-msgid "Pool shortcode must be 6 characters or fewer"
-msgstr "Il codice breve del fondo deve contenere al massimo 6 caratteri"
+msgid "Pool symbol is required"
+msgstr "Il simbolo del pool è obbligatorio"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+msgid "Pool symbol must be 6 characters or fewer"
+msgstr "Il simbolo del pool deve contenere al massimo 6 caratteri"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:724
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -3630,8 +3683,12 @@ msgid "Recipient"
 msgstr "Destinatario"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:115
-msgid "Recipient ENS, phone or address"
-msgstr "ENS, telefono o indirizzo del destinatario"
+#~ msgid "Recipient ENS, phone or address"
+#~ msgstr "ENS, telefono o indirizzo del destinatario"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:122
+msgid "Recipient username, pool name, phone or address"
+msgstr "Nome utente, nome del pool, telefono o indirizzo del destinatario"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
 msgid "Recommended"
@@ -3975,6 +4032,10 @@ msgstr "Cerchi tra i suoi buoni"
 msgid "Searching places…"
 msgstr "Ricerca di luoghi…"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:211
+msgid "Searching recipients…"
+msgstr "Ricerca dei destinatari…"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:362
 msgid "Searching vouchers…"
 msgstr "Ricerca di buoni…"
@@ -4129,8 +4190,8 @@ msgstr "Condivisione…"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
-msgid "Shortcode"
-msgstr "Codice breve"
+#~ msgid "Shortcode"
+#~ msgstr "Codice breve"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
 msgid "Show {stars}-star reviews"
@@ -4260,6 +4321,10 @@ msgstr "Inviato"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:335
 msgid "Submitting…"
 msgstr "Invio…"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Suggest username"
+msgstr "Suggerisci un nome utente"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:469
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:508
@@ -4460,6 +4525,11 @@ msgid "That link has already been added."
 msgstr "Questo link è già stato aggiunto."
 
 #. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:16
+msgid "That name or symbol is already taken"
+msgstr "Questo nome o simbolo è già in uso"
+
+#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:143
 msgid "That pool name is already taken"
 msgstr "Il nome del fondo è già in uso"
@@ -4473,6 +4543,11 @@ msgstr "Il nome del fondo è stato scelto da qualcun altro mentre compilava il "
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:170
 msgid "That symbol is already in use."
 msgstr "Il simbolo è già in uso."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:11
+msgid "That username or pool name is already taken"
+msgstr "Questo nome utente o nome del pool è già in uso"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:78
@@ -4933,9 +5008,9 @@ msgid "Use my location"
 msgstr "Usi la mia posizione"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
-msgid "Use only letters and numbers for the pool shortcode"
-msgstr "Usi solo lettere e numeri per il codice breve del fondo"
+#: apps/web/src/lib/validation-i18n.ts:163
+msgid "Use only letters and numbers for the pool symbol"
+msgstr "Usa solo lettere e numeri per il simbolo del pool"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:93
@@ -4945,6 +5020,15 @@ msgstr "Usi solo lettere e numeri per il simbolo del buono"
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "Usi la foto"
+
+#: apps/web/src/components/ui/username-input.tsx:32
+msgid "Username"
+msgstr "Nome utente"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:6
+msgid "Username must be 3–24 letters, digits or hyphens"
+msgstr "Il nome utente deve contenere da 3 a 24 lettere, cifre o trattini"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"

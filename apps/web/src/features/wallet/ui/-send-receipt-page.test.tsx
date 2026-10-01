@@ -335,3 +335,7 @@ describe("SendReceiptPage", () => {
     expect(screen.getByText(/transaction reverted/i)).toBeTruthy();
   });
 });
+
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useReverseRecipientResolution: () => ({ data: null }),
+}));

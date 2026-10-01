@@ -17,18 +17,18 @@ afterEach(() => {
 describe("address book local storage", () => {
   it("persists recipients locally", () => {
     upsertAddressBookRecipient(OWNER, {
-      label: "alice.sarafu.eth",
+      label: "alice",
       address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-      source: "ens",
+      source: "alias",
     });
 
     expect(readAddressBookRecipients(OWNER)).toEqual([
       {
         id: "0xa316408425cf17f1827483dee621c6c3a9b5fad4",
-        label: "alice.sarafu.eth",
+        label: "alice",
         address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-        seed: "alice.sarafu.eth",
-        source: "ens",
+        seed: "alice",
+        source: "alias",
       },
     ]);
   });
@@ -40,15 +40,15 @@ describe("address book local storage", () => {
       source: "manual",
     });
     upsertAddressBookRecipient(OWNER, {
-      label: "alice.sarafu.eth",
+      label: "alice",
       address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-      source: "reverse-ens",
+      source: "reverse-name",
     });
 
     expect(readAddressBookRecipients(OWNER)).toHaveLength(1);
     expect(readAddressBookRecipients(OWNER)[0]).toMatchObject({
-      label: "alice.sarafu.eth",
-      source: "reverse-ens",
+      label: "alice",
+      source: "reverse-name",
     });
   });
 

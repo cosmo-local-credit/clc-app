@@ -73,3 +73,7 @@ describe("TransferDetailsSheet private attachment", () => {
     expect(screen.getByTestId("shared-location-map").textContent).toContain("-1.2921,36.8219");
   });
 });
+
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useReverseRecipientResolution: () => ({ data: null }),
+}));

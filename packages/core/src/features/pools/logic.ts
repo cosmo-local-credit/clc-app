@@ -25,9 +25,9 @@ export const poolNameSchema = z
 export const poolSymbolSchema = z
   .string()
   .trim()
-  .min(3, { message: "Pool shortcode must be at least 3 characters" })
-  .max(6, { message: "Pool shortcode must be 6 characters or fewer" })
-  .regex(/^[A-Z0-9]+$/, { message: "Use only letters and numbers for the pool shortcode" });
+  .min(3, { message: "Pool symbol must be at least 3 characters" })
+  .max(6, { message: "Pool symbol must be 6 characters or fewer" })
+  .regex(/^[A-Z0-9]+$/, { message: "Use only letters and numbers for the pool symbol" });
 
 export const poolDescriptionSchema = z
   .string()

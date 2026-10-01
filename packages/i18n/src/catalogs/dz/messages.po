@@ -38,6 +38,21 @@ msgstr "{count, plural, other {# འཛིན་ཤོག}}"
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, other {# གསལ་བསྒྲགས}}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:148
+#~ msgid "Pool shortcode is required"
+#~ msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་དགོ"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:153
+#~ msgid "Pool shortcode must be 6 characters or fewer"
+#~ msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་ཡིག་འབྲུ་ ༦ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+#~ msgid "Use only letters and numbers for the pool shortcode"
+#~ msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་ལུ་ཡིག་འབྲུ་དང་ཨང་རྐྱངམ་ཅིག་ལག་ལེན་འཐབ།"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
@@ -1380,6 +1395,10 @@ msgstr "MPESA དངུལ་ཁ་སྐོང་འགོ་བཙུགས་
 msgid "Couldn't submit withdrawal"
 msgstr "ཕྱིར་བཏོན་ཞུ་འབུལ་འབད་མ་ཚུགས།"
 
+#: apps/web/src/components/ui/username-input.tsx:63
+msgid "Couldn't suggest a username. Please try again."
+msgstr "ལག་ལེན་པའི་མིང་གྲོས་འཆར་བཀོད་མ་ཚུགས། ལོག་འབད་བལྟ་གནང་།"
+
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:339
 msgid "Couldn't transfer ownership."
 msgstr "བདག་དབང་སྤོ་བཤུད་འབད་མ་ཚུགས།"
@@ -1722,6 +1741,10 @@ msgstr "http:// ཡང་ན་ https:// གིས་འགོ་བཙུགས
 msgid "Enter a title for your post"
 msgstr "ཁྱོད་ཀྱི་གསལ་བསྒྲགས་ལུ་མགོ་མིང་ཅིག་བཙུགས།"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:112
+msgid "Enter a username, pool name, phone number or address."
+msgstr "ལག་ལེན་པའི་མིང་ མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་མིང་ བརྒྱུད་འཕྲིན་ཨང་ ཡང་ན་ཁ་བྱང་བཙུགས།"
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a valid date and time"
@@ -1750,8 +1773,8 @@ msgid "Enter an amount this voucher supports."
 msgstr "འཛིན་ཤོག་འདི་གིས་རྒྱབ་སྐྱོར་འབད་མི་དངུལ་བསྡོམས་བཙུགས།"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
-msgid "Enter an ENS, phone number or address."
-msgstr "ENS, ཁ་པར་ཨང་ ཡང་ན་ཁ་བྱང་བཙུགས།"
+#~ msgid "Enter an ENS, phone number or address."
+#~ msgstr "ENS, ཁ་པར་ཨང་ ཡང་ན་ཁ་བྱང་བཙུགས།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -1767,8 +1790,12 @@ msgid "Enter pool name"
 msgstr "དངུལ་ཁུངས་ཀྱི་མིང་བཙུགས།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
-msgid "Enter pool shortcode, eg. ABC1"
-msgstr "དངུལ་ཁུངས་ཀྱི་བསྡུས་ཡིག་བཙུགས། དཔེར་ན་ ABC1"
+#~ msgid "Enter pool shortcode, eg. ABC1"
+#~ msgstr "དངུལ་ཁུངས་ཀྱི་བསྡུས་ཡིག་བཙུགས། དཔེར་ན་ ABC1"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
+msgid "Enter pool symbol, eg. ABC1"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་རྟགས་བཙུགས་ དཔེར་ན་ ABC1།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:280
@@ -1916,6 +1943,10 @@ msgstr "འཛིན་ཤོག་ཚུ་ཚགས་མ་རྐྱབ།"
 #: apps/web/src/components/catalog-filter-controls.tsx:243
 msgid "Filters"
 msgstr "ཚགས་མ་ཚུ།"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Finding a name…"
+msgstr "མིང་འཚོལ་དོ…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:94
 msgid "Finding location"
@@ -2484,6 +2515,10 @@ msgstr "ཚོང་རའི་འཛིན་ཤོག"
 msgid "Match"
 msgstr "མཐུན།"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:191
+msgid "Matching recipients"
+msgstr "མཐུན་པའི་ལེན་མཁན་ཚུ།"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:300
 msgid "Max"
@@ -2731,6 +2766,10 @@ msgstr "དངུལ་རིགས་མ་ཐོབ།"
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
 msgid "No deposit limit"
 msgstr "བཙུགས་དངུལ་ཚད་མེད།"
+
+#: apps/web/src/components/wallet/recipient-address-input.tsx:220
+msgid "No matching recipients."
+msgstr "མཐུན་པའི་ལེན་མཁན་མིན་འདུག"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -3119,6 +3158,16 @@ msgstr "གསང་ཚིག་ཚུ་མི་མཐུན།"
 msgid "Pending"
 msgstr "བསྒུག་པའི་སྒང་།"
 
+#: apps/web/src/components/ui/username-input.tsx:47
+msgid "People can use this name to send vouchers to you. Leave blank to choose "
+"automatically."
+msgstr "མི་གཞན་ཚུ་གིས་མིང་འདི་ལག་ལེན་འཐབ་སྟེ་ཁྱོད་ལུ་འཛིན་ཤོག་གཏང་ཚུགས། རང་བཞིན་གྱིས་གདམ་ནི་ལུ་སྟོངམ་བཞག"
+
+#: apps/web/src/components/ui/username-input.tsx:48
+msgid "People can use this name to send vouchers to you. Leave blank to keep "
+"your current username."
+msgstr "མི་གཞན་ཚུ་གིས་མིང་འདི་ལག་ལེན་འཐབ་སྟེ་ཁྱོད་ལུ་འཛིན་ཤོག་གཏང་ཚུགས། ད་ལྟོའི་ལག་ལེན་པའི་མིང་བཞག་ནི་ལུ་སྟོངམ་བཞག"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:240
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
@@ -3268,18 +3317,22 @@ msgid "Pool received"
 msgstr "དངུལ་ཁུངས་ཀྱིས་ལེན་ཚར།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
-msgid "Pool Shortcode"
-msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག"
+#~ msgid "Pool Shortcode"
+#~ msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག"
 
-#. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
-msgid "Pool shortcode is required"
-msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་དགོ"
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
+msgid "Pool symbol"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་རྟགས།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:153
-msgid "Pool shortcode must be 6 characters or fewer"
-msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་ཡིག་འབྲུ་ ༦ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
+msgid "Pool symbol is required"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་རྟགས་དགོ"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+msgid "Pool symbol must be 6 characters or fewer"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་རྟགས་ལུ་ཡིག་འབྲུ་ 6 ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:724
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -3620,8 +3673,12 @@ msgid "Recipient"
 msgstr "ལེན་མི།"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:115
-msgid "Recipient ENS, phone or address"
-msgstr "ལེན་མིའི་ ENS, ཁ་པར་ཡང་ན་ཁ་བྱང་།"
+#~ msgid "Recipient ENS, phone or address"
+#~ msgstr "ལེན་མིའི་ ENS, ཁ་པར་ཡང་ན་ཁ་བྱང་།"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:122
+msgid "Recipient username, pool name, phone or address"
+msgstr "ལེན་མཁན་གྱི་ལག་ལེན་པའི་མིང་ མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་མིང་ བརྒྱུད་འཕྲིན་ ཡང་ན་ཁ་བྱང་།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
 msgid "Recommended"
@@ -3965,6 +4022,10 @@ msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་འཚོལ།"
 msgid "Searching places…"
 msgstr "ས་གནས་ཚུ་འཚོལ་དོ…"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:211
+msgid "Searching recipients…"
+msgstr "ལེན་མཁན་འཚོལ་དོ…"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:362
 msgid "Searching vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་དོ…"
@@ -4118,8 +4179,8 @@ msgstr "རུབ་སྤྱོད་འབད་དོ…"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
-msgid "Shortcode"
-msgstr "བསྡུས་ཡིག"
+#~ msgid "Shortcode"
+#~ msgstr "བསྡུས་ཡིག"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
 msgid "Show {stars}-star reviews"
@@ -4249,6 +4310,10 @@ msgstr "ཞུ་འབུལ་གྲུབ།"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:335
 msgid "Submitting…"
 msgstr "ཞུ་འབུལ་འབད་དོ…"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Suggest username"
+msgstr "ལག་ལེན་པའི་མིང་གྲོས་འཆར་བཀོད།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:469
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:508
@@ -4448,6 +4513,11 @@ msgid "That link has already been added."
 msgstr "འབྲེལ་ལམ་འདི་ཧེ་མ་ལས་ཁ་སྐོང་རྐྱབ་ཡོད།"
 
 #. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:16
+msgid "That name or symbol is already taken"
+msgstr "མིང་ཡང་ན་རྟགས་འདི་ཧེ་མ་ལས་ལག་ལེན་འཐབ་ནུག"
+
+#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:143
 msgid "That pool name is already taken"
 msgstr "དངུལ་ཁུངས་མིང་འདི་ཧེ་མ་ལས་གཞན་གྱིས་ལེན་ཡོད།"
@@ -4460,6 +4530,11 @@ msgstr "ཁྱོད་ཀྱིས་འདི་བཀང་བའི་བས
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:170
 msgid "That symbol is already in use."
 msgstr "མཚོན་རྟགས་འདི་ཧེ་མ་ལས་ལག་ལེན་འཐབ་དོ།"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:11
+msgid "That username or pool name is already taken"
+msgstr "ལག་ལེན་པའི་མིང་ཡང་ན་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་མིང་འདི་ཧེ་མ་ལས་ལག་ལེན་འཐབ་ནུག"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:78
@@ -4919,9 +4994,9 @@ msgid "Use my location"
 msgstr "ངའི་ས་གནས་ལག་ལེན་འཐབ།"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
-msgid "Use only letters and numbers for the pool shortcode"
-msgstr "དངུལ་ཁུངས་བསྡུས་ཡིག་ལུ་ཡིག་འབྲུ་དང་ཨང་རྐྱངམ་ཅིག་ལག་ལེན་འཐབ།"
+#: apps/web/src/lib/validation-i18n.ts:163
+msgid "Use only letters and numbers for the pool symbol"
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཀྱི་རྟགས་ལུ་ཡི་གུ་དང་ཨང་གྲངས་རྐྱངམ་ཅིག་ལག་ལེན་འཐབ།"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:93
@@ -4931,6 +5006,15 @@ msgstr "འཛིན་ཤོག་མཚོན་རྟགས་ལུ་ཡི
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "པར་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/components/ui/username-input.tsx:32
+msgid "Username"
+msgstr "ལག་ལེན་པའི་མིང་།"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:6
+msgid "Username must be 3–24 letters, digits or hyphens"
+msgstr "ལག་ལེན་པའི་མིང་ལུ་ཡི་གུ་ ཨང་གྲངས་ ཡང་ན་སྦྲེལ་རྟགས་ 3–24 དགོ"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"

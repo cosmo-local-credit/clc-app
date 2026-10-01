@@ -1,3 +1,4 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
@@ -15,7 +16,7 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { EllipsizedAddress, SignHint, TokenLogo } from "#/components/wallet";
+import { SignHint, TokenLogo } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
@@ -131,7 +132,7 @@ export function SendAmountPage({
             {recipientLabel ? (
               <p className="truncate font-medium text-xs">{recipientLabel}</p>
             ) : (
-              <EllipsizedAddress address={recipientAddress} />
+              <RecipientIdentityLabel address={recipientAddress} />
             )}
           </div>
           {/* Changing the recipient leaves the deposit: `returnPool` is not
@@ -367,7 +368,7 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>
                 </span>
-                {recipient ? <EllipsizedAddress address={recipient} /> : null}
+                {recipient ? <RecipientIdentityLabel address={recipient} /> : null}
               </div>
             </div>
           </div>

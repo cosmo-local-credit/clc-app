@@ -1,44 +1,51 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { BackendApiError } from "@clc/api/client/errors";
 
-import {
-  resolveEnsRecipient,
-  resolvePhoneRecipient,
-  reverseResolveAddress,
-} from "#/features/wallet/api/recipient-resolution-client";
-
-const recipientResolutionQueryKeys = {
-  all: ["recipient-resolution"] as const,
-  phone: (phone: string) => [...recipientResolutionQueryKeys.all, "phone", phone] as const,
-  ens: (ensName: string) => [...recipientResolutionQueryKeys.all, "ens", ensName] as const,
-  reverseEns: (address: string) =>
-    [...recipientResolutionQueryKeys.all, "reverse-ens", address.toLowerCase()] as const,
-};
+import { resolvePhoneRecipient } from "#/features/wallet/api/recipient-resolution-client";
+import { recipientsClient, recipientQueryKey } from "#/lib/api/recipients";
 
 export function usePhoneRecipientResolution(phone: string | null) {
   return useQuery({
-    queryKey: recipientResolutionQueryKeys.phone(phone ?? "none"),
-    queryFn: () => resolvePhoneRecipient(requireQueryValue(phone, "phone")),
+    queryKey: [...recipientQueryKey, "phone", phone],
+    queryFn: () => resolvePhoneRecipient(phone!),
     enabled: Boolean(phone),
   });
 }
 
-export function useEnsRecipientResolution(ensName: string | null) {
-  return useQuery({
-    queryKey: recipientResolutionQueryKeys.ens(ensName?.toLowerCase() ?? "none"),
-    queryFn: () => resolveEnsRecipient(requireQueryValue(ensName, "ENS name")),
-    enabled: Boolean(ensName),
+export function useRecipientSearch(query: string | null, allowPools: boolean) {
+  const [debounced, setDebounced] = useState(query);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(query), 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+  const results = useQuery({
+    queryKey: [...recipientQueryKey, "search", debounced, allowPools],
+    queryFn: ({ signal }) =>
+      recipientsClient.search(debounced!, allowPools ? undefined : "user", signal),
+    enabled: Boolean(debounced) && debounced === query,
+    staleTime: 0,
   });
+  return {
+    ...results,
+    data: debounced === query ? results.data : undefined,
+    isDebouncing: debounced !== query,
+  };
 }
 
-export function useReverseEnsResolution(address: string | null) {
+export function useReverseRecipientResolution(address: string | null) {
   return useQuery({
-    queryKey: recipientResolutionQueryKeys.reverseEns(address ?? "none"),
-    queryFn: () => reverseResolveAddress(requireQueryValue(address, "address")),
+    queryKey: [...recipientQueryKey, "reverse", address?.toLowerCase()],
+    queryFn: async ({ signal }) => {
+      try {
+        return await recipientsClient.reverse(address!, signal);
+      } catch (error) {
+        if (error instanceof BackendApiError && error.status === 404) return null;
+        throw error;
+      }
+    },
     enabled: Boolean(address),
+    retry: false,
+    staleTime: 0,
   });
-}
-
-function requireQueryValue(value: string | null, label: string): string {
-  if (!value) throw new Error(`Recipient ${label} is required.`);
-  return value;
 }

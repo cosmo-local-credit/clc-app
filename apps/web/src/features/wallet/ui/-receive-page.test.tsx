@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -42,7 +43,13 @@ afterEach(() => {
 describe("ReceivePage", () => {
   it("copies the connected wallet address and encodes a chain-specific receive URI", async () => {
     useConnectionMock.mockReturnValue({ address: ADDRESS });
-    render(<ReceivePage />);
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <ReceivePage />
+      </QueryClientProvider>,
+    );
 
     await waitFor(() =>
       expect(qrCode.toDataURL).toHaveBeenCalledWith(`ethereum:${ADDRESS}@${CHAIN_ID}`, {
@@ -61,7 +68,13 @@ describe("ReceivePage", () => {
 
   it("disables actions and shows a message when there is no address", () => {
     useConnectionMock.mockReturnValue({ address: undefined });
-    render(<ReceivePage />);
+    render(
+      <QueryClientProvider
+        client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+      >
+        <ReceivePage />
+      </QueryClientProvider>,
+    );
 
     expect(screen.getByText(/no wallet address available/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /^copy$/i }).hasAttribute("disabled")).toBe(true);

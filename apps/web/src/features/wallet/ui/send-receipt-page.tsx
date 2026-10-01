@@ -1,3 +1,4 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -169,7 +170,7 @@ export function SendReceiptPage({
         ) : null}
         {toAddress ? (
           <ReceiptRow label={t`To`}>
-            <EllipsizedAddress address={toAddress} />
+            <RecipientIdentityLabel address={toAddress} />
           </ReceiptRow>
         ) : null}
         {txHash ? (
@@ -451,7 +452,7 @@ function ReceiptShell({
       <div className="my-5 border border-border bg-card">
         {toAddress ? (
           <ReceiptRow label={<Trans>To</Trans>}>
-            <EllipsizedAddress address={toAddress} />
+            <RecipientIdentityLabel address={toAddress} />
           </ReceiptRow>
         ) : null}
         <ReceiptRow label={<Trans>Network</Trans>}>

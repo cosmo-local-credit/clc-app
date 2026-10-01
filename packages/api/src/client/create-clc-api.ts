@@ -18,6 +18,7 @@ import { createOfferingsClient } from "../features/offerings/client";
 import { createPoolsClient } from "../features/pools/client";
 import { createPretiumClient } from "../features/pretium/client";
 import { createPoolDeployClient } from "../features/pools/deploy-client";
+import { createRecipientsClient } from "../features/recipients/client";
 import { createReportsClient } from "../features/reports/client";
 import { createSymbolsClient } from "../features/symbols/client";
 import { createVoucherDeployClient } from "../features/vouchers/deploy-client";
@@ -53,6 +54,7 @@ export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) 
     poolDeploy: createPoolDeployClient(http),
     pretium: createPretiumClient(http),
     reports: createReportsClient(http),
+    recipients: createRecipientsClient(http),
     symbols: createSymbolsClient(http),
     voucherDeploy: createVoucherDeployClient(http),
     vocabulary: createVocabularyClient(http),

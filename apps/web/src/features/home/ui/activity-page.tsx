@@ -1,10 +1,11 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
 import { RiArrowLeftDownLine, RiArrowRightUpLine, RiChat1Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
+import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 
@@ -105,7 +106,7 @@ export function ActivityPage({ address }: { address?: string }) {
                 </p>
                 <p className="truncate text-muted-foreground text-[0.6875rem]">
                   {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <EllipsizedAddress address={transfer.counterpartyAddress} />
+                  <RecipientIdentityLabel address={transfer.counterpartyAddress} />
                   {transferDate ? (
                     <>
                       <span aria-hidden="true"> · </span>

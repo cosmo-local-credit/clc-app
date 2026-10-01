@@ -1,3 +1,4 @@
+import { CHAIN_ID } from "#/lib/chain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
@@ -56,25 +57,35 @@ describe("RecipientAddressInput", () => {
     expect((input as HTMLInputElement).value).toBe(ADDRESS);
   });
 
-  it("resolves ENS names into a contract-ready recipient address", async () => {
-    const fetcher = vi.fn().mockResolvedValue(json({ result: { address: ADDRESS } }));
+  it("selects an internal username and clears selection when the query changes", async () => {
+    const fetcher = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        json({
+          ok: true,
+          result: {
+            recipients: [
+              { kind: "user", name: "Alice", alias: "alice", address: ADDRESS, chainId: CHAIN_ID },
+            ],
+          },
+        }),
+      ),
+    );
     vi.stubGlobal("fetch", fetcher);
     const onRecipientChange = renderInput();
-
-    fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
-      target: { value: "alice.sarafu.eth" },
-    });
-
+    const input = screen.getByRole("textbox", { name: "Recipient" });
+    fireEvent.change(input, { target: { value: "alice" } });
+    fireEvent.click(await screen.findByRole("button", { name: /Alice \(alice\)/ }));
     await waitFor(() =>
       expect(onRecipientChange).toHaveBeenLastCalledWith({
         address: ADDRESS,
-        name: "alice.sarafu.eth",
-        source: "ens",
+        name: "Alice (alice)",
+        source: "alias",
       }),
     );
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://resolver.v3.grassecon.net/api/v1/resolve/alice.sarafu.eth",
-      expect.objectContaining({ method: "GET" }),
+    fireEvent.change(input, { target: { value: "different" } });
+    await waitFor(() => expect(onRecipientChange).toHaveBeenLastCalledWith(null));
+    expect(fetcher.mock.calls.every(([url]) => String(url).includes("/api/v2/recipients"))).toBe(
+      true,
     );
   });
 

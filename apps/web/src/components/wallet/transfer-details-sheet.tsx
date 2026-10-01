@@ -1,3 +1,4 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense } from "react";
@@ -18,7 +19,6 @@ import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
-import { EllipsizedAddress } from "./wallet-address";
 
 export type TransferDetails = {
   txHash: string;
@@ -94,7 +94,7 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Recipient</Trans>
                   </span>
-                  <EllipsizedAddress address={transfer.recipientAddress} />
+                  <RecipientIdentityLabel address={transfer.recipientAddress} />
                 </div>
               </div>
             </div>

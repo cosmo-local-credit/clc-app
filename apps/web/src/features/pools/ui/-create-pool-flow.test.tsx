@@ -198,7 +198,7 @@ describe("CreatePoolFlow", () => {
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
-    expect(advancedDetails.contains(screen.getByLabelText("Pool Shortcode"))).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Pool symbol"))).toBe(true);
   });
 
   it("does not expose pool decimals for editing", () => {
@@ -406,7 +406,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -504,7 +504,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -528,7 +528,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -575,7 +575,7 @@ describe("CreatePoolFlow", () => {
   });
 
   describe("shortcode suggestion", () => {
-    const symbolInput = () => screen.getByLabelText("Pool Shortcode") as HTMLInputElement;
+    const symbolInput = () => screen.getByLabelText("Pool symbol") as HTMLInputElement;
 
     it("fills the shortcode from the name once the name blurs", async () => {
       renderFlow(<CreatePoolFlow step="pool" />);

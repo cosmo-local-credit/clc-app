@@ -3,6 +3,7 @@ import { useConnection } from "wagmi";
 
 import type { ProfilePayload, ProfileResult } from "@clc/api/features/auth/client";
 import { authKeys } from "@clc/api/features/auth/queries";
+import { recipientQueryKey } from "#/lib/api/recipients";
 import { authClient } from "#/lib/api/auth";
 
 export function useUpdateProfile() {
@@ -21,7 +22,10 @@ export function useUpdateProfile() {
       );
       // Still invalidated, for the same missing `createdAt`: a screen that mounts
       // on a cold cache must read the whole row from the backend.
-      return queryClient.invalidateQueries({ queryKey: authKeys.profile(address) });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: authKeys.profile(address) }),
+        queryClient.invalidateQueries({ queryKey: recipientQueryKey }),
+      ]);
     },
   });
 }

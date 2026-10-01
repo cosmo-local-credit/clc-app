@@ -28,7 +28,7 @@ export function PoolDetailsRows({
   return (
     <>
       <InfoRow label={t`Pool`}>{values.name}</InfoRow>
-      <InfoRow label={t`Shortcode`}>{values.symbol}</InfoRow>
+      <InfoRow label={t`Symbol`}>{values.symbol}</InfoRow>
       <InfoRow label={t`Unit of account`}>{values.unitOfAccount}</InfoRow>
       <InfoRow label={t`Description`}>{values.description}</InfoRow>
       <InfoRow label={t`Pricing`} muted>

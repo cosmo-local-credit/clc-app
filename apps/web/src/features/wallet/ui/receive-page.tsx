@@ -6,12 +6,16 @@ import { useConnection } from "wagmi";
 import { Button } from "#/components/ui/button";
 import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { recipientLabel } from "@clc/api/features/recipients/client";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 export function ReceivePage() {
   const chainName = CHAIN_INFO.name;
   const { t } = useLingui();
   const { address } = useConnection();
+  const identity = useReverseRecipientResolution(address ?? null);
+  const receiveName = identity.data?.alias ?? address;
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
 
   const copy = (value: string) => {
@@ -30,16 +34,16 @@ export function ReceivePage() {
     // Prefer the native share sheet; fall back to copying when unavailable.
     if (navigator.share) {
       try {
-        await navigator.share({ title: t`My wallet address`, text: address });
+        await navigator.share({ title: t`My wallet address`, text: receiveName });
       } catch (error) {
         // AbortError = user dismissed the sheet; not a failure worth surfacing.
         if (error instanceof Error && error.name !== "AbortError") {
-          copy(address);
+          copy(receiveName ?? address);
         }
       }
       return;
     }
-    copy(address);
+    copy(receiveName ?? address);
   };
 
   return (
@@ -70,13 +74,17 @@ export function ReceivePage() {
           type="button"
           aria-label={t`Copy wallet address`}
           className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
-          onClick={() => copy(address)}
+          onClick={() => copy(receiveName ?? address)}
         >
-          <HighlightAddress
-            address={address}
-            tailLength={6}
-            className="min-w-0 break-all text-[0.625rem] leading-tight"
-          />
+          {identity.data ? (
+            <span className="break-all text-sm">{recipientLabel(identity.data)}</span>
+          ) : (
+            <HighlightAddress
+              address={address}
+              tailLength={6}
+              className="min-w-0 break-all text-[0.625rem] leading-tight"
+            />
+          )}
           <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
       ) : null}
@@ -97,7 +105,7 @@ export function ReceivePage() {
           variant="outline"
           className="h-11 flex-1"
           disabled={!address}
-          onClick={() => address && copy(address)}
+          onClick={() => receiveName && copy(receiveName)}
         >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>

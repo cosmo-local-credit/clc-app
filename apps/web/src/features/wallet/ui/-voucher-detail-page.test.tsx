@@ -112,9 +112,9 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
-  useEnsRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+  useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
   usePhoneRecipientResolution: () => ({ data: null, error: null, isPending: false }),
-  useReverseEnsResolution: () => ({ data: null, error: null, isPending: false }),
+  useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),
 }));
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({

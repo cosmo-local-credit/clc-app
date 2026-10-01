@@ -1,4 +1,4 @@
-import type { Recipient } from "#/components/wallet/wallet-data";
+import type { Recipient, RecipientSource } from "#/components/wallet/wallet-data";
 import {
   readOwnerScoped,
   removeOwnerScoped,
@@ -20,7 +20,7 @@ import type { StorageOwner } from "#/lib/storage/owner-tier-key";
  * each other or live in the same array, and neither is what anyone wants.
  */
 
-export type AddressBookRecipientSource = "manual" | "phone" | "ens" | "reverse-ens" | "qr";
+export type AddressBookRecipientSource = RecipientSource;
 
 export type AddressBookRecipient = Recipient & {
   address: `0x${string}`;
@@ -88,8 +88,8 @@ function isAddressBookRecipientSource(value: unknown): value is AddressBookRecip
   return (
     value === "manual" ||
     value === "phone" ||
-    value === "ens" ||
-    value === "reverse-ens" ||
+    value === "alias" ||
+    value === "reverse-name" ||
     value === "qr"
   );
 }

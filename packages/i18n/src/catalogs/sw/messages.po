@@ -37,6 +37,21 @@ msgstr "{count, plural, one {vocha #} other {vocha #}}"
 msgid "{count, plural, one {# post} other {# posts}}"
 msgstr "{count, plural, one {# chapisho} other {# machapisho}}"
 
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:148
+#~ msgid "Pool shortcode is required"
+#~ msgstr "Kifupisho cha puli kinahitajika"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:153
+#~ msgid "Pool shortcode must be 6 characters or fewer"
+#~ msgstr "Kifupisho cha puli lazima kiwe na alama 6 au chache"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+#~ msgid "Use only letters and numbers for the pool shortcode"
+#~ msgstr "Tumia herufi na nambari pekee kwa kifupisho cha puli"
+
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:240
@@ -1378,6 +1393,10 @@ msgstr "Hatukuweza kuanzisha uwekaji pesa wa MPESA"
 msgid "Couldn't submit withdrawal"
 msgstr "Haikuwezekana kuwasilisha utoaji pesa"
 
+#: apps/web/src/components/ui/username-input.tsx:63
+msgid "Couldn't suggest a username. Please try again."
+msgstr "Hatukuweza kupendekeza jina la mtumiaji. Tafadhali jaribu tena."
+
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:339
 msgid "Couldn't transfer ownership."
 msgstr "Hatukuweza kuhamisha umiliki."
@@ -1719,6 +1738,10 @@ msgstr "Weka kiungo kinachoanza na http:// au https://"
 msgid "Enter a title for your post"
 msgstr "Weka kichwa cha chapisho lako"
 
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:112
+msgid "Enter a username, pool name, phone number or address."
+msgstr "Weka jina la mtumiaji, jina la puli, nambari ya simu au anwani."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:245
 msgid "Enter a valid date and time"
@@ -1747,8 +1770,8 @@ msgid "Enter an amount this voucher supports."
 msgstr "Weka kiasi ambacho vocha hii inakubali."
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:106
-msgid "Enter an ENS, phone number or address."
-msgstr "Weka ENS, nambari ya simu au anwani."
+#~ msgid "Enter an ENS, phone number or address."
+#~ msgstr "Weka ENS, nambari ya simu au anwani."
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:350
@@ -1764,8 +1787,12 @@ msgid "Enter pool name"
 msgstr "Weka jina la puli"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
-msgid "Enter pool shortcode, eg. ABC1"
-msgstr "Weka kifupisho cha puli, mfano ABC1"
+#~ msgid "Enter pool shortcode, eg. ABC1"
+#~ msgstr "Weka kifupisho cha puli, mfano ABC1"
+
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:481
+msgid "Enter pool symbol, eg. ABC1"
+msgstr "Weka alama ya puli, kwa mfano ABC1"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:280
@@ -1915,6 +1942,10 @@ msgstr "Chuja vocha"
 #: apps/web/src/components/catalog-filter-controls.tsx:243
 msgid "Filters"
 msgstr "Vichujio"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Finding a name…"
+msgstr "Tunatafuta jina…"
 
 #: apps/web/src/features/home/ui/market-page.tsx:94
 msgid "Finding location"
@@ -2483,6 +2514,10 @@ msgstr "Vocha za sokoni"
 msgid "Match"
 msgstr "Linganisha"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:191
+msgid "Matching recipients"
+msgstr "Wapokeaji wanaolingana"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:302
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:300
 msgid "Max"
@@ -2731,6 +2766,10 @@ msgstr "Hakuna sarafu zilizopatikana."
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
 msgid "No deposit limit"
 msgstr "Hakuna kikomo cha amana"
+
+#: apps/web/src/components/wallet/recipient-address-input.tsx:220
+msgid "No matching recipients."
+msgstr "Hakuna wapokeaji wanaolingana."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -3117,6 +3156,16 @@ msgstr "Manenosiri hayalingani."
 msgid "Pending"
 msgstr "Inasubiri"
 
+#: apps/web/src/components/ui/username-input.tsx:47
+msgid "People can use this name to send vouchers to you. Leave blank to choose "
+"automatically."
+msgstr "Watu wanaweza kutumia jina hili kukutumia vocha. Acha wazi ili lichaguliwe kiotomatiki."
+
+#: apps/web/src/components/ui/username-input.tsx:48
+msgid "People can use this name to send vouchers to you. Leave blank to keep "
+"your current username."
+msgstr "Watu wanaweza kutumia jina hili kukutumia vocha. Acha wazi ili uhifadhi jina lako la sasa la mtumiaji."
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:175
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:240
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:245
@@ -3266,18 +3315,22 @@ msgid "Pool received"
 msgstr "Bwawa lilipokea"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
-msgid "Pool Shortcode"
-msgstr "Kifupisho cha Puli"
+#~ msgid "Pool Shortcode"
+#~ msgstr "Kifupisho cha Puli"
 
-#. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:148
-msgid "Pool shortcode is required"
-msgstr "Kifupisho cha puli kinahitajika"
+#: apps/web/src/features/pools/ui/create-pool-flow.tsx:467
+msgid "Pool symbol"
+msgstr "Alama ya puli"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:153
-msgid "Pool shortcode must be 6 characters or fewer"
-msgstr "Kifupisho cha puli lazima kiwe na alama 6 au chache"
+msgid "Pool symbol is required"
+msgstr "Alama ya puli inahitajika"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:158
+msgid "Pool symbol must be 6 characters or fewer"
+msgstr "Alama ya puli lazima iwe na vibambo 6 au vichache"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:724
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:291
@@ -3620,8 +3673,12 @@ msgid "Recipient"
 msgstr "Mpokeaji"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:115
-msgid "Recipient ENS, phone or address"
-msgstr "ENS, simu au anwani ya mpokeaji"
+#~ msgid "Recipient ENS, phone or address"
+#~ msgstr "ENS, simu au anwani ya mpokeaji"
+
+#: apps/web/src/features/wallet/ui/send-recipient-page.tsx:122
+msgid "Recipient username, pool name, phone or address"
+msgstr "Jina la mtumiaji, jina la puli, simu au anwani ya mpokeaji"
 
 #: apps/web/src/features/onboarding/ui/onboarding-method-step.tsx:89
 msgid "Recommended"
@@ -3965,6 +4022,10 @@ msgstr "Tafuta vocha zako"
 msgid "Searching places…"
 msgstr "Inatafuta maeneo…"
 
+#: apps/web/src/components/wallet/recipient-address-input.tsx:211
+msgid "Searching recipients…"
+msgstr "Tunatafuta wapokeaji…"
+
 #: apps/web/src/components/catalog-filter-controls.tsx:362
 msgid "Searching vouchers…"
 msgstr "Inatafuta vocha…"
@@ -4118,8 +4179,8 @@ msgstr "Inashiriki…"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:187
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:31
-msgid "Shortcode"
-msgstr "Kifupisho"
+#~ msgid "Shortcode"
+#~ msgstr "Kifupisho"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
 msgid "Show {stars}-star reviews"
@@ -4248,6 +4309,10 @@ msgstr "Imewasilishwa"
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:335
 msgid "Submitting…"
 msgstr "Inawasilisha…"
+
+#: apps/web/src/components/ui/username-input.tsx:69
+msgid "Suggest username"
+msgstr "Pendekeza jina la mtumiaji"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:469
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:508
@@ -4447,6 +4512,11 @@ msgid "That link has already been added."
 msgstr "Kiungo hicho kimeongezwa tayari."
 
 #. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:16
+msgid "That name or symbol is already taken"
+msgstr "Jina au alama hiyo tayari imetumika"
+
+#. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:143
 msgid "That pool name is already taken"
 msgstr "Jina hilo la kikundi tayari limechukuliwa"
@@ -4459,6 +4529,11 @@ msgstr "Jina hilo la kikundi lilichukuliwa ulipokuwa unajaza fomu hii."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:170
 msgid "That symbol is already in use."
 msgstr "Alama hiyo tayari inatumika."
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/recipient-error-i18n.ts:11
+msgid "That username or pool name is already taken"
+msgstr "Jina hilo la mtumiaji au la puli tayari limetumika"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:78
@@ -4914,9 +4989,9 @@ msgid "Use my location"
 msgstr "Tumia eneo langu"
 
 #. js-lingui-explicit-id
-#: apps/web/src/lib/validation-i18n.ts:158
-msgid "Use only letters and numbers for the pool shortcode"
-msgstr "Tumia herufi na nambari pekee kwa kifupisho cha puli"
+#: apps/web/src/lib/validation-i18n.ts:163
+msgid "Use only letters and numbers for the pool symbol"
+msgstr "Tumia herufi na nambari pekee kwa alama ya puli"
 
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:93
@@ -4926,6 +5001,15 @@ msgstr "Tumia herufi na namba pekee kwa alama ya vocha"
 #: apps/web/src/components/ui/image-crop-sheet.tsx:261
 msgid "Use photo"
 msgstr "Tumia picha"
+
+#: apps/web/src/components/ui/username-input.tsx:32
+msgid "Username"
+msgstr "Jina la mtumiaji"
+
+#. js-lingui-explicit-id
+#: apps/web/src/lib/validation-i18n.ts:6
+msgid "Username must be 3–24 letters, digits or hyphens"
+msgstr "Jina la mtumiaji lazima liwe na herufi, tarakimu au vistari 3–24"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"

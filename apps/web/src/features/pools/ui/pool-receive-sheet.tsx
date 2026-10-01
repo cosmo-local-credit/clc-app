@@ -22,11 +22,12 @@ export function PoolReceiveSheet({
   open,
   onClose,
 }: {
-  pool: Pick<UserPool, "address">;
+  pool: Pick<UserPool, "address"> & Partial<Pick<UserPool, "name">>;
   open: boolean;
   onClose: () => void;
 }) {
   const { t } = useLingui();
+  const receiveName = pool.name || pool.address;
   const qrValue = `ethereum:${pool.address}@${CHAIN_ID}`;
 
   const copy = () => {
@@ -35,7 +36,7 @@ export function PoolReceiveSheet({
       return;
     }
     void navigator.clipboard
-      .writeText(pool.address)
+      .writeText(receiveName)
       .then(() => toast.success(t`Address copied`))
       .catch(() => toast.error(t`Couldn't copy address`));
   };
@@ -72,11 +73,15 @@ export function PoolReceiveSheet({
                   className="flex min-h-11 w-full items-center justify-between gap-3 border border-border bg-card p-3 text-start"
                   onClick={copy}
                 >
-                  <HighlightAddress
-                    address={pool.address}
-                    tailLength={6}
-                    className="min-w-0 break-all text-[0.625rem] leading-tight"
-                  />
+                  {pool.name ? (
+                    <span className="break-all text-sm">{pool.name}</span>
+                  ) : (
+                    <HighlightAddress
+                      address={pool.address}
+                      tailLength={6}
+                      className="min-w-0 break-all text-[0.625rem] leading-tight"
+                    />
+                  )}
                   <RiFileCopyLine
                     className="size-4 shrink-0 text-muted-foreground"
                     aria-hidden="true"
