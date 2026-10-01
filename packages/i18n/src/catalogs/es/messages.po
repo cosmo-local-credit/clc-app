@@ -137,7 +137,7 @@ msgid "{0} updated."
 msgstr "{0} actualizado."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:408
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:439
 #: apps/web/src/features/home/ui/wallet-page.tsx:346
 #: apps/web/src/features/pools/ui/pools-page.tsx:550
 msgid "{0} vouchers"
@@ -204,7 +204,7 @@ msgstr "{withdrawable} {0} disponibles. Las comisiones retenidas para su cobro "
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:47
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:225
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:256
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -212,7 +212,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 oferta"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:406
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:437
 #: apps/web/src/features/home/ui/wallet-page.tsx:344
 #: apps/web/src/features/pools/ui/pools-page.tsx:548
 msgid "1 voucher"
@@ -600,7 +600,7 @@ msgstr "Compre o venda monedas estables con dinero local."
 msgid "Buy USD₮ with KES."
 msgstr "Comprar USD₮ con KES."
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:254
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:285
 msgid "Call"
 msgstr "Llamar"
 
@@ -863,7 +863,8 @@ msgid "Clear search"
 msgstr "Borrar búsqueda"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:389
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:204
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:128
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:235
 #: apps/web/src/features/home/ui/report-page.tsx:287
 msgid "Close"
 msgstr "Cerrar"
@@ -890,7 +891,7 @@ msgid "Close private key form"
 msgstr "Cerrar formulario de clave privada"
 
 #: apps/web/src/components/ui/map-sheet.tsx:221
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:102
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:106
 msgid "Collapse"
 msgstr "Contraer"
 
@@ -1106,7 +1107,7 @@ msgstr "Copiar hash de la transacción de despliegue"
 msgid "Copy fee recipient"
 msgstr "Copiar destinatario de las comisiones"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:447
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:478
 msgid "Copy link"
 msgstr "Copiar enlace"
 
@@ -1212,8 +1213,8 @@ msgstr "No se pudo copiar el hash de la transacción de despliegue"
 msgid "Couldn't copy fee recipient"
 msgstr "No se pudo copiar el destinatario de las comisiones"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:456
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:462
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:487
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:493
 msgid "Couldn't copy link"
 msgstr "No se pudo copiar el enlace"
 
@@ -1323,6 +1324,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "No se pudo cargar esta publicación. Solo puede editar las publicaciones "
 "que haya escrito."
 
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:122
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:136
 msgid "Couldn't load this voucher."
 msgstr "No se pudo cargar este vale."
@@ -1614,7 +1616,7 @@ msgstr "Describa su fondo"
 msgid "Description"
 msgstr "Descripción"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:247
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:278
 msgid "Directions"
 msgstr "Cómo llegar"
 
@@ -2027,7 +2029,7 @@ msgstr "Encuadre su foto"
 msgid "From"
 msgstr "De"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:236
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:267
 msgid "Get"
 msgstr "Obtener"
 
@@ -2332,7 +2334,7 @@ msgstr "Dirección del enlace"
 msgid "Link at most 12 vouchers"
 msgstr "Vincule como máximo 12 vales"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:461
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:492
 msgid "Link copied"
 msgstr "Enlace copiado"
 
@@ -3112,7 +3114,7 @@ msgid "Offering updated."
 msgstr "Oferta actualizada."
 
 #: apps/web/src/features/home/ui/market-voucher-sheet-full.tsx:46
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:327
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:358
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:276
 msgid "Offerings"
@@ -3511,7 +3513,7 @@ msgstr "Fondos"
 msgid "Pools list"
 msgstr "Lista de fondos"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:377
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:408
 msgid "Pools with this voucher"
 msgstr "Fondos con este vale"
 
@@ -4004,6 +4006,7 @@ msgstr "Retirando…"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:873
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:140
 #: apps/web/src/features/home/ui/report-page.tsx:56
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:713
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
@@ -4197,7 +4200,7 @@ msgstr "Buscando vales…"
 msgid "Searching…"
 msgstr "Buscando…"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:384
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:415
 msgid "See all"
 msgstr "Ver todo"
 
@@ -4317,7 +4320,7 @@ msgstr "Configurando su billetera…"
 msgid "Settings"
 msgstr "Configuración"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:447
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:478
 #: apps/web/src/features/wallet/ui/receive-page.tsx:107
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:426
 msgid "Share"
@@ -4523,7 +4526,7 @@ msgstr "La cantidad emitida debe ser mayor que cero"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Los archivos SVG no son compatibles. Use PNG, JPEG o WebP."
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:419
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:450
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:364
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
@@ -5446,7 +5449,7 @@ msgstr "No se pudo verificar si ya se han emitido unidades de este vale."
 #: apps/web/src/components/vouchers/voucher-about.tsx:97
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:333
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:262
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:347
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97

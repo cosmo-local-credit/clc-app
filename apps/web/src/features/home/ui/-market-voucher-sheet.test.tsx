@@ -7,15 +7,22 @@ import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/marke
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import type { MarketVoucherTab } from "#/lib/navigation/home-tabs";
 
-const { detailResult, offeringRequests, poolRequests, mapsRequests } = vi.hoisted(() => ({
-  detailResult: { current: undefined as MarketVoucherDetail | undefined },
-  offeringRequests: { current: [] as (string | undefined)[] },
-  poolRequests: { current: [] as unknown[] },
-  mapsRequests: { current: [] as unknown[] },
-}));
+const { detailResult, detailError, offeringRequests, poolRequests, mapsRequests } = vi.hoisted(
+  () => ({
+    detailResult: { current: undefined as MarketVoucherDetail | undefined },
+    detailError: { current: false, refetch: vi.fn() },
+    offeringRequests: { current: [] as (string | undefined)[] },
+    poolRequests: { current: [] as unknown[] },
+    mapsRequests: { current: [] as unknown[] },
+  }),
+);
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
-  useMarketVoucherDetail: () => ({ data: detailResult.current }),
+  useMarketVoucherDetail: () => ({
+    data: detailResult.current,
+    isError: detailError.current,
+    refetch: detailError.refetch,
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
@@ -151,10 +158,12 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
 }
 
 function Sheet({
+  catalogVoucher = CATALOG,
   initialSnap = "peek",
   voucherTab = "overview",
   onSnapChange,
 }: {
+  catalogVoucher?: MarketVoucher | null;
   initialSnap?: MapSheetSnap;
   voucherTab?: MarketVoucherTab;
   onSnapChange?: (snap: MapSheetSnap) => void;
@@ -164,7 +173,7 @@ function Sheet({
     <MarketVoucherSheet
       address={VOUCHER}
       open
-      catalogVoucher={CATALOG}
+      catalogVoucher={catalogVoucher}
       realFix={null}
       snap={snap}
       onSnapChange={(next) => {
@@ -188,6 +197,8 @@ function renderSheet(props: Parameters<typeof Sheet>[0] = {}) {
 
 beforeEach(() => {
   detailResult.current = undefined;
+  detailError.current = false;
+  detailError.refetch.mockReset();
   offeringRequests.current = [];
   poolRequests.current = [];
   mapsRequests.current = [];
@@ -202,6 +213,16 @@ describe("MarketVoucherSheet peek", () => {
     expect(card.textContent).toContain("Goods");
     expect(card.textContent).toContain("Kilifi");
     expect(card.textContent).not.toContain("=");
+  });
+
+  it("says so when a linked voucher cannot be loaded, and offers a retry", () => {
+    detailError.current = true;
+    renderSheet({ catalogVoucher: null });
+
+    expect(screen.getByRole("dialog", { name: "Couldn't load this voucher." })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Get" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(detailError.refetch).toHaveBeenCalledTimes(1);
   });
 
   it("adds the rate once detail arrives", () => {

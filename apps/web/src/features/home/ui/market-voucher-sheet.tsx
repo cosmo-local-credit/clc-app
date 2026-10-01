@@ -82,8 +82,12 @@ export function MarketVoucherSheet({
   floating?: ReactNode;
 }) {
   const { t } = useLingui();
-  const { data: detail } = useMarketVoucherDetail(address);
+  const detailQuery = useMarketVoucherDetail(address);
+  const detail = detailQuery.data;
   const name = detail?.name ?? catalogVoucher?.name ?? "";
+  // A shared link can name a voucher the catalog has not loaded, or one that
+  // no longer exists: there is then nothing to draw the card from.
+  const unavailable = !detail && !catalogVoucher && detailQuery.isError;
 
   return (
     <MapSheet
@@ -111,18 +115,45 @@ export function MarketVoucherSheet({
         </div>
       }
     >
-      <VoucherCard
-        key={address}
-        address={address}
-        catalogVoucher={catalogVoucher}
-        detail={detail}
-        name={name}
-        realFix={realFix}
-        snap={snap}
-        onSnapChange={onSnapChange}
-        voucherTab={voucherTab}
-        onClose={onClose}
-      />
+      {unavailable ? (
+        <MapSheetPeek className="px-4 pb-4">
+          <div className="flex items-start gap-3">
+            <MapSheetTitle className="min-w-0 flex-1 pt-2.5 text-muted-foreground text-sm">
+              <Trans>Couldn't load this voucher.</Trans>
+            </MapSheetTitle>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              className="-me-2 size-11 shrink-0"
+              aria-label={t`Close`}
+              onClick={onClose}
+            >
+              <RiCloseLine className="size-5" aria-hidden="true" />
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(PILL, "mt-3 bg-card")}
+            onClick={() => void detailQuery.refetch()}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </MapSheetPeek>
+      ) : (
+        <VoucherCard
+          key={address}
+          address={address}
+          catalogVoucher={catalogVoucher}
+          detail={detail}
+          name={name}
+          realFix={realFix}
+          snap={snap}
+          onSnapChange={onSnapChange}
+          voucherTab={voucherTab}
+          onClose={onClose}
+        />
+      )}
     </MapSheet>
   );
 }

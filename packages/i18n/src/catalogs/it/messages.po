@@ -136,7 +136,7 @@ msgid "{0} updated."
 msgstr "{0} aggiornato."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:408
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:439
 #: apps/web/src/features/home/ui/wallet-page.tsx:346
 #: apps/web/src/features/pools/ui/pools-page.tsx:550
 msgid "{0} vouchers"
@@ -203,7 +203,7 @@ msgstr "{withdrawable} {0} disponibili. Le commissioni trattenute per la "
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:47
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:225
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:256
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -211,7 +211,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 offerta"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:406
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:437
 #: apps/web/src/features/home/ui/wallet-page.tsx:344
 #: apps/web/src/features/pools/ui/pools-page.tsx:548
 msgid "1 voucher"
@@ -598,7 +598,7 @@ msgstr "Acquisti o venda stablecoin con valuta locale."
 msgid "Buy USD₮ with KES."
 msgstr "Acquisti USD₮ con KES."
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:254
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:285
 msgid "Call"
 msgstr "Chiami"
 
@@ -860,7 +860,8 @@ msgid "Clear search"
 msgstr "Cancelli la ricerca"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:389
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:204
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:128
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:235
 #: apps/web/src/features/home/ui/report-page.tsx:287
 msgid "Close"
 msgstr "Chiuda"
@@ -887,7 +888,7 @@ msgid "Close private key form"
 msgstr "Chiuda il modulo della chiave privata"
 
 #: apps/web/src/components/ui/map-sheet.tsx:221
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:102
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:106
 msgid "Collapse"
 msgstr "Riduca"
 
@@ -1104,7 +1105,7 @@ msgstr "Copi l’hash della transazione di distribuzione"
 msgid "Copy fee recipient"
 msgstr "Copi il destinatario delle commissioni"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:447
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:478
 msgid "Copy link"
 msgstr "Copi il link"
 
@@ -1211,8 +1212,8 @@ msgstr "Non è stato possibile copiare l’hash della transazione di distribuzio
 msgid "Couldn't copy fee recipient"
 msgstr "Non è stato possibile copiare il destinatario delle commissioni"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:456
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:462
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:487
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:493
 msgid "Couldn't copy link"
 msgstr "Non è stato possibile copiare il link"
 
@@ -1323,6 +1324,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Non è stato possibile caricare questa pubblicazione. Può modificare "
 "soltanto le pubblicazioni che ha scritto."
 
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:122
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:136
 msgid "Couldn't load this voucher."
 msgstr "Non è stato possibile caricare questo buono."
@@ -1615,7 +1617,7 @@ msgstr "Descriva il fondo"
 msgid "Description"
 msgstr "Descrizione"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:247
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:278
 msgid "Directions"
 msgstr "Indicazioni"
 
@@ -2026,7 +2028,7 @@ msgstr "Inquadri la foto"
 msgid "From"
 msgstr "Da"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:236
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:267
 msgid "Get"
 msgstr "Ottenga"
 
@@ -2331,7 +2333,7 @@ msgstr "Indirizzo del link"
 msgid "Link at most 12 vouchers"
 msgstr "Colleghi al massimo 12 buoni"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:461
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:492
 msgid "Link copied"
 msgstr "Link copiato"
 
@@ -3108,7 +3110,7 @@ msgid "Offering updated."
 msgstr "Offerta aggiornata."
 
 #: apps/web/src/features/home/ui/market-voucher-sheet-full.tsx:46
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:327
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:358
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:276
 msgid "Offerings"
@@ -3506,7 +3508,7 @@ msgstr "Fondi"
 msgid "Pools list"
 msgstr "Elenco dei fondi"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:377
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:408
 msgid "Pools with this voucher"
 msgstr "Fondi con questo buono"
 
@@ -3999,6 +4001,7 @@ msgstr "Ritiro…"
 
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:873
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:140
 #: apps/web/src/features/home/ui/report-page.tsx:56
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:713
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
@@ -4191,7 +4194,7 @@ msgstr "Ricerca di buoni…"
 msgid "Searching…"
 msgstr "Ricerca…"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:384
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:415
 msgid "See all"
 msgstr "Visualizzi tutto"
 
@@ -4311,7 +4314,7 @@ msgstr "Configurazione del portafoglio..."
 msgid "Settings"
 msgstr "Impostazioni"
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:447
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:478
 #: apps/web/src/features/wallet/ui/receive-page.tsx:107
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:426
 msgid "Share"
@@ -4517,7 +4520,7 @@ msgstr "La quantità emessa deve essere maggiore di zero"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "I file SVG non sono supportati. Usi PNG, JPEG o WebP."
 
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:419
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:450
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:364
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
@@ -5441,7 +5444,7 @@ msgstr "Non è stato possibile verificare se questo buono dispone già di una "
 #: apps/web/src/components/vouchers/voucher-about.tsx:97
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:333
-#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:262
+#: apps/web/src/features/home/ui/market-voucher-sheet.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:347
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
