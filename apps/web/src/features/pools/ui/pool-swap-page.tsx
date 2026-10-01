@@ -36,7 +36,14 @@ import {
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 
-export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
+export function PoolSwapPage({
+  poolAddress,
+  receiveTokenAddress,
+}: {
+  poolAddress: string;
+  /** A voucher to open the "You receive" side on, from the screen that linked here. */
+  receiveTokenAddress?: string;
+}) {
   const { i18n, t } = useLingui();
   const receiveLabel = t`You receive`;
   const sendLabel = t`You send`;
@@ -54,7 +61,9 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   const reads = usePoolSwapTokenReads(pool, vouchers, address);
 
   const [fromTokenId, setFromTokenId] = useState<string | undefined>(undefined);
-  const [toTokenId, setToTokenId] = useState<string | undefined>(undefined);
+  const [toTokenId, setToTokenId] = useState<string | undefined>(
+    receiveTokenAddress?.toLowerCase(),
+  );
   const [fromAmount, setFromAmount] = useState("");
   const [fromMaxAmountRaw, setFromMaxAmountRaw] = useState<string | null>(null);
   const [toAmount, setToAmount] = useState("");
@@ -76,7 +85,14 @@ export function PoolSwapPage({ poolAddress }: { poolAddress: string }) {
   // round trip on a pair the holder never chose — and briefly shows them a rate
   // for it.
   const chosenFrom = swapTokens.find((token) => token.id === fromTokenId);
-  const selectedFrom = chosenFrom ?? (tokensPending ? undefined : defaultPoolSwapFrom(swapTokens));
+  // The default keeps off the voucher the holder arrived wanting, not whatever
+  // is selected on the other side now: keyed off the live selection, choosing a
+  // different receive voucher would hand the send side back to that default.
+  const selectedFrom =
+    chosenFrom ??
+    (tokensPending
+      ? undefined
+      : defaultPoolSwapFrom(swapTokens, receiveTokenAddress?.toLowerCase()));
   const chosenTo = swapTokens.find(
     (token) => token.id === toTokenId && token.id !== selectedFrom?.id,
   );

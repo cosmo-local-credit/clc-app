@@ -183,6 +183,7 @@ describe("SendAmountPage", () => {
           recipient: RECIPIENT,
           amount: "5",
           symbol: "USDC",
+          recipientLabel: "Trade Pool",
           returnPool: RECIPIENT,
         },
       });
@@ -322,6 +323,7 @@ describe("SendAmountPage", () => {
         trackingId: "tracking-1",
         token: USDC,
         recipient: RECIPIENT,
+        recipientLabel: "Alice",
         amount: "2.13",
         symbol: "USDC",
       },

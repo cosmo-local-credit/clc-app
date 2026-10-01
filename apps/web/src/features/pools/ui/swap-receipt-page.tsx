@@ -9,6 +9,7 @@ import {
   EllipsizedAddress,
   FailureCross,
   PendingClock,
+  ShareReceiptButton,
   SignedAmount,
   StatusPill,
   SuccessCheck,
@@ -118,6 +119,7 @@ export function SwapReceiptPage({
 
   const txHash = outcome.otx.txHash || null;
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
+  const poolName = details.poolName;
   const submittedAt = outcome.otx.createdAt || null;
   const copy = (value: string) => {
     if (!navigator.clipboard) {
@@ -179,6 +181,23 @@ export function SwapReceiptPage({
         <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
       </div>
       <div className="flex-1" />
+      {explorerUrl ? (
+        <ShareReceiptButton
+          className="mb-2.5 h-11 w-full"
+          title={t`Swap receipt`}
+          lines={[
+            amountLabel && sentLabel
+              ? poolName
+                ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
+                : t`I swapped ${sentLabel} for ${amountLabel}.`
+              : t`I made a swap.`,
+            ...(submittedAt
+              ? [formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)]
+              : []),
+          ]}
+          url={explorerUrl}
+        />
+      ) : null}
       {sendReceived ? (
         <Button asChild className="mb-2.5 h-11 w-full">
           <Link to="/wallet/send" search={sendReceived}>

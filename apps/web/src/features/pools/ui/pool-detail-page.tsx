@@ -324,11 +324,12 @@ function VoucherRow({
   onManage?: () => void;
 }) {
   const { t } = useLingui();
+  const voucherAddress = voucher.tokenAddress.toLowerCase();
   return (
     <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
       <Link
         to="/vouchers/$voucherAddress"
-        params={{ voucherAddress: voucher.tokenAddress.toLowerCase() }}
+        params={{ voucherAddress }}
         search={{ poolAddress }}
         className="flex min-w-0 flex-1 items-center gap-3 p-3"
       >
@@ -342,16 +343,27 @@ function VoucherRow({
             </p>
           )}
         </div>
-        {voucher.offerCount === null ? null : (
-          <span className="shrink-0 text-primary text-[0.6875rem] font-semibold">
-            {voucher.offerCount === 1 ? (
-              <Trans>1 offer</Trans>
-            ) : (
-              <Trans>{voucher.offerCount} offers</Trans>
-            )}
-          </span>
-        )}
       </Link>
+      {/* Getting this voucher out of the pool is one tap from its row: the
+          pool's swap opens with it already chosen under "You receive". A
+          sibling of the row link, not inside it — links do not nest. Filled in
+          the brand colour, like the pool's own Swap, so it does not read as
+          part of the white row. */}
+      <Button
+        asChild
+        size="sm"
+        className={["text-[0.6875rem] font-semibold", onManage ? "" : "me-3"].join(" ")}
+      >
+        <Link
+          to="/pools/$poolAddress/swap"
+          params={{ poolAddress }}
+          search={{ receive: voucherAddress }}
+          aria-label={t`Swap for ${voucher.symbol}`}
+        >
+          <RiArrowLeftRightLine className="size-3.5" aria-hidden="true" />
+          <Trans>Swap</Trans>
+        </Link>
+      </Button>
       {onManage ? (
         <button
           type="button"
