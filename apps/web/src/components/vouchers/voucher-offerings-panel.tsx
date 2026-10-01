@@ -11,9 +11,9 @@ import {
   useManagedVoucherOfferingsInfinite,
   useVoucherOfferingsInfinite,
 } from "#/features/home/hooks/use-voucher-offerings";
+import { useDeleteVoucherOffering } from "#/features/wallet/hooks/use-offering-mutations";
 import { isStorageConfigured } from "#/lib/api/storage";
 
-import { useDeleteVoucherOffering } from "../hooks/use-offering-mutations";
 import { OfferingEditorSheet, type OfferingEditor } from "./offering-editor-sheet";
 
 /**
