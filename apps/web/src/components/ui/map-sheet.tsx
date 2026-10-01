@@ -1,0 +1,245 @@
+import { Drawer } from "@base-ui/react/drawer";
+import { useLingui } from "@lingui/react/macro";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+import { cn } from "#/lib/utils";
+
+/**
+ * A bottom sheet over a live map, after the Google Maps place sheet: it opens
+ * small, shows more each time it is pulled up, and closes when pulled below its
+ * smallest size.
+ *
+ * Non-modal on purpose. The map stays pannable above the sheet, and a tap on the
+ * map is the map's event: the screen decides what it means, so the sheet never
+ * closes itself on an outside press.
+ */
+export type MapSheetSnap = "peek" | "half" | "full";
+
+const HALF = 0.55;
+const FULL = 1;
+const SNAP_ORDER: readonly MapSheetSnap[] = ["peek", "half", "full"];
+/** Until the peek block has been laid out. */
+const PEEK_FALLBACK_PX = 160;
+
+type Layout = { viewport: number; popup: number; peek: number; floating: number };
+
+const PeekContext = createContext<((element: HTMLElement | null) => void) | null>(null);
+
+export const MapSheetTitle = Drawer.Title;
+export const MapSheetDescription = Drawer.Description;
+
+/**
+ * The essentials at the top of the sheet. The smallest snap point is measured
+ * from it, so it should keep a stable height as its content changes: truncate
+ * rather than wrap.
+ */
+export function MapSheetPeek({ className, children }: { className?: string; children: ReactNode }) {
+  const register = useContext(PeekContext);
+  return (
+    <div ref={register} className={className}>
+      {children}
+    </div>
+  );
+}
+
+export function MapSheet({
+  open,
+  snap,
+  onSnapChange,
+  onClose,
+  onCoveredHeightChange,
+  floating,
+  appBar,
+  children,
+}: {
+  open: boolean;
+  snap: MapSheetSnap;
+  onSnapChange: (snap: MapSheetSnap) => void;
+  /**
+   * Escape, a swipe below the peek, Android Back and any close button inside.
+   * The sheet starts closing at once rather than waiting for `open` to follow,
+   * because the caller may close it by navigating, and a swipe that waited
+   * would bounce back to the peek first.
+   */
+  onClose: () => void;
+  /**
+   * Pixels from the bottom of the viewport to the top of whatever the sheet
+   * draws over the map, the floating controls included. Reported whenever the
+   * snap point or the layout changes.
+   */
+  onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
+  /** Rides just above the sheet's top edge, and fades out above half. */
+  floating?: ReactNode;
+  /** Shown under the handle once the sheet fills the screen. */
+  appBar?: ReactNode;
+  children: ReactNode;
+}) {
+  const { t } = useLingui();
+  const [closing, setClosing] = useState(false);
+  if (closing && !open) setClosing(false);
+  const isOpen = open && !closing;
+
+  const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
+  const [popup, setPopup] = useState<HTMLDivElement | null>(null);
+  const [content, setContent] = useState<HTMLDivElement | null>(null);
+  const [peek, setPeek] = useState<HTMLElement | null>(null);
+  const [safeArea, setSafeArea] = useState<HTMLDivElement | null>(null);
+  const [floatingSlot, setFloatingSlot] = useState<HTMLDivElement | null>(null);
+  const [layout, setLayout] = useState<Layout>({ viewport: 0, popup: 0, peek: 0, floating: 0 });
+
+  useLayoutEffect(() => {
+    if (!popup) return;
+    function measure() {
+      if (!popup) return;
+      setLayout((previous) => {
+        const next: Layout = {
+          viewport: viewport?.offsetHeight ?? 0,
+          popup: popup.offsetHeight,
+          // The peek block sits in the scroll area, which only scrolls at full:
+          // measured there it would include the scroll offset.
+          peek:
+            snap === "full" || !peek
+              ? previous.peek
+              : Math.round(
+                  peek.getBoundingClientRect().bottom -
+                    popup.getBoundingClientRect().top +
+                    (safeArea?.offsetHeight ?? 0),
+                ),
+          floating: floatingSlot?.offsetHeight ?? 0,
+        };
+        return next.viewport === previous.viewport &&
+          next.popup === previous.popup &&
+          next.peek === previous.peek &&
+          next.floating === previous.floating
+          ? previous
+          : next;
+      });
+    }
+    measure();
+    const observer = new ResizeObserver(measure);
+    for (const element of [viewport, popup, peek, floatingSlot]) {
+      if (element) observer.observe(element);
+    }
+    return () => observer.disconnect();
+  }, [viewport, popup, peek, safeArea, floatingSlot, snap]);
+
+  // Collapsing from full would otherwise leave the content scrolled, with the
+  // peek block out of sight under a sheet that no longer scrolls.
+  useEffect(() => {
+    if (snap !== "full" && content) content.scrollTop = 0;
+  }, [content, snap]);
+
+  const peekHeight = layout.peek > 0 ? layout.peek : PEEK_FALLBACK_PX;
+  const peekPoint = `${peekHeight}px`;
+  const snapPoints = useMemo(() => [peekPoint, HALF, FULL], [peekPoint]);
+  const snapPoint = snap === "full" ? FULL : snap === "half" ? HALF : peekPoint;
+
+  // The same resolution Base UI applies: fractions of the viewport, clamped to
+  // the popup, which stops short of the status bar.
+  const viewportHeight = layout.viewport || window.innerHeight;
+  const maxHeight = Math.min(layout.popup || viewportHeight, viewportHeight);
+  const sheetHeight =
+    snap === "full"
+      ? maxHeight
+      : Math.min(maxHeight, snap === "half" ? HALF * viewportHeight : peekHeight);
+  const coveredHeight = Math.round(sheetHeight + (snap === "full" ? 0 : layout.floating));
+
+  const reportCoveredHeight = useEffectEvent((height: number, at: MapSheetSnap) => {
+    onCoveredHeightChange?.(height, at);
+  });
+  useEffect(() => {
+    if (isOpen) reportCoveredHeight(coveredHeight, snap);
+  }, [isOpen, coveredHeight, snap]);
+
+  const nextSnap = SNAP_ORDER[(SNAP_ORDER.indexOf(snap) + 1) % SNAP_ORDER.length] ?? "peek";
+
+  return (
+    <Drawer.Root
+      open={isOpen}
+      onOpenChange={(next) => {
+        if (next) return;
+        setClosing(true);
+        onClose();
+      }}
+      modal={false}
+      disablePointerDismissal
+      snapPoints={snapPoints}
+      snapPoint={snapPoint}
+      onSnapPointChange={(value) => {
+        // Null is the swipe that closes the sheet; onOpenChange reports that.
+        if (value === null) return;
+        onSnapChange(value === FULL ? "full" : value === HALF ? "half" : "peek");
+      }}
+      // Velocity skipping would close the card on any quick downward flick,
+      // even from full. Stepping matches the place sheet: a fling moves one snap
+      // point, and only a fling down from the peek closes it.
+      snapToSequentialPoints
+    >
+      <Drawer.Portal>
+        {/* The viewport covers the screen but takes no input, or the map
+            under it could not be panned. Only the popup does. */}
+        <Drawer.Viewport ref={setViewport} className="pointer-events-none fixed inset-0 z-40">
+          <Drawer.Popup
+            ref={setPopup}
+            className={cn(
+              "pointer-events-auto absolute inset-x-0 bottom-0 flex h-[calc(100%-env(safe-area-inset-top))] flex-col border-border border-t bg-card text-foreground outline-none",
+              "[transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
+              "transition-transform duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+              "data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*450ms)] data-[swiping]:duration-0 motion-reduce:duration-0",
+              "data-[ending-style]:[transform:translateY(100%)] data-[starting-style]:[transform:translateY(100%)]",
+            )}
+          >
+            {floating ? (
+              <div
+                ref={setFloatingSlot}
+                data-base-ui-swipe-ignore=""
+                className={cn(
+                  "pointer-events-none absolute end-0 bottom-full pe-4 pb-3 transition-opacity duration-200 [&>*]:pointer-events-auto",
+                  snap === "full" && "opacity-0 [&>*]:pointer-events-none",
+                )}
+              >
+                {floating}
+              </div>
+            ) : null}
+            <div
+              ref={setSafeArea}
+              aria-hidden="true"
+              className="invisible absolute h-[env(safe-area-inset-bottom)] w-px"
+            />
+
+            <button
+              type="button"
+              aria-label={snap === "full" ? t`Collapse` : t`Expand`}
+              className="flex h-7 w-full shrink-0 items-center justify-center"
+              onClick={() => onSnapChange(nextSnap)}
+            >
+              <span aria-hidden="true" className="h-1 w-10 rounded-full bg-muted-foreground/30" />
+            </button>
+            {snap === "full" ? appBar : null}
+
+            <PeekContext.Provider value={setPeek}>
+              <Drawer.Content
+                ref={setContent}
+                className={cn(
+                  "min-h-0 flex-1 overscroll-contain pb-[env(safe-area-inset-bottom)]",
+                  snap === "full" ? "overflow-y-auto" : "overflow-hidden",
+                )}
+              >
+                {children}
+              </Drawer.Content>
+            </PeekContext.Provider>
+          </Drawer.Popup>
+        </Drawer.Viewport>
+      </Drawer.Portal>
+    </Drawer.Root>
+  );
+}
