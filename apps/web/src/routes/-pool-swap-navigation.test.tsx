@@ -6,7 +6,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { quoteData, swapMutateAsync } = vi.hoisted(() => ({
@@ -129,14 +129,19 @@ import { PoolSwapPage } from "#/features/pools/ui";
 
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
-function createTestRouter() {
+function createTestRouter(search = "") {
   const rootRoute = createRootRoute({ component: Outlet });
   const swapRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/pools/$poolAddress/swap",
     component: () => {
       const { poolAddress } = swapRoute.useParams();
-      return <PoolSwapPage poolAddress={poolAddress} />;
+      return (
+        <PoolSwapPage
+          poolAddress={poolAddress}
+          receiveTokenAddress={new URLSearchParams(search).get("receive") ?? undefined}
+        />
+      );
     },
   });
   const receiptRoute = createRoute({
@@ -146,7 +151,7 @@ function createTestRouter() {
   });
   return createRouter({
     routeTree: rootRoute.addChildren([swapRoute, receiptRoute]),
-    history: createMemoryHistory({ initialEntries: [`/pools/${POOL_ADDRESS}/swap`] }),
+    history: createMemoryHistory({ initialEntries: [`/pools/${POOL_ADDRESS}/swap${search}`] }),
   });
 }
 
@@ -185,5 +190,26 @@ describe("pool swap navigation", () => {
       expect(router.state.location.pathname).toBe(`/pools/${POOL_ADDRESS}/swap`);
       expect(screen.getByRole("heading", { name: /^swap$/i })).toBeTruthy();
     });
+  });
+
+  it("opens on the voucher it was linked with and sends from another holding", async () => {
+    const router = createTestRouter("?receive=0x3333333333333333333333333333333333333333");
+    render(<RouterProvider router={router} />);
+
+    const receive = await screen.findByRole("group", { name: "You receive" });
+    expect(within(receive).getByText("RAMBO")).toBeTruthy();
+    // RAMBO is also the largest holding, which would otherwise be the default
+    // From; the swap must not open as RAMBO for RAMBO.
+    expect(within(screen.getByRole("group", { name: "You send" })).getByText("TTX")).toBeTruthy();
+  });
+
+  it("opens on the pool's own defaults without a linked voucher", async () => {
+    render(<RouterProvider router={createTestRouter()} />);
+
+    const send = await screen.findByRole("group", { name: "You send" });
+    expect(within(send).getByText("RAMBO")).toBeTruthy();
+    expect(
+      within(screen.getByRole("group", { name: "You receive" })).getByText("TTX"),
+    ).toBeTruthy();
   });
 });

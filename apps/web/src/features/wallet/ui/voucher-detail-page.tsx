@@ -16,6 +16,7 @@ import {
 } from "react";
 import {
   RiArrowLeftDownLine,
+  RiArrowLeftRightLine,
   RiArrowRightUpLine,
   RiCoinLine,
   RiDownloadLine,
@@ -233,7 +234,10 @@ export function VoucherDetailPage({
         </div>
       </div>
 
-      <div className="my-4 grid grid-cols-3 gap-2" aria-label={t`Voucher actions`}>
+      <div
+        className={["my-4 grid gap-2", poolAddress ? "grid-cols-4" : "grid-cols-3"].join(" ")}
+        aria-label={t`Voucher actions`}
+      >
         {issuerAddress ? (
           <Button asChild className="h-14 flex-col gap-1 px-1">
             <Link to="/wallet/send/amount" search={{ token: sendToken, recipient: issuerAddress }}>
@@ -248,6 +252,22 @@ export function VoucherDetailPage({
             {redeemContent}
           </Button>
         )}
+        {/* Opened from a pool, so the way to get this voucher out of that pool
+            is one tap away, with it already chosen as the voucher to receive. */}
+        {poolAddress && contractAddress ? (
+          <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
+            <Link
+              to="/pools/$poolAddress/swap"
+              params={{ poolAddress }}
+              search={{ receive: contractAddress }}
+            >
+              <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
+              <span className="text-[0.6875rem] font-semibold">
+                <Trans>Swap</Trans>
+              </span>
+            </Link>
+          </Button>
+        ) : null}
         <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
           <Link to="/wallet/send" search={{ token: sendToken }}>
             <RiSendPlane2Line className="size-4" aria-hidden="true" />
