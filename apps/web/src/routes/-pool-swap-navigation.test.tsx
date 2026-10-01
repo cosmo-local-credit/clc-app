@@ -66,6 +66,15 @@ vi.mock("#/features/pools/hooks/use-pool-swap-vouchers", () => ({
         iconUrl: null,
         tokenLimit: null,
       },
+      {
+        id: "3",
+        tokenAddress: "0x4444444444444444444444444444444444444444",
+        name: "Third Token",
+        symbol: "THIRD",
+        decimals: 6,
+        iconUrl: null,
+        tokenLimit: null,
+      },
     ],
     isPending: false,
     isError: false,
@@ -89,6 +98,15 @@ vi.mock("#/features/pools/hooks/use-pool-swap-tokens", () => ({
         "0x3333333333333333333333333333333333333333",
         {
           holderBalanceRaw: "1000000000",
+          poolBalanceRaw: "500000000",
+          feesRaw: "0",
+          limitRaw: null,
+        },
+      ],
+      [
+        "0x4444444444444444444444444444444444444444",
+        {
+          holderBalanceRaw: "50000000",
           poolBalanceRaw: "500000000",
           feesRaw: "0",
           limitRaw: null,
@@ -200,6 +218,27 @@ describe("pool swap navigation", () => {
     expect(within(receive).getByText("RAMBO")).toBeTruthy();
     // RAMBO is also the largest holding, which would otherwise be the default
     // From; the swap must not open as RAMBO for RAMBO.
+    expect(within(screen.getByRole("group", { name: "You send" })).getByText("TTX")).toBeTruthy();
+  });
+
+  it("keeps the send voucher when the receive voucher is changed", async () => {
+    render(
+      <RouterProvider
+        router={createTestRouter("?receive=0x3333333333333333333333333333333333333333")}
+      />,
+    );
+
+    const receive = await screen.findByRole("group", { name: "You receive" });
+    fireEvent.click(within(receive).getByText("RAMBO"));
+    fireEvent.click(await screen.findByRole("button", { name: /THIRD/ }));
+
+    await waitFor(() => {
+      expect(
+        within(screen.getByRole("group", { name: "You receive" })).getByText("THIRD"),
+      ).toBeTruthy();
+    });
+    // The holder's largest holding is RAMBO, but they arrived for RAMBO: the
+    // send side stays on what it opened with rather than flipping to it.
     expect(within(screen.getByRole("group", { name: "You send" })).getByText("TTX")).toBeTruthy();
   });
 

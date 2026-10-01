@@ -85,8 +85,14 @@ export function PoolSwapPage({
   // round trip on a pair the holder never chose — and briefly shows them a rate
   // for it.
   const chosenFrom = swapTokens.find((token) => token.id === fromTokenId);
+  // The default keeps off the voucher the holder arrived wanting, not whatever
+  // is selected on the other side now: keyed off the live selection, choosing a
+  // different receive voucher would hand the send side back to that default.
   const selectedFrom =
-    chosenFrom ?? (tokensPending ? undefined : defaultPoolSwapFrom(swapTokens, toTokenId));
+    chosenFrom ??
+    (tokensPending
+      ? undefined
+      : defaultPoolSwapFrom(swapTokens, receiveTokenAddress?.toLowerCase()));
   const chosenTo = swapTokens.find(
     (token) => token.id === toTokenId && token.id !== selectedFrom?.id,
   );
