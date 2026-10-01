@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:55
+#: apps/web/src/features/pools/ui/pools-page.tsx:87
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, other {# མཉམ་སྤྱོད་དངུལ་ཁུངས}}"
 
@@ -138,7 +138,7 @@ msgstr "{0} དུས་མཐུན་བཟོ་ཡོད།"
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:339
-#: apps/web/src/features/pools/ui/pools-page.tsx:180
+#: apps/web/src/features/pools/ui/pools-page.tsx:293
 msgid "{0} vouchers"
 msgstr "འཛིན་ཤོག་ {0}"
 
@@ -211,7 +211,7 @@ msgid "1 offer"
 msgstr "གོ་སྐབས་ ༡"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:337
-#: apps/web/src/features/pools/ui/pools-page.tsx:178
+#: apps/web/src/features/pools/ui/pools-page.tsx:291
 msgid "1 voucher"
 msgstr "འཛིན་ཤོག་ ༡"
 
@@ -250,7 +250,7 @@ msgid "About"
 msgstr "སྐོར་ལས།"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit གི་སྐོར་ལས།"
 
@@ -721,6 +721,7 @@ msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤ
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/pools/ui/pools-page.tsx:219
 msgid "Checking…"
 msgstr "ཞིབ་དཔྱད་འབད་དོ…"
 
@@ -824,7 +825,7 @@ msgstr "བསལ།"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:71
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
-#: apps/web/src/features/pools/ui/pools-page.tsx:131
+#: apps/web/src/features/pools/ui/pools-page.tsx:244
 msgid "Clear filters"
 msgstr "ཚགས་མ་ཚུ་བསལ།"
 
@@ -1100,7 +1101,7 @@ msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས།"
 msgid "Copy wallet address"
 msgstr "དངུལ་ཁུག་ཁ་བྱང་འདྲ་བཤུས།"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1131,6 +1132,10 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་རུབ་སྤ
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
 msgstr "ཁྱོད་ཀྱི་པར་ཡར་བཙུགས་འབད་མ་ཚུགས། ལོག་སྟེ་འབད།"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:170
+msgid "Couldn't check creditable pools."
+msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:268
 msgid "Couldn't check message availability."
@@ -1406,13 +1411,13 @@ msgstr "ཁྱོད་ཀྱི་ MPESA འབྲེལ་ལམ་བདེ�
 msgid "Cover photo"
 msgstr "ཁ་ཤོག་པར།"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:91
+#: apps/web/src/features/pools/ui/pools-page.tsx:144
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:85
 msgid "Create"
 msgstr "གསར་བཟོ།"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:54
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
 msgid "Create account"
 msgstr "རྩིས་ཐོ་གསར་བཟོ།"
@@ -1457,6 +1462,10 @@ msgstr "རྩིས་ཐོ་གསར་བཟོ་འབད་དོ..."
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:286
 msgid "Creating vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་གསར་བཟོ་འབད་དོ…"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:215
+msgid "Credit"
+msgstr "ཡིད་རྟོན།"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:359
 msgid "Credit limit"
@@ -2011,7 +2020,7 @@ msgid "How was your experience?"
 msgstr "ཁྱོད་ཀྱི་ཉམས་མྱོང་ག་དེ་སྦེ་སྡོད་ཡི?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 msgid "I already have an account"
 msgstr "ང་ལུ་ཧེ་མ་ལས་རྩིས་ཐོ་ཡོད།"
 
@@ -2314,7 +2323,7 @@ msgstr "ཚོང་ར་མངོན་གསལ་འབད་དོ…"
 #: apps/web/src/features/home/ui/activity-page.tsx:126
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
-#: apps/web/src/features/pools/ui/pools-page.tsx:154
+#: apps/web/src/features/pools/ui/pools-page.tsx:267
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:509
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
 msgid "Loading more…"
@@ -2330,7 +2339,7 @@ msgid "Loading pool…"
 msgstr "དངུལ་ཁུངས་མངོན་གསལ་འབད་དོ…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:292
-#: apps/web/src/features/pools/ui/pools-page.tsx:113
+#: apps/web/src/features/pools/ui/pools-page.tsx:194
 msgid "Loading pools…"
 msgstr "དངུལ་ཁུངས་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -2716,6 +2725,15 @@ msgstr "དབྱེ་རིམ་ཚགས་མ་ཐོབ་མི་ཚུ
 msgid "No CLC account was found for this sign-in."
 msgstr "ནང་འཛུལ་འདིའི་དོན་ལུ་ CLC རྩིས་ཐོ་མ་ཐོབ།"
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:235
+msgid "No creditable pools are available."
+msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་མིན་འདུག"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:233
+msgid "No creditable pools match this search."
+msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་མིན་"
+"འདུག"
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:271
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:281
 msgid "No currencies found"
@@ -2740,11 +2758,11 @@ msgstr "ད་ཚུན་གོ་སྐབས་མེད།"
 msgid "No passkey is linked to this wallet."
 msgstr "དངུལ་ཁུག་འདི་ལུ་ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་མ་འབད།"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:124
+#: apps/web/src/features/pools/ui/pools-page.tsx:237
 msgid "No pools match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་དངུལ་ཁུངས་མེད།"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:126
+#: apps/web/src/features/pools/ui/pools-page.tsx:239
 msgid "No pools yet."
 msgstr "ད་ཚུན་དངུལ་ཁུངས་མེད།"
 
@@ -3298,11 +3316,11 @@ msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གས
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:317
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:289
-#: apps/web/src/features/pools/ui/pools-page.tsx:85
+#: apps/web/src/features/pools/ui/pools-page.tsx:138
 msgid "Pools"
 msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ།"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:146
+#: apps/web/src/features/pools/ui/pools-page.tsx:259
 msgid "Pools list"
 msgstr "དངུལ་ཁུངས་ཐོ་ཡིག"
 
@@ -3656,6 +3674,10 @@ msgstr "ཚོང་འདུས་ཀྱི་ཉིནམ་ཚུ་ནང་
 msgid "Redo"
 msgstr "ལོག་འབད།"
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:224
+msgid "Refreshing creditable pools…"
+msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ་ཁ་གསོ་འབད་དོ…"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
 msgstr "ཁྱོད་ཀྱི་ནང་འཛུལ་ལྡེ་མིག་ཐོ་བཀོད་འབད་དོ…"
@@ -3793,6 +3815,7 @@ msgstr "ལག་ལེན་ལས་བཏོན་དོ…"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:711
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:769
+#: apps/web/src/features/pools/ui/pools-page.tsx:178
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:206
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
@@ -3829,7 +3852,7 @@ msgstr "བསྐྱར་ཞིབ་ཚུ།"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "འཛིན་ཤོག་འདིའི་བསྐྱར་ཞིབ་ཚུ་ནཱ་ལུ་མཐོང་འོང་།"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "རུབ་སྤྱོད་ཚད་གཞི་ཡོད་པའི་གདམ་བསྒྲིགས་ཚོང་ར་ཚུ་བརྒྱུད་དེ་བསྐྱར་ཉོ་འབད་ཆོ"
 "ག་པའི་ཐོབ་བརྗོད་འགྲུལ་ལམ་བཟོ།"
@@ -3921,7 +3944,7 @@ msgstr "འཚོལ་ཡང་ན་བཙུགས།"
 msgid "Search pool tags"
 msgstr "དངུལ་ཁུངས་ངོ་རྟགས་འཚོལ།"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:107
+#: apps/web/src/features/pools/ui/pools-page.tsx:160
 msgid "Search pools"
 msgstr "དངུལ་ཁུངས་འཚོལ།"
 
@@ -4200,6 +4223,11 @@ msgstr "ཡིག་ཆ་ལ་ལོ་བཀོ་བཞག་ཡོད། �
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:111
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "པར་ལ་ལོ་ཡར་བཙུགས་མ་འགྲུབ། ལོག་སྟེ་ཁ་སྐོང་རྐྱབ།"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:188
+msgid "Some pools couldn't be checked. Showing verified results."
+msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ལ་ལོ་ཅིག་ཞིབ་དཔྱད་འབད་མ་ཚུགས། "
+"ཞིབ་དཔྱད་འབད་ཚར་བའི་གྲུབ་འབྲས་ཚུ་སྟོནམ་ཨིན།"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:210
@@ -5137,7 +5165,7 @@ msgstr "བཀག་ཐག་བསྒུག་དོ…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/features/home/ui/wallet-page.tsx:136
-#: apps/web/src/features/pools/ui/pools-page.tsx:82
+#: apps/web/src/features/pools/ui/pools-page.tsx:135
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:126
 #: apps/web/src/features/wallet/ui/receive-page.tsx:47
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100

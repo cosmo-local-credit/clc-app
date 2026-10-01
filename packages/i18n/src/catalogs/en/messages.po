@@ -13,7 +13,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:55
+#: apps/web/src/features/pools/ui/pools-page.tsx:87
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# pool} other {# pools}}"
 
@@ -135,7 +135,7 @@ msgstr "{0} updated."
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:339
-#: apps/web/src/features/pools/ui/pools-page.tsx:180
+#: apps/web/src/features/pools/ui/pools-page.tsx:293
 msgid "{0} vouchers"
 msgstr "{0} vouchers"
 
@@ -208,7 +208,7 @@ msgid "1 offer"
 msgstr "1 offer"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:337
-#: apps/web/src/features/pools/ui/pools-page.tsx:178
+#: apps/web/src/features/pools/ui/pools-page.tsx:291
 msgid "1 voucher"
 msgstr "1 voucher"
 
@@ -245,7 +245,7 @@ msgid "About"
 msgstr "About"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "About Cosmo-Local Credit"
 
@@ -714,6 +714,7 @@ msgstr "Checking which vouchers this pool takes…"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/pools/ui/pools-page.tsx:219
 msgid "Checking…"
 msgstr "Checking…"
 
@@ -818,7 +819,7 @@ msgstr "Clear"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:71
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
-#: apps/web/src/features/pools/ui/pools-page.tsx:131
+#: apps/web/src/features/pools/ui/pools-page.tsx:244
 msgid "Clear filters"
 msgstr "Clear filters"
 
@@ -1092,7 +1093,7 @@ msgstr "Copy transaction hash"
 msgid "Copy wallet address"
 msgstr "Copy wallet address"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1123,6 +1124,10 @@ msgstr "Could not share the paper wallet. Try downloading it instead."
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
 msgstr "Could not upload your photo. Please try again."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:170
+msgid "Couldn't check creditable pools."
+msgstr "Couldn't check creditable pools."
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:268
 msgid "Couldn't check message availability."
@@ -1397,13 +1402,13 @@ msgstr "Couldn't verify your MPESA link."
 msgid "Cover photo"
 msgstr "Cover photo"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:91
+#: apps/web/src/features/pools/ui/pools-page.tsx:144
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:85
 msgid "Create"
 msgstr "Create"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:54
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
 msgid "Create account"
 msgstr "Create account"
@@ -1448,6 +1453,10 @@ msgstr "Creating account..."
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:286
 msgid "Creating vouchers…"
 msgstr "Creating vouchers…"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:215
+msgid "Credit"
+msgstr "Credit"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:359
 msgid "Credit limit"
@@ -2004,7 +2013,7 @@ msgid "How was your experience?"
 msgstr "How was your experience?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 msgid "I already have an account"
 msgstr "I already have an account"
 
@@ -2302,7 +2311,7 @@ msgstr "Loading marketplace…"
 #: apps/web/src/features/home/ui/activity-page.tsx:126
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
-#: apps/web/src/features/pools/ui/pools-page.tsx:154
+#: apps/web/src/features/pools/ui/pools-page.tsx:267
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:509
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
 msgid "Loading more…"
@@ -2318,7 +2327,7 @@ msgid "Loading pool…"
 msgstr "Loading pool…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:292
-#: apps/web/src/features/pools/ui/pools-page.tsx:113
+#: apps/web/src/features/pools/ui/pools-page.tsx:194
 msgid "Loading pools…"
 msgstr "Loading pools…"
 
@@ -2703,6 +2712,14 @@ msgstr "No category filters are available."
 msgid "No CLC account was found for this sign-in."
 msgstr "No CLC account was found for this sign-in."
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:235
+msgid "No creditable pools are available."
+msgstr "No creditable pools are available."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:233
+msgid "No creditable pools match this search."
+msgstr "No creditable pools match this search."
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:271
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:281
 msgid "No currencies found"
@@ -2727,11 +2744,11 @@ msgstr "No offerings yet"
 msgid "No passkey is linked to this wallet."
 msgstr "No passkey is linked to this wallet."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:124
+#: apps/web/src/features/pools/ui/pools-page.tsx:237
 msgid "No pools match this search."
 msgstr "No pools match this search."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:126
+#: apps/web/src/features/pools/ui/pools-page.tsx:239
 msgid "No pools yet."
 msgstr "No pools yet."
 
@@ -3281,11 +3298,11 @@ msgstr "Pool tracking details are missing."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:317
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:289
-#: apps/web/src/features/pools/ui/pools-page.tsx:85
+#: apps/web/src/features/pools/ui/pools-page.tsx:138
 msgid "Pools"
 msgstr "Pools"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:146
+#: apps/web/src/features/pools/ui/pools-page.tsx:259
 msgid "Pools list"
 msgstr "Pools list"
 
@@ -3636,6 +3653,10 @@ msgstr "Redeemable at our stall on market days..."
 msgid "Redo"
 msgstr "Redo"
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:224
+msgid "Refreshing creditable pools…"
+msgstr "Refreshing creditable pools…"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
 msgstr "Registering your passkey…"
@@ -3773,6 +3794,7 @@ msgstr "Retiring…"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:711
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:769
+#: apps/web/src/features/pools/ui/pools-page.tsx:178
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:206
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
@@ -3811,7 +3833,7 @@ msgstr "Reviews"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Reviews for this voucher will appear here."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
@@ -3902,7 +3924,7 @@ msgstr "Search or enter"
 msgid "Search pool tags"
 msgstr "Search pool tags"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:107
+#: apps/web/src/features/pools/ui/pools-page.tsx:160
 msgid "Search pools"
 msgstr "Search pools"
 
@@ -4179,6 +4201,10 @@ msgstr "Some files were skipped. Use JPEG, PNG or WebP images under 8 MB."
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:111
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "Some photos didn't upload. Try adding them again."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:188
+msgid "Some pools couldn't be checked. Showing verified results."
+msgstr "Some pools couldn't be checked. Showing verified results."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:210
@@ -5109,7 +5135,7 @@ msgstr "Waiting for the chain…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/features/home/ui/wallet-page.tsx:136
-#: apps/web/src/features/pools/ui/pools-page.tsx:82
+#: apps/web/src/features/pools/ui/pools-page.tsx:135
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:126
 #: apps/web/src/features/wallet/ui/receive-page.tsx:47
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100

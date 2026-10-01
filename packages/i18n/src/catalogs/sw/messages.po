@@ -13,7 +13,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: apps/web/src/features/pools/ui/pools-page.tsx:55
+#: apps/web/src/features/pools/ui/pools-page.tsx:87
 msgid "{count, plural, one {# pool} other {# pools}}"
 msgstr "{count, plural, one {# puli} other {# puli}}"
 
@@ -135,7 +135,7 @@ msgstr "{0} imesasishwa."
 
 #. placeholder {0}: pool.voucherCount
 #: apps/web/src/features/home/ui/wallet-page.tsx:339
-#: apps/web/src/features/pools/ui/pools-page.tsx:180
+#: apps/web/src/features/pools/ui/pools-page.tsx:293
 msgid "{0} vouchers"
 msgstr "vocha {0}"
 
@@ -208,7 +208,7 @@ msgid "1 offer"
 msgstr "ofa 1"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:337
-#: apps/web/src/features/pools/ui/pools-page.tsx:178
+#: apps/web/src/features/pools/ui/pools-page.tsx:291
 msgid "1 voucher"
 msgstr "vocha 1"
 
@@ -245,7 +245,7 @@ msgid "About"
 msgstr "Kuhusu"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "Kuhusu Cosmo-Local Credit"
 
@@ -716,6 +716,7 @@ msgstr "Inaangalia vocha ambazo kikundi hiki kinakubali…"
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
 #: apps/web/src/features/home/ui/settings-page.tsx:116
+#: apps/web/src/features/pools/ui/pools-page.tsx:219
 msgid "Checking…"
 msgstr "Inakagua…"
 
@@ -821,7 +822,7 @@ msgstr "Ondoa"
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:62
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:71
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:82
-#: apps/web/src/features/pools/ui/pools-page.tsx:131
+#: apps/web/src/features/pools/ui/pools-page.tsx:244
 msgid "Clear filters"
 msgstr "Ondoa vichujio"
 
@@ -1097,7 +1098,7 @@ msgstr "Nakili heshi ya muamala"
 msgid "Copy wallet address"
 msgstr "Nakili anwani ya pochi"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1128,6 +1129,10 @@ msgstr "Imeshindikana kushiriki pochi ya karatasi. Jaribu kuipakua badala yake."
 #: apps/web/src/features/auth/hooks/use-backend-auth.ts:103
 msgid "Could not upload your photo. Please try again."
 msgstr "Hatukuweza kupakia picha yako. Tafadhali jaribu tena."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:170
+msgid "Couldn't check creditable pools."
+msgstr "Haikuwezekana kukagua vikundi vinavyokubali vocha zako."
 
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:268
 msgid "Couldn't check message availability."
@@ -1404,13 +1409,13 @@ msgstr "Haikuwezekana kuthibitisha muunganisho wako wa MPESA."
 msgid "Cover photo"
 msgstr "Picha ya jalada"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:91
+#: apps/web/src/features/pools/ui/pools-page.tsx:144
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:85
 msgid "Create"
 msgstr "Unda"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:54
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
 msgid "Create account"
 msgstr "Fungua akaunti"
@@ -1455,6 +1460,10 @@ msgstr "Inafungua akaunti..."
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:286
 msgid "Creating vouchers…"
 msgstr "Inaunda vocha…"
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:215
+msgid "Credit"
+msgstr "Mkopo"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:359
 msgid "Credit limit"
@@ -2012,7 +2021,7 @@ msgid "How was your experience?"
 msgstr "Uzoefu wako ulikuwaje?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 msgid "I already have an account"
 msgstr "Nina akaunti tayari"
 
@@ -2313,7 +2322,7 @@ msgstr "Inapakia soko…"
 #: apps/web/src/features/home/ui/activity-page.tsx:126
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
-#: apps/web/src/features/pools/ui/pools-page.tsx:154
+#: apps/web/src/features/pools/ui/pools-page.tsx:267
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:509
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:633
 msgid "Loading more…"
@@ -2329,7 +2338,7 @@ msgid "Loading pool…"
 msgstr "Inapakia puli…"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:292
-#: apps/web/src/features/pools/ui/pools-page.tsx:113
+#: apps/web/src/features/pools/ui/pools-page.tsx:194
 msgid "Loading pools…"
 msgstr "Inapakia puli…"
 
@@ -2716,6 +2725,15 @@ msgstr "Hakuna vichujio vya kategoria vinavyopatikana."
 msgid "No CLC account was found for this sign-in."
 msgstr "Hakuna akaunti ya CLC iliyopatikana kwa kuingia huku."
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:235
+msgid "No creditable pools are available."
+msgstr "Hakuna vikundi vinavyokubali vocha zako."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:233
+msgid "No creditable pools match this search."
+msgstr "Hakuna vikundi vinavyokubali vocha zako vinavyolingana na utafutaji "
+"huu."
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:271
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:281
 msgid "No currencies found"
@@ -2740,11 +2758,11 @@ msgstr "Bado hakuna matoleo"
 msgid "No passkey is linked to this wallet."
 msgstr "Hakuna passkey iliyounganishwa na mkoba huu."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:124
+#: apps/web/src/features/pools/ui/pools-page.tsx:237
 msgid "No pools match this search."
 msgstr "Hakuna puli inayolingana na utafutaji huu."
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:126
+#: apps/web/src/features/pools/ui/pools-page.tsx:239
 msgid "No pools yet."
 msgstr "Bado hakuna puli."
 
@@ -3296,11 +3314,11 @@ msgstr "Maelezo ya kufuatilia puli hayapo."
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:317
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:289
-#: apps/web/src/features/pools/ui/pools-page.tsx:85
+#: apps/web/src/features/pools/ui/pools-page.tsx:138
 msgid "Pools"
 msgstr "Vikundi"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:146
+#: apps/web/src/features/pools/ui/pools-page.tsx:259
 msgid "Pools list"
 msgstr "Orodha ya puli"
 
@@ -3654,6 +3672,10 @@ msgstr "Inakombolewa kwenye kibanda chetu siku za soko..."
 msgid "Redo"
 msgstr "Rudia"
 
+#: apps/web/src/features/pools/ui/pools-page.tsx:224
+msgid "Refreshing creditable pools…"
+msgstr "Inasasisha vikundi vinavyokubali vocha zako…"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:73
 msgid "Registering your passkey…"
 msgstr "Inasajili passkey yako…"
@@ -3791,6 +3813,7 @@ msgstr "Inastaafisha…"
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:280
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:711
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:769
+#: apps/web/src/features/pools/ui/pools-page.tsx:178
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:58
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:206
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
@@ -3829,7 +3852,7 @@ msgstr "Maoni"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Maoni kuhusu vocha hii yataonekana hapa."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Elekeza madai yanayoweza kukombolewa kwenye masoko yaliyochaguliwa kwa "
 "viwango vya pamoja."
@@ -3921,7 +3944,7 @@ msgstr "Tafuta au weka"
 msgid "Search pool tags"
 msgstr "Tafuta lebo za puli"
 
-#: apps/web/src/features/pools/ui/pools-page.tsx:107
+#: apps/web/src/features/pools/ui/pools-page.tsx:160
 msgid "Search pools"
 msgstr "Tafuta puli"
 
@@ -4199,6 +4222,11 @@ msgstr "Faili kadhaa zilirukwa. Tumia picha za JPEG, PNG au WebP chini ya MB 8."
 #: apps/web/src/features/posts/ui/post-image-manager.tsx:111
 msgid "Some photos didn't upload. Try adding them again."
 msgstr "Picha kadhaa hazikupakiwa. Jaribu kuziongeza tena."
+
+#: apps/web/src/features/pools/ui/pools-page.tsx:188
+msgid "Some pools couldn't be checked. Showing verified results."
+msgstr "Baadhi ya vikundi havikuweza kukaguliwa. Matokeo yaliyothibitishwa "
+"yanaonyeshwa."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:74
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:210
@@ -5132,7 +5160,7 @@ msgstr "Inasubiri mnyororo…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/features/home/ui/wallet-page.tsx:136
-#: apps/web/src/features/pools/ui/pools-page.tsx:82
+#: apps/web/src/features/pools/ui/pools-page.tsx:135
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:126
 #: apps/web/src/features/wallet/ui/receive-page.tsx:47
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:100

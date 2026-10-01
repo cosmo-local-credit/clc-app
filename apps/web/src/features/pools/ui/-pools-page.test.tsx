@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
@@ -10,7 +10,16 @@ const POOLS_FILTER_KEY = ownerScopedKey(
   CATALOG_FILTER_PREFERENCE_NAMES.pools,
 );
 
-const { getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
+const { creditableState, getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
+  creditableState: {
+    current: {
+      pools: [] as Array<{ address: string; name: string; voucherCount: number; tags: string[] }>,
+      status: "ready" as "loading" | "ready" | "error",
+      isRefreshing: false,
+      hasVerificationGaps: false,
+      retry: vi.fn(),
+    },
+  },
   getPoolVouchers: vi.fn(),
   routeSearch: { current: {} as Record<string, unknown> },
   navigate: vi.fn(),
@@ -18,6 +27,14 @@ const { getPoolVouchers, routeSearch, navigate } = vi.hoisted(() => ({
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
+}));
+
+vi.mock("wagmi", () => ({
+  useConnection: () => ({ address: "0xabc0000000000000000000000000000000000123" }),
+}));
+
+vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
+  useCreditablePools: () => creditableState.current,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -98,9 +115,10 @@ function mockPoolsList() {
         );
       }
       if (url.includes("/api/v2/pools?")) {
+        const pools = url.includes("q=trade") ? POOLS.slice(0, 1) : POOLS;
         return Promise.resolve(
           jsonResponse({
-            pools: POOLS.map((pool, index) => ({
+            pools: pools.map((pool, index) => ({
               id: index + 1,
               chainId: 42220,
               address: pool.address,
@@ -129,6 +147,13 @@ afterEach(() => {
   window.localStorage.clear();
   vi.restoreAllMocks();
   getPoolVouchers.mockReset();
+  creditableState.current = {
+    pools: [],
+    status: "ready",
+    isRefreshing: false,
+    hasVerificationGaps: false,
+    retry: vi.fn(),
+  };
   routeSearch.current = {};
   navigate.mockReset();
 });
@@ -235,6 +260,110 @@ describe("pools list", () => {
 
     const search = (await screen.findByLabelText("Search pools")) as HTMLInputElement;
     expect(search.readOnly).toBe(false);
+  });
+});
+
+describe("creditable pools", () => {
+  it("shows all pools and disables Credit while eligibility loads", async () => {
+    creditableState.current = { ...creditableState.current, status: "loading" };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
+    expect(screen.getByText("Solo Pool")).toBeTruthy();
+    const credit = screen.getByRole("checkbox", { name: /Credit/ });
+    expect(credit.hasAttribute("data-disabled")).toBe(true);
+    expect(credit.getAttribute("data-checked")).toBeNull();
+  });
+
+  it("defaults Credit on and displays the verified complete result", async () => {
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[2]!] };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    expect(screen.getByText("Empty Pool")).toBeTruthy();
+    expect(screen.queryByText("Solo Pool")).toBeNull();
+    expect(screen.getByText("2 pools")).toBeTruthy();
+  });
+
+  it("leaves a zero-result Credit option unchecked and enabled", async () => {
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    expect(credit.hasAttribute("disabled")).toBe(false);
+    expect(credit.getAttribute("data-checked")).toBeNull();
+
+    fireEvent.click(credit);
+    expect(await screen.findByText("No creditable pools are available.")).toBeTruthy();
+    expect(screen.queryByText("Trade Pool")).toBeNull();
+  });
+
+  it("keeps a manual choice for the current visit when verified data refreshes", async () => {
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!] };
+    mockPoolsList();
+    const view = renderWithQueryClient(<PoolsPage />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    fireEvent.click(credit);
+    expect(screen.getByText("Solo Pool")).toBeTruthy();
+
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[1]!] };
+    view.rerender(
+      <QueryClientProvider client={new QueryClient()}>
+        <PoolsPage />
+      </QueryClientProvider>,
+    );
+    expect(credit.getAttribute("data-checked")).toBeNull();
+    expect(screen.getByText("Empty Pool")).toBeTruthy();
+  });
+
+  it("intersects Credit with the current search result", async () => {
+    routeSearch.current = { q: "trade" };
+    creditableState.current = { ...creditableState.current, pools: [POOLS[0]!, POOLS[2]!] };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    const credit = await screen.findByRole("checkbox", { name: "Credit" });
+    await waitFor(() => expect(credit.getAttribute("data-checked")).not.toBeNull());
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    expect(screen.queryByText("Empty Pool")).toBeNull();
+    expect(screen.queryByText("Solo Pool")).toBeNull();
+  });
+
+  it("keeps the normal catalog visible and offers Retry when Credit fails", async () => {
+    const retry = vi.fn();
+    creditableState.current = { ...creditableState.current, status: "error", retry };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Couldn't check creditable pools.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(retry).toHaveBeenCalledOnce();
+    expect(screen.getByRole("checkbox", { name: "Credit" }).hasAttribute("data-disabled")).toBe(
+      true,
+    );
+  });
+
+  it("discloses incomplete verification while retaining verified pools", async () => {
+    creditableState.current = {
+      ...creditableState.current,
+      pools: [POOLS[0]!],
+      hasVerificationGaps: true,
+    };
+    mockPoolsList();
+    renderWithQueryClient(<PoolsPage />);
+
+    expect(
+      await screen.findByText("Some pools couldn't be checked. Showing verified results."),
+    ).toBeTruthy();
+    expect(await screen.findByText("Trade Pool")).toBeTruthy();
   });
 });
 

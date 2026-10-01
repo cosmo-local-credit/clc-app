@@ -66,6 +66,16 @@ vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({
   usePoolVoucherTokens: () => [],
 }));
 
+vi.mock("#/features/pools/hooks/use-creditable-pools", () => ({
+  useCreditablePools: () => ({
+    pools: [],
+    status: "ready",
+    isRefreshing: false,
+    hasVerificationGaps: false,
+    retry: vi.fn(),
+  }),
+}));
+
 import {
   canonicalRedirectSearch,
   type CatalogRouteSearch,
