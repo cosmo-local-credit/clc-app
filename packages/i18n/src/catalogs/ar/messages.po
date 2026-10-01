@@ -51,7 +51,7 @@ msgid "{0} approved for {1}."
 msgstr "تمت الموافقة على {0} لـ {1}."
 
 #. placeholder {0}: holding.name
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:246
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:112
 msgid "{0} available credit"
 msgstr "رصيد متاح بقيمة {0}"
 
@@ -120,7 +120,7 @@ msgid "{0} of {max}"
 msgstr "{0} من {max}"
 
 #. placeholder {0}: voucher.offerCount
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:338
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:350
 msgid "{0} offers"
 msgstr "{0} عروض"
 
@@ -151,7 +151,7 @@ msgstr "{0} قسائم"
 msgid "{amount} {0} withdrawn."
 msgstr "تم سحب {amount} {0}."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:250
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:116
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "رصيد متاح بقيمة {available} من أصل {limit} {denomination}"
 
@@ -209,7 +209,7 @@ msgstr "1 {0} = {1} {2}"
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:336
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:348
 msgid "1 offer"
 msgstr "عرض واحد"
 
@@ -250,7 +250,7 @@ msgid "About"
 msgstr "حول"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "حول Cosmo-Local Credit"
 
@@ -302,7 +302,7 @@ msgstr "نشط"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:33
 #: apps/web/src/features/home/ui/activity-page.tsx:37
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:279
 msgid "Activity"
 msgstr "النشاط"
@@ -496,7 +496,7 @@ msgstr "تطبيق"
 msgid "Apply filters"
 msgstr "تطبيق عوامل التصفية"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:227
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:438
 msgid "Approve voucher"
@@ -1096,7 +1096,7 @@ msgstr "نسخ تجزئة المعاملة"
 msgid "Copy wallet address"
 msgstr "نسخ عنوان المحفظة"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1203,7 +1203,17 @@ msgstr "تعذّر تحديد بلد في هذا الموقع. جرّب نقطة
 msgid "Couldn't load activity."
 msgstr "تعذّر تحميل النشاط."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:79
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:32
+msgid "Couldn't load credit limits."
+msgstr "{'ar': 'تعذّر تحميل حدود الائتمان.', 'dz': "
+"'ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།', 'es': 'No se pudieron cargar los "
+"límites de crédito.', 'fr': 'Impossible de charger les limites de "
+"crédit.', 'it': 'Non è stato possibile caricare i limiti di credito.', "
+"'pt': 'Não foi possível carregar os limites de crédito.', 'sr': "
+"'Учитавање кредитних лимита није успело.', 'sw': 'Imeshindwa kupakia "
+"vikomo vya mkopo.'}"
+
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:31
 msgid "Couldn't load holdings."
 msgstr "تعذّر تحميل الأرصدة."
 
@@ -1241,7 +1251,7 @@ msgstr "تعذّر تحميل الوسوم."
 msgid "Couldn't load the private attachment."
 msgstr "تعذّر تحميل المرفق الخاص."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:82
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:89
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:268
 msgid "Couldn't load this pool."
 msgstr "تعذّر تحميل هذا الصندوق."
@@ -1405,7 +1415,7 @@ msgid "Create"
 msgstr "إنشاء"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:54
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
 msgid "Create account"
 msgstr "إنشاء حساب"
@@ -1451,9 +1461,22 @@ msgstr "جارٍ إنشاء الحساب..."
 msgid "Creating vouchers…"
 msgstr "جارٍ إنشاء القسائم…"
 
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:42
+msgid "Credit"
+msgstr "{'ar': 'الائتمان', 'dz': 'ཡིད་རྟོན།', 'es': 'Crédito', 'fr': 'Crédit', "
+"'it': 'Credito', 'pt': 'Crédito', 'sr': 'Кредит', 'sw': 'Mkopo'}"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:359
 msgid "Credit limit"
 msgstr "حد الائتمان"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:88
+msgid "Credit limit unknown"
+msgstr "{'ar': 'حد الائتمان غير معروف', 'dz': 'ཡིད་རྟོན་ཚད་མ་ཤེས།', 'es': "
+"'Límite de crédito desconocido', 'fr': 'Limite de crédit inconnue', "
+"'it': 'Limite di credito sconosciuto', 'pt': 'Limite de crédito "
+"desconhecido', 'sr': 'Кредитни лимит није познат', 'sw': 'Kikomo cha "
+"mkopo hakijulikani'}"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
@@ -1514,7 +1537,7 @@ msgid "Deployment transaction hash copied"
 msgstr "تم نسخ تجزئة معاملة النشر"
 
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:142
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:149
 msgid "Deposit"
 msgstr "إيداع"
 
@@ -1963,8 +1986,12 @@ msgid "Helps members find and understand your pool"
 msgstr "يساعد الأعضاء على العثور على صندوقك وفهمه"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:237
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:35
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:177
+msgid "Holdings"
+msgstr "الأرصدة"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
+msgctxt "Pool tab"
 msgid "Holdings"
 msgstr "الأرصدة"
 
@@ -2006,7 +2033,7 @@ msgid "How was your experience?"
 msgstr "كيف كانت تجربتك؟"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 msgid "I already have an account"
 msgstr "لديّ حساب بالفعل"
 
@@ -2147,8 +2174,8 @@ msgid "Light"
 msgstr "فاتح"
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
-msgid "Limit not set"
-msgstr "لم يُحدّد الحد"
+#~ msgid "Limit not set"
+#~ msgstr "لم يُحدّد الحد"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:349
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
@@ -2286,7 +2313,16 @@ msgstr "جارٍ تحميل الأرصدة…"
 msgid "Loading cash activity…"
 msgstr "جارٍ تحميل النشاط النقدي…"
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:73
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:31
+msgid "Loading credit limits…"
+msgstr "{'ar': 'جارٍ تحميل حدود الائتمان…', 'dz': "
+"'ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་འབད་དོ…', 'es': 'Cargando límites de "
+"crédito…', 'fr': 'Chargement des limites de crédit…', 'it': "
+"'Caricamento dei limiti di credito…', 'pt': 'A carregar os limites de "
+"crédito…', 'sr': 'Учитавање кредитних лимита…', 'sw': 'Inapakia vikomo "
+"vya mkopo…'}"
+
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:30
 msgid "Loading holdings…"
 msgstr "جارٍ تحميل الأرصدة…"
 
@@ -2313,7 +2349,7 @@ msgstr "جارٍ تحميل المزيد…"
 msgid "Loading offerings…"
 msgstr "جارٍ تحميل العروض…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:79
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:265
 msgid "Loading pool…"
 msgstr "جارٍ تحميل الصندوق…"
@@ -2429,7 +2465,7 @@ msgstr "ابحث عن «تثبيت التطبيق» في قائمة متصفحك
 "اختر «ملف»، ثم «إضافة إلى Dock»."
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:346
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:358
 msgid "Manage {0}"
 msgstr "إدارة {0}"
 
@@ -2704,6 +2740,20 @@ msgstr "لا تتوفر عوامل تصفية للفئات."
 msgid "No CLC account was found for this sign-in."
 msgstr "لم يُعثر على حساب CLC لتسجيل الدخول هذا."
 
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:86
+msgid "No credit limit"
+msgstr "{'ar': 'لا يوجد حد ائتمان', 'dz': 'ཡིད་རྟོན་ཚད་མེད།', 'es': 'Sin límite "
+"de crédito', 'fr': 'Aucune limite de crédit', 'it': 'Nessun limite di "
+"credito', 'pt': 'Sem limite de crédito', 'sr': 'Без кредитног лимита', "
+"'sw': 'Hakuna kikomo cha mkopo'}"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:77
+msgid "No credit offered"
+msgstr "{'ar': 'لا يُقدَّم ائتمان', 'dz': 'ཡིད་རྟོན་མ་བྱིན།', 'es': 'No se "
+"ofrece crédito', 'fr': 'Aucun crédit proposé', 'it': 'Nessun credito "
+"offerto', 'pt': 'Não é oferecido crédito', 'sr': 'Кредит се не нуди', "
+"'sw': 'Hakuna mkopo unaotolewa'}"
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:271
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:281
 msgid "No currencies found"
@@ -2717,8 +2767,8 @@ msgid "No currencies found."
 msgstr "لم يُعثر على عملات."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
-msgid "No deposit limit"
-msgstr "لا يوجد حد للإيداع"
+#~ msgid "No deposit limit"
+#~ msgstr "لا يوجد حد للإيداع"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -2782,7 +2832,8 @@ msgstr "لا يوجد رصيد USDm أو USDT أو USDC متاح للسحب."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "لا تعرض أي قسيمة في هذا الصندوق شيئًا بعد."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:233
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:33
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:243
 msgid "No vouchers in this pool yet."
 msgstr "لا توجد قسائم في هذا الصندوق بعد."
 
@@ -2828,8 +2879,8 @@ msgid "Not a standard Safaricom number. Continue only if it's ported."
 msgstr "هذا ليس رقم Safaricom قياسيًا. تابع فقط إذا كان الرقم منقولاً."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:215
-msgid "Not accepting deposits"
-msgstr "لا يقبل الإيداعات"
+#~ msgid "Not accepting deposits"
+#~ msgstr "لا يقبل الإيداعات"
 
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
@@ -2923,7 +2974,7 @@ msgstr "تم حذف العرض."
 msgid "Offering updated."
 msgstr "تم تحديث العرض."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:33
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:277
 msgid "Offerings"
 msgstr "العروض"
@@ -3162,7 +3213,7 @@ msgstr "المكان"
 msgid "Pool"
 msgstr "الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:120
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:127
 msgid "Pool actions"
 msgstr "إجراءات الصندوق"
 
@@ -3178,17 +3229,25 @@ msgstr "تفاصيل نشاط الصندوق"
 msgid "Pool address"
 msgstr "عنوان الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:70
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:24
 msgid "Pool balances"
 msgstr "أرصدة الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:166
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:173
 msgid "Pool contents"
 msgstr "محتويات الصندوق"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:81
 msgid "Pool controls"
 msgstr "عناصر التحكم في الصندوق"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:25
+msgid "Pool credit limits"
+msgstr "{'ar': 'حدود ائتمان الصندوق', 'dz': 'དངུལ་ཁུངས་ཡིད་རྟོན་ཚད།', 'es': "
+"'Límites de crédito del fondo', 'fr': 'Limites de crédit du bassin', "
+"'it': 'Limiti di credito del fondo', 'pt': 'Limites de crédito do "
+"Fundo', 'sr': 'Кредитни лимити тржнице', 'sw': 'Vikomo vya mkopo vya "
+"kikundi'}"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:430
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:193
@@ -3236,7 +3295,7 @@ msgstr "اسم الصندوق مطلوب"
 msgid "Pool name must be 80 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم الصندوق 80 حرفًا"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:85
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:92
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:271
 msgid "Pool not found."
 msgstr "لم يُعثر على الصندوق."
@@ -3278,8 +3337,8 @@ msgstr "تفاصيل تتبّع الصندوق مفقودة."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:317
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:289
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:97
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:301
 #: apps/web/src/features/pools/ui/pools-page.tsx:85
 msgid "Pools"
 msgstr "الصناديق"
@@ -3560,7 +3619,7 @@ msgid "Reason for reporting"
 msgstr "سبب الإبلاغ"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:94
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:160
 #: apps/web/src/features/wallet/ui/receive-page.tsx:51
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
 msgid "Receive"
@@ -3810,7 +3869,7 @@ msgstr "التقييمات"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "ستظهر تقييمات هذه القسيمة هنا."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "وجّه المطالبات القابلة للاسترداد عبر أسواق مختارة بمعايير مشتركة."
 
@@ -4263,7 +4322,7 @@ msgstr "يجب أن تكون الكمية المصدرة أكبر من صفر"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "ملفات SVG غير مدعومة. استخدم PNG أو JPEG أو WebP."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:124
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:435
 msgid "Swap"
@@ -4604,7 +4663,7 @@ msgstr "لا يملك هذا الصندوق آلية لتحديد الحد، ل�
 msgid "This pool holds no vouchers yet."
 msgstr "لا يحتوي هذا الصندوق على قسائم بعد."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:96
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:32
 msgid "This pool holds nothing yet."
 msgstr "لا يحتوي هذا الصندوق على شيء بعد."
 
@@ -4742,7 +4801,7 @@ msgstr "رحلة"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:90
+#: apps/web/src/features/pools/ui/pool-holding-list.tsx:53
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:369
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:159
@@ -5064,7 +5123,7 @@ msgid "Voucher tracking details are missing."
 msgstr "تفاصيل تتبّع القسيمة مفقودة."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:34
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:37
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:328
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:104

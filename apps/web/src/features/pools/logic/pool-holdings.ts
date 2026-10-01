@@ -29,8 +29,19 @@ export type PoolHolding = {
    * approximate.
    */
   unitValueRaw: string | null;
+  /**
+   * This holding's `unitValueRaw` as a share of the largest one in the pool,
+   * 0–100 — the length of its bar on the holdings tab. Null where the row is
+   * unpriced: bars compare one unit of account, and a row outside it has no
+   * length to draw.
+   */
+  percentOfLargest: number | null;
   /** The quoter's price index for the voucher, or null when it was not read. */
   ratePpm: string | null;
+  /**
+   * The limiter's cap, from the chain where the treasury read it and from the
+   * catalog's record only where it did not.
+   */
   cap: PoolDepositCap;
   /**
    * How full the cap is, 0–100. Null wherever there is no cap to be full of, so
@@ -72,8 +83,11 @@ export type BuildPoolHoldingsInput = {
   pool: UserPool;
   /** The catalog's view: names, decimals and the recorded deposit cap. */
   vouchers: PoolVoucher[];
-  /** On-chain balances, keyed by lowercased token address. */
-  treasury?: Map<string, { balanceRaw: string; feesRaw: string; withdrawableRaw: string }>;
+  /** On-chain balances and caps, keyed by lowercased token address. */
+  treasury?: Map<
+    string,
+    { balanceRaw: string; feesRaw: string; withdrawableRaw: string; limitRaw: string | null }
+  >;
   /** The indexer's view of what the pool address holds. Catches what the catalog misses. */
   indexedTokens?: AccountToken[];
   /** Quoter price indexes, keyed by lowercased token address. */
@@ -99,6 +113,11 @@ export type BuildPoolHoldingsInput = {
  * Ordered by what the pool is worth, largest first, with unpriced rows after the
  * priced ones — a reader scanning a phone screen wants the pool's weight, not
  * the order the catalog happened to page in.
+ *
+ * The cap follows the same rule as the balance: the chain answers first. The
+ * catalog's `tokenLimit` is the indexer's projection of `LimitSet`, and it has
+ * been seen keeping a zero the limiter overwrote four blocks later — a voucher
+ * with its whole limit on offer read as one the pool would not take.
  */
 export function buildPoolHoldings({
   pool,
@@ -124,7 +143,9 @@ export function buildPoolHoldings({
         balanceRaw: tokenTreasury?.balanceRaw ?? null,
         liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
         feesRaw: tokenTreasury?.feesRaw ?? null,
-        cap: poolDepositCap(pool, voucher),
+        cap: poolDepositCap(pool, {
+          tokenLimit: tokenTreasury?.limitRaw ?? voucher.tokenLimit,
+        }),
         ratePpm: rates?.get(tokenAddress),
         priced,
         uncatalogued: false,
@@ -158,8 +179,9 @@ export function buildPoolHoldings({
         balanceRaw: tokenTreasury?.balanceRaw ?? token.balance,
         liquidityRaw: tokenTreasury?.withdrawableRaw ?? null,
         feesRaw: tokenTreasury?.feesRaw ?? null,
-        // Nothing in the catalog describes it, so nothing records a cap either.
-        cap: pool.limiterAddress ? { kind: "unrecorded" } : { kind: "uncapped" },
+        // Nothing in the catalog describes it, so only the chain can say what
+        // the cap is; without that read it is unrecorded, not zero.
+        cap: poolDepositCap(pool, { tokenLimit: tokenTreasury?.limitRaw ?? null }),
         ratePpm: rates?.get(tokenAddress),
         priced,
         uncatalogued: true,
@@ -167,7 +189,17 @@ export function buildPoolHoldings({
     );
   }
 
-  return [...byAddress.values()].sort(compareByValue);
+  const holdings = [...byAddress.values()].sort(compareByValue);
+  // Sorted largest first, so the first priced row is the bar every other row is
+  // measured against.
+  const largest = holdings.find((entry) => entry.unitValueRaw !== null)?.unitValueRaw ?? null;
+  return holdings.map((entry) => ({
+    ...entry,
+    percentOfLargest:
+      entry.unitValueRaw === null || largest === null
+        ? null
+        : percentOf(entry.unitValueRaw, largest),
+  }));
 }
 
 function holding(input: {
@@ -198,6 +230,7 @@ function holding(input: {
     balanceRaw,
     liquidityRaw: input.liquidityRaw,
     unitValueRaw: null,
+    percentOfLargest: null,
     ratePpm,
     cap: input.cap,
     fillPercent: null,
@@ -300,6 +333,18 @@ function capFill(balanceRaw: string, cap: PoolDepositCap): number | null {
   // Scaled before dividing so a balance under a ten-thousandth of the cap does
   // not floor to a bar that reads as empty.
   return Number((balance * 10_000n) / limit) / 100;
+}
+
+/**
+ * `part` as a percentage of `whole`, 0–100. A zero whole is a pool whose priced
+ * holdings are all empty, where every bar is empty too.
+ */
+function percentOf(part: string, whole: string): number {
+  const total = BigInt(whole);
+  if (total <= 0n) return 0;
+  // Scaled before dividing, as `capFill` is, so a small holding beside a large
+  // one keeps a sliver rather than flooring to nothing.
+  return Number((BigInt(part) * 10_000n) / total) / 100;
 }
 
 /** Priced rows first, then by what the pool holds, then alphabetically. */

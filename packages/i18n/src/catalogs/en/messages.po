@@ -44,7 +44,7 @@ msgid "{0} approved for {1}."
 msgstr "{0} approved for {1}."
 
 #. placeholder {0}: holding.name
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:246
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:112
 msgid "{0} available credit"
 msgstr "{0} available credit"
 
@@ -113,7 +113,7 @@ msgid "{0} of {max}"
 msgstr "{0} of {max}"
 
 #. placeholder {0}: voucher.offerCount
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:338
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:350
 msgid "{0} offers"
 msgstr "{0} offers"
 
@@ -144,7 +144,7 @@ msgstr "{0} vouchers"
 msgid "{amount} {0} withdrawn."
 msgstr "{amount} {0} withdrawn."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:250
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:116
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{available} of {limit} {denomination} available credit"
 
@@ -203,7 +203,7 @@ msgstr "1 {0} = {1} {2}"
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:336
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:348
 msgid "1 offer"
 msgstr "1 offer"
 
@@ -245,7 +245,7 @@ msgid "About"
 msgstr "About"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:47
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:48
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "About Cosmo-Local Credit"
 
@@ -297,7 +297,7 @@ msgstr "Active"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:33
 #: apps/web/src/features/home/ui/activity-page.tsx:37
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:43
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:279
 msgid "Activity"
 msgstr "Activity"
@@ -493,7 +493,7 @@ msgstr "Apply"
 msgid "Apply filters"
 msgstr "Apply filters"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:227
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:237
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:438
 msgid "Approve voucher"
@@ -1092,7 +1092,7 @@ msgstr "Copy transaction hash"
 msgid "Copy wallet address"
 msgstr "Copy wallet address"
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:35
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
 
@@ -1199,7 +1199,11 @@ msgstr "Couldn't identify a country here. Try a nearby spot."
 msgid "Couldn't load activity."
 msgstr "Couldn't load activity."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:79
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:32
+msgid "Couldn't load credit limits."
+msgstr "Couldn't load credit limits."
+
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:31
 msgid "Couldn't load holdings."
 msgstr "Couldn't load holdings."
 
@@ -1237,7 +1241,7 @@ msgstr "Couldn't load tags."
 msgid "Couldn't load the private attachment."
 msgstr "Couldn't load the private attachment."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:82
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:89
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:268
 msgid "Couldn't load this pool."
 msgstr "Couldn't load this pool."
@@ -1403,7 +1407,7 @@ msgid "Create"
 msgstr "Create"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:54
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:154
 msgid "Create account"
 msgstr "Create account"
@@ -1449,9 +1453,17 @@ msgstr "Creating account..."
 msgid "Creating vouchers…"
 msgstr "Creating vouchers…"
 
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:42
+msgid "Credit"
+msgstr "Credit"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:359
 msgid "Credit limit"
 msgstr "Credit limit"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:88
+msgid "Credit limit unknown"
+msgstr "Credit limit unknown"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:77
 msgid "Customize"
@@ -1512,7 +1524,7 @@ msgid "Deployment transaction hash copied"
 msgstr "Deployment transaction hash copied"
 
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:142
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:149
 msgid "Deposit"
 msgstr "Deposit"
 
@@ -1961,8 +1973,12 @@ msgid "Helps members find and understand your pool"
 msgstr "Helps members find and understand your pool"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:237
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:35
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:177
+msgid "Holdings"
+msgstr "Holdings"
+
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:41
+msgctxt "Pool tab"
 msgid "Holdings"
 msgstr "Holdings"
 
@@ -2004,7 +2020,7 @@ msgid "How was your experience?"
 msgstr "How was your experience?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:57
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 msgid "I already have an account"
 msgstr "I already have an account"
 
@@ -2146,8 +2162,8 @@ msgid "Light"
 msgstr "Light"
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
-msgid "Limit not set"
-msgstr "Limit not set"
+#~ msgid "Limit not set"
+#~ msgstr "Limit not set"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:349
 msgid "Limit of {CATALOG_MAX_VOUCHERS} vouchers reached. Remove one to add "
@@ -2285,7 +2301,11 @@ msgstr "Loading balances…"
 msgid "Loading cash activity…"
 msgstr "Loading cash activity…"
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:73
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:31
+msgid "Loading credit limits…"
+msgstr "Loading credit limits…"
+
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:30
 msgid "Loading holdings…"
 msgstr "Loading holdings…"
 
@@ -2312,7 +2332,7 @@ msgstr "Loading more…"
 msgid "Loading offerings…"
 msgstr "Loading offerings…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:79
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:265
 msgid "Loading pool…"
 msgstr "Loading pool…"
@@ -2428,7 +2448,7 @@ msgstr "Look for Install app in your browser's menu. On a Mac with Safari, "
 "choose File, then Add to Dock."
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:346
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:358
 msgid "Manage {0}"
 msgstr "Manage {0}"
 
@@ -2703,6 +2723,14 @@ msgstr "No category filters are available."
 msgid "No CLC account was found for this sign-in."
 msgstr "No CLC account was found for this sign-in."
 
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:86
+msgid "No credit limit"
+msgstr "No credit limit"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:77
+msgid "No credit offered"
+msgstr "No credit offered"
+
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:271
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:281
 msgid "No currencies found"
@@ -2716,8 +2744,8 @@ msgid "No currencies found."
 msgstr "No currencies found."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:223
-msgid "No deposit limit"
-msgstr "No deposit limit"
+#~ msgid "No deposit limit"
+#~ msgstr "No deposit limit"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:183
 msgid "No offerings yet"
@@ -2781,7 +2809,8 @@ msgstr "No USDm, USDT, or USDC balance available to withdraw."
 msgid "No voucher in this pool is offering anything yet."
 msgstr "No voucher in this pool is offering anything yet."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:233
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:33
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:243
 msgid "No vouchers in this pool yet."
 msgstr "No vouchers in this pool yet."
 
@@ -2827,8 +2856,8 @@ msgid "Not a standard Safaricom number. Continue only if it's ported."
 msgstr "Not a standard Safaricom number. Continue only if it's ported."
 
 #: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:215
-msgid "Not accepting deposits"
-msgstr "Not accepting deposits"
+#~ msgid "Not accepting deposits"
+#~ msgstr "Not accepting deposits"
 
 #: apps/web/src/features/posts/ui/post-status-badge.tsx:21
 msgid "Not approved"
@@ -2924,7 +2953,7 @@ msgstr "Offering removed."
 msgid "Offering updated."
 msgstr "Offering updated."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:33
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:36
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:277
 msgid "Offerings"
 msgstr "Offerings"
@@ -3163,7 +3192,7 @@ msgstr "Place"
 msgid "Pool"
 msgstr "Pool"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:120
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:127
 msgid "Pool actions"
 msgstr "Pool actions"
 
@@ -3179,17 +3208,21 @@ msgstr "Pool activity details"
 msgid "Pool address"
 msgstr "Pool address"
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:70
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:24
 msgid "Pool balances"
 msgstr "Pool balances"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:166
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:173
 msgid "Pool contents"
 msgstr "Pool contents"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:81
 msgid "Pool controls"
 msgstr "Pool controls"
+
+#: apps/web/src/features/pools/ui/pool-credit-panel.tsx:25
+msgid "Pool credit limits"
+msgstr "Pool credit limits"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:430
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:193
@@ -3237,7 +3270,7 @@ msgstr "Pool name is required"
 msgid "Pool name must be 80 characters or fewer"
 msgstr "Pool name must be 80 characters or fewer"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:85
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:92
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:271
 msgid "Pool not found."
 msgstr "Pool not found."
@@ -3279,8 +3312,8 @@ msgstr "Pool tracking details are missing."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:317
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:289
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:97
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:301
 #: apps/web/src/features/pools/ui/pools-page.tsx:85
 msgid "Pools"
 msgstr "Pools"
@@ -3561,7 +3594,7 @@ msgid "Reason for reporting"
 msgstr "Reason for reporting"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:94
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:160
 #: apps/web/src/features/wallet/ui/receive-page.tsx:51
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:263
 msgid "Receive"
@@ -3811,7 +3844,7 @@ msgstr "Reviews"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Reviews for this voucher will appear here."
 
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:38
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
 msgid "Route redeemable claims across curated markets with shared standards."
 msgstr "Route redeemable claims across curated markets with shared standards."
 
@@ -4263,7 +4296,7 @@ msgstr "Supply must be greater than zero"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG files are not supported. Use PNG, JPEG, or WebP."
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:124
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:279
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:435
 msgid "Swap"
@@ -4604,7 +4637,7 @@ msgstr "This pool has no limiter, so deposits are uncapped and no credit limit "
 msgid "This pool holds no vouchers yet."
 msgstr "This pool holds no vouchers yet."
 
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:96
+#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:32
 msgid "This pool holds nothing yet."
 msgstr "This pool holds nothing yet."
 
@@ -4743,7 +4776,7 @@ msgstr "Trip"
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
-#: apps/web/src/features/pools/ui/pool-holdings-panel.tsx:90
+#: apps/web/src/features/pools/ui/pool-holding-list.tsx:53
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:369
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:159
@@ -5065,7 +5098,7 @@ msgid "Voucher tracking details are missing."
 msgstr "Voucher tracking details are missing."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:286
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:34
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:37
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:173
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:328
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:104

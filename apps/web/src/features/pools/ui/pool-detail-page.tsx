@@ -20,19 +20,26 @@ import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
+import { PoolCreditPanel } from "./pool-credit-panel";
 import { PoolHoldingsPanel } from "./pool-holdings-panel";
 import { PoolOfferingsPanel } from "./pool-offerings-panel";
 import { PoolReceiveSheet } from "./pool-receive-sheet";
 import { PoolVoucherSheet } from "./pool-voucher-sheet";
 
-export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "activity";
+export type PoolDetailTab = "offerings" | "vouchers" | "holdings" | "credit" | "activity";
 
-const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "activity"];
+// Holdings and credit sit side by side because they read the same rows two
+// ways: what the pool is made of, and how much more of each it will take.
+const POOL_TABS: PoolDetailTab[] = ["offerings", "vouchers", "holdings", "credit", "activity"];
 
 const TAB_LABELS: Record<PoolDetailTab, ReactNode> = {
   offerings: <Trans>Offerings</Trans>,
   vouchers: <Trans>Vouchers</Trans>,
-  holdings: <Trans>Holdings</Trans>,
+  // Its own message rather than the wallet's: a tab has a fifth of a 360px
+  // row, and a translation that suits a section heading — Italian's
+  // "Disponibilità" — does not fit one.
+  holdings: <Trans context="Pool tab">Holdings</Trans>,
+  credit: <Trans>Credit</Trans>,
   activity: <Trans>Activity</Trans>,
 };
 
@@ -161,14 +168,17 @@ export function PoolDetailPage({
       ) : null}
 
       <div
-        className="grid grid-cols-4 border border-border bg-card p-1"
+        className="grid grid-cols-5 border border-border bg-card p-1"
         role="tablist"
         aria-label={t`Pool contents`}
       >
         {POOL_TABS.map((tab) => {
           const label = TAB_LABELS[tab];
+          // Five tabs leave about 60px a label at 360px. A label of two words
+          // wraps onto a second line centred under the first; a single word
+          // has to fit, which is what the tab's own `context` is for.
           const className = [
-            "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
+            "flex h-10 min-w-0 items-center justify-center px-1 text-center text-[0.6875rem] leading-tight font-semibold",
             activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
           ].join(" ");
 
@@ -252,6 +262,8 @@ export function PoolDetailPage({
       ) : null}
 
       {activeTab === "holdings" ? <PoolHoldingsPanel pool={pool} vouchers={vouchers} /> : null}
+
+      {activeTab === "credit" ? <PoolCreditPanel pool={pool} vouchers={vouchers} /> : null}
 
       {activeTab === "activity" ? <PoolActivityPanel pool={pool} /> : null}
 

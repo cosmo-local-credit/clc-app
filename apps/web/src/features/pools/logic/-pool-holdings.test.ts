@@ -92,8 +92,13 @@ function accountToken(overrides: Partial<AccountToken> = {}): AccountToken {
   };
 }
 
-function treasury(balanceRaw: string, feesRaw = "0", withdrawableRaw = balanceRaw) {
-  return { balanceRaw, feesRaw, withdrawableRaw };
+function treasury(
+  balanceRaw: string,
+  feesRaw = "0",
+  withdrawableRaw = balanceRaw,
+  limitRaw: string | null = null,
+) {
+  return { balanceRaw, feesRaw, withdrawableRaw, limitRaw };
 }
 
 describe("buildPoolHoldings", () => {
@@ -218,6 +223,117 @@ describe("buildPoolHoldings", () => {
     expect(capOf({}, { tokenLimit: "0" })?.cap).toEqual({ kind: "blocked" });
     expect(capOf({}, { tokenLimit: null })?.cap).toEqual({ kind: "unrecorded" });
     expect(capOf({ limiterAddress: null }, { tokenLimit: "0" })?.cap).toEqual({ kind: "uncapped" });
+  });
+
+  it("takes the limiter's cap over the catalog's record", () => {
+    // The catalog's tokenLimit is the indexer's projection of LimitSet. A pool
+    // whose steward wrote zero and then 1000 four blocks later was left reading
+    // as closed while the limiter held the 1000.
+    const [stale] = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [voucher({ tokenLimit: "0" })],
+      treasury: new Map([[KAW.toLowerCase(), treasury("50120000", "0", "50120000", "1000000000")]]),
+      rates: new Map([[KAW.toLowerCase(), PARITY]]),
+    });
+    expect(stale?.cap).toEqual({ kind: "capped", raw: "1000000000" });
+    expect(stale?.headroomRaw).toBe("949880000");
+    expect(stale?.headroomUnitValueRaw).toBe("949880000");
+
+    // The chain's zero closes a voucher the catalog still lists with room.
+    const [closed] = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [voucher()],
+      treasury: new Map([[KAW.toLowerCase(), treasury("0", "0", "0", "0")]]),
+    });
+    expect(closed?.cap).toEqual({ kind: "blocked" });
+
+    // A token only the indexer knows has nothing in the catalog to fall back
+    // to, so the chain's answer is the only cap it can have.
+    const seeded = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [],
+      treasury: new Map([[SAR.toLowerCase(), treasury("50000000", "0", "50000000", "80000000")]]),
+      indexedTokens: [accountToken()],
+    })[0];
+    expect(seeded?.cap).toEqual({ kind: "capped", raw: "80000000" });
+  });
+
+  it("falls back to the catalog's cap where the limiter read failed", () => {
+    const [holding] = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [voucher({ tokenLimit: "300000000" })],
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
+    });
+
+    expect(holding?.cap).toEqual({ kind: "capped", raw: "300000000" });
+  });
+
+  it("measures each holding's bar against the largest one", () => {
+    const holdings = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [
+        voucher({ id: "a", symbol: "AAA", tokenAddress: KAW }),
+        voucher({ id: "b", symbol: "BBB", tokenAddress: SAR }),
+        voucher({ id: "c", symbol: "CCC", tokenAddress: LIMITER, decimals: null }),
+      ],
+      treasury: new Map([
+        // 40 tokens at 2 units each is 80, beside 200 at parity.
+        [KAW.toLowerCase(), treasury("40000000")],
+        [SAR.toLowerCase(), treasury("200000000")],
+        [LIMITER.toLowerCase(), treasury("9999000000")],
+      ]),
+      rates: new Map([
+        [KAW.toLowerCase(), 2_000_000n],
+        [SAR.toLowerCase(), PARITY],
+      ]),
+    });
+
+    expect(holdings.map((entry) => [entry.symbol, entry.percentOfLargest])).toEqual([
+      ["BBB", 100],
+      ["AAA", 40],
+      // No decimals, no value, and so no length in the unit the bars share —
+      // however much of it the pool holds.
+      ["CCC", null],
+    ]);
+  });
+
+  it("keeps a sliver for a holding far smaller than the largest", () => {
+    const holdings = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [
+        voucher({ id: "a", symbol: "AAA", tokenAddress: KAW }),
+        voucher({ id: "b", symbol: "BBB", tokenAddress: SAR }),
+      ],
+      treasury: new Map([
+        [KAW.toLowerCase(), treasury("1000000")],
+        [SAR.toLowerCase(), treasury("3000000000")],
+      ]),
+    });
+
+    // 1 beside 3000 is a thirtieth of a percent, which floors to zero only
+    // after the second decimal.
+    expect(holdings[1]?.percentOfLargest).toBe(0.03);
+  });
+
+  it("draws empty bars for a pool whose priced holdings are all empty", () => {
+    const holdings = buildPoolHoldings({
+      pool: pool(),
+      vouchers: [voucher()],
+      treasury: new Map([[KAW.toLowerCase(), treasury("0")]]),
+    });
+
+    expect(holdings[0]?.percentOfLargest).toBe(0);
+  });
+
+  it("draws no bar where the pool cannot be valued", () => {
+    const holdings = buildPoolHoldings({
+      pool: pool({ quoterType: "oracle" }),
+      vouchers: [voucher()],
+      treasury: new Map([[KAW.toLowerCase(), treasury("100000000")]]),
+      priced: false,
+    });
+
+    expect(holdings[0]?.percentOfLargest).toBeNull();
   });
 
   it("draws no bar where there is no cap to be full of", () => {
