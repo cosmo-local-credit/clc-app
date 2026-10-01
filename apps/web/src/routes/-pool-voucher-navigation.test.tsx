@@ -102,6 +102,61 @@ describe("pool voucher navigation", () => {
       expect(screen.getByRole("heading", { name: "Trade Pool" })).toBeTruthy();
     });
   });
+
+  it("swaps for a voucher from its row and Back returns to the pool", async () => {
+    mockRequests();
+    const rootRoute = createRootRoute({ component: Outlet });
+    const poolRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/pools/$poolAddress",
+      component: () => {
+        const { poolAddress } = useParams({ strict: false });
+        return poolAddress ? (
+          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
+        ) : null;
+      },
+    });
+    const swapRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/pools/$poolAddress/swap",
+      validateSearch: (search): { receive?: string } => ({
+        receive: typeof search.receive === "string" ? search.receive : undefined,
+      }),
+      component: () => <h1>Swap screen</h1>,
+    });
+    const history = createMemoryHistory({ initialEntries: [`/pools/${POOL_ADDRESS}`] });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([poolRoute, swapRoute]),
+      history,
+    });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await router.load();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+
+    // The row's Swap stands in for the offer count and opens the pool's swap
+    // with this voucher as the one to receive.
+    fireEvent.click(await screen.findByRole("link", { name: "Swap for TTX" }));
+
+    await waitFor(() => {
+      expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}/swap`);
+      expect(history.location.search).toBe(`?receive=${TOKEN_ADDRESS.toLowerCase()}`);
+      expect(screen.getByRole("heading", { name: "Swap screen" })).toBeTruthy();
+    });
+
+    await act(async () => {
+      router.history.back();
+    });
+
+    await waitFor(() => {
+      expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
+      expect(screen.getByRole("heading", { name: "Trade Pool" })).toBeTruthy();
+    });
+  });
 });
 
 function mockRequests() {

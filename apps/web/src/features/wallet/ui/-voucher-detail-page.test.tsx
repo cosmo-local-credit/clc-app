@@ -572,30 +572,6 @@ describe("VoucherDetailPage", () => {
     expect(within(dialog).getByText("Close").className).toContain("sr-only");
   });
 
-  it("offers Swap only when opened from a pool, with this voucher chosen to receive", () => {
-    const { unmount } = render(
-      <VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />,
-    );
-    expect(
-      within(screen.getByLabelText("Voucher actions")).queryByRole("link", { name: "Swap" }),
-    ).toBeNull();
-    unmount();
-
-    render(
-      <VoucherDetailPage
-        voucherAddress={ADDRESS}
-        activeTab="offerings"
-        poolAddress="0x9999999999999999999999999999999999999999"
-      />,
-    );
-    const swap = within(screen.getByLabelText("Voucher actions")).getByRole("link", {
-      name: "Swap",
-    });
-    expect(swap.getAttribute("href")).toBe(
-      `/pools/0x9999999999999999999999999999999999999999/swap?receive=${ADDRESS}`,
-    );
-  });
-
   it("colours each tag from its own name so a tag looks the same everywhere", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
