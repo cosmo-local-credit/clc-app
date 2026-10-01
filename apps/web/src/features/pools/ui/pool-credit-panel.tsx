@@ -3,10 +3,14 @@ import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { formatTokenAmount, formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 
-import { Progress } from "#/components/ui/progress";
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
-import { PoolHoldingIdentity, PoolHoldingListPanel, PoolHoldingRowLink } from "./pool-holding-list";
+import {
+  PoolHoldingBar,
+  PoolHoldingIdentity,
+  PoolHoldingListPanel,
+  PoolHoldingRowLink,
+} from "./pool-holding-list";
 
 /**
  * How much more of each voucher the pool will take — the credit its limits
@@ -106,17 +110,18 @@ function CreditLine({ holding, unit }: { holding: PoolHolding; unit: string }) {
   const denomination = priced ? unit : holding.symbol;
 
   return (
-    <div className="mt-2">
-      <Progress
-        value={100 - fillPercent}
-        aria-label={t`${holding.name} available credit`}
-        className="h-1.5 w-full overflow-hidden bg-muted"
+    <>
+      <PoolHoldingBar
+        percent={100 - fillPercent}
+        fill="bg-primary"
+        track="bg-muted"
+        label={t`${holding.name} available credit`}
       />
       <p className="mt-1 font-mono text-muted-foreground text-[0.6875rem] tabular-nums">
         <Trans>
           {available} of {limit} {denomination} available credit
         </Trans>
       </p>
-    </div>
+    </>
   );
 }

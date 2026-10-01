@@ -89,6 +89,45 @@ export function PoolHoldingRowLink({
   );
 }
 
+/**
+ * A row's bar, drawn the same way on both tabs: square-ended like the panel it
+ * sits in, with a sliver kept for a share too small to show at this scale. The
+ * tabs differ only in colour and in whether the bar is read out. A holdings bar
+ * repeats the figure printed beside it, so it is hidden from assistive
+ * technology; a credit bar is a gauge of the limit, announced under `label`.
+ */
+export function PoolHoldingBar({
+  percent,
+  fill,
+  track = "",
+  label,
+}: {
+  percent: number;
+  fill: string;
+  track?: string;
+  label?: string;
+}) {
+  const a11y =
+    label === undefined
+      ? { "aria-hidden": true }
+      : {
+          role: "progressbar",
+          "aria-label": label,
+          "aria-valuemin": 0,
+          "aria-valuemax": 100,
+          "aria-valuenow": percent,
+        };
+
+  return (
+    <div className={["mt-2 h-1.5 w-full", track].join(" ")} data-slot="holding-bar" {...a11y}>
+      <div
+        className={["h-full", fill, percent > 0 ? "min-w-0.5" : ""].join(" ")}
+        style={{ width: `${percent}%` }}
+      />
+    </div>
+  );
+}
+
 /** The logo, the name and the pool's rate — what a row is about, on both tabs. */
 export function PoolHoldingIdentity({ holding, unit }: { holding: PoolHolding; unit: string }) {
   // The logo and colour are derived from the address and symbol alone, so the

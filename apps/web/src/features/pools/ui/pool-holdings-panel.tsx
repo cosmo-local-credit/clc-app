@@ -5,7 +5,12 @@ import { Trans, useLingui } from "@lingui/react/macro";
 
 import { usePoolHoldings } from "#/features/pools/hooks/use-pool-holdings";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
-import { PoolHoldingIdentity, PoolHoldingListPanel, PoolHoldingRowLink } from "./pool-holding-list";
+import {
+  PoolHoldingBar,
+  PoolHoldingIdentity,
+  PoolHoldingListPanel,
+  PoolHoldingRowLink,
+} from "./pool-holding-list";
 
 /**
  * What the pool is holding, as a horizontal bar chart in its unit of account.
@@ -43,7 +48,14 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
             <PoolHoldingIdentity holding={holding} unit={unit} />
             <HoldingAmount holding={holding} unit={unit} />
           </div>
-          <HoldingBar percent={holding.percentOfLargest} />
+          {/* Full width for the pool's largest holding, the rest in proportion.
+              No track behind it: a filled track reads as a gauge, and the
+              largest holding drawn as a full gauge would say the pool is full
+              of it, which a holding never means. An unpriced row draws
+              nothing: it is outside the unit the bars share. */}
+          {holding.percentOfLargest === null ? null : (
+            <PoolHoldingBar percent={holding.percentOfLargest} fill="bg-info" />
+          )}
         </PoolHoldingRowLink>
       ))}
     </PoolHoldingListPanel>
@@ -73,29 +85,6 @@ function HoldingAmount({ holding, unit }: { holding: PoolHolding; unit: string }
           </p>
         </>
       )}
-    </div>
-  );
-}
-
-/**
- * The row's bar: full width for the pool's largest holding, the rest in
- * proportion. Decorative to assistive technology, since the figure it draws is
- * printed beside it.
- *
- * No track behind it. A filled track reads as a gauge, and the largest holding
- * drawn as a full gauge would say the pool is full of it, which a holding never
- * means. An unpriced row draws nothing: it is outside the unit the bars share.
- */
-function HoldingBar({ percent }: { percent: number | null }) {
-  if (percent === null) return null;
-  return (
-    <div className="mt-2 h-1.5 w-full" aria-hidden="true" data-slot="holding-bar">
-      {/* A holding too small to show at this scale keeps a sliver, so a pool
-          that holds a little of a voucher does not read as holding none. */}
-      <div
-        className={["h-full bg-info", percent > 0 ? "min-w-0.5" : ""].join(" ")}
-        style={{ width: `${percent}%` }}
-      />
     </div>
   );
 }
