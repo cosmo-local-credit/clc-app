@@ -86,7 +86,7 @@ export function RecipientAddressInput({
   const phoneResolvedAddress = normalizedPhone ? (phoneResolution.data?.address ?? null) : null;
   const phoneReverseResolution = useReverseRecipientResolution(phoneResolvedAddress);
   const searchTerm =
-    !directAddress && !normalizedPhone && trimmedQuery.length >= 2 ? trimmedQuery : null;
+    !directAddress && !normalizedPhone && trimmedQuery.length >= 3 ? trimmedQuery : null;
   const search = useRecipientSearch(searchTerm, allowPools);
   const currentSelection = selected?.query === trimmedQuery ? selected.identity : null;
   const recipient: ResolvedRecipientAddress | null = directAddress

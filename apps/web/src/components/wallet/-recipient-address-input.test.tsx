@@ -1,6 +1,6 @@
 import { CHAIN_ID } from "#/lib/chain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
@@ -41,6 +41,45 @@ afterEach(() => {
 });
 
 describe("RecipientAddressInput", () => {
+  it("searches only with three trimmed characters and hides results when shortened or cleared", async () => {
+    const fetcher = vi.fn((_url: string) =>
+      Promise.resolve(
+        json({
+          ok: true,
+          result: {
+            recipients: [
+              { kind: "user", name: "Alice", alias: "alice", address: ADDRESS, chainId: CHAIN_ID },
+            ],
+          },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    renderInput();
+    const input = screen.getByRole("textbox", { name: "Recipient" });
+
+    for (const value of ["", "a", "al", "  al  "]) {
+      fireEvent.change(input, { target: { value } });
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      expect(fetcher).not.toHaveBeenCalled();
+      expect(screen.queryByText("Searching recipients…")).toBeNull();
+      expect(screen.queryByText("No matching recipients.")).toBeNull();
+    }
+
+    fireEvent.change(input, { target: { value: "  ali  " } });
+    expect(await screen.findByRole("button", { name: /Alice \(alice\)/ })).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.get("q")).toBe("ali");
+
+    for (const value of ["al", ""]) {
+      fireEvent.change(input, { target: { value } });
+      expect(screen.queryByRole("list", { name: "Matching recipients" })).toBeNull();
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText("Searching recipients…")).toBeNull();
+    }
+  });
+
   it("returns a directly entered address without replacing the text the user entered", async () => {
     const onRecipientChange = renderInput();
     const input = screen.getByRole("textbox", { name: "Recipient" });
