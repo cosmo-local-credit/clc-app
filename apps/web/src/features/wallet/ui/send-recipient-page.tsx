@@ -26,6 +26,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   const { t } = useLingui();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [recentRequested, setRecentRequested] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(null);
   const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
@@ -34,7 +35,9 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
   const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
-  const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
+  const transfersQuery = useAccountTransfersInfinite(recentRequested ? wallet : undefined, {
+    poll: false,
+  });
   const addressBook = useAddressBookRecipients(owner);
   const labels = new Map(
     (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry]),
@@ -122,7 +125,17 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
         />
       </div>
 
-      {showRecent ? (
+      {showRecent && wallet !== undefined && !recentRequested ? (
+        <Button
+          variant="outline"
+          className="mb-3 h-11 w-full"
+          onClick={() => setRecentRequested(true)}
+        >
+          <Trans>Recent recipients</Trans>
+        </Button>
+      ) : null}
+
+      {showRecent && recentRequested ? (
         <RecentRecipients
           recipients={recent}
           // A guest has no activity to read, and a read that never runs stays

@@ -1,6 +1,6 @@
 import { CHAIN_ID } from "#/lib/chain";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const ADDRESS = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
@@ -41,6 +41,145 @@ afterEach(() => {
 });
 
 describe("RecipientAddressInput", () => {
+  it.each([200, 500])(
+    "shows phone search empty/error state (%s) without resolving a recipient",
+    async (status) => {
+      vi.stubGlobal(
+        "fetch",
+        vi
+          .fn()
+          .mockImplementation(() =>
+            Promise.resolve(
+              new Response(
+                JSON.stringify(
+                  status === 200
+                    ? { ok: true, result: { recipients: [] } }
+                    : { ok: false, description: "unavailable" },
+                ),
+                { status, headers: { "Content-Type": "application/json" } },
+              ),
+            ),
+          ),
+      );
+      const onRecipientChange = renderInput();
+      fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
+        target: { value: "071" },
+      });
+      expect(
+        await screen.findByText(
+          status === 200 ? "No matching recipients." : "Couldn't resolve that recipient.",
+        ),
+      ).toBeTruthy();
+      expect(onRecipientChange).toHaveBeenLastCalledWith(null);
+      fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
+        target: { value: "" },
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(screen.queryByText("No matching recipients.")).toBeNull();
+    },
+  );
+
+  it("waits for three phone digits, clears phone selection and ignores incomplete addresses", async () => {
+    const fetcher = vi.fn((_url: string) =>
+      Promise.resolve(
+        json({
+          ok: true,
+          result: {
+            recipients: [
+              { kind: "user", name: "Alice", alias: "alice", address: ADDRESS, chainId: CHAIN_ID },
+            ],
+          },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    const onRecipientChange = renderInput();
+    const input = screen.getByRole("textbox", { name: "Recipient" });
+    for (const value of ["+0 (7)", "0x123"]) {
+      fireEvent.change(input, { target: { value } });
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      expect(fetcher).not.toHaveBeenCalled();
+      expect(screen.queryByText("Searching recipients…")).toBeNull();
+    }
+    fireEvent.change(input, { target: { value: "007" } });
+    fireEvent.click(await screen.findByRole("button", { name: /Alice \(alice\)/ }));
+    expect(onRecipientChange).toHaveBeenLastCalledWith({
+      address: ADDRESS,
+      name: "Alice (alice)",
+      source: "phone",
+    });
+    fireEvent.change(input, { target: { value: "00" } });
+    expect(onRecipientChange).toHaveBeenLastCalledWith(null);
+    expect(screen.queryByRole("list", { name: "Matching recipients" })).toBeNull();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts an unknown full address when reverse lookup has no profile", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ ok: false, description: "not found" }), {
+            status: 404,
+            headers: { "Content-Type": "application/json" },
+          }),
+        ),
+      ),
+    );
+    const onRecipientChange = renderInput();
+    fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
+      target: { value: ADDRESS },
+    });
+    await waitFor(() =>
+      expect(onRecipientChange).toHaveBeenLastCalledWith({
+        address: ADDRESS,
+        name: null,
+        source: "manual",
+      }),
+    );
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("searches only with three trimmed characters and hides results when shortened or cleared", async () => {
+    const fetcher = vi.fn((_url: string) =>
+      Promise.resolve(
+        json({
+          ok: true,
+          result: {
+            recipients: [
+              { kind: "user", name: "Alice", alias: "alice", address: ADDRESS, chainId: CHAIN_ID },
+            ],
+          },
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    renderInput();
+    const input = screen.getByRole("textbox", { name: "Recipient" });
+
+    for (const value of ["", "a", "al", "  al  "]) {
+      fireEvent.change(input, { target: { value } });
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      expect(fetcher).not.toHaveBeenCalled();
+      expect(screen.queryByText("Searching recipients…")).toBeNull();
+      expect(screen.queryByText("No matching recipients.")).toBeNull();
+    }
+
+    fireEvent.change(input, { target: { value: "  ali  " } });
+    expect(await screen.findByRole("button", { name: /Alice \(alice\)/ })).toBeTruthy();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(new URL(String(fetcher.mock.calls[0]?.[0])).searchParams.get("q")).toBe("ali");
+
+    for (const value of ["al", ""]) {
+      fireEvent.change(input, { target: { value } });
+      expect(screen.queryByRole("list", { name: "Matching recipients" })).toBeNull();
+      await act(() => new Promise((resolve) => setTimeout(resolve, 300)));
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      expect(screen.queryByText("Searching recipients…")).toBeNull();
+    }
+  });
+
   it("returns a directly entered address without replacing the text the user entered", async () => {
     const onRecipientChange = renderInput();
     const input = screen.getByRole("textbox", { name: "Recipient" });

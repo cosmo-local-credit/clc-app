@@ -1,21 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
-  recipientKeys,
   recipientReverseQueryOptions,
   recipientSearchQueryOptions,
 } from "@clc/api/features/recipients/queries";
 
-import { resolvePhoneRecipient } from "#/features/wallet/api/recipient-resolution-client";
 import { recipientsClient } from "#/lib/api/recipients";
-
-export function usePhoneRecipientResolution(phone: string | null) {
-  return useQuery({
-    queryKey: recipientKeys.phone(phone ?? "none"),
-    queryFn: () => resolvePhoneRecipient(phone!),
-    enabled: Boolean(phone),
-  });
-}
 
 export function useRecipientSearch(query: string | null, allowPools: boolean) {
   const [debounced, setDebounced] = useState(query);
@@ -34,6 +24,7 @@ export function useRecipientSearch(query: string | null, allowPools: boolean) {
   return {
     ...results,
     data: debounced === query ? results.data : undefined,
+    error: debounced === query ? results.error : null,
     isDebouncing: debounced !== query,
   };
 }

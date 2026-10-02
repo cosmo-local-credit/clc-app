@@ -10,7 +10,6 @@ import { RecipientIdentityText } from "#/components/wallet/recipient-identity-la
 import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
 import {
   useRecipientSearch,
-  usePhoneRecipientResolution,
   useReverseRecipientResolution,
 } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
@@ -81,12 +80,12 @@ export function RecipientAddressInput({
   const trimmedQuery = query.trim();
   const normalizedPhone = isPhone(query) ? normalizePhone(query) : null;
   const directAddress = isAddress(trimmedQuery) ? (trimmedQuery as `0x${string}`) : null;
-  const phoneResolution = usePhoneRecipientResolution(normalizedPhone);
   const reverseResolution = useReverseRecipientResolution(directAddress);
-  const phoneResolvedAddress = normalizedPhone ? (phoneResolution.data?.address ?? null) : null;
-  const phoneReverseResolution = useReverseRecipientResolution(phoneResolvedAddress);
+  const searchableQuery = normalizedPhone ?? trimmedQuery;
   const searchTerm =
-    !directAddress && !normalizedPhone && trimmedQuery.length >= 2 ? trimmedQuery : null;
+    !trimmedQuery.toLowerCase().startsWith("0x") && searchableQuery.length >= 3
+      ? searchableQuery
+      : null;
   const search = useRecipientSearch(searchTerm, allowPools);
   const currentSelection = selected?.query === trimmedQuery ? selected.identity : null;
   const recipient: ResolvedRecipientAddress | null = directAddress
@@ -99,23 +98,10 @@ export function RecipientAddressInput({
       ? {
           name: recipientLabel(currentSelection),
           address: currentSelection.address,
-          source: "alias",
+          source: normalizedPhone ? "phone" : "alias",
         }
-      : normalizedPhone && phoneResolution.data
-        ? {
-            name: phoneReverseResolution.data
-              ? recipientLabel(phoneReverseResolution.data)
-              : normalizedPhone,
-            address: phoneResolution.data.address,
-            source: phoneReverseResolution.data ? "reverse-name" : "phone",
-          }
-        : null;
-  const isResolving = Boolean(normalizedPhone) && phoneResolution.isPending;
-  const resolutionError = normalizedPhone
-    ? phoneResolution.error
-    : searchTerm
-      ? search.error
       : null;
+  const resolutionError = searchTerm ? search.error : null;
   const matches =
     searchTerm && !currentSelection
       ? (search.data ?? []).filter((item) => item.chainId === CHAIN_ID || item.chainId === 0)
@@ -233,12 +219,6 @@ export function RecipientAddressInput({
             onKeyDecoded={handleScanDecoded}
           />
         </div>
-      ) : null}
-
-      {isResolving ? (
-        <p className="mt-3 text-muted-foreground text-xs">
-          <Trans>Resolving recipient…</Trans>
-        </p>
       ) : null}
 
       {resolutionError ? (
