@@ -333,15 +333,11 @@ export function OnboardingWalletStep({
     setSessionError(null);
     try {
       await ensureBackendSignup();
-    } catch (err) {
-      clearPrivateKey();
-      if (err instanceof BackendApiError) {
-        setConnectError(formatBackendApiError(err));
-      } else {
-        setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
-      }
+    } catch {
       setPendingMethod(null);
       setConnecting(false);
+      // Registration failures are owned and rendered by backendSignup. They
+      // are not connector failures and must not be copied into connectError.
       return;
     }
 
@@ -445,7 +441,7 @@ export function OnboardingWalletStep({
           />
 
           {backendSignup.error ? (
-            <p className="text-destructive text-xs">
+            <p role="alert" className="text-destructive text-xs">
               {translateRecipientError(backendSignup.error, i18n) ??
                 (backendSignup.error instanceof BackendApiError
                   ? formatBackendApiError(backendSignup.error)

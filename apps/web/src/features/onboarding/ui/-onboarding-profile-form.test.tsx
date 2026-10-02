@@ -192,6 +192,41 @@ describe("OnboardingProfileForm rendering", () => {
 });
 
 describe("OnboardingProfileForm submission", () => {
+  it("blocks a consecutive-dot email and continues after it is corrected", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    const email = screen.getByRole("textbox", { name: /email/i });
+    fireEvent.change(email, {
+      target: { value: "w..illruddick@gmail.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).not.toHaveBeenCalled();
+    expect(screen.getByText("Invalid email address")).toBeTruthy();
+
+    fireEvent.change(email, {
+      target: { value: "w.illruddick@gmail.com" },
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({
+        email: "w.illruddick@gmail.com",
+      }),
+      PHOTO,
+    );
+  });
+
   it("does not advance without a photo and explains what is required", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
