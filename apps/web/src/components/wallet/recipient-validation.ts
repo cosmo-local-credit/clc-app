@@ -1,7 +1,5 @@
 export function normalizePhone(value: string): string {
-  const compact = value.replace(/[\s()-]/g, "");
-  if (/^0\d{9}$/.test(compact)) return `+254${compact.slice(1)}`;
-  return compact;
+  return value.replace(/[+\s()-]/g, "");
 }
 
 export function normalizeScannedRecipient(value: string): string {
@@ -14,5 +12,5 @@ export function isAddress(value: string): boolean {
 }
 
 export function isPhone(value: string): boolean {
-  return /^\+254\d{9}$/.test(normalizePhone(value));
+  return /^\+?[0-9\s()-]*[0-9][0-9\s()-]*$/.test(value.trim());
 }

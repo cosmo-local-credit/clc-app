@@ -57,7 +57,6 @@ vi.mock("#/components/wallet", () => ({
 
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
-  usePhoneRecipientResolution: () => ({ data: null, error: null, isPending: false }),
   useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),
 }));
 

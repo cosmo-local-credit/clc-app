@@ -8,7 +8,6 @@ type RecipientKind = RecipientIdentity["kind"];
 
 export const recipientKeys = {
   all: ["clc", "recipients"] as const,
-  phone: (phone: string) => [...recipientKeys.all, "phone", phone] as const,
   search: (query: string, kind?: RecipientKind) =>
     [...recipientKeys.all, "search", query, kind ?? "all"] as const,
   reverse: (address: string) => [...recipientKeys.all, "reverse", address.toLowerCase()] as const,
