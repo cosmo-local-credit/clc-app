@@ -272,8 +272,6 @@ export function PoolDetailPage({
           pool={pool}
           poolVouchers={vouchers}
           voucher={null}
-          currentRatePpm={undefined}
-          rateIsPending={false}
           open={approving}
           onClose={() => setApproving(false)}
         />
@@ -284,8 +282,6 @@ export function PoolDetailPage({
           pool={pool}
           poolVouchers={vouchers}
           voucher={managing}
-          currentRatePpm={rates.data?.get(managing.tokenAddress.toLowerCase())}
-          rateIsPending={rates.isEnabled && rates.isPending}
           open
           onClose={() => setManaging(null)}
         />

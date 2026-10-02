@@ -34,6 +34,21 @@ const mocks = vi.hoisted(() => ({
     refetch: vi.fn(),
   },
   membership: { data: false as boolean | undefined, isPending: false },
+  rates: {
+    data: new Map<string, bigint>(),
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
+  treasury: {
+    data: new Map<
+      string,
+      { balanceRaw: string; feesRaw: string; withdrawableRaw: string; limitRaw: string | null }
+    >(),
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
 }));
@@ -44,7 +59,11 @@ vi.mock("#/features/pools/hooks/use-pool-admin", () => ({
 
 vi.mock("#/features/pools/hooks/use-pool-quoter", () => ({
   usePoolQuoterKind: () => mocks.quoterKind,
-  usePoolVoucherRates: () => ({ data: undefined }),
+  usePoolVoucherRatesByAddress: () => mocks.rates,
+}));
+
+vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
+  usePoolTreasury: () => mocks.treasury,
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-registry", () => ({
@@ -166,6 +185,35 @@ beforeEach(() => {
   mocks.relay.mockResolvedValue({ trackingId: "t1", txHash: `0x${"ab".repeat(32)}` });
   mocks.quoterKind = { kind: "relative", isPending: false };
   mocks.membership = { data: false, isPending: false };
+  mocks.rates = {
+    data: new Map([
+      [TOKEN.toLowerCase(), 2_500_000n],
+      [CANDIDATE.toLowerCase(), 1_000_000n],
+    ]),
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  };
+  mocks.treasury = {
+    data: new Map([
+      [
+        TOKEN.toLowerCase(),
+        {
+          balanceRaw: "50000000",
+          feesRaw: "0",
+          withdrawableRaw: "50000000",
+          limitRaw: "200000000",
+        },
+      ],
+      [
+        CANDIDATE.toLowerCase(),
+        { balanceRaw: "0", feesRaw: "0", withdrawableRaw: "0", limitRaw: "0" },
+      ],
+    ]),
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  };
   mocks.searchResults = [];
   mocks.suggestions = {
     issued: [],
@@ -188,15 +236,7 @@ describe("PoolVoucherSheet approving", () => {
       { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
     ];
     renderSheet(
-      <PoolVoucherSheet
-        pool={pool()}
-        poolVouchers={[]}
-        voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
-        open
-        onClose={vi.fn()}
-      />,
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -234,15 +274,7 @@ describe("PoolVoucherSheet approving", () => {
       { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
     ];
     renderSheet(
-      <PoolVoucherSheet
-        pool={pool()}
-        poolVouchers={[]}
-        voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
-        open
-        onClose={vi.fn()}
-      />,
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -251,6 +283,8 @@ describe("PoolVoucherSheet approving", () => {
 
     expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("1");
     expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("0");
+    expect(within(dialog).getByText("0.00 JUAN")).toBeTruthy();
+    expect(within(dialog).getByText("0.00 KES")).toBeTruthy();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
 
@@ -268,6 +302,40 @@ describe("PoolVoucherSheet approving", () => {
     ).toEqual({ functionName: "setPriceIndexValue", args: [CANDIDATE, 1000000n] });
   });
 
+  it("shows deposits and retained configuration for a voucher missing from the catalog", async () => {
+    mocks.searchResults = [
+      { id: "m1", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
+    ];
+    mocks.rates.data = new Map([[CANDIDATE.toLowerCase(), 2_000_000n]]);
+    mocks.treasury.data = new Map([
+      [
+        CANDIDATE.toLowerCase(),
+        {
+          balanceRaw: "7500000",
+          feesRaw: "500000",
+          withdrawableRaw: "7000000",
+          limitRaw: "100000000",
+        },
+      ],
+    ]);
+    renderSheet(
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
+    fireEvent.click(within(dialog).getByRole("button", { name: /Juan's Voucher/ }));
+
+    expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("2");
+    expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("200");
+    // The gross 7.5 voucher balance is shown, not the fee-adjusted 7.0 liquidity.
+    expect(within(dialog).getByText("7.50 JUAN")).toBeTruthy();
+    expect(within(dialog).getByText("15.00 KES")).toBeTruthy();
+
+    fireEvent.change(within(dialog).getByLabelText("Exchange rate"), { target: { value: "4" } });
+    expect(within(dialog).getByText("30.00 KES")).toBeTruthy();
+  });
+
   it("refuses a quoter this screen cannot configure", async () => {
     mocks.quoterKind = { kind: "oracle", isPending: false };
     mocks.searchResults = [
@@ -278,8 +346,6 @@ describe("PoolVoucherSheet approving", () => {
         pool={pool({ quoterType: "oracle" })}
         poolVouchers={[]}
         voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -318,8 +384,6 @@ describe("PoolVoucherSheet approving", () => {
         pool={pool()}
         poolVouchers={[poolVoucher()]}
         voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -357,8 +421,6 @@ describe("PoolVoucherSheet managing", () => {
         pool={pool()}
         poolVouchers={[poolVoucher()]}
         voucher={poolVoucher()}
-        currentRatePpm={2_500_000n}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -367,6 +429,8 @@ describe("PoolVoucherSheet managing", () => {
     const dialog = await screen.findByRole("dialog");
     expect((within(dialog).getByLabelText("Exchange rate") as HTMLInputElement).value).toBe("2.5");
     expect((within(dialog).getByLabelText("Credit limit") as HTMLInputElement).value).toBe("500");
+    expect(within(dialog).getByText("50.00 PEPAS")).toBeTruthy();
+    expect(within(dialog).getByText("125.00 KES")).toBeTruthy();
     expect(
       within(dialog).getByText(
         "How much value in KES can be swapped from the pool using PEPAS vouchers?",
@@ -375,14 +439,39 @@ describe("PoolVoucherSheet managing", () => {
     expect(within(dialog).queryByText(/Zero accepts no deposits yet/)).toBeNull();
   });
 
+  it("does not present a failed balance read as zero or allow an unknown cap to be saved", async () => {
+    mocks.treasury = {
+      data: new Map(),
+      isPending: false,
+      isError: true,
+      refetch: vi.fn(),
+    };
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={poolVoucher()}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getAllByText("Unavailable")).toHaveLength(2);
+    expect(within(dialog).queryByText("0.00 PEPAS")).toBeNull();
+    expect(
+      (within(dialog).getByRole("button", { name: "Save changes" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    fireEvent.click(within(dialog).getAllByRole("button", { name: "Retry" })[0]!);
+    expect(mocks.treasury.refetch).toHaveBeenCalledOnce();
+  });
+
   it("re-signs only what the steward changed", async () => {
     renderSheet(
       <PoolVoucherSheet
         pool={pool()}
         poolVouchers={[poolVoucher()]}
         voucher={poolVoucher()}
-        currentRatePpm={2_500_000n}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -409,8 +498,6 @@ describe("PoolVoucherSheet managing", () => {
         pool={pool()}
         poolVouchers={[poolVoucher()]}
         voucher={poolVoucher()}
-        currentRatePpm={2_500_000n}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -429,8 +516,6 @@ describe("PoolVoucherSheet managing", () => {
         pool={pool()}
         poolVouchers={[poolVoucher()]}
         voucher={poolVoucher()}
-        currentRatePpm={2_500_000n}
-        rateIsPending={false}
         open
         onClose={vi.fn()}
       />,
@@ -459,15 +544,7 @@ describe("PoolVoucherSheet registration", () => {
     mocks.membership = { data: true, isPending: false };
     mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
     renderSheet(
-      <PoolVoucherSheet
-        pool={pool()}
-        poolVouchers={[]}
-        voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
-        open
-        onClose={vi.fn()}
-      />,
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -488,15 +565,7 @@ describe("PoolVoucherSheet registration", () => {
     mocks.membership = { data: undefined, isPending: true };
     mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
     renderSheet(
-      <PoolVoucherSheet
-        pool={pool()}
-        poolVouchers={[]}
-        voucher={null}
-        currentRatePpm={undefined}
-        rateIsPending={false}
-        open
-        onClose={vi.fn()}
-      />,
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
     );
 
     const dialog = await screen.findByRole("dialog");
