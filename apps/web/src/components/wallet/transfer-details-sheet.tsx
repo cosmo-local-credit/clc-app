@@ -1,3 +1,5 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense } from "react";
@@ -17,10 +19,10 @@ import {
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { useSendShare } from "#/features/wallet/hooks/use-send-share";
 import { CHAIN_INFO } from "#/lib/chain";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
-import { EllipsizedAddress } from "./wallet-address";
 import { ShareReceiptButton } from "./share-receipt-button";
 
 export type TransferDetails = {
@@ -51,6 +53,7 @@ export function TransferDetailsSheet({
     : "";
   const explorerUrl = transfer ? explorerTxUrl(CHAIN_INFO, transfer.txHash) : "#";
   const shareQuery = useSendShare(transfer?.txHash ?? null, open && transfer?.success === true);
+  const recipientIdentity = useReverseRecipientResolution(transfer?.recipientAddress ?? null);
   const addressBook = useAddressBookRecipients(useStorageOwner());
   const recipientAlias = transfer
     ? ((addressBook.data ?? []).find(
@@ -59,7 +62,9 @@ export function TransferDetailsSheet({
           !entry.label.toLowerCase().startsWith("0x"),
       )?.label ?? null)
     : null;
-  const recipientLabel = recipientAlias ?? transfer?.recipientAddress;
+  const recipientLabel = recipientIdentity.data
+    ? formatRecipientLabel(recipientIdentity.data)
+    : (recipientAlias ?? transfer?.recipientAddress);
   const amountLabel = transfer
     ? `${formatTokenAmount(transfer.amount, transfer.tokenDecimals)} ${transfer.tokenSymbol}`
     : "";
@@ -111,12 +116,11 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Recipient</Trans>
                   </span>
-                  <div className="flex min-w-0 flex-col items-end gap-1 text-end">
-                    {recipientAlias ? (
-                      <span className="break-words text-xs font-semibold">{recipientAlias}</span>
-                    ) : null}
-                    <EllipsizedAddress address={transfer.recipientAddress} />
-                  </div>
+                  <RecipientIdentityLabel
+                    address={transfer.recipientAddress}
+                    fallback={recipientAlias ?? undefined}
+                    showAddress
+                  />
                 </div>
               </div>
             </div>
@@ -134,6 +138,9 @@ export function TransferDetailsSheet({
                   transfer.direction === "OUT"
                     ? t`I sent ${amountLabel} to ${recipientLabel}.`
                     : t`I received ${amountLabel}.`,
+                  ...(transfer.direction === "OUT" && recipientLabel !== transfer.recipientAddress
+                    ? [`${t`Address`}: ${transfer.recipientAddress}`]
+                    : []),
                   ...(transferDate ? [transferDate] : []),
                 ]}
                 url={explorerUrl}

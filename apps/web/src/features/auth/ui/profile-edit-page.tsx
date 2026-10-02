@@ -13,6 +13,7 @@ import { Button } from "#/components/ui/button";
 import { CurrencySelect } from "#/components/ui/currency-select";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
+import { UsernameInput } from "#/components/profile/username-input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { Textarea } from "#/components/ui/textarea";
@@ -23,6 +24,7 @@ import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useUpdateProfile } from "#/features/auth/hooks/use-update-profile";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { preferredCurrencyForCountry } from "#/lib/profile-currency";
+import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import { translateValidationError } from "#/lib/validation-i18n";
 
 // The signup flow stores a placeholder email for wallets created without one.
@@ -94,6 +96,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
 
   const defaultValues: ProfileEditInput = {
     name: profile.name ?? "",
+    username: profile.username ?? "",
     email: profile.email.endsWith(PLACEHOLDER_EMAIL_SUFFIX) ? "" : (profile.email ?? ""),
     phone: profile.phone ?? "",
     location: initialLocation,
@@ -115,6 +118,7 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
         const parsed = profileEditSchema.parse(value);
         await updateProfile.mutateAsync({
           name: parsed.name,
+          username: parsed.username?.trim() || undefined,
           email: parsed.email,
           phone: parsed.phone,
           country: parsed.location?.country ?? profile.country,
@@ -141,11 +145,12 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
         }
       } catch (err) {
         setSubmitError(
-          err instanceof BackendApiError
-            ? formatBackendApiError(err)
-            : err instanceof Error
-              ? err.message
-              : t`Couldn't save your profile.`,
+          translateRecipientError(err, i18n) ??
+            (err instanceof BackendApiError
+              ? formatBackendApiError(err)
+              : err instanceof Error
+                ? err.message
+                : t`Couldn't save your profile.`),
         );
       }
     },
@@ -198,6 +203,25 @@ function ProfileEditForm({ profile }: { profile: ProfileResult }) {
                 {err ? (
                   <p className="text-destructive text-xs">{translateValidationError(err, i18n)}</p>
                 ) : null}
+              </div>
+            );
+          }}
+        </form.Field>
+
+        <form.Field name="username">
+          {(field) => {
+            const err = getFieldError(field.state.meta.errors);
+            return (
+              <div>
+                <UsernameInput
+                  id="profile-username"
+                  automatic={!profile.username}
+                  value={field.state.value ?? ""}
+                  hint={() => form.getFieldValue("name")}
+                  onChange={field.handleChange}
+                  onBlur={field.handleBlur}
+                  error={err ? translateValidationError(err, i18n) : null}
+                />
               </div>
             );
           }}

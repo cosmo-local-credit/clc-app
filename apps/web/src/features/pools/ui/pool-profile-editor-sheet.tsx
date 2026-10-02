@@ -1,3 +1,4 @@
+import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import type { UserPool } from "@clc/api/features/pools/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { poolProfileTextSchema } from "@clc/core/features/pools/logic";
@@ -153,7 +154,10 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
         toast.success(t`Pool details updated.`);
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't save the pool details.`);
+        toast.error(
+          translateRecipientError(error, i18n) ??
+            (error instanceof Error ? error.message : t`Couldn't save the pool details.`),
+        );
       }
     },
   });

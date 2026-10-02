@@ -6,23 +6,29 @@ import { useConnection } from "wagmi";
 import { Button } from "#/components/ui/button";
 import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wallet";
 import { BackChevron } from "#/components/wallet/wallet-kit";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 export function ReceivePage() {
   const chainName = CHAIN_INFO.name;
   const { t } = useLingui();
   const { address } = useConnection();
+  const identity = useReverseRecipientResolution(address ?? null);
+  const username = identity.data?.alias ?? null;
+  const receiveName = username ?? address;
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
 
-  const copy = (value: string) => {
+  const copy = (value: string, copyingUsername = false) => {
     if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy address`);
+      toast.error(copyingUsername ? t`Couldn't copy username` : t`Couldn't copy address`);
       return;
     }
     void navigator.clipboard
       .writeText(value)
-      .then(() => toast.success(t`Address copied`))
-      .catch(() => toast.error(t`Couldn't copy address`));
+      .then(() => toast.success(copyingUsername ? t`Username copied` : t`Address copied`))
+      .catch(() =>
+        toast.error(copyingUsername ? t`Couldn't copy username` : t`Couldn't copy address`),
+      );
   };
 
   const share = async () => {
@@ -30,16 +36,19 @@ export function ReceivePage() {
     // Prefer the native share sheet; fall back to copying when unavailable.
     if (navigator.share) {
       try {
-        await navigator.share({ title: t`My wallet address`, text: address });
+        await navigator.share({
+          title: username ? t`My wallet username` : t`My wallet address`,
+          text: receiveName,
+        });
       } catch (error) {
         // AbortError = user dismissed the sheet; not a failure worth surfacing.
         if (error instanceof Error && error.name !== "AbortError") {
-          copy(address);
+          copy(receiveName ?? address, Boolean(username));
         }
       }
       return;
     }
-    copy(address);
+    copy(receiveName ?? address, Boolean(username));
   };
 
   return (
@@ -68,15 +77,21 @@ export function ReceivePage() {
       {address ? (
         <button
           type="button"
-          aria-label={t`Copy wallet address`}
+          aria-label={username ? t`Copy wallet username` : t`Copy wallet address`}
           className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
-          onClick={() => copy(address)}
+          onClick={() => copy(receiveName ?? address, Boolean(username))}
         >
-          <HighlightAddress
-            address={address}
-            tailLength={6}
-            className="min-w-0 break-all text-[0.625rem] leading-tight"
-          />
+          {username ? (
+            <span dir="ltr" className="break-all font-mono text-sm">
+              {username}
+            </span>
+          ) : (
+            <HighlightAddress
+              address={address}
+              tailLength={6}
+              className="min-w-0 break-all text-[0.625rem] leading-tight"
+            />
+          )}
           <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         </button>
       ) : null}
@@ -97,7 +112,7 @@ export function ReceivePage() {
           variant="outline"
           className="h-11 flex-1"
           disabled={!address}
-          onClick={() => address && copy(address)}
+          onClick={() => receiveName && copy(receiveName, Boolean(username))}
         >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>

@@ -43,4 +43,24 @@ describe("PoolReceiveSheet", () => {
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(ADDRESS));
     expect(toast.success).toHaveBeenCalledWith("Address copied");
   });
+
+  it("displays and copies the pool name while retaining the address in the QR", async () => {
+    render(
+      <PoolReceiveSheet
+        pool={{ address: ADDRESS, name: "Community Pool" }}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Community Pool")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Copy pool name" }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("Community Pool"));
+    expect(toast.success).toHaveBeenCalledWith("Pool name copied");
+    expect(qrCode.toDataURL).toHaveBeenCalledWith(
+      `ethereum:${ADDRESS}@${CHAIN_ID}`,
+      expect.any(Object),
+    );
+  });
 });

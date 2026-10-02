@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { translateValidationError } from "./validation-i18n";
 
 const knownErrors = [
+  "Username must be 3–24 letters, digits or hyphens",
   "Name is required",
   "Name must be 80 characters or fewer",
   "Invalid email address",
@@ -27,9 +28,10 @@ const knownErrors = [
   "Accept the terms to publish your voucher",
   "Pool name is required",
   "Pool name must be 80 characters or fewer",
-  "Pool shortcode is required",
-  "Pool shortcode must be 6 characters or fewer",
-  "Use only letters and numbers for the pool shortcode",
+  "Pool symbol is required",
+  "Pool symbol must be at least 3 characters",
+  "Pool symbol must be 6 characters or fewer",
+  "Use only letters and numbers for the pool symbol",
   "Pool description is required",
   "Pool description must be 500 characters or fewer",
   "Swap fee must be a number from 0 to 100",

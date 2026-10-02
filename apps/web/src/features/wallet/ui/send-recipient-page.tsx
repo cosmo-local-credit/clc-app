@@ -37,22 +37,26 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
   const addressBook = useAddressBookRecipients(owner);
   const labels = new Map(
-    (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry.label]),
+    (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry]),
   );
   const recent = recentSendRecipients(
     transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [],
     wallet,
   ).map((address): Recipient => {
-    const saved = labels.get(address.toLowerCase());
+    const savedEntry = labels.get(address.toLowerCase());
+    const saved = savedEntry?.label;
     const named = saved !== undefined && !saved.toLowerCase().startsWith("0x");
     return {
       id: address.toLowerCase(),
+      source: savedEntry?.source,
       label: named ? saved : address,
       address,
       seed: named ? saved : address,
     };
   });
-  const recipient = selectedRecipient ?? resolvedRecipient;
+  const recipient = resolvedRecipient?.name
+    ? resolvedRecipient
+    : (selectedRecipient ?? resolvedRecipient);
   const showRecent = query.trim() === "";
 
   function handleSelectRecipient(recipient: Recipient) {
@@ -60,7 +64,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       setSelectedRecipient({
         name: recipient.label.startsWith("0x") ? null : recipient.label,
         address: recipient.address as `0x${string}`,
-        source: "manual",
+        source: recipient.source ?? "manual",
       });
       setQuery(recipient.address);
       return;
@@ -103,16 +107,17 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
         <Trans>Send to</Trans>
       </h1>
       <p className="mt-1 mb-3.5 text-muted-foreground text-sm">
-        <Trans>Enter an ENS, phone number or address.</Trans>
+        <Trans>Enter a username, pool name, phone number or address.</Trans>
       </p>
 
       <div className="mb-2.5">
         <RecipientAddressInput
           id="send-recipient"
+          allowPools
           value={query}
           onValueChange={handleInputChange}
           onRecipientChange={setResolvedRecipient}
-          ariaLabel={t`Recipient ENS, phone or address`}
+          ariaLabel={t`Recipient username, pool name, phone or address`}
           className="font-mono text-sm"
         />
       </div>

@@ -105,6 +105,7 @@ export function useBackendSignup() {
 
       await authClient.submitProfile({
         name: profile.name,
+        username: profile.username?.trim() || undefined,
         email,
         phone: profile.phone,
         country: profile.location.country,

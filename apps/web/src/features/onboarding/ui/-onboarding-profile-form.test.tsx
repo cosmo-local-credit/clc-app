@@ -149,7 +149,7 @@ beforeEach(() => {
 describe("OnboardingProfileForm rendering", () => {
   it("renders contact, profile, currency, and location fields", () => {
     renderForm();
-    expect(screen.getByRole("textbox", { name: /name/i })).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: /^name$/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /email/i })).toBeTruthy();
     expect(screen.getByTestId("phone-input")).toBeTruthy();
     expect(screen.getByRole("combobox", { name: /preferred currency/i })).toBeTruthy();
@@ -196,7 +196,7 @@ describe("OnboardingProfileForm submission", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
@@ -219,7 +219,7 @@ describe("OnboardingProfileForm submission", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
@@ -251,6 +251,51 @@ describe("OnboardingProfileForm submission", () => {
     );
   });
 
+  it("submits a chosen username", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /^username$/i }), {
+      target: { value: "alice-2" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ username: "alice-2" }),
+      PHOTO,
+    );
+  });
+
+  it("omits a blank username so signup can assign one automatically", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    const submitted = mockOnNext.mock.calls[0]?.[0] as ProfileInput;
+    expect(submitted).not.toHaveProperty("username");
+  });
+
   it("keeps a location currency when the network suggestion arrives later", async () => {
     let resolveNetworkCountry: (country: string) => void = () => undefined;
     mockResolveProfileCountry.mockImplementation(
@@ -262,7 +307,7 @@ describe("OnboardingProfileForm submission", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
@@ -317,7 +362,7 @@ describe("OnboardingProfileForm submission", () => {
       expect(screen.getByTestId("phone-input").getAttribute("data-default-country")).toBe("US"),
     );
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
@@ -355,7 +400,7 @@ describe("OnboardingProfileForm submission", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
@@ -371,7 +416,7 @@ describe("OnboardingProfileForm submission", () => {
     renderForm();
 
     await act(async () => {
-      fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+      fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
         target: { value: "Alice" },
       });
     });
@@ -383,7 +428,7 @@ describe("OnboardingProfileForm submission", () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext);
 
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
@@ -416,7 +461,7 @@ describe("OnboardingProfileForm value restoration", () => {
       },
     });
 
-    expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe(
+    expect((screen.getByRole("textbox", { name: /^name$/i }) as HTMLInputElement).value).toBe(
       "Alice",
     );
     expect((screen.getByRole("textbox", { name: /email/i }) as HTMLInputElement).value).toBe(
@@ -427,7 +472,7 @@ describe("OnboardingProfileForm value restoration", () => {
 
   it("falls back to empty defaults when no initialValues are given", () => {
     renderForm();
-    expect((screen.getByRole("textbox", { name: /name/i }) as HTMLInputElement).value).toBe("");
+    expect((screen.getByRole("textbox", { name: /^name$/i }) as HTMLInputElement).value).toBe("");
     expect(screen.getByText("No location")).toBeTruthy();
   });
 });
@@ -446,7 +491,7 @@ describe("OnboardingProfileForm photo", () => {
 
     // The identity fields first: the frame is modal, so nothing behind it is
     // reachable while a photo is being positioned.
-    fireEvent.change(screen.getByRole("textbox", { name: /name/i }), {
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
       target: { value: "Alice" },
     });
     fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {

@@ -1,44 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
-
+import { useEffect, useState } from "react";
 import {
-  resolveEnsRecipient,
-  resolvePhoneRecipient,
-  reverseResolveAddress,
-} from "#/features/wallet/api/recipient-resolution-client";
+  recipientKeys,
+  recipientReverseQueryOptions,
+  recipientSearchQueryOptions,
+} from "@clc/api/features/recipients/queries";
 
-const recipientResolutionQueryKeys = {
-  all: ["recipient-resolution"] as const,
-  phone: (phone: string) => [...recipientResolutionQueryKeys.all, "phone", phone] as const,
-  ens: (ensName: string) => [...recipientResolutionQueryKeys.all, "ens", ensName] as const,
-  reverseEns: (address: string) =>
-    [...recipientResolutionQueryKeys.all, "reverse-ens", address.toLowerCase()] as const,
-};
+import { resolvePhoneRecipient } from "#/features/wallet/api/recipient-resolution-client";
+import { recipientsClient } from "#/lib/api/recipients";
 
 export function usePhoneRecipientResolution(phone: string | null) {
   return useQuery({
-    queryKey: recipientResolutionQueryKeys.phone(phone ?? "none"),
-    queryFn: () => resolvePhoneRecipient(requireQueryValue(phone, "phone")),
+    queryKey: recipientKeys.phone(phone ?? "none"),
+    queryFn: () => resolvePhoneRecipient(phone!),
     enabled: Boolean(phone),
   });
 }
 
-export function useEnsRecipientResolution(ensName: string | null) {
-  return useQuery({
-    queryKey: recipientResolutionQueryKeys.ens(ensName?.toLowerCase() ?? "none"),
-    queryFn: () => resolveEnsRecipient(requireQueryValue(ensName, "ENS name")),
-    enabled: Boolean(ensName),
+export function useRecipientSearch(query: string | null, allowPools: boolean) {
+  const [debounced, setDebounced] = useState(query);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(query), 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+  const results = useQuery({
+    ...recipientSearchQueryOptions(
+      recipientsClient,
+      debounced ?? "none",
+      allowPools ? undefined : "user",
+    ),
+    enabled: Boolean(debounced) && debounced === query,
   });
+  return {
+    ...results,
+    data: debounced === query ? results.data : undefined,
+    isDebouncing: debounced !== query,
+  };
 }
 
-export function useReverseEnsResolution(address: string | null) {
+export function useReverseRecipientResolution(address: string | null) {
   return useQuery({
-    queryKey: recipientResolutionQueryKeys.reverseEns(address ?? "none"),
-    queryFn: () => reverseResolveAddress(requireQueryValue(address, "address")),
+    ...recipientReverseQueryOptions(recipientsClient, address ?? "none"),
     enabled: Boolean(address),
   });
-}
-
-function requireQueryValue(value: string | null, label: string): string {
-  if (!value) throw new Error(`Recipient ${label} is required.`);
-  return value;
 }

@@ -1,3 +1,4 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
@@ -163,7 +164,6 @@ export function VoucherDetailPage({
     phone: detail?.phone ?? baseToken?.phone,
     email: detail?.email ?? baseToken?.email,
     owner: detail?.ownerAddress ?? baseToken?.owner,
-    ownerEns: baseToken?.ownerEns,
     contractAddress: detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
     iconUrl: detail?.iconUrl ?? baseToken?.iconUrl,
     tokenDecimals: baseToken?.tokenDecimals ?? detail?.decimals ?? undefined,
@@ -615,7 +615,7 @@ function VoucherActivityPanel({
                 </span>
                 <span className="block truncate text-muted-foreground text-[0.6875rem]">
                   {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <EllipsizedAddress address={transfer.counterpartyAddress} />
+                  <RecipientIdentityLabel address={transfer.counterpartyAddress} />
                   {transferDate ? (
                     <>
                       <span aria-hidden="true"> · </span>
@@ -783,7 +783,7 @@ function VoucherInfoPanel({
           </InfoRow>
         ) : null}
         <InfoRow label={t`Issuer`}>
-          {issuerAddress ? <EllipsizedAddress address={issuerAddress} /> : "—"}
+          {issuerAddress ? <RecipientIdentityLabel address={issuerAddress} /> : "—"}
         </InfoRow>
       </dl>
 

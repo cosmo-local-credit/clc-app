@@ -1,7 +1,16 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { shareState, recipients } = vi.hoisted(() => ({
+const { identity, shareState, recipients } = vi.hoisted(() => ({
+  identity: {
+    data: null as null | {
+      name: string;
+      alias: string;
+      address: string;
+      chainId: number;
+      kind: "user";
+    },
+  },
   shareState: { data: null as Record<string, unknown> | null },
   recipients: { data: [] as Array<{ address: string; label: string }> },
 }));
@@ -21,6 +30,10 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
     isError: false,
     fetchStatus: "idle",
   }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useReverseRecipientResolution: () => identity,
 }));
 
 vi.mock("#/components/ui/location-map.lazy", () => ({
@@ -45,6 +58,7 @@ const TRANSFER: TransferDetails = {
 };
 
 afterEach(() => {
+  identity.data = null;
   shareState.data = null;
   recipients.data = [];
   Reflect.deleteProperty(navigator, "share");
@@ -65,12 +79,15 @@ describe("TransferDetailsSheet receipt sharing", () => {
     );
 
     expect(screen.getByText("Alice")).toBeTruthy();
-    expect(screen.getByText("Recipient").parentElement?.textContent).toContain("0x2222…22222");
+    expect(screen.getByText("Recipient").parentElement?.textContent).toContain(
+      TRANSFER.recipientAddress,
+    );
     fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const payload = share.mock.calls[0]?.[0] as { text: string };
     expect(payload.text).toContain("I sent 1 USDC to Alice.");
+    expect(payload.text).toContain(`Address: ${TRANSFER.recipientAddress}`);
     expect(payload.text).toMatch(/Aug|8/);
     expect(payload.text).toContain(`/tx/${TRANSFER.txHash}`);
   });
@@ -85,6 +102,40 @@ describe("TransferDetailsSheet receipt sharing", () => {
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     expect(share.mock.calls[0]?.[0].text).toContain("I received 1 USDC.");
     expect(share.mock.calls[0]?.[0].text).not.toContain("I sent");
+  });
+
+  it("prefers the current backend identity while retaining the exact address", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    recipients.data = [{ address: TRANSFER.recipientAddress, label: "Old Alice" }];
+    identity.data = {
+      kind: "user",
+      name: "Alice Updated",
+      alias: "alice-new",
+      address: TRANSFER.recipientAddress,
+      chainId: 100,
+    };
+
+    render(
+      <TransferDetailsSheet
+        transfer={{ ...TRANSFER, direction: "OUT" }}
+        open
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Alice Updated").parentElement?.textContent).toBe(
+      "Alice Updated (alice-new)",
+    );
+    expect(screen.queryByText("Old Alice")).toBeNull();
+    expect(screen.getByText("Recipient").parentElement?.textContent).toContain(
+      TRANSFER.recipientAddress,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    expect(share.mock.calls[0]?.[0].text).toContain("I sent 1 USDC to Alice Updated (alice-new).");
+    expect(share.mock.calls[0]?.[0].text).toContain(`Address: ${TRANSFER.recipientAddress}`);
   });
 
   it.each([{ success: false }, { txHash: "" }])(

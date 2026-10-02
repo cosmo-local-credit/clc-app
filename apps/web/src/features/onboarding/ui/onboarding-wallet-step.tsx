@@ -1,3 +1,4 @@
+import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,7 +61,7 @@ export function OnboardingWalletStep({
   linkPasskey,
   onDone,
 }: Props) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const queryClient = useQueryClient();
 
   const account = useMemo(() => privateKeyToAccount(pk), [pk]);
@@ -445,11 +446,12 @@ export function OnboardingWalletStep({
 
           {backendSignup.error ? (
             <p className="text-destructive text-xs">
-              {backendSignup.error instanceof BackendApiError
-                ? formatBackendApiError(backendSignup.error)
-                : backendSignup.error instanceof Error
-                  ? backendSignup.error.message
-                  : t`Account registration failed.`}
+              {translateRecipientError(backendSignup.error, i18n) ??
+                (backendSignup.error instanceof BackendApiError
+                  ? formatBackendApiError(backendSignup.error)
+                  : backendSignup.error instanceof Error
+                    ? backendSignup.error.message
+                    : t`Account registration failed.`)}
             </p>
           ) : null}
           {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}
