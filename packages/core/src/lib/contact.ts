@@ -1,5 +1,31 @@
 import { z } from "zod";
 
+const EMAIL_LOCAL_ATOM = /^[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+$/u;
+const EMAIL_DOMAIN_LABEL = /^[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]*[\p{L}\p{N}])?$/u;
+
+/**
+ * Validate the ordinary, unquoted address format supported by the product.
+ * Splitting the local part and domain makes their dot and hyphen rules
+ * explicit while retaining international letters and numbers.
+ */
+function isSupportedEmail(value: string): boolean {
+  const separator = value.indexOf("@");
+  if (separator <= 0 || separator !== value.lastIndexOf("@")) return false;
+
+  const local = value.slice(0, separator);
+  const domain = value.slice(separator + 1);
+  const localAtoms = local.split(".");
+  const domainLabels = domain.split(".");
+
+  if (!localAtoms.every((atom) => EMAIL_LOCAL_ATOM.test(atom))) return false;
+  if (domainLabels.length < 2 || !domainLabels.every((label) => EMAIL_DOMAIN_LABEL.test(label))) {
+    return false;
+  }
+
+  // A numeric final label is not a usable public email domain.
+  return /\p{L}/u.test(domainLabels.at(-1) ?? "");
+}
+
 /**
  * Contact details are optional per field but validated identically everywhere
  * they are collected (signup profile, voucher issuer contact). An empty string
@@ -8,7 +34,7 @@ import { z } from "zod";
 export const optionalEmailSchema = z
   .string()
   .trim()
-  .refine((value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
+  .refine((value) => value === "" || isSupportedEmail(value), {
     message: "Invalid email address",
   });
 
