@@ -56,9 +56,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   });
   const recipient = resolvedRecipient?.name
     ? resolvedRecipient
-    : selectedRecipient?.source === "alias" || selectedRecipient?.source === "reverse-name"
-      ? resolvedRecipient
-      : (selectedRecipient ?? resolvedRecipient);
+    : (selectedRecipient ?? resolvedRecipient);
   const showRecent = query.trim() === "";
 
   function handleSelectRecipient(recipient: Recipient) {

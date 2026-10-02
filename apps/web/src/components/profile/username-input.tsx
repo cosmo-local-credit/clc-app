@@ -1,8 +1,9 @@
 import { useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
+
+import { Button } from "#/components/ui/button";
+import { Input } from "#/components/ui/input";
 import { recipientsClient } from "#/lib/api/recipients";
-import { Button } from "./button";
-import { Input } from "./input";
 
 /** Suggestions are read-only; saving the profile claims the current name. */
 export function UsernameInput({
@@ -11,7 +12,7 @@ export function UsernameInput({
   hint,
   onChange,
   onBlur,
-  invalid,
+  error: validationError,
   automatic = true,
 }: {
   id: string;
@@ -19,30 +20,41 @@ export function UsernameInput({
   hint: () => string;
   onChange: (value: string) => void;
   onBlur: () => void;
-  invalid: boolean;
+  error?: string | null;
   automatic?: boolean;
 }) {
   const currentValue = useRef(value);
   currentValue.current = value;
   const { t } = useLingui();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const descriptionId = `${id}-description`;
+  const errorId = `${id}-error`;
+  const error = validationError ?? suggestionError;
+
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="font-medium text-sm">{t`Username`}</label>
+      <label htmlFor={id} className="font-medium text-sm">
+        {t`Username`}
+      </label>
       <Input
         id={id}
+        dir="ltr"
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          setSuggestionError(null);
+          onChange(event.target.value);
+        }}
         onBlur={onBlur}
-        aria-invalid={invalid}
+        aria-describedby={`${descriptionId}${error ? ` ${errorId}` : ""}`}
+        aria-invalid={Boolean(validationError)}
         autoComplete="username"
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
         maxLength={24}
       />
-      <p className="text-muted-foreground text-xs">
+      <p id={descriptionId} className="text-muted-foreground text-xs">
         {automatic
           ? t`People can use this name to send vouchers to you. Leave blank to choose automatically.`
           : t`People can use this name to send vouchers to you. Leave blank to keep your current username.`}
@@ -52,15 +64,16 @@ export function UsernameInput({
         variant="outline"
         size="sm"
         disabled={busy}
+        aria-busy={busy}
         onClick={async () => {
           const before = currentValue.current;
           setBusy(true);
-          setError(null);
+          setSuggestionError(null);
           try {
             const suggestion = await recipientsClient.suggest(hint());
             if (currentValue.current === before) onChange(suggestion);
           } catch {
-            setError(t`Couldn't suggest a username. Please try again.`);
+            setSuggestionError(t`Couldn't suggest a username. Please try again.`);
           } finally {
             setBusy(false);
           }
@@ -69,7 +82,7 @@ export function UsernameInput({
         {busy ? t`Finding a name…` : t`Suggest username`}
       </Button>
       {error ? (
-        <p className="text-destructive text-xs" role="alert">
+        <p id={errorId} className="text-destructive text-xs" role="alert">
           {error}
         </p>
       ) : null}

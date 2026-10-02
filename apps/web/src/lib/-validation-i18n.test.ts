@@ -29,6 +29,7 @@ const knownErrors = [
   "Pool name is required",
   "Pool name must be 80 characters or fewer",
   "Pool symbol is required",
+  "Pool symbol must be at least 3 characters",
   "Pool symbol must be 6 characters or fewer",
   "Use only letters and numbers for the pool symbol",
   "Pool description is required",

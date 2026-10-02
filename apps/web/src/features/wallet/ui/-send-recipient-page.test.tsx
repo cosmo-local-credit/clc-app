@@ -163,6 +163,39 @@ describe("SendRecipientPage", () => {
     expect(readAddressBookRecipients(OWNER)[0]?.address).toBe(AMINA);
   });
 
+  it("falls back to a saved label when the address has no current backend identity", async () => {
+    upsertAddressBookRecipient(OWNER, { label: "Saved Amina", address: AMINA, source: "alias" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) => {
+        if (url.includes("/recipients/reverse/")) {
+          return Promise.resolve(createJsonResponse({ ok: false, description: "not found" }, 404));
+        }
+        return Promise.resolve(
+          createJsonResponse({
+            ok: true,
+            result: {
+              transfers: [transfer(AMINA, "2026-10-01T00:00:00Z")],
+              last: 1,
+            },
+          }),
+        );
+      }),
+    );
+    renderWithQueryClient(<SendRecipientPage token="0xtoken" />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /Saved Amina/ }));
+    await waitFor(() => expect(screen.getByText("Saved Amina")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith({
+        to: "/wallet/send/amount",
+        search: { token: "0xtoken", recipient: AMINA, recipientLabel: "Saved Amina" },
+      }),
+    );
+  });
+
   it("resolves a phone number before continuing to the amount step", async () => {
     const fetcher = mockFetch({
       ok: true,

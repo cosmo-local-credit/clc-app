@@ -19,8 +19,8 @@ import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
   RiCoinLine,
-  RiDownloadLine,
   RiFileCopyLine,
+  RiGroupLine,
   RiNavigationLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
@@ -256,11 +256,14 @@ export function VoucherDetailPage({
             </span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
-          <Link to="/wallet/receive">
-            <RiDownloadLine className="size-4" aria-hidden="true" />
+        <Button asChild variant="info" className="h-14 flex-col gap-1 px-1">
+          <Link
+            to="/pools"
+            search={{ out_voucher: (contractAddress ?? voucherAddress).toLowerCase() }}
+          >
+            <RiGroupLine className="size-4" aria-hidden="true" />
             <span className="text-[0.6875rem] font-semibold">
-              <Trans>Receive</Trans>
+              <Trans>Pools</Trans>
             </span>
           </Link>
         </Button>

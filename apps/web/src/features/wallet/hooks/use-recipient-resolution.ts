@@ -1,13 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { BackendApiError } from "@clc/api/client/errors";
+import {
+  recipientKeys,
+  recipientReverseQueryOptions,
+  recipientSearchQueryOptions,
+} from "@clc/api/features/recipients/queries";
 
 import { resolvePhoneRecipient } from "#/features/wallet/api/recipient-resolution-client";
-import { recipientsClient, recipientQueryKey } from "#/lib/api/recipients";
+import { recipientsClient } from "#/lib/api/recipients";
 
 export function usePhoneRecipientResolution(phone: string | null) {
   return useQuery({
-    queryKey: [...recipientQueryKey, "phone", phone],
+    queryKey: recipientKeys.phone(phone ?? "none"),
     queryFn: () => resolvePhoneRecipient(phone!),
     enabled: Boolean(phone),
   });
@@ -20,11 +24,12 @@ export function useRecipientSearch(query: string | null, allowPools: boolean) {
     return () => clearTimeout(timer);
   }, [query]);
   const results = useQuery({
-    queryKey: [...recipientQueryKey, "search", debounced, allowPools],
-    queryFn: ({ signal }) =>
-      recipientsClient.search(debounced!, allowPools ? undefined : "user", signal),
+    ...recipientSearchQueryOptions(
+      recipientsClient,
+      debounced ?? "none",
+      allowPools ? undefined : "user",
+    ),
     enabled: Boolean(debounced) && debounced === query,
-    staleTime: 0,
   });
   return {
     ...results,
@@ -35,17 +40,7 @@ export function useRecipientSearch(query: string | null, allowPools: boolean) {
 
 export function useReverseRecipientResolution(address: string | null) {
   return useQuery({
-    queryKey: [...recipientQueryKey, "reverse", address?.toLowerCase()],
-    queryFn: async ({ signal }) => {
-      try {
-        return await recipientsClient.reverse(address!, signal);
-      } catch (error) {
-        if (error instanceof BackendApiError && error.status === 404) return null;
-        throw error;
-      }
-    },
+    ...recipientReverseQueryOptions(recipientsClient, address ?? "none"),
     enabled: Boolean(address),
-    retry: false,
-    staleTime: 0,
   });
 }

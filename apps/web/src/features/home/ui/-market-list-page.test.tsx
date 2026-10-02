@@ -276,6 +276,19 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
+  it("links to all pools with the blue Pools action immediately before Filters", () => {
+    render(<MarketListPage />);
+
+    const pools = screen.getByRole("link", { name: "Pools" });
+    const filters = screen.getByRole("button", { name: "Filters" });
+
+    expect(pools.getAttribute("href")).toBe("/pools?creditable=false");
+    expect(pools.getAttribute("data-variant")).toBe("info");
+    expect(pools.className).toContain("h-8");
+    expect(filters.className).toContain("h-8");
+    expect(pools.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("removes the visible sheet header while preserving accessible controls", () => {
     mocks.camera = {
       ...mocks.camera,

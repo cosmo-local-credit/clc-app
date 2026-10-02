@@ -1,6 +1,6 @@
 import type MapLibreGL from "maplibre-gl";
 import type { IconType } from "react-icons";
-import { RiCouponLine, RiHandCoinLine, RiShoppingBasket2Line } from "react-icons/ri";
+import { RiCouponFill, RiHandCoinFill, RiShoppingBasket2Fill } from "react-icons/ri";
 
 import type { MarketLocationKind } from "./market-data";
 
@@ -23,31 +23,50 @@ export const markerImageIds = {
 
 export const MARKET_MARKER_KINDS: MarketLocationKind[] = ["goods", "services", "voucher"];
 
-/** Locked round marker: 24 px logical, thin white stroke, ~1.1x when selected. */
-const MARKER_SIZE = 24;
-const SELECTED_SCALE = 1.1;
-const ICON_VIEWBOX = 24;
-const GLYPH_FRACTION = 0.52;
+type PinShape = { radius: number; tail: number };
 
 /**
- * Fixed sRGB fills, one per offering kind.
+ * A Google Maps place pin: a disc that tapers to a short point at the
+ * location it marks. 24 px across, 28 px when selected. Logical pixels.
+ */
+export const markerPin = {
+  base: { radius: 12, tail: 6 },
+  selected: { radius: 14, tail: 7 },
+  /** Room around the artwork for the white stroke and the drop shadow. */
+  padding: 3,
+} as const satisfies { base: PinShape; selected: PinShape; padding: number };
+
+const GLYPH_FRACTION = 0.58;
+const ICON_VIEWBOX = 24;
+const STROKE_WIDTH = 1.5;
+const SHADOW = { color: "rgba(0, 0, 0, 0.3)", blur: 2, offsetY: 1 };
+
+/**
+ * Fixed sRGB fills, one per offering kind, with a darker shade of each for the
+ * name beside the pin, the way Google Maps colours a place's label.
  *
- * Goods is red, services is purple, and a voucher with no offerings is orange.
- * These stay off `--primary`: the live-location dot owns the brand colour
+ * Goods is blue, services is purple, and a voucher with no offerings is orange.
+ * These stay off `--primary`: the live-location pin owns the brand colour
  * (green on prod, red on staging), and an oklch token painted onto a canvas
  * is silently ignored by older implementations. Hex is the colour the marker
  * actually draws.
  */
 const KIND_COLOR: Record<MarketLocationKind, string> = {
-  goods: "#dc2626",
+  goods: "#2563eb",
   services: "#7c3aed",
   voucher: "#ea580c",
 };
 
+export const KIND_LABEL_COLOR: Record<MarketLocationKind, string> = {
+  goods: "#1d4ed8",
+  services: "#6d28d9",
+  voucher: "#c2410c",
+};
+
 const kindIcon: Record<MarketLocationKind, IconType> = {
-  goods: RiShoppingBasket2Line,
-  services: RiHandCoinLine,
-  voucher: RiCouponLine,
+  goods: RiShoppingBasket2Fill,
+  services: RiHandCoinFill,
+  voucher: RiCouponFill,
 };
 
 let iconPathCache: Partial<Record<MarketLocationKind, string[]>> = {};
@@ -58,8 +77,8 @@ export function resetMarketMarkerCache(): void {
 
 export function addMarketMarkerImages(map: MapLibreGL.Map): void {
   for (const kind of MARKET_MARKER_KINDS) {
-    addImage(map, markerImageIds.base[kind], kind, false);
-    addImage(map, markerImageIds.selected[kind], kind, true);
+    addImage(map, markerImageIds.base[kind], kind, markerPin.base);
+    addImage(map, markerImageIds.selected[kind], kind, markerPin.selected);
   }
 }
 
@@ -67,53 +86,56 @@ function addImage(
   map: MapLibreGL.Map,
   imageId: string,
   kind: MarketLocationKind,
-  selected: boolean,
+  shape: PinShape,
 ): void {
   if (map.hasImage(imageId)) return;
-  const image = createMarkerImage(kind, selected);
+  const image = createMarkerImage(kind, shape);
   if (!image) return;
   map.addImage(imageId, image.data, { pixelRatio: image.pixelRatio });
 }
 
 function createMarkerImage(
   kind: MarketLocationKind,
-  selected: boolean,
+  { radius, tail }: PinShape,
 ): { data: ImageData; pixelRatio: number } | null {
-  const size = selected ? Math.round(MARKER_SIZE * SELECTED_SCALE) : MARKER_SIZE;
+  const { padding } = markerPin;
+  const width = radius * 2 + padding * 2;
+  const height = radius * 2 + tail + padding * 2;
   const pixelRatio = typeof window === "undefined" ? 1 : window.devicePixelRatio || 1;
 
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(size * pixelRatio);
-  canvas.height = Math.round(size * pixelRatio);
+  canvas.width = Math.round(width * pixelRatio);
+  canvas.height = Math.round(height * pixelRatio);
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
   ctx.scale(pixelRatio, pixelRatio);
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, width, height);
 
-  const fill = KIND_COLOR[kind];
-  const center = size / 2;
-  const ringInset = selected ? 1.75 : 0.75;
-  const bodyRadius = center - (selected ? 3 : 1.25);
+  const center = { x: width / 2, y: padding + radius };
+  // The two straight edges are tangents from the tip, so they meet the disc
+  // without a kink.
+  const spread = Math.acos(radius / (radius + tail));
 
-  if (selected) {
-    ctx.strokeStyle = fill;
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(center, center, center - ringInset, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = fill;
   ctx.beginPath();
-  ctx.arc(center, center, bodyRadius, 0, Math.PI * 2);
+  ctx.arc(center.x, center.y, radius, Math.PI / 2 + spread, Math.PI / 2 - spread);
+  ctx.lineTo(center.x, center.y + radius + tail);
+  ctx.closePath();
+
+  // Shadow geometry ignores the context transform, so it is scaled by hand.
+  ctx.shadowColor = SHADOW.color;
+  ctx.shadowBlur = SHADOW.blur * pixelRatio;
+  ctx.shadowOffsetY = SHADOW.offsetY * pixelRatio;
+  ctx.fillStyle = KIND_COLOR[kind];
   ctx.fill();
+  ctx.shadowColor = "transparent";
 
   ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 1.25;
+  ctx.lineWidth = STROKE_WIDTH;
+  ctx.lineJoin = "round";
   ctx.stroke();
 
-  drawKindGlyph(ctx, kind, center, size * GLYPH_FRACTION);
+  drawKindGlyph(ctx, kind, center, radius * 2 * GLYPH_FRACTION);
 
   return { data: ctx.getImageData(0, 0, canvas.width, canvas.height), pixelRatio };
 }
@@ -121,15 +143,15 @@ function createMarkerImage(
 function drawKindGlyph(
   ctx: CanvasRenderingContext2D,
   kind: MarketLocationKind,
-  center: number,
+  center: { x: number; y: number },
   glyphSize: number,
 ): void {
-  // jsdom and very old WebViews lack Path2D; the coloured disc still renders.
+  // jsdom and very old WebViews lack Path2D; the coloured pin still renders.
   if (typeof Path2D === "undefined") return;
 
   const scale = glyphSize / ICON_VIEWBOX;
   ctx.save();
-  ctx.translate(center - glyphSize / 2, center - glyphSize / 2);
+  ctx.translate(center.x - glyphSize / 2, center.y - glyphSize / 2);
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
   for (const definition of iconPaths(kind)) {
@@ -156,7 +178,7 @@ function iconPaths(kind: MarketLocationKind): string[] {
       if (typeof definition === "string" && definition) paths.push(definition);
     }
   } catch {
-    // A shape change upstream must degrade to a plain coloured disc, not crash.
+    // A shape change upstream must degrade to a plain coloured pin, not crash.
   }
 
   iconPathCache[kind] = paths;

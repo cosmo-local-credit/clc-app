@@ -64,7 +64,12 @@ const {
    * swap room. The pool holds 30 of each voucher, so a cap of 30_000_000n is a
    * pool that is full of it.
    */
-  poolTokenLimit: { overrides: {} as Record<string, bigint>, fallback: 1_000_000_000n },
+  poolTokenLimit: {
+    overrides: {} as Record<string, bigint>,
+    fallback: 1_000_000_000n,
+    /** Tokens whose `limitOf` reverts in the holdings treasury read. */
+    unreadable: [] as string[],
+  },
   publicClientCall: vi.fn(),
   publicClientMulticall: vi.fn(),
   publicClientRead: vi.fn(),
@@ -142,6 +147,7 @@ function mockPoolRequests({
   // holdings and offerings assertions keep their two-voucher arithmetic.
   withUnheldVoucher = false,
   catalogFails = false,
+  usdcTokenLimit = "40000000",
 }: {
   usdcBalance?: string;
   usdcSymbol?: string;
@@ -149,6 +155,8 @@ function mockPoolRequests({
   withUnheldVoucher?: boolean;
   /** The pool's catalog voucher list cannot be read. */
   catalogFails?: boolean;
+  /** What the catalog records as USDC's cap, which the chain may contradict. */
+  usdcTokenLimit?: string;
 } = {}) {
   holderBalances.value = {
     [USDC_ADDRESS.toLowerCase()]: BigInt(usdcBalance),
@@ -188,7 +196,7 @@ function mockPoolRequests({
                 decimals: 6,
                 voucherUoa: "USD",
                 voucherValue: "1",
-                tokenLimit: "40000000",
+                tokenLimit: usdcTokenLimit,
                 iconUrl: "https://pool.example/usdc.png",
               },
               {
@@ -337,6 +345,7 @@ beforeEach(() => {
   poolTreasuryState.fees = {};
   poolTreasuryState.feesDecoupled = false;
   poolTokenLimit.overrides = {};
+  poolTokenLimit.unreadable = [];
   swapTransferState.error = null;
   swapTransferState.isPending = false;
   swapMutateAsync.mockResolvedValue({ trackingId: "swap-tracking-1", signatureType: "secp256k1" });
@@ -368,6 +377,32 @@ beforeEach(() => {
           }),
         );
       }
+      // The holdings/admin treasury reads the immutable fee mode once, then
+      // balanceOf/fees/limitOf per voucher in the same Multicall3 snapshot.
+      // Matched first: its fourth read is a limitOf, like the swap screen's.
+      // The swap quote's own three reads put feesDecoupled second instead.
+      if (contracts[0]?.functionName === "feesDecoupled" && contracts[2]?.functionName === "fees") {
+        return Promise.resolve(
+          contracts.map((contract, index) => {
+            if (index === 0) {
+              return { status: "success", result: poolTreasuryState.feesDecoupled };
+            }
+            const tokenAddress = String(contract.args?.[0]).toLowerCase();
+            if (contract.functionName === "balanceOf") {
+              return {
+                status: "success",
+                result: poolTreasuryState.balances[contract.address.toLowerCase()] ?? 0n,
+              };
+            }
+            if (contract.functionName === "limitOf") {
+              return poolTokenLimit.unreadable.includes(tokenAddress)
+                ? { status: "failure", error: new Error("limiter reverted") }
+                : { status: "success", result: tokenLimitOf(tokenAddress) };
+            }
+            return { status: "success", result: poolTreasuryState.fees[tokenAddress] ?? 0n };
+          }),
+        );
+      }
       // The swap screen's per-voucher reads: holder balance, pool balance, fees,
       // limiter cap — four to a voucher, in that order.
       if (allowFailure && contracts[3]?.functionName === "limitOf") {
@@ -392,26 +427,6 @@ beforeEach(() => {
           { status: "success", result: 30_000_000n },
           { status: "success", result: tokenLimitOf(contracts[1].args?.[0]) },
         ]);
-      }
-      // The holdings/admin treasury reads the immutable fee mode once, then
-      // alternates balanceOf/fees per voucher in the same Multicall3 snapshot.
-      // The swap quote's own three reads put feesDecoupled second instead.
-      if (contracts[0]?.functionName === "feesDecoupled" && contracts[2]?.functionName === "fees") {
-        return Promise.resolve(
-          contracts.map((contract, index) => {
-            if (index === 0) {
-              return { status: "success", result: poolTreasuryState.feesDecoupled };
-            }
-            if (index % 2 === 1) {
-              return {
-                status: "success",
-                result: poolTreasuryState.balances[contract.address.toLowerCase()] ?? 0n,
-              };
-            }
-            const tokenAddress = String(contract.args?.[0]).toLowerCase();
-            return { status: "success", result: poolTreasuryState.fees[tokenAddress] ?? 0n };
-          }),
-        );
       }
       // The holdings panel's quoter rates, which tolerate a reverted read.
       if (allowFailure) {
@@ -552,6 +567,7 @@ describe("pool voucher UI", () => {
       "Offerings",
       "Vouchers",
       "Holdings",
+      "Credit",
       "Activity",
     ]);
     expect(tabs[0]?.getAttribute("aria-selected")).toBe("true");
@@ -559,6 +575,7 @@ describe("pool voucher UI", () => {
       "pool-panel-offerings",
       "pool-panel-vouchers",
       "pool-panel-holdings",
+      "pool-panel-credit",
       "pool-panel-activity",
     ]);
     // Only the selected panel is mounted, so every tab's target exists but one
@@ -566,7 +583,7 @@ describe("pool voucher UI", () => {
     expect(screen.getByRole("tabpanel").id).toBe("pool-panel-offerings");
   });
 
-  it("prices the pool's holdings and shows what each voucher has left before its cap", async () => {
+  it("prices the pool's holdings in its unit of account and names each row", async () => {
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
 
@@ -587,26 +604,29 @@ describe("pool voucher UI", () => {
     expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
     expect(within(panel).getByText("1 TTX = 2 USD")).toBeTruthy();
 
-    // USDC carries a recorded cap of 40 tokens — 80 USD — against 30 held, so
-    // 20 USD of credit is still on offer. TTX has no cap on record, which is not
-    // the same as having none.
-    expect(within(panel).getByText("20.00 of 80.00 USD available credit")).toBeTruthy();
-    expect(within(panel).getByText("Limit not set")).toBeTruthy();
+    // Credit has a tab of its own; a row about what the pool holds says
+    // nothing about what it will take.
+    expect(within(panel).queryByText(/available credit/)).toBeNull();
+    expect(within(panel).queryByRole("progressbar")).toBeNull();
   });
 
-  it("fills the deposit bar with the credit still on offer, not the credit used", async () => {
-    // A steward who set a limit on an empty voucher is offering the whole of it.
-    // A bar reading empty at that moment says the opposite of the figure printed
-    // under it, which is what it used to do.
+  it("draws each holding as a bar measured against the largest one", async () => {
+    poolTreasuryState.balances[TTX_ADDRESS.toLowerCase()] = 12_000_000n;
     mockPoolRequests();
     renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
 
     const panel = await screen.findByRole("tabpanel");
-    const bar = await within(panel).findByRole("progressbar", {
-      name: /USD Coin available credit/i,
-    });
-    // 30 of 40 held, so a quarter of the cap is left.
-    expect(bar.getAttribute("aria-valuenow")).toBe("25");
+    await waitFor(() => expect(within(panel).getByText("24.00 USD")).toBeTruthy());
+
+    // 60 USD of USDC is the largest holding and fills its row; 24 USD of TTX is
+    // two fifths of it. Largest first, as the rows are ordered.
+    const bars = Array.from(panel.querySelectorAll<HTMLElement>('[data-slot="holding-bar"]'));
+    expect(bars.map((bar) => (bar.firstElementChild as HTMLElement).style.width)).toEqual([
+      "100%",
+      "40%",
+    ]);
+    // The figure is printed beside the bar, so the bar is not read out twice.
+    expect(bars.every((bar) => bar.getAttribute("aria-hidden") === "true")).toBe(true);
   });
 
   it("shows only withdrawable liquidity when the pool holds fees separately", async () => {
@@ -623,9 +643,81 @@ describe("pool voucher UI", () => {
     await waitFor(() => expect(within(panel).getByText("7.00 USD")).toBeTruthy());
     expect(within(panel).getByText("3.5 USDC")).toBeTruthy();
     expect(within(panel).queryByText("7.43 USDC")).toBeNull();
-    // Deposit caps still use the gross balance, exactly like mustWithinLimit:
+  });
+
+  it("shows what each voucher has left before its credit limit", async () => {
+    poolTokenLimit.overrides[USDC_ADDRESS.toLowerCase()] = 40_000_000n;
+    // TTX's cap cannot be read and the catalog never recorded one.
+    poolTokenLimit.unreadable = [TTX_ADDRESS.toLowerCase()];
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="credit" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    expect(panel.id).toBe("pool-panel-credit");
+
+    // A cap of 40 tokens — 80 USD — against 30 held, so 20 USD of credit is
+    // still on offer. An unread cap is not the same as none.
+    expect(await within(panel).findByText("20.00 of 80.00 USD available credit")).toBeTruthy();
+    expect(within(panel).getByText("Credit limit unknown")).toBeTruthy();
+    // The same identity line as the holdings tab, without its amounts.
+    expect(within(panel).getByText("1 USDC = 2 USD")).toBeTruthy();
+    expect(within(panel).queryByText("60.00 USD")).toBeNull();
+  });
+
+  it("fills the credit bar with the credit still on offer, not the credit used", async () => {
+    // A steward who set a limit on an empty voucher is offering the whole of it.
+    // A bar reading empty at that moment says the opposite of the figure printed
+    // under it, which is what it used to do.
+    poolTokenLimit.overrides[USDC_ADDRESS.toLowerCase()] = 40_000_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="credit" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    const bar = await within(panel).findByRole("progressbar", {
+      name: /USD Coin available credit/i,
+    });
+    // 30 of 40 held, so a quarter of the cap is left.
+    expect(bar.getAttribute("aria-valuenow")).toBe("25");
+  });
+
+  it("reads the credit limit from the limiter, not the catalog's stale zero", async () => {
+    // The catalog's tokenLimit is the indexer's projection of LimitSet, and it
+    // kept a zero the steward overwrote moments later. The limiter holds 100.
+    poolTokenLimit.overrides[USDC_ADDRESS.toLowerCase()] = 100_000_000n;
+    mockPoolRequests({ usdcTokenLimit: "0" });
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="credit" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    // (100 - 30) x 2 USD of a 200 USD limit.
+    expect(await within(panel).findByText("140.00 of 200.00 USD available credit")).toBeTruthy();
+    expect(within(panel).queryByText("No credit offered")).toBeNull();
+  });
+
+  it("says a zero credit limit in words rather than as an empty bar", async () => {
+    poolTokenLimit.overrides[TTX_ADDRESS.toLowerCase()] = 0n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="credit" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    const closed = await within(panel).findByText("No credit offered");
+    // A steward's setting, not a fault, so it is not drawn in the error colour.
+    expect(closed.className).not.toContain("text-destructive");
+    expect(within(panel).queryByRole("progressbar", { name: /Trade Token/ })).toBeNull();
+  });
+
+  it("measures credit against the gross balance the limiter checks", async () => {
+    poolTreasuryState.feesDecoupled = true;
+    poolTreasuryState.balances[USDC_ADDRESS.toLowerCase()] = 7_430_000n;
+    poolTreasuryState.fees[USDC_ADDRESS.toLowerCase()] = 3_930_000n;
+    poolTokenLimit.overrides[USDC_ADDRESS.toLowerCase()] = 40_000_000n;
+    mockPoolRequests({ usdcBalance: "7430000" });
+
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="credit" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    // Deposit caps use the gross balance, exactly like mustWithinLimit:
     // (40 - 7.43) x 2 USD leaves 65.14 USD of credit.
-    expect(within(panel).getByText("65.14 of 80.00 USD available credit")).toBeTruthy();
+    expect(await within(panel).findByText("65.14 of 80.00 USD available credit")).toBeTruthy();
   });
 
   it("reassembles a pool swap from the two transfer legs the indexer records", async () => {
@@ -1167,7 +1259,7 @@ describe("pool voucher UI", () => {
     ).toBeTruthy();
   });
 
-  it("says when the pool is full of a voucher instead of quietly dropping it", async () => {
+  it("explains when the pool balance has reached a voucher's credit limit", async () => {
     // The pool holds 30 USDC against a cap of 30, so `mustWithinLimit` reverts
     // `LimitExceeded` on any deposit — worth knowing before a passkey ceremony.
     poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 30_000_000n };
@@ -1180,8 +1272,29 @@ describe("pool voucher UI", () => {
     fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
 
     const full = await screen.findByRole("button", { name: /USDC/ });
-    expect(full.textContent).toContain("This pool is full of it");
+    expect(full.textContent).toContain(
+      "The credit limit has been reached. No more can be added to this pool.",
+    );
     expect(full.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("uses the same credit-limit explanation when the voucher's limit is zero", async () => {
+    // A zero limit rejects every positive deposit even while the pool holds none
+    // of the voucher, so this is the same limiter condition as an exhausted cap.
+    poolTreasuryState.balances[USDC_ADDRESS.toLowerCase()] = 0n;
+    poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 0n };
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "You send" });
+    expect(await within(fromField).findByText("TTX")).toBeTruthy();
+    fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
+
+    const blocked = await screen.findByRole("button", { name: /USDC/ });
+    expect(blocked.textContent).toContain(
+      "The credit limit has been reached. No more can be added to this pool.",
+    );
+    expect(blocked.hasAttribute("disabled")).toBe(true);
   });
 
   it("blocks an amount the pool has no room for, and clamps Max to that room", async () => {

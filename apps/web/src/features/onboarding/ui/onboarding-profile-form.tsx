@@ -12,7 +12,7 @@ import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
 import { CurrencySelect } from "#/components/ui/currency-select";
 import { Input } from "#/components/ui/input";
-import { UsernameInput } from "#/components/ui/username-input";
+import { UsernameInput } from "#/components/profile/username-input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { StepProgress } from "#/components/ui/step-progress";
@@ -221,13 +221,8 @@ export function OnboardingProfileForm({
                       hint={() => form.getFieldValue("name")}
                       onChange={field.handleChange}
                       onBlur={field.handleBlur}
-                      invalid={!!err}
+                      error={err ? translateValidationError(err, i18n) : null}
                     />
-                    {err ? (
-                      <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
-                      </p>
-                    ) : null}
                   </div>
                 );
               }}

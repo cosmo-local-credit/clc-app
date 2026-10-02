@@ -80,6 +80,8 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
     });
     hasImage = vi.fn((id: string) => this.images.has(id));
     remove = vi.fn();
+    removeImage = vi.fn((id: string) => this.images.delete(id));
+    getCanvas = vi.fn(() => ({ clientWidth: 360, clientHeight: 640 }));
     zoom = 12;
     maxZoom = 21;
     bounds = { west: 36.6, south: -1.5, east: 37.1, north: -1.1 };
@@ -167,10 +169,12 @@ const { mapInstances, markerInstances, MockMap, MockMarker } = vi.hoisted(() => 
   class HoistedMockMarker {
     coordinates: [number, number] | null = null;
     element: HTMLElement | undefined;
+    anchor: string | undefined;
     remove = vi.fn();
 
-    constructor(options: { element?: HTMLElement }) {
+    constructor(options: { element?: HTMLElement; anchor?: string }) {
       this.element = options.element;
+      this.anchor = options.anchor;
       markerInstances.push(this);
     }
 
@@ -205,7 +209,7 @@ vi.mock("maplibre-gl", () => ({
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK, type MarketCamera, MarketMap } from "./market-map";
-import { resetMarketMarkerCache } from "./market-markers";
+import { markerPin, resetMarketMarkerCache } from "./market-markers";
 import { SPIDER_PAGE_SIZE } from "./market-stacks";
 
 const LOCATIONS: MarketLocation[] = [
@@ -575,9 +579,26 @@ describe("MarketMap ranked camera", () => {
     loadedMap();
 
     const element = markerInstances[0]?.element;
-    expect(element?.className).toContain("bg-primary");
+    expect(element?.className).toContain("text-primary");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("currentColor");
     expect(element?.className).not.toContain("animate-ping");
     expect(element?.querySelector(".animate-ping")).toBeNull();
+  });
+
+  it("drops the live location as a pin whose tip marks the fix", () => {
+    render(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={{ lat: -1.29, lng: 36.82 }}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    loadedMap();
+
+    expect(markerInstances[0]?.anchor).toBe("bottom");
+    expect(markerInstances[0]?.element?.querySelector("svg")).not.toBeNull();
   });
 });
 
@@ -1208,26 +1229,234 @@ describe("MarketMap symbol stability", () => {
     expect(map.options.fadeDuration).toBe(0);
   });
 
-  it("draws every badge together with its own count", () => {
+  it("draws every badge together with its own count, and keeps names off it", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
 
     for (const id of ["market-cluster-count", "market-stack-count"]) {
       const layout = (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
       expect(layout["text-allow-overlap"]).toBe(true);
-      expect(layout["text-ignore-placement"]).toBe(true);
+      expect(layout["text-ignore-placement"]).not.toBe(true);
+      expect(layout["text-padding"]).toBeGreaterThan(0);
     }
   });
 
-  it("keeps marker icons out of collision placement entirely", () => {
+  it("always draws marker icons, and keeps names off them", () => {
     renderMap(LOCATIONS);
     const map = loadedMap();
 
     for (const id of ["market-points", "market-point-selected", "market-spider-points"]) {
       const layout = (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
       expect(layout["icon-allow-overlap"]).toBe(true);
-      expect(layout["icon-ignore-placement"]).toBe(true);
+      expect(layout["icon-ignore-placement"]).not.toBe(true);
+      // The default 2 px would overlap each pin's own name and hide all of them.
+      expect(layout["icon-padding"]).toBe(0);
     }
+  });
+});
+
+describe("MarketMap pins and names", () => {
+  function layoutOf(map: ReturnType<typeof loadedMap>, id: string) {
+    return (map.getLayer(id) as { layout?: Record<string, unknown> }).layout ?? {};
+  }
+
+  it("points each pin at its location with its tip", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    for (const id of ["market-points", "market-point-selected"]) {
+      expect(layoutOf(map, id)["icon-anchor"]).toBe("bottom");
+      expect(layoutOf(map, id)["icon-offset"]).toEqual([0, markerPin.padding]);
+    }
+  });
+
+  it("names every lone pin after its voucher, coloured by kind", () => {
+    renderMap([...LOCATIONS, ...KILIFI_STACK]);
+    const map = loadedMap();
+    const layer = map.getLayer("market-point-labels") as {
+      type: string;
+      filter?: unknown;
+      layout?: Record<string, unknown>;
+      paint?: Record<string, unknown>;
+    };
+
+    expect(layer.type).toBe("symbol");
+    expect(layer.layout?.["text-field"]).toEqual(["get", "name"]);
+    expect(layer.filter).toEqual([
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+      ["!=", ["get", "id"], ""],
+    ]);
+    expect(layer.paint?.["text-color"]).toEqual(
+      expect.arrayContaining(["match", ["get", "kind"], "goods", "services"]),
+    );
+    expect(layer.paint?.["text-halo-color"]).toBe("#ffffff");
+  });
+
+  it("sets each name beside the pin, on whichever side fits", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const offsets = layoutOf(map, "market-point-labels")["text-variable-anchor-offset"] as [
+      string,
+      [number, number],
+      string,
+      [number, number],
+    ];
+
+    expect(offsets[0]).toBe("left");
+    expect(offsets[2]).toBe("right");
+    // Level with the disc, which sits above the tip the feature is anchored on.
+    expect(offsets[1][0]).toBeGreaterThan(0);
+    expect(offsets[1][1]).toBeLessThan(0);
+    expect(offsets[3]).toEqual([-offsets[1][0], offsets[1][1]]);
+  });
+
+  it("places names below every marker layer, so pins claim their space first", () => {
+    renderMap(LOCATIONS);
+    const ids = loadedMap().layers.map((layer) => layer.id);
+    const labels = Math.max(
+      ids.indexOf("market-point-labels"),
+      ids.indexOf("market-point-selected-label"),
+    );
+
+    expect(ids.indexOf("market-point-labels")).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf("market-point-selected-label")).toBeGreaterThanOrEqual(0);
+    for (const id of [
+      "market-clusters",
+      "market-cluster-count",
+      "market-points",
+      "market-stacks",
+      "market-stack-count",
+      "market-point-selected",
+      "market-spider-points",
+    ]) {
+      expect(ids.indexOf(id)).toBeGreaterThan(labels);
+    }
+  });
+
+  it("moves the selected voucher's name onto its enlarged pin", () => {
+    const { rerender } = renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    rerender(
+      <MarketMap
+        locations={LOCATIONS}
+        selectedLocationId="3"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+
+    expect(map.setFilter).toHaveBeenCalledWith("market-point-labels", [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+      ["!=", ["get", "id"], "3"],
+    ]);
+    expect(map.setFilter).toHaveBeenCalledWith("market-point-selected-label", [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "count"], 1],
+      ["==", ["get", "id"], "3"],
+    ]);
+    expect(layoutOf(map, "market-point-selected-label")["text-field"]).toEqual(["get", "name"]);
+    // Text placement cannot hide or cover a marker in its separate layer.
+    expect(layoutOf(map, "market-point-selected")["text-field"]).toBeUndefined();
+  });
+
+  it("selects a voucher when its name is tapped", () => {
+    const onSelect = vi.fn();
+    renderMap(LOCATIONS, { onSelectLocation: onSelect });
+    const map = loadedMap();
+
+    clickFeature(map, "market-point-labels", { id: "2", count: 1 });
+
+    expect(onSelect).toHaveBeenCalledWith("2");
+  });
+
+  it("lists the name layer among the tappable layers", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+
+    clickEmptyMap(map);
+
+    expect(map.queryRenderedFeatures).toHaveBeenCalledWith(expect.anything(), {
+      layers: expect.arrayContaining(["market-point-labels", "market-point-selected-label"]),
+    });
+  });
+});
+
+describe("MarketMap viewport edges", () => {
+  function edgeSource(map: ReturnType<typeof loadedMap>) {
+    const source = map.getSource("market-label-edges");
+    if (!source) throw new Error("expected the label edge source");
+    return source;
+  }
+
+  it("rings the viewport with collision obstacles once the map loads", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const layout = (map.getLayer("market-label-edges") as { layout?: Record<string, unknown> })
+      .layout;
+
+    // Two 200 px columns past both corners of a 360 x 640 canvas, two rows
+    // between them.
+    expect((edgeSource(map).spec.data as { features: unknown[] }).features).toHaveLength(16);
+    expect(layout?.["icon-allow-overlap"]).toBe(true);
+    expect(map.addImage).toHaveBeenCalledWith("market-label-edge", {
+      width: 1,
+      height: 1,
+      data: new Uint8Array(4),
+    });
+  });
+
+  it("never rebuilds the obstacles on a move frame", () => {
+    // A setData per frame re-tiled the source and re-placed every symbol on
+    // each frame of a pan: about a third of the frame rate, gone.
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    act(() => map.trigger("movestart"));
+    const source = edgeSource(map);
+    source.setData.mockClear();
+
+    act(() => {
+      for (let frame = 0; frame < 60; frame++) map.trigger("move");
+    });
+
+    expect(source.setData).not.toHaveBeenCalled();
+  });
+
+  it("lifts the obstacles while the map moves and restores them where it settles", () => {
+    renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = edgeSource(map);
+    const ring = source.spec.data;
+    source.setData.mockClear();
+
+    act(() => map.trigger("movestart"));
+    expect(source.setData).toHaveBeenCalledTimes(1);
+    expect((source.spec.data as { features: unknown[] }).features).toHaveLength(0);
+
+    act(() => map.trigger("moveend"));
+    expect(source.setData).toHaveBeenCalledTimes(2);
+    expect(source.spec.data).toEqual(ring);
+  });
+
+  it("stops following the map after unmount", () => {
+    const { unmount } = renderMap(LOCATIONS);
+    const map = loadedMap();
+    const source = edgeSource(map);
+    unmount();
+    source.setData.mockClear();
+
+    act(() => {
+      map.trigger("movestart");
+      map.trigger("moveend");
+    });
+
+    expect(source.setData).not.toHaveBeenCalled();
   });
 });
 

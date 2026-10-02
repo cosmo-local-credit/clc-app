@@ -165,6 +165,32 @@ describe("ProfileEditPage", () => {
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
 
+  it("prefills and submits a changed username", async () => {
+    const fetchMock = mockBackend({ username: "alice" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const username = (await screen.findByLabelText(/^username$/i)) as HTMLInputElement;
+    expect(username.value).toBe("alice");
+    fireEvent.change(username, { target: { value: "alice-new" } });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(JSON.parse(postBody(fetchMock))).toMatchObject({ username: "alice-new" });
+  });
+
+  it("omits a blank username so the backend keeps the current automatic name", async () => {
+    const fetchMock = mockBackend({ username: "alice" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.change(await screen.findByLabelText(/^username$/i), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(JSON.parse(postBody(fetchMock))).not.toHaveProperty("username");
+  });
+
   it("leaves the location picker empty for an existing user with no captured geo", async () => {
     mockBackend();
 

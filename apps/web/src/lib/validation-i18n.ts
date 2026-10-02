@@ -154,6 +154,11 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "Pool symbol is required",
         message: "Pool symbol is required",
       });
+    case "Pool symbol must be at least 3 characters":
+      return i18n._({
+        id: "Pool symbol must be at least 3 characters",
+        message: "Pool symbol must be at least 3 characters",
+      });
     case "Pool symbol must be 6 characters or fewer":
       return i18n._({
         id: "Pool symbol must be 6 characters or fewer",

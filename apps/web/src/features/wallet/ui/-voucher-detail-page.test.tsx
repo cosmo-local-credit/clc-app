@@ -126,6 +126,10 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
 }));
 
+vi.mock("#/features/wallet/hooks/use-address-book", () => ({
+  useAddressBookRecipients: () => ({ data: [] }),
+}));
+
 vi.mock("#/features/auth/hooks/use-profile", () => ({
   useAuthProfile: () => mocks.profile,
 }));
@@ -504,13 +508,17 @@ describe("VoucherDetailPage", () => {
     expect(screen.queryByText("KSH")).toBeNull();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toBe("RedeemSendReceive");
+    expect(actions.textContent).toBe("RedeemSendPools");
     // Redeem is a send to the issuer, with the voucher already selected.
     const redeem = within(actions).getByRole("link", { name: "Redeem" });
     expect(redeem.getAttribute("data-variant")).toBe("default");
     expect(redeem.getAttribute("href")).toBe(
       `/wallet/send/amount?token=${ADDRESS}&recipient=0xDeF0000000000000000000000000000000000456`,
     );
+    const pools = within(actions).getByRole("link", { name: "Pools" });
+    expect(pools.getAttribute("data-variant")).toBe("info");
+    expect(pools.getAttribute("href")).toBe(`/pools?out_voucher=${ADDRESS.toLowerCase()}`);
+    expect(within(actions).queryByRole("link", { name: "Receive" })).toBeNull();
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
@@ -747,6 +755,7 @@ describe("VoucherDetailPage", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
     const panel = screen.getByRole("tabpanel");
+    expect(within(panel).queryByRole("link", { name: "Find this voucher in a pool" })).toBeNull();
     const rate = within(panel).getByText("1 MALII = 10 KSH");
     expect(rate.className).toContain("text-sm");
     expect(rate.className).toContain("text-primary");

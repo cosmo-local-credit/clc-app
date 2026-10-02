@@ -251,6 +251,51 @@ describe("OnboardingProfileForm submission", () => {
     );
   });
 
+  it("submits a chosen username", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /^username$/i }), {
+      target: { value: "alice-2" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(mockOnNext).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<ProfileInput>>({ username: "alice-2" }),
+      PHOTO,
+    );
+  });
+
+  it("omits a blank username so signup can assign one automatically", async () => {
+    const mockOnNext = vi.fn();
+    renderForm(mockOnNext, undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    const submitted = mockOnNext.mock.calls[0]?.[0] as ProfileInput;
+    expect(submitted).not.toHaveProperty("username");
+  });
+
   it("keeps a location currency when the network suggestion arrives later", async () => {
     let resolveNetworkCountry: (country: string) => void = () => undefined;
     mockResolveProfileCountry.mockImplementation(

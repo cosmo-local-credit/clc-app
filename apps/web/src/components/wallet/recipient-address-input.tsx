@@ -1,10 +1,12 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { recipientLabel, type RecipientIdentity } from "@clc/api/features/recipients/client";
 import { useEffect, useRef, useState } from "react";
 import { RiQrScan2Line } from "react-icons/ri";
 
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
 import {
   useRecipientSearch,
@@ -17,7 +19,7 @@ import {
   normalizePhone,
   normalizeScannedRecipient,
 } from "./recipient-validation";
-import { recipientLabel, type RecipientIdentity } from "@clc/api/features/recipients/client";
+import { EllipsizedAddress } from "./wallet-address";
 import { CHAIN_ID } from "#/lib/chain";
 import { cn } from "#/lib/utils";
 
@@ -173,6 +175,7 @@ export function RecipientAddressInput({
           autoCorrect="off"
           autoComplete="off"
           spellCheck={false}
+          maxLength={120}
           disabled={disabled}
           className={cn("font-mono text-sm", className)}
         />
@@ -197,10 +200,11 @@ export function RecipientAddressInput({
                 disabled={disabled}
                 onClick={() => setSelected({ query: trimmedQuery, identity: match })}
               >
-                <span className="block">{recipientLabel(match)}</span>
+                <RecipientIdentityText identity={match} className="block" />
                 <span className="block text-xs text-muted-foreground">
                   {match.kind === "pool" ? t`Pool` : t`Wallet`}
                 </span>
+                <EllipsizedAddress address={match.address} className="mt-1 block" />
               </button>
             </li>
           ))}

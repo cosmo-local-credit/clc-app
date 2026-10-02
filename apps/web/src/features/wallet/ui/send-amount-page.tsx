@@ -130,7 +130,9 @@ export function SendAmountPage({
           </span>
           <div className="min-w-0 flex-1">
             {recipientLabel ? (
-              <p className="truncate font-medium text-xs">{recipientLabel}</p>
+              <p dir="auto" className="truncate font-medium text-xs">
+                {recipientLabel}
+              </p>
             ) : (
               <RecipientIdentityLabel address={recipientAddress} />
             )}
@@ -292,6 +294,7 @@ export function SendAmountPage({
         amount={amount}
         symbol={selectedToken?.symbol ?? ""}
         recipient={recipientAddress}
+        recipientLabel={recipientLabel}
         error={sendVoucher.error instanceof Error ? sendVoucher.error.message : null}
         isPending={sendVoucher.isPending}
         onConfirm={async () => {
@@ -313,6 +316,7 @@ export function SendAmountPage({
               trackingId: result.trackingId,
               token: tokenAddress,
               recipient: recipientAddress,
+              recipientLabel,
               amount,
               symbol: selectedToken.symbol,
               returnPool,
@@ -330,6 +334,7 @@ function SendConfirmationSheet({
   amount,
   symbol,
   recipient,
+  recipientLabel,
   error,
   isPending,
   onConfirm,
@@ -339,6 +344,7 @@ function SendConfirmationSheet({
   amount: string;
   symbol: string;
   recipient: `0x${string}` | null;
+  recipientLabel?: string;
   error: string | null;
   isPending: boolean;
   onConfirm: () => Promise<void>;
@@ -368,7 +374,13 @@ function SendConfirmationSheet({
                 <span className="text-muted-foreground text-xs">
                   <Trans>Recipient</Trans>
                 </span>
-                {recipient ? <RecipientIdentityLabel address={recipient} /> : null}
+                {recipient ? (
+                  <RecipientIdentityLabel
+                    address={recipient}
+                    fallback={recipientLabel}
+                    showAddress
+                  />
+                ) : null}
               </div>
             </div>
           </div>

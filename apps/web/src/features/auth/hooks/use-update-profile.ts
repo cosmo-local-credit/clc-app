@@ -3,7 +3,7 @@ import { useConnection } from "wagmi";
 
 import type { ProfilePayload, ProfileResult } from "@clc/api/features/auth/client";
 import { authKeys } from "@clc/api/features/auth/queries";
-import { recipientQueryKey } from "#/lib/api/recipients";
+import { recipientKeys } from "@clc/api/features/recipients/queries";
 import { authClient } from "#/lib/api/auth";
 
 export function useUpdateProfile() {
@@ -24,7 +24,7 @@ export function useUpdateProfile() {
       // on a cold cache must read the whole row from the backend.
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: authKeys.profile(address) }),
-        queryClient.invalidateQueries({ queryKey: recipientQueryKey }),
+        queryClient.invalidateQueries({ queryKey: recipientKeys.all }),
       ]);
     },
   });

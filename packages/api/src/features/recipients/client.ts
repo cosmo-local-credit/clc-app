@@ -19,46 +19,73 @@ export function createRecipientsClient(http: HttpClient) {
     async search(query: string, kind?: "user" | "pool", signal?: AbortSignal) {
       const params = new URLSearchParams({ q: query });
       if (kind) params.set("kind", kind);
-      const result = await http.request<{ recipients: RecipientIdentity[] }>(
-        `/api/v2/recipients?${params}`,
-        { method: "GET", signal, cache: "no-store" },
-      );
+      const result = await http.request<unknown>(`/api/v2/recipients?${params}`, {
+        method: "GET",
+        signal,
+        cache: "no-store",
+      });
+      if (!isRecord(result) || !Array.isArray(result.recipients)) {
+        throw new Error("Invalid recipient search response");
+      }
       return result.recipients.filter(isRecipientIdentity);
     },
     async resolve(name: string, signal?: AbortSignal) {
-      const result = await http.request<{ recipient: RecipientIdentity }>(
+      const result = await http.request<unknown>(
         `/api/v2/recipients/resolve/${encodeURIComponent(name)}`,
         { method: "GET", signal, cache: "no-store" },
       );
-      if (!isRecipientIdentity(result.recipient)) throw new Error("Invalid recipient response");
+      if (!isRecord(result) || !isRecipientIdentity(result.recipient)) {
+        throw new Error("Invalid recipient response");
+      }
       return result.recipient;
     },
     async reverse(address: string, signal?: AbortSignal) {
-      const result = await http.request<{ recipient: RecipientIdentity }>(
+      const result = await http.request<unknown>(
         `/api/v2/recipients/reverse/${encodeURIComponent(address)}`,
         { method: "GET", signal, cache: "no-store" },
       );
-      if (!isRecipientIdentity(result.recipient)) throw new Error("Invalid recipient response");
+      if (!isRecord(result) || !isRecipientIdentity(result.recipient)) {
+        throw new Error("Invalid recipient response");
+      }
       return result.recipient;
     },
     async suggest(hint: string, signal?: AbortSignal) {
-      const result = await http.request<{ username: string }>(
+      const result = await http.request<unknown>(
         `/api/v2/recipients/suggest?${new URLSearchParams({ hint })}`,
         { method: "GET", signal, cache: "no-store" },
       );
+      if (!isRecord(result) || !isUsername(result.username)) {
+        throw new Error("Invalid username suggestion response");
+      }
       return result.username;
     },
   };
 }
 
-function isRecipientIdentity(value: RecipientIdentity): boolean {
+function isUsername(value: unknown): value is string {
   return (
-    Boolean(value) &&
+    typeof value === "string" &&
+    /^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(value) &&
+    /[a-z]/.test(value)
+  );
+}
+
+function isRecipientIdentity(value: unknown): value is RecipientIdentity {
+  if (!isRecord(value)) return false;
+  return (
     (value.kind === "user" || value.kind === "pool") &&
     typeof value.name === "string" &&
+    value.name.trim() !== "" &&
     typeof value.alias === "string" &&
+    value.alias.trim() !== "" &&
+    typeof value.address === "string" &&
     /^0x[a-fA-F0-9]{40}$/.test(value.address) &&
+    typeof value.chainId === "number" &&
     Number.isSafeInteger(value.chainId) &&
     value.chainId >= 0
   );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

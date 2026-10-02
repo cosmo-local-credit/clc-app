@@ -17,7 +17,11 @@ vi.mock("#/lib/api/accounts", async () => ({
   accountsClient: await import("@clc/api/features/accounts/client"),
 }));
 
-import { useAccountTokensInfinite, useAccountTransfersInfinite } from "./use-account-balances";
+import {
+  useAccountTokensInfinite,
+  useAccountTransfersInfinite,
+  useAllAccountTokens,
+} from "./use-account-balances";
 
 const ADDRESS = "0x2a986F40d29fc7e1Bded626542d4b8f1Ca0A82f6";
 
@@ -78,5 +82,27 @@ describe("account balance polling", () => {
     renderHook(() => useAccountTransfersInfinite(ADDRESS, { poll: true }), { wrapper: wrapper() });
     await tick(16_000);
     expect(mocks.getAccountTransfers.mock.calls.length).toBeGreaterThan(1);
+  });
+});
+
+describe("complete account holdings", () => {
+  it("drains every token page instead of stopping at the latest or first page", async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => ({ id: 200 - index }));
+    const finalToken = { id: 99 };
+    mocks.getAccountTokens.mockImplementation(({ cursor }: { cursor?: number }) =>
+      cursor === undefined
+        ? Promise.resolve({ tokens: firstPage, last: 100 })
+        : Promise.resolve({ tokens: [finalToken], last: 99 }),
+    );
+
+    const { result } = renderHook(() => useAllAccountTokens(ADDRESS), { wrapper: wrapper() });
+
+    await tick(0);
+    await tick(0);
+    await tick(1);
+    expect(mocks.getAccountTokens).toHaveBeenCalledTimes(2);
+    expect(mocks.getAccountTokens.mock.calls[1]?.[0]).toMatchObject({ cursor: 100, next: true });
+    expect(result.current.tokens).toHaveLength(101);
+    expect(result.current.isPending).toBe(false);
   });
 });

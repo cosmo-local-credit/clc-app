@@ -39,4 +39,34 @@ describe("internal recipients", () => {
     const { client } = setup({ recipient: { ...pool, chainId: -1 } });
     await expect(client.resolve("Sohail Pool")).rejects.toThrow("Invalid recipient response");
   });
+
+  it("rejects malformed search envelopes and filters malformed search rows", async () => {
+    const malformed = setup({ recipients: "not-an-array" });
+    await expect(malformed.client.search("alice")).rejects.toThrow(
+      "Invalid recipient search response",
+    );
+
+    const mixed = setup({
+      recipients: [pool, null, { ...pool, name: "" }, { ...pool, address: "0x123" }],
+    });
+    await expect(mixed.client.search("alice")).resolves.toEqual([pool]);
+  });
+
+  it("validates reverse lookups and username suggestions", async () => {
+    const malformedReverse = setup({ recipient: { ...pool, alias: "" } });
+    await expect(malformedReverse.client.reverse(address)).rejects.toThrow(
+      "Invalid recipient response",
+    );
+
+    const malformedSuggestion = setup({ username: "bad username" });
+    await expect(malformedSuggestion.client.suggest("Alice")).rejects.toThrow(
+      "Invalid username suggestion response",
+    );
+
+    const suggestion = setup({ username: "alice-2" });
+    await expect(suggestion.client.suggest("Alice Smith")).resolves.toBe("alice-2");
+    expect(suggestion.fetcher.mock.calls[0][0]).toBe(
+      "https://core.test/api/v2/recipients/suggest?hint=Alice+Smith",
+    );
+  });
 });

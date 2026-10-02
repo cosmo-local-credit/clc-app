@@ -89,6 +89,55 @@ describe("RecipientAddressInput", () => {
     );
   });
 
+  it("filters other chains and keeps duplicate display names as distinct selections", async () => {
+    const secondAddress = "0xb316408425cF17F1827483dee621c6C3A9B5fad4";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        json({
+          ok: true,
+          result: {
+            recipients: [
+              { kind: "user", name: "Alex", alias: "alex", address: ADDRESS, chainId: CHAIN_ID },
+              {
+                kind: "user",
+                name: "Alex",
+                alias: "alex",
+                address: secondAddress,
+                chainId: CHAIN_ID,
+              },
+              {
+                kind: "user",
+                name: "Alex",
+                alias: "alex",
+                address: "0xc316408425cF17F1827483dee621c6C3A9B5fad4",
+                chainId: 1,
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    const onRecipientChange = renderInput();
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Recipient" }), {
+      target: { value: "alex" },
+    });
+    const matches = await screen.findAllByRole("button", { name: /Alex \(alex\)/ });
+    expect(matches).toHaveLength(2);
+    expect(matches[0].textContent).toContain("0xa316…5fad4");
+    expect(matches[1].textContent).toContain("0xb316…5fad4");
+    fireEvent.click(matches[1]);
+
+    await waitFor(() =>
+      expect(onRecipientChange).toHaveBeenLastCalledWith({
+        address: secondAddress,
+        name: "Alex (alex)",
+        source: "alias",
+      }),
+    );
+  });
+
   it("extracts a recipient address from a scanned QR payload", async () => {
     const onRecipientChange = renderInput();
 

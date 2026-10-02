@@ -27,18 +27,19 @@ export function PoolReceiveSheet({
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const receiveName = pool.name || pool.address;
+  const poolName = pool.name?.trim() || null;
+  const receiveName = poolName ?? pool.address;
   const qrValue = `ethereum:${pool.address}@${CHAIN_ID}`;
 
   const copy = () => {
     if (!navigator.clipboard) {
-      toast.error(t`Couldn't copy address`);
+      toast.error(poolName ? t`Couldn't copy pool name` : t`Couldn't copy address`);
       return;
     }
     void navigator.clipboard
       .writeText(receiveName)
-      .then(() => toast.success(t`Address copied`))
-      .catch(() => toast.error(t`Couldn't copy address`));
+      .then(() => toast.success(poolName ? t`Pool name copied` : t`Address copied`))
+      .catch(() => toast.error(poolName ? t`Couldn't copy pool name` : t`Couldn't copy address`));
   };
 
   return (
@@ -65,16 +66,18 @@ export function PoolReceiveSheet({
               <div className="flex flex-col items-center px-4 pb-2">
                 <AddressQRCode value={qrValue} size={184} />
                 <p className="mt-4 mb-1.5 w-full text-muted-foreground text-xs">
-                  <Trans>Pool address</Trans>
+                  {poolName ? <Trans>Pool name</Trans> : <Trans>Pool address</Trans>}
                 </p>
                 <button
                   type="button"
-                  aria-label={t`Copy pool address`}
+                  aria-label={poolName ? t`Copy pool name` : t`Copy pool address`}
                   className="flex min-h-11 w-full items-center justify-between gap-3 border border-border bg-card p-3 text-start"
                   onClick={copy}
                 >
-                  {pool.name ? (
-                    <span className="break-all text-sm">{pool.name}</span>
+                  {poolName ? (
+                    <span dir="auto" className="break-all text-sm">
+                      {poolName}
+                    </span>
                   ) : (
                     <HighlightAddress
                       address={pool.address}

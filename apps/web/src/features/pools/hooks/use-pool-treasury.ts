@@ -1,4 +1,5 @@
 import type { UserPool } from "@clc/api/features/pools/client";
+import { limiterLimitOfAbi } from "@clc/core/features/pool-admin/logic";
 import {
   erc20BalanceOfAbi,
   poolAvailableLiquidityRaw,
@@ -21,6 +22,12 @@ export type PoolTokenTreasury = {
    * included, so the two figures are shown apart rather than summed.
    */
   withdrawableRaw: string;
+  /**
+   * The limiter's `limitOf(token, pool)`, read in the same block as the balance
+   * it is measured against. Null when the pool has no limiter or the read
+   * failed — an unknown cap, which is not a zero one.
+   */
+  limitRaw: string | null;
 };
 
 export const poolTreasuryQueryKeys = {
@@ -30,13 +37,16 @@ export const poolTreasuryQueryKeys = {
 };
 
 /**
- * What each of a pool's vouchers is worth to its owner right now, keyed by
- * lowercased token address.
+ * What each of a pool's vouchers is worth to its owner right now, and how much
+ * more of it the pool will take, keyed by lowercased token address.
  *
- * Read from the chain rather than the catalog because both figures move with
- * every swap, and the two withdrawal calls this feeds revert on a stale number:
- * `withdraw(token)` throws `InsufficientFees` on a zero balance, and
- * `withdrawLiquidity` throws `InsufficientBalance` past the free balance.
+ * Read from the chain rather than the catalog because every figure here moves
+ * on chain first, and the calls this feeds revert on a stale number:
+ * `withdraw(token)` throws `InsufficientFees` on a zero balance,
+ * `withdrawLiquidity` throws `InsufficientBalance` past the free balance, and a
+ * deposit reverts `LimitExceeded` against the limiter's cap — which the
+ * catalog's `tokenLimit` can misstate, since it is the indexer's projection of
+ * `LimitSet` rather than the limit itself.
  */
 export function usePoolTreasury(
   pool: UserPool | null | undefined,
@@ -45,6 +55,10 @@ export function usePoolTreasury(
 ) {
   const client = useClient();
   const poolAddress = pool?.address && isAddress(pool.address) ? pool.address : undefined;
+  const limiterAddress =
+    pool?.limiterAddress && isAddress(pool.limiterAddress) ? pool.limiterAddress : undefined;
+  // Two reads per token, or three where a limiter has a cap to report.
+  const stride = limiterAddress ? 3 : 2;
   // Stable and unique: a catalog voucher and an indexer-discovered holding can
   // name the same token, and paging either source must not refetch an identical
   // treasury snapshot in a different order.
@@ -77,6 +91,16 @@ export function usePoolTreasury(
             functionName: "fees",
             args: [address as `0x${string}`],
           },
+          ...(limiterAddress
+            ? [
+                {
+                  address: limiterAddress,
+                  abi: limiterLimitOfAbi,
+                  functionName: "limitOf",
+                  args: [address as `0x${string}`, poolAddress],
+                },
+              ]
+            : []),
         ]),
       ];
       const results = await multicall(client, {
@@ -94,8 +118,9 @@ export function usePoolTreasury(
       const feesDecoupled = feeModeRead.result;
       const treasury = new Map<string, PoolTokenTreasury>();
       tokenAddresses.forEach((address, index) => {
-        const balanceRead = results[index * 2 + 1];
-        const feesRead = results[index * 2 + 2];
+        const balanceRead = results[index * stride + 1];
+        const feesRead = results[index * stride + 2];
+        const limitRead = limiterAddress ? results[index * stride + 3] : undefined;
         // One malformed token must not make every healthy holding unknown. A
         // skipped row can still use the indexer's gross balance, but it cannot
         // claim any of that balance is available liquidity.
@@ -117,6 +142,12 @@ export function usePoolTreasury(
             feesRaw,
             feesDecoupled,
           }),
+          // A failed cap read leaves the balance usable; the caller falls back
+          // to the catalog's recorded cap.
+          limitRaw:
+            limitRead?.status === "success" && typeof limitRead.result === "bigint"
+              ? limitRead.result.toString()
+              : null,
         });
       });
       return treasury;

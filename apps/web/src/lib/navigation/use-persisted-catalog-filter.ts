@@ -39,7 +39,7 @@ export type PersistedCatalogFilterControls = Omit<CatalogFilterControls, "clear"
 export function usePersistedCatalogFilter(
   name: string,
   owner: StorageOwner | null,
-  options?: { voucherRelationships?: boolean },
+  options?: { voucherRelationships?: boolean; externalFilterActive?: boolean },
 ): PersistedCatalogFilterControls {
   const filter = useCatalogFilter(options);
   const voucherRelationships = options?.voucherRelationships === true;
@@ -60,7 +60,7 @@ export function usePersistedCatalogFilter(
 
     checkedStorage.current = true;
 
-    if (filter.isFiltered) {
+    if (filter.isFiltered || options?.externalFilterActive) {
       setPreferenceToRestore(null);
       return;
     }
@@ -99,7 +99,14 @@ export function usePersistedCatalogFilter(
       preference.voucherMatch,
       { replace: true },
     );
-  }, [filter.isFiltered, filter.setFacets, name, owner, voucherRelationships]);
+  }, [
+    filter.isFiltered,
+    filter.setFacets,
+    name,
+    owner,
+    options?.externalFilterActive,
+    voucherRelationships,
+  ]);
 
   useEffect(() => {
     if (!preferenceToRestore) return;

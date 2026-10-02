@@ -22,6 +22,10 @@ const messages = [
   msg`Enter pool symbol, eg. ABC1`,
   { id: "Pool symbol is required", message: "Pool symbol is required" },
   {
+    id: "Pool symbol must be at least 3 characters",
+    message: "Pool symbol must be at least 3 characters",
+  },
+  {
     id: "Pool symbol must be 6 characters or fewer",
     message: "Pool symbol must be 6 characters or fewer",
   },

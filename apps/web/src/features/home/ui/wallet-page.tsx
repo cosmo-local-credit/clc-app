@@ -172,10 +172,17 @@ export function WalletPage({ address }: { address?: string }) {
                 variant={action.variant}
                 className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
               >
-                <Link to={action.to}>
-                  <Icon className="size-4" aria-hidden="true" />
-                  {action.label}
-                </Link>
+                {action.id === "pools" ? (
+                  <Link to="/pools" search={{ creditable: true }}>
+                    <Icon className="size-4" aria-hidden="true" />
+                    {action.label}
+                  </Link>
+                ) : (
+                  <Link to={action.to}>
+                    <Icon className="size-4" aria-hidden="true" />
+                    {action.label}
+                  </Link>
+                )}
               </Button>
             );
           })}

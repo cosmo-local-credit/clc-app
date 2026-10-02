@@ -30,8 +30,13 @@ export function AccountSettingsSection() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-sm">
-            {name || t`Your profile`}
-            {username ? ` (${username})` : ""}
+            <span dir="auto">{name || t`Your profile`}</span>
+            {username ? (
+              <>
+                {" ("}
+                <bdi dir="ltr">{username}</bdi>)
+              </>
+            ) : null}
           </p>
           <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
         </div>

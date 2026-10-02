@@ -10,6 +10,10 @@ import { ActivityPage } from "./activity-page";
 
 const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => ADDRESS.toLowerCase(),
+}));
+
 function renderWithQueryClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
@@ -107,7 +111,7 @@ describe("ActivityPage", () => {
     expect(screen.getByText("Recipient")).toBeTruthy();
     expect(screen.getAllByText("1.23 USD₮").length).toBeGreaterThan(1);
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
-    expect(document.body.textContent).toContain("0x1a3E…3563d");
+    expect(document.body.textContent).toContain("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
     // From the chain table, not a literal: this suite runs on whichever chain
     // the build points at, and "celoscan.io" passed only until one pointed at
     // Gnosis.
