@@ -1259,7 +1259,7 @@ describe("pool voucher UI", () => {
     ).toBeTruthy();
   });
 
-  it("says when the pool is full of a voucher instead of quietly dropping it", async () => {
+  it("explains when the pool balance has reached a voucher's credit limit", async () => {
     // The pool holds 30 USDC against a cap of 30, so `mustWithinLimit` reverts
     // `LimitExceeded` on any deposit — worth knowing before a passkey ceremony.
     poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 30_000_000n };
@@ -1272,8 +1272,29 @@ describe("pool voucher UI", () => {
     fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
 
     const full = await screen.findByRole("button", { name: /USDC/ });
-    expect(full.textContent).toContain("This pool is full of it");
+    expect(full.textContent).toContain(
+      "The credit limit has been reached. No more can be added to this pool.",
+    );
     expect(full.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("uses the same credit-limit explanation when the voucher's limit is zero", async () => {
+    // A zero limit rejects every positive deposit even while the pool holds none
+    // of the voucher, so this is the same limiter condition as an exhausted cap.
+    poolTreasuryState.balances[USDC_ADDRESS.toLowerCase()] = 0n;
+    poolTokenLimit.overrides = { [USDC_ADDRESS.toLowerCase()]: 0n };
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    const fromField = await screen.findByRole("group", { name: "You send" });
+    expect(await within(fromField).findByText("TTX")).toBeTruthy();
+    fireEvent.click(within(fromField).getByRole("button", { name: "TTX" }));
+
+    const blocked = await screen.findByRole("button", { name: /USDC/ });
+    expect(blocked.textContent).toContain(
+      "The credit limit has been reached. No more can be added to this pool.",
+    );
+    expect(blocked.hasAttribute("disabled")).toBe(true);
   });
 
   it("blocks an amount the pool has no room for, and clamps Max to that room", async () => {

@@ -925,7 +925,7 @@ function PoolTokenPickerReason({
   if (variant === "from" && token.held && token.depositHeadroomRaw === "0") {
     return (
       <p className="text-[0.6875rem] text-muted-foreground">
-        <Trans>This pool is full of it</Trans>
+        <Trans>The credit limit has been reached. No more can be added to this pool.</Trans>
       </p>
     );
   }
