@@ -1,3 +1,4 @@
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import { isRetryableBackendError } from "@clc/api/client/errors";
 import type { UserPool } from "@clc/api/features/pools/client";
 import {
@@ -74,6 +75,7 @@ type MulticallEntry = { status: "success"; result: unknown } | { status: "failur
  * owns, independent of the Pools screen's optional search and facet filters.
  */
 export function useCreditablePools(holderAddress: string | undefined): CreditablePoolsResult {
+  const nearby = useNearbyCatalog();
   const client = useClient();
   const holder = holderAddress && isAddress(holderAddress) ? holderAddress : undefined;
   const holdings = useAllAccountTokens(holder);
@@ -101,10 +103,11 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
 
   const sourceReady = Boolean(holder) && !holdings.isPending && vocabulary.data !== undefined;
   const candidates = useQuery({
-    queryKey: poolCreditQueryKeys.candidates(heldVoucherRefs),
-    queryFn: ({ signal }) => fetchPoolCreditCandidates(heldVoucherRefs, signal),
+    queryKey: nearbyQueryKey(poolCreditQueryKeys.candidates(heldVoucherRefs), nearby),
+    queryFn: ({ signal }) => fetchPoolCreditCandidates(heldVoucherRefs, signal, !!nearby),
     enabled: sourceReady,
     staleTime: CANDIDATE_STALE_TIME_MS,
+    ...nearbyQueryPolicy(nearby),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 
@@ -115,7 +118,10 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
   );
   const candidatePools = candidates.data ?? [];
   const capacity = useQuery({
-    queryKey: poolCreditQueryKeys.capacity(holder ?? "none", candidatePools, holdingsVersion),
+    queryKey: nearbyQueryKey(
+      poolCreditQueryKeys.capacity(holder ?? "none", candidatePools, holdingsVersion),
+      nearby,
+    ),
     queryFn: () => {
       if (!client || !holder) {
         throw new Error("The creditable pool read is missing a chain client or holder.");
@@ -175,6 +181,7 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
 async function fetchPoolCreditCandidates(
   vouchers: readonly VoucherRef[],
   signal: AbortSignal,
+  nearby = false,
 ): Promise<PoolCreditCandidate[]> {
   const chunks = chunkPoolCreditVouchers(vouchers);
   if (chunks.length === 0) return [];
@@ -189,6 +196,7 @@ async function fetchPoolCreditCandidates(
         voucherMatch: "any",
       },
       signal,
+      nearby,
     });
     return {
       pools: catalog.pools,

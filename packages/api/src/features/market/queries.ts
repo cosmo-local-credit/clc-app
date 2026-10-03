@@ -143,12 +143,23 @@ export function voucherFilteredPageQueryOptions(
   });
 }
 
-export function voucherCatalogInfiniteQueryOptions(market: MarketClient, perPage: number) {
+export function voucherCatalogInfiniteQueryOptions(
+  market: MarketClient,
+  perPage: number,
+  nearby?: string,
+) {
   return infiniteQueryOptions({
-    queryKey: voucherKeys.catalog(perPage),
+    queryKey: nearby
+      ? ([...voucherKeys.catalog(perPage), nearby] as const)
+      : voucherKeys.catalog(perPage),
     queryFn: ({ pageParam, signal }) =>
       market.getMarketVouchers(
-        { perPage, cursor: pageParam, next: pageParam === undefined ? undefined : true },
+        {
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+          ...(nearby ? { nearby: true } : {}),
+        },
         signal,
       ),
     initialPageParam: undefined as number | undefined,
@@ -161,12 +172,17 @@ export function voucherViewportQueryOptions(
   market: MarketClient,
   boxes: ReadonlyArray<MarketBoundingBox>,
   perPage: number,
+  nearby?: string,
 ) {
   return queryOptions({
-    queryKey: voucherKeys.viewport(boxes, perPage),
+    queryKey: nearby
+      ? ([...voucherKeys.viewport(boxes, perPage), nearby] as const)
+      : voucherKeys.viewport(boxes, perPage),
     queryFn: async ({ signal }) => {
       const pages = await Promise.all(
-        boxes.map((bbox) => market.getMarketVouchers({ perPage, bbox }, signal)),
+        boxes.map((bbox) =>
+          market.getMarketVouchers({ perPage, bbox, ...(nearby ? { nearby: true } : {}) }, signal),
+        ),
       );
       return pages.flatMap((entry) => entry.vouchers);
     },

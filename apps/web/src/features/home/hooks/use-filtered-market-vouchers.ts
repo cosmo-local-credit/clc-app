@@ -1,3 +1,4 @@
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
@@ -42,8 +43,9 @@ export function useFilteredMarketVouchers(
   filter: CatalogFilter | null,
   perPage = MARKET_MAP_PAGE_SIZE,
 ) {
+  const nearby = useNearbyCatalog();
   const query = useQuery({
-    queryKey: marketVoucherQueryKeys.filtered(filter, perPage),
+    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredMarketCatalog> => {
       if (!filter) throw new Error("The filtered catalog query ran without a filter.");
 
@@ -53,6 +55,7 @@ export function useFilteredMarketVouchers(
       for (let index = 0; index < MAX_FILTERED_PAGES; index++) {
         const page = await marketClient.getFilteredMarketVouchers(
           {
+            ...(nearby ? { nearby: true } : {}),
             perPage,
             cursor,
             next: cursor === undefined ? undefined : true,
@@ -80,6 +83,7 @@ export function useFilteredMarketVouchers(
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
+    ...nearbyQueryPolicy(nearby),
     // Only a transport failure or server fault is worth replaying; a rejected
     // filter, an exhausted page budget, or a bug in our own query function
     // will fail identically. See isRetryableBackendError.
@@ -90,11 +94,17 @@ export function useFilteredMarketVouchers(
 }
 
 export function useMarketFacetVocabulary(enabled: boolean) {
+  const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: marketVoucherQueryKeys.facetVocabulary(),
+    queryKey: nearbyQueryKey(marketVoucherQueryKeys.facetVocabulary(), nearby),
     queryFn: async ({ signal }) => {
       const page = await marketClient.getFilteredMarketVouchers(
-        { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
+        {
+          perPage: 1,
+          filter: EMPTY_CATALOG_FILTER,
+          facets: true,
+          ...(nearby ? { nearby: true } : {}),
+        },
         signal,
       );
       return page.tagFacets ?? [];
@@ -103,6 +113,7 @@ export function useMarketFacetVocabulary(enabled: boolean) {
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,
     gcTime: FILTERED_GC_TIME,
+    ...nearbyQueryPolicy(nearby),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }

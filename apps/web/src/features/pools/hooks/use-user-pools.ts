@@ -1,3 +1,4 @@
+import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   poolListInfiniteQueryOptions,
   poolQueryOptions,
@@ -10,8 +11,11 @@ import { poolsClient } from "#/lib/api/pools";
 const DEFAULT_POOLS_PAGE_SIZE = 20;
 
 export function useUserPoolsInfinite(perPage = DEFAULT_POOLS_PAGE_SIZE, enabled = true) {
+  const nearby = useNearbyCatalog();
+  const options = poolListInfiniteQueryOptions(poolsClient, perPage, nearby);
   return useInfiniteQuery({
-    ...poolListInfiniteQueryOptions(poolsClient, perPage),
+    ...options,
+    ...nearbyQueryPolicy(nearby),
     enabled,
   });
 }
