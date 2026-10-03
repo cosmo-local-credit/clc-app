@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
@@ -12,6 +12,30 @@ const ADDRESS = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" as const;
 
 vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => ADDRESS.toLowerCase(),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    children,
+    params,
+    search,
+    to: _to,
+    ...props
+  }: {
+    children: React.ReactNode;
+    params: { voucherAddress: string };
+    search: { from: string };
+    to: string;
+    "aria-label"?: string;
+    className?: string;
+  }) => (
+    <a
+      href={`/vouchers/${params.voucherAddress}?${new URLSearchParams(search).toString()}`}
+      {...props}
+    >
+      {children}
+    </a>
+  ),
 }));
 
 function renderWithQueryClient(ui: React.ReactElement) {
@@ -67,6 +91,50 @@ describe("ActivityPage", () => {
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
   });
 
+  it("shows zero-address receipts as created supply", async () => {
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        statusText: "",
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              ok: true,
+              result: {
+                transfers: [
+                  {
+                    id: 743840,
+                    txHash: "0xec0810051bdd353f0d3ad60bdf6c78eef8579d8d4b19d1bd7bc4f6a73cc16783",
+                    dateBlock: "2026-09-30T05:27:30Z",
+                    direction: "IN",
+                    counterpartyAddress: zeroAddress,
+                    senderAddress: zeroAddress,
+                    recipientAddress: ADDRESS,
+                    tokenAddress: "0xdE67c8adFC4A61e335E8a86296CDf102A9f3C658",
+                    tokenSymbol: "MY3R",
+                    tokenName: "my3rd",
+                    tokenDecimals: 6,
+                    amount: "1000000000",
+                    success: true,
+                  },
+                ],
+              },
+            }),
+          ),
+      }),
+    );
+
+    renderWithQueryClient(<ActivityPage address={ADDRESS} />);
+
+    expect(await screen.findByText("Created")).toBeTruthy();
+    expect(screen.getByText("New supply")).toBeTruthy();
+    expect(screen.getByText("1000 MY3R")).toBeTruthy();
+    expect(document.body.textContent).not.toContain("0x0000");
+  });
+
   it("opens transfer details in a sharp bottom sheet", async () => {
     vi.stubGlobal(
       "fetch",
@@ -108,8 +176,13 @@ describe("ActivityPage", () => {
     expect(screen.getByText("Received voucher")).toBeTruthy();
     expect(screen.getByText("Status")).toBeTruthy();
     expect(screen.getByText("Confirmed")).toBeTruthy();
-    expect(screen.getByText("Recipient")).toBeTruthy();
-    expect(screen.getAllByText("1.23 USD₮").length).toBeGreaterThan(1);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("From")).toBeTruthy();
+    expect(within(dialog).getByText("To")).toBeTruthy();
+    expect(within(dialog).getByText("Amount").parentElement?.textContent).toContain("1.23 USD₮");
+    expect(within(dialog).getByRole("link", { name: "View voucher" }).getAttribute("href")).toBe(
+      "/vouchers/0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e?from=wallet",
+    );
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
     expect(document.body.textContent).toContain("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
     // From the chain table, not a literal: this suite runs on whichever chain

@@ -354,7 +354,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                   label="Owner"
                   htmlFor={field.name}
                   error={fieldError(field)}
-                  hint="The wallet that will own this voucher and mint its supply."
+                  hint="The wallet that will own this voucher and create its supply."
                 >
                   <Input
                     id={field.name}
@@ -713,7 +713,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                     only place an operator finds out before they are asked why the
                     voucher they just published cannot be sent. */}
                 <p className="text-muted-foreground mt-4 text-xs leading-snug">
-                  Deploys with zero supply. The owner mints their opening supply from their own
+                  Deploys with zero supply. The owner creates their opening supply from their own
                   wallet.
                 </p>
                 <Button
