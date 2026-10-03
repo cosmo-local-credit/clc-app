@@ -107,12 +107,19 @@ function nextPoolCursor(page: UserPoolPage, perPage: number): number | undefined
   return page.receivedCount < perPage || page.last === undefined ? undefined : page.last;
 }
 
-export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number) {
+export function poolListInfiniteQueryOptions(pools: PoolsClient, perPage: number, nearby?: string) {
   return infiniteQueryOptions({
-    queryKey: poolKeys.listInfinite(perPage),
+    queryKey: nearby
+      ? ([...poolKeys.listInfinite(perPage), nearby] as const)
+      : poolKeys.listInfinite(perPage),
     queryFn: ({ pageParam, signal }) =>
       pools.getPools(
-        { perPage, cursor: pageParam, next: pageParam === undefined ? undefined : true },
+        {
+          perPage,
+          cursor: pageParam,
+          next: pageParam === undefined ? undefined : true,
+          ...(nearby ? { nearby: true } : {}),
+        },
         signal,
       ),
     initialPageParam: undefined as number | undefined,

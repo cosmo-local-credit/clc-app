@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -168,6 +168,67 @@ describe("useMarketMapVouchers pagination", () => {
 });
 
 describe("useMarketMapVouchers viewport bootstrap", () => {
+  it("drops viewport-only rows when the complete catalog excludes them", async () => {
+    let releaseCatalog: (value: MarketVoucherPage) => void = () => {};
+    getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
+      params.bbox
+        ? Promise.resolve(page([7]))
+        : new Promise<MarketVoucherPage>((resolve) => {
+            releaseCatalog = resolve;
+          }),
+    );
+    const client = newClient();
+    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_VIEWPORT), {
+      wrapper: wrapper(client),
+    });
+
+    await waitFor(() => expect(result.current.vouchers.map((entry) => entry.id)).toEqual(["7"]));
+    expect(result.current.isCatalogComplete).toBe(false);
+
+    await act(async () => releaseCatalog(page([])));
+    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
+    expect(result.current.vouchers).toEqual([]);
+  });
+
+  it("does not restore old viewport rows after a catalog exclusion or a later refresh error", async () => {
+    let releaseCatalog: (value: MarketVoucherPage) => void = () => {};
+    getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
+      params.bbox
+        ? Promise.resolve(page([7]))
+        : new Promise<MarketVoucherPage>((resolve) => {
+            releaseCatalog = resolve;
+          }),
+    );
+    const client = newClient();
+    client.setDefaultOptions({ queries: { retry: false } });
+    const { result } = renderHook(() => useMarketMapVouchers(NAIROBI_VIEWPORT), {
+      wrapper: wrapper(client),
+    });
+    await waitFor(() => expect(result.current.vouchers).toHaveLength(1));
+    await act(async () => releaseCatalog(page([7])));
+    await waitFor(() => expect(result.current.isCatalogComplete).toBe(true));
+
+    // A fresh server response omits the voucher after it moves out of range.
+    getMarketVouchers.mockResolvedValue(page([]));
+    await act(async () => {
+      await client.invalidateQueries({
+        queryKey: marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE),
+      });
+    });
+    await waitFor(() => expect(result.current.vouchers).toEqual([]));
+
+    // Keep the last complete catalog authoritative if a later refresh fails.
+    getMarketVouchers.mockRejectedValue(new Error("network down"));
+    await act(async () => {
+      await client.invalidateQueries({
+        queryKey: marketVoucherQueryKeys.catalog(MARKET_MAP_PAGE_SIZE),
+      });
+    });
+    await waitFor(() => expect(result.current.error).toBeTruthy());
+    expect(result.current.isCatalogComplete).toBe(true);
+    expect(result.current.vouchers).toEqual([]);
+  });
+
   it("renders the bbox page before the full catalog and deduplicates it away", async () => {
     getMarketVouchers.mockImplementation((params: { bbox?: unknown }) =>
       params.bbox

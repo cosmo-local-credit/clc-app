@@ -25,6 +25,10 @@ export function useUpdateProfile() {
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: authKeys.profile(address) }),
         queryClient.invalidateQueries({ queryKey: recipientKeys.all }),
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            query.queryKey.some((part) => typeof part === "string" && part.startsWith("nearby:")),
+        }),
       ]);
     },
   });
