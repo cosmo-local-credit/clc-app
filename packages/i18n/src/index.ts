@@ -28,6 +28,7 @@ const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages
   pt: () => import("./catalogs/pt/messages.po"),
   sr: () => import("./catalogs/sr/messages.po"),
   sw: () => import("./catalogs/sw/messages.po"),
+  uk: () => import("./catalogs/uk/messages.po"),
 };
 
 const loadedLocales = new Set<SupportedLocale>();

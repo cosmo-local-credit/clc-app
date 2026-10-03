@@ -36,6 +36,7 @@ describe("formatTokenAmountFixed", () => {
     ["pt", "10.000,00"],
     ["sw", "10,000.00"],
     ["sr", "10.000,00"],
+    ["uk", "10 000,00"],
   ])("groups fixed amounts for the %s locale", (locale, expected) => {
     expect(formatTokenAmountFixed("10000000000", 6, 2, locale)).toBe(expected);
   });
@@ -64,6 +65,11 @@ describe("formatTokenAmountFixed", () => {
   it("preserves large values with Portuguese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "pt")).toBe(
       "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("preserves large values with Ukrainian grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "uk")).toBe(
+      "90 071 992 547 409 931 234,56",
     );
   });
   it("preserves large values with Tibetan digits and Dzongkha grouping", () => {

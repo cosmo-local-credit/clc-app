@@ -178,8 +178,19 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Ukrainian", async () => {
+    await activateLocale("uk");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Оберіть місце");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Недійсний номер телефону");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Назва ваучера обов’язкова",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Назва пулу обов’язкова");
+  });
+
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw"] as const) {
+    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {
