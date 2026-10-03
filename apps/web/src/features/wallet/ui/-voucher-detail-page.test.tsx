@@ -93,6 +93,7 @@ const mocks = vi.hoisted(() => ({
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   },
+  transfers: [] as Array<Record<string, unknown>>,
 }));
 
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
@@ -114,6 +115,10 @@ vi.mock("sonner", () => ({
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
   useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
   useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-send-share", () => ({
+  useSendShare: () => ({ data: null, isPending: false, isError: false }),
 }));
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
@@ -231,7 +236,7 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
     isPending: false,
   }),
   useAccountTransfersInfinite: () => ({
-    data: { pages: [{ transfers: [] }] },
+    data: { pages: [{ transfers: mocks.transfers }] },
     isPending: false,
     isError: false,
     isSuccess: true,
@@ -481,6 +486,7 @@ beforeEach(() => {
     refetch: vi.fn(),
   };
   mocks.reportVoucher = undefined;
+  mocks.transfers = [];
   mocks.reportsEnabled = false;
   mocks.reportsResult = {
     data: { pages: [{ reports: [report()] }] },
@@ -499,6 +505,34 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("shows voucher creation as new supply without exposing the zero address", async () => {
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+    mocks.transfers = [
+      {
+        id: 743840,
+        txHash: "0xec0810051bdd353f0d3ad60bdf6c78eef8579d8d4b19d1bd7bc4f6a73cc16783",
+        dateBlock: "2026-09-30T05:27:30Z",
+        direction: "IN",
+        counterpartyAddress: zeroAddress,
+        senderAddress: zeroAddress,
+        recipientAddress: mocks.address,
+        tokenAddress: ADDRESS,
+        tokenSymbol: "MALII",
+        tokenName: "Priscilah Malii",
+        tokenDecimals: 2,
+        amount: "100000",
+        success: true,
+      },
+    ];
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    expect(await screen.findByText("Created")).toBeTruthy();
+    expect(screen.getByText(/New supply/)).toBeTruthy();
+    expect(screen.getByText("1000")).toBeTruthy();
+    expect(document.body.textContent).not.toContain("0x0000");
+  });
+
   it("puts balance and the three voucher actions above the tabs", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 

@@ -193,7 +193,7 @@ function EntryTitle({ entry }: { entry: PoolActivityEntry }) {
       </Trans>
     );
   }
-  if (entry.kind === "mint") return <Trans>Minted into the pool</Trans>;
+  if (entry.kind === "mint") return <Trans>Created in the pool</Trans>;
   // A deposit is the only inbound transfer a pool takes; outbound covers a fee
   // sweep and a liquidity withdrawal, which the chain does not tell apart.
   return entry.direction === "IN" ? <Trans>Deposit</Trans> : <Trans>Paid out</Trans>;

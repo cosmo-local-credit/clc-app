@@ -1,7 +1,8 @@
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 import { Badge } from "#/components/ui/badge";
@@ -28,7 +29,9 @@ import { ShareReceiptButton } from "./share-receipt-button";
 export type TransferDetails = {
   txHash: string;
   direction: "IN" | "OUT";
+  senderAddress: string;
   recipientAddress: string;
+  tokenAddress: string;
   tokenDecimals: number;
   tokenSymbol: string;
   amount: string;
@@ -46,22 +49,39 @@ export function TransferDetailsSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { i18n, t } = useLingui();
-  const badge = transfer?.direction === "IN" ? t`Received voucher` : t`Sent voucher`;
+  const created = transfer ? isVoucherCreationTransfer(transfer) : false;
+  const badge = created
+    ? t`Created voucher`
+    : transfer?.direction === "IN"
+      ? t`Received voucher`
+      : t`Sent voucher`;
   const status = transfer?.success ? t`Confirmed` : t`Failed`;
   const transferDate = transfer
     ? formatTransferDate(transfer.dateBlock, i18n.locales?.[0] ?? i18n.locale)
     : "";
   const explorerUrl = transfer ? explorerTxUrl(CHAIN_INFO, transfer.txHash) : "#";
-  const shareQuery = useSendShare(transfer?.txHash ?? null, open && transfer?.success === true);
+  const shareQuery = useSendShare(
+    transfer?.txHash ?? null,
+    open && transfer?.success === true && !created,
+  );
+  const senderIdentity = useReverseRecipientResolution(
+    transfer && !created ? transfer.senderAddress : null,
+  );
   const recipientIdentity = useReverseRecipientResolution(transfer?.recipientAddress ?? null);
   const addressBook = useAddressBookRecipients(useStorageOwner());
-  const recipientAlias = transfer
-    ? ((addressBook.data ?? []).find(
-        (entry) =>
-          entry.address.toLowerCase() === transfer.recipientAddress.toLowerCase() &&
-          !entry.label.toLowerCase().startsWith("0x"),
-      )?.label ?? null)
-    : null;
+  const addressBookLabel = (address: string) =>
+    (addressBook.data ?? []).find(
+      (entry) =>
+        entry.address.toLowerCase() === address.toLowerCase() &&
+        !entry.label.toLowerCase().startsWith("0x"),
+    )?.label ?? null;
+  const senderAlias = transfer && !created ? addressBookLabel(transfer.senderAddress) : null;
+  const recipientAlias = transfer ? addressBookLabel(transfer.recipientAddress) : null;
+  const senderLabel = transfer
+    ? senderIdentity.data
+      ? formatRecipientLabel(senderIdentity.data)
+      : (senderAlias ?? transfer.senderAddress)
+    : undefined;
   const recipientLabel = recipientIdentity.data
     ? formatRecipientLabel(recipientIdentity.data)
     : (recipientAlias ?? transfer?.recipientAddress);
@@ -101,7 +121,15 @@ export function TransferDetailsSheet({
                   </span>
                   <span className="font-mono text-xs font-semibold">
                     {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
-                    {transfer.tokenSymbol}
+                    <Link
+                      to="/vouchers/$voucherAddress"
+                      params={{ voucherAddress: transfer.tokenAddress.toLowerCase() }}
+                      search={{ from: "wallet" }}
+                      aria-label={t`View voucher`}
+                      className="underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <bdi dir="ltr">{transfer.tokenSymbol}</bdi>
+                    </Link>
                   </span>
                 </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
@@ -112,9 +140,25 @@ export function TransferDetailsSheet({
                     {transferDate}
                   </time>
                 </div>
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>From</Trans>
+                  </span>
+                  {created ? (
+                    <span className="text-xs font-semibold">
+                      <Trans>New supply</Trans>
+                    </span>
+                  ) : (
+                    <RecipientIdentityLabel
+                      address={transfer.senderAddress}
+                      fallback={senderAlias ?? undefined}
+                      showAddress
+                    />
+                  )}
+                </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2.5">
                   <span className="text-muted-foreground text-xs">
-                    <Trans>Recipient</Trans>
+                    <Trans>To</Trans>
                   </span>
                   <RecipientIdentityLabel
                     address={transfer.recipientAddress}
@@ -133,13 +177,20 @@ export function TransferDetailsSheet({
               <ShareReceiptButton
                 key={transfer.txHash}
                 className="h-11 w-full"
-                title={t`Payment receipt`}
+                title={created ? t`Voucher creation receipt` : t`Payment receipt`}
                 lines={[
-                  transfer.direction === "OUT"
-                    ? t`I sent ${amountLabel} to ${recipientLabel}.`
-                    : t`I received ${amountLabel}.`,
+                  created
+                    ? t`I created ${amountLabel}.`
+                    : transfer.direction === "OUT"
+                      ? t`I sent ${amountLabel} to ${recipientLabel}.`
+                      : t`I received ${amountLabel} from ${senderLabel}.`,
                   ...(transfer.direction === "OUT" && recipientLabel !== transfer.recipientAddress
                     ? [`${t`Address`}: ${transfer.recipientAddress}`]
+                    : []),
+                  ...(!created &&
+                  transfer.direction === "IN" &&
+                  senderLabel !== transfer.senderAddress
+                    ? [`${t`Address`}: ${transfer.senderAddress}`]
                     : []),
                   ...(transferDate ? [transferDate] : []),
                 ]}

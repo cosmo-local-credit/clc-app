@@ -5,11 +5,38 @@ import {
   formatTokenAmount,
   formatTokenAmountFixed,
   hasSendSharePermission,
+  isVoucherCreationTransfer,
   parseTokenAmount,
   SEND_SHARE_PERMISSION,
   SEND_SHARE_PERMISSION_ALL,
   sendShareFormSchema,
 } from "./logic";
+
+describe("isVoucherCreationTransfer", () => {
+  it("recognizes an inbound ERC-20 transfer from the zero-address supply source", () => {
+    expect(
+      isVoucherCreationTransfer({
+        direction: "IN",
+        senderAddress: "0x0000000000000000000000000000000000000000",
+      }),
+    ).toBe(true);
+  });
+
+  it("does not classify ordinary receipts or outbound burns as voucher creation", () => {
+    expect(
+      isVoucherCreationTransfer({
+        direction: "IN",
+        senderAddress: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toBe(false);
+    expect(
+      isVoucherCreationTransfer({
+        direction: "OUT",
+        senderAddress: "0x0000000000000000000000000000000000000000",
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("formatTokenAmount", () => {
   it("formats raw token units with up to two decimal places", () => {
