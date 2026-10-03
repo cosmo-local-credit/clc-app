@@ -103,6 +103,22 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["de-DE", "pt-AO", "es-ES"])).toBe("pt");
   });
 
+  it("matches generic, regional, and script-tagged Ukrainian locales", () => {
+    expect(matchSupportedLocale(["uk"])).toBe("uk");
+    expect(matchSupportedLocale(["uk-UA"])).toBe("uk");
+    expect(matchSupportedLocale(["uk-Cyrl-UA"])).toBe("uk");
+    expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
+  });
+
+  it("honors Ukrainian in the preferred-language order", () => {
+    expect(matchSupportedLocale(["de-DE", "uk-UA", "en-US"])).toBe("uk");
+  });
+
+  it("exposes Ukrainian direction and formatting metadata", () => {
+    expect(getLocaleDirection("uk")).toBe("ltr");
+    expect(getLocaleFormattingLocale("uk")).toBe("uk");
+  });
+
   it("falls back to the default locale when nothing matches", () => {
     expect(matchSupportedLocale(["de", "ja"])).toBe(DEFAULT_LOCALE);
   });
@@ -118,11 +134,13 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
     expect(matchSupportedLocale(["IT-ch"])).toBe("it");
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
+    expect(matchSupportedLocale(["UK-ua"])).toBe("uk");
   });
 
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
     expect(matchSupportedLocale(["sw_KE", "en_US"])).toBe("sw");
     expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
+    expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
   });
 
   it("trims surrounding whitespace", () => {

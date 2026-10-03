@@ -29,6 +29,7 @@ describe("i18n catalogs", () => {
     ["pt", "Ainda não há avaliações."],
     ["sr", "Још нема рецензија."],
     ["sw", "Bado hakuna maoni."],
+    ["uk", "Відгуків ще немає."],
   ] as const)("loads the review empty state in %s", async (locale, emptyMessage) => {
     await activateLocale(locale);
     expect(i18n._("dEETgs")).toBe(emptyMessage);
@@ -239,6 +240,34 @@ describe("i18n catalogs", () => {
     expect(i18n._(msg`Switch wallet`)).toBe("Промијени новчаник");
   });
 
+  it("activates the Ukrainian catalog with all plural forms", async () => {
+    await activateLocale("uk");
+
+    expect(i18n.locales).toEqual(["uk"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("Оберіть місце");
+    expect(i18n._(msg`Pools`)).toBe("Пули");
+    expect(i18n._(msg`Wallet`)).toBe("Гаманець");
+    expect(i18n._(msg`Swap`)).toBe("Обміняти");
+    expect(i18n._(msg`Redeem`)).toBe("Погасити");
+    expect(maxAmount("55,00")).toBe("Макс. 55,00");
+
+    const voucherCount = (count: number) =>
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count },
+      });
+
+    expect(voucherCount(0)).toBe("0 ваучерів");
+    expect(voucherCount(1)).toBe("1 ваучер");
+    expect(voucherCount(2)).toBe("2 ваучери");
+    expect(voucherCount(5)).toBe("5 ваучерів");
+    expect(voucherCount(21)).toBe("21 ваучер");
+    expect(voucherCount(22)).toBe("22 ваучери");
+    expect(voucherCount(25)).toBe("25 ваучерів");
+    expect(voucherCount(1.5)).toBe("1,5 ваучера");
+  });
+
   it.each([
     ["ar", "فتح القائمة", "الانتقال إلى الموقع المحفوظ", "شروط الخدمة"],
     ["es", "Abrir menú", "Ir a la ubicación guardada", "Términos del servicio"],
@@ -247,6 +276,7 @@ describe("i18n catalogs", () => {
     ["pt", "Abrir menu", "Ir para a localização guardada", "Termos de Serviço"],
     ["sr", "Отвори мени", "Иди на сачувану локацију", "Услови коришћења"],
     ["sw", "Fungua menyu", "Nenda kwenye eneo lililohifadhiwa", "Masharti ya Huduma"],
+    ["uk", "Відкрити меню", "Перейти до збереженого місця", "Умови користування"],
   ] as const)("translates the reusable app menu into %s", async (locale, open, location, terms) => {
     await activateLocale(locale);
 
