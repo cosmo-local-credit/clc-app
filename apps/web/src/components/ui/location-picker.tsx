@@ -28,7 +28,7 @@ type PlacePinOptions = {
 
 export function LocationPicker({ value, onChange, error, label }: LocationPickerProps) {
   const { t } = useLingui();
-  const [query, setQuery] = useState(value?.locationName ?? "");
+  const [query, setQuery] = useState({ text: value?.locationName ?? "", shouldSearch: false });
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [searching, setSearching] = useState(false);
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(
@@ -40,10 +40,6 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   const searchAbortRef = useRef<AbortController | null>(null);
   const reverseAbortRef = useRef<AbortController | null>(null);
   const reverseRequestRef = useRef(0);
-  // Seeded from the initial value: the query starts as the saved place name, and
-  // without this the search effect would fire on mount and drop a suggestion list
-  // over a form the user has not typed in. Only typing sets it back to false.
-  const skipNextSearchRef = useRef(Boolean(value?.locationName));
   const onChangeRef = useRef(onChange);
   const geolocation = useBrowserGeolocation();
   const geoStatus = geolocation.state.status;
@@ -55,14 +51,12 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   }, [onChange]);
 
   useEffect(() => {
+    if (!value && reverseAbortRef.current) return;
     const nextQuery = value?.locationName ?? "";
+    searchAbortRef.current?.abort();
     setQuery((currentQuery) => {
-      if (currentQuery === nextQuery) return currentQuery;
-      // A parent-provided place name is already selected data, not a new search.
-      // Suppress the search effect that follows this state update so opening an
-      // edit form cannot cover the saved location with a suggestion dropdown.
-      skipNextSearchRef.current = Boolean(nextQuery);
-      return nextQuery;
+      if (currentQuery.text === nextQuery && !currentQuery.shouldSearch) return currentQuery;
+      return { text: nextQuery, shouldSearch: false };
     });
   }, [value?.locationName]);
 
@@ -71,6 +65,8 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   }, []);
 
   useEffect(() => {
+    // Clearing the form value during a country lookup must keep the selected pin.
+    if (!value && reverseAbortRef.current) return;
     setPin((current) => {
       if (!value) return current ? null : current;
       if (current?.lat === value.lat && current.lng === value.lng) return current;
@@ -79,30 +75,32 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
   }, [value]);
 
   const setSearchQueryFromLocation = useCallback((nextQuery: string) => {
-    skipNextSearchRef.current = true;
-    setQuery(nextQuery);
+    searchAbortRef.current?.abort();
+    setQuery({ text: nextQuery, shouldSearch: false });
   }, []);
 
   const placePin = useCallback(
     (lat: number, lng: number, options: PlacePinOptions = {}) => {
+      searchAbortRef.current?.abort();
+      setQuery((current) => (current.shouldSearch ? { ...current, shouldSearch: false } : current));
       setPin({ lat, lng });
       if (options.clearSuggestions !== false) {
         setSuggestions([]);
       }
       setReverseError(null);
       setReversePending(true);
-      onChangeRef.current(undefined);
-
       reverseAbortRef.current?.abort();
       const controller = new AbortController();
       reverseAbortRef.current = controller;
       const requestId = reverseRequestRef.current + 1;
       reverseRequestRef.current = requestId;
+      onChangeRef.current(undefined);
 
       void reverseLocation(lat, lng, controller.signal).then((result) => {
         if (controller.signal.aborted || reverseRequestRef.current !== requestId) {
           return;
         }
+        reverseAbortRef.current = null;
         setReversePending(false);
         const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
         if (!result) {
@@ -135,14 +133,15 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
 
   useEffect(() => {
     searchAbortRef.current?.abort();
-    if (skipNextSearchRef.current) {
-      skipNextSearchRef.current = false;
+    // Only text entered by the user searches. Saved and reverse-geocoded names
+    // remain selected across rerenders and effect replay.
+    if (!query.shouldSearch) {
       setSuggestions([]);
       setSearching(false);
       return;
     }
 
-    const trimmedQuery = query.trim();
+    const trimmedQuery = query.text.trim();
     if (trimmedQuery.length < 3) {
       setSuggestions([]);
       setSearching(false);
@@ -164,7 +163,7 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [query]);
+  }, [query.text, query.shouldSearch]);
 
   useEffect(() => {
     return () => {
@@ -197,10 +196,9 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
             role="searchbox"
             autoComplete="off"
             placeholder={t`Search for a town or place`}
-            value={query}
+            value={query.text}
             onChange={(event) => {
-              skipNextSearchRef.current = false;
-              setQuery(event.target.value);
+              setQuery({ text: event.target.value, shouldSearch: true });
             }}
             className="bg-card pe-10"
             aria-invalid={!!shownError}
