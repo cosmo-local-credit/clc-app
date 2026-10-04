@@ -1,6 +1,8 @@
 import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { $convertFromMarkdownString } from "@lexical/markdown";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { LexicalEditor } from "lexical";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -113,6 +115,12 @@ vi.mock("#/hooks/use-deployment", () => ({
 
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
 
+// The shell only defers the chunk; these tests are about the editor inside it.
+vi.mock("#/components/ui/markdown-editor", async () => {
+  const editor = await import("#/components/ui/markdown-editor-lexical");
+  return { MarkdownEditor: editor.MarkdownEditorLexical };
+});
+
 // Cropping and uploading are covered by the shared field's tests. This keeps
 // this suite on form integration: stored URLs must survive the steps and reach
 // the deploy request.
@@ -149,6 +157,7 @@ vi.mock("#/components/ui/image-upload-field", () => ({
   ),
 }));
 
+import { MARKDOWN_TRANSFORMERS } from "#/components/ui/markdown-editor-lexical";
 import { BackendApiError } from "@clc/api/client/errors";
 import { toast } from "sonner";
 
@@ -164,6 +173,18 @@ function renderFlow(ui: ReactElement) {
     ),
   });
   return { ...view, queryClient };
+}
+
+/** Replaces what the terms editor holds, as if the author had formatted it. */
+async function writeTerms(label: string, markdown: string) {
+  const root = screen.getByRole("textbox", { name: label }) as HTMLElement & {
+    __lexicalEditor: LexicalEditor;
+  };
+  await act(async () => {
+    root.__lexicalEditor.update(() => {
+      $convertFromMarkdownString(markdown, MARKDOWN_TRANSFORMERS);
+    });
+  });
 }
 
 beforeEach(() => {
@@ -362,16 +383,20 @@ describe("CreateVoucherFlow", () => {
     fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
 
     // Flipping the switch discards the link: a URL is not a body of terms.
-    const editor = screen.getByLabelText("Shown to anyone holding this voucher");
-    expect((editor as HTMLTextAreaElement).value).toBe("");
+    const editor = await screen.findByRole("textbox", {
+      name: "Shown to anyone holding this voucher",
+    });
+    expect(editor.textContent).toBe("");
     expect(screen.queryByLabelText("Terms URL")).toBeNull();
 
-    fireEvent.change(editor, {
-      target: { value: "# House rules\n\nRedeemable on **market days** only." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
-    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
-    expect(screen.getByText("market days").tagName).toBe("STRONG");
+    await writeTerms(
+      "Shown to anyone holding this voucher",
+      "# House rules\n\nRedeemable on **market days** only.",
+    );
+    // Formatted where it is written: no syntax to read, so nothing to preview.
+    expect(editor.querySelector("h1")?.textContent).toBe("House rules");
+    expect(editor.querySelector("strong")?.textContent).toBe("market days");
+    expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
