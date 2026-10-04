@@ -3,6 +3,7 @@ import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -31,12 +32,6 @@ import { isStorageConfigured } from "#/lib/storage";
 import { useUpdateVoucherProfile } from "../use-update-voucher-profile";
 import { UnitOfAccountCombobox } from "#/components/admin/unit-of-account-combobox";
 
-const optionalStoredImageSchema = z
-  .string()
-  .refine((value) => value === "" || /^https?:\/\//.test(value), {
-    message: "The image must be an http(s) URL",
-  });
-
 /**
  * The text fields are the product's shared profile rules, so a voucher cannot be
  * edited here into a state the owner's own editor or the publish form would
@@ -46,8 +41,8 @@ const profileSchema = voucherProfileTextSchema
   .extend({
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
-    iconUrl: optionalStoredImageSchema,
-    bannerUrl: optionalStoredImageSchema,
+    iconUrl: storedImageUrlSchema,
+    bannerUrl: storedImageUrlSchema,
     locationName: z.string().trim().max(200, { message: "Location name is too long" }),
     latitude: z.string(),
     longitude: z.string(),

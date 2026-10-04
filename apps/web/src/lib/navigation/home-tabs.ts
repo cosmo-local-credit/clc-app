@@ -6,7 +6,7 @@ import {
   type VoucherSheetSearch,
 } from "#/lib/navigation/voucher-sheet-search";
 
-const privateHomeTabs = ["wallet", "activity", "posts", "settings"] as const;
+const privateHomeTabs = ["wallet", "activity", "settings"] as const;
 const homeTabs = ["wallet", "activity", "market", "posts", "settings"] as const;
 
 export type HomeTab = (typeof homeTabs)[number];

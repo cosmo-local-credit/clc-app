@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isHttpUrl } from "../../lib/contact";
 import { CUSTOM_UNIT_MAX_LENGTH } from "../vocabulary/logic";
 
 /**
@@ -106,7 +107,7 @@ const offeringDescriptionSchema = z
 const offeringImageUrlSchema = z
   .string()
   .trim()
-  .refine((value) => /^https?:\/\//i.test(value), {
+  .refine((value) => isHttpUrl(value), {
     message: "The photo must be an uploaded image URL",
   })
   .nullable();

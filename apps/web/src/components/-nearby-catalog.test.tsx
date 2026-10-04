@@ -275,14 +275,29 @@ it("cancels a pending old-location request on a location change", async () => {
   expect(signal?.aborted).toBe(true);
 });
 
-it("does not load catalogs for guests or while authentication is loading", () => {
+it("loads public results for guests and remounts when signing in or out", async () => {
   state.auth.isAuthenticated = false;
   const view = mount();
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+  for (const request of [state.market, state.reports]) {
+    expect(request.mock.calls[0]?.[0].nearby).toBeUndefined();
+  }
+  state.auth.isAuthenticated = true;
+  await act(async () => view.rerender(view.tree()));
+  await waitFor(() => expect(state.market.mock.lastCall?.[0].nearby).toBe(true));
+  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toContain("nearby:");
+  state.auth.isAuthenticated = false;
+  await act(async () => view.rerender(view.tree()));
+  expect(screen.getByTestId("lists").getAttribute("data-initial-scope")).toBeNull();
+});
+
+it("does not load catalogs while authentication is loading", () => {
+  state.auth.isAuthenticated = false;
+  state.auth.isLoading = true;
+  mount();
   expect(screen.queryByTestId("lists")).toBeNull();
   expect(state.market).not.toHaveBeenCalled();
-  state.auth.isLoading = true;
-  view.rerender(view.tree());
-  expect(screen.queryByTestId("lists")).toBeNull();
   expect(state.pools).not.toHaveBeenCalled();
   expect(state.reports).not.toHaveBeenCalled();
 });

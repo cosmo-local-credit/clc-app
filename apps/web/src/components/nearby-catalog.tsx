@@ -5,7 +5,6 @@ import { createContext, type ReactNode, useContext } from "react";
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
-import { onboardingSearch } from "#/lib/onboarding-search";
 
 // Only Market, Pools browsing, and Posts opt in. Other consumers of the same
 // catalog hooks (wallet, pickers, and details) retain ordinary reads.
@@ -68,13 +67,9 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
   }
   if (!auth.isAuthenticated) {
     return (
-      <div className="p-6">
-        <Button asChild>
-          <Link to="/onboarding" search={onboardingSearch("welcome")}>
-            <Trans>Sign in or sign up</Trans>
-          </Link>
-        </Button>
-      </div>
+      <NearbyCatalogContext.Provider key="public" value={undefined}>
+        {children}
+      </NearbyCatalogContext.Provider>
     );
   }
   if (

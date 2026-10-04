@@ -6,6 +6,7 @@ import {
 } from "@clc/core/lib/contact";
 import { isIsoCurrency } from "@clc/core/lib/currencies";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -73,9 +74,7 @@ const profileSchema = z
     longitude: z.string(),
     // Already uploaded by the time it reaches the form, so the only rule left is
     // the one the database enforces: a URL or nothing.
-    avatarUrl: z.string().refine((value) => value === "" || /^https?:\/\//.test(value), {
-      message: "The image must be an http(s) URL",
-    }),
+    avatarUrl: storedImageUrlSchema,
     maxPools: limitSchema,
     maxTokens: limitSchema,
   })
