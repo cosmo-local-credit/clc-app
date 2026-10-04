@@ -57,7 +57,7 @@ export function UsernameInput({
       <p id={descriptionId} className="text-muted-foreground text-xs">
         {automatic
           ? t`People can use this name to send vouchers to you. Leave blank to choose automatically.`
-          : t`People can use this name to send vouchers to you. Leave blank to keep your current username.`}
+          : t`People can use this name to send vouchers to you.`}
       </p>
       <Button
         type="button"

@@ -1,6 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 const { account, historyBack, navigate, toastSuccess } = vi.hoisted(() => ({
@@ -107,11 +107,21 @@ function profilePayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function mockBackend(profile: Record<string, unknown> = {}) {
+function mockBackend(
+  profile: Record<string, unknown> = {},
+  { rejectSave }: { rejectSave?: string } = {},
+) {
+  // Saves persist, so the refetch after a save reads what was written.
+  let stored = profilePayload(profile);
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = requestUrl(input);
+    if (url.includes("/auth/profile") && init?.method === "POST") {
+      if (rejectSave) return Promise.resolve(errorResponse(409, rejectSave));
+      stored = { ...stored, ...(JSON.parse(init.body as string) as Record<string, unknown>) };
+      return Promise.resolve(jsonResponse(stored));
+    }
     if (url.includes("/auth/profile")) {
-      return Promise.resolve(jsonResponse(profilePayload(profile)));
+      return Promise.resolve(jsonResponse(stored));
     }
     return Promise.reject(new Error(`Unexpected fetch: ${url} ${init?.method ?? "GET"}`));
   });
@@ -131,6 +141,15 @@ function requestUrl(input: RequestInfo | URL) {
   if (typeof input === "string") return input;
   if (input instanceof URL) return input.href;
   return input.url;
+}
+
+function errorResponse(status: number, description: string) {
+  return {
+    ok: false,
+    status,
+    statusText: "",
+    text: () => Promise.resolve(JSON.stringify({ ok: false, description })),
+  };
 }
 
 function jsonResponse(result: unknown) {
@@ -165,26 +184,96 @@ describe("ProfileEditPage", () => {
     expect(phone.value.replace(/\s/g, "")).toContain("712345678");
   });
 
-  it("prefills and submits a changed username", async () => {
-    const fetchMock = mockBackend({ username: "alice" });
+  it("shows the saved username on its own, outside the contact form", async () => {
+    mockBackend({ username: "alice" });
 
     renderWithQueryClient(<ProfileEditPage />);
 
-    const username = (await screen.findByLabelText(/^username$/i)) as HTMLInputElement;
-    expect(username.value).toBe("alice");
-    fireEvent.change(username, { target: { value: "alice-new" } });
-    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
-
-    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
-    expect(JSON.parse(postBody(fetchMock))).toMatchObject({ username: "alice-new" });
+    const section = await screen.findByRole("region", { name: /^username$/i });
+    expect(within(section).getByText("alice")).toBeTruthy();
+    expect(within(section).getByRole("button", { name: /change username/i })).toBeTruthy();
+    const form = screen.getByRole("form", { name: /edit profile/i });
+    expect(within(form).queryByLabelText(/^username$/i)).toBeNull();
   });
 
-  it("omits a blank username so the backend keeps the current automatic name", async () => {
+  it("says when the account has no username yet", async () => {
+    mockBackend({ username: null });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    const section = await screen.findByRole("region", { name: /^username$/i });
+    expect(within(section).getByText(/you don't have a username yet/i)).toBeTruthy();
+    expect(within(section).getByRole("button", { name: /choose username/i })).toBeTruthy();
+  });
+
+  it("saves a new username alone, keeping the contact form's unsaved edits out", async () => {
     const fetchMock = mockBackend({ username: "alice" });
 
     renderWithQueryClient(<ProfileEditPage />);
 
-    fireEvent.change(await screen.findByLabelText(/^username$/i), { target: { value: "" } });
+    fireEvent.change(await screen.findByLabelText(/^name$/i), {
+      target: { value: "Alice Cooper" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /change username/i }));
+    const sheet = await screen.findByRole("form", { name: /change username/i });
+    fireEvent.change(within(sheet).getByLabelText(/^username$/i), {
+      target: { value: "Alice-New" },
+    });
+    fireEvent.click(within(sheet).getByRole("button", { name: /save username/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith("Username updated"));
+    const body = JSON.parse(postBody(fetchMock)) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      name: "Alice",
+      username: "alice-new",
+      email: "alice@example.com",
+      phone: "+254712345678",
+      country: "KE",
+    });
+    for (const key of ["preferredCurrency", "bio", "website", "clearLocation", "avatarUrl"]) {
+      expect(body).not.toHaveProperty(key);
+    }
+    const section = screen.getByRole("region", { name: /^username$/i });
+    await waitFor(() => expect(within(section).getByText("alice-new")).toBeTruthy());
+    expect(historyBack).not.toHaveBeenCalled();
+    expect(screen.getByDisplayValue("Alice Cooper")).toBeTruthy();
+  });
+
+  it("keeps the sheet open with the reason when the username is taken", async () => {
+    mockBackend({ username: null }, { rejectSave: "username or pool name is already in use" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /choose username/i }));
+    const sheet = await screen.findByRole("form", { name: /choose username/i });
+    fireEvent.change(within(sheet).getByLabelText(/^username$/i), { target: { value: "bob" } });
+    fireEvent.click(within(sheet).getByRole("button", { name: /save username/i }));
+
+    expect(
+      await within(sheet).findByText("That username or pool name is already taken"),
+    ).toBeTruthy();
+    expect(toastSuccess).not.toHaveBeenCalled();
+  });
+
+  it("does not save an unchanged or blank username", async () => {
+    mockBackend({ username: "alice" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: /change username/i }));
+    const sheet = await screen.findByRole("form", { name: /change username/i });
+    const save = within(sheet).getByRole("button", { name: /save username/i });
+    expect(save.hasAttribute("disabled")).toBe(true);
+    fireEvent.change(within(sheet).getByLabelText(/^username$/i), { target: { value: " " } });
+    expect(save.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("leaves the username out of a contact-form save", async () => {
+    const fetchMock = mockBackend({ username: "alice" });
+
+    renderWithQueryClient(<ProfileEditPage />);
+
+    await screen.findByDisplayValue("Alice");
     fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());

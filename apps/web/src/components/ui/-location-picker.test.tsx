@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { LocationInput } from "@clc/core/features/location/logic";
-import { useState } from "react";
+import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -73,6 +73,60 @@ beforeEach(() => {
 });
 
 describe("LocationPicker", () => {
+  it("does not search a saved location when effects replay in StrictMode", async () => {
+    mockSearchLocations.mockResolvedValue([
+      { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
+      { address: "Nairobi West, Kenya", lat: -1.31, lng: 36.81, score: 95 },
+    ]);
+    render(
+      <StrictMode>
+        <LocationPicker
+          value={{ locationName: "Nairobi, Kenya", country: "KE", lat: -1.2921, lng: 36.8219 }}
+          onChange={vi.fn()}
+        />
+      </StrictMode>,
+    );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(mockSearchLocations).not.toHaveBeenCalled();
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("discards pending suggestions after a map selection resolves to the same search text", async () => {
+    let resolveSearch: (value: unknown) => void = () => undefined;
+    mockSearchLocations.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveSearch = resolve;
+        }),
+    );
+    mockReverseLocation.mockResolvedValue({ locationName: "Nairobi, Kenya", country: "KE" });
+    render(<LocationPicker value={undefined} onChange={vi.fn()} />);
+    fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
+      target: { value: "Nairobi, Kenya" },
+    });
+    await waitFor(() => expect(mockSearchLocations).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /pick map location/i }));
+    });
+    await act(async () => {
+      resolveSearch([
+        { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
+        { address: "Nairobi West, Kenya", lat: -1.31, lng: 36.81, score: 95 },
+      ]);
+    });
+
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+      "value",
+      "Nairobi, Kenya",
+    );
+  });
+
   it("does not render the browser-only map during server rendering", () => {
     const html = renderToString(<LocationPicker onChange={vi.fn()} value={undefined} />);
 

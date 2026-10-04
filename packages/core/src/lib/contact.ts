@@ -23,7 +23,7 @@ export const optionalPhoneSchema = z
   });
 
 /** Unlike `z.httpUrl()`, accepts `localhost` and bare IPs, which dev storage uses. */
-export const httpUrlSchema = z.url({ protocol: /^https?$/ });
+const httpUrlSchema = z.url({ protocol: /^https?$/ });
 
 export function isHttpUrl(value: string): boolean {
   return httpUrlSchema.safeParse(value).success;

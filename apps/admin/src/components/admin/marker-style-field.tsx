@@ -40,7 +40,7 @@ const MARKER_GLYPHS: Record<MarkerIcon, IconType> = {
   education: RiGraduationCapFill,
 };
 
-export const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
+const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
   basket: "Shopping",
   "hand-coin": "Services",
   coupon: "Voucher",
@@ -51,7 +51,7 @@ export const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
   education: "Education",
 };
 
-export const MARKER_COLOR_LABEL: Record<MarkerColor, string> = {
+const MARKER_COLOR_LABEL: Record<MarkerColor, string> = {
   blue: "Blue",
   purple: "Purple",
   orange: "Orange",
@@ -61,7 +61,7 @@ export const MARKER_COLOR_LABEL: Record<MarkerColor, string> = {
 };
 
 /** The member app's map pin as SVG: the same 30 x 36 box, disc, tip and glyph. */
-export function MarkerPin({ style, size = 30 }: { style: MarkerStyle; size?: number }) {
+function MarkerPin({ style, size = 30 }: { style: MarkerStyle; size?: number }) {
   const Glyph = MARKER_GLYPHS[style.icon];
   return (
     <svg

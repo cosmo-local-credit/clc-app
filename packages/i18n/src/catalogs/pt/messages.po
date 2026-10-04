@@ -593,7 +593,7 @@ msgstr "Saldo {0}"
 msgid "Balance {tokenBalance}"
 msgstr "Saldo {tokenBalance}"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:312
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:305
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:322
 msgid "Bio"
 msgstr "Biografia"
@@ -647,6 +647,7 @@ msgstr "Acesso à câmara recusada."
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:498
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:635
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
@@ -698,6 +699,12 @@ msgstr "Mudar"
 #: apps/web/src/components/ui/avatar-picker.tsx:100
 msgid "Change photo"
 msgstr "Mudar a Imagem"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Change username"
+msgstr "Alterar nome de utilizador"
 
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:179
 msgid "Changes how the pool is shown. The deployed contract keeps its name."
@@ -857,6 +864,11 @@ msgstr "Escolha entre as fotos"
 msgid "Choose Image"
 msgstr "Escolher imagem"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:85
+msgid "Choose one so people can send you vouchers without your wallet address."
+msgstr "Escolha um para que outras pessoas lhe possam enviar vales sem o "
+"endereço da sua carteira."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:193
 msgid "Choose rates you set or equal value when the unit has no price feed"
@@ -866,6 +878,12 @@ msgstr "Escolha as taxas de câmbio definidas por si ou um valor equivalente "
 #: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "Choose the app display language."
 msgstr "Escolha a língua de visualização da aplicação."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Choose username"
+msgstr "Escolher nome de utilizador"
 
 #: apps/web/src/features/install/ui/install-page.tsx:80
 msgid "CLC is installed. Find it on your home screen."
@@ -900,7 +918,7 @@ msgstr "Limpar filtro"
 msgid "Clear filters"
 msgstr "Limpar filtros"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:393
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:390
 msgid "Clear location"
 msgstr "Limpar localização"
 
@@ -1196,6 +1214,7 @@ msgstr "Copiar o hash da transação"
 msgid "Copy wallet address"
 msgstr "Copiar o endereço da carteira"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:75
 #: apps/web/src/features/wallet/ui/receive-page.tsx:80
 msgid "Copy wallet username"
 msgstr "Copiar nome de utilizador da carteira"
@@ -1314,6 +1333,8 @@ msgstr "Não foi possível copiar o hash da transação de emissão"
 msgid "Couldn't copy transaction hash"
 msgstr "Não foi possível copiar o hash da transação"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:43
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:49
 #: apps/web/src/features/wallet/ui/receive-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:30
 msgid "Couldn't copy username"
@@ -1332,7 +1353,7 @@ msgstr "Não foi possível criar os vales."
 msgid "Couldn't estimate this swap."
 msgstr "Não foi possível calcular esta troca."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:113
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Não foi possível identificar um país aqui. Tente com um ponto próximo."
 
@@ -1497,13 +1518,17 @@ msgstr "Não foi possível gravar os detalhes do vale."
 msgid "Couldn't save your post."
 msgstr "Não foi possível gravar a sua publicação."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:153
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:152
 msgid "Couldn't save your profile."
 msgstr "Não foi possível gravar o seu perfil."
 
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:72
 msgid "Couldn't save your review. Please try again."
 msgstr "Não foi possível salvar sua avaliação. Tente novamente."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:151
+msgid "Couldn't save your username."
+msgstr "Não foi possível gravar o seu nome de utilizador."
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
 msgid "Couldn't save. Please try again."
@@ -1863,8 +1888,8 @@ msgid "Edit post"
 msgstr "Editar publicação"
 
 #: apps/web/src/components/nearby-catalog.tsx:90
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:44
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Editar perfil"
@@ -1887,8 +1912,8 @@ msgstr "Educação"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:223
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:235
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:237
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:249
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
@@ -2315,7 +2340,7 @@ msgstr "Troquei {sentLabel} por {amountLabel} em {poolName}."
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Troquei {sentLabel} por {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:291
+#: apps/web/src/components/ui/location-picker.tsx:289
 msgid "Identifying location…"
 msgstr "A identificar a localização…"
 
@@ -2599,8 +2624,8 @@ msgstr "A carregar os limites de crédito…"
 msgid "Loading holdings…"
 msgstr "A carregar os ativos…"
 
-#: apps/web/src/components/ui/location-picker.tsx:268
-#: apps/web/src/components/ui/location-picker.tsx:284
+#: apps/web/src/components/ui/location-picker.tsx:266
+#: apps/web/src/components/ui/location-picker.tsx:282
 msgid "Loading location map"
 msgstr "A carregar o mapa"
 
@@ -2699,7 +2724,7 @@ msgstr "A carregar o seu perfil…"
 msgid "Loading…"
 msgstr "A carregar…"
 
-#: apps/web/src/components/ui/location-picker.tsx:199
+#: apps/web/src/components/ui/location-picker.tsx:198
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/home/ui/report-page.tsx:577
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
@@ -2712,11 +2737,11 @@ msgstr "Localização"
 msgid "Location denied"
 msgstr "Permissão de localização recusada"
 
-#: apps/web/src/components/ui/location-map.tsx:198
+#: apps/web/src/components/ui/location-map.tsx:203
 msgid "Location map"
 msgstr "Mapa de localização"
 
-#: apps/web/src/components/ui/location-picker.tsx:221
+#: apps/web/src/components/ui/location-picker.tsx:219
 #: apps/web/src/features/home/ui/market-page.tsx:131
 msgid "Location unavailable"
 msgstr "Localização não disponível"
@@ -2928,8 +2953,8 @@ msgstr "Endereço da minha carteira"
 msgid "My wallet username"
 msgstr "Nome de utilizador da minha carteira"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:190
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:201
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:194
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:205
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:190
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:201
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -3059,7 +3084,7 @@ msgid "No creditable pools with this voucher match these filters."
 msgstr "Nenhum fundo que aceite os seus vales e tenha este vale disponível "
 "corresponde a estes filtros."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:295
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:286
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:303
 msgid "No currencies found"
 msgstr "Não foram encontradas moedas"
@@ -3368,9 +3393,9 @@ msgstr "A abrir a carteira de papel..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:363
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:175
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:343
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:179
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:307
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:338
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:355
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:664
@@ -3507,6 +3532,15 @@ msgstr "Recibo de pagamento"
 msgid "Pending"
 msgstr "Pendente"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:84
+msgid "People can type your username to send you vouchers."
+msgstr "Outras pessoas podem escrever o seu nome de utilizador para lhe enviar "
+"vales."
+
+#: apps/web/src/components/profile/username-input.tsx:60
+msgid "People can use this name to send vouchers to you."
+msgstr "Outras pessoas podem usar este nome para lhe enviar vales."
+
 #: apps/web/src/components/profile/username-input.tsx:59
 msgid "People can use this name to send vouchers to you. Leave blank to choose "
 "automatically."
@@ -3514,14 +3548,14 @@ msgstr "Outras pessoas podem usar este nome para lhe enviar vales. Deixe em "
 "branco para escolher automaticamente."
 
 #: apps/web/src/components/profile/username-input.tsx:60
-msgid "People can use this name to send vouchers to you. Leave blank to keep "
-"your current username."
-msgstr "Outras pessoas podem usar este nome para lhe enviar vales. Deixe em "
-"branco para manter o seu nome de utilizador atual."
+#~ msgid "People can use this name to send vouchers to you. Leave blank to keep "
+#~ "your current username."
+#~ msgstr "Outras pessoas podem usar este nome para lhe enviar vales. Deixe em "
+#~ "branco para manter o seu nome de utilizador atual."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:264
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
@@ -3529,7 +3563,7 @@ msgstr "Outras pessoas podem usar este nome para lhe enviar vales. Deixe em "
 msgid "Phone"
 msgstr "Telefone"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:261
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:275
 msgid "Phone number"
 msgstr "Número de telefone"
@@ -3794,8 +3828,8 @@ msgstr "As publicações não estão disponíveis para este vale."
 msgid "Preferences"
 msgstr "Preferências"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:288
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:279
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:304
 msgid "Preferred currency"
@@ -3907,11 +3941,11 @@ msgstr "Anexo privado"
 msgid "Private key"
 msgstr "Chave privada"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:174
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:178
 msgid "Profile photo"
 msgstr "Foto do perfil"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:140
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:139
 msgid "Profile updated"
 msgstr "Perfil atualizado"
 
@@ -4312,7 +4346,7 @@ msgid "Save"
 msgstr "Salvar"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:488
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:573
@@ -4336,6 +4370,10 @@ msgstr "Guarde este cartão em segurança. Se usar uma palavra-passe, guarde-a "
 "separadamente. Qualquer pessoa com um código QR desprotegido pode "
 "aceder à carteira."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
+msgid "Save username"
+msgstr "Guardar nome de utilizador"
+
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
 #~ msgstr "Localização guardada indisponível"
@@ -4346,7 +4384,8 @@ msgstr "Gravado. A sua publicação está de novo pendente de aprovação."
 
 #: apps/web/src/components/reviews/review-editor.tsx:129
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:486
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4374,7 +4413,7 @@ msgstr "Deslize para ver mais"
 msgid "Search by name or symbol"
 msgstr "Procurar por nome ou símbolo"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:294
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:285
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:302
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:412
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
@@ -4383,7 +4422,7 @@ msgstr "Procurar por nome ou símbolo"
 msgid "Search currencies"
 msgstr "Procurar moedas"
 
-#: apps/web/src/components/ui/location-picker.tsx:207
+#: apps/web/src/components/ui/location-picker.tsx:206
 msgid "Search for a town or place"
 msgstr "Procurar uma cidade ou local"
 
@@ -4436,7 +4475,7 @@ msgstr "Procurar vales"
 msgid "Search your vouchers"
 msgstr "Procurar os seus vales"
 
-#: apps/web/src/components/ui/location-picker.tsx:259
+#: apps/web/src/components/ui/location-picker.tsx:257
 msgid "Searching places…"
 msgstr "À procura de lugares…"
 
@@ -4569,7 +4608,7 @@ msgid "Setting up your wallet..."
 msgstr "A configurar a sua carteira..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
 #: apps/web/src/features/home/ui/settings-page.tsx:38
 msgid "Settings"
 msgstr "Definições"
@@ -4933,7 +4972,7 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Carregue no menu de três pontos e, em seguida, Adicionar ao ecrã "
 "inicial ou Instalar a aplicação."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:321
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 msgid "Tell people a little about yourself"
 msgstr "Fale um pouco sobre si"
@@ -5320,7 +5359,7 @@ msgstr "Viagem"
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:64
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:65
 #: apps/web/src/features/home/ui/activity-page.tsx:66
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
@@ -5411,7 +5450,7 @@ msgstr "Atualizar foto"
 msgid "Update protected paper wallet"
 msgstr "Atualizar carteira de papel protegida"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:47
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
 msgstr "Atualize os seus dados de contato e localização."
 
@@ -5441,7 +5480,7 @@ msgid "Upload QR code image"
 msgstr "Carregar imagem do código QR"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:380
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 msgid "Uploading photo…"
 msgstr "A carregar a foto…"
 
@@ -5480,7 +5519,7 @@ msgstr "Use letras e números, por exemplo KES"
 msgid "Use max · {0}"
 msgstr "Usar o máximo · {0}"
 
-#: apps/web/src/components/ui/location-picker.tsx:221
+#: apps/web/src/components/ui/location-picker.tsx:219
 msgid "Use my location"
 msgstr "Usar a minha localização"
 
@@ -5499,9 +5538,11 @@ msgid "Use photo"
 msgstr "Usar foto"
 
 #: apps/web/src/components/profile/username-input.tsx:38
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:57
 msgid "Username"
 msgstr "Nome de utilizador"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:48
 #: apps/web/src/features/wallet/ui/receive-page.tsx:28
 msgid "Username copied"
 msgstr "Nome de utilizador copiado"
@@ -5511,6 +5552,10 @@ msgstr "Nome de utilizador copiado"
 msgid "Username must be 3–24 letters, digits or hyphens"
 msgstr "O nome de utilizador deve ter entre 3 e 24 letras, algarismos ou "
 "hífenes"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:142
+msgid "Username updated"
+msgstr "Nome de utilizador atualizado"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"
@@ -5761,7 +5806,7 @@ msgid "We couldn't load your profile phone number."
 msgstr "Não foi possível carregar o número de telefone do seu perfil."
 
 #: apps/web/src/components/nearby-catalog.tsx:55
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 msgid "We couldn't load your profile."
 msgstr "Não foi possível carregar o seu perfil."
 
@@ -5777,8 +5822,8 @@ msgstr "Não foi possível verificar se já foram emitidas unidades deste vale."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:317
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:341
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:357
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:336
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:352
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
@@ -5904,6 +5949,10 @@ msgstr "Você pode escrever ou editar sua avaliação até {0}."
 msgid "You didn't issue any of these."
 msgstr "Não emitiu nenhum destes vales."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:65
+msgid "You don't have a username yet."
+msgstr "Ainda não tem um nome de utilizador."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:394
 msgid "You don't hold any voucher this pool takes."
 msgstr "Não possui nenhum vale aceite por este fundo."
@@ -5962,11 +6011,17 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 msgstr "A sua conta está pendente de aprovação. Pode continuar quando for "
 "aprovada."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:189
+msgid "Your current username stops working as soon as you save, and someone "
+"else can then take it."
+msgstr "O seu nome de utilizador atual deixa de funcionar assim que guardar, e "
+"outra pessoa poderá ficar com ele."
+
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:167
 msgid "Your MPESA payout will arrive shortly."
 msgstr "O seu pagamento via MPESA chegará em breve."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:196
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:196
 msgid "Your name"
 msgstr "O seu nome"

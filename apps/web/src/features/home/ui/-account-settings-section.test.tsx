@@ -67,6 +67,13 @@ describe("AccountSettingsSection", () => {
     expect(screen.getByText("+254712345678")).toBeTruthy();
   });
 
+  it("shows the username on its own line, apart from a name that may truncate", async () => {
+    mockProfile({ name: "Alice Wanjiru Kamau Otieno", username: "alice" });
+    renderWithQueryClient(<AccountSettingsSection />);
+    expect(await screen.findByText("Alice Wanjiru Kamau Otieno")).toBeTruthy();
+    expect(screen.getByText("alice").closest("p")?.textContent).toBe("alice");
+  });
+
   it("hides a placeholder email and prompts for contact details", async () => {
     mockProfile({ phone: "", email: "pending+abc@clc.local" });
     renderWithQueryClient(<AccountSettingsSection />);

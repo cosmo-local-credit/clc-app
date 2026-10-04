@@ -585,7 +585,7 @@ msgstr "Баланс {0}"
 msgid "Balance {tokenBalance}"
 msgstr "Баланс {tokenBalance}"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:312
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:305
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:322
 msgid "Bio"
 msgstr "Про себе"
@@ -639,6 +639,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:498
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:635
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
@@ -690,6 +691,12 @@ msgstr "Змінити"
 #: apps/web/src/components/ui/avatar-picker.tsx:100
 msgid "Change photo"
 msgstr "Змінити фото"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Change username"
+msgstr "Змінити ім’я користувача"
 
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:179
 msgid "Changes how the pool is shown. The deployed contract keeps its name."
@@ -848,6 +855,11 @@ msgstr "Обрати з фотографій"
 msgid "Choose Image"
 msgstr "Обрати зображення"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:85
+msgid "Choose one so people can send you vouchers without your wallet address."
+msgstr "Виберіть його, щоб люди могли надсилати вам ваучери без адреси вашого "
+"гаманця."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:193
 msgid "Choose rates you set or equal value when the unit has no price feed"
@@ -857,6 +869,12 @@ msgstr "Оберіть установлені вами курси або одн�
 #: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "Choose the app display language."
 msgstr "Оберіть мову інтерфейсу застосунку."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Choose username"
+msgstr "Вибрати ім’я користувача"
 
 #: apps/web/src/features/install/ui/install-page.tsx:80
 msgid "CLC is installed. Find it on your home screen."
@@ -891,7 +909,7 @@ msgstr "Очистити фільтр"
 msgid "Clear filters"
 msgstr "Очистити фільтри"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:393
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:390
 msgid "Clear location"
 msgstr "Очистити місце"
 
@@ -1186,6 +1204,7 @@ msgstr "Копіювати хеш транзакції"
 msgid "Copy wallet address"
 msgstr "Копіювати адресу гаманця"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:75
 #: apps/web/src/features/wallet/ui/receive-page.tsx:80
 msgid "Copy wallet username"
 msgstr "Копіювати ім’я користувача гаманця"
@@ -1304,6 +1323,8 @@ msgstr "Не вдалося скопіювати хеш транзакції в�
 msgid "Couldn't copy transaction hash"
 msgstr "Не вдалося скопіювати хеш транзакції"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:43
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:49
 #: apps/web/src/features/wallet/ui/receive-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:30
 msgid "Couldn't copy username"
@@ -1322,7 +1343,7 @@ msgstr "Не вдалося створити ваучери."
 msgid "Couldn't estimate this swap."
 msgstr "Не вдалося розрахувати цей обмін."
 
-#: apps/web/src/components/ui/location-picker.tsx:115
+#: apps/web/src/components/ui/location-picker.tsx:113
 msgid "Couldn't identify a country here. Try a nearby spot."
 msgstr "Не вдалося визначити країну в цьому місці. Спробуйте вибрати місце "
 "поруч."
@@ -1487,13 +1508,17 @@ msgstr "Не вдалося зберегти відомості про вауч�
 msgid "Couldn't save your post."
 msgstr "Не вдалося зберегти ваш допис."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:153
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:152
 msgid "Couldn't save your profile."
 msgstr "Не вдалося зберегти ваш профіль."
 
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:72
 msgid "Couldn't save your review. Please try again."
 msgstr "Не вдалося зберегти ваш відгук. Спробуйте ще раз."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:151
+msgid "Couldn't save your username."
+msgstr "Не вдалося зберегти ваше ім’я користувача."
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
 msgid "Couldn't save. Please try again."
@@ -1853,8 +1878,8 @@ msgid "Edit post"
 msgstr "Редагувати допис"
 
 #: apps/web/src/components/nearby-catalog.tsx:90
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:44
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Редагувати профіль"
@@ -1877,8 +1902,8 @@ msgstr "Освіта"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:223
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:235
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:237
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:249
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
@@ -2298,7 +2323,7 @@ msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel} у пулі {poo
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "Я обміняв(-ла) {sentLabel} на {amountLabel}."
 
-#: apps/web/src/components/ui/location-picker.tsx:291
+#: apps/web/src/components/ui/location-picker.tsx:289
 msgid "Identifying location…"
 msgstr "Визначення місця…"
 
@@ -2580,8 +2605,8 @@ msgstr "Завантаження кредитних лімітів…"
 msgid "Loading holdings…"
 msgstr "Завантаження активів…"
 
-#: apps/web/src/components/ui/location-picker.tsx:268
-#: apps/web/src/components/ui/location-picker.tsx:284
+#: apps/web/src/components/ui/location-picker.tsx:266
+#: apps/web/src/components/ui/location-picker.tsx:282
 msgid "Loading location map"
 msgstr "Завантаження мапи місця"
 
@@ -2680,7 +2705,7 @@ msgstr "Завантаження вашого профілю…"
 msgid "Loading…"
 msgstr "Завантаження…"
 
-#: apps/web/src/components/ui/location-picker.tsx:199
+#: apps/web/src/components/ui/location-picker.tsx:198
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:280
 #: apps/web/src/features/home/ui/report-page.tsx:577
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
@@ -2693,11 +2718,11 @@ msgstr "Місце"
 msgid "Location denied"
 msgstr "Доступ до геоданих заборонено"
 
-#: apps/web/src/components/ui/location-map.tsx:198
+#: apps/web/src/components/ui/location-map.tsx:203
 msgid "Location map"
 msgstr "Мапа місця"
 
-#: apps/web/src/components/ui/location-picker.tsx:221
+#: apps/web/src/components/ui/location-picker.tsx:219
 #: apps/web/src/features/home/ui/market-page.tsx:131
 msgid "Location unavailable"
 msgstr "Геодані недоступні"
@@ -2906,8 +2931,8 @@ msgstr "Адреса мого гаманця"
 msgid "My wallet username"
 msgstr "Ім’я користувача мого гаманця"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:190
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:201
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:194
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:205
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:190
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:201
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -3037,7 +3062,7 @@ msgid "No creditable pools with this voucher match these filters."
 msgstr "Жоден пул із кредитом, у якому доступний цей ваучер, не відповідає цим "
 "фільтрам."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:295
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:286
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:303
 msgid "No currencies found"
 msgstr "Валют не знайдено"
@@ -3343,9 +3368,9 @@ msgstr "Відкриття паперового гаманця..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:363
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:175
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:343
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:179
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:307
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:338
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:355
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:664
@@ -3480,6 +3505,14 @@ msgstr "Квитанція про оплату"
 msgid "Pending"
 msgstr "Очікується"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:84
+msgid "People can type your username to send you vouchers."
+msgstr "Люди можуть ввести ваше ім’я користувача, щоб надсилати вам ваучери."
+
+#: apps/web/src/components/profile/username-input.tsx:60
+msgid "People can use this name to send vouchers to you."
+msgstr "Люди можуть використовувати це ім’я, щоб надсилати вам ваучери."
+
 #: apps/web/src/components/profile/username-input.tsx:59
 msgid "People can use this name to send vouchers to you. Leave blank to choose "
 "automatically."
@@ -3487,14 +3520,14 @@ msgstr "Люди можуть використовувати це ім’я, щ�
 "поле порожнім для автоматичного вибору."
 
 #: apps/web/src/components/profile/username-input.tsx:60
-msgid "People can use this name to send vouchers to you. Leave blank to keep "
-"your current username."
-msgstr "Люди можуть використовувати це ім’я, щоб надсилати вам ваучери. Залиште "
-"поле порожнім, щоб зберегти поточне ім’я користувача."
+#~ msgid "People can use this name to send vouchers to you. Leave blank to keep "
+#~ "your current username."
+#~ msgstr "Люди можуть використовувати це ім’я, щоб надсилати вам ваучери. Залиште "
+#~ "поле порожнім, щоб зберегти поточне ім’я користувача."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:264
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:253
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
@@ -3502,7 +3535,7 @@ msgstr "Люди можуть використовувати це ім’я, щ�
 msgid "Phone"
 msgstr "Телефон"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:261
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:275
 msgid "Phone number"
 msgstr "Номер телефону"
@@ -3766,8 +3799,8 @@ msgstr "Дописи недоступні для цього ваучера."
 msgid "Preferences"
 msgstr "Налаштування"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:288
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:279
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:287
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:304
 msgid "Preferred currency"
@@ -3880,11 +3913,11 @@ msgstr "Приватне вкладення"
 msgid "Private key"
 msgstr "Приватний ключ"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:174
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:178
 msgid "Profile photo"
 msgstr "Фото профілю"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:140
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:139
 msgid "Profile updated"
 msgstr "Профіль оновлено"
 
@@ -4282,7 +4315,7 @@ msgid "Save"
 msgstr "Зберегти"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:488
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:573
@@ -4306,6 +4339,10 @@ msgstr "Надійно збережіть цю картку. Якщо викор
 "його окремо. Кожен, хто має незахищений QR-код, може отримати доступ до "
 "гаманця."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
+msgid "Save username"
+msgstr "Зберегти ім’я користувача"
+
 #~ msgid "Saved location unavailable"
 #~ msgstr "Збережене місце недоступне"
 
@@ -4315,7 +4352,8 @@ msgstr "Збережено. Ваш допис знову очікує схвал
 
 #: apps/web/src/components/reviews/review-editor.tsx:129
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:486
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4343,7 +4381,7 @@ msgstr "Прокрутіть, щоб побачити більше"
 msgid "Search by name or symbol"
 msgstr "Пошук за назвою або символом"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:294
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:285
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:302
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:412
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
@@ -4352,7 +4390,7 @@ msgstr "Пошук за назвою або символом"
 msgid "Search currencies"
 msgstr "Пошук валют"
 
-#: apps/web/src/components/ui/location-picker.tsx:207
+#: apps/web/src/components/ui/location-picker.tsx:206
 msgid "Search for a town or place"
 msgstr "Знайдіть місто або місце"
 
@@ -4405,7 +4443,7 @@ msgstr "Пошук ваучерів"
 msgid "Search your vouchers"
 msgstr "Пошук у ваших ваучерах"
 
-#: apps/web/src/components/ui/location-picker.tsx:259
+#: apps/web/src/components/ui/location-picker.tsx:257
 msgid "Searching places…"
 msgstr "Пошук місць…"
 
@@ -4536,7 +4574,7 @@ msgid "Setting up your wallet..."
 msgstr "Налаштування гаманця..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:40
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
 #: apps/web/src/features/home/ui/settings-page.tsx:38
 msgid "Settings"
 msgstr "Налаштування"
@@ -4896,7 +4934,7 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Торкніться меню з трьома крапками, а потім виберіть «Додати на "
 "початковий екран» або «Установити застосунок»."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:321
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 msgid "Tell people a little about yourself"
 msgstr "Розкажіть людям трохи про себе"
@@ -5279,7 +5317,7 @@ msgstr "Поїздка"
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:64
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:65
 #: apps/web/src/features/home/ui/activity-page.tsx:66
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
@@ -5370,7 +5408,7 @@ msgstr "Оновити фото"
 msgid "Update protected paper wallet"
 msgstr "Оновити захищений паперовий гаманець"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:47
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
 msgstr "Оновіть свої контактні дані та місце."
 
@@ -5400,7 +5438,7 @@ msgid "Upload QR code image"
 msgstr "Завантажити зображення QR-коду"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:380
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 msgid "Uploading photo…"
 msgstr "Завантаження фото…"
 
@@ -5439,7 +5477,7 @@ msgstr "Використовуйте літери й цифри, наприкл�
 msgid "Use max · {0}"
 msgstr "Використати максимум · {0}"
 
-#: apps/web/src/components/ui/location-picker.tsx:221
+#: apps/web/src/components/ui/location-picker.tsx:219
 msgid "Use my location"
 msgstr "Використати моє місце"
 
@@ -5458,9 +5496,11 @@ msgid "Use photo"
 msgstr "Використати фото"
 
 #: apps/web/src/components/profile/username-input.tsx:38
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:57
 msgid "Username"
 msgstr "Ім’я користувача"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:48
 #: apps/web/src/features/wallet/ui/receive-page.tsx:28
 msgid "Username copied"
 msgstr "Ім’я користувача скопійовано"
@@ -5469,6 +5509,10 @@ msgstr "Ім’я користувача скопійовано"
 #: apps/web/src/lib/validation-i18n.ts:6
 msgid "Username must be 3–24 letters, digits or hyphens"
 msgstr "Ім’я користувача має містити 3–24 літери, цифри або дефіси"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:142
+msgid "Username updated"
+msgstr "Ім’я користувача оновлено"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"
@@ -5718,7 +5762,7 @@ msgid "We couldn't load your profile phone number."
 msgstr "Не вдалося завантажити номер телефону з вашого профілю."
 
 #: apps/web/src/components/nearby-catalog.tsx:55
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 msgid "We couldn't load your profile."
 msgstr "Не вдалося завантажити ваш профіль."
 
@@ -5734,8 +5778,8 @@ msgstr "Не вдалося перевірити, чи вже випускали
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:317
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:341
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:357
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:336
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:352
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
@@ -5860,6 +5904,10 @@ msgstr "Ви можете написати або відредагувати с�
 msgid "You didn't issue any of these."
 msgstr "Ви не випускали жодного з них."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:65
+msgid "You don't have a username yet."
+msgstr "У вас ще немає імені користувача."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:394
 msgid "You don't hold any voucher this pool takes."
 msgstr "У вас немає ваучерів, які приймає цей пул."
@@ -5918,11 +5966,17 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 msgstr "Ваш обліковий запис очікує схвалення. Ви зможете продовжити після "
 "схвалення."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:189
+msgid "Your current username stops working as soon as you save, and someone "
+"else can then take it."
+msgstr "Ваше поточне ім’я користувача перестане працювати одразу після "
+"збереження, і тоді його зможе взяти хтось інший."
+
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:167
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Виплата через MPESA незабаром надійде."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:196
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:200
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:196
 msgid "Your name"
 msgstr "Ваше ім’я"

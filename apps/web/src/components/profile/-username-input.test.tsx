@@ -72,7 +72,7 @@ describe("UsernameInput", () => {
       expect(screen.getByRole("button", { name: "Suggest username" })).toBeTruthy(),
     );
     expect(input.value).toBe("manual-name");
-    expect(screen.getByText(/keep your current username/i)).toBeTruthy();
+    expect(screen.getByText("People can use this name to send vouchers to you.")).toBeTruthy();
   });
 
   it("announces suggestion failures without marking the input invalid", async () => {

@@ -52,7 +52,7 @@ export const MARKER_COLOR_HEX: Record<MarkerColor, { pin: string; label: string 
 };
 
 /** What a voucher offers, as clc-core derives it for the market map. */
-export const MARKET_KINDS = ["goods", "services", "voucher"] as const;
+const MARKET_KINDS = ["goods", "services", "voucher"] as const;
 
 export type MarketKind = (typeof MARKET_KINDS)[number];
 
