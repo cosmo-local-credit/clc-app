@@ -583,7 +583,7 @@ msgstr "Стање {0}"
 msgid "Balance {tokenBalance}"
 msgstr "Стање {tokenBalance}"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:312
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:322
 msgid "Bio"
 msgstr "Биографија"
@@ -629,6 +629,7 @@ msgstr "Приступ камери је одбијен."
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:498
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:635
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
@@ -680,6 +681,12 @@ msgstr "Промијени"
 #: apps/web/src/components/ui/avatar-picker.tsx:100
 msgid "Change photo"
 msgstr "Промени фотографију"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Change username"
+msgstr "Промијени корисничко име"
 
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:179
 msgid "Changes how the pool is shown. The deployed contract keeps its name."
@@ -780,7 +787,7 @@ msgstr "Изаберите JPEG, PNG или WebP слику."
 msgid "Choose a location"
 msgstr "Изаберите локацију"
 
-#: apps/web/src/components/nearby-catalog.tsx:91
+#: apps/web/src/components/nearby-catalog.tsx:86
 msgid "Choose a location"
 msgstr "Изаберите локацију"
 
@@ -837,6 +844,11 @@ msgstr "Изаберите из фотографија"
 msgid "Choose Image"
 msgstr "Изаберите слику"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:85
+msgid "Choose one so people can send you vouchers without your wallet address."
+msgstr "Изаберите га да би вам други могли слати ваучере без адресе вашег "
+"новчаника."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:193
 msgid "Choose rates you set or equal value when the unit has no price feed"
@@ -846,6 +858,12 @@ msgstr "Изаберите стопе које сами постављате и�
 #: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "Choose the app display language."
 msgstr "Изаберите језик приказа апликације."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Choose username"
+msgstr "Изабери корисничко име"
 
 #: apps/web/src/features/install/ui/install-page.tsx:80
 msgid "CLC is installed. Find it on your home screen."
@@ -880,7 +898,7 @@ msgstr "Обриши филтер"
 msgid "Clear filters"
 msgstr "Обриши филтере"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:393
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:377
 msgid "Clear location"
 msgstr "Обриши локацију"
 
@@ -1175,6 +1193,7 @@ msgstr "Копирај хеш трансакције"
 msgid "Copy wallet address"
 msgstr "Копирај адресу новчаника"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:75
 #: apps/web/src/features/wallet/ui/receive-page.tsx:80
 msgid "Copy wallet username"
 msgstr "Копирај корисничко име новчаника"
@@ -1293,6 +1312,8 @@ msgstr "Није могуће копирати хеш трансакције и�
 msgid "Couldn't copy transaction hash"
 msgstr "Хеш трансакције није могуће копирати"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:43
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:49
 #: apps/web/src/features/wallet/ui/receive-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:30
 msgid "Couldn't copy username"
@@ -1477,13 +1498,17 @@ msgstr "Није могуће сачувати податке о ваучеру.
 msgid "Couldn't save your post."
 msgstr "Није могуће сачувати вашу објаву."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:153
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:151
 msgid "Couldn't save your profile."
 msgstr "Профил није могуће сачувати."
 
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:72
 msgid "Couldn't save your review. Please try again."
 msgstr "Није могуће сачувати вашу рецензију. Покушајте поново."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:151
+msgid "Couldn't save your username."
+msgstr "Корисничко име није могуће сачувати."
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
 msgid "Couldn't save. Please try again."
@@ -1836,9 +1861,9 @@ msgstr "Уреди податке о пулу"
 msgid "Edit post"
 msgstr "Уреди објаву"
 
-#: apps/web/src/components/nearby-catalog.tsx:95
+#: apps/web/src/components/nearby-catalog.tsx:90
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:44
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:164
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Измијени профил"
@@ -1857,8 +1882,8 @@ msgstr "Измијени своју рецензију"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:232
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:237
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:249
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
@@ -2646,7 +2671,7 @@ msgstr "Учитавање ваших објава…"
 msgid "Loading your profile…"
 msgstr "Учитавање вашег профила…"
 
-#: apps/web/src/components/nearby-catalog.tsx:45
+#: apps/web/src/components/nearby-catalog.tsx:44
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -2874,8 +2899,8 @@ msgstr "Адреса мог новчаника"
 msgid "My wallet username"
 msgstr "Корисничко име мог новчаника"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:190
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:201
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:193
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:204
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:190
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:201
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -3006,7 +3031,7 @@ msgid "No creditable pools with this voucher match these filters."
 msgstr "Ниједна тржница која прихвата ваше ваучере и у којој је овај ваучер "
 "доступан не одговара овим филтерима."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:295
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:279
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:303
 msgid "No currencies found"
 msgstr "Ниједна валута није пронађена"
@@ -3315,9 +3340,9 @@ msgstr "Отварање папирног новчаника..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:363
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:175
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:343
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:178
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:298
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:327
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:355
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:664
@@ -3449,6 +3474,14 @@ msgstr "Признаница о плаћању"
 msgid "Pending"
 msgstr "На чекању"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:84
+msgid "People can type your username to send you vouchers."
+msgstr "Други могу унијети ваше корисничко име да вам пошаљу ваучере."
+
+#: apps/web/src/components/profile/username-input.tsx:60
+msgid "People can use this name to send vouchers to you."
+msgstr "Други могу користити ово име да вам пошаљу ваучере."
+
 #: apps/web/src/components/profile/username-input.tsx:59
 msgid "People can use this name to send vouchers to you. Leave blank to choose "
 "automatically."
@@ -3456,14 +3489,14 @@ msgstr "Други могу користити ово име да вам пош�
 "аутоматски избор."
 
 #: apps/web/src/components/profile/username-input.tsx:60
-msgid "People can use this name to send vouchers to you. Leave blank to keep "
-"your current username."
-msgstr "Други могу користити ово име да вам пошаљу ваучере. Оставите празно да "
-"задржите тренутно корисничко име."
+#~ msgid "People can use this name to send vouchers to you. Leave blank to keep "
+#~ "your current username."
+#~ msgstr "Други могу користити ово име да вам пошаљу ваучере. Оставите празно да "
+#~ "задржите тренутно корисничко име."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:264
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
@@ -3471,7 +3504,7 @@ msgstr "Други могу користити ово име да вам пош�
 msgid "Phone"
 msgstr "Телефон"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:256
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:275
 msgid "Phone number"
 msgstr "Број телефона"
@@ -3724,8 +3757,8 @@ msgstr "Објаве нису доступне за овај ваучер."
 msgid "Preferences"
 msgstr "Подешавања"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:288
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:280
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:304
 msgid "Preferred currency"
@@ -3837,11 +3870,11 @@ msgstr "Приватни прилог"
 msgid "Private key"
 msgstr "Приватни кључ"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:174
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
 msgid "Profile photo"
 msgstr "Slika profila"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:140
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:138
 msgid "Profile updated"
 msgstr "Профил је ажуриран"
 
@@ -4240,7 +4273,7 @@ msgid "Save"
 msgstr "Сачувај"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:488
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:573
@@ -4263,6 +4296,10 @@ msgid "Save this card securely. If you use a password, keep it separately. "
 msgstr "Sačuvajte ovu karticu na sigurnom. Ako koristite lozinku, čuvajte je "
 "odvojeno. Svako ko ima nezaštićen QR kod može pristupiti novčaniku."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
+msgid "Save username"
+msgstr "Сачувај корисничко име"
+
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
 #~ msgstr "Сачувана локација није доступна"
@@ -4273,7 +4310,8 @@ msgstr "Сачувано. Ваша објава поново чека одобр
 
 #: apps/web/src/components/reviews/review-editor.tsx:129
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:486
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4301,7 +4339,7 @@ msgstr "Померите за још"
 msgid "Search by name or symbol"
 msgstr "Претражи по имену или симболу"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:294
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:278
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:302
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:412
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
@@ -4566,7 +4604,6 @@ msgid "Sign in after redeeming this voucher to leave a review."
 msgstr "Пријавите се након што искористите овај ваучер да бисте оставили "
 "рецензију."
 
-#: apps/web/src/components/nearby-catalog.tsx:74
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
 msgid "Sign in or sign up"
 msgstr "Prijavite se ili se registrujte"
@@ -4851,7 +4888,7 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Додирните мени са три тачке, па „Додај на почетни екран“ или "
 "„Инсталирај апликацију“."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:321
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:305
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 msgid "Tell people a little about yourself"
 msgstr "Реците људима нешто о себи"
@@ -5226,7 +5263,7 @@ msgstr "Вожња"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
-#: apps/web/src/components/nearby-catalog.tsx:64
+#: apps/web/src/components/nearby-catalog.tsx:63
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
@@ -5350,7 +5387,7 @@ msgid "Upload QR code image"
 msgstr "Отпреми слику QR кода"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:380
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
 msgid "Uploading photo…"
 msgstr "Отпремање фотографије…"
 
@@ -5404,9 +5441,11 @@ msgid "Use photo"
 msgstr "Употреби фотографију"
 
 #: apps/web/src/components/profile/username-input.tsx:38
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:57
 msgid "Username"
 msgstr "Корисничко име"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:48
 #: apps/web/src/features/wallet/ui/receive-page.tsx:28
 msgid "Username copied"
 msgstr "Корисничко име је копирано"
@@ -5415,6 +5454,10 @@ msgstr "Корисничко име је копирано"
 #: apps/web/src/lib/validation-i18n.ts:6
 msgid "Username must be 3–24 letters, digits or hyphens"
 msgstr "Корисничко име мора имати 3–24 слова, цифре или цртице"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:142
+msgid "Username updated"
+msgstr "Корисничко име је ажурирано"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"
@@ -5662,7 +5705,7 @@ msgstr "Нисмо могли да потврдимо вашу сесију. П�
 msgid "We couldn't load your profile phone number."
 msgstr "Нисмо могли да учитамо број телефона са вашег профила."
 
-#: apps/web/src/components/nearby-catalog.tsx:56
+#: apps/web/src/components/nearby-catalog.tsx:55
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
 msgid "We couldn't load your profile."
 msgstr "Нисмо могли да учитамо ваш профил."
@@ -5679,8 +5722,8 @@ msgstr "Није могуће потврдити да ли овај ваучер
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:317
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:341
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:357
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
@@ -5806,6 +5849,10 @@ msgstr "Можете написати или измијенити своју р�
 msgid "You didn't issue any of these."
 msgstr "Нисте издали ниједан од ових."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:65
+msgid "You don't have a username yet."
+msgstr "Још немате корисничко име."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:394
 msgid "You don't hold any voucher this pool takes."
 msgstr "Не посједујете ниједан ваучер који ова тржница прихвата."
@@ -5863,11 +5910,17 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 "is approved."
 msgstr "Ваш налог чека одобрење. Моћи ћете да наставите када буде одобрен."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:189
+msgid "Your current username stops working as soon as you save, and someone "
+"else can then take it."
+msgstr "Ваше тренутно корисничко име престаје да ради чим сачувате, а неко "
+"други га тада може узети."
+
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:167
 msgid "Your MPESA payout will arrive shortly."
 msgstr "Ваша MPESA исплата ће ускоро стићи."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:196
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:199
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:196
 msgid "Your name"
 msgstr "Ваше име"

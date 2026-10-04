@@ -585,7 +585,7 @@ msgstr "الرصيد {0}"
 msgid "Balance {tokenBalance}"
 msgstr "الرصيد {tokenBalance}"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:312
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:322
 msgid "Bio"
 msgstr "نبذة"
@@ -631,6 +631,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:498
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:635
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
@@ -682,6 +683,12 @@ msgstr "تغيير"
 #: apps/web/src/components/ui/avatar-picker.tsx:100
 msgid "Change photo"
 msgstr "تغيير الصورة"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Change username"
+msgstr "تغيير اسم المستخدم"
 
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:179
 msgid "Changes how the pool is shown. The deployed contract keeps its name."
@@ -782,7 +789,7 @@ msgstr "اختر صورة بصيغة JPEG أو PNG أو WebP."
 msgid "Choose a location"
 msgstr "اختر موقعًا"
 
-#: apps/web/src/components/nearby-catalog.tsx:91
+#: apps/web/src/components/nearby-catalog.tsx:86
 msgid "Choose a location"
 msgstr "اختر موقعًا"
 
@@ -839,6 +846,10 @@ msgstr "اختر من الصور"
 msgid "Choose Image"
 msgstr "اختيار صورة"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:85
+msgid "Choose one so people can send you vouchers without your wallet address."
+msgstr "اختر اسمًا ليتمكن الآخرون من إرسال القسائم إليك دون عنوان محفظتك."
+
 #. js-lingui-explicit-id
 #: apps/web/src/lib/validation-i18n.ts:193
 msgid "Choose rates you set or equal value when the unit has no price feed"
@@ -848,6 +859,12 @@ msgstr "اختر الأسعار التي تحددها أو القيمة المت
 #: apps/web/src/features/home/ui/settings-page.tsx:75
 msgid "Choose the app display language."
 msgstr "اختر لغة عرض التطبيق."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:93
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:107
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:159
+msgid "Choose username"
+msgstr "اختيار اسم مستخدم"
 
 #: apps/web/src/features/install/ui/install-page.tsx:80
 msgid "CLC is installed. Find it on your home screen."
@@ -882,7 +899,7 @@ msgstr "مسح عامل التصفية"
 msgid "Clear filters"
 msgstr "مسح عوامل التصفية"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:393
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:377
 msgid "Clear location"
 msgstr "مسح الموقع"
 
@@ -1177,6 +1194,7 @@ msgstr "نسخ تجزئة المعاملة"
 msgid "Copy wallet address"
 msgstr "نسخ عنوان المحفظة"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:75
 #: apps/web/src/features/wallet/ui/receive-page.tsx:80
 msgid "Copy wallet username"
 msgstr "نسخ اسم مستخدم المحفظة"
@@ -1295,6 +1313,8 @@ msgstr "تعذّر نسخ تجزئة معاملة إصدار المعروض"
 msgid "Couldn't copy transaction hash"
 msgstr "تعذّر نسخ تجزئة المعاملة"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:43
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:49
 #: apps/web/src/features/wallet/ui/receive-page.tsx:23
 #: apps/web/src/features/wallet/ui/receive-page.tsx:30
 msgid "Couldn't copy username"
@@ -1474,13 +1494,17 @@ msgstr "تعذّر حفظ تفاصيل القسيمة."
 msgid "Couldn't save your post."
 msgstr "تعذّر حفظ منشورك."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:153
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:151
 msgid "Couldn't save your profile."
 msgstr "تعذّر حفظ ملفك الشخصي."
 
 #: apps/web/src/components/reviews/redemption-review-prompt.tsx:72
 msgid "Couldn't save your review. Please try again."
 msgstr "تعذّر حفظ مراجعتك. يرجى المحاولة مرة أخرى."
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:151
+msgid "Couldn't save your username."
+msgstr "تعذّر حفظ اسم المستخدم."
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
 msgid "Couldn't save. Please try again."
@@ -1833,9 +1857,9 @@ msgstr "تعديل تفاصيل الصندوق"
 msgid "Edit post"
 msgstr "تعديل المنشور"
 
-#: apps/web/src/components/nearby-catalog.tsx:95
+#: apps/web/src/components/nearby-catalog.tsx:90
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:44
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:161
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:164
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "تعديل الملف الشخصي"
@@ -1854,8 +1878,8 @@ msgstr "تعديل مراجعتك"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:89
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:256
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:236
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:220
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:232
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:237
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:249
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
@@ -2638,7 +2662,7 @@ msgstr "جارٍ تحميل منشوراتك…"
 msgid "Loading your profile…"
 msgstr "جارٍ تحميل ملفك الشخصي…"
 
-#: apps/web/src/components/nearby-catalog.tsx:45
+#: apps/web/src/components/nearby-catalog.tsx:44
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -2866,8 +2890,8 @@ msgstr "عنوان محفظتي"
 msgid "My wallet username"
 msgstr "اسم مستخدم محفظتي"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:190
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:201
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:193
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:204
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:190
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:201
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:249
@@ -2997,7 +3021,7 @@ msgid "No creditable pools with this voucher match these filters."
 msgstr "لا توجد صناديق تقبل قسائمك وتتوفر فيها هذه القسيمة وتطابق عوامل التصفية "
 "هذه."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:295
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:279
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:303
 msgid "No currencies found"
 msgstr "لم يُعثر على عملات"
@@ -3301,9 +3325,9 @@ msgstr "جارٍ فتح المحفظة الورقية..."
 
 #: apps/web/src/components/ui/avatar-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:363
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:175
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:343
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:178
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:298
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:327
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:324
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:355
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:664
@@ -3434,6 +3458,14 @@ msgstr "إيصال الدفع"
 msgid "Pending"
 msgstr "قيد الانتظار"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:84
+msgid "People can type your username to send you vouchers."
+msgstr "يمكن للآخرين كتابة اسم المستخدم الخاص بك لإرسال القسائم إليك."
+
+#: apps/web/src/components/profile/username-input.tsx:60
+msgid "People can use this name to send vouchers to you."
+msgstr "يمكن للآخرين استخدام هذا الاسم لإرسال القسائم إليك."
+
 #: apps/web/src/components/profile/username-input.tsx:59
 msgid "People can use this name to send vouchers to you. Leave blank to choose "
 "automatically."
@@ -3441,14 +3473,14 @@ msgstr "يمكن للآخرين استخدام هذا الاسم لإرسال ا
 "لاختياره تلقائيًا."
 
 #: apps/web/src/components/profile/username-input.tsx:60
-msgid "People can use this name to send vouchers to you. Leave blank to keep "
-"your current username."
-msgstr "يمكن للآخرين استخدام هذا الاسم لإرسال القسائم إليك. اتركه فارغًا "
-"للاحتفاظ باسم المستخدم الحالي."
+#~ msgid "People can use this name to send vouchers to you. Leave blank to keep "
+#~ "your current username."
+#~ msgstr "يمكن للآخرين استخدام هذا الاسم لإرسال القسائم إليك. اتركه فارغًا "
+#~ "للاحتفاظ باسم المستخدم الحالي."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:113
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:269
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:264
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:248
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:44
@@ -3456,7 +3488,7 @@ msgstr "يمكن للآخرين استخدام هذا الاسم لإرسال ا
 msgid "Phone"
 msgstr "الهاتف"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:256
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:275
 msgid "Phone number"
 msgstr "رقم الهاتف"
@@ -3708,8 +3740,8 @@ msgstr "المنشورات غير متاحة لهذه القسيمة."
 msgid "Preferences"
 msgstr "التفضيلات"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:288
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:296
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:272
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:280
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:293
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:304
 msgid "Preferred currency"
@@ -3821,11 +3853,11 @@ msgstr "مرفق خاص"
 msgid "Private key"
 msgstr "المفتاح الخاص"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:174
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:177
 msgid "Profile photo"
 msgstr "صورة الملف الشخصي"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:140
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:138
 msgid "Profile updated"
 msgstr "تم تحديث الملف الشخصي"
 
@@ -4219,7 +4251,7 @@ msgid "Save"
 msgstr "حفظ"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:488
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:573
@@ -4242,6 +4274,10 @@ msgid "Save this card securely. If you use a password, keep it separately. "
 msgstr "احفظ هذه البطاقة بأمان. إذا استخدمت كلمة مرور، فاحتفظ بها منفصلة. يمكن "
 "لأي شخص لديه رمز QR غير محمي الوصول إلى المحفظة."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
+msgid "Save username"
+msgstr "حفظ اسم المستخدم"
+
 #: apps/web/src/components/app-menu.tsx:166
 #~ msgid "Saved location unavailable"
 #~ msgstr "الموقع المحفوظ غير متاح"
@@ -4252,7 +4288,8 @@ msgstr "تم الحفظ. منشورك ينتظر الموافقة مرة أخر�
 
 #: apps/web/src/components/reviews/review-editor.tsx:129
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:218
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:416
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:486
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:636
@@ -4280,7 +4317,7 @@ msgstr "مرّر لرؤية المزيد"
 msgid "Search by name or symbol"
 msgstr "البحث بالاسم أو الرمز"
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:294
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:278
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:302
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:412
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:224
@@ -4543,7 +4580,6 @@ msgstr "يظهر لأي شخص يستخدم هذا الصندوق"
 msgid "Sign in after redeeming this voucher to leave a review."
 msgstr "سجّل الدخول بعد استرداد هذه القسيمة لكتابة مراجعة."
 
-#: apps/web/src/components/nearby-catalog.tsx:74
 #: apps/web/src/features/home/ui/onboarding-banner.tsx:13
 msgid "Sign in or sign up"
 msgstr "تسجيل الدخول أو إنشاء حساب"
@@ -4828,7 +4864,7 @@ msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "اضغط على قائمة النقاط الثلاث، ثم «إضافة إلى الشاشة الرئيسية» أو «تثبيت "
 "التطبيق»."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:321
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:305
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
 msgid "Tell people a little about yourself"
 msgstr "أخبر الناس قليلاً عن نفسك"
@@ -5199,7 +5235,7 @@ msgstr "رحلة"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
-#: apps/web/src/components/nearby-catalog.tsx:64
+#: apps/web/src/components/nearby-catalog.tsx:63
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
@@ -5323,7 +5359,7 @@ msgid "Upload QR code image"
 msgstr "تحميل صورة رمز QR"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:380
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:415
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:399
 msgid "Uploading photo…"
 msgstr "جارٍ تحميل الصورة…"
 
@@ -5377,9 +5413,11 @@ msgid "Use photo"
 msgstr "استخدام الصورة"
 
 #: apps/web/src/components/profile/username-input.tsx:38
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:57
 msgid "Username"
 msgstr "اسم المستخدم"
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:48
 #: apps/web/src/features/wallet/ui/receive-page.tsx:28
 msgid "Username copied"
 msgstr "تم نسخ اسم المستخدم"
@@ -5388,6 +5426,10 @@ msgstr "تم نسخ اسم المستخدم"
 #: apps/web/src/lib/validation-i18n.ts:6
 msgid "Username must be 3–24 letters, digits or hyphens"
 msgstr "يجب أن يتكون اسم المستخدم من 3 إلى 24 حرفًا أو رقمًا أو شرطة"
+
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:142
+msgid "Username updated"
+msgstr "تم تحديث اسم المستخدم"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:508
 msgid "Uses voucher rates set for this pool"
@@ -5634,7 +5676,7 @@ msgstr "تعذّر التحقق من جلستك. تحقق من اتصالك وح
 msgid "We couldn't load your profile phone number."
 msgstr "تعذّر تحميل رقم الهاتف في ملفك الشخصي."
 
-#: apps/web/src/components/nearby-catalog.tsx:56
+#: apps/web/src/components/nearby-catalog.tsx:55
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:56
 msgid "We couldn't load your profile."
 msgstr "تعذّر تحميل ملفك الشخصي."
@@ -5651,8 +5693,8 @@ msgstr "تعذّر التحقق مما إذا كانت لهذه القسيمة �
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:317
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:325
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:341
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:357
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:369
 #: apps/web/src/features/onboarding/ui/paper-wallet-customizer.tsx:97
@@ -5778,6 +5820,10 @@ msgstr "يمكنك كتابة مراجعتك أو تعديلها حتى {0}."
 msgid "You didn't issue any of these."
 msgstr "لم تُصدر أيًا من هذه القسائم."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:65
+msgid "You don't have a username yet."
+msgstr "ليس لديك اسم مستخدم بعد."
+
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:394
 msgid "You don't hold any voucher this pool takes."
 msgstr "لا تحتفظ بأي قسيمة يقبلها هذا الصندوق."
@@ -5833,11 +5879,17 @@ msgid "Your account is awaiting approval. You will be able to continue once it "
 "is approved."
 msgstr "حسابك بانتظار الاعتماد. ستتمكن من المتابعة بعد اعتماده."
 
+#: apps/web/src/features/auth/ui/profile-username-section.tsx:189
+msgid "Your current username stops working as soon as you save, and someone "
+"else can then take it."
+msgstr "يتوقف اسم المستخدم الحالي عن العمل فور الحفظ، ويمكن لشخص آخر عندها "
+"أخذه."
+
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:167
 msgid "Your MPESA payout will arrive shortly."
 msgstr "ستصل دفعة MPESA الخاصة بك قريبًا."
 
-#: apps/web/src/features/auth/ui/profile-edit-page.tsx:196
+#: apps/web/src/features/auth/ui/profile-edit-page.tsx:199
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:196
 msgid "Your name"
 msgstr "اسمك"

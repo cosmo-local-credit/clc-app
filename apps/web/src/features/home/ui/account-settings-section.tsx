@@ -31,13 +31,13 @@ export function AccountSettingsSection() {
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-sm">
             <span dir="auto">{name || t`Your profile`}</span>
-            {username ? (
-              <>
-                {" ("}
-                <bdi dir="ltr">{username}</bdi>)
-              </>
-            ) : null}
           </p>
+          {/* Its own line: appended to the name, a long name truncated it away. */}
+          {username ? (
+            <p className="truncate font-mono text-xs">
+              <bdi dir="ltr">{username}</bdi>
+            </p>
+          ) : null}
           <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
         </div>
         <RiArrowRightSLine

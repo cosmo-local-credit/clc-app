@@ -55,7 +55,6 @@ export type ProfileInput = z.infer<typeof profileSchema>;
 export const profileEditSchema = z
   .object({
     name: nameSchema,
-    username: usernameSchema.optional(),
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,
     location: locationSchema.optional(),
