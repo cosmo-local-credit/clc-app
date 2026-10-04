@@ -59,6 +59,7 @@ import {
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
@@ -649,6 +650,24 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                   );
                 }}
               </form.Field>
+
+              <form.Subscribe
+                selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+              >
+                {([icon, color]) => (
+                  <div className="border border-border bg-card p-4">
+                    <MarkerStylePicker
+                      kind="voucher"
+                      value={{ icon, color }}
+                      onChange={(next) => {
+                        form.setFieldValue("markerIcon", next.icon);
+                        form.setFieldValue("markerColor", next.color);
+                      }}
+                      disabled={deployVoucher.isPending}
+                    />
+                  </div>
+                )}
+              </form.Subscribe>
 
               <form.Field name="tags">
                 {(field) => (

@@ -1,5 +1,5 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -205,5 +205,53 @@ describe("terms written by the issuer", () => {
     });
 
     expect(termsEditor().textContent).toBe("");
+  });
+});
+
+describe("map pin", () => {
+  it("leaves the stored pin out of a save that did not touch it", async () => {
+    open(detail({ markerIcon: "farm", markerColor: "cyan" }));
+
+    await save();
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    const update = mocks.updateProfile.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect("markerIcon" in update).toBe(false);
+    expect("markerColor" in update).toBe(false);
+  });
+
+  it("opens on the stored pin and saves a new one", async () => {
+    open(detail({ markerIcon: "farm", markerColor: null }));
+
+    const icons = screen.getByRole("radiogroup", { name: "Pin icon" });
+    expect(within(icons).getByRole("radio", { name: "Farming" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+    fireEvent.click(within(icons).getByRole("radio", { name: "Tools" }));
+    fireEvent.click(
+      within(screen.getByRole("radiogroup", { name: "Pin colour" })).getByRole("radio", {
+        name: "Brown",
+      }),
+    );
+    await save();
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({
+      markerIcon: "tools",
+      markerColor: "brown",
+    });
+  });
+
+  it("resets the pin to follow the offerings", async () => {
+    open(detail({ markerIcon: "farm", markerColor: "cyan" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Use default" }));
+    await save();
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({
+      markerIcon: null,
+      markerColor: null,
+    });
   });
 });

@@ -1,6 +1,6 @@
 import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -539,6 +539,62 @@ describe("CreateVoucherFlow", () => {
       history: expect.any(Object),
       destination: "/vouchers/create/receipt?trackingId=tracking-1&mintAmount=10000",
     });
+  });
+
+  it("lets the issuer choose the map pin, and sends it only when chosen", async () => {
+    deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+    useVoucherCreateDraft.getState().setDraft({
+      name: "Kilifi Harvest",
+      symbol: "KHV",
+      price: "1",
+      unitOfAccount: "KES",
+      description: "Fresh food from Kilifi producers.",
+      voucherType: "standard",
+      expiryDate: "",
+      decimals: "6",
+      supply: "1000",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5107, lng: 39.9093 },
+      tags: [],
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      iconUrl: "",
+      markerIcon: null,
+      markerColor: null,
+      acceptedTerms: true,
+    });
+    const view = renderFlow(<CreateVoucherFlow step="place" />);
+
+    const icons = screen.getByRole("radiogroup", { name: "Pin icon" });
+    const colours = screen.getByRole("radiogroup", { name: "Pin colour" });
+    // Nothing is chosen until the issuer picks: the pin follows the offerings.
+    expect(within(icons).queryByRole("radio", { checked: true })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Use default" })).toBeNull();
+
+    fireEvent.click(within(icons).getByRole("radio", { name: "Health" }));
+    fireEvent.click(within(colours).getByRole("radio", { name: "Pink" }));
+    expect(within(icons).getByRole("radio", { name: "Health" }).getAttribute("aria-checked")).toBe(
+      "true",
+    );
+
+    view.rerender(<CreateVoucherFlow step="review" />);
+    expect(screen.getByText("Health, Pink")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() =>
+      expect(deployMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ markerIcon: "health", markerColor: "pink" }),
+      ),
+    );
+
+    view.rerender(<CreateVoucherFlow step="place" />);
+    fireEvent.click(screen.getByRole("button", { name: "Use default" }));
+    view.rerender(<CreateVoucherFlow step="review" />);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalledTimes(2));
+    const payload = deployMutateAsync.mock.calls[1]?.[0] as Record<string, unknown>;
+    expect("markerIcon" in payload).toBe(false);
+    expect("markerColor" in payload).toBe(false);
   });
 
   it("always sends the standard six-decimal token defaults", async () => {
