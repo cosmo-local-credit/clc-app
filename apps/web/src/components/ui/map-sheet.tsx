@@ -204,7 +204,7 @@ export function MapSheet({
             ref={setPopup}
             className={cn(
               "pointer-events-auto absolute inset-x-0 bottom-0 flex h-[calc(100%-env(safe-area-inset-top))] flex-col border-border border-t bg-card text-foreground outline-none",
-              "[transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
+              "will-change-transform [transform:translateY(calc(var(--drawer-snap-point-offset)+var(--drawer-swipe-movement-y)))]",
               "transition-transform duration-[450ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
               "data-[ending-style]:duration-[calc(var(--drawer-swipe-strength)*450ms)] data-[swiping]:duration-0 motion-reduce:duration-0",
               "data-[ending-style]:[transform:translateY(100%)] data-[starting-style]:[transform:translateY(100%)]",
