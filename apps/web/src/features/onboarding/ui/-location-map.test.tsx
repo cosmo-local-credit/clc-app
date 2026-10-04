@@ -71,9 +71,14 @@ const {
     coordinates: [number, number] | null = null;
     handlers = new Map<string, () => void>();
     remove = vi.fn();
-    options: { color?: string; draggable?: boolean };
+    options: { color?: string; draggable?: boolean; element?: HTMLElement; anchor?: string };
 
-    constructor(options: { color?: string; draggable?: boolean }) {
+    constructor(options: {
+      color?: string;
+      draggable?: boolean;
+      element?: HTMLElement;
+      anchor?: string;
+    }) {
       this.options = options;
       markerInstances.push(this);
     }
@@ -223,16 +228,49 @@ describe("LocationMap", () => {
     expect(mapInstances).toHaveLength(0);
   });
 
-  it("updates the marker and flies to new coordinates when lat/lng props change after load", () => {
-    const { rerender } = render(<LocationMap interactive />);
-    mapInstances[0]?.triggerLoad();
+  it("updates the marker position and preview without recreating the map", () => {
+    const { rerender } = render(
+      <LocationMap interactive markerStyle={{ icon: "education", color: "blue" }} />,
+    );
+    act(() => mapInstances[0]?.triggerLoad());
+    // Tile fetching during a camera move makes loaded() false after the
+    // map's one-time load event has already fired.
+    const map = mapInstances[0];
+    if (map) map.loadedValue = false;
 
-    rerender(<LocationMap interactive lat={-1.2921} lng={36.8219} />);
+    rerender(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "education", color: "blue" }}
+      />,
+    );
 
     expect(markerInstances[0]?.coordinates).toEqual([36.8219, -1.2921]);
     expect(mapInstances[0]?.flyTo).toHaveBeenCalledWith({
       center: [36.8219, -1.2921],
       zoom: 13,
     });
+    const element = markerInstances[0]?.options.element;
+    expect(markerInstances[0]?.options.anchor).toBe("bottom");
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#2563eb");
+    const glyph = element?.querySelector("svg svg")?.innerHTML;
+    mapInstances[0]?.flyTo.mockClear();
+
+    rerender(
+      <LocationMap
+        interactive
+        lat={-1.2921}
+        lng={36.8219}
+        markerStyle={{ icon: "food", color: "pink" }}
+      />,
+    );
+
+    expect(element?.querySelector("path")?.getAttribute("fill")).toBe("#db2777");
+    expect(element?.querySelector("svg svg")?.innerHTML).not.toBe(glyph);
+    expect(mapInstances).toHaveLength(1);
+    expect(markerInstances).toHaveLength(1);
+    expect(mapInstances[0]?.flyTo).not.toHaveBeenCalled();
   });
 });

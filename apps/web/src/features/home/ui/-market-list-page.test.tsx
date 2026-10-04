@@ -145,6 +145,8 @@ function voucher(
     lat,
     lng,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
     ...overrides,
   };
 }

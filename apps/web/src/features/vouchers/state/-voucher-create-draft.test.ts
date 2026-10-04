@@ -17,6 +17,8 @@ const submittedVoucher = {
   website: "https://kilifi.example",
   phone: "+254712345678",
   terms: "https://kilifi.example/terms",
+  markerIcon: null,
+  markerColor: null,
   acceptedTerms: true as const,
 };
 

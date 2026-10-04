@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { StrictMode } from "react";
+import type { LocationInput } from "@clc/core/features/location/logic";
+import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -275,6 +276,55 @@ describe("LocationPicker", () => {
     expect(screen.getByTestId("map-pin").textContent).toBe(",");
     expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty("value", "");
   });
+
+  it.each([{ locationName: "Mathira, Nyeri, Kenya", country: "KE" }, null])(
+    "keeps the tapped pin while a controlled form resolves the location (%j)",
+    async (result) => {
+      let resolveReverse: (value: typeof result) => void = () => undefined;
+      mockReverseLocation.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveReverse = resolve;
+          }),
+      );
+      function ControlledPicker() {
+        const [value, setValue] = useState<LocationInput | undefined>({
+          lat: -1.2921,
+          lng: 36.8219,
+          locationName: "Nairobi, Kenya",
+          country: "KE",
+        });
+        return (
+          <LocationPicker
+            value={value}
+            onChange={setValue}
+            markerStyle={{ icon: "education", color: "blue" }}
+          />
+        );
+      }
+      render(<ControlledPicker />);
+
+      fireEvent.click(screen.getByRole("button", { name: /pick map location/i }));
+
+      expect(screen.getByTestId("map-pin").textContent).toBe("-1.29,36.82");
+      expect(screen.getByText(/identifying location/i)).toBeTruthy();
+
+      await act(async () => {
+        resolveReverse(result);
+      });
+
+      expect(screen.getByTestId("map-pin").textContent).toBe("-1.29,36.82");
+      expect(screen.queryByText(/identifying location/i)).toBeNull();
+      if (result) {
+        expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+          "value",
+          result.locationName,
+        );
+      } else {
+        expect(screen.getByText(/couldn't identify a country/i)).toBeTruthy();
+      }
+    },
+  );
 
   it("fills the visible input when the parent loads a saved location", () => {
     const { rerender } = render(<LocationPicker onChange={vi.fn()} value={undefined} />);

@@ -270,6 +270,8 @@ function voucher(id: string, overrides: Partial<MarketVoucher> = {}): MarketVouc
     lat: -1.29,
     lng: 36.82,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
     ...overrides,
   };
 }
@@ -816,6 +818,8 @@ describe("MarketPage filtering", () => {
     lat,
     lng,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
   });
 
   it("draws the filtered set and never the unfiltered import", () => {

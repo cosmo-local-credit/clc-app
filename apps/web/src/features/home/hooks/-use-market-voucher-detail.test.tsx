@@ -45,6 +45,8 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     bannerUrl: null,
     tags: [],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
     ...overrides,
   };

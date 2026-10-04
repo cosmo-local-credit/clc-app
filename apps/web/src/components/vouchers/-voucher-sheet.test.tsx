@@ -130,6 +130,8 @@ const CATALOG: VoucherPlaceholder & MarketVoucher = {
   lat: -3.63,
   lng: 39.85,
   kind: "goods",
+  markerIcon: null,
+  markerColor: null,
 };
 
 function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDetail {

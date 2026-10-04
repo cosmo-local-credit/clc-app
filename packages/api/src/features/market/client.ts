@@ -1,4 +1,12 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
+import {
+  type MarketKind,
+  type MarkerColor,
+  type MarkerIcon,
+  isMarketKind,
+  isMarkerColor,
+  isMarkerIcon,
+} from "@clc/core/features/markers/logic";
 
 import type { HttpClient } from "../../client/http-client";
 import {
@@ -14,7 +22,17 @@ import {
   normalizeText,
 } from "../../lib/api-normalize";
 
-export type MarketVoucherKind = "goods" | "services" | "voucher";
+export type MarketVoucherKind = MarketKind;
+
+/**
+ * The issuer's choice of map pin. Null on either field means "follow the kind",
+ * and so does a value this client cannot draw: a slug added to clc-core after
+ * this build shipped falls back to the automatic pin instead of a blank one.
+ */
+export type MarketVoucherMarker = {
+  markerIcon: MarkerIcon | null;
+  markerColor: MarkerColor | null;
+};
 
 export type MarketVoucher = {
   id: string;
@@ -27,7 +45,7 @@ export type MarketVoucher = {
   lat: number;
   lng: number;
   kind: MarketVoucherKind;
-};
+} & MarketVoucherMarker;
 
 export type MarketVoucherDetail = {
   id: string;
@@ -68,7 +86,7 @@ export type MarketVoucherDetail = {
    * key normalizes to `true` rather than hiding a voucher that is not retired.
    */
   active: boolean;
-};
+} & MarketVoucherMarker;
 
 export type MarketBoundingBox = {
   minLng: number;
@@ -113,6 +131,8 @@ type BackendMarketVoucher = Partial<{
   geoLat: string | number | null;
   geoLng: string | number | null;
   kind: string;
+  markerIcon: string | null;
+  markerColor: string | null;
 }>;
 
 export type BackendMarketVoucherDetail = BackendMarketVoucher &
@@ -162,6 +182,13 @@ export type VoucherProfileUpdate = {
    */
   iconUrl?: string;
   bannerUrl?: string;
+  /**
+   * Preserved when omitted, like the images: a client that predates the
+   * picker must not reset an issuer's pin on save. Null resets it to the
+   * automatic one.
+   */
+  markerIcon?: MarkerIcon | null;
+  markerColor?: MarkerColor | null;
   tags: string[];
 };
 
@@ -174,9 +201,9 @@ function emptyToNull(value: string): string | null {
  * The wire shape of a profile write, shared by the owner and admin routes.
  *
  * Blank text becomes null because clc-core writes every column it receives.
- * The display name and the two images are the exceptions: omitted preserves
- * them, and "" is the only way to clear one, so they pass through untouched and
- * only when the caller supplied them.
+ * The display name, the two images and the marker are the exceptions: omitted
+ * preserves them, and "" is the only way to clear one, so they are sent only
+ * when the caller supplied them.
  */
 export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
   return {
@@ -193,6 +220,8 @@ export function serializeVoucherProfileUpdate(profile: VoucherProfileUpdate) {
     geoLng: profile.geoLng,
     ...(profile.iconUrl === undefined ? {} : { iconUrl: profile.iconUrl }),
     ...(profile.bannerUrl === undefined ? {} : { bannerUrl: profile.bannerUrl }),
+    ...(profile.markerIcon === undefined ? {} : { markerIcon: profile.markerIcon ?? "" }),
+    ...(profile.markerColor === undefined ? {} : { markerColor: profile.markerColor ?? "" }),
     tags: profile.tags,
   };
 }
@@ -206,8 +235,6 @@ type BackendMarketVoucherPage = {
 type BackendFilteredMarketVoucherPage = BackendMarketVoucherPage & {
   tagFacets?: { tag?: unknown; count?: unknown }[] | null;
 };
-
-const MARKET_KINDS = new Set<string>(["goods", "services", "voucher"]);
 
 export type MarketClient = ReturnType<typeof createMarketClient>;
 
@@ -416,8 +443,7 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
     lng === null ||
     voucher.id === undefined ||
     voucher.id === null ||
-    typeof kind !== "string" ||
-    !MARKET_KINDS.has(kind)
+    !isMarketKind(kind)
   ) {
     return null;
   }
@@ -432,7 +458,8 @@ function normalizeMarketVoucher(voucher: BackendMarketVoucher): MarketVoucher | 
     locationName: normalizeText(voucher.locationName),
     lat,
     lng,
-    kind: kind as MarketVoucherKind,
+    kind,
+    ...normalizeMarker(voucher),
   };
 }
 
@@ -473,9 +500,16 @@ export function normalizeMarketVoucherDetail(
     tags: Array.isArray(voucher.tags)
       ? voucher.tags.filter((tag): tag is string => typeof tag === "string" && tag !== "")
       : [],
-    kind:
-      typeof kind === "string" && MARKET_KINDS.has(kind) ? (kind as MarketVoucherKind) : "voucher",
+    kind: isMarketKind(kind) ? kind : "voucher",
     active: voucher.active !== false,
+    ...normalizeMarker(voucher),
+  };
+}
+
+function normalizeMarker(voucher: BackendMarketVoucher): MarketVoucherMarker {
+  return {
+    markerIcon: isMarkerIcon(voucher.markerIcon) ? voucher.markerIcon : null,
+    markerColor: isMarkerColor(voucher.markerColor) ? voucher.markerColor : null,
   };
 }
 

@@ -10,7 +10,16 @@ import {
 } from "./market-stacks";
 
 function at(id: string, lat: number, lng: number): MarketLocation {
-  return { id, name: `Voucher ${id}`, kind: "voucher", lat, lng, locationName: null };
+  return {
+    id,
+    name: `Voucher ${id}`,
+    kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
+    lat,
+    lng,
+    locationName: null,
+  };
 }
 
 describe("groupByProximity", () => {

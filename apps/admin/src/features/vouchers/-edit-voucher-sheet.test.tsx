@@ -64,6 +64,8 @@ function voucher(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDet
     bannerUrl: null,
     tags: ["food"],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
     ...overrides,
   };
@@ -250,5 +252,46 @@ describe("EditVoucherSheet images", () => {
     await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalled());
     const [, profile] = updateVoucherProfile.mock.calls[0]!;
     expect(profile).toMatchObject({ iconUrl: "" });
+  });
+});
+
+describe("EditVoucherSheet map marker", () => {
+  it("leaves the stored marker alone when the operator did not touch it", async () => {
+    renderSheet({ markerIcon: "food", markerColor: "pink" });
+
+    await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalled());
+    const [, profile] = updateVoucherProfile.mock.calls[0]!;
+    expect("markerIcon" in (profile as object)).toBe(false);
+    expect("markerColor" in (profile as object)).toBe(false);
+  });
+
+  it("sends a chosen marker, and null to put it back on its default", async () => {
+    renderSheet({ markerIcon: "food", markerColor: null });
+
+    await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
+    expect(screen.getByRole("button", { name: /Food/ }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Brown" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalledTimes(1));
+    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({ markerColor: "brown" });
+    expect("markerIcon" in (updateVoucherProfile.mock.calls[0]![1] as object)).toBe(false);
+  });
+
+  it("resets both halves to the default", async () => {
+    renderSheet({ markerIcon: "food", markerColor: "pink" });
+
+    await waitFor(() => expect(screen.getByLabelText("Description")).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: "Use default" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(updateVoucherProfile).toHaveBeenCalledTimes(1));
+    expect(updateVoucherProfile.mock.calls[0]![1]).toMatchObject({
+      markerIcon: null,
+      markerColor: null,
+    });
   });
 });

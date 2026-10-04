@@ -1,5 +1,10 @@
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
+  type MarkerColor,
+  type MarkerIcon,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
+import {
   toVoucherDeployPayload,
   type VoucherUnit,
   voucherCreateSchema,
@@ -58,6 +63,7 @@ import {
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
@@ -81,6 +87,8 @@ type VoucherFormValues = {
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
   iconUrl: string;
+  markerIcon: MarkerIcon | null;
+  markerColor: MarkerColor | null;
   acceptedTerms: boolean;
 };
 
@@ -102,6 +110,8 @@ const DEFAULT_VALUES: VoucherFormValues = {
   terms: "",
   termsMode: "url",
   iconUrl: "",
+  markerIcon: null,
+  markerColor: null,
   acceptedTerms: false,
 };
 
@@ -636,14 +646,45 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
                   return (
-                    <LocationPicker
-                      value={field.state.value}
-                      onChange={(value) => field.handleChange(value)}
-                      error={error ? translateValidationError(error, i18n) : undefined}
-                    />
+                    <form.Subscribe
+                      selector={(state) =>
+                        [state.values.markerIcon, state.values.markerColor] as const
+                      }
+                    >
+                      {([markerIcon, markerColor]) => (
+                        <LocationPicker
+                          value={field.state.value}
+                          onChange={(value) => field.handleChange(value)}
+                          error={error ? translateValidationError(error, i18n) : undefined}
+                          markerStyle={resolveMarkerStyle({
+                            kind: "voucher",
+                            markerIcon,
+                            markerColor,
+                          })}
+                        />
+                      )}
+                    </form.Subscribe>
                   );
                 }}
               </form.Field>
+
+              <form.Subscribe
+                selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+              >
+                {([icon, color]) => (
+                  <div className="border border-border bg-card p-4">
+                    <MarkerStylePicker
+                      kind="voucher"
+                      value={{ icon, color }}
+                      onChange={(next) => {
+                        form.setFieldValue("markerIcon", next.icon);
+                        form.setFieldValue("markerColor", next.color);
+                      }}
+                      disabled={deployVoucher.isPending}
+                    />
+                  </div>
+                )}
+              </form.Subscribe>
 
               <form.Field name="tags">
                 {(field) => (

@@ -213,9 +213,36 @@ import { markerPin, resetMarketMarkerCache } from "./market-markers";
 import { SPIDER_PAGE_SIZE } from "./market-stacks";
 
 const LOCATIONS: MarketLocation[] = [
-  { id: "1", name: "Alpha", kind: "goods", lat: -1.28, lng: 36.82, locationName: "Nairobi" },
-  { id: "2", name: "Beta", kind: "services", lat: -1.3, lng: 36.81, locationName: null },
-  { id: "3", name: "Gamma", kind: "voucher", lat: -1.27, lng: 36.83, locationName: null },
+  {
+    id: "1",
+    name: "Alpha",
+    kind: "goods",
+    markerIcon: null,
+    markerColor: null,
+    lat: -1.28,
+    lng: 36.82,
+    locationName: "Nairobi",
+  },
+  {
+    id: "2",
+    name: "Beta",
+    kind: "services",
+    markerIcon: null,
+    markerColor: null,
+    lat: -1.3,
+    lng: 36.81,
+    locationName: null,
+  },
+  {
+    id: "3",
+    name: "Gamma",
+    kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
+    lat: -1.27,
+    lng: 36.83,
+    locationName: null,
+  },
 ];
 
 function firstMap() {
@@ -325,10 +352,22 @@ describe("MarketMap lifecycle", () => {
     expect(firstMap().remove).not.toHaveBeenCalled();
   });
 
-  it("builds features as [lng, lat] carrying id, name, and kind", () => {
+  it("builds features as [lng, lat] carrying id, name, and the pin to draw", () => {
     render(
       <MarketMap
-        locations={LOCATIONS}
+        locations={[
+          ...LOCATIONS,
+          {
+            id: "4",
+            name: "Delta",
+            kind: "goods",
+            markerIcon: "farm",
+            markerColor: "cyan",
+            lat: -1.26,
+            lng: 36.84,
+            locationName: null,
+          },
+        ]}
         selectedLocationId={null}
         camera={null}
         userLocation={null}
@@ -339,18 +378,27 @@ describe("MarketMap lifecycle", () => {
 
     const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
       features: Array<{
-        properties: { id: string; name: string; kind: string };
+        properties: { id: string; name: string; pin: string; color: string };
         geometry: { coordinates: [number, number] };
       }>;
     };
 
     expect(data.features[0]?.geometry.coordinates).toEqual([36.82, -1.28]);
-    expect(data.features[0]?.properties).toMatchObject({ id: "1", name: "Alpha", kind: "goods" });
-    expect(data.features.map((feature) => feature.properties.kind)).toEqual([
-      "goods",
-      "services",
-      "voucher",
+    expect(data.features[0]?.properties).toMatchObject({
+      id: "1",
+      name: "Alpha",
+      pin: "market-pin-basket-blue",
+      color: "blue",
+    });
+    expect(data.features.map((feature) => feature.properties.pin)).toEqual([
+      "market-pin-basket-blue",
+      "market-pin-hand-coin-purple",
+      "market-pin-coupon-orange",
+      "market-pin-farm-cyan",
     ]);
+    // Registered before the source that references them, so no pin is skipped.
+    expect(map.hasImage("market-pin-farm-cyan")).toBe(true);
+    expect(map.hasImage("market-pin-farm-cyan-selected")).toBe(true);
   });
 
   it("removes the map on unmount", () => {
@@ -661,12 +709,32 @@ const KILIFI_STACK: MarketLocation[] = [
     id: "s1",
     name: "Farm Star",
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     lat: -3.632178,
     lng: 39.854538,
     locationName: null,
   },
-  { id: "s2", name: "Beta", kind: "services", lat: -3.632178, lng: 39.854538, locationName: null },
-  { id: "s3", name: "Gamma", kind: "voucher", lat: -3.632178, lng: 39.854538, locationName: null },
+  {
+    id: "s2",
+    name: "Beta",
+    kind: "services",
+    markerIcon: null,
+    markerColor: null,
+    lat: -3.632178,
+    lng: 39.854538,
+    locationName: null,
+  },
+  {
+    id: "s3",
+    name: "Gamma",
+    kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
+    lat: -3.632178,
+    lng: 39.854538,
+    locationName: null,
+  },
 ];
 
 function renderMap(locations: MarketLocation[], extra = {}) {
@@ -865,6 +933,8 @@ describe("MarketMap spiderfy", () => {
       id: `h${index}`,
       name: `Voucher ${index}`,
       kind: "voucher" as const,
+      markerIcon: null,
+      markerColor: null,
       lat: -3.632178,
       lng: 39.854538,
       locationName: null,
@@ -960,11 +1030,12 @@ describe("MarketMap selection", () => {
       />,
     );
 
-    expect(map.setLayoutProperty).toHaveBeenCalledWith(
-      "market-spider-points",
-      "icon-image",
-      expect.anything(),
-    );
+    expect(map.setLayoutProperty).toHaveBeenCalledWith("market-spider-points", "icon-image", [
+      "case",
+      ["==", ["get", "id"], "s2"],
+      ["concat", ["get", "pin"], "-selected"],
+      ["get", "pin"],
+    ]);
   });
 
   it("never moves the camera or requests a viewport when a point is selected", () => {
@@ -1088,6 +1159,8 @@ describe("MarketMap fan paging", () => {
       id: `b${index}`,
       name: `Voucher ${index}`,
       kind: "voucher" as const,
+      markerIcon: null,
+      markerColor: null,
       lat: -1.283253,
       lng: 36.817245,
       locationName: null,
@@ -1194,6 +1267,8 @@ describe("MarketMap badge counts", () => {
     id: `c${index}`,
     name: `Voucher ${index}`,
     kind: "voucher" as const,
+    markerIcon: null,
+    markerColor: null,
     lat: -1.283253,
     lng: 36.817245,
     locationName: null,
@@ -1294,7 +1369,7 @@ describe("MarketMap pins and names", () => {
     }
   });
 
-  it("names every lone pin after its voucher, coloured by kind", () => {
+  it("names every lone pin after its voucher, coloured by its pin", () => {
     renderMap([...LOCATIONS, ...KILIFI_STACK]);
     const map = loadedMap();
     const layer = map.getLayer("market-point-labels") as {
@@ -1313,7 +1388,7 @@ describe("MarketMap pins and names", () => {
       ["!=", ["get", "id"], ""],
     ]);
     expect(layer.paint?.["text-color"]).toEqual(
-      expect.arrayContaining(["match", ["get", "kind"], "goods", "services"]),
+      expect.arrayContaining(["match", ["get", "color"], "blue", "#1d4ed8", "pink", "#be185d"]),
     );
     expect(layer.paint?.["text-halo-color"]).toBe("#ffffff");
   });
@@ -1531,6 +1606,8 @@ describe("MarketMap trailing fan page", () => {
       id: `t${index}`,
       name: `Voucher ${index}`,
       kind: "voucher" as const,
+      markerIcon: null,
+      markerColor: null,
       lat: -1.283253,
       lng: 36.817245,
       locationName: null,
@@ -1772,6 +1849,8 @@ describe("MarketMap under a sheet", () => {
     id: "low",
     name: "Low",
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     lat: 6,
     lng: 1,
     locationName: null,
@@ -1780,6 +1859,8 @@ describe("MarketMap under a sheet", () => {
     id: "high",
     name: "High",
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     lat: 3,
     lng: 1,
     locationName: null,

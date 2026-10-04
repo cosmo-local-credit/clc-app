@@ -370,6 +370,8 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     bannerUrl: "https://content.example/banner.jpg",
     tags: ["Agriculture"],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
     ...overrides,
   };

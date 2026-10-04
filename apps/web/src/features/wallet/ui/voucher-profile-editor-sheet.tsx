@@ -1,5 +1,6 @@
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
+import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import {
   isHttpUrl,
@@ -33,6 +34,7 @@ import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { translateValidationError } from "#/lib/validation-i18n";
@@ -53,6 +55,8 @@ const profileFormSchema = voucherProfileTextSchema.extend({
     .or(z.undefined()),
   tags: z.array(z.string()),
   termsMode: z.enum(["url", "text"]),
+  markerIcon: markerIconSchema.nullable(),
+  markerColor: markerColorSchema.nullable(),
 });
 
 /**
@@ -124,6 +128,8 @@ function VoucherProfileForm({
       phone: voucher.phone ?? "",
       terms: voucher.terms ?? "",
       termsMode: (voucher.terms && !isHttpUrl(voucher.terms) ? "text" : "url") as "url" | "text",
+      markerIcon: voucher.markerIcon,
+      markerColor: voucher.markerColor,
     },
     validators: { onSubmit: profileFormSchema },
     onSubmit: async ({ value }) => {
@@ -151,6 +157,10 @@ function VoucherProfileForm({
           // Preserved on omission by clc-core, so sent only when it changed; ""
           // is how the stored logo is removed.
           ...(value.iconUrl === (voucher.iconUrl ?? "") ? {} : { iconUrl: value.iconUrl }),
+          // Preserved on omission too, so a save that leaves the pin alone
+          // cannot undo a change made elsewhere since this sheet opened.
+          ...(value.markerIcon === voucher.markerIcon ? {} : { markerIcon: value.markerIcon }),
+          ...(value.markerColor === voucher.markerColor ? {} : { markerColor: value.markerColor }),
           locationName: value.location?.locationName ?? "",
           geoLat: value.location?.lat ?? null,
           geoLng: value.location?.lng ?? null,
@@ -280,6 +290,24 @@ function VoucherProfileForm({
             );
           }}
         </form.Field>
+
+        <form.Subscribe
+          selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+        >
+          {([icon, color]) => (
+            <div className="border border-border bg-card p-4">
+              <MarkerStylePicker
+                kind={voucher.kind}
+                value={{ icon, color }}
+                onChange={(next) => {
+                  form.setFieldValue("markerIcon", next.icon);
+                  form.setFieldValue("markerColor", next.color);
+                }}
+                disabled={update.isPending}
+              />
+            </div>
+          )}
+        </form.Subscribe>
 
         <form.Field name="tags">
           {(field) => (

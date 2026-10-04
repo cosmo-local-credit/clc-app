@@ -1,3 +1,4 @@
+import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useLingui } from "@lingui/react/macro";
 
@@ -40,4 +41,47 @@ export function useMarketDistanceLabel(
   } catch {
     return null;
   }
+}
+
+/** Names for the map pin choices, read by assistive tech and the review rows. */
+export function useMarkerLabels() {
+  const { t } = useLingui();
+  return {
+    icon(icon: MarkerIcon): string {
+      switch (icon) {
+        case "basket":
+          return t`Shopping`;
+        case "hand-coin":
+          return t`Services`;
+        case "coupon":
+          return t`Voucher`;
+        case "food":
+          return t`Food`;
+        case "farm":
+          return t`Farming`;
+        case "tools":
+          return t`Tools`;
+        case "health":
+          return t`Health`;
+        case "education":
+          return t`Education`;
+      }
+    },
+    color(color: MarkerColor): string {
+      switch (color) {
+        case "blue":
+          return t`Blue`;
+        case "purple":
+          return t`Purple`;
+        case "orange":
+          return t`Orange`;
+        case "pink":
+          return t`Pink`;
+        case "cyan":
+          return t`Cyan`;
+        case "brown":
+          return t`Brown`;
+      }
+    },
+  };
 }

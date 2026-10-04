@@ -50,6 +50,8 @@ function voucher(id: number): MarketVoucher {
     lat: -1.29,
     lng: 36.82,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
   };
 }
 
