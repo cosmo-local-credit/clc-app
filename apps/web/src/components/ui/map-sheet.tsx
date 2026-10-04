@@ -19,9 +19,10 @@ import { cn } from "#/lib/utils";
  * small, shows more each time it is pulled up, and closes when pulled below its
  * smallest size.
  *
- * Non-modal on purpose. The map stays pannable above the sheet, and a tap on the
- * map is the map's event: the screen decides what it means, so the sheet never
- * closes itself on an outside press.
+ * Non-modal over a map, on purpose. The map stays pannable above the sheet, and
+ * a tap on the map is the map's event: the screen decides what it means, so the
+ * sheet never closes itself on an outside press. Off a map, `modal` gives it a
+ * backdrop and closes it on a tap outside, like the app's other sheets.
  */
 export type MapSheetSnap = "peek" | "half" | "full";
 
@@ -54,6 +55,7 @@ export function MapSheetPeek({ className, children }: { className?: string; chil
 
 export function MapSheet({
   open,
+  modal = false,
   snap,
   onSnapChange,
   onClose,
@@ -62,6 +64,12 @@ export function MapSheet({
   children,
 }: {
   open: boolean;
+  /**
+   * Off a map the sheet behaves like the app's other sheets: a backdrop dims
+   * the screen and a tap outside closes it. Over a map, a tap on the map is
+   * the map's event and the screen decides what it means.
+   */
+  modal?: boolean;
   snap: MapSheetSnap;
   onSnapChange: (snap: MapSheetSnap) => void;
   /**
@@ -84,7 +92,13 @@ export function MapSheet({
   const { t } = useLingui();
   const [closing, setClosing] = useState(false);
   if (closing && !open) setClosing(false);
-  const isOpen = open && !closing;
+  // A drawer that mounts already open skips its enter animation, and paints
+  // once fully open before its snap point resolves. Opening it after mount
+  // lets the first card on a screen, and a deep link's, rise from the bottom
+  // like every later one.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isOpen = open && !closing && mounted;
 
   const [viewport, setViewport] = useState<HTMLDivElement | null>(null);
   const [popup, setPopup] = useState<HTMLDivElement | null>(null);
@@ -186,8 +200,8 @@ export function MapSheet({
         setClosing(true);
         onClose();
       }}
-      modal={false}
-      disablePointerDismissal
+      modal={modal}
+      disablePointerDismissal={!modal}
       snapPoints={snapPoints}
       snapPoint={snapPoint}
       onSnapPointChange={(value) => {
@@ -197,6 +211,12 @@ export function MapSheet({
       }}
     >
       <Drawer.Portal>
+        {modal ? (
+          <Drawer.Backdrop
+            data-map-sheet-backdrop=""
+            className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0"
+          />
+        ) : null}
         {/* The viewport covers the screen but takes no input, or the map
             under it could not be panned. Only the popup does. */}
         <Drawer.Viewport ref={setViewport} className="pointer-events-none fixed inset-0 z-40">

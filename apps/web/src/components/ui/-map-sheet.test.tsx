@@ -6,11 +6,13 @@ import { MapSheet, MapSheetPeek, MapSheetTitle, type MapSheetSnap } from "./map-
 
 function Harness({
   initialSnap = "peek",
+  modal = false,
   onSnapChange,
   onClose = vi.fn(),
   onCoveredHeightChange,
 }: {
   initialSnap?: MapSheetSnap;
+  modal?: boolean;
   onSnapChange?: (snap: MapSheetSnap) => void;
   onClose?: () => void;
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
@@ -19,6 +21,7 @@ function Harness({
   return (
     <MapSheet
       open
+      modal={modal}
       snap={snap}
       onSnapChange={(next) => {
         onSnapChange?.(next);
@@ -41,7 +44,43 @@ function scrollArea() {
   return area;
 }
 
+function pressOutside(target: Element) {
+  act(() => {
+    fireEvent.pointerDown(target, { pointerType: "mouse", button: 0 });
+    fireEvent.mouseDown(target, { button: 0 });
+    fireEvent.pointerUp(target, { pointerType: "mouse", button: 0 });
+    fireEvent.mouseUp(target, { button: 0 });
+    fireEvent.click(target, { button: 0 });
+  });
+}
+
 describe("MapSheet", () => {
+  it("leaves a tap outside to the screen beneath when it sits over a map", () => {
+    const onClose = vi.fn();
+    render(
+      <>
+        <button type="button">Map</button>
+        <Harness onClose={onClose} />
+      </>,
+    );
+
+    expect(document.querySelector("[data-map-sheet-backdrop]")).toBeNull();
+    pressOutside(screen.getByRole("button", { name: "Map" }));
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("dims the screen and closes on a tap outside, like any other sheet, off a map", () => {
+    const onClose = vi.fn();
+    render(<Harness modal onClose={onClose} />);
+
+    const backdrop = document.querySelector("[data-map-sheet-backdrop]");
+    if (!backdrop) throw new Error("expected a backdrop");
+    pressOutside(backdrop);
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("names the sheet from its title", () => {
     render(<Harness />);
 

@@ -249,6 +249,7 @@ export function MarketPage({
       )}
 
       <VoucherSheet
+        modal={false}
         placeholder={cardCatalogVoucher}
         realFix={realFix}
         snap={snap}

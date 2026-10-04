@@ -104,9 +104,12 @@ describe("pool voucher navigation", () => {
       fireEvent.click(screen.getByRole("link", { name: "Pool" }));
     });
 
+    // Back lands on the pool with the card it was opened from still open over
+    // it; the pool sits behind the card's backdrop until the card closes.
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
-      expect(screen.getByRole("heading", { name: "Trade Pool" })).toBeTruthy();
+      expect(screen.getByRole("dialog", { name: "Trade Token" })).toBeTruthy();
+      expect(screen.getByRole("heading", { name: "Trade Pool", hidden: true })).toBeTruthy();
     });
   });
 

@@ -86,6 +86,7 @@ export function useVoucherSheetSnap(isOpen: boolean) {
 export function VoucherSheet({
   placeholder = null,
   origin,
+  modal = true,
   realFix = null,
   snap: controlledSnap,
   onSnapChange,
@@ -95,6 +96,8 @@ export function VoucherSheet({
   placeholder?: VoucherPlaceholder | null;
   /** Where the voucher's page should send Back once opened from the card. */
   origin?: VoucherPageOrigin;
+  /** False over the map, which stays live under the card. */
+  modal?: boolean;
   realFix?: Coordinates | null;
   /** Controlled by a screen that moves the sheet itself; the map collapses it on a pan. */
   snap?: MapSheetSnap;
@@ -124,6 +127,7 @@ export function VoucherSheet({
   return (
     <MapSheet
       open={isOpen}
+      modal={modal}
       snap={snap}
       onSnapChange={setSnap}
       onClose={selection.close}
@@ -132,8 +136,8 @@ export function VoucherSheet({
     >
       {unavailable ? (
         <MapSheetPeek className="px-4 pb-4">
-          <div className="flex items-start gap-3">
-            <MapSheetTitle className="min-w-0 flex-1 pt-2.5 text-muted-foreground text-sm">
+          <div className="flex items-center gap-3">
+            <MapSheetTitle className="min-w-0 flex-1 text-muted-foreground text-sm">
               <Trans>Couldn't load this voucher.</Trans>
             </MapSheetTitle>
             <CloseButton label={t`Close`} onClick={selection.close} />
@@ -166,13 +170,17 @@ export function VoucherSheet({
   );
 }
 
-/** Borderless, so the close reads as part of the header rather than a second box. */
+/**
+ * Borderless, so the close reads as part of the header rather than a second
+ * box. The 44 px target overhangs the content inset so the glyph itself lines
+ * up with the content's edge.
+ */
 function CloseButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <Button
       variant="ghost"
       size="icon-lg"
-      className="-me-2 size-11 shrink-0 border-0 text-muted-foreground"
+      className="-me-3 size-11 shrink-0 border-0 text-muted-foreground"
       aria-label={label}
       onClick={onClick}
     >
@@ -225,7 +233,7 @@ function VoucherCard({
   return (
     <>
       <MapSheetPeek className="px-4 pb-4">
-        <div className="flex items-start gap-3">
+        <div className="flex items-center gap-3">
           {/* A pointer shortcut, as on the place sheet. The handle above is the
               control that names the action for everyone else. */}
           <div
