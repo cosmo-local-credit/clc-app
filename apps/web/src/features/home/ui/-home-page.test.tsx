@@ -164,17 +164,23 @@ describe("HomePage tabs", () => {
 });
 
 describe("HomePage guest mode", () => {
-  it("asks the guest to sign in before loading nearby Market", () => {
+  it("renders public Posts for guests", () => {
+    nearbyAuth.isAuthenticated = false;
+    renderHome(<HomePage activeTab="posts" isAuthenticated={false} />);
+    expect(screen.getByTestId("posts-page")).toBeTruthy();
+  });
+
+  it("renders the public Market for guests", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
-    expect(screen.queryByTestId("market-page")).toBeNull();
-    expect(screen.getByText("Sign in or sign up")).toBeTruthy();
+    expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 
   it("does not render private content for a requested private tab", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage activeTab="wallet" isAuthenticated={false} />);
-    expect(screen.queryByTestId("market-page")).toBeNull();
+    expect(screen.getByTestId("market-page")).toBeTruthy();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
     expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
   });
@@ -283,7 +289,7 @@ describe("HomePage location scope", () => {
     nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
 
-    expect(screen.queryByTestId("market-page")).toBeNull();
-    expect(screen.getByText("Sign in or sign up")).toBeTruthy();
+    expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.queryByText("Sign in or sign up")).toBeNull();
   });
 });
