@@ -96,6 +96,27 @@ describe("MapSheet", () => {
     expect(scrollArea().className).toContain("overflow-y-auto");
   });
 
+  it("measures the peek from the top of its content after collapsing from full", () => {
+    const onCoveredHeightChange = vi.fn();
+    render(<Harness initialSnap="full" onCoveredHeightChange={onCoveredHeightChange} />);
+    const area = scrollArea();
+    const peekBlock = screen.getByRole("heading", { name: "Mama Mboga" }).parentElement;
+    if (!peekBlock) throw new Error("expected the peek block");
+    area.scrollTop = 240;
+    // jsdom lays nothing out. The peek block ends 150 px below the popup's
+    // top, less however far the content is scrolled.
+    vi.spyOn(screen.getByRole("dialog"), "getBoundingClientRect").mockReturnValue(
+      new DOMRect(0, 0, 360, 780),
+    );
+    vi.spyOn(peekBlock, "getBoundingClientRect").mockImplementation(
+      () => new DOMRect(0, -area.scrollTop, 360, 150),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
+
+    expect(onCoveredHeightChange).toHaveBeenLastCalledWith(150, "peek");
+  });
+
   it("returns to the top of its content when it collapses from full", () => {
     render(<Harness initialSnap="full" />);
     const area = scrollArea();

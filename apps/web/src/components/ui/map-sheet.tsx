@@ -97,6 +97,13 @@ export function MapSheet({
   const [floatingSlot, setFloatingSlot] = useState<HTMLDivElement | null>(null);
   const [layout, setLayout] = useState<Layout>({ viewport: 0, popup: 0, peek: 0, floating: 0 });
 
+  // Collapsing from full would otherwise leave the content scrolled, with the
+  // peek block out of sight under a sheet that no longer scrolls. A layout
+  // effect, so the content is back at the top before anything is painted.
+  useLayoutEffect(() => {
+    if (snap !== "full" && content) content.scrollTop = 0;
+  }, [content, snap]);
+
   useLayoutEffect(() => {
     if (!popup) return;
     function measure() {
@@ -105,14 +112,17 @@ export function MapSheet({
         const next: Layout = {
           viewport: viewport?.offsetHeight ?? 0,
           popup: popup.offsetHeight,
-          // The peek block sits in the scroll area, which only scrolls at full:
-          // measured there it would include the scroll offset.
+          // Kept from below full: the app bar pushes the peek block down there.
+          // The scroll offset is added back, since content scrolled out of
+          // sight (by focus, say) leaves the block's height unchanged and so
+          // no resize to measure again on.
           peek:
             snap === "full" || !peek
               ? previous.peek
               : Math.round(
                   peek.getBoundingClientRect().bottom -
                     popup.getBoundingClientRect().top +
+                    (content?.scrollTop ?? 0) +
                     (safeArea?.offsetHeight ?? 0),
                 ),
           floating: floatingSlot?.offsetHeight ?? 0,
@@ -131,13 +141,7 @@ export function MapSheet({
       if (element) observer.observe(element);
     }
     return () => observer.disconnect();
-  }, [viewport, popup, peek, safeArea, floatingSlot, snap]);
-
-  // Collapsing from full would otherwise leave the content scrolled, with the
-  // peek block out of sight under a sheet that no longer scrolls.
-  useEffect(() => {
-    if (snap !== "full" && content) content.scrollTop = 0;
-  }, [content, snap]);
+  }, [viewport, popup, content, peek, safeArea, floatingSlot, snap]);
 
   const peekHeight = layout.peek > 0 ? layout.peek : PEEK_FALLBACK_PX;
   const peekPoint = `${peekHeight}px`;
