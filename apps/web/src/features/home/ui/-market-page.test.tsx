@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useSyncExternalStore } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
@@ -49,8 +49,17 @@ const {
   selection,
 } = vi.hoisted(() => ({
   selection: {
-    initial: null as `0x${string}` | null,
+    voucher: null as `0x${string}` | null,
     calls: [] as [string, string?][],
+    listeners: new Set<() => void>(),
+    subscribe: (listener: () => void) => {
+      selection.listeners.add(listener);
+      return () => selection.listeners.delete(listener);
+    },
+    set: (voucher: `0x${string}` | null) => {
+      selection.voucher = voucher;
+      for (const listener of selection.listeners) listener();
+    },
   },
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
@@ -171,19 +180,20 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   },
 }));
 
-vi.mock("#/features/home/hooks/use-market-voucher-selection", () => ({
-  useMarketVoucherSelection: () => {
-    const [voucher, setVoucher] = useState(selection.initial);
+// One selection for the page and its sheet, as the URL is for both.
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => {
+    const voucher = useSyncExternalStore(selection.subscribe, () => selection.voucher);
     return {
       voucher,
-      voucherTab: undefined,
-      select: (address: `0x${string}`) => {
-        selection.calls.push(["select", address]);
-        setVoucher(address);
+      voucherTab: "offerings",
+      open: (address: `0x${string}`) => {
+        selection.calls.push(["open", address]);
+        selection.set(address);
       },
       close: () => {
         selection.calls.push(["close"]);
-        setVoucher(null);
+        selection.set(null);
       },
     };
   },
@@ -291,7 +301,7 @@ beforeEach(() => {
     retry: mockRetry,
   };
   routeSearch.current = {};
-  selection.initial = null;
+  selection.voucher = null;
   selection.calls = [];
   mockNavigate.mockReset();
   filteredResult.current = {
@@ -520,7 +530,7 @@ describe("MarketPage voucher card", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(selection.calls).toEqual([["select", "0xAbC0000000000000000000000000000000000123"]]);
+    expect(selection.calls).toEqual([["open", "0xAbC0000000000000000000000000000000000123"]]);
     const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
     expect(within(card).getByText("Goods")).toBeTruthy();
     expect(lastMapProps.current?.selectedLocationId).toBe("1");
@@ -634,7 +644,7 @@ describe("MarketPage voucher card", () => {
   });
 
   it("opens a deep-linked card before the catalog holds the voucher", () => {
-    selection.initial = "0xAbC0000000000000000000000000000000000123";
+    selection.voucher = "0xAbC0000000000000000000000000000000000123";
     detailResult.current = { data: detailFor(), isPending: false };
     renderPage();
 
@@ -652,7 +662,7 @@ describe("MarketPage voucher card", () => {
   });
 
   it("centres a shared link on its voucher, ahead of the saved location", () => {
-    selection.initial = "0xAbC0000000000000000000000000000000000123";
+    selection.voucher = "0xAbC0000000000000000000000000000000000123";
     detailResult.current = { data: detailFor({ lat: -3.63, lng: 39.85 }), isPending: false };
     profileResult.current = {
       data: { geoLat: -4.0435, geoLng: 39.6682 },

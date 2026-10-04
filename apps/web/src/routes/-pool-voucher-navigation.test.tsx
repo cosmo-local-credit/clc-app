@@ -26,6 +26,7 @@ vi.mock("sonner", () => ({
 
 import { PoolDetailPage } from "#/features/pools/ui";
 import { VoucherDetailPage } from "#/features/wallet/ui";
+import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
 
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const TOKEN_ADDRESS = "0x2222222222222222222222222222222222222222";
@@ -45,6 +46,7 @@ describe("pool voucher navigation", () => {
     const poolRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/pools/$poolAddress",
+      validateSearch: (search) => parseVoucherSheetSearch(search),
       component: () => {
         const { poolAddress } = useParams({ strict: false });
         return poolAddress ? (
@@ -84,7 +86,12 @@ describe("pool voucher navigation", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.click(await screen.findByRole("link", { name: /trade token/i }));
+    // The row opens the voucher's card; its page is the card's last link.
+    fireEvent.click(await screen.findByRole("button", { name: /trade token/i }));
+    await screen.findByRole("dialog", { name: "Trade Token" });
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    fireEvent.click(await screen.findByRole("link", { name: "Open voucher page" }));
 
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);

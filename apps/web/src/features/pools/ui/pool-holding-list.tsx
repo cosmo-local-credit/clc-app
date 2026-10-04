@@ -1,13 +1,14 @@
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { Button } from "#/components/ui/button";
 import { TokenLogo } from "#/components/wallet";
 import type { PoolHolding } from "#/features/pools/logic/pool-holdings";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
 /**
  * The tab panel the holdings and credit tabs share: one outlined list of the
@@ -65,27 +66,28 @@ export function PoolHoldingListPanel({
   );
 }
 
-/** One voucher's row, linking to its page with the pool kept in context. */
-export function PoolHoldingRowLink({
+/** One voucher's row, opening its card over the pool. */
+export function PoolHoldingRowButton({
   holding,
-  poolAddress,
   isLast,
   children,
 }: {
   holding: PoolHolding;
-  poolAddress: string;
   isLast: boolean;
   children: ReactNode;
 }) {
+  const { open } = useVoucherSheetSelection();
   return (
-    <Link
-      to="/vouchers/$voucherAddress"
-      params={{ voucherAddress: holding.tokenAddress }}
-      search={{ poolAddress }}
-      className={["block p-3", isLast ? "" : "border-b border-border"].join(" ")}
+    <button
+      type="button"
+      onClick={() => {
+        const address = parseVoucherAddress(holding.tokenAddress);
+        if (address) open(address);
+      }}
+      className={["block w-full p-3 text-start", isLast ? "" : "border-b border-border"].join(" ")}
     >
       {children}
-    </Link>
+    </button>
   );
 }
 

@@ -10,22 +10,23 @@ import {
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
 
-import { useMarketVoucherSelection } from "#/features/home/hooks/use-market-voucher-selection";
 import { pickCatalogSearch } from "#/lib/navigation/catalog-search";
 import { isAtHomeTabRoot, parseHomeSearch } from "#/lib/navigation/home-tabs";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
 
 const A = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const B = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 function Market() {
-  const { voucher, select, close } = useMarketVoucherSelection();
+  const { voucher, open, close } = useVoucherSheetSelection();
   return (
     <div>
       <output data-testid="card">{voucher ?? "none"}</output>
-      <button type="button" onClick={() => select(A)}>
+      <button type="button" onClick={() => open(A)}>
         Pin A
       </button>
-      <button type="button" onClick={() => select(B)}>
+      <button type="button" onClick={() => open(B)}>
         Pin B
       </button>
       <button type="button" onClick={close}>
@@ -54,11 +55,24 @@ function createTestRouter(initialEntries: string[]) {
     validateSearch: (search) => ({ ...parseHomeSearch(search), ...pickCatalogSearch(search) }),
     component: Market,
   });
+  // Any other screen that opens the card, with search of its own.
+  const poolRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/pools/$poolAddress",
+    validateSearch: (search) => ({
+      tab: typeof search.tab === "string" ? search.tab : undefined,
+      ...parseVoucherSheetSearch(search),
+    }),
+    component: Market,
+  });
   const history = createMemoryHistory({
     initialEntries,
     initialIndex: initialEntries.length - 1,
   });
-  const router = createRouter({ routeTree: rootRoute.addChildren([indexRoute]), history });
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([indexRoute, poolRoute]),
+    history,
+  });
   return { router, history };
 }
 
@@ -177,16 +191,30 @@ describe("market voucher card history", () => {
     expect(history.length).toBe(1);
   });
 
-  it("drops the card when the market switches to the list", async () => {
-    const { router, history } = await renderMarket([`/?voucher=${A}`]);
+  it("keeps the card when the market switches to the list", async () => {
+    const { history } = await renderMarket([`/?voucher=${A}`]);
 
     fireEvent.click(screen.getByRole("link", { name: "List" }));
 
     await waitFor(() =>
       expect(new URLSearchParams(history.location.search).get("view")).toBe("list"),
     );
-    expect(router.state.location.search).not.toHaveProperty("voucher", A);
-    expect(screen.getByTestId("card").textContent).toBe("none");
+    expect(screen.getByTestId("card").textContent).toBe(A);
+  });
+
+  it("opens and closes on whichever screen it was opened, keeping that screen's search", async () => {
+    const { history } = await renderMarket(["/pools/0xpool?tab=holdings"]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin A" }));
+    await waitFor(() => expect(voucherParam(history)).toBe(A));
+    expect(history.location.pathname).toBe("/pools/0xpool");
+    expect(new URLSearchParams(history.location.search).get("tab")).toBe("holdings");
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(screen.getByTestId("card").textContent).toBe("none"));
+    expect(history.location.pathname).toBe("/pools/0xpool");
+    expect(new URLSearchParams(history.location.search).get("tab")).toBe("holdings");
   });
 
   it("ignores a voucher that is not an address", async () => {

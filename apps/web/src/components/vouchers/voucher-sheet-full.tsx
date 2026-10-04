@@ -6,26 +6,29 @@ import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel"
 import { Button } from "#/components/ui/button";
 import { VoucherAbout } from "#/components/vouchers/voucher-about";
 import { VoucherOfferingsPanel } from "#/components/vouchers/voucher-offerings-panel";
-import type { MarketVoucherTab } from "#/lib/navigation/home-tabs";
+import { VOUCHER_SHEET_TABS, type VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
 
-const TABS: readonly MarketVoucherTab[] = ["overview", "offerings", "reviews"];
+/** The voucher page's own search: where Back leads once it is open. */
+export type VoucherPageOrigin = { from?: "wallet" | "vouchers"; poolAddress?: string };
 
 /**
  * The card at full: the voucher's page, short of what only the page holds.
  * Activity, Posts and the owner's contract actions stay there, one link away.
  *
- * Its own chunk, so the map does not ship the Markdown renderer and the review
- * editor until a card is pulled all the way up.
+ * Its own chunk, so no screen ships the Markdown renderer and the review editor
+ * until a card is pulled all the way up.
  */
-export function MarketVoucherSheetFull({
+export function VoucherSheetFull({
   address,
   detail,
   activeTab,
+  origin,
 }: {
   address: `0x${string}`;
   detail: MarketVoucherDetail | undefined;
-  activeTab: MarketVoucherTab;
+  activeTab: VoucherSheetTab;
+  origin: VoucherPageOrigin | undefined;
 }) {
   const { t } = useLingui();
   const symbol = detail?.symbol ?? "";
@@ -38,14 +41,14 @@ export function MarketVoucherSheetFull({
           role="tablist"
           aria-label={t`Voucher details`}
         >
-          {TABS.map((tab) => {
+          {VOUCHER_SHEET_TABS.map((tab) => {
             const label =
-              tab === "overview" ? (
-                <Trans>Overview</Trans>
-              ) : tab === "offerings" ? (
+              tab === "offerings" ? (
                 <Trans>Offerings</Trans>
-              ) : (
+              ) : tab === "reviews" ? (
                 <Trans>Reviews</Trans>
+              ) : (
+                <Trans>Overview</Trans>
               );
             const className = cn(
               "flex h-10 min-w-0 items-center justify-center px-1 font-semibold text-[0.6875rem]",
@@ -75,11 +78,10 @@ export function MarketVoucherSheetFull({
                 role="tab"
                 aria-selected="false"
                 aria-controls={`voucher-panel-${tab}`}
-                to="/"
+                to="."
                 search={(previous) => ({
                   ...previous,
-                  tab: "market",
-                  voucherTab: tab === "overview" ? undefined : tab,
+                  voucherTab: tab === "offerings" ? undefined : tab,
                 })}
                 // A panel on the same card is not a navigation: Back must close
                 // the card, not walk back through the tabs it showed.
@@ -137,11 +139,11 @@ export function MarketVoucherSheetFull({
         ) : null}
         {activeTab === "reviews" ? <VoucherReviewsPanel key={address} address={address} /> : null}
 
-        <Button asChild variant="outline" className="mt-6 h-11 w-full bg-card">
+        <Button asChild className="mt-6 h-11 w-full">
           <Link
             to="/vouchers/$voucherAddress"
             params={{ voucherAddress: address }}
-            search={{ from: "market" }}
+            search={{ from: origin?.from, poolAddress: origin?.poolAddress }}
           >
             <Trans>Open voucher page</Trans>
           </Link>

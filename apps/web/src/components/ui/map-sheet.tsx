@@ -59,7 +59,6 @@ export function MapSheet({
   onClose,
   onCoveredHeightChange,
   floating,
-  appBar,
   children,
 }: {
   open: boolean;
@@ -80,8 +79,6 @@ export function MapSheet({
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
   /** Rides just above the sheet's top edge, and fades out above half. */
   floating?: ReactNode;
-  /** Shown under the handle once the sheet fills the screen. */
-  appBar?: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useLingui();
@@ -112,19 +109,17 @@ export function MapSheet({
         const next: Layout = {
           viewport: viewport?.offsetHeight ?? 0,
           popup: popup.offsetHeight,
-          // Kept from below full: the app bar pushes the peek block down there.
-          // The scroll offset is added back, since content scrolled out of
-          // sight (by focus, say) leaves the block's height unchanged and so
-          // no resize to measure again on.
-          peek:
-            snap === "full" || !peek
-              ? previous.peek
-              : Math.round(
-                  peek.getBoundingClientRect().bottom -
-                    popup.getBoundingClientRect().top +
-                    (content?.scrollTop ?? 0) +
-                    (safeArea?.offsetHeight ?? 0),
-                ),
+          // The scroll offset is added back: content scrolled at full, or out
+          // of sight below it (by focus, say), leaves the block's height
+          // unchanged and so no resize to measure again on.
+          peek: !peek
+            ? previous.peek
+            : Math.round(
+                peek.getBoundingClientRect().bottom -
+                  popup.getBoundingClientRect().top +
+                  (content?.scrollTop ?? 0) +
+                  (safeArea?.offsetHeight ?? 0),
+              ),
           floating: floatingSlot?.offsetHeight ?? 0,
         };
         return next.viewport === previous.viewport &&
@@ -241,7 +236,6 @@ export function MapSheet({
             >
               <span aria-hidden="true" className="h-1 w-10 rounded-full bg-muted-foreground/30" />
             </button>
-            {snap === "full" ? appBar : null}
 
             <PeekContext.Provider value={setPeek}>
               <Drawer.Content

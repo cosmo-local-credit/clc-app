@@ -26,7 +26,6 @@ function Harness({
       }}
       onClose={onClose}
       onCoveredHeightChange={onCoveredHeightChange}
-      appBar={<div data-testid="app-bar" />}
     >
       <MapSheetPeek>
         <MapSheetTitle>Mama Mboga</MapSheetTitle>
@@ -55,11 +54,9 @@ describe("MapSheet", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    expect(screen.getByTestId("app-bar")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
 
     expect(onSnapChange.mock.calls).toEqual([["half"], ["full"], ["peek"]]);
-    expect(screen.queryByTestId("app-bar")).toBeNull();
   });
 
   it("closes on Escape", () => {

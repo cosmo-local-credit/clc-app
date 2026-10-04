@@ -6,6 +6,7 @@ import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
 import { AppMenu } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
+import { useVoucherSheetSnap, VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import {
@@ -15,13 +16,12 @@ import {
 } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useMarketVoucherSelection } from "#/features/home/hooks/use-market-voucher-selection";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
 import { MarketMap } from "./market-map.lazy";
-import { MarketVoucherSheet } from "./market-voucher-sheet";
 
 type Coordinates = { lat: number; lng: number };
 
@@ -43,7 +43,7 @@ export function MarketPage({
     requestLocation,
   } = useMarketCamera(locationOwner);
   const [viewport, setViewport] = useState<MarketViewport | null>(null);
-  const selection = useMarketVoucherSelection();
+  const selection = useVoucherSheetSelection();
 
   // A link that opens the market on a card centres the map on its voucher,
   // which may lie far outside anything the catalog has loaded.
@@ -103,24 +103,14 @@ export function MarketPage({
     return { key: catalog.filterKey, west, south, east, north };
   }, [filter.isFiltered, catalog.status, catalog.filterKey, vouchers]);
 
-  // The card keeps the voucher it last showed while it animates closed.
   const isCardOpen = selection.voucher !== null;
-  const [cardVoucher, setCardVoucher] = useState(selection.voucher);
-  const [wasCardOpen, setWasCardOpen] = useState(isCardOpen);
-  const [snap, setSnap] = useState<MapSheetSnap>("peek");
-  if (selection.voucher && selection.voucher !== cardVoucher) setCardVoucher(selection.voucher);
-  if (isCardOpen !== wasCardOpen) {
-    setWasCardOpen(isCardOpen);
-    // Every card opens at the peek, Forward and deep links included.
-    if (isCardOpen) setSnap("peek");
-  }
-
-  const cardAddress = cardVoucher?.toLowerCase() ?? null;
+  const [snap, setSnap] = useVoucherSheetSnap(isCardOpen);
+  const cardAddress = selection.voucher?.toLowerCase() ?? null;
   const cardCatalogVoucher = useMemo(
     () => vouchers.find((voucher) => voucher.address.toLowerCase() === cardAddress) ?? null,
     [vouchers, cardAddress],
   );
-  const selectedLocationId = isCardOpen ? (cardCatalogVoucher?.id ?? null) : null;
+  const selectedLocationId = cardCatalogVoucher?.id ?? null;
 
   const [sheetInset, setSheetInset] = useState(0);
   const handleCoveredHeightChange = useCallback((height: number, at: MapSheetSnap) => {
@@ -141,13 +131,13 @@ export function MarketPage({
           ? t`Location unavailable`
           : t`Use current location`;
 
-  const { select } = selection;
+  const { open } = selection;
   const handleSelectLocation = useCallback(
     (id: string) => {
       const voucher = vouchers.find((candidate) => candidate.id === id);
-      if (voucher) select(voucher.address);
+      if (voucher) open(voucher.address);
     },
-    [select, vouchers],
+    [open, vouchers],
   );
 
   const handleViewportSettled = useCallback((settled: MarketViewport) => {
@@ -258,20 +248,14 @@ export function MarketPage({
         </div>
       )}
 
-      {cardVoucher ? (
-        <MarketVoucherSheet
-          address={cardVoucher}
-          open={isCardOpen}
-          catalogVoucher={cardCatalogVoucher}
-          realFix={realFix}
-          snap={snap}
-          onSnapChange={setSnap}
-          voucherTab={selection.voucherTab ?? "overview"}
-          onClose={selection.close}
-          onCoveredHeightChange={handleCoveredHeightChange}
-          floating={locationButton}
-        />
-      ) : null}
+      <VoucherSheet
+        placeholder={cardCatalogVoucher}
+        realFix={realFix}
+        snap={snap}
+        onSnapChange={setSnap}
+        onCoveredHeightChange={handleCoveredHeightChange}
+        floating={locationButton}
+      />
     </main>
   );
 }

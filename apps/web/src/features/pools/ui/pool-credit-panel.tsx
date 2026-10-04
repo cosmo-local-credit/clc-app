@@ -9,7 +9,7 @@ import {
   PoolHoldingBar,
   PoolHoldingIdentity,
   PoolHoldingListPanel,
-  PoolHoldingRowLink,
+  PoolHoldingRowButton,
 } from "./pool-holding-list";
 
 /**
@@ -38,17 +38,16 @@ export function PoolCreditPanel({ pool, vouchers }: { pool: UserPool; vouchers: 
       }}
     >
       {holdings.map((holding, index, list) => (
-        <PoolHoldingRowLink
+        <PoolHoldingRowButton
           key={holding.tokenAddress}
           holding={holding}
-          poolAddress={pool.address}
           isLast={index === list.length - 1}
         >
           <div className="flex items-center gap-3">
             <PoolHoldingIdentity holding={holding} unit={unit} />
           </div>
           <CreditLine holding={holding} unit={unit} />
-        </PoolHoldingRowLink>
+        </PoolHoldingRowButton>
       ))}
     </PoolHoldingListPanel>
   );

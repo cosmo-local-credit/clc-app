@@ -5,17 +5,26 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
-import type { MarketVoucherTab } from "#/lib/navigation/home-tabs";
+import type { VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 
-const { detailResult, detailError, offeringRequests, poolRequests, mapsRequests } = vi.hoisted(
-  () => ({
+const { detailResult, detailError, offeringRequests, poolRequests, mapsRequests, selection } =
+  vi.hoisted(() => ({
+    selection: { voucherTab: "offerings" as string, close: vi.fn() },
     detailResult: { current: undefined as MarketVoucherDetail | undefined },
     detailError: { current: false, refetch: vi.fn() },
     offeringRequests: { current: [] as (string | undefined)[] },
     poolRequests: { current: [] as unknown[] },
     mapsRequests: { current: [] as unknown[] },
+  }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: VOUCHER,
+    voucherTab: selection.voucherTab,
+    open: vi.fn(),
+    close: selection.close,
   }),
-);
+}));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: () => ({
@@ -115,11 +124,11 @@ vi.mock("@tanstack/react-router", () => ({
   },
 }));
 
-import { MarketVoucherSheet } from "./market-voucher-sheet";
+import { VoucherSheet, type VoucherPlaceholder } from "./voucher-sheet";
 
 const VOUCHER = "0xAbC0000000000000000000000000000000000123";
 
-const CATALOG: MarketVoucher = {
+const CATALOG: VoucherPlaceholder & MarketVoucher = {
   id: "1",
   chainId: 100,
   address: VOUCHER,
@@ -161,35 +170,33 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
 }
 
 function Sheet({
-  catalogVoucher = CATALOG,
+  placeholder = CATALOG,
   initialSnap = "peek",
-  voucherTab = "overview",
   onSnapChange,
 }: {
-  catalogVoucher?: MarketVoucher | null;
+  placeholder?: VoucherPlaceholder | null;
   initialSnap?: MapSheetSnap;
-  voucherTab?: MarketVoucherTab;
   onSnapChange?: (snap: MapSheetSnap) => void;
 }) {
   const [snap, setSnap] = useState<MapSheetSnap>(initialSnap);
   return (
-    <MarketVoucherSheet
-      address={VOUCHER}
-      open
-      catalogVoucher={catalogVoucher}
-      realFix={null}
+    <VoucherSheet
+      placeholder={placeholder}
+      origin={{ from: "wallet" }}
       snap={snap}
       onSnapChange={(next) => {
         onSnapChange?.(next);
         setSnap(next);
       }}
-      voucherTab={voucherTab}
-      onClose={vi.fn()}
     />
   );
 }
 
-function renderSheet(props: Parameters<typeof Sheet>[0] = {}) {
+function renderSheet({
+  voucherTab = "offerings",
+  ...props
+}: Parameters<typeof Sheet>[0] & { voucherTab?: VoucherSheetTab } = {}) {
+  selection.voucherTab = voucherTab;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
@@ -202,12 +209,13 @@ beforeEach(() => {
   detailResult.current = undefined;
   detailError.current = false;
   detailError.refetch.mockReset();
+  selection.close.mockReset();
   offeringRequests.current = [];
   poolRequests.current = [];
   mapsRequests.current = [];
 });
 
-describe("MarketVoucherSheet peek", () => {
+describe("VoucherSheet peek", () => {
   it("draws from the catalog row before detail arrives", () => {
     renderSheet();
 
@@ -220,7 +228,7 @@ describe("MarketVoucherSheet peek", () => {
 
   it("says so when a linked voucher cannot be loaded, and offers a retry", () => {
     detailError.current = true;
-    renderSheet({ catalogVoucher: null });
+    renderSheet({ placeholder: null });
 
     expect(screen.getByRole("dialog", { name: "Couldn't load this voucher." })).toBeTruthy();
     expect(screen.queryByRole("link", { name: "Get" })).toBeNull();
@@ -304,7 +312,7 @@ describe("MarketVoucherSheet peek", () => {
   });
 });
 
-describe("MarketVoucherSheet half", () => {
+describe("VoucherSheet half", () => {
   it("asks for pools and offerings only once half is reached", async () => {
     detailResult.current = detail();
     renderSheet();
@@ -328,8 +336,7 @@ describe("MarketVoucherSheet half", () => {
     await screen.findByText("Kilifi Pool");
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    // The handle comes first; the app bar's collapse only goes back to half.
-    fireEvent.click(screen.getAllByRole("button", { name: "Collapse" })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
 
     expect(screen.getByText("Kilifi Pool")).toBeTruthy();
     expect(poolRequests.current).toHaveLength(1);
@@ -358,22 +365,34 @@ describe("MarketVoucherSheet half", () => {
   });
 });
 
-describe("MarketVoucherSheet full", () => {
+describe("VoucherSheet full", () => {
+  it("opens on Offerings, then Reviews, then Overview", async () => {
+    detailResult.current = detail();
+    renderSheet({ initialSnap: "full" });
+
+    await screen.findByRole("tab", { name: "Offerings", selected: true });
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Offerings",
+      "Reviews",
+      "Overview",
+    ]);
+    expect(screen.getByText("Offerings panel")).toBeTruthy();
+  });
+
   it("switches tabs in place, without adding history", async () => {
     detailResult.current = detail();
     renderSheet({ initialSnap: "full" });
 
-    const offerings = await screen.findByRole("tab", { name: "Offerings" });
-    expect(offerings.getAttribute("href")).toContain("voucherTab=offerings");
-    expect(offerings.getAttribute("data-replace")).toBe("true");
-    // Keeps the mark that lets Close pop the entry the pin pushed.
-    expect(offerings.getAttribute("data-keep-state")).toBe("true");
-    expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeTruthy();
+    const reviews = await screen.findByRole("tab", { name: "Reviews" });
+    expect(reviews.getAttribute("href")).toContain("voucherTab=reviews");
+    expect(reviews.getAttribute("data-replace")).toBe("true");
+    // Keeps the mark that lets Close pop the entry the tap pushed.
+    expect(reviews.getAttribute("data-keep-state")).toBe("true");
   });
 
   it("reads the description in full above the tabs and shows the rate once", async () => {
     detailResult.current = detail();
-    renderSheet({ initialSnap: "full" });
+    renderSheet({ initialSnap: "full", voucherTab: "overview" });
 
     await screen.findByRole("tab", { name: "Overview", selected: true });
     const descriptions = screen.getAllByText("Fresh vegetables from the farm.");
@@ -382,29 +401,32 @@ describe("MarketVoucherSheet full", () => {
     expect(screen.getAllByText("1 MALII = 10 KSH")).toHaveLength(1);
   });
 
-  it("shows the chosen tab's panel", async () => {
+  it("shows the chosen tab's panel, and drops the tab for the default", async () => {
     detailResult.current = detail();
     renderSheet({ initialSnap: "full", voucherTab: "reviews" });
 
     expect(await screen.findByText("Reviews panel")).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Overview" }).getAttribute("href")).not.toContain(
+    expect(screen.getByRole("tab", { name: "Offerings" }).getAttribute("href")).not.toContain(
       "voucherTab",
     );
   });
 
-  it("collapses to half from the app bar and links to the voucher's page", async () => {
-    const onSnapChange = vi.fn();
+  it("leaves for the voucher's page, carrying where the card was opened", async () => {
     detailResult.current = detail();
-    renderSheet({ initialSnap: "full", onSnapChange });
+    renderSheet({ initialSnap: "full" });
 
-    expect(
-      (await screen.findByRole("link", { name: "Open voucher page" })).getAttribute("href"),
-    ).toBe(`/vouchers/${VOUCHER}?from=market`);
-    const [appBarCollapse] = screen
-      .getAllByRole("button", { name: "Collapse" })
-      .filter((button) => button.className.includes("size-11"));
-    fireEvent.click(appBarCollapse!);
+    const page = await screen.findByRole("link", { name: "Open voucher page" });
+    expect(page.getAttribute("href")).toBe(`/vouchers/${VOUCHER}?from=wallet`);
+    // Filled in the brand colour, unlike the outlined actions above it.
+    expect(page.getAttribute("data-variant")).toBe("default");
+  });
 
-    expect(onSnapChange).toHaveBeenCalledWith("half");
+  it("has no app bar above the header at full", async () => {
+    detailResult.current = detail();
+    renderSheet({ initialSnap: "full" });
+
+    await screen.findByRole("tab", { name: "Offerings", selected: true });
+    expect(screen.getAllByText("Priscilah Malii")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Share" })).toHaveLength(1);
   });
 });

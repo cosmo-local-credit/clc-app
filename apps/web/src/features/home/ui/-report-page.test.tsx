@@ -95,6 +95,20 @@ vi.mock("#/components/ui/location-map.lazy", () => ({
   ),
 }));
 
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
@@ -371,12 +385,15 @@ describe("ReportPage", () => {
     expect(screen.getByText("Author")).toBeTruthy();
   });
 
-  it("links each related voucher to its own page", () => {
+  it("opens each related voucher's card over the post", () => {
+    voucherSheet.open.mockClear();
     render(<ReportPage reportId="3182" />);
 
-    const link = screen.getByRole("link", { name: /Kiriba/ });
-    expect(link.getAttribute("href")).toBe("/vouchers/0x2222222222222222222222222222222222222222");
-    expect(link.textContent).toContain("KCH");
+    const voucher = screen.getByRole("button", { name: /Kiriba/ });
+    expect(voucher.textContent).toContain("KCH");
+    fireEvent.click(voucher);
+
+    expect(voucherSheet.open).toHaveBeenCalledWith("0x2222222222222222222222222222222222222222");
   });
 
   it("reverse-geocodes the coordinates for the header, location panel, and Maps label", () => {

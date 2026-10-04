@@ -1,4 +1,4 @@
-import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
+import type { MarketVoucherDetail, MarketVoucherKind } from "@clc/api/features/market/client";
 import { poolFilteredPageQueryOptions } from "@clc/api/features/pools/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
@@ -8,7 +8,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense, useState, type ReactNode } from "react";
 import {
-  RiArrowLeftLine,
   RiCloseLine,
   RiFileCopyLine,
   RiGlobalLine,
@@ -35,12 +34,28 @@ import { useVoucherOfferingsInfinite } from "#/features/home/hooks/use-voucher-o
 import { poolsClient } from "#/lib/api/pools";
 import { CHAIN_ID } from "#/lib/chain";
 import { openDefaultMaps } from "#/lib/default-maps";
-import type { MarketVoucherTab } from "#/lib/navigation/home-tabs";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import type { VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
-import { useMarketDistanceLabel, useMarketKindLabel } from "./market-labels";
-import { MarketVoucherSheetFull } from "./market-voucher-sheet-full.lazy";
+import { useMarketDistanceLabel, useMarketKindLabel } from "./voucher-labels";
+import type { VoucherPageOrigin } from "./voucher-sheet-full";
+import { VoucherSheetFull } from "./voucher-sheet-full.lazy";
+
+export type { VoucherPageOrigin } from "./voucher-sheet-full";
 
 type Coordinates = { lat: number; lng: number };
+
+/** What the screen that opened the card already knows, to draw it before detail. */
+export type VoucherPlaceholder = {
+  name: string;
+  symbol: string;
+  iconUrl?: string | null;
+  kind?: MarketVoucherKind;
+  locationName?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  chainId?: number | null;
+};
 
 const POOL_CARD_LIMIT = 10;
 const OFFERING_STRIP_LIMIT = 8;
@@ -49,71 +64,74 @@ const OFFERING_STRIP_LIMIT = 8;
 const PILL =
   "relative h-9 shrink-0 gap-1.5 px-3 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
 
+/** The sheet's snap point, back at the peek each time a card opens. */
+export function useVoucherSheetSnap(isOpen: boolean) {
+  const [snap, setSnap] = useState<MapSheetSnap>("peek");
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    // Forward and deep links included.
+    if (isOpen) setSnap("peek");
+  }
+  return [snap, setSnap] as const;
+}
+
 /**
- * The card a market pin opens. It shows the essentials at the peek, adds the
- * offerings, the description and the pools that hold the voucher at half, and
- * reads as the voucher's page at full.
+ * The card a voucher opens, wherever it is tapped: the market, the wallet, a
+ * pool or a post. It shows the essentials at the peek, adds the offerings, the
+ * description and the pools that hold the voucher at half, and reads as the
+ * voucher's page at full. Only its own button leaves for that page.
  *
+ * The selection lives in the opening screen's URL (`useVoucherSheetSelection`).
  * Everything below the peek mounts the first time its tier is reached and
  * stays mounted after a collapse, so its queries run once per card.
  */
-export function MarketVoucherSheet({
-  address,
-  open,
-  catalogVoucher,
-  realFix,
-  snap,
+export function VoucherSheet({
+  placeholder = null,
+  origin,
+  realFix = null,
+  snap: controlledSnap,
   onSnapChange,
-  voucherTab,
-  onClose,
   onCoveredHeightChange,
   floating,
 }: {
-  address: `0x${string}`;
-  open: boolean;
-  /** The catalog row, when one is loaded: enough to draw the peek before detail. */
-  catalogVoucher: MarketVoucher | null;
-  realFix: Coordinates | null;
-  snap: MapSheetSnap;
-  onSnapChange: (snap: MapSheetSnap) => void;
-  voucherTab: MarketVoucherTab;
-  onClose: () => void;
+  placeholder?: VoucherPlaceholder | null;
+  /** Where the voucher's page should send Back once opened from the card. */
+  origin?: VoucherPageOrigin;
+  realFix?: Coordinates | null;
+  /** Controlled by a screen that moves the sheet itself; the map collapses it on a pan. */
+  snap?: MapSheetSnap;
+  onSnapChange?: (snap: MapSheetSnap) => void;
   onCoveredHeightChange?: (height: number, snap: MapSheetSnap) => void;
   floating?: ReactNode;
 }) {
   const { t } = useLingui();
-  const detailQuery = useMarketVoucherDetail(address);
+  const selection = useVoucherSheetSelection();
+  const isOpen = selection.voucher !== null;
+  // The card keeps the voucher it last showed while it animates closed.
+  const [address, setAddress] = useState(selection.voucher);
+  if (selection.voucher && selection.voucher !== address) setAddress(selection.voucher);
+  const [ownSnap, setOwnSnap] = useVoucherSheetSnap(isOpen);
+  const snap = controlledSnap ?? ownSnap;
+  const setSnap = onSnapChange ?? setOwnSnap;
+
+  const detailQuery = useMarketVoucherDetail(address ?? undefined);
   const detail = detailQuery.data;
-  const name = detail?.name ?? catalogVoucher?.name ?? "";
-  // A shared link can name a voucher the catalog has not loaded, or one that
-  // no longer exists: there is then nothing to draw the card from.
-  const unavailable = !detail && !catalogVoucher && detailQuery.isError;
+  if (!address) return null;
+
+  const name = detail?.name ?? placeholder?.name ?? "";
+  // A shared link can name a voucher nothing on screen holds, or one that no
+  // longer exists: there is then nothing to draw the card from.
+  const unavailable = !detail && !placeholder && detailQuery.isError;
 
   return (
     <MapSheet
-      open={open}
+      open={isOpen}
       snap={snap}
-      onSnapChange={onSnapChange}
-      onClose={onClose}
+      onSnapChange={setSnap}
+      onClose={selection.close}
       onCoveredHeightChange={onCoveredHeightChange}
       floating={floating}
-      appBar={
-        <div className="flex h-12 shrink-0 items-center gap-1 border-border border-b px-2">
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            className="size-11"
-            aria-label={t`Collapse`}
-            onClick={() => onSnapChange("half")}
-          >
-            <RiArrowLeftLine className="rtl:-scale-x-100 size-5" aria-hidden="true" />
-          </Button>
-          <p dir="auto" className="min-w-0 flex-1 truncate font-heading font-semibold text-base">
-            {name}
-          </p>
-          <ShareVoucherButton name={name} address={address} variant="icon" />
-        </div>
-      }
     >
       {unavailable ? (
         <MapSheetPeek className="px-4 pb-4">
@@ -121,15 +139,7 @@ export function MarketVoucherSheet({
             <MapSheetTitle className="min-w-0 flex-1 pt-2.5 text-muted-foreground text-sm">
               <Trans>Couldn't load this voucher.</Trans>
             </MapSheetTitle>
-            <Button
-              variant="ghost"
-              size="icon-lg"
-              className="-me-2 size-11 shrink-0"
-              aria-label={t`Close`}
-              onClick={onClose}
-            >
-              <RiCloseLine className="size-5" aria-hidden="true" />
-            </Button>
+            <CloseButton label={t`Close`} onClick={selection.close} />
           </div>
           <Button
             variant="outline"
@@ -144,39 +154,57 @@ export function MarketVoucherSheet({
         <VoucherCard
           key={address}
           address={address}
-          catalogVoucher={catalogVoucher}
+          placeholder={placeholder}
           detail={detail}
           name={name}
           realFix={realFix}
           snap={snap}
-          onSnapChange={onSnapChange}
-          voucherTab={voucherTab}
-          onClose={onClose}
+          onSnapChange={setSnap}
+          voucherTab={selection.voucherTab}
+          origin={origin}
+          onClose={selection.close}
         />
       )}
     </MapSheet>
   );
 }
 
+/** Borderless, so the close reads as part of the header rather than a second box. */
+function CloseButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      className="-me-2 size-11 shrink-0 border-0 text-muted-foreground"
+      aria-label={label}
+      onClick={onClick}
+    >
+      <RiCloseLine className="size-5" aria-hidden="true" />
+    </Button>
+  );
+}
+
 function VoucherCard({
   address,
-  catalogVoucher,
+  placeholder,
   detail,
   name,
   realFix,
   snap,
   onSnapChange,
   voucherTab,
+  origin,
   onClose,
 }: {
   address: `0x${string}`;
-  catalogVoucher: MarketVoucher | null;
+  placeholder: VoucherPlaceholder | null;
   detail: MarketVoucherDetail | undefined;
   name: string;
   realFix: Coordinates | null;
   snap: MapSheetSnap;
   onSnapChange: (snap: MapSheetSnap) => void;
-  voucherTab: MarketVoucherTab;
+  voucherTab: VoucherSheetTab;
+  origin: VoucherPageOrigin | undefined;
   onClose: () => void;
 }) {
   const { t } = useLingui();
@@ -185,12 +213,12 @@ function VoucherCard({
   if (snap !== "peek" && !reachedHalf) setReachedHalf(true);
   if (snap === "full" && !reachedFull) setReachedFull(true);
 
-  const symbol = detail?.symbol ?? catalogVoucher?.symbol ?? "";
-  const kindLabel = useMarketKindLabel(detail?.kind ?? catalogVoucher?.kind ?? "voucher");
-  const lat = detail?.lat ?? catalogVoucher?.lat ?? null;
-  const lng = detail?.lng ?? catalogVoucher?.lng ?? null;
+  const symbol = detail?.symbol ?? placeholder?.symbol ?? "";
+  const kindLabel = useMarketKindLabel(detail?.kind ?? placeholder?.kind ?? "voucher");
+  const lat = detail?.lat ?? placeholder?.lat ?? null;
+  const lng = detail?.lng ?? placeholder?.lng ?? null;
   const coordinates = lat !== null && lng !== null ? { lat, lng } : null;
-  const locationName = detail?.locationName ?? catalogVoucher?.locationName ?? null;
+  const locationName = detail?.locationName ?? placeholder?.locationName ?? null;
   const distanceLabel = useMarketDistanceLabel(realFix, coordinates);
   const place = distanceLabel ?? locationName;
   const rate = formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null);
@@ -210,7 +238,7 @@ function VoucherCard({
             <VoucherAvatar
               address={address}
               symbol={symbol}
-              iconUrl={detail?.iconUrl ?? catalogVoucher?.iconUrl ?? null}
+              iconUrl={detail?.iconUrl ?? placeholder?.iconUrl ?? null}
               size={40}
             />
             <div className="flex min-w-0 flex-1 items-baseline gap-2">
@@ -228,17 +256,8 @@ function VoucherCard({
               </span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            className="-me-2 size-11 shrink-0"
-            aria-label={t`Close`}
-            onClick={onClose}
-          >
-            <RiCloseLine className="size-5" aria-hidden="true" />
-          </Button>
+          <CloseButton label={t`Close`} onClick={onClose} />
         </div>
-
         <MapSheetDescription className="mt-1 flex min-w-0 items-center gap-2 text-muted-foreground text-xs">
           <span className="inline-flex shrink-0 border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem]">
             {kindLabel}
@@ -294,7 +313,7 @@ function VoucherCard({
               </a>
             </Button>
           ) : null}
-          <ShareVoucherButton name={name} address={address} variant="pill" />
+          <ShareVoucherButton name={name} address={address} />
         </div>
       </MapSheetPeek>
 
@@ -303,14 +322,19 @@ function VoucherCard({
           address={address}
           detail={detail}
           expanded={snap === "full"}
-          chainId={detail?.chainId ?? catalogVoucher?.chainId ?? CHAIN_ID}
+          chainId={detail?.chainId ?? placeholder?.chainId ?? CHAIN_ID}
           onOpenOfferings={() => onSnapChange("full")}
         />
       ) : null}
 
       {reachedFull ? (
         <Suspense fallback={<Skeleton className="mx-4 mt-6 h-40 rounded-none" />}>
-          <MarketVoucherSheetFull address={address} detail={detail} activeTab={voucherTab} />
+          <VoucherSheetFull
+            address={address}
+            detail={detail}
+            activeTab={voucherTab}
+            origin={origin}
+          />
         </Suspense>
       ) : null}
     </>
@@ -356,13 +380,13 @@ function HalfTier({
       {offerings.length > 0 ? (
         <ul
           aria-label={t`Offerings`}
-          className="flex snap-x gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {offerings.slice(0, OFFERING_STRIP_LIMIT).map((offering) => (
             <li key={offering.id} className="shrink-0 snap-start">
               <Link
-                to="/"
-                search={(previous) => ({ ...previous, tab: "market", voucherTab: "offerings" })}
+                to="."
+                search={(previous) => ({ ...previous, voucherTab: undefined })}
                 replace
                 state
                 resetScroll={false}
@@ -416,11 +440,13 @@ function HalfTier({
               <Trans>See all</Trans>
             </Link>
           </div>
-          <ul className="mt-2 flex snap-x gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <ul className="mt-2 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {pools.map((pool) => (
+              // Tinted in the brand colour: on the white sheet a white tile
+              // reads as more of the same, and these are where to act.
               <li
                 key={pool.address}
-                className="flex w-56 shrink-0 snap-start flex-col border border-border bg-card p-3"
+                className="flex w-56 shrink-0 snap-start flex-col border border-primary/25 bg-primary/5 p-3"
               >
                 <div className="flex min-w-0 items-center gap-2.5">
                   <PoolLogo
@@ -465,15 +491,7 @@ function HalfTier({
  * fresh copy tap if it fails: sharing consumes the tap's user activation, and
  * WebKit will not write to the clipboard without a new one.
  */
-function ShareVoucherButton({
-  name,
-  address,
-  variant,
-}: {
-  name: string;
-  address: string;
-  variant: "pill" | "icon";
-}) {
+function ShareVoucherButton({ name, address }: { name: string; address: string }) {
   const { t } = useLingui();
   const [copyOnly, setCopyOnly] = useState(false);
   const label = copyOnly ? t`Copy link` : t`Share`;
@@ -513,19 +531,6 @@ function ShareVoucherButton({
     else void share();
   };
 
-  if (variant === "icon") {
-    return (
-      <Button
-        variant="ghost"
-        size="icon-lg"
-        className="size-11"
-        aria-label={label}
-        onClick={onClick}
-      >
-        <Icon className="size-5" aria-hidden="true" />
-      </Button>
-    );
-  }
   return (
     <Button variant="outline" size="sm" className={cn(PILL, "bg-card")} onClick={onClick}>
       <Icon aria-hidden="true" />
