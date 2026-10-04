@@ -64,6 +64,8 @@ function voucher(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDet
     bannerUrl: null,
     tags: ["food"],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
     ...overrides,
   };

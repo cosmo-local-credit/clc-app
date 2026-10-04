@@ -10,6 +10,12 @@ import { isUnitOfAccount, type UnitOfAccount } from "../../lib/currencies";
 import { optionalStoredImageUrlSchema } from "../../lib/image-url";
 import { tokenDecimalsSchema } from "../../lib/token";
 import { locationSchema } from "../location/logic";
+import {
+  type MarkerColor,
+  type MarkerIcon,
+  markerColorSchema,
+  markerIconSchema,
+} from "../markers/logic";
 import type { CaliburCall } from "../webauthn/index";
 
 export const voucherNameSchema = z
@@ -140,6 +146,9 @@ const voucherPlaceSchema = z.object({
   terms: optionalTermsSchema,
   iconUrl: optionalStoredImageUrlSchema,
   bannerUrl: optionalStoredImageUrlSchema,
+  /** Null leaves the pin to follow what the voucher offers. */
+  markerIcon: markerIconSchema.nullable(),
+  markerColor: markerColorSchema.nullable(),
 });
 
 export const voucherCreateSchema = voucherDetailsSchema
@@ -189,6 +198,9 @@ export type VoucherDeployPayload = {
    */
   iconUrl?: string;
   bannerUrl?: string;
+  /** Omitted, not null, when the issuer kept the automatic pin. */
+  markerIcon?: MarkerIcon;
+  markerColor?: MarkerColor;
   tags: string[];
 };
 
@@ -214,6 +226,8 @@ export function toVoucherDeployPayload(
     ...(input.terms.trim() ? { terms: input.terms.trim() } : {}),
     ...(input.iconUrl?.trim() ? { iconUrl: input.iconUrl.trim() } : {}),
     ...(input.bannerUrl?.trim() ? { bannerUrl: input.bannerUrl.trim() } : {}),
+    ...(input.markerIcon ? { markerIcon: input.markerIcon } : {}),
+    ...(input.markerColor ? { markerColor: input.markerColor } : {}),
     voucherUoa: input.unitOfAccount,
     voucherValue: Number(input.price),
     locationName: input.location.locationName,

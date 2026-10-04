@@ -87,6 +87,8 @@ function voucher(): MarketVoucherDetail {
     bannerUrl: null,
     tags: ["food"],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
   };
 }

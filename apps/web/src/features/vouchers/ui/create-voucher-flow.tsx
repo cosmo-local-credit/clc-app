@@ -1,4 +1,5 @@
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
+import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
 import {
   toVoucherDeployPayload,
   type VoucherUnit,
@@ -81,6 +82,8 @@ type VoucherFormValues = {
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
   iconUrl: string;
+  markerIcon: MarkerIcon | null;
+  markerColor: MarkerColor | null;
   acceptedTerms: boolean;
 };
 
@@ -102,6 +105,8 @@ const DEFAULT_VALUES: VoucherFormValues = {
   terms: "",
   termsMode: "url",
   iconUrl: "",
+  markerIcon: null,
+  markerColor: null,
   acceptedTerms: false,
 };
 

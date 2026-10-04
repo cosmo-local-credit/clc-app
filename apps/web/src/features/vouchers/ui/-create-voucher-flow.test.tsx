@@ -762,6 +762,8 @@ describe("CreateVoucherFlow", () => {
         phone: "",
         terms: "",
         iconUrl: "",
+        markerIcon: null,
+        markerColor: null,
         acceptedTerms: true,
       });
       renderFlow(<CreateVoucherFlow step="voucher" />);

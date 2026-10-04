@@ -34,6 +34,8 @@ const validVoucher: VoucherCreateInput = {
   terms: "https://kilifi.example/terms",
   iconUrl: "",
   bannerUrl: "",
+  markerIcon: null,
+  markerColor: null,
   acceptedTerms: true,
 };
 
@@ -116,6 +118,19 @@ describe("voucherCreateSchema", () => {
       voucherCreateSchema.safeParse({ ...validVoucher, iconUrl: "data:image/png;base64,abc" })
         .success,
     ).toBe(false);
+  });
+
+  it("accepts a chosen map marker or none, and nothing outside the palette", () => {
+    expect(
+      voucherCreateSchema.safeParse({ ...validVoucher, markerIcon: "farm", markerColor: "cyan" })
+        .success,
+    ).toBe(true);
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, markerIcon: "rocket" }).success).toBe(
+      false,
+    );
+    expect(voucherCreateSchema.safeParse({ ...validVoucher, markerColor: "red" }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -204,6 +219,17 @@ describe("toVoucherDeployPayload", () => {
 
     expect(payload.expiryTimestamp).toBe("1798761600");
     vi.useRealTimers();
+  });
+
+  it("sends a chosen marker and omits an automatic one", () => {
+    const owner = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+
+    expect(
+      toVoucherDeployPayload({ ...validVoucher, markerIcon: "food", markerColor: null }, owner),
+    ).toMatchObject({ markerIcon: "food" });
+    expect(
+      toVoucherDeployPayload({ ...validVoucher, markerIcon: "food", markerColor: null }, owner),
+    ).not.toHaveProperty("markerColor");
   });
 });
 

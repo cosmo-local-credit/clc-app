@@ -192,6 +192,8 @@ describe("VoucherDeploymentReceiptPage", () => {
       website: "https://kilifi.example",
       phone: "+254712345678",
       terms: "https://kilifi.example/terms",
+      markerIcon: null,
+      markerColor: null,
       acceptedTerms: true,
     });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
@@ -293,6 +295,8 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       website: "",
       phone: "",
       terms: "",
+      markerIcon: null,
+      markerColor: null,
       acceptedTerms: true,
     });
     renderReceipt();
