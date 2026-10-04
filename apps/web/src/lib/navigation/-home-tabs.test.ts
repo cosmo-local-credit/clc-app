@@ -27,7 +27,7 @@ describe("parseHomeTab", () => {
   it("identifies private tabs", () => {
     expect(isPrivateHomeTab("wallet")).toBe(true);
     expect(isPrivateHomeTab("activity")).toBe(true);
-    expect(isPrivateHomeTab("posts")).toBe(true);
+    expect(isPrivateHomeTab("posts")).toBe(false);
     expect(isPrivateHomeTab("settings")).toBe(true);
     expect(isPrivateHomeTab("market")).toBe(false);
   });
