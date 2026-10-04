@@ -1,27 +1,24 @@
+import {
+  MARKER_COLOR_HEX,
+  type MarkerIcon,
+  type MarkerStyle,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
 import type MapLibreGL from "maplibre-gl";
-import type { IconType } from "react-icons";
-import { RiCouponFill, RiHandCoinFill, RiShoppingBasket2Fill } from "react-icons/ri";
 
-import type { MarketLocationKind } from "./market-data";
+import { MARKER_GLYPHS } from "#/components/vouchers/marker-glyphs";
+import type { MarketLocation } from "./market-data";
+
+/** Appended to a pin's image id for the larger variant a selected voucher gets. */
+export const SELECTED_PIN_SUFFIX = "-selected";
 
 /**
- * Exactly six voucher marker images: a base and a selected variant per kind.
- * Cluster circles and counts are style layers, not images.
+ * One image per icon and colour a voucher on the map actually uses, plus its
+ * selected variant. Cluster circles and counts are style layers, not images.
  */
-export const markerImageIds = {
-  base: {
-    goods: "market-goods",
-    services: "market-services",
-    voucher: "market-voucher",
-  },
-  selected: {
-    goods: "market-goods-selected",
-    services: "market-services-selected",
-    voucher: "market-voucher-selected",
-  },
-} as const;
-
-export const MARKET_MARKER_KINDS: MarketLocationKind[] = ["goods", "services", "voucher"];
+export function markerImageId({ icon, color }: MarkerStyle): string {
+  return `market-pin-${icon}-${color}`;
+}
 
 type PinShape = { radius: number; tail: number };
 
@@ -41,61 +38,49 @@ const ICON_VIEWBOX = 24;
 const STROKE_WIDTH = 1.5;
 const SHADOW = { color: "rgba(0, 0, 0, 0.3)", blur: 2, offsetY: 1 };
 
-/**
- * Fixed sRGB fills, one per offering kind, with a darker shade of each for the
- * name beside the pin, the way Google Maps colours a place's label.
- *
- * Goods is blue, services is purple, and a voucher with no offerings is orange.
- * These stay off `--primary`: the live-location pin owns the brand colour
- * (green on prod, red on staging), and an oklch token painted onto a canvas
- * is silently ignored by older implementations. Hex is the colour the marker
- * actually draws.
- */
-const KIND_COLOR: Record<MarketLocationKind, string> = {
-  goods: "#2563eb",
-  services: "#7c3aed",
-  voucher: "#ea580c",
-};
-
-export const KIND_LABEL_COLOR: Record<MarketLocationKind, string> = {
-  goods: "#1d4ed8",
-  services: "#6d28d9",
-  voucher: "#c2410c",
-};
-
-const kindIcon: Record<MarketLocationKind, IconType> = {
-  goods: RiShoppingBasket2Fill,
-  services: RiHandCoinFill,
-  voucher: RiCouponFill,
-};
-
-let iconPathCache: Partial<Record<MarketLocationKind, string[]>> = {};
+let iconPathCache: Partial<Record<MarkerIcon, string[]>> = {};
 
 export function resetMarketMarkerCache(): void {
   iconPathCache = {};
 }
 
-export function addMarketMarkerImages(map: MapLibreGL.Map): void {
-  for (const kind of MARKET_MARKER_KINDS) {
-    addImage(map, markerImageIds.base[kind], kind, markerPin.base);
-    addImage(map, markerImageIds.selected[kind], kind, markerPin.selected);
+/**
+ * Registers the pins these vouchers draw, before the source that references
+ * them is given its data.
+ *
+ * Only the styles in use are drawn, so the atlas holds a handful of images
+ * rather than every icon and colour pair. Done ahead of `setData` rather than
+ * from `styleimagemissing`, which MapLibre 6 no longer lets a listener answer.
+ * Repeat calls cost one `Set` lookup per voucher.
+ */
+export function addMarketMarkerImages(
+  map: MapLibreGL.Map,
+  locations: Iterable<Pick<MarketLocation, "kind" | "markerIcon" | "markerColor">>,
+): void {
+  const seen = new Set<string>();
+  for (const location of locations) {
+    const style = resolveMarkerStyle(location);
+    const imageId = markerImageId(style);
+    if (seen.has(imageId)) continue;
+    seen.add(imageId);
+    addImage(map, imageId, style, markerPin.base);
+    addImage(map, imageId + SELECTED_PIN_SUFFIX, style, markerPin.selected);
   }
 }
 
-function addImage(
-  map: MapLibreGL.Map,
-  imageId: string,
-  kind: MarketLocationKind,
-  shape: PinShape,
-): void {
+function addImage(map: MapLibreGL.Map, imageId: string, style: MarkerStyle, shape: PinShape): void {
   if (map.hasImage(imageId)) return;
-  const image = createMarkerImage(kind, shape);
+  const image = createMarkerImage(style, shape);
   if (!image) return;
   map.addImage(imageId, image.data, { pixelRatio: image.pixelRatio });
 }
 
+/**
+ * Fills come from the shared palette, which stays off `--primary`: the
+ * live-location pin owns the brand colour (green on prod, red on staging).
+ */
 function createMarkerImage(
-  kind: MarketLocationKind,
+  { icon, color }: MarkerStyle,
   { radius, tail }: PinShape,
 ): { data: ImageData; pixelRatio: number } | null {
   const { padding } = markerPin;
@@ -126,7 +111,7 @@ function createMarkerImage(
   ctx.shadowColor = SHADOW.color;
   ctx.shadowBlur = SHADOW.blur * pixelRatio;
   ctx.shadowOffsetY = SHADOW.offsetY * pixelRatio;
-  ctx.fillStyle = KIND_COLOR[kind];
+  ctx.fillStyle = MARKER_COLOR_HEX[color].pin;
   ctx.fill();
   ctx.shadowColor = "transparent";
 
@@ -135,14 +120,14 @@ function createMarkerImage(
   ctx.lineJoin = "round";
   ctx.stroke();
 
-  drawKindGlyph(ctx, kind, center, radius * 2 * GLYPH_FRACTION);
+  drawGlyph(ctx, icon, center, radius * 2 * GLYPH_FRACTION);
 
   return { data: ctx.getImageData(0, 0, canvas.width, canvas.height), pixelRatio };
 }
 
-function drawKindGlyph(
+function drawGlyph(
   ctx: CanvasRenderingContext2D,
-  kind: MarketLocationKind,
+  icon: MarkerIcon,
   center: { x: number; y: number },
   glyphSize: number,
 ): void {
@@ -154,7 +139,7 @@ function drawKindGlyph(
   ctx.translate(center.x - glyphSize / 2, center.y - glyphSize / 2);
   ctx.scale(scale, scale);
   ctx.fillStyle = "#ffffff";
-  for (const definition of iconPaths(kind)) {
+  for (const definition of iconPaths(icon)) {
     ctx.fill(new Path2D(definition));
   }
   ctx.restore();
@@ -164,15 +149,15 @@ function drawKindGlyph(
  * Reads the icon's path geometry straight off the React element the
  * `react-icons` component returns. This keeps the locked icon imports as the
  * single source of the artwork without dragging `react-dom/server` into the
- * bundle to stringify six glyphs.
+ * bundle to stringify the glyphs.
  */
-function iconPaths(kind: MarketLocationKind): string[] {
-  const cached = iconPathCache[kind];
+function iconPaths(icon: MarkerIcon): string[] {
+  const cached = iconPathCache[icon];
   if (cached) return cached;
 
   const paths: string[] = [];
   try {
-    const children = elementProps(kindIcon[kind]({}))?.children;
+    const children = elementProps(MARKER_GLYPHS[icon]({}))?.children;
     for (const child of Array.isArray(children) ? children : [children]) {
       const definition = elementProps(child)?.d;
       if (typeof definition === "string" && definition) paths.push(definition);
@@ -181,7 +166,7 @@ function iconPaths(kind: MarketLocationKind): string[] {
     // A shape change upstream must degrade to a plain coloured pin, not crash.
   }
 
-  iconPathCache[kind] = paths;
+  iconPathCache[icon] = paths;
   return paths;
 }
 

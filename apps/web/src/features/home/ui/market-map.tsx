@@ -1,4 +1,10 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import {
+  MARKER_COLORS,
+  MARKER_COLOR_HEX,
+  type MarkerColor,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
@@ -11,17 +17,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
-import {
-  MAP_MAX_ZOOM,
-  MARKET_SOURCE_ID,
-  type MarketLocation,
-  type MarketLocationKind,
-} from "./market-data";
+import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
 import { keepMarketLabelsInsideViewport } from "./market-label-edges";
 import {
-  KIND_LABEL_COLOR,
+  SELECTED_PIN_SUFFIX,
   addMarketMarkerImages,
-  markerImageIds,
+  markerImageId,
   markerPin,
 } from "./market-markers";
 import {
@@ -164,15 +165,17 @@ type StackFeature = {
     key: string;
     count: number;
     id: string;
-    kind: MarketLocationKind;
     name: string;
-  };
+  } & PinProperties;
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
+/** The pin's image id and its colour, which the name beside it is shaded by. */
+type PinProperties = { pin: string; color: MarkerColor };
+
 type SpiderFeature = {
   type: "Feature";
-  properties: { id: string; kind: MarketLocationKind; name: string };
+  properties: { id: string; name: string } & PinProperties;
   geometry:
     | { type: "Point"; coordinates: [number, number] }
     | { type: "LineString"; coordinates: [number, number][] };
@@ -189,6 +192,13 @@ function emptyCollection<T>(): FeatureCollection<T> {
   return { type: "FeatureCollection", features: [] };
 }
 
+function pinProperties(location: MarketLocation | undefined): PinProperties {
+  const style = resolveMarkerStyle(
+    location ?? { kind: "voucher", markerIcon: null, markerColor: null },
+  );
+  return { pin: markerImageId(style), color: style.color };
+}
+
 function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
   return {
     type: "FeatureCollection",
@@ -201,8 +211,8 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
           key: stack.key,
           count: stack.members.length,
           id: single ? single.id : "",
-          kind: single?.kind ?? first?.kind ?? "voucher",
           name: single?.name ?? "",
+          ...pinProperties(first),
         },
         geometry: { type: "Point", coordinates: [stack.lng, stack.lat] },
       };
@@ -232,19 +242,12 @@ function lockMapUpright(map: MapLibreGL.Map): void {
   map.setBearing(0);
 }
 
-function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecification<string> {
-  const ids = selected ? markerImageIds.selected : markerImageIds.base;
-  return [
-    "match",
-    ["get", "kind"],
-    "goods",
-    ids.goods,
-    "services",
-    ids.services,
-    "voucher",
-    ids.voucher,
-    ids.voucher,
-  ];
+/**
+ * Each feature names its own pin, so the expression stays the same size
+ * however many icons and colours the palette grows to.
+ */
+function pinImage(selected: boolean): DataDrivenPropertyValueSpecification<string> {
+  return selected ? ["concat", ["get", "pin"], SELECTED_PIN_SUFFIX] : ["get", "pin"];
 }
 
 /**
@@ -270,15 +273,16 @@ function labelLayout(
   };
 }
 
+const [FIRST_COLOR, ...OTHER_COLORS] = MARKER_COLORS;
+
 const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
   "text-color": [
     "match",
-    ["get", "kind"],
-    "goods",
-    KIND_LABEL_COLOR.goods,
-    "services",
-    KIND_LABEL_COLOR.services,
-    KIND_LABEL_COLOR.voucher,
+    ["get", "color"],
+    FIRST_COLOR,
+    MARKER_COLOR_HEX[FIRST_COLOR].label,
+    ...OTHER_COLORS.flatMap((color) => [color, MARKER_COLOR_HEX[color].label]),
+    MARKER_COLOR_HEX.orange.label,
   ],
   "text-halo-color": "#ffffff",
   "text-halo-width": 1.5,
@@ -330,8 +334,8 @@ function badgeRadius(property: string): DataDrivenPropertyValueSpecification<num
   return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
 }
 
-function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
-  addMarketMarkerImages(map);
+function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stacks: MarketStack[]) {
+  addMarketMarkerImages(map, locations);
 
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
@@ -394,7 +398,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: MARKET_SOURCE_ID,
     filter: singleFilter,
     layout: {
-      "icon-image": kindMatchExpression(false),
+      "icon-image": pinImage(false),
       "icon-size": 1,
       "icon-anchor": "bottom",
       "icon-offset": PIN_OFFSET,
@@ -435,7 +439,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: MARKET_SOURCE_ID,
     filter: selectedFilter(null),
     layout: {
-      "icon-image": kindMatchExpression(true),
+      "icon-image": pinImage(true),
       "icon-size": 1,
       "icon-anchor": "bottom",
       "icon-offset": PIN_OFFSET,
@@ -457,7 +461,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: SPIDER_SOURCE_ID,
     filter: ["==", ["geometry-type"], "Point"],
     layout: {
-      "icon-image": kindMatchExpression(false),
+      "icon-image": pinImage(false),
       "icon-size": FAN_PIN_SIZE,
       "icon-offset": FAN_PIN_OFFSET,
       "icon-padding": PIN_COLLISION_PADDING,
@@ -634,7 +638,7 @@ export function MarketMap({
     }
 
     function handleLoad() {
-      addMarketLayers(map, stacksRef.current);
+      addMarketLayers(map, locationsRef.current, stacksRef.current);
       removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map, () => bottomInsetRef.current);
       loadedRef.current = true;
       setLoaded(true);
@@ -680,7 +684,10 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
-    source?.setData(createStackCollection(stacks));
+    if (!source) return;
+    // Every member, not only lone pins: a fanned stack draws its members' pins.
+    addMarketMarkerImages(map, locationsRef.current);
+    source.setData(createStackCollection(stacks));
   }, [loaded, stacks]);
 
   useEffect(() => {
@@ -709,14 +716,15 @@ export function MarketMap({
       if (!member) return;
       const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
       const coordinates: [number, number] = [point.lng, point.lat];
+      const properties = { id: member.id, name: member.name, ...pinProperties(member) };
       features.push({
         type: "Feature",
-        properties: { id: member.id, kind: member.kind, name: member.name },
+        properties,
         geometry: { type: "LineString", coordinates: [[stack.lng, stack.lat], coordinates] },
       });
       features.push({
         type: "Feature",
-        properties: { id: member.id, kind: member.kind, name: member.name },
+        properties,
         geometry: { type: "Point", coordinates },
       });
     });
@@ -742,8 +750,8 @@ export function MarketMap({
     map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
       "case",
       ["==", ["get", "id"], selectedLocationId ?? ""],
-      kindMatchExpression(true),
-      kindMatchExpression(false),
+      pinImage(true),
+      pinImage(false),
     ]);
   }, [loaded, selectedLocationId]);
 
