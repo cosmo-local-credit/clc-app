@@ -12,6 +12,7 @@ import { AvatarPicker } from "#/components/ui/avatar-picker";
 import { Button } from "#/components/ui/button";
 import { CurrencySelect } from "#/components/ui/currency-select";
 import { Input } from "#/components/ui/input";
+import { UsernameInput } from "#/components/profile/username-input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { StepProgress } from "#/components/ui/step-progress";
@@ -38,6 +39,7 @@ type Props = {
 
 type ProfileFormValues = {
   name: string;
+  username?: string;
   email: string;
   phone: string;
   location: LocationInput | undefined;
@@ -48,6 +50,7 @@ type ProfileFormValues = {
 
 const DEFAULT_VALUES: ProfileFormValues = {
   name: "",
+  username: "",
   email: "",
   phone: "",
   location: undefined,
@@ -87,6 +90,7 @@ export function OnboardingProfileForm({
     onSubmit: async ({ value }) => {
       if (!avatarFile || !isStorageConfigured) return;
       const parsed = profileSchema.parse(value);
+      if (!parsed.username) delete parsed.username;
       onNext(parsed, avatarFile);
     },
   });
@@ -201,6 +205,24 @@ export function OnboardingProfileForm({
                         {translateValidationError(err, i18n)}
                       </p>
                     ) : null}
+                  </div>
+                );
+              }}
+            </form.Field>
+
+            <form.Field name="username">
+              {(field) => {
+                const err = getFieldError(field.state.meta.errors);
+                return (
+                  <div>
+                    <UsernameInput
+                      id="onb-username"
+                      value={field.state.value ?? ""}
+                      hint={() => form.getFieldValue("name")}
+                      onChange={field.handleChange}
+                      onBlur={field.handleBlur}
+                      error={err ? translateValidationError(err, i18n) : null}
+                    />
                   </div>
                 );
               }}

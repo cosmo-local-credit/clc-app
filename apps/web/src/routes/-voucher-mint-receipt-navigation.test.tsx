@@ -139,7 +139,7 @@ describe("voucher mint receipt navigation", () => {
     fireEvent.change(await screen.findByLabelText("Create vouchers"), {
       target: { value: "500" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create supply" }));
 
     await waitFor(() =>
       expect(router.state.location.search).toMatchObject({

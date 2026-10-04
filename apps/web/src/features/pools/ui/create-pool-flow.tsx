@@ -464,7 +464,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                   >
                     {(field) => (
                       <Field
-                        label={t`Pool Shortcode`}
+                        label={t`Pool symbol`}
                         htmlFor="pool-symbol"
                         hint={t`Suggested from the name. You can change it.`}
                         error={getFieldError(field.state.meta.errors)}
@@ -478,7 +478,7 @@ export function CreatePoolFlow({ step }: { step: PoolCreateStep }) {
                             suggestedSymbol.track(symbol);
                           }}
                           onBlur={field.handleBlur}
-                          placeholder={t`Enter pool shortcode, eg. ABC1`}
+                          placeholder={t`Enter pool symbol, eg. ABC1`}
                           maxLength={6}
                           aria-invalid={field.state.meta.errors.length > 0}
                         />

@@ -130,7 +130,7 @@ describe("pool create navigation", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -159,7 +159,7 @@ describe("pool create navigation", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "KGP1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "KGP1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });

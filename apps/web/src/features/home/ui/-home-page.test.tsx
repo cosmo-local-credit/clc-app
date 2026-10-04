@@ -6,6 +6,19 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { getStoredKey, storePrivateKey } from "#/connectors/privateKey";
 import { getWebAuthnCredential, storeWebAuthnCredential } from "#/lib/webauthn-storage";
 
+const nearbyAuth = vi.hoisted(() => ({ isAuthenticated: true }));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  authSessionQueryKey: ["auth", "session"],
+  useAuthStatus: () => ({ ...nearbyAuth, isLoading: false, address: "0xabc", chainId: 100 }),
+}));
+vi.mock("#/features/auth/hooks/use-profile", () => ({
+  useAuthProfile: () => ({ data: { geoLat: 0, geoLng: 0 }, isPending: false, isError: false }),
+}));
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+}));
+
 const PRIVATE_KEY = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d" as const;
 
 const { mockAbortWalletSwitch, mockClearPersistedLocation, mockBackendLogout, mockDisconnect } =
@@ -105,6 +118,7 @@ function renderHome(ui: ReactNode) {
 }
 
 beforeEach(() => {
+  nearbyAuth.isAuthenticated = true;
   localStorage.clear();
   mockAbortWalletSwitch.mockClear();
   mockClearPersistedLocation.mockClear();
@@ -150,16 +164,17 @@ describe("HomePage tabs", () => {
 });
 
 describe("HomePage guest mode", () => {
-  it("shows market and onboarding banner", () => {
+  it("asks the guest to sign in before loading nearby Market", () => {
+    nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
-    expect(screen.getByTestId("market-page")).toBeTruthy();
-    expect(screen.getByTestId("market-page").getAttribute("data-authenticated")).toBe("false");
-    expect(screen.getByTestId("onboarding-banner")).toBeTruthy();
+    expect(screen.queryByTestId("market-page")).toBeNull();
+    expect(screen.getByText("Sign in or sign up")).toBeTruthy();
   });
 
   it("does not render private content for a requested private tab", () => {
+    nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage activeTab="wallet" isAuthenticated={false} />);
-    expect(screen.getByTestId("market-page")).toBeTruthy();
+    expect(screen.queryByTestId("market-page")).toBeNull();
     expect(screen.queryByTestId("wallet-page")).toBeNull();
     expect(screen.queryByRole("button", { name: "Wallet" })).toBeNull();
   });
@@ -265,8 +280,10 @@ describe("HomePage location scope", () => {
   it("treats a connected wallet without a session as a guest", () => {
     // docs/AUTH.md: a connected wallet alone is not authentication. An expired
     // session must not keep exposing that wallet's persisted location.
+    nearbyAuth.isAuthenticated = false;
     renderHome(<HomePage isAuthenticated={false} />);
 
-    expect(screen.getByTestId("market-page").getAttribute("data-location-owner")).toBe("guest");
+    expect(screen.queryByTestId("market-page")).toBeNull();
+    expect(screen.getByText("Sign in or sign up")).toBeTruthy();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { profileEditSchema, profileSchema } from "./logic";
+import { profileEditSchema, profileSchema, usernameSchema } from "./logic";
 
 const VALID_LOCATION = {
   lat: -1.2921,
@@ -194,4 +194,17 @@ describe("profileEditSchema", () => {
     );
     expect(profileSchema.safeParse({ ...VALID_BASE, bio: "a".repeat(501) }).success).toBe(false);
   });
+});
+
+describe("usernameSchema", () => {
+  it("normalizes manual names and allows deferred assignment", () => {
+    expect(usernameSchema.parse("  Sohail-1  ")).toBe("sohail-1");
+    expect(usernameSchema.parse("  ")).toBe("");
+    expect(profileSchema.safeParse({ ...VALID_BASE }).success).toBe(true);
+  });
+
+  it.each(["ab", "a".repeat(25), "123456", "-alice", "alice-", "alice.eth", "Alice Smith"])(
+    "rejects unsupported username %s",
+    (username) => expect(usernameSchema.safeParse(username).success).toBe(false),
+  );
 });

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { InfoRow } from "#/components/ui/info-row";
 import { MarkdownContent } from "#/components/ui/markdown-content";
 import { EllipsizedAddress } from "#/components/wallet";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 
 /**
  * What a voucher is worth, what it is for, and how to reach its issuer.
@@ -128,7 +129,7 @@ export function VoucherAbout({
           </InfoRow>
         ) : null}
         <InfoRow label={t`Issuer`}>
-          {issuerAddress ? <EllipsizedAddress address={issuerAddress} /> : "—"}
+          {issuerAddress ? <RecipientIdentityLabel address={issuerAddress} /> : "—"}
         </InfoRow>
       </dl>
 

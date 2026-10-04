@@ -83,6 +83,7 @@ export type WebAuthnCredentialsResult = {
 };
 
 export type ProfilePayload = {
+  username?: string;
   name: string;
   email: string;
   phone: string;
@@ -110,6 +111,7 @@ export type ProfilePayload = {
 };
 
 export type ProfileResult = {
+  username?: string | null;
   address: string;
   name: string;
   email: string;
@@ -344,6 +346,7 @@ export function createAuthClient(http: HttpClient): AuthClient {
         method: "POST",
         body: JSON.stringify({
           name: payload.name,
+          ...(payload.username === undefined ? {} : { username: payload.username }),
           email: payload.email,
           phone: payload.phone,
           country: payload.country,

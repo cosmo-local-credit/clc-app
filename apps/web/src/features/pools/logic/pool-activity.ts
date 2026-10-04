@@ -1,5 +1,5 @@
 import type { AccountTransfersResult } from "@clc/api/features/accounts/client";
-import { zeroAddress } from "viem";
+import { isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 
 export type PoolTransfer = AccountTransfersResult["transfers"][number];
 
@@ -215,7 +215,7 @@ function soloEntry(transfer: PoolTransfer): PoolActivityEntry {
     detail: transfer,
   };
 
-  if (transfer.direction === "IN" && sameAddress(transfer.counterpartyAddress, zeroAddress)) {
+  if (isVoucherCreationTransfer(transfer)) {
     return { ...base, kind: "mint", leg: leg(transfer) };
   }
 

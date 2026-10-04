@@ -5,11 +5,38 @@ import {
   formatTokenAmount,
   formatTokenAmountFixed,
   hasSendSharePermission,
+  isVoucherCreationTransfer,
   parseTokenAmount,
   SEND_SHARE_PERMISSION,
   SEND_SHARE_PERMISSION_ALL,
   sendShareFormSchema,
 } from "./logic";
+
+describe("isVoucherCreationTransfer", () => {
+  it("recognizes an inbound ERC-20 transfer from the zero-address supply source", () => {
+    expect(
+      isVoucherCreationTransfer({
+        direction: "IN",
+        senderAddress: "0x0000000000000000000000000000000000000000",
+      }),
+    ).toBe(true);
+  });
+
+  it("does not classify ordinary receipts or outbound burns as voucher creation", () => {
+    expect(
+      isVoucherCreationTransfer({
+        direction: "IN",
+        senderAddress: "0x1111111111111111111111111111111111111111",
+      }),
+    ).toBe(false);
+    expect(
+      isVoucherCreationTransfer({
+        direction: "OUT",
+        senderAddress: "0x0000000000000000000000000000000000000000",
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("formatTokenAmount", () => {
   it("formats raw token units with up to two decimal places", () => {
@@ -36,6 +63,7 @@ describe("formatTokenAmountFixed", () => {
     ["pt", "10.000,00"],
     ["sw", "10,000.00"],
     ["sr", "10.000,00"],
+    ["uk", "10 000,00"],
   ])("groups fixed amounts for the %s locale", (locale, expected) => {
     expect(formatTokenAmountFixed("10000000000", 6, 2, locale)).toBe(expected);
   });
@@ -64,6 +92,11 @@ describe("formatTokenAmountFixed", () => {
   it("preserves large values with Portuguese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "pt")).toBe(
       "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("preserves large values with Ukrainian grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "uk")).toBe(
+      "90 071 992 547 409 931 234,56",
     );
   });
   it("preserves large values with Tibetan digits and Dzongkha grouping", () => {

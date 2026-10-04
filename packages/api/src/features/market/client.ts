@@ -84,7 +84,7 @@ export type MarketVoucherPage = {
   receivedCount: number;
 };
 
-export type MarketVouchersParams = CursorParams & { bbox?: MarketBoundingBox };
+export type MarketVouchersParams = CursorParams & { bbox?: MarketBoundingBox; nearby?: boolean };
 
 export type MarketTagFacet = {
   tag: string;
@@ -256,7 +256,13 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
     ): Promise<MarketVoucherPage> {
       const result = await http.request<BackendMarketVoucherPage>(
         `/api/v2/vouchers${formatMarketQuery(params)}`,
-        { method: "GET", credentials: "omit", signal, ...cachePolicy },
+        {
+          method: "GET",
+          credentials: params.nearby ? "include" : "omit",
+          signal,
+          ...cachePolicy,
+          ...(params.nearby ? { cache: "no-store" as const } : {}),
+        },
       );
 
       const received = result.vouchers ?? [];
@@ -338,7 +344,13 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
     ): Promise<FilteredMarketVoucherPage> {
       const result = await http.request<BackendFilteredMarketVoucherPage>(
         `/api/v2/vouchers${formatFilteredMarketQuery(params)}`,
-        { method: "GET", credentials: "omit", signal, ...cachePolicy },
+        {
+          method: "GET",
+          credentials: params.nearby ? "include" : "omit",
+          signal,
+          ...cachePolicy,
+          ...(params.nearby ? { cache: "no-store" as const } : {}),
+        },
       );
 
       const received = result.vouchers ?? [];
@@ -355,8 +367,8 @@ export function createMarketClient(http: HttpClient, options: CreateMarketClient
   };
 }
 
-function formatMarketQuery({ bbox, ...cursor }: MarketVouchersParams): string {
-  const query = formatCursorQuery(cursor);
+function formatMarketQuery({ bbox, nearby, ...cursor }: MarketVouchersParams): string {
+  const query = formatCursorQuery(cursor) + (nearby ? "&nearby=true" : "");
   if (!bbox) return query;
   const box = [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(",");
   return `${query}&bbox=${encodeURIComponent(box)}`;
@@ -367,6 +379,7 @@ function formatFilteredMarketQuery({
   filter,
   facets,
   owner,
+  nearby,
   ...cursor
 }: FilteredMarketVouchersParams): string {
   const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -378,6 +391,7 @@ function formatFilteredMarketQuery({
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
   if (owner) search.set("owner", owner);
   if (facets) search.set("facets", "true");
+  if (nearby) search.set("nearby", "true");
   return `?${search.toString()}`;
 }
 

@@ -9,6 +9,7 @@ export function AccountSettingsSection() {
   const profileQuery = useAuthProfile();
 
   const name = profileQuery.data?.name?.trim();
+  const username = profileQuery.data?.username;
   const phone = profileQuery.data?.phone?.trim();
   const email = profileQuery.data?.email?.trim();
   // Hide the signup placeholder email so the summary reads "Add contact details".
@@ -28,7 +29,15 @@ export function AccountSettingsSection() {
           <RiUser3Line className="size-5" aria-hidden="true" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-sm">{name || t`Your profile`}</p>
+          <p className="truncate font-medium text-sm">
+            <span dir="auto">{name || t`Your profile`}</span>
+            {username ? (
+              <>
+                {" ("}
+                <bdi dir="ltr">{username}</bdi>)
+              </>
+            ) : null}
+          </p>
           <p className="truncate text-muted-foreground text-xs">{subtitle}</p>
         </div>
         <RiArrowRightSLine

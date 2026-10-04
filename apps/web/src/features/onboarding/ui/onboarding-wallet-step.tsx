@@ -1,3 +1,4 @@
+import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQueryClient } from "@tanstack/react-query";
@@ -60,7 +61,7 @@ export function OnboardingWalletStep({
   linkPasskey,
   onDone,
 }: Props) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const queryClient = useQueryClient();
 
   const account = useMemo(() => privateKeyToAccount(pk), [pk]);
@@ -332,15 +333,11 @@ export function OnboardingWalletStep({
     setSessionError(null);
     try {
       await ensureBackendSignup();
-    } catch (err) {
-      clearPrivateKey();
-      if (err instanceof BackendApiError) {
-        setConnectError(formatBackendApiError(err));
-      } else {
-        setConnectError(err instanceof Error ? err.message : t`Connection failed.`);
-      }
+    } catch {
       setPendingMethod(null);
       setConnecting(false);
+      // Registration failures are owned and rendered by backendSignup. They
+      // are not connector failures and must not be copied into connectError.
       return;
     }
 
@@ -444,12 +441,13 @@ export function OnboardingWalletStep({
           />
 
           {backendSignup.error ? (
-            <p className="text-destructive text-xs">
-              {backendSignup.error instanceof BackendApiError
-                ? formatBackendApiError(backendSignup.error)
-                : backendSignup.error instanceof Error
-                  ? backendSignup.error.message
-                  : t`Account registration failed.`}
+            <p role="alert" className="text-destructive text-xs">
+              {translateRecipientError(backendSignup.error, i18n) ??
+                (backendSignup.error instanceof BackendApiError
+                  ? formatBackendApiError(backendSignup.error)
+                  : backendSignup.error instanceof Error
+                    ? backendSignup.error.message
+                    : t`Account registration failed.`)}
             </p>
           ) : null}
           {upgradeError ? <p className="text-destructive text-xs">{upgradeError}</p> : null}

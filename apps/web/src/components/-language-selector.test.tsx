@@ -62,7 +62,7 @@ describe("LanguageSelector", () => {
     setLocale.mockClear();
   });
 
-  it("shows English, Arabic, Dzongkha, Spanish, French, Italian, Portuguese, Serbian, and Kiswahili locale choices", () => {
+  it("shows every locale choice in the intended order", () => {
     renderSelector();
     const select = screen.getByRole("combobox", {
       name: /language/i,
@@ -77,6 +77,7 @@ describe("LanguageSelector", () => {
     expect(screen.getByRole("option", { name: "Italiano" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Português" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Српски" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Українська" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Kiswahili" })).toBeTruthy();
     expect([...select.options].map((option) => option.text)).toEqual([
       "English",
@@ -87,6 +88,7 @@ describe("LanguageSelector", () => {
       "Italiano",
       "Português",
       "Српски",
+      "Українська",
       "Kiswahili",
     ]);
     expect(screen.getByRole("option", { name: "العربية" }).getAttribute("dir")).toBe("rtl");
@@ -154,5 +156,13 @@ describe("LanguageSelector", () => {
       target: { value: "sr" },
     });
     expect(setLocale).toHaveBeenCalledWith("sr");
+  });
+
+  it("requests a locale change when the user selects Ukrainian", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "uk" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("uk");
   });
 });

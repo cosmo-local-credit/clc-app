@@ -7,7 +7,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
@@ -122,6 +122,18 @@ describe("VoucherTransactionsPage", () => {
 
     const badge = (await table()).getByLabelText("voucher transaction type transfer");
     expect(badge.className).toContain("bg-sky-50");
+  });
+
+  it("displays mint transactions as creation while preserving the raw filter value", async () => {
+    renderPage([{ ...transfer, type: "mint" }], "/?type=mint");
+
+    expect((await table()).getByLabelText("voucher transaction type creation")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "creation" }).getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    await waitFor(() =>
+      expect(queryParams).toHaveBeenCalledWith(expect.objectContaining({ type: "mint" })),
+    );
   });
 
   it("shows the raw integer, marked, when the catalog does not know the voucher", async () => {

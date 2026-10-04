@@ -179,6 +179,11 @@ export function transactionTypeSelectClass(type: string | undefined) {
   return type ? toneFor(type).select : undefined;
 }
 
+export function transactionTypeLabel(type: string): string {
+  if (type === "mint") return "creation";
+  return type.toLowerCase().replaceAll("_", " ");
+}
+
 /**
  * A transaction category, distinct from its outcome.
  *
@@ -195,7 +200,7 @@ export function TransactionTypeBadge({
   kind: string;
   className?: string;
 }) {
-  const label = type.toLowerCase().replaceAll("_", " ");
+  const label = transactionTypeLabel(type);
 
   return (
     <Badge

@@ -1,7 +1,8 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
@@ -20,6 +21,7 @@ import {
   RiGroupLine,
   RiNavigationLine,
   RiSendPlane2Line,
+  RiSparkling2Line,
 } from "react-icons/ri";
 import { useConnection } from "wagmi";
 
@@ -32,7 +34,6 @@ import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
   BackChevron,
-  EllipsizedAddress,
   TransferDetailsSheet,
   VoucherAvatar,
   WALLET_TOKEN_BY_ID,
@@ -159,7 +160,6 @@ export function VoucherDetailPage({
     phone: detail?.phone ?? baseToken?.phone,
     email: detail?.email ?? baseToken?.email,
     owner: detail?.ownerAddress ?? baseToken?.owner,
-    ownerEns: baseToken?.ownerEns,
     contractAddress: detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
     iconUrl: detail?.iconUrl ?? baseToken?.iconUrl,
     tokenDecimals: baseToken?.tokenDecimals ?? detail?.decimals ?? undefined,
@@ -586,6 +586,7 @@ function VoucherActivityPanel({
         ) : null}
         {transfers.map((transfer, index, list) => {
           const kind = transfer.direction === "IN" ? "in" : "out";
+          const created = isVoucherCreationTransfer(transfer);
           const transferDate = formatTransferDate(transfer.dateBlock);
           return (
             <button
@@ -600,18 +601,34 @@ function VoucherActivityPanel({
               <span
                 className={[
                   "flex size-7 shrink-0 items-center justify-center bg-muted",
-                  TX_ICON_CLASS[kind],
+                  created ? "text-foreground" : TX_ICON_CLASS[kind],
                 ].join(" ")}
               >
-                {TX_ICON[kind]}
+                {created ? (
+                  <RiSparkling2Line className="size-3.5" aria-hidden="true" />
+                ) : (
+                  TX_ICON[kind]
+                )}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium">
-                  {transfer.direction === "IN" ? <Trans>Received</Trans> : <Trans>Sent</Trans>}
+                  {created ? (
+                    <Trans>Created</Trans>
+                  ) : transfer.direction === "IN" ? (
+                    <Trans>Received</Trans>
+                  ) : (
+                    <Trans>Sent</Trans>
+                  )}
                 </span>
                 <span className="block truncate text-muted-foreground text-[0.6875rem]">
-                  {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <EllipsizedAddress address={transfer.counterpartyAddress} />
+                  {created ? (
+                    <Trans>New supply</Trans>
+                  ) : (
+                    <>
+                      {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                      <RecipientIdentityLabel address={transfer.counterpartyAddress} />
+                    </>
+                  )}
                   {transferDate ? (
                     <>
                       <span aria-hidden="true"> · </span>

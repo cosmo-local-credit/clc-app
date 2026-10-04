@@ -26,6 +26,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   const { t } = useLingui();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [recentRequested, setRecentRequested] = useState(false);
   const [addressBookOpen, setAddressBookOpen] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState<ResolvedRecipientAddress | null>(null);
   const [resolvedRecipient, setResolvedRecipient] = useState<ResolvedRecipientAddress | null>(null);
@@ -34,25 +35,31 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
   const owner = useStorageOwner();
   const upsertRecipient = useUpsertAddressBookRecipient(owner);
   const wallet = owner !== null && owner !== GUEST_STORAGE_OWNER ? owner : undefined;
-  const transfersQuery = useAccountTransfersInfinite(wallet, { poll: false });
+  const transfersQuery = useAccountTransfersInfinite(recentRequested ? wallet : undefined, {
+    poll: false,
+  });
   const addressBook = useAddressBookRecipients(owner);
   const labels = new Map(
-    (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry.label]),
+    (addressBook.data ?? []).map((entry) => [entry.address.toLowerCase(), entry]),
   );
   const recent = recentSendRecipients(
     transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [],
     wallet,
   ).map((address): Recipient => {
-    const saved = labels.get(address.toLowerCase());
+    const savedEntry = labels.get(address.toLowerCase());
+    const saved = savedEntry?.label;
     const named = saved !== undefined && !saved.toLowerCase().startsWith("0x");
     return {
       id: address.toLowerCase(),
+      source: savedEntry?.source,
       label: named ? saved : address,
       address,
       seed: named ? saved : address,
     };
   });
-  const recipient = selectedRecipient ?? resolvedRecipient;
+  const recipient = resolvedRecipient?.name
+    ? resolvedRecipient
+    : (selectedRecipient ?? resolvedRecipient);
   const showRecent = query.trim() === "";
 
   function handleSelectRecipient(recipient: Recipient) {
@@ -60,7 +67,7 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
       setSelectedRecipient({
         name: recipient.label.startsWith("0x") ? null : recipient.label,
         address: recipient.address as `0x${string}`,
-        source: "manual",
+        source: recipient.source ?? "manual",
       });
       setQuery(recipient.address);
       return;
@@ -103,21 +110,32 @@ export function SendRecipientPage({ token, amount }: { token?: string; amount?: 
         <Trans>Send to</Trans>
       </h1>
       <p className="mt-1 mb-3.5 text-muted-foreground text-sm">
-        <Trans>Enter an ENS, phone number or address.</Trans>
+        <Trans>Enter a username, pool name, phone number or address.</Trans>
       </p>
 
       <div className="mb-2.5">
         <RecipientAddressInput
           id="send-recipient"
+          allowPools
           value={query}
           onValueChange={handleInputChange}
           onRecipientChange={setResolvedRecipient}
-          ariaLabel={t`Recipient ENS, phone or address`}
+          ariaLabel={t`Recipient username, pool name, phone or address`}
           className="font-mono text-sm"
         />
       </div>
 
-      {showRecent ? (
+      {showRecent && wallet !== undefined && !recentRequested ? (
+        <Button
+          variant="outline"
+          className="mb-3 h-11 w-full"
+          onClick={() => setRecentRequested(true)}
+        >
+          <Trans>Recent recipients</Trans>
+        </Button>
+      ) : null}
+
+      {showRecent && recentRequested ? (
         <RecentRecipients
           recipients={recent}
           // A guest has no activity to read, and a read that never runs stays

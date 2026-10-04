@@ -1,3 +1,5 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
 import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -23,6 +25,7 @@ import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
+import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
   useCreateSendShare,
   useSendShareEligibility,
@@ -99,8 +102,9 @@ export function SendReceiptPage({
     queryFn: async (nextTrackingId) => (await relayerClient.trackRelay(nextTrackingId)).result,
   });
   const toAddress = recipient ?? null;
+  const recipientIdentity = useReverseRecipientResolution(toAddress);
   const addressBook = useAddressBookRecipients(useStorageOwner());
-  const recipientAlias =
+  const fallbackRecipientLabel =
     toAddress === null
       ? null
       : ((addressBook.data ?? []).find(
@@ -142,6 +146,7 @@ export function SendReceiptPage({
         amount={amountLabel}
         message={<Trans>Waiting for on-chain confirmation</Trans>}
         toAddress={toAddress}
+        recipientLabel={fallbackRecipientLabel}
         status={<StatusPill tone="pending" label={<Trans>Pending</Trans>} />}
       />
     );
@@ -155,6 +160,7 @@ export function SendReceiptPage({
         amount={amountLabel}
         message={outcome.error}
         toAddress={toAddress}
+        recipientLabel={fallbackRecipientLabel}
         status={<StatusPill tone="error" label={<Trans>Reverted</Trans>} />}
         onDone={exitReceipt}
       />
@@ -163,7 +169,9 @@ export function SendReceiptPage({
 
   const txHash = outcome.otx.txHash || null;
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
-  const recipientLabel = recipientAlias ?? toAddress;
+  const recipientLabel = recipientIdentity.data
+    ? formatRecipientLabel(recipientIdentity.data)
+    : (fallbackRecipientLabel ?? toAddress);
   const submittedAt = outcome.otx.createdAt
     ? formatSubmittedAt(outcome.otx.createdAt, i18n.locales?.[0] ?? i18n.locale)
     : null;
@@ -183,16 +191,13 @@ export function SendReceiptPage({
             <SignedAmount direction="out" amount={amountLabel} />
           </ReceiptRow>
         ) : null}
-        {recipientAlias ? (
-          <ReceiptRow label={t`Recipient`}>
-            <span className="min-w-0 break-words text-end text-xs font-semibold">
-              {recipientAlias}
-            </span>
-          </ReceiptRow>
-        ) : null}
         {toAddress ? (
-          <ReceiptRow label={t`To`}>
-            <EllipsizedAddress address={toAddress} />
+          <ReceiptRow label={t`Recipient`}>
+            <RecipientIdentityLabel
+              address={toAddress}
+              fallback={fallbackRecipientLabel ?? undefined}
+              showAddress
+            />
           </ReceiptRow>
         ) : null}
         {txHash ? (
@@ -231,6 +236,7 @@ export function SendReceiptPage({
             amountLabel && recipientLabel
               ? t`I sent ${amountLabel} to ${recipientLabel}.`
               : t`I sent a payment.`,
+            ...(toAddress && recipientLabel !== toAddress ? [`${t`Address`}: ${toAddress}`] : []),
             ...(submittedAt ? [submittedAt] : []),
           ]}
           url={explorerUrl}
@@ -458,6 +464,7 @@ function ReceiptShell({
   amount,
   message,
   toAddress,
+  recipientLabel,
   status,
   onDone,
 }: {
@@ -466,6 +473,7 @@ function ReceiptShell({
   amount: string | null;
   message: React.ReactNode;
   toAddress: string | null;
+  recipientLabel: string | null;
   status: React.ReactNode;
   /**
    * Omitted while the transfer is still settling. The screen replaces itself
@@ -487,8 +495,12 @@ function ReceiptShell({
 
       <div className="my-5 border border-border bg-card">
         {toAddress ? (
-          <ReceiptRow label={<Trans>To</Trans>}>
-            <EllipsizedAddress address={toAddress} />
+          <ReceiptRow label={<Trans>Recipient</Trans>}>
+            <RecipientIdentityLabel
+              address={toAddress}
+              fallback={recipientLabel ?? undefined}
+              showAddress
+            />
           </ReceiptRow>
         ) : null}
         <ReceiptRow label={<Trans>Network</Trans>}>

@@ -1,5 +1,8 @@
 import { ListToolbar } from "#/components/admin/list-toolbar";
-import { transactionTypeFilterClass } from "#/components/admin/transaction-type-badge";
+import {
+  transactionTypeFilterClass,
+  transactionTypeLabel,
+} from "#/components/admin/transaction-type-badge";
 import { ToggleGroup, ToggleGroupItem } from "#/components/ui/toggle-group";
 import { cn } from "#/lib/utils";
 
@@ -65,7 +68,7 @@ export function ChainTxToolbar<TType extends string>({
                 transactionTypeFilterClass(type),
               )}
             >
-              {type}
+              {transactionTypeLabel(type)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

@@ -3,12 +3,18 @@ import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
 import {
   buildAddPoolVoucherCalls,
   buildRemovePoolVoucherCalls,
+  POOL_PRICE_INDEX_DECIMALS,
+  poolVoucherUnitValueFromCap,
   poolVoucherRateSchema,
   seedPoolVoucherRateInput,
   toPoolVoucherRateConfig,
   type PoolVoucherRateInput,
 } from "@clc/core/features/pool-admin/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import {
+  formatTokenAmount,
+  formatTokenAmountFixed,
+  parseTokenAmount,
+} from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useState } from "react";
@@ -36,8 +42,13 @@ import {
 } from "#/features/home/hooks/use-voucher-search";
 import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
-import { usePoolQuoterKind, type PoolQuoterKind } from "#/features/pools/hooks/use-pool-quoter";
+import {
+  usePoolQuoterKind,
+  usePoolVoucherRatesByAddress,
+  type PoolQuoterKind,
+} from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolTokenMembership } from "#/features/pools/hooks/use-pool-registry";
+import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 import {
   type ApprovalCandidate,
   suggestApprovalVouchers,
@@ -47,16 +58,16 @@ import {
 /**
  * The voucher a steward is configuring, whichever screen they came from.
  *
- * Approving picks a catalog or balance row; managing starts
- * from a row the pool already holds, which carries its own decimals and cap.
- * Reducing both to this shape keeps one form rather than two.
+ * Approving picks a catalog or balance row; managing starts from a row the
+ * pool already holds. The current rate, cap, and balance are still read from
+ * chain for either path. Reducing both to this shape keeps one form rather
+ * than two.
  */
 type SheetVoucher = {
   address: `0x${string}`;
   name: string;
   symbol: string;
   decimals: number | null;
-  capRaw: string | null;
 };
 
 /**
@@ -75,8 +86,6 @@ export function PoolVoucherSheet({
   pool,
   poolVouchers,
   voucher,
-  currentRatePpm,
-  rateIsPending,
   open,
   onClose,
 }: {
@@ -84,10 +93,6 @@ export function PoolVoucherSheet({
   poolVouchers: PoolVoucher[];
   /** Null opens the approve flow; a row opens the manage flow for that voucher. */
   voucher: PoolVoucher | null;
-  /** The voucher's rate as the quoter holds it. Meaningful only while managing. */
-  currentRatePpm: bigint | undefined;
-  /** Whether that read is still in flight, so an absent rate is not read as parity. */
-  rateIsPending: boolean;
   open: boolean;
   onClose: () => void;
 }) {
@@ -113,8 +118,6 @@ export function PoolVoucherSheet({
               pool={pool}
               poolVouchers={poolVouchers}
               voucher={voucher}
-              currentRatePpm={currentRatePpm}
-              rateIsPending={rateIsPending}
               onClose={onClose}
             />
           ) : null}
@@ -128,22 +131,16 @@ function PoolVoucherForm({
   pool,
   poolVouchers,
   voucher,
-  currentRatePpm,
-  rateIsPending,
   onClose,
 }: {
   pool: UserPool;
   poolVouchers: PoolVoucher[];
   voucher: PoolVoucher | null;
-  currentRatePpm: bigint | undefined;
-  rateIsPending: boolean;
   onClose: () => void;
 }) {
   const { t } = useLingui();
   const quoter = usePoolQuoterKind(pool);
-  const relay = usePoolAdminRelay();
   const [picked, setPicked] = useState<ApprovalCandidate | null>(null);
-  const [confirmingRemoval, setConfirmingRemoval] = useState(false);
 
   // Only the picked voucher's decimals are missing — a pool row already carries
   // them — so the detail is fetched once a voucher is chosen rather than for
@@ -155,7 +152,6 @@ function PoolVoucherForm({
         name: voucher.name,
         symbol: voucher.symbol,
         decimals: voucher.decimals,
-        capRaw: voucher.tokenLimit,
       }
     : picked
       ? {
@@ -163,7 +159,6 @@ function PoolVoucherForm({
           name: picked.name,
           symbol: picked.symbol,
           decimals: pickedDetail.data?.decimals ?? null,
-          capRaw: null,
         }
       : null;
 
@@ -180,25 +175,204 @@ function PoolVoucherForm({
   const registrationUnknown = !voucher && membership.data === undefined;
   const hasLimiter = pool.limiterAddress !== null;
   const unitSymbol = pool.unitOfAccount ?? pool.symbol;
-  // Only meaningful when a rate was actually read. Defaulting an unread rate to
-  // parity would seed the form with a number the quoter never held, and saving
-  // would write it — so an unread rate blocks the fields instead.
+  const canConfigure = POOL_QUOTER_SUPPORT[quoter.kind];
+  const selectedAddresses = selected ? [selected.address] : [];
+  const rates = usePoolVoucherRatesByAddress(pool, selectedAddresses, !!selected && canConfigure, {
+    failOnReadError: true,
+  });
+  const treasury = usePoolTreasury(pool, selectedAddresses, !!selected);
+  const treasuryRow = selected ? treasury.data?.get(selected.address.toLowerCase()) : undefined;
+  const currentRatePpm = selected ? rates.data?.get(selected.address.toLowerCase()) : undefined;
   const seedRatePpm = currentRatePpm?.toString() ?? null;
-  const seed: PoolVoucherRateInput =
-    voucher && seedRatePpm
+  const seedCapRaw = hasLimiter ? (treasuryRow?.limitRaw ?? null) : null;
+  const decimalsPending = !!picked && pickedDetail.isPending;
+  const decimalsUnread = !!selected && !decimalsPending && selected.decimals === null;
+  const ratePending = !!selected && canConfigure && rates.isPending;
+  const rateUnread = !!selected && canConfigure && !ratePending && !seedRatePpm;
+  const treasuryPending = !!selected && treasury.isPending;
+  const capUnread = !!selected && hasLimiter && !treasuryPending && seedCapRaw === null;
+  const blockedReason = quoter.isPending
+    ? null
+    : !canConfigure
+      ? quoterNotice(quoter.kind)
+      : rateUnread
+        ? t`Couldn't read this voucher's current rate, so it can't be changed right now.`
+        : capUnread
+          ? t`Couldn't load credit limits.`
+          : decimalsUnread
+            ? t`This voucher's decimals are unknown, so a limit can't be set.`
+            : null;
+  const balance: VoucherBalanceState = !selected
+    ? { status: "loading" }
+    : decimalsPending || treasuryPending
+      ? { status: "loading" }
+      : treasuryRow
+        ? { status: "ready", raw: treasuryRow.balanceRaw }
+        : { status: "unavailable" };
+  const retryReads = () => {
+    if (canConfigure) void rates.refetch();
+    void treasury.refetch();
+  };
+  const seed =
+    selected && seedRatePpm && (!hasLimiter || seedCapRaw !== null)
       ? seedPoolVoucherRateInput({
           exchangeRatePpm: seedRatePpm,
-          capRaw: voucher.tokenLimit,
-          decimals: voucher.decimals,
+          capRaw: seedCapRaw,
+          decimals: selected.decimals,
         })
-      : APPROVAL_DEFAULTS;
+      : null;
+  const configuring =
+    selected &&
+    seed &&
+    canConfigure &&
+    !quoter.isPending &&
+    !ratePending &&
+    !treasuryPending &&
+    !blockedReason
+      ? selected
+      : null;
 
+  if (configuring && seed && seedRatePpm) {
+    return (
+      <PoolVoucherConfigurationForm
+        key={configuring.address}
+        pool={pool}
+        voucher={voucher}
+        selected={configuring}
+        seed={seed}
+        seedRatePpm={seedRatePpm}
+        seedCapRaw={seedCapRaw}
+        hasLimiter={hasLimiter}
+        unitSymbol={unitSymbol}
+        balance={balance}
+        register={register}
+        registrationUnknown={registrationUnknown}
+        alreadyRegistered={alreadyRegistered}
+        onRetryReads={retryReads}
+        onChange={voucher ? undefined : () => setPicked(null)}
+        onClose={onClose}
+      />
+    );
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
+        {selected ? (
+          <SelectedVoucher
+            voucher={selected}
+            unitSymbol={unitSymbol}
+            exchangeRate={
+              seedRatePpm
+                ? formatTokenAmount(
+                    seedRatePpm,
+                    POOL_PRICE_INDEX_DECIMALS,
+                    POOL_PRICE_INDEX_DECIMALS,
+                  )
+                : null
+            }
+            balance={balance}
+            onRetry={retryReads}
+            loadingDecimals={decimalsPending}
+            onChange={voucher ? undefined : () => setPicked(null)}
+          />
+        ) : (
+          <VoucherPicker excluded={poolVouchers} onSelect={setPicked} />
+        )}
+
+        {quoter.isPending ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Checking how this pool prices vouchers…</Trans>
+          </p>
+        ) : null}
+        {ratePending ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Reading the current rate…</Trans>
+          </p>
+        ) : null}
+        {treasuryPending ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Reading the pool's balance…</Trans>
+          </p>
+        ) : null}
+        {blockedReason ? (
+          <div className="space-y-2 border border-border bg-card p-4">
+            <p role="alert" className="text-destructive text-xs">
+              {blockedReason}
+            </p>
+            {(rateUnread || capUnread) && selected ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="bg-card"
+                onClick={retryReads}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <SheetFooter>
+        <SignHint className="bg-card" />
+        <Button type="button" className="h-11 w-full" disabled>
+          {voucher ? <Trans>Save changes</Trans> : <Trans>Approve voucher</Trans>}
+        </Button>
+        <Button type="button" variant="outline" className="h-11 w-full bg-card" onClick={onClose}>
+          <Trans>Cancel</Trans>
+        </Button>
+      </SheetFooter>
+    </div>
+  );
+}
+
+type VoucherBalanceState =
+  | { status: "loading" }
+  | { status: "ready"; raw: string }
+  | { status: "unavailable" };
+
+function PoolVoucherConfigurationForm({
+  pool,
+  voucher,
+  selected,
+  seed,
+  seedRatePpm,
+  seedCapRaw,
+  hasLimiter,
+  unitSymbol,
+  balance,
+  register,
+  registrationUnknown,
+  alreadyRegistered,
+  onRetryReads,
+  onChange,
+  onClose,
+}: {
+  pool: UserPool;
+  voucher: PoolVoucher | null;
+  selected: SheetVoucher;
+  seed: PoolVoucherRateInput;
+  seedRatePpm: string;
+  seedCapRaw: string | null;
+  hasLimiter: boolean;
+  unitSymbol: string;
+  balance: VoucherBalanceState;
+  register: boolean;
+  registrationUnknown: boolean;
+  alreadyRegistered: boolean;
+  onRetryReads: () => void;
+  onChange?: () => void;
+  onClose: () => void;
+}) {
+  const { t } = useLingui();
+  const relay = usePoolAdminRelay();
+  const [confirmingRemoval, setConfirmingRemoval] = useState(false);
   const form = useForm({
     defaultValues: seed,
     validators: { onSubmit: poolVoucherRateSchema({ requireCreditLimit: hasLimiter }) },
     onSubmit: async ({ value }) => {
-      if (!selected) return;
-      if (voucher && !seedRatePpm) return;
       if (hasLimiter && selected.decimals === null) {
         toast.error(t`This voucher's decimals are unknown, so a limit can't be set.`);
         return;
@@ -209,12 +383,12 @@ function PoolVoucherForm({
         decimals: selected.decimals ?? 0,
         hasLimiter,
       });
-      // An edit re-signs only what moved. Writing the rate back unchanged would
-      // race anyone else who repriced it, and re-registering an existing member
-      // reverts `TokenAlreadyExists`, taking the rest of the batch with it.
-      const rateChanged = !voucher || config.pricing.exchangeRatePpm !== seedRatePpm;
-      const capChanged = !voucher || config.depositCapRaw !== (voucher.tokenLimit ?? undefined);
-      if (voucher && !rateChanged && !capChanged) {
+      // New registrations deliberately write the displayed defaults. Existing
+      // members write only genuine changes, avoiding a stale no-op overwrite.
+      const rateChanged = register || config.pricing.exchangeRatePpm !== seedRatePpm;
+      const capChanged =
+        hasLimiter && (register || config.depositCapRaw !== (seedCapRaw ?? undefined));
+      if (!register && !rateChanged && !capChanged) {
         toast.error(t`Nothing has changed.`);
         return;
       }
@@ -263,26 +437,7 @@ function PoolVoucherForm({
     }
   };
 
-  const canConfigure = POOL_QUOTER_SUPPORT[quoter.kind];
-  const rateUnread = !!voucher && !rateIsPending && !seedRatePpm;
-  const blockedReason = quoter.isPending
-    ? null
-    : !canConfigure
-      ? quoterNotice(quoter.kind)
-      : rateUnread
-        ? t`Couldn't read this voucher's current rate, so it can't be changed right now.`
-        : null;
-  const decimalsPending = !!picked && pickedDetail.isPending;
-  // Narrowed to the voucher rather than kept as a flag, so the field group below
-  // reads its symbol and decimals off the same value that decided to render it.
-  const configuring: SheetVoucher | null =
-    selected && canConfigure && !rateUnread && !(voucher && rateIsPending) ? selected : null;
-  const canSubmit =
-    !!configuring &&
-    !quoter.isPending &&
-    !decimalsPending &&
-    !registrationUnknown &&
-    !relay.isPending;
+  const canSubmit = !registrationUnknown && !relay.isPending;
 
   return (
     <form
@@ -293,92 +448,74 @@ function PoolVoucherForm({
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-2">
-        {selected ? (
-          <SelectedVoucher
-            voucher={selected}
-            loadingDecimals={decimalsPending}
-            onChange={voucher ? undefined : () => setPicked(null)}
-          />
-        ) : (
-          <VoucherPicker excluded={poolVouchers} onSelect={setPicked} />
-        )}
-
-        {quoter.isPending ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Checking how this pool prices vouchers…</Trans>
-          </p>
-        ) : null}
-
-        {voucher && canConfigure && rateIsPending ? (
-          <p className="text-muted-foreground text-xs">
-            <Trans>Reading the current rate…</Trans>
-          </p>
-        ) : null}
+        <form.Subscribe selector={(state) => state.values.exchangeRate}>
+          {(exchangeRate) => (
+            <SelectedVoucher
+              voucher={selected}
+              unitSymbol={unitSymbol}
+              exchangeRate={exchangeRate}
+              balance={balance}
+              onRetry={onRetryReads}
+              loadingDecimals={false}
+              onChange={onChange}
+            />
+          )}
+        </form.Subscribe>
 
         {!voucher && alreadyRegistered ? (
           <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
             <Trans>
-              This pool already allows {selected?.symbol}. Saving updates its rate and limit instead
+              This pool already allows {selected.symbol}. Saving updates its rate and limit instead
               of adding it again.
             </Trans>
           </p>
         ) : null}
 
-        {blockedReason ? (
-          <p role="alert" className="border border-border bg-card p-4 text-destructive text-xs">
-            {blockedReason}
-          </p>
-        ) : null}
+        <form.Field name="exchangeRate">
+          {(field) => (
+            <RateRow
+              id="pool-voucher-rate"
+              heading={t`Exchange rate`}
+              leading={`1 ${selected.symbol}`}
+              unitSymbol={unitSymbol}
+              value={field.state.value}
+              onChange={field.handleChange}
+              onBlur={field.handleBlur}
+              error={getFieldError(field.state.meta.errors)}
+              hint={t`Exchange rate relative to the default voucher (${unitSymbol})`}
+              placeholder="1"
+            />
+          )}
+        </form.Field>
 
-        {configuring ? (
-          <>
-            <form.Field name="exchangeRate">
-              {(field) => (
-                <RateRow
-                  id="pool-voucher-rate"
-                  heading={t`Exchange rate`}
-                  leading={`1 ${configuring.symbol}`}
-                  unitSymbol={unitSymbol}
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  onBlur={field.handleBlur}
-                  error={getFieldError(field.state.meta.errors)}
-                  hint={t`Exchange rate relative to the default voucher (${unitSymbol})`}
-                  placeholder="1"
-                />
-              )}
-            </form.Field>
-
-            {hasLimiter ? (
-              <form.Subscribe selector={(state) => state.values.exchangeRate}>
-                {(exchangeRate) => (
-                  <form.Field name="creditLimit">
-                    {(field) => (
-                      <RateRow
-                        id="pool-voucher-limit"
-                        heading={t`Credit limit`}
-                        leading={`${previewCap(exchangeRate, field.state.value, configuring.decimals)} ${configuring.symbol}`}
-                        unitSymbol={unitSymbol}
-                        value={field.state.value}
-                        onChange={field.handleChange}
-                        onBlur={field.handleBlur}
-                        error={getFieldError(field.state.meta.errors)}
-                        hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${configuring.symbol} vouchers?`}
-                        placeholder="0"
-                      />
-                    )}
-                  </form.Field>
+        {hasLimiter ? (
+          <form.Subscribe selector={(state) => state.values.exchangeRate}>
+            {(exchangeRate) => (
+              <form.Field name="creditLimit">
+                {(field) => (
+                  <RateRow
+                    id="pool-voucher-limit"
+                    heading={t`Credit limit`}
+                    leading={`${previewCap(exchangeRate, field.state.value, selected.decimals)} ${selected.symbol}`}
+                    unitSymbol={unitSymbol}
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    onBlur={field.handleBlur}
+                    error={getFieldError(field.state.meta.errors)}
+                    hint={t`How much value in ${unitSymbol} can be swapped from the pool using ${selected.symbol} vouchers?`}
+                    placeholder="0"
+                  />
                 )}
-              </form.Subscribe>
-            ) : (
-              <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
-                <Trans>
-                  This pool has no limiter, so deposits are uncapped and no credit limit can be set.
-                </Trans>
-              </p>
+              </form.Field>
             )}
-          </>
-        ) : null}
+          </form.Subscribe>
+        ) : (
+          <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
+            <Trans>
+              This pool has no limiter, so deposits are uncapped and no credit limit can be set.
+            </Trans>
+          </p>
+        )}
 
         {voucher ? (
           <div className="border-t border-border pt-4">
@@ -461,17 +598,6 @@ function PoolVoucherForm({
  * branch threaded through the form. `false` is a quoter the protocol supports
  * and this screen does not yet.
  */
-/**
- * What a new voucher starts at: parity, and a limit of nothing.
- *
- * Parity because it is the only rate that asserts nothing about the voucher, and
- * zero because the limiter takes it and it is the cautious half of the pair —
- * approving a voucher is a separate decision from deciding how much of it the
- * pool will hold, and the steward makes the second one deliberately rather than
- * by leaving a suggested number in place.
- */
-const APPROVAL_DEFAULTS: PoolVoucherRateInput = { exchangeRate: "1", creditLimit: "0" };
-
 const POOL_QUOTER_SUPPORT: Record<PoolQuoterKind, boolean> = {
   relative: true,
   oracle: false,
@@ -573,26 +699,105 @@ function RateRow({
 
 function SelectedVoucher({
   voucher,
+  unitSymbol,
+  exchangeRate,
+  balance,
+  onRetry,
   loadingDecimals,
   onChange,
 }: {
   voucher: SheetVoucher;
+  unitSymbol: string;
+  exchangeRate: string | null;
+  balance: VoucherBalanceState;
+  onRetry: () => void;
   loadingDecimals: boolean;
   onChange?: () => void;
 }) {
+  const { i18n } = useLingui();
+  const locale = i18n.locales?.[0] ?? i18n.locale;
+  const amount =
+    balance.status === "ready" && voucher.decimals !== null
+      ? formatTokenAmountFixed(balance.raw, voucher.decimals, 2, locale)
+      : null;
+  let unitValue: string | null = null;
+  if (balance.status === "ready" && voucher.decimals !== null && exchangeRate !== null) {
+    try {
+      const ratePpm = parseTokenAmount(exchangeRate.trim(), POOL_PRICE_INDEX_DECIMALS);
+      if (BigInt(ratePpm) > 0n) {
+        const valueRaw = poolVoucherUnitValueFromCap(balance.raw, ratePpm, voucher.decimals);
+        unitValue = formatTokenAmountFixed(valueRaw, POOL_PRICE_INDEX_DECIMALS, 2, locale);
+      }
+    } catch {
+      // An incomplete rate while editing is already explained by the field.
+      // Keep the derived value blank rather than showing a stale calculation.
+    }
+  }
+
   return (
-    <div className="flex items-start justify-between gap-3 border border-border bg-card p-3">
-      <div className="min-w-0">
-        <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
-        <p className="font-mono text-muted-foreground text-xs">{voucher.symbol}</p>
-        <p className="mt-1 font-mono text-muted-foreground text-xs">
-          {formatVoucherAddress(voucher.address)}
-          {loadingDecimals ? " · …" : voucher.decimals === null ? "" : ` · ${voucher.decimals} dp`}
-        </p>
+    <div className="border border-border bg-card p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-bold text-sm tracking-tight">{voucher.name}</p>
+          <p dir="ltr" className="font-mono text-muted-foreground text-xs">
+            {voucher.symbol}
+          </p>
+          <p dir="ltr" className="mt-1 font-mono text-muted-foreground text-xs">
+            {formatVoucherAddress(voucher.address)}
+            {loadingDecimals
+              ? " · …"
+              : voucher.decimals === null
+                ? ""
+                : ` · ${voucher.decimals} dp`}
+          </p>
+        </div>
+        {onChange ? (
+          <Button type="button" variant="outline" size="sm" className="bg-card" onClick={onChange}>
+            <Trans>Change</Trans>
+          </Button>
+        ) : null}
       </div>
-      {onChange ? (
-        <Button type="button" variant="outline" size="sm" className="bg-card" onClick={onChange}>
-          <Trans>Change</Trans>
+
+      <dl className="mt-3 divide-y divide-border border-t border-border">
+        <div className="flex items-center justify-between gap-3 py-2 text-xs">
+          <dt className="text-muted-foreground">
+            <Trans>Amount in pool</Trans>
+          </dt>
+          <dd dir="ltr" className="text-end font-mono font-semibold">
+            {balance.status === "loading" ? (
+              <Trans>Reading…</Trans>
+            ) : amount === null ? (
+              <Trans>Unavailable</Trans>
+            ) : (
+              `${amount} ${voucher.symbol}`
+            )}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-3 py-2 text-xs">
+          <dt className="text-muted-foreground">
+            <Trans>Value in {unitSymbol}</Trans>
+          </dt>
+          <dd dir="ltr" className="text-end font-mono font-semibold">
+            {balance.status === "loading" ? (
+              <Trans>Reading…</Trans>
+            ) : unitValue === null ? (
+              <Trans>Unavailable</Trans>
+            ) : (
+              `${unitValue} ${unitSymbol}`
+            )}
+          </dd>
+        </div>
+      </dl>
+
+      {balance.status === "unavailable" ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-2 bg-card"
+          onClick={onRetry}
+        >
+          <Trans>Retry</Trans>
         </Button>
       ) : null}
     </div>

@@ -26,7 +26,6 @@ export type WalletToken = {
   phone?: string;
   email?: string;
   owner?: string;
-  ownerEns?: string;
   contractAddress?: string;
   iconUrl?: string | null;
   tokenDecimals?: number;
@@ -72,7 +71,6 @@ const WALLET_TOKENS: WalletToken[] = [
     phone: "+254 723 456 789",
     email: "babas@vouchers.co.ke",
     owner: "0xBa5eb14E9c1D7f3A0b6C2e8F4d1a9F57c3b2C0de",
-    ownerEns: "babas.sarafu.eth",
     contractAddress: "0xBaba5Eed3c1D7f3A0b6C2e8F4d1a9F57c3b2C0de",
     lat: -4.0435,
     lng: 39.6682,
@@ -90,7 +88,6 @@ const WALLET_TOKENS: WalletToken[] = [
     phone: "+254 711 234 567",
     email: "garden@community.co.ke",
     owner: "0x7A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4c",
-    ownerEns: "grdn.sarafu.eth",
     contractAddress: "0x6A23bE91d44C7f0a2E58c1B6aD3f0091Ef7C9F4d",
     lat: -3.6305,
     lng: 39.8499,
@@ -133,7 +130,10 @@ export const WALLET_TOKEN_BY_ID: Record<string, WalletToken> = Object.fromEntrie
   WALLET_TOKENS.map((token) => [token.id, token]),
 );
 
+export type RecipientSource = "manual" | "phone" | "alias" | "reverse-name" | "qr";
+
 export type Recipient = {
+  source?: RecipientSource;
   id: string;
   label: string;
   /** Sub-label when there is no resolved on-chain address. */

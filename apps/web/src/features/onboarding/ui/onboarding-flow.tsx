@@ -26,6 +26,7 @@ type Props = {
 function profileFingerprint(profile: ProfileInput): string {
   return JSON.stringify({
     name: profile.name,
+    username: profile.username,
     email: profile.email,
     phone: profile.phone,
     location: profile.location,

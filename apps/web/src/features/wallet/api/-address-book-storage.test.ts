@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { ownerScopedKey } from "#/lib/storage/owner-tier-key";
 import {
   clearAddressBookRecipients,
   readAddressBookRecipients,
@@ -17,18 +18,18 @@ afterEach(() => {
 describe("address book local storage", () => {
   it("persists recipients locally", () => {
     upsertAddressBookRecipient(OWNER, {
-      label: "alice.sarafu.eth",
+      label: "alice",
       address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-      source: "ens",
+      source: "alias",
     });
 
     expect(readAddressBookRecipients(OWNER)).toEqual([
       {
         id: "0xa316408425cf17f1827483dee621c6c3a9b5fad4",
-        label: "alice.sarafu.eth",
+        label: "alice",
         address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-        seed: "alice.sarafu.eth",
-        source: "ens",
+        seed: "alice",
+        source: "alias",
       },
     ]);
   });
@@ -40,16 +41,51 @@ describe("address book local storage", () => {
       source: "manual",
     });
     upsertAddressBookRecipient(OWNER, {
-      label: "alice.sarafu.eth",
+      label: "alice",
       address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
-      source: "reverse-ens",
+      source: "reverse-name",
     });
 
     expect(readAddressBookRecipients(OWNER)).toHaveLength(1);
     expect(readAddressBookRecipients(OWNER)[0]).toMatchObject({
-      label: "alice.sarafu.eth",
-      source: "reverse-ens",
+      label: "alice",
+      source: "reverse-name",
     });
+  });
+
+  it("migrates legacy ENS sources without discarding saved recipients", () => {
+    localStorage.setItem(
+      ownerScopedKey(OWNER, "address-book.v1"),
+      JSON.stringify([
+        {
+          id: "legacy-alice",
+          label: "alice.eth",
+          address: "0xa316408425cF17F1827483dee621c6C3A9B5fad4",
+          seed: "alice.eth",
+          source: "ens",
+        },
+        {
+          id: "legacy-bob",
+          label: "bob.eth",
+          address: "0xb316408425cF17F1827483dee621c6C3A9B5fad4",
+          seed: "bob.eth",
+          source: "reverse-ens",
+        },
+      ]),
+    );
+
+    expect(readAddressBookRecipients(OWNER)).toEqual([
+      expect.objectContaining({
+        id: "0xa316408425cf17f1827483dee621c6c3a9b5fad4",
+        label: "alice.eth",
+        source: "alias",
+      }),
+      expect.objectContaining({
+        id: "0xb316408425cf17f1827483dee621c6c3a9b5fad4",
+        label: "bob.eth",
+        source: "reverse-name",
+      }),
+    ]);
   });
 
   it("can be reset by clearing the local address book", () => {

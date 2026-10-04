@@ -180,6 +180,6 @@ function legAmount(leg: PoolActivityLeg): string {
 
 function kindLabel(entry: PoolActivityEntry, t: (strings: TemplateStringsArray) => string): string {
   if (entry.kind === "swap") return t`Swap`;
-  if (entry.kind === "mint") return t`Minted`;
+  if (entry.kind === "mint") return t`Created`;
   return entry.direction === "IN" ? t`Deposit` : t`Paid out`;
 }

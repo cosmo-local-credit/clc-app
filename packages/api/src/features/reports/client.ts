@@ -166,6 +166,7 @@ export type ReportVoucherFacet = VoucherRef & {
 };
 
 export type FilteredReportsParams = {
+  nearby?: boolean;
   perPage: number;
   cursor?: ReportCursor;
   filter: CatalogFilter;
@@ -319,10 +320,11 @@ export function createReportsClient(http: HttpClient) {
 
   return {
     async getReports(
-      params: { perPage: number; cursor?: ReportCursor },
+      params: { perPage: number; cursor?: ReportCursor; nearby?: boolean },
       signal?: AbortSignal,
     ): Promise<ReportPage> {
       const query = new URLSearchParams({ perPage: String(params.perPage) });
+      if (params.nearby) query.set("nearby", "true");
       if (params.cursor) {
         query.set("cursorUpdatedAt", params.cursor.updatedAt);
         query.set("cursorId", params.cursor.id);
@@ -341,7 +343,7 @@ export function createReportsClient(http: HttpClient) {
     },
 
     async getFilteredReports(
-      { filter, facets, perPage, cursor, author }: FilteredReportsParams,
+      { filter, facets, perPage, cursor, author, nearby }: FilteredReportsParams,
       signal?: AbortSignal,
     ): Promise<FilteredReportPage> {
       const query = new URLSearchParams({ perPage: String(perPage) });
@@ -352,6 +354,7 @@ export function createReportsClient(http: HttpClient) {
       appendCatalogFilter(query, filter);
       if (author) query.set("author", author);
       if (facets) query.set("facets", "true");
+      if (nearby) query.set("nearby", "true");
 
       const result = await http.request<BackendFilteredReportPage>(
         `/api/v2/reports?${query.toString()}`,

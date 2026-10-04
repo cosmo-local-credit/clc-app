@@ -1,3 +1,4 @@
+import { NearbyCatalog } from "#/components/nearby-catalog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useConnection, useDisconnect } from "wagmi";
@@ -80,24 +81,30 @@ export function HomePage({
   return (
     <div className="min-h-[100svh] bg-background text-foreground">
       {currentTab === "market" ? (
-        marketView === "map" ? (
-          <MarketPage
-            onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-            isAuthenticated={isAuthenticated}
-            locationOwner={locationOwner}
-          />
-        ) : (
-          <MarketListPage
-            onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
-            locationOwner={locationOwner}
-          />
-        )
+        <NearbyCatalog>
+          {marketView === "map" ? (
+            <MarketPage
+              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+              isAuthenticated={isAuthenticated}
+              locationOwner={locationOwner}
+            />
+          ) : (
+            <MarketListPage
+              onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
+              locationOwner={locationOwner}
+            />
+          )}
+        </NearbyCatalog>
       ) : (
         <div className="min-h-[100svh] pb-bottom-nav">
           <main className="px-6 pt-[calc(env(safe-area-inset-top)+1rem)]">
             {currentTab === "wallet" ? <WalletPage address={address} /> : null}
             {currentTab === "activity" ? <ActivityPage address={address} /> : null}
-            {currentTab === "posts" ? <PostsPage /> : null}
+            {currentTab === "posts" ? (
+              <NearbyCatalog>
+                <PostsPage />
+              </NearbyCatalog>
+            ) : null}
             {currentTab === "settings" ? (
               <SettingsPage
                 address={address}

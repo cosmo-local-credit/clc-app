@@ -241,7 +241,7 @@ function VoucherMintSheet({
               <Trans>Create vouchers</Trans>
             </SheetTitle>
             <p className="text-muted-foreground text-sm">
-              <Trans>Mint new vouchers to your wallet.</Trans>
+              <Trans>Create new vouchers in your wallet.</Trans>
             </p>
           </SheetHeader>
           <form
