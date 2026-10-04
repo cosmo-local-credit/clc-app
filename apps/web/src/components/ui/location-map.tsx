@@ -1,8 +1,11 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import type { MarkerStyle } from "@clc/core/features/markers/logic";
 import { useLingui } from "@lingui/react/macro";
 import MapLibreGL, { type MapMouseEvent } from "maplibre-gl";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
+import { MarkerPin } from "#/components/vouchers/marker-style-picker";
 import { BRAND_THEME_COLOR } from "#/lib/brand";
 import { cn } from "#/lib/utils";
 
@@ -16,6 +19,7 @@ type LocationMapProps = {
   lng?: number | null;
   interactive?: boolean;
   onLocationChange?: (lat: number, lng: number) => void;
+  markerStyle?: MarkerStyle;
   className?: string;
 };
 
@@ -29,6 +33,7 @@ export function LocationMap({
   lng,
   interactive = false,
   onLocationChange,
+  markerStyle,
   className,
 }: LocationMapProps) {
   const { t } = useLingui();
@@ -38,6 +43,8 @@ export function LocationMap({
   const onLocationChangeRef = useRef(onLocationChange);
   const initialLocationRef = useRef({ lat, lng });
   const interactiveRef = useRef(interactive);
+  const markerStyleRef = useRef(markerStyle);
+  const [markerElement, setMarkerElement] = useState<HTMLDivElement | null>(null);
   const pendingRef = useRef<{ lat: number; lng: number } | null>(null);
   const [failed, setFailed] = useState(false);
   const maptilerKey = import.meta.env.VITE_MAPTILER_KEY as string | undefined;
@@ -53,14 +60,22 @@ export function LocationMap({
     interactiveRef.current = interactive;
   }, [interactive]);
 
+  useEffect(() => {
+    markerStyleRef.current = markerStyle;
+  }, [markerStyle]);
+
   const setMarker = useCallback((map: MapLibreGL.Map, nextLat: number, nextLng: number) => {
     if (markerRef.current) {
       markerRef.current.setLngLat([nextLng, nextLat]);
       return;
     }
 
+    const element = markerStyleRef.current ? document.createElement("div") : null;
+    if (element) setMarkerElement(element);
     markerRef.current = new MapLibreGL.Marker({
-      color: MARKER_COLOR,
+      ...(element
+        ? { element, anchor: "bottom" as const, offset: [0, 4] as [number, number] }
+        : { color: MARKER_COLOR }),
       draggable: interactiveRef.current,
     })
       .setLngLat([nextLng, nextLat])
@@ -171,18 +186,21 @@ export function LocationMap({
     pendingRef.current = null;
     markerRef.current?.remove();
     markerRef.current = null;
+    setMarkerElement(null);
   }, [lat, lng, setMarker]);
 
   if (!maptilerStyle || failed) return null;
 
   return (
-    <section
-      ref={containerRef}
-      aria-label={t`Location map`}
-      className={cn(
-        "h-52 w-full overflow-hidden rounded-xl border border-border bg-card",
-        className,
-      )}
-    />
+    <>
+      <section
+        ref={containerRef}
+        aria-label={t`Location map`}
+        className={cn("h-52 w-full overflow-hidden border border-border bg-card", className)}
+      />
+      {markerElement && markerStyle
+        ? createPortal(<MarkerPin style={markerStyle} size={40} className="block" />, markerElement)
+        : null}
+    </>
   );
 }

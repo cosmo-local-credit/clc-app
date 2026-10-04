@@ -1,5 +1,9 @@
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
-import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
+import {
+  type MarkerColor,
+  type MarkerIcon,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
 import {
   toVoucherDeployPayload,
   type VoucherUnit,
@@ -642,11 +646,24 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
                   return (
-                    <LocationPicker
-                      value={field.state.value}
-                      onChange={(value) => field.handleChange(value)}
-                      error={error ? translateValidationError(error, i18n) : undefined}
-                    />
+                    <form.Subscribe
+                      selector={(state) =>
+                        [state.values.markerIcon, state.values.markerColor] as const
+                      }
+                    >
+                      {([markerIcon, markerColor]) => (
+                        <LocationPicker
+                          value={field.state.value}
+                          onChange={(value) => field.handleChange(value)}
+                          error={error ? translateValidationError(error, i18n) : undefined}
+                          markerStyle={resolveMarkerStyle({
+                            kind: "voucher",
+                            markerIcon,
+                            markerColor,
+                          })}
+                        />
+                      )}
+                    </form.Subscribe>
                   );
                 }}
               </form.Field>

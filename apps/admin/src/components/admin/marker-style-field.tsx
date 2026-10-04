@@ -13,6 +13,7 @@ import {
 import type { IconType } from "react-icons";
 import {
   RiCouponFill,
+  RiGraduationCapFill,
   RiHandCoinFill,
   RiHeartPulseFill,
   RiPlantFill,
@@ -36,6 +37,7 @@ const MARKER_GLYPHS: Record<MarkerIcon, IconType> = {
   farm: RiPlantFill,
   tools: RiToolsFill,
   health: RiHeartPulseFill,
+  education: RiGraduationCapFill,
 };
 
 export const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
@@ -46,6 +48,7 @@ export const MARKER_ICON_LABEL: Record<MarkerIcon, string> = {
   farm: "Farming",
   tools: "Tools",
   health: "Health",
+  education: "Education",
 };
 
 export const MARKER_COLOR_LABEL: Record<MarkerColor, string> = {
@@ -125,8 +128,9 @@ export function MarkerStyleField({
         {automatic ? null : (
           <Button
             type="button"
-            variant="ghost"
+            variant="destructive"
             size="sm"
+            className="bg-destructive px-4 text-white hover:bg-destructive/90"
             disabled={disabled}
             onClick={() => onChange({ icon: null, color: null })}
           >

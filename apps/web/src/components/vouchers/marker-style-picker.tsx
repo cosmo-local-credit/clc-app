@@ -97,9 +97,9 @@ export function MarkerStylePicker({
         {automatic ? null : (
           <Button
             type="button"
-            variant="link"
+            variant="destructive"
             size="sm"
-            className="px-0"
+            className="h-11 bg-destructive px-4 text-white hover:bg-destructive/90"
             disabled={disabled}
             onClick={() => onChange({ icon: null, color: null })}
           >
@@ -123,7 +123,7 @@ export function MarkerStylePicker({
             value={icon}
             aria-label={labels.icon(icon)}
             className={cn(
-              "flex h-16 flex-col items-center justify-center gap-1 border border-border bg-card px-1 outline-none",
+              "flex h-16 min-w-0 flex-col items-center justify-center gap-1 border border-border bg-card px-2 outline-none",
               "data-[checked]:border-primary data-[checked]:bg-primary/[0.05]",
               "focus-visible:ring-2 focus-visible:ring-ring/50",
               "disabled:cursor-not-allowed disabled:opacity-50",

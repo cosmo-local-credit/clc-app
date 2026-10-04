@@ -59,6 +59,6 @@ describe("marker palette", () => {
     expect(isMarkerIcon("rocket")).toBe(false);
     expect(isMarkerColor("red")).toBe(false);
     expect(isMarkerColor("green")).toBe(false);
-    expect(MARKER_ICONS).toHaveLength(7);
+    expect(MARKER_ICONS).toHaveLength(8);
   });
 });

@@ -18,6 +18,7 @@ export const MARKER_ICONS = [
   "farm",
   "tools",
   "health",
+  "education",
 ] as const;
 
 export type MarkerIcon = (typeof MARKER_ICONS)[number];

@@ -1,5 +1,6 @@
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { locationSchema } from "@clc/core/features/location/logic";
+import type { MarkerStyle } from "@clc/core/features/markers/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ImSpinner2 } from "react-icons/im";
@@ -18,6 +19,7 @@ type LocationPickerProps = {
   onChange: (value: LocationInput | undefined) => void;
   error?: string;
   label?: string;
+  markerStyle?: MarkerStyle;
 };
 
 type PlacePinOptions = {
@@ -26,7 +28,13 @@ type PlacePinOptions = {
   updateSearchInput?: boolean;
 };
 
-export function LocationPicker({ value, onChange, error, label }: LocationPickerProps) {
+export function LocationPicker({
+  value,
+  onChange,
+  error,
+  label,
+  markerStyle,
+}: LocationPickerProps) {
   const { t } = useLingui();
   const [query, setQuery] = useState(value?.locationName ?? "");
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
@@ -255,7 +263,7 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
       {canRenderMap ? (
         <Suspense
           fallback={
-            <output className="block h-52 w-full rounded-xl border border-border bg-card">
+            <output className="block h-52 w-full border border-border bg-card">
               <span className="sr-only">
                 <Trans>Loading location map</Trans>
               </span>
@@ -267,10 +275,11 @@ export function LocationPicker({ value, onChange, error, label }: LocationPicker
             lng={pin?.lng ?? null}
             interactive
             onLocationChange={placePin}
+            markerStyle={markerStyle}
           />
         </Suspense>
       ) : (
-        <output className="block h-52 w-full rounded-xl border border-border bg-card">
+        <output className="block h-52 w-full border border-border bg-card">
           <span className="sr-only">
             <Trans>Loading location map</Trans>
           </span>

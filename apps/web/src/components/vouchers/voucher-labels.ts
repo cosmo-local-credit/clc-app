@@ -63,6 +63,8 @@ export function useMarkerLabels() {
           return t`Tools`;
         case "health":
           return t`Health`;
+        case "education":
+          return t`Education`;
       }
     },
     color(color: MarkerColor): string {

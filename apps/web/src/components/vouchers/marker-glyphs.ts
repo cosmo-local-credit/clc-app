@@ -2,6 +2,7 @@ import type { MarkerIcon } from "@clc/core/features/markers/logic";
 import type { IconType } from "react-icons";
 import {
   RiCouponFill,
+  RiGraduationCapFill,
   RiHandCoinFill,
   RiHeartPulseFill,
   RiPlantFill,
@@ -22,4 +23,5 @@ export const MARKER_GLYPHS: Record<MarkerIcon, IconType> = {
   farm: RiPlantFill,
   tools: RiToolsFill,
   health: RiHeartPulseFill,
+  education: RiGraduationCapFill,
 };

@@ -66,12 +66,16 @@ vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
     value,
     onChange,
+    markerStyle,
   }: {
     value?: { locationName: string };
     onChange: (value: { locationName: string; country: string; lat: number; lng: number }) => void;
+    markerStyle?: { icon: string; color: string };
   }) => (
     <button
       type="button"
+      data-marker-icon={markerStyle?.icon}
+      data-marker-color={markerStyle?.color}
       onClick={() =>
         onChange({
           locationName: "Kilifi, Kenya",
@@ -571,24 +575,40 @@ describe("CreateVoucherFlow", () => {
     // Nothing is chosen until the issuer picks: the pin follows the offerings.
     expect(within(icons).queryByRole("radio", { checked: true })).toBeNull();
     expect(screen.queryByRole("button", { name: "Use default" })).toBeNull();
+    expect(within(icons).getAllByRole("radio")).toHaveLength(8);
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("coupon");
 
-    fireEvent.click(within(icons).getByRole("radio", { name: "Health" }));
+    fireEvent.click(within(icons).getByRole("radio", { name: "Education" }));
     fireEvent.click(within(colours).getByRole("radio", { name: "Pink" }));
-    expect(within(icons).getByRole("radio", { name: "Health" }).getAttribute("aria-checked")).toBe(
-      "true",
-    );
+    expect(
+      within(icons).getByRole("radio", { name: "Education" }).getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("education");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-color"),
+    ).toBe("pink");
 
     view.rerender(<CreateVoucherFlow step="review" />);
-    expect(screen.getByText("Health, Pink")).toBeTruthy();
+    expect(screen.getByText("Education, Pink")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
     await waitFor(() =>
       expect(deployMutateAsync).toHaveBeenCalledWith(
-        expect.objectContaining({ markerIcon: "health", markerColor: "pink" }),
+        expect.objectContaining({ markerIcon: "education", markerColor: "pink" }),
       ),
     );
 
     view.rerender(<CreateVoucherFlow step="place" />);
     fireEvent.click(screen.getByRole("button", { name: "Use default" }));
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("coupon");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-color"),
+    ).toBe("orange");
     view.rerender(<CreateVoucherFlow step="review" />);
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
     await waitFor(() => expect(deployMutateAsync).toHaveBeenCalledTimes(2));
