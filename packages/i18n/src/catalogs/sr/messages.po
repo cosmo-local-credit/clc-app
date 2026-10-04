@@ -135,7 +135,7 @@ msgid "{0} updated."
 msgstr "{0} је ажуриран."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:466
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:392
 #: apps/web/src/features/home/ui/wallet-page.tsx:353
 #: apps/web/src/features/pools/ui/pools-page.tsx:550
 msgid "{0} vouchers"
@@ -202,7 +202,7 @@ msgstr "Доступно: {withdrawable} {0}. Накнаде задржане з
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:47
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:275
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:272
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -210,7 +210,7 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 понуда"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:464
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:390
 #: apps/web/src/features/home/ui/wallet-page.tsx:351
 #: apps/web/src/features/pools/ui/pools-page.tsx:548
 msgid "1 voucher"
@@ -594,7 +594,7 @@ msgstr "Купите или продајте стабилне токене за 
 msgid "Buy USD₮ with KES."
 msgstr "Купите USD₮ за KES."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:304
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:301
 msgid "Call"
 msgstr "Позови"
 
@@ -854,8 +854,8 @@ msgid "Clear search"
 msgstr "Обриши претрагу"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:389
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:142
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:259
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:139
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:256
 #: apps/web/src/features/home/ui/report-page.tsx:290
 msgid "Close"
 msgstr "Затвори"
@@ -1096,7 +1096,7 @@ msgstr "Копирај хеш трансакције постављања"
 msgid "Copy fee recipient"
 msgstr "Копирај примаоца накнаде"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:497
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:423
 msgid "Copy link"
 msgstr "Копирај везу"
 
@@ -1202,8 +1202,8 @@ msgstr "Није могуће копирати хеш трансакције п�
 msgid "Couldn't copy fee recipient"
 msgstr "Није могуће копирати примаоца накнаде"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:506
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:512
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:432
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:438
 msgid "Couldn't copy link"
 msgstr "Није могуће копирати везу"
 
@@ -1314,7 +1314,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "Није могуће учитати ову објаву. Можете уређивати само објаве које сте "
 "сами написали."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:140
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:137
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:136
 msgid "Couldn't load this voucher."
 msgstr "Овај ваучер није могуће учитати."
@@ -1606,7 +1606,7 @@ msgstr "Опишите свој пул"
 msgid "Description"
 msgstr "Опис"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:297
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:294
 msgid "Directions"
 msgstr "Упутства за пут"
 
@@ -2018,7 +2018,7 @@ msgstr "Уредите кадар фотографије"
 msgid "From"
 msgstr "Од"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:286
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:283
 msgid "Get"
 msgstr "Набави"
 
@@ -2322,7 +2322,7 @@ msgstr "Адреса везе"
 msgid "Link at most 12 vouchers"
 msgstr "Повежите највише 12 ваучера"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:511
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:437
 msgid "Link copied"
 msgstr "Веза је копирана"
 
@@ -3100,7 +3100,6 @@ msgid "Offering updated."
 msgstr "Понуда је ажурирана."
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:47
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:382
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:276
 msgid "Offerings"
@@ -3154,7 +3153,7 @@ msgid "Open this page in Safari or Chrome and tap Share."
 msgstr "Отворите ову страницу у Safari-ју или Chrome-у и додирните „Дијели“ "
 "(Share)."
 
-#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:148
+#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:147
 msgid "Open voucher page"
 msgstr "Отвори страницу ваучера"
 
@@ -3496,7 +3495,7 @@ msgstr "Тржнице"
 msgid "Pools list"
 msgstr "Листа пулова"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:433
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:359
 msgid "Pools with this voucher"
 msgstr "Тржнице са овим ваучером"
 
@@ -3988,7 +3987,7 @@ msgstr "Povuci vaučer"
 msgid "Retiring…"
 msgstr "Povlačenje…"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:150
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:147
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:873
 #: apps/web/src/features/home/ui/report-page.tsx:59
@@ -4183,7 +4182,7 @@ msgstr "Претрага ваучера…"
 msgid "Searching…"
 msgstr "Претраживање…"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:440
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:366
 msgid "See all"
 msgstr "Прикажи све"
 
@@ -4302,7 +4301,7 @@ msgstr "Подешавање вашег новчаника..."
 msgid "Settings"
 msgstr "Подешавања"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:497
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:423
 #: apps/web/src/features/wallet/ui/receive-page.tsx:107
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:426
 msgid "Share"
@@ -4507,7 +4506,7 @@ msgstr "Количина мора бити већа од нуле"
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG датотеке нису подржане. Користите PNG, JPEG или WebP."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:477
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:403
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:135
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:382
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
@@ -5420,7 +5419,7 @@ msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Није могуће потврдити да ли овај ваучер већ има количину."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:97
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:312
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:309
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:317
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:333
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331

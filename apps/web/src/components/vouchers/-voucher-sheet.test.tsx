@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -7,15 +7,13 @@ import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/marke
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
 import type { VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 
-const { detailResult, detailError, offeringRequests, poolRequests, mapsRequests, selection } =
-  vi.hoisted(() => ({
-    selection: { voucherTab: "offerings" as string, close: vi.fn() },
-    detailResult: { current: undefined as MarketVoucherDetail | undefined },
-    detailError: { current: false, refetch: vi.fn() },
-    offeringRequests: { current: [] as (string | undefined)[] },
-    poolRequests: { current: [] as unknown[] },
-    mapsRequests: { current: [] as unknown[] },
-  }));
+const { detailResult, detailError, poolRequests, mapsRequests, selection } = vi.hoisted(() => ({
+  selection: { voucherTab: "offerings" as string, close: vi.fn() },
+  detailResult: { current: undefined as MarketVoucherDetail | undefined },
+  detailError: { current: false, refetch: vi.fn() },
+  poolRequests: { current: [] as unknown[] },
+  mapsRequests: { current: [] as unknown[] },
+}));
 
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
   useVoucherSheetSelection: () => ({
@@ -32,13 +30,6 @@ vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
     isError: detailError.current,
     refetch: detailError.refetch,
   }),
-}));
-
-vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
-  useVoucherOfferingsInfinite: (address: string | undefined) => {
-    offeringRequests.current.push(address);
-    return { data: undefined };
-  },
 }));
 
 vi.mock("#/lib/api/pools", () => ({
@@ -210,7 +201,6 @@ beforeEach(() => {
   detailError.current = false;
   detailError.refetch.mockReset();
   selection.close.mockReset();
-  offeringRequests.current = [];
   poolRequests.current = [];
   mapsRequests.current = [];
 });
@@ -313,11 +303,10 @@ describe("VoucherSheet peek", () => {
 });
 
 describe("VoucherSheet half", () => {
-  it("asks for pools and offerings only once half is reached", async () => {
+  it("asks for pools only once half is reached", async () => {
     detailResult.current = detail();
     renderSheet();
     expect(poolRequests.current).toEqual([]);
-    expect(offeringRequests.current).toEqual([]);
 
     fireEvent.click(screen.getByRole("button", { name: "Expand" }));
 
@@ -327,7 +316,6 @@ describe("VoucherSheet half", () => {
       perPage: 10,
       filter: { vouchers: [{ chainId: 100, address: VOUCHER }] },
     });
-    expect(offeringRequests.current).toContain(VOUCHER);
   });
 
   it("keeps the half tier mounted after collapsing, so it does not refetch", async () => {
@@ -355,13 +343,13 @@ describe("VoucherSheet half", () => {
     );
   });
 
-  it("clamps the description and lets the text set its own direction", () => {
-    detailResult.current = detail();
+  it("goes straight from the actions to the pools, with no picture or bio between", async () => {
+    detailResult.current = detail({ bannerUrl: "https://content.example/banner.jpg" });
     renderSheet({ initialSnap: "half" });
 
-    const description = screen.getByText("Fresh vegetables from the farm.");
-    expect(description.getAttribute("dir")).toBe("auto");
-    expect(description.className).toContain("line-clamp-3");
+    await screen.findByText("Kilifi Pool");
+    expect(screen.getByRole("dialog").querySelector("img")).toBeNull();
+    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
   });
 });
 
@@ -390,14 +378,15 @@ describe("VoucherSheet full", () => {
     expect(reviews.getAttribute("data-keep-state")).toBe("true");
   });
 
-  it("reads the description in full above the tabs and shows the rate once", async () => {
+  it("reads the description once, in Overview, and the rate once", async () => {
     detailResult.current = detail();
     renderSheet({ initialSnap: "full", voucherTab: "overview" });
 
-    await screen.findByRole("tab", { name: "Overview", selected: true });
-    const descriptions = screen.getAllByText("Fresh vegetables from the farm.");
-    expect(descriptions).toHaveLength(1);
-    expect(descriptions[0]!.className).not.toContain("line-clamp");
+    const panel = await screen.findByRole("tabpanel");
+    expect(screen.getAllByText("Fresh vegetables from the farm.")).toHaveLength(1);
+    expect(within(panel).getByText("Fresh vegetables from the farm.").getAttribute("dir")).toBe(
+      "auto",
+    );
     expect(screen.getAllByText("1 MALII = 10 KSH")).toHaveLength(1);
   });
 

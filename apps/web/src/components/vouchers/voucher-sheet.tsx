@@ -26,11 +26,9 @@ import {
   MapSheetTitle,
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
-import { ProgressiveImage } from "#/components/ui/progressive-image";
 import { Skeleton } from "#/components/ui/skeleton";
 import { PoolLogo, VoucherAvatar } from "#/components/wallet";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { useVoucherOfferingsInfinite } from "#/features/home/hooks/use-voucher-offerings";
 import { poolsClient } from "#/lib/api/pools";
 import { CHAIN_ID } from "#/lib/chain";
 import { openDefaultMaps } from "#/lib/default-maps";
@@ -58,7 +56,6 @@ export type VoucherPlaceholder = {
 };
 
 const POOL_CARD_LIMIT = 10;
-const OFFERING_STRIP_LIMIT = 8;
 
 /** A pill draws at 36 px; the inset widens its tap target to 44. */
 const PILL =
@@ -78,9 +75,9 @@ export function useVoucherSheetSnap(isOpen: boolean) {
 
 /**
  * The card a voucher opens, wherever it is tapped: the market, the wallet, a
- * pool or a post. It shows the essentials at the peek, adds the offerings, the
- * description and the pools that hold the voucher at half, and reads as the
- * voucher's page at full. Only its own button leaves for that page.
+ * pool or a post. It shows the essentials at the peek, adds the pools that hold
+ * the voucher at half, and reads as the voucher's page at full. Only its own
+ * button leaves for that page.
  *
  * The selection lives in the opening screen's URL (`useVoucherSheetSelection`).
  * Everything below the peek mounts the first time its tier is reached and
@@ -318,13 +315,7 @@ function VoucherCard({
       </MapSheetPeek>
 
       {reachedHalf ? (
-        <HalfTier
-          address={address}
-          detail={detail}
-          expanded={snap === "full"}
-          chainId={detail?.chainId ?? placeholder?.chainId ?? CHAIN_ID}
-          onOpenOfferings={() => onSnapChange("full")}
-        />
+        <HalfTier address={address} chainId={detail?.chainId ?? placeholder?.chainId ?? CHAIN_ID} />
       ) : null}
 
       {reachedFull ? (
@@ -341,28 +332,11 @@ function VoucherCard({
   );
 }
 
-function HalfTier({
-  address,
-  detail,
-  expanded,
-  chainId,
-  onOpenOfferings,
-}: {
-  address: `0x${string}`;
-  detail: MarketVoucherDetail | undefined;
-  /** At full the description reads in full here, and Overview leaves it out. */
-  expanded: boolean;
-  chainId: number;
-  onOpenOfferings: () => void;
-}) {
-  const { t } = useLingui();
-  // `kind === "voucher"` already says there is nothing on offer.
-  const offeringsQuery = useVoucherOfferingsInfinite(
-    detail && detail.kind !== "voucher" ? address : undefined,
-  );
-  const offerings = (offeringsQuery.data?.pages[0]?.offerings ?? []).filter(
-    (offering) => offering.imageUrl,
-  );
+/**
+ * Where to get the voucher. Its offerings and description read once, in the
+ * tabs at full: repeated here they only pushed the pools down.
+ */
+function HalfTier({ address, chainId }: { address: `0x${string}`; chainId: number }) {
   const poolsQuery = useQuery({
     ...poolFilteredPageQueryOptions(poolsClient, {
       perPage: POOL_CARD_LIMIT,
@@ -372,57 +346,9 @@ function HalfTier({
     placeholderData: undefined,
   });
   const pools = poolsQuery.data?.pools ?? [];
-  const description = detail?.description ?? null;
-  const bannerUrl = detail?.bannerUrl ?? null;
 
   return (
-    <div className="space-y-4 pb-6">
-      {offerings.length > 0 ? (
-        <ul
-          aria-label={t`Offerings`}
-          className="flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {offerings.slice(0, OFFERING_STRIP_LIMIT).map((offering) => (
-            <li key={offering.id} className="shrink-0 snap-start">
-              <Link
-                to="."
-                search={(previous) => ({ ...previous, voucherTab: undefined })}
-                replace
-                state
-                resetScroll={false}
-                onClick={onOpenOfferings}
-                aria-label={offering.name}
-                className="relative block size-24 overflow-hidden border border-border bg-card"
-              >
-                <ProgressiveImage
-                  src={offering.imageUrl ?? undefined}
-                  alt=""
-                  loading="lazy"
-                  className="absolute inset-0 size-full object-cover"
-                  skeletonClassName="absolute inset-0 size-full rounded-none"
-                />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : bannerUrl ? (
-        <div className="relative mx-4 h-32 overflow-hidden border border-border bg-card">
-          <ProgressiveImage
-            src={bannerUrl}
-            alt=""
-            loading="lazy"
-            className="absolute inset-0 size-full object-cover"
-            skeletonClassName="absolute inset-0 size-full rounded-none"
-          />
-        </div>
-      ) : null}
-
-      {description ? (
-        <p dir="auto" className={cn("px-4 text-sm leading-relaxed", !expanded && "line-clamp-3")}>
-          {description}
-        </p>
-      ) : null}
-
+    <div className="pb-6">
       {pools.length > 0 ? (
         <section aria-labelledby="market-voucher-pools">
           <div className="flex items-center justify-between gap-3 px-4">

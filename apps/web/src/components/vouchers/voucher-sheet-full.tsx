@@ -105,12 +105,11 @@ export function VoucherSheetFull({
             aria-labelledby="voucher-tab-overview"
             className="space-y-3"
           >
-            {/* The rate heads the card and the description reads in full above
-                the tabs, so Overview starts at the contact rows. */}
+            {/* The rate already heads the card. */}
             <VoucherAbout
               rate={null}
               symbol={symbol}
-              description={null}
+              description={detail?.description ?? null}
               contractAddress={detail?.address ?? address}
               email={detail?.email ?? null}
               website={detail?.website ?? null}
