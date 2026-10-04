@@ -1,7 +1,18 @@
-import { useCanGoBack, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
+import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
 import { type HomeRouteSearch, parseHomeSearch } from "#/lib/navigation/home-tabs";
+
+declare module "@tanstack/react-router" {
+  interface HistoryState {
+    /**
+     * On the entry a market pin pushed. Only that entry may be popped to close
+     * its card: an entry behind a deep link can be anything, another tab
+     * included.
+     */
+    marketVoucherCard?: true;
+  }
+}
 
 export type MarketVoucherSelection = {
   /** The voucher whose card is open, as the URL spells it. */
@@ -15,16 +26,18 @@ export type MarketVoucherSelection = {
  * The market card's selection, kept in the URL so Back, a refresh and a shared
  * link all keep it.
  *
- * Each opened card costs one history entry: the first pin pushes, another pin
- * while a card is open replaces, and closing pops it again. A card reached by a
- * deep link has nothing in this app to pop back to, so it closes by replacing,
- * and Close never takes the viewer out of the app.
+ * Each opened card costs one history entry: the first pin pushes it and marks
+ * it, another pin while a card is open replaces it and keeps the mark, and
+ * closing pops it again. A card reached any other way, a deep link above all,
+ * closes by replacing, so Close never leaves the market.
+ *
+ * Anything that replaces the entry while its card stays open must pass
+ * `state: true`, or the mark is lost and Close stops popping.
  */
 export function useMarketVoucherSelection(): MarketVoucherSelection {
   const search = useSearch({ strict: false });
   const navigate = useNavigate();
   const router = useRouter();
-  const canGoBack = useCanGoBack();
   const { voucher = null, voucherTab } = parseHomeSearch(search);
 
   // Closing by Back is asynchronous. A swipe and a map tap landing together
@@ -48,6 +61,7 @@ export function useMarketVoucherSelection(): MarketVoucherSelection {
           voucherTab: undefined,
         }),
         replace: voucher !== null,
+        state: voucher !== null ? true : { marketVoucherCard: true },
         resetScroll: false,
       });
     },
@@ -57,7 +71,7 @@ export function useMarketVoucherSelection(): MarketVoucherSelection {
   const close = useCallback(() => {
     if (!voucher || closingRef.current === voucher) return;
     closingRef.current = voucher;
-    if (canGoBack) {
+    if (router.state.location.state.marketVoucherCard) {
       router.history.back();
       return;
     }
@@ -72,7 +86,7 @@ export function useMarketVoucherSelection(): MarketVoucherSelection {
       replace: true,
       resetScroll: false,
     });
-  }, [canGoBack, navigate, router, voucher]);
+  }, [navigate, router, voucher]);
 
   return { voucher, voucherTab, select, close };
 }

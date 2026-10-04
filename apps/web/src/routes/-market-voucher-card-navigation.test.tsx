@@ -34,6 +34,14 @@ function Market() {
       <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
         List
       </Link>
+      <Link
+        to="/"
+        search={(previous) => ({ ...previous, tab: "market", voucherTab: "reviews" })}
+        replace
+        state
+      >
+        Reviews
+      </Link>
     </div>
   );
 }
@@ -120,6 +128,42 @@ describe("market voucher card history", () => {
 
     await waitFor(() => expect(screen.getByTestId("card").textContent).toBe("none"));
     expect(new URLSearchParams(history.location.search).get("tab")).not.toBe("wallet");
+  });
+
+  it("closes a deep-linked card in place even when another tab sits behind it", async () => {
+    const { history } = await renderMarket(["/?tab=wallet", `/?voucher=${A}`]);
+    expect(screen.getByTestId("card").textContent).toBe(A);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(screen.getByTestId("card").textContent).toBe("none"));
+    expect(new URLSearchParams(history.location.search).get("tab")).toBe("market");
+    expect(voucherParam(history)).toBeNull();
+    expect(history.length).toBe(2);
+  });
+
+  it("still pops the card's entry after its tabs replaced it", async () => {
+    const { history } = await renderMarket(["/?tab=wallet", "/"]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin A" }));
+    await waitFor(() => expect(voucherParam(history)).toBe(A));
+    fireEvent.click(screen.getByRole("link", { name: "Reviews" }));
+    await waitFor(() =>
+      expect(new URLSearchParams(history.location.search).get("voucherTab")).toBe("reviews"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Pin B" }));
+    await waitFor(() => expect(voucherParam(history)).toBe(B));
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => expect(screen.getByTestId("card").textContent).toBe("none"));
+    // Popped back to the map the pin was tapped on, not replaced in place.
+    expect(new URLSearchParams(history.location.search).get("tab")).not.toBe("wallet");
+    expect(history.length).toBe(3);
+    await back(history);
+    await waitFor(() =>
+      expect(new URLSearchParams(history.location.search).get("tab")).toBe("wallet"),
+    );
   });
 
   it("closes a deep-linked card in place and stays in the app", async () => {

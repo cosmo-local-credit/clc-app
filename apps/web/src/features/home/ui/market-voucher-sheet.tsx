@@ -364,6 +364,7 @@ function HalfTier({
                 to="/"
                 search={(previous) => ({ ...previous, tab: "market", voucherTab: "offerings" })}
                 replace
+                state
                 resetScroll={false}
                 onClick={onOpenOfferings}
                 aria-label={offering.name}

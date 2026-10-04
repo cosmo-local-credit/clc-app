@@ -84,6 +84,7 @@ export function MarketVoucherSheetFull({
                 // A panel on the same card is not a navigation: Back must close
                 // the card, not walk back through the tabs it showed.
                 replace
+                state
                 resetScroll={false}
                 className={className}
               >

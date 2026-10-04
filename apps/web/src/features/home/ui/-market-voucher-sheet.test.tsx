@@ -76,6 +76,7 @@ vi.mock("@tanstack/react-router", () => ({
     params,
     search,
     replace,
+    state,
     resetScroll: _resetScroll,
     children,
     ...rest
@@ -86,6 +87,7 @@ vi.mock("@tanstack/react-router", () => ({
       | Record<string, unknown>
       | ((previous: Record<string, unknown>) => Record<string, unknown>);
     replace?: boolean;
+    state?: unknown;
     resetScroll?: boolean;
     children?: ReactNode;
   }) => {
@@ -104,6 +106,7 @@ vi.mock("@tanstack/react-router", () => ({
       <a
         href={query ? `${path}?${query}` : path}
         data-replace={replace ? "true" : undefined}
+        data-keep-state={state === true ? "true" : undefined}
         {...rest}
       >
         {children}
@@ -363,6 +366,8 @@ describe("MarketVoucherSheet full", () => {
     const offerings = await screen.findByRole("tab", { name: "Offerings" });
     expect(offerings.getAttribute("href")).toContain("voucherTab=offerings");
     expect(offerings.getAttribute("data-replace")).toBe("true");
+    // Keeps the mark that lets Close pop the entry the pin pushed.
+    expect(offerings.getAttribute("data-keep-state")).toBe("true");
     expect(screen.getByRole("tab", { name: "Overview", selected: true })).toBeTruthy();
   });
 
