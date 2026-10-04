@@ -1,5 +1,6 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
+import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import { voucherProfileTextSchema } from "@clc/core/features/vouchers/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { z } from "zod";
 
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
+import { MarkerStyleField } from "#/components/admin/marker-style-field";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -50,6 +52,8 @@ const profileSchema = voucherProfileTextSchema
     latitude: z.string(),
     longitude: z.string(),
     tags: z.array(z.string()),
+    markerIcon: markerIconSchema.nullable(),
+    markerColor: markerColorSchema.nullable(),
   })
   .superRefine((value, ctx) => {
     // A label with no pin, or a pin with no label, describes a place nobody can
@@ -137,6 +141,8 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
       latitude: voucher.lat === null ? "" : String(voucher.lat),
       longitude: voucher.lng === null ? "" : String(voucher.lng),
       tags: voucher.tags,
+      markerIcon: voucher.markerIcon,
+      markerColor: voucher.markerColor,
     },
     // Both, matching the publish form. On submit alone a rejected field blocks
     // the save with nothing on screen to say which one — the operator clicks
@@ -161,6 +167,9 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
           // removes an image; omitting it would leave the stored one in place.
           ...(value.iconUrl === (voucher.iconUrl ?? "") ? {} : { iconUrl: value.iconUrl }),
           ...(value.bannerUrl === (voucher.bannerUrl ?? "") ? {} : { bannerUrl: value.bannerUrl }),
+          // Preserved on omission as well, and null puts the pin back on its default.
+          ...(value.markerIcon === voucher.markerIcon ? {} : { markerIcon: value.markerIcon }),
+          ...(value.markerColor === voucher.markerColor ? {} : { markerColor: value.markerColor }),
           locationName: value.locationName,
           // Sent as a pair or not at all, which is the rule the database holds.
           geoLat: value.latitude === "" ? null : Number(value.latitude),
@@ -439,6 +448,25 @@ function VoucherForm({ voucher, onClose }: { voucher: MarketVoucherDetail; onClo
               </Field>
             )}
           </form.Field>
+        </div>
+
+        <div className="border-border flex flex-col gap-4 border-t pt-4">
+          <SectionLabel>Map marker</SectionLabel>
+          <form.Subscribe
+            selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+          >
+            {([icon, color]) => (
+              <MarkerStyleField
+                kind={voucher.kind}
+                value={{ icon, color }}
+                onChange={(next) => {
+                  form.setFieldValue("markerIcon", next.icon);
+                  form.setFieldValue("markerColor", next.color);
+                }}
+                disabled={update.isPending}
+              />
+            )}
+          </form.Subscribe>
         </div>
       </div>
 

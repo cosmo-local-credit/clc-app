@@ -1,5 +1,6 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 import {
   voucherDescriptionSchema,
@@ -27,6 +28,7 @@ import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { PageHeader } from "#/components/admin/page-header";
+import { MarkerStyleField, describeMarker } from "#/components/admin/marker-style-field";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -130,6 +132,8 @@ const voucherPublishSchema = z
     // mean a signed transaction with no catalog row.
     iconUrl: optionalStoredImageSchema,
     bannerUrl: optionalStoredImageSchema,
+    markerIcon: markerIconSchema.nullable(),
+    markerColor: markerColorSchema.nullable(),
   })
   .superRefine((value, ctx) => {
     if (value.voucherType === "expiring") {
@@ -189,6 +193,8 @@ function defaultValues(owner: string): VoucherPublishValues {
     terms: "",
     iconUrl: "",
     bannerUrl: "",
+    markerIcon: null,
+    markerColor: null,
   };
 }
 
@@ -260,6 +266,8 @@ function VoucherPublishForm({ operator }: { operator: string }) {
         ...(value.terms.trim() ? { terms: value.terms.trim() } : {}),
         ...(value.iconUrl ? { iconUrl: value.iconUrl } : {}),
         ...(value.bannerUrl ? { bannerUrl: value.bannerUrl } : {}),
+        ...(value.markerIcon ? { markerIcon: value.markerIcon } : {}),
+        ...(value.markerColor ? { markerColor: value.markerColor } : {}),
         tags: value.tags,
       };
 
@@ -558,6 +566,23 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                 </Field>
               )}
             </form.Field>
+            <form.Subscribe
+              selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+            >
+              {([icon, color]) => (
+                <Field label="Map marker" error={null}>
+                  {/* A new voucher has no offerings, so its default pin is the voucher's. */}
+                  <MarkerStyleField
+                    kind="voucher"
+                    value={{ icon, color }}
+                    onChange={(next) => {
+                      form.setFieldValue("markerIcon", next.icon);
+                      form.setFieldValue("markerColor", next.color);
+                    }}
+                  />
+                </Field>
+              )}
+            </form.Subscribe>
           </FormPanel>
 
           <FormPanel title="Issuer contact" className="xl:col-span-2">
@@ -675,6 +700,13 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                     }
                   />
                   <BoundRow label="Tags" value={values.tags.join(", ")} />
+                  <BoundRow
+                    label="Map marker"
+                    value={describeMarker("voucher", {
+                      icon: values.markerIcon,
+                      color: values.markerColor,
+                    })}
+                  />
                   <BoundRow label="Email" value={values.email} optional />
                   <BoundRow label="Phone" value={values.phone} optional />
                   <BoundRow label="Website" value={values.website} optional />
