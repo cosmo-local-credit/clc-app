@@ -233,6 +233,10 @@ describe("LocationMap", () => {
       <LocationMap interactive markerStyle={{ icon: "education", color: "blue" }} />,
     );
     act(() => mapInstances[0]?.triggerLoad());
+    // Tile fetching during a camera move makes loaded() false after the
+    // map's one-time load event has already fired.
+    const map = mapInstances[0];
+    if (map) map.loadedValue = false;
 
     rerender(
       <LocationMap

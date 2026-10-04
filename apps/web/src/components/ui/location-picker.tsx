@@ -63,6 +63,7 @@ export function LocationPicker({
   }, [onChange]);
 
   useEffect(() => {
+    if (!value && reverseAbortRef.current) return;
     const nextQuery = value?.locationName ?? "";
     setQuery((currentQuery) => {
       if (currentQuery === nextQuery) return currentQuery;
@@ -79,6 +80,9 @@ export function LocationPicker({
   }, []);
 
   useEffect(() => {
+    // A new pin temporarily clears the form value until its country is known.
+    // Keep the local preview while that lookup is in flight.
+    if (!value && reverseAbortRef.current) return;
     setPin((current) => {
       if (!value) return current ? null : current;
       if (current?.lat === value.lat && current.lng === value.lng) return current;
@@ -99,18 +103,18 @@ export function LocationPicker({
       }
       setReverseError(null);
       setReversePending(true);
-      onChangeRef.current(undefined);
-
       reverseAbortRef.current?.abort();
       const controller = new AbortController();
       reverseAbortRef.current = controller;
       const requestId = reverseRequestRef.current + 1;
       reverseRequestRef.current = requestId;
+      onChangeRef.current(undefined);
 
       void reverseLocation(lat, lng, controller.signal).then((result) => {
         if (controller.signal.aborted || reverseRequestRef.current !== requestId) {
           return;
         }
+        reverseAbortRef.current = null;
         setReversePending(false);
         const reverseErrorMsg = t`Couldn't identify a country here. Try a nearby spot.`;
         if (!result) {

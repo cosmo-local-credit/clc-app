@@ -39,6 +39,7 @@ export function LocationMap({
   const { t } = useLingui();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreGL.Map | null>(null);
+  const hasLoadedRef = useRef(false);
   const markerRef = useRef<MapLibreGL.Marker | null>(null);
   const onLocationChangeRef = useRef(onLocationChange);
   const initialLocationRef = useRef({ lat, lng });
@@ -122,6 +123,7 @@ export function LocationMap({
     map.addControl(new MapLibreGL.NavigationControl(), "bottom-right");
 
     function removeMap() {
+      hasLoadedRef.current = false;
       markerRef.current?.remove();
       markerRef.current = null;
       if (mapRef.current === map) {
@@ -142,6 +144,7 @@ export function LocationMap({
     }
 
     function handleLoad() {
+      hasLoadedRef.current = true;
       const pending = pendingRef.current;
       if (pending) {
         setMarker(map, pending.lat, pending.lng);
@@ -173,7 +176,9 @@ export function LocationMap({
     if (!map) return;
 
     if (typeof lat === "number" && typeof lng === "number") {
-      if (!map.loaded()) {
+      // loaded() becomes false again while tiles load after a camera move.
+      // Only wait for the initial load event before updating the pin.
+      if (!hasLoadedRef.current) {
         pendingRef.current = { lat, lng };
         return;
       }
