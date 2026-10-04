@@ -7,6 +7,7 @@ import {
   useEffectEvent,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -162,11 +163,27 @@ export function MapSheet({
 
   const nextSnap = SNAP_ORDER[(SNAP_ORDER.indexOf(snap) + 1) % SNAP_ORDER.length] ?? "peek";
 
+  // Set while a swipe that would have closed the sheet from above the peek is
+  // turned into a collapse. Base UI then restores the snap point the swipe
+  // started from, which must not override the peek.
+  const collapsingRef = useRef(false);
+
   return (
     <Drawer.Root
       open={isOpen}
-      onOpenChange={(next) => {
+      onOpenChange={(next, details) => {
         if (next) return;
+        // Only the peek swipes away. From half or full, a fling down or a drag
+        // past the peek lands on the peek, as on the place sheet.
+        if (details.reason === "swipe" && snap !== "peek") {
+          details.cancel();
+          collapsingRef.current = true;
+          requestAnimationFrame(() => {
+            collapsingRef.current = false;
+          });
+          onSnapChange("peek");
+          return;
+        }
         setClosing(true);
         onClose();
       }}
@@ -176,13 +193,9 @@ export function MapSheet({
       snapPoint={snapPoint}
       onSnapPointChange={(value) => {
         // Null is the swipe that closes the sheet; onOpenChange reports that.
-        if (value === null) return;
+        if (value === null || collapsingRef.current) return;
         onSnapChange(value === FULL ? "full" : value === HALF ? "half" : "peek");
       }}
-      // Velocity skipping would close the card on any quick downward flick,
-      // even from full. Stepping matches the place sheet: a fling moves one snap
-      // point, and only a fling down from the peek closes it.
-      snapToSequentialPoints
     >
       <Drawer.Portal>
         {/* The viewport covers the screen but takes no input, or the map
