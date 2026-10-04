@@ -9,7 +9,7 @@ import {
   PoolHoldingBar,
   PoolHoldingIdentity,
   PoolHoldingListPanel,
-  PoolHoldingRowLink,
+  PoolHoldingRowButton,
 } from "./pool-holding-list";
 
 /**
@@ -38,10 +38,9 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
       }}
     >
       {holdings.map((holding, index, list) => (
-        <PoolHoldingRowLink
+        <PoolHoldingRowButton
           key={holding.tokenAddress}
           holding={holding}
-          poolAddress={pool.address}
           isLast={index === list.length - 1}
         >
           <div className="flex items-center gap-3">
@@ -56,7 +55,7 @@ export function PoolHoldingsPanel({ pool, vouchers }: { pool: UserPool; vouchers
           {holding.percentOfLargest === null ? null : (
             <PoolHoldingBar percent={holding.percentOfLargest} fill="bg-info" />
           )}
-        </PoolHoldingRowLink>
+        </PoolHoldingRowButton>
       ))}
     </PoolHoldingListPanel>
   );

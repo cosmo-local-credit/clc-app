@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { ReportPage } from "#/features/home/ui/report-page";
+import { voucherSheetSearchShape } from "#/lib/navigation/voucher-sheet-search";
 
 export const Route = createFileRoute("/_nav/posts/$reportId/")({
   staticData: { navOwner: "posts" },
+  validateSearch: z.object(voucherSheetSearchShape),
   component: ReportRoute,
 });
 

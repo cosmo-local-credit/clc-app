@@ -11,6 +11,7 @@ import {
   RiSettings3Line,
 } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
+import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
@@ -18,6 +19,8 @@ import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-to
 import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
+import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
+import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 import { PoolActivityPanel } from "./pool-activity-panel";
 import { PoolControlsPanel } from "./pool-controls-panel";
 import { PoolCreditPanel } from "./pool-credit-panel";
@@ -60,6 +63,7 @@ export function PoolDetailPage({
   // of one. This is the browse list, where it is only an entry to a page that no
   // longer resolves.
   const vouchers = usePoolVouchers(pool).filter((voucher) => voucher.active);
+  const sheet = useVoucherSheetSelection();
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const auth = useAuthStatus();
   // The same rule the voucher screen applies: the backend session's address
@@ -254,6 +258,7 @@ export function PoolDetailPage({
                   unitSymbol={pool.unitOfAccount ?? pool.symbol}
                   ratePpm={rates.data?.get(voucher.tokenAddress.toLowerCase())}
                   onManage={canManageOnChain ? () => setManaging(voucher) : undefined}
+                  onOpen={sheet.open}
                 />
               ))}
             </div>
@@ -286,6 +291,15 @@ export function PoolDetailPage({
           onClose={() => setManaging(null)}
         />
       ) : null}
+
+      <VoucherSheet
+        placeholder={
+          vouchers.find(
+            (voucher) => voucher.tokenAddress.toLowerCase() === sheet.voucher?.toLowerCase(),
+          ) ?? null
+        }
+        origin={{ poolAddress }}
+      />
     </div>
   );
 }
@@ -308,6 +322,7 @@ function VoucherRow({
   unitSymbol,
   ratePpm,
   onManage,
+  onOpen,
 }: {
   poolAddress: string;
   voucher: PoolVoucher;
@@ -318,16 +333,19 @@ function VoucherRow({
   ratePpm: bigint | undefined;
   /** Present only for the pool's owner; the row stays a plain link for everyone else. */
   onManage?: () => void;
+  onOpen: (address: `0x${string}`) => void;
 }) {
   const { t } = useLingui();
   const voucherAddress = voucher.tokenAddress.toLowerCase();
   return (
     <div className={["flex items-center", isLast ? "" : "border-b border-border"].join(" ")}>
-      <Link
-        to="/vouchers/$voucherAddress"
-        params={{ voucherAddress }}
-        search={{ poolAddress }}
-        className="flex min-w-0 flex-1 items-center gap-3 p-3"
+      <button
+        type="button"
+        onClick={() => {
+          const address = parseVoucherAddress(voucherAddress);
+          if (address) onOpen(address);
+        }}
+        className="flex min-w-0 flex-1 items-center gap-3 p-3 text-start"
       >
         {token ? <TokenLogo token={token} size={36} /> : null}
         <div className="min-w-0 flex-1 overflow-hidden">
@@ -339,7 +357,7 @@ function VoucherRow({
             </p>
           )}
         </div>
-      </Link>
+      </button>
       {/* Getting this voucher out of the pool is one tap from its row: the
           pool's swap opens with it already chosen under "You receive". A
           sibling of the row link, not inside it — links do not nest. Filled in

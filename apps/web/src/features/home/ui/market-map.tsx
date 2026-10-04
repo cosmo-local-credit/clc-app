@@ -134,6 +134,9 @@ const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
 
+/** How far above a sheet's edge a selected pin's tip must sit to count as visible. */
+const REVEAL_MARGIN = 24;
+
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
@@ -142,6 +145,15 @@ type MarketMapProps = {
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
+  /** A tap on the map that lands on nothing. */
+  onDeselect?: () => void;
+  /** The viewer started dragging the map. */
+  onUserPan?: () => void;
+  /**
+   * Pixels covered at the bottom by a sheet and the controls riding it. The
+   * camera frames the area above, and names keep clear of it.
+   */
+  bottomInset?: number;
   onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
@@ -462,6 +474,9 @@ export function MarketMap({
   cameraScope,
   userLocation,
   onSelectLocation,
+  onDeselect,
+  onUserPan,
+  bottomInset = 0,
   onViewportSettled,
   className,
 }: MarketMapProps) {
@@ -470,6 +485,7 @@ export function MarketMap({
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
   const appliedCameraRef = useRef<MarketCamera | null>(null);
   const appliedFitKeyRef = useRef<string | null>(null);
+  const appliedInsetRef = useRef(0);
   const userHasInteractedRef = useRef(false);
   const loadedRef = useRef(false);
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
@@ -486,8 +502,16 @@ export function MarketMap({
 
   const stacksRef = useRef(stacks);
   stacksRef.current = stacks;
+  const locationsRef = useRef(locations);
+  locationsRef.current = locations;
+  const bottomInsetRef = useRef(bottomInset);
+  bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
+  const onDeselectRef = useRef(onDeselect);
+  onDeselectRef.current = onDeselect;
+  const onUserPanRef = useRef(onUserPan);
+  onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
 
@@ -545,6 +569,7 @@ export function MarketMap({
 
       if (!feature) {
         setSpider(null);
+        onDeselectRef.current?.();
         return;
       }
 
@@ -594,6 +619,11 @@ export function MarketMap({
       if (event?.originalEvent) userHasInteractedRef.current = true;
     }
 
+    function handleDragStart(event: { originalEvent?: unknown }) {
+      handleUserInteraction(event);
+      if (event?.originalEvent) onUserPanRef.current?.();
+    }
+
     function handleZoomStart() {
       setSpider(null);
     }
@@ -605,7 +635,7 @@ export function MarketMap({
 
     function handleLoad() {
       addMarketLayers(map, stacksRef.current);
-      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map);
+      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map, () => bottomInsetRef.current);
       loadedRef.current = true;
       setLoaded(true);
     }
@@ -618,7 +648,7 @@ export function MarketMap({
     map.on("load", handleLoad);
     map.on("error", handleError);
     map.on("click", handleMapClick);
-    map.on("dragstart", handleUserInteraction);
+    map.on("dragstart", handleDragStart);
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
@@ -629,7 +659,7 @@ export function MarketMap({
       map.off("load", handleLoad);
       map.off("error", handleError);
       map.off("click", handleMapClick);
-      map.off("dragstart", handleUserInteraction);
+      map.off("dragstart", handleDragStart);
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
@@ -639,6 +669,7 @@ export function MarketMap({
       mapRef.current = null;
       appliedCameraRef.current = null;
       appliedFitKeyRef.current = null;
+      appliedInsetRef.current = 0;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       setLoaded(false);
@@ -716,6 +747,34 @@ export function MarketMap({
     ]);
   }, [loaded, selectedLocationId]);
 
+  // Pads the camera by the sheet without moving the view: whatever sits at the
+  // centre of the area left above the sheet becomes the camera's centre. Every
+  // later move then frames that area.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || appliedInsetRef.current === bottomInset) return;
+    appliedInsetRef.current = bottomInset;
+    const { clientWidth, clientHeight } = map.getCanvas();
+    const center = map.unproject([clientWidth / 2, (clientHeight - bottomInset) / 2]);
+    map.easeTo({
+      center: [center.lng, center.lat],
+      padding: { top: 0, right: 0, bottom: bottomInset, left: 0 },
+      duration: 0,
+    });
+  }, [bottomInset, loaded]);
+
+  // A selected pin the sheet would cover is panned into the area above it, on
+  // selection and whenever the sheet grows. A pin already in view stays put.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !selectedLocationId) return;
+    const location = locationsRef.current.find((candidate) => candidate.id === selectedLocationId);
+    if (!location) return;
+    const tip = map.project([location.lng, location.lat]);
+    if (tip.y <= map.getCanvas().clientHeight - bottomInset - REVEAL_MARGIN) return;
+    map.easeTo({ center: [location.lng, location.lat] });
+  }, [bottomInset, loaded, selectedLocationId]);
+
   useEffect(() => {
     appliedCameraRef.current = null;
   }, [cameraScope]);
@@ -757,7 +816,14 @@ export function MarketMap({
         [fitBounds.west, fitBounds.south],
         [fitBounds.east, fitBounds.north],
       ],
-      { maxZoom: FILTER_FIT_MAX_ZOOM, padding: FILTER_FIT_PADDING },
+      {
+        maxZoom: FILTER_FIT_MAX_ZOOM,
+        // Added to the camera's own padding, which already clears the sheet.
+        padding: {
+          ...FILTER_FIT_PADDING,
+          bottom: Math.max(0, FILTER_FIT_PADDING.bottom - bottomInsetRef.current),
+        },
+      },
     );
   }, [fitBounds, loaded]);
 

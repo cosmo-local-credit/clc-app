@@ -78,6 +78,20 @@ const {
   swapTransferState: { error: null as Error | null, isPending: false },
 }));
 
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
+
 vi.mock("@tanstack/react-router", () => ({
   // Router props are dropped, but ARIA and identity props are forwarded: the
   // pool tab strip is built from Links and its roles are part of the contract.
@@ -608,6 +622,17 @@ describe("pool voucher UI", () => {
     // nothing about what it will take.
     expect(within(panel).queryByText(/available credit/)).toBeNull();
     expect(within(panel).queryByRole("progressbar")).toBeNull();
+  });
+
+  it("opens a holding's card over the pool", async () => {
+    voucherSheet.open.mockClear();
+    mockPoolRequests();
+    renderWithQueryClient(<PoolDetailPage poolAddress={POOL_ADDRESS} activeTab="holdings" />);
+
+    const panel = await screen.findByRole("tabpanel");
+    fireEvent.click(await within(panel).findByRole("button", { name: /Trade Token/ }));
+
+    expect(voucherSheet.open).toHaveBeenCalledWith(TTX_ADDRESS);
   });
 
   it("draws each holding as a bar measured against the largest one", async () => {

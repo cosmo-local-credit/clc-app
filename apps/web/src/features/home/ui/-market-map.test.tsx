@@ -1006,6 +1006,30 @@ describe("MarketMap click wiring", () => {
     expect([...map.layerHandlers.keys()].filter((key) => key.startsWith("click:"))).toEqual([]);
   });
 
+  it("reports a tap on empty map as a deselection, and a tap on a pin as a selection", () => {
+    const onSelect = vi.fn();
+    const onDeselect = vi.fn();
+    renderMap(LOCATIONS, { onSelectLocation: onSelect, onDeselect });
+    const map = loadedMap();
+
+    clickEmptyMap(map);
+    expect(onDeselect).toHaveBeenCalledTimes(1);
+
+    clickFeature(map, "market-points", { id: "2", count: 1 });
+    expect(onSelect).toHaveBeenCalledWith("2");
+    expect(onDeselect).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not deselect when a cluster is tapped", () => {
+    const onDeselect = vi.fn();
+    renderMap(LOCATIONS, { onDeselect });
+    const map = loadedMap();
+
+    clickFeature(map, "market-clusters", { cluster_id: 7, point_count: 3 });
+
+    expect(onDeselect).not.toHaveBeenCalled();
+  });
+
   it("opens the fan on a single real click without immediately closing it", () => {
     renderMap(KILIFI_STACK);
     const map = loadedMap();
@@ -1739,5 +1763,129 @@ describe("MarketMap filtered framing", () => {
     rerender(withBounds(BOUNDS));
 
     expect(map.fitBounds).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("MarketMap under a sheet", () => {
+  // The mock projects [lng, lat] to (lng * 100, lat * 100) on a 360 x 640 canvas.
+  const LOW: MarketLocation = {
+    id: "low",
+    name: "Low",
+    kind: "goods",
+    lat: 6,
+    lng: 1,
+    locationName: null,
+  };
+  const HIGH: MarketLocation = {
+    id: "high",
+    name: "High",
+    kind: "goods",
+    lat: 3,
+    lng: 1,
+    locationName: null,
+  };
+
+  function revealCalls(map: ReturnType<typeof loadedMap>) {
+    return map.easeTo.mock.calls.filter(
+      ([options]) => !(options as { padding?: unknown }).padding,
+    ) as [{ center: [number, number] }][];
+  }
+
+  it("pads the camera by the sheet without moving the view", () => {
+    const { rerender } = renderMap([HIGH]);
+    const map = loadedMap();
+    expect(map.easeTo).not.toHaveBeenCalled();
+
+    rerender(
+      <MarketMap
+        locations={[HIGH]}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        bottomInset={300}
+      />,
+    );
+
+    // What sat at the centre of the 340 px left above the sheet becomes the centre.
+    expect(map.easeTo).toHaveBeenCalledWith({
+      center: [1.8, 1.7],
+      padding: { top: 0, right: 0, bottom: 300, left: 0 },
+      duration: 0,
+    });
+  });
+
+  it("re-centres a selected pin the sheet covers, and leaves a visible one", () => {
+    const { rerender } = renderMap([LOW, HIGH], { selectedLocationId: "high", bottomInset: 200 });
+    const map = loadedMap();
+    expect(revealCalls(map)).toEqual([]);
+
+    rerender(
+      <MarketMap
+        locations={[LOW, HIGH]}
+        selectedLocationId="low"
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+        bottomInset={200}
+      />,
+    );
+
+    expect(revealCalls(map)).toEqual([[{ center: [1, 6] }]]);
+  });
+
+  it("reveals the selected pin again when the sheet grows over it", () => {
+    const props = {
+      locations: [HIGH],
+      selectedLocationId: "high",
+      camera: null,
+      userLocation: null,
+      onSelectLocation: vi.fn(),
+    };
+    const { rerender } = render(<MarketMap {...props} bottomInset={160} />);
+    const map = loadedMap();
+    expect(revealCalls(map)).toEqual([]);
+
+    rerender(<MarketMap {...props} bottomInset={420} />);
+
+    expect(revealCalls(map)).toEqual([[{ center: [1, 3] }]]);
+  });
+
+  it("keeps names above the sheet's edge", () => {
+    renderMap(LOCATIONS, { bottomInset: 200 });
+    const map = loadedMap();
+
+    const source = map.getSource("market-label-edges");
+    if (!source) throw new Error("expected the label edge source");
+    const bottomRow = (
+      source.spec.data as {
+        features: { properties: { anchor: string }; geometry: { coordinates: number[] } }[];
+      }
+    ).features.filter((feature) => feature.properties.anchor === "top");
+    // 640 - 200, less the 2 px inset; the mock unprojects y / 100.
+    expect(bottomRow.map((feature) => feature.geometry.coordinates[1])).toEqual([4.38, 4.38]);
+  });
+
+  it("frames filtered results in the area above the sheet without padding twice", () => {
+    renderMap(LOCATIONS, {
+      bottomInset: 300,
+      fitBounds: { key: "f", west: 36.8, south: -1.3, east: 36.9, north: -1.2 },
+    });
+    const map = loadedMap();
+
+    const [, options] = map.fitBounds.mock.calls[0] as [unknown, { padding: { bottom: number } }];
+    expect(options.padding.bottom).toBe(0);
+  });
+
+  it("reports a drag the viewer starts, and no programmatic move", () => {
+    const onUserPan = vi.fn();
+    renderMap(LOCATIONS, { onUserPan });
+    const map = loadedMap();
+
+    act(() => map.trigger("dragstart", {}));
+    expect(onUserPan).not.toHaveBeenCalled();
+
+    act(() => map.trigger("dragstart", { originalEvent: new Event("pointerdown") }));
+    expect(onUserPan).toHaveBeenCalledTimes(1);
   });
 });

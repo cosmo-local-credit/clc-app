@@ -21,9 +21,12 @@ export function useMarketKindLabel(kind: MarketVoucherKind): string {
  * Distance is only labelled from a live or persisted GPS fix. IP and country
  * centroids are useful camera fallbacks, but would fabricate user proximity.
  */
-export function useMarketDistanceLabel(from: Coordinates | null, to: Coordinates): string | null {
+export function useMarketDistanceLabel(
+  from: Coordinates | null,
+  to: Coordinates | null,
+): string | null {
   const { i18n, t } = useLingui();
-  if (!from) return null;
+  if (!from || !to) return null;
 
   try {
     const distance = formatDistance(haversineMeters(from, to));

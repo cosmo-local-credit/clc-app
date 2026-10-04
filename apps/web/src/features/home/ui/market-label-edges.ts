@@ -21,8 +21,15 @@ type Obstacle = { x: number; y: number; anchor: "left" | "right" | "top" | "bott
  * either: left in place they would slide inward and hide names in a band. So
  * they lift when a move starts, names clip at the edge in motion as they do on
  * any native map, and they return where the camera settles.
+ *
+ * The bottom edge is the top of whatever sheet covers the map, so a name is
+ * never placed where the sheet hides it.
  */
-export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void {
+export function keepMarketLabelsInsideViewport(
+  map: MapLibreGL.Map,
+  /** Pixels a sheet covers at the bottom of the map, read each time the edges settle. */
+  bottomInset: () => number = () => 0,
+): () => void {
   // One transparent pixel scaled to EDGE_DEPTH: the collision box grows with
   // `icon-size`, while every rebuild packs a single pixel into the icon atlas
   // instead of a viewport-sized bitmap.
@@ -34,6 +41,7 @@ export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void 
     const { clientWidth, clientHeight } = map.getCanvas();
     const width = Math.max(1, clientWidth);
     const height = Math.max(1, clientHeight);
+    const bottom = Math.max(1, height - bottomInset());
     const result: Obstacle[] = [];
     // The side columns run past both corners; the rows only span the width.
     for (let top = -EDGE_DEPTH; top < height + EDGE_DEPTH; top += EDGE_DEPTH) {
@@ -44,7 +52,7 @@ export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void 
     for (let left = 0; left < width; left += EDGE_DEPTH) {
       const x = left + EDGE_DEPTH / 2;
       result.push({ x, y: EDGE_INSET, anchor: "bottom" });
-      result.push({ x, y: height - EDGE_INSET, anchor: "top" });
+      result.push({ x, y: bottom - EDGE_INSET, anchor: "top" });
     }
     return result;
   }
@@ -84,7 +92,8 @@ export function keepMarketLabelsInsideViewport(map: MapLibreGL.Map): () => void 
   }
 
   // `resize` needs no listener: a resize at rest fires its own `moveend`, and
-  // one during a gesture is picked up by the gesture's.
+  // one during a gesture is picked up by the gesture's. So does a change of
+  // inset, which moves the camera's padding.
   function settle() {
     const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
     source?.setData(collection());

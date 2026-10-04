@@ -25,6 +25,20 @@ const mocks = vi.hoisted(() => ({
   updateProfile: vi.fn(),
 }));
 
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     children,
