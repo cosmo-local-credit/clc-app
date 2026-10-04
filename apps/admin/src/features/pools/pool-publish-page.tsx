@@ -8,8 +8,9 @@ import {
   poolSymbolSchema,
 } from "@clc/core/features/pools/logic";
 import { voucherUnitSchema } from "@clc/core/features/vouchers/logic";
-import { optionalTermsSchema } from "@clc/core/lib/contact";
+import { isHttpUrl, optionalTermsSchema } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import {
   CELO_MAINNET_CEUR_ADDRESS,
   CELO_MAINNET_CHAIN_ID,
@@ -97,9 +98,7 @@ const requiredEmailSchema = z
   .string()
   .trim()
   .min(1, { message: "Email is required" })
-  .refine((value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
-    message: "Invalid email address",
-  });
+  .pipe(z.email({ message: "Invalid email address" }));
 
 const requiredPhoneSchema = z
   .string()
@@ -108,15 +107,6 @@ const requiredPhoneSchema = z
   .refine((value) => /^\+[1-9]\d{7,14}$/.test(value), {
     message: "Invalid phone number",
   });
-
-function isHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
-  } catch {
-    return false;
-  }
-}
 
 const requiredWebsiteSchema = z
   .string()
@@ -129,12 +119,6 @@ const requiredCoordinateSchema = z
   .trim()
   .min(1, { message: "Drop a pin on the map" })
   .refine((value) => Number.isFinite(Number(value)), { message: "Enter a number" });
-
-const optionalStoredImageSchema = z
-  .string()
-  .refine((value) => value === "" || /^https?:\/\//.test(value), {
-    message: "The image must be an http(s) URL",
-  });
 
 const poolPublishSchema = z
   .object({
@@ -162,8 +146,8 @@ const poolPublishSchema = z
     // validates them as http(s) before it queues the deploy, because the catalog
     // column that receives them refuses anything else — and refusing it there
     // would mean a signed transaction with no catalog row.
-    imageUrl: optionalStoredImageSchema,
-    bannerUrl: optionalStoredImageSchema,
+    imageUrl: storedImageUrlSchema,
+    bannerUrl: storedImageUrlSchema,
   })
   .superRefine((value, ctx) => {
     if (

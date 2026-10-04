@@ -1,40 +1,16 @@
 import { z } from "zod";
 
-const EMAIL_LOCAL_ATOM = /^[\p{L}\p{M}\p{N}!#$%&'*+/=?^_`{|}~-]+$/u;
-const EMAIL_DOMAIN_LABEL = /^[\p{L}\p{N}](?:[\p{L}\p{M}\p{N}-]*[\p{L}\p{N}])?$/u;
-
-/**
- * Validate the ordinary, unquoted address format supported by the product.
- * Splitting the local part and domain makes their dot and hyphen rules
- * explicit while retaining international letters and numbers.
- */
-function isSupportedEmail(value: string): boolean {
-  const separator = value.indexOf("@");
-  if (separator <= 0 || separator !== value.lastIndexOf("@")) return false;
-
-  const local = value.slice(0, separator);
-  const domain = value.slice(separator + 1);
-  const localAtoms = local.split(".");
-  const domainLabels = domain.split(".");
-
-  if (!localAtoms.every((atom) => EMAIL_LOCAL_ATOM.test(atom))) return false;
-  if (domainLabels.length < 2 || !domainLabels.every((label) => EMAIL_DOMAIN_LABEL.test(label))) {
-    return false;
-  }
-
-  // A numeric final label is not a usable public email domain.
-  return /\p{L}/u.test(domainLabels.at(-1) ?? "");
-}
-
 /**
  * Contact details are optional per field but validated identically everywhere
  * they are collected (signup profile, voucher issuer contact). An empty string
  * means "not provided"; callers decide whether that is acceptable.
  */
+const emailSchema = z.email();
+
 export const optionalEmailSchema = z
   .string()
   .trim()
-  .refine((value) => value === "" || isSupportedEmail(value), {
+  .refine((value) => value === "" || emailSchema.safeParse(value).success, {
     message: "Invalid email address",
   });
 
@@ -46,13 +22,11 @@ export const optionalPhoneSchema = z
     message: "Invalid phone number",
   });
 
+/** Unlike `z.httpUrl()`, accepts `localhost` and bare IPs, which dev storage uses. */
+export const httpUrlSchema = z.url({ protocol: /^https?$/ });
+
 export function isHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
-  } catch {
-    return false;
-  }
+  return httpUrlSchema.safeParse(value).success;
 }
 
 function isOptionalHttpUrl(value: string): boolean {

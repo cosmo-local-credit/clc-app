@@ -15,6 +15,7 @@ import {
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -52,12 +53,6 @@ const TYPE_OPTIONS = [
   { value: "standard", label: "Standard" },
   { value: "expiring", label: "Expiring" },
 ] as const;
-
-const optionalStoredImageSchema = z
-  .string()
-  .refine((value) => value === "" || /^https?:\/\//.test(value), {
-    message: "The image must be an http(s) URL",
-  });
 
 /**
  * Coordinates are required even though the deploy request treats them as
@@ -128,8 +123,8 @@ const voucherPublishSchema = z
     // as http(s) before it queues the deploy, because the catalog column that
     // receives them refuses anything else, and refusing it in the worker would
     // mean a signed transaction with no catalog row.
-    iconUrl: optionalStoredImageSchema,
-    bannerUrl: optionalStoredImageSchema,
+    iconUrl: storedImageUrlSchema,
+    bannerUrl: storedImageUrlSchema,
   })
   .superRefine((value, ctx) => {
     if (value.voucherType === "expiring") {
