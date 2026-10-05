@@ -31,7 +31,8 @@ describe("bottom-navigation layout contract", () => {
 
     expect(navigation).toContain("bottom-0 z-30");
     expect(sheet).toContain("fixed inset-0 z-40");
-    expect(sheet).toContain("bottom-0 z-50");
+    // The drawer viewport carries the popup's stacking context.
+    expect(sheet).toContain("fixed inset-0 z-50");
     expect(dialog).toContain("fixed inset-0 z-40");
     expect(dialog).toContain("left-1/2 z-50");
     expect(report).toContain('<DialogBackdrop className="bg-black" />');

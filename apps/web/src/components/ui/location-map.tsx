@@ -201,6 +201,8 @@ export function LocationMap({
       <section
         ref={containerRef}
         aria-label={t`Location map`}
+        // Panning an interactive map inside a bottom sheet must not drag it closed.
+        data-base-ui-swipe-ignore={interactive ? "" : undefined}
         className={cn("h-52 w-full overflow-hidden border border-border bg-card", className)}
       />
       {markerElement && markerStyle

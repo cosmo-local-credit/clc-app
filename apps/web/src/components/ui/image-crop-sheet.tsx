@@ -157,6 +157,8 @@ export function ImageCropSheet({
                   // Focusable so the frame can be panned without a pointer; the
                   // slider already covers zoom for keyboard and screen readers.
                   tabIndex={0}
+                  // Panning down would otherwise drag the sheet closed.
+                  data-base-ui-swipe-ignore=""
                   role="group"
                   aria-label={t`Position your photo`}
                   className="focus-visible:ring-ring absolute focus-visible:ring-2 focus-visible:outline-none"
