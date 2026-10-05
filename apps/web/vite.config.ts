@@ -10,7 +10,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite-plus";
-import { tanstackSerwistPlugin } from "./plugins/serwist";
+import { serwistNitroModule, tanstackSerwistPlugin } from "./plugins/serwist";
 
 const webRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -61,6 +61,8 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
       }
     : undefined;
 
+  const brand = (process.env.VITE_BRAND ?? localEnv.VITE_BRAND) === "staging" ? "staging" : "prod";
+
   const plugins: import("vite-plus").PluginOption[] = [
     ...(command === "serve" ? [devtools()] : []),
     // `plugins/` is Nitro's runtime-plugin convention, but this file is a Vite
@@ -71,15 +73,22 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     // `NitroPluginConfig extends NitroConfig`, so its options sit at the top
     // level. A later nightly moves them back under `config` — if this line stops
     // type-checking after a bump, that is which shape changed, not what it means.
-    nitro({ ignore: ["plugins/serwist.ts"] }),
+    nitro({
+      ignore: ["plugins/serwist.ts"],
+      modules: [serwistNitroModule({ brand })],
+      // The Pages preset lists the output's static files as routes exclusions
+      // before module `compiled` hooks run, so it never sees the worker. A path
+      // missing from the list reaches the SSR Function, which knows nothing of
+      // files written after its build and answers with HTML. Configured entries
+      // come first and survive the preset's 100-rule cap.
+      cloudflare: { pages: { routes: { exclude: ["/sw.js"] } } },
+    }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
     babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
     lingui(),
-    tanstackSerwistPlugin({
-      brand: (process.env.VITE_BRAND ?? localEnv.VITE_BRAND) === "staging" ? "staging" : "prod",
-    }),
+    tanstackSerwistPlugin({ brand }),
     codecovVitePlugin({
       enableBundleAnalysis: process.env.CI === "true",
       bundleName: "clc-web-client",

@@ -1,8 +1,15 @@
 import path from "node:path";
 import { injectManifest } from "@serwist/build";
+import type { NitroModule } from "nitro/types";
 import { build, type Plugin } from "vite-plus";
 
-export function tanstackSerwistPlugin({ brand }: { brand: "prod" | "staging" }): Plugin {
+type Brand = "prod" | "staging";
+
+/**
+ * Development worker, written into `public/` so the dev server serves it. The
+ * production worker is built by {@link serwistNitroModule} instead.
+ */
+export function tanstackSerwistPlugin({ brand }: { brand: Brand }): Plugin {
   let rootDir: string;
   let isProduction: boolean;
 
@@ -14,29 +21,64 @@ export function tanstackSerwistPlugin({ brand }: { brand: "prod" | "staging" }):
     },
     async buildStart() {
       if (!isProduction) {
-        await buildServiceWorker(rootDir, false, brand);
-      }
-    },
-    async closeBundle() {
-      if (isProduction) {
-        await buildServiceWorker(rootDir, true, brand);
+        await buildServiceWorker({
+          rootDir,
+          outDir: path.resolve(rootDir, "public"),
+          production: false,
+          brand,
+        });
       }
     },
   };
 }
 
-function getPublicOutputDir(rootDir: string, production: boolean): string {
-  if (!production) return path.resolve(rootDir, "public");
-  // cloudflare-pages preset (set by build:cf or Cloudflare CI) outputs static
-  // assets to dist/ rather than .output/public/ used by the node preset.
-  const isCfPages =
-    process.env.NITRO_PRESET === "cloudflare-pages" || Boolean(process.env.CF_PAGES);
-  return isCfPages ? path.resolve(rootDir, "dist") : path.resolve(rootDir, ".output", "public");
+/**
+ * Production worker, built once Nitro has finished writing the output.
+ *
+ * A Vite `closeBundle` hook used to own this, but it fires once per environment
+ * and the client environment's call lands before Nitro copies `public/` into
+ * the output, so which pass produced the shipped `sw.js` — and therefore what it
+ * precached — depended on build order. Nitro's `compiled` hook runs after the
+ * public copy and the server build, and its `output.publicDir` is the resolved
+ * static directory for every preset (`dist/` on Pages, `.output/public/`
+ * locally), so no preset sniffing is needed.
+ *
+ * Registered as a module rather than through `hooks: { compiled }`: the pinned
+ * Nitro merges that option over the preset's own `compiled` hook, and the Pages
+ * preset writes `_routes.json`, `_headers` and the Wrangler config from it.
+ * Module hooks are appended after the preset's. That ordering also means the
+ * preset scans the output before this file exists, so `/sw.js` has to be an
+ * explicit routes exclusion in the Nitro config.
+ */
+export function serwistNitroModule({ brand }: { brand: Brand }): NitroModule {
+  return {
+    name: "clc-serwist",
+    setup(nitro) {
+      if (nitro.options.dev) return;
+      nitro.hooks.hook("compiled", async () => {
+        await buildServiceWorker({
+          rootDir: nitro.options.rootDir,
+          outDir: nitro.options.output.publicDir,
+          production: true,
+          brand,
+        });
+      });
+    },
+  };
 }
 
-async function buildServiceWorker(rootDir: string, production: boolean, brand: "prod" | "staging") {
+async function buildServiceWorker({
+  rootDir,
+  outDir,
+  production,
+  brand,
+}: {
+  rootDir: string;
+  outDir: string;
+  production: boolean;
+  brand: Brand;
+}) {
   const outName = "sw.js";
-  const outDir = getPublicOutputDir(rootDir, production);
   const swSrc = path.resolve(rootDir, "src", "sw.ts");
   const swDest = path.resolve(outDir, outName);
   const env = production ? "production" : "dev";
@@ -47,6 +89,11 @@ async function buildServiceWorker(rootDir: string, production: boolean, brand: "
     await build({
       root: rootDir,
       configFile: false,
+      // Vite copies `public/` into `outDir` by default. Here `outDir` is the
+      // finished output, so the copy would overwrite the `_headers` the Pages
+      // preset has just generated with the checked-in source and drop the
+      // immutable `/assets/*` rule.
+      publicDir: false,
       define: {
         "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
       },
