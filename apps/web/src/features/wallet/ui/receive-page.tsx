@@ -71,29 +71,21 @@ export function ReceivePage() {
       </div>
 
       {address ? (
-        <div className="mb-3 space-y-2">
-          <button
-            type="button"
-            aria-label={t`Copy wallet address`}
-            className="flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
-            onClick={() => copy(address)}
-          >
-            <HighlightAddress
-              address={address}
-              tailLength={6}
-              className="min-w-0 break-all text-[0.625rem] leading-tight"
-            />
-            <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </button>
+        <div className="mb-3 border border-border bg-card">
           {username ? (
             <button
               type="button"
               aria-label={t`Copy wallet username`}
-              className="flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
+              className="flex min-h-12 w-full items-center justify-between gap-3 border-b border-border px-3 py-2 text-start"
               onClick={() => copy(username, true)}
             >
-              <span dir="ltr" className="min-w-0 truncate font-mono text-sm">
-                {username}
+              <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-muted-foreground text-[0.625rem]">
+                  <Trans>Username</Trans>
+                </span>
+                <span dir="ltr" className="truncate font-mono text-muted-foreground text-xs">
+                  {username}
+                </span>
               </span>
               <RiFileCopyLine
                 className="size-4 shrink-0 text-muted-foreground"
@@ -101,6 +93,24 @@ export function ReceivePage() {
               />
             </button>
           ) : null}
+          <button
+            type="button"
+            aria-label={t`Copy wallet address`}
+            className="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-start"
+            onClick={() => copy(address)}
+          >
+            <span className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-muted-foreground text-[0.625rem]">
+                <Trans>{chainName} address</Trans>
+              </span>
+              <HighlightAddress
+                address={address}
+                tailLength={6}
+                className="min-w-0 break-all text-[0.625rem] leading-tight"
+              />
+            </span>
+            <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
         </div>
       ) : null}
 

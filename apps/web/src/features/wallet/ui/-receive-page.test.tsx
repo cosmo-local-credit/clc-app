@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { CHAIN_ID } from "#/lib/chain";
+import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...props }: { children: React.ReactNode }) => <a {...props}>{children}</a>,
@@ -69,6 +69,9 @@ describe("ReceivePage", () => {
       }),
     );
 
+    // No username: only the address row, and nothing labelled as one.
+    expect(screen.getByText(`${CHAIN_INFO.name} address`)).toBeTruthy();
+    expect(screen.queryByText("Username")).toBeNull();
     const copyButton = screen.getByRole("button", { name: /^copy$/i });
     expect(copyButton.hasAttribute("disabled")).toBe(false);
     copyButton.click();
@@ -102,6 +105,8 @@ describe("ReceivePage", () => {
     );
 
     expect(screen.getByText("alice")).toBeTruthy();
+    expect(screen.getByText("Username")).toBeTruthy();
+    expect(screen.getByText(`${CHAIN_INFO.name} address`)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Copy wallet username" }));
     expect(writeText).toHaveBeenLastCalledWith("alice");
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Username copied"));
