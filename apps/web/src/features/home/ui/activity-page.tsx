@@ -120,20 +120,24 @@ export function ActivityPage({ address }: { address?: string }) {
                     </>
                   ) : null}
                 </p>
-                <p className="truncate text-muted-foreground text-[0.6875rem]">
-                  {created ? (
-                    <Trans>New supply</Trans>
-                  ) : (
-                    <>
-                      {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                      <RecipientIdentityLabel address={transfer.counterpartyAddress} />
-                    </>
-                  )}
+                {/* Only the counterparty truncates: a long name and username
+                    must not push the date off the row. */}
+                <p className="flex min-w-0 text-muted-foreground text-[0.6875rem]">
+                  <span className="min-w-0 truncate">
+                    {created ? (
+                      <Trans>New supply</Trans>
+                    ) : (
+                      <>
+                        {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                        <RecipientIdentityLabel address={transfer.counterpartyAddress} />
+                      </>
+                    )}
+                  </span>
                   {transferDate ? (
-                    <>
+                    <span className="shrink-0 whitespace-pre">
                       <span aria-hidden="true"> · </span>
                       <time dateTime={transfer.dateBlock}>{transferDate}</time>
-                    </>
+                    </span>
                   ) : null}
                 </p>
               </div>
