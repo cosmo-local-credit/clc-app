@@ -245,12 +245,16 @@ msgstr "འཛིན་ཤོག་ ༡"
 msgid "A good"
 msgstr "ཅ་ཆས་ཅིག"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "ཐོན་རིམ་གསརཔ་ཐོབ་ཚུགས།"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་འབྲེལ་ལམ་ཁ་ཕྱེ་ཡོད། "
 "ཁ་བྱང་འདི་གིས་ནང་འཛུལ་འབད་ནི་ཨིན་ན?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་ QR བཤེར་ཡོད། ཁ་བྱང་འདི་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
@@ -664,7 +668,7 @@ msgstr "པར་ཆས་ལག་ལེན་ཆོག་ཐམ་མ་བྱ
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "ཆ་མེད།"
 
@@ -1087,14 +1091,14 @@ msgid "Connecting..."
 msgstr "མཐུད་དོ..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "མཐུད་དོ…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "མཐུད་ལམ་མ་འགྲུབ།"
 
@@ -1487,6 +1491,10 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་ཁྱབ་བ
 msgid "Couldn't publish your voucher."
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་མ་ཚུགས།"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "དུས་མཐུན་ལུ་ལྷོད་མ་ཚུགས། ཁྱོད་ཀྱི་མཐུད་ལམ་ཞིབ་དཔྱད་འབད་དེ་ལོག་འབད།"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "འཛིན་ཤོག་འདི་གིས་བཅུ་ཚག་ག་དེམ་ཅིག་ལག་ལེན་འཐབ་ཨིན་ན་ལྷག་མ་ཚུགས།"
@@ -1782,6 +1790,7 @@ msgstr "ལམ་སྟོན།"
 msgid "Discard changes"
 msgstr "བསྒྱུར་བཅོས་ཚུ་བཀོག་བཞག"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "ཁ་བསྡམ།"
@@ -2356,11 +2365,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "སྟོན་པ་ཅིན་ ཡོངས་འབྲེལ་ལས་རིམ་སྦེ་ཁ་ཕྱེ་ཟེར་མི་ཨཱོན་རང་བཞག་སྟེ་ "
 "ཁ་སྐོང་ལུ་ཨེབ།"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "དངུལ་ཁུག་ནང་འདྲེན།"
 
@@ -3514,7 +3523,7 @@ msgid "Password cannot be empty."
 msgstr "གསང་ཚིག་སྟོངམ་བཞག་མི་ཆོག"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག"
 
@@ -4918,11 +4927,11 @@ msgstr "བརྗེ་ལེན་འབད་དོ…"
 msgid "Swaps settle within the market association..."
 msgstr "བརྗེ་ལེན་ཚུ་ཚོང་རའི་ཚོགས་པ་ནང་གཏན་འཁེལ་འབདཝ་ཨིན..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "དངུལ་ཁུག་བསྒྱུར།"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "དངུལ་ཁུག་བསྒྱུར་ནི་ཨིན་ན?"
 
@@ -5274,6 +5283,10 @@ msgstr "གསལ་བསྒྲགས་འདི་སྲུང་ནི་ལ
 msgid "This QR code does not contain a valid private key."
 msgstr "QR ཨང་རྟགས་འདི་ནང་ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་མེད།"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "ཐོན་རིམ་འདི་ད་ལས་ཕར་རྒྱབ་སྐྱོར་མེད།"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5451,6 +5464,10 @@ msgstr "ཁ་ཕྱེ་སྟེ་ནང་འདྲེན།"
 msgid "Unlocking..."
 msgstr "ཁ་ཕྱེ་དོ..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "དུས་མཐུན་བཟོ།"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "པར་དུས་མཐུན་བཟོ།"
@@ -5458,6 +5475,10 @@ msgstr "པར་དུས་མཐུན་བཟོ།"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག་དུས་མཐུན་བཟོ།"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "དུས་མཐུན་བཟོ་དགོཔ་ཨིན།"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5471,6 +5492,10 @@ msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་དུས་མ
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "དུས་མཐུན་བཟོ་ཡོད།"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "དུས་མཐུན་བཟོ་དོ…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"

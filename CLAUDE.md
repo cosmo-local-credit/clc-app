@@ -739,6 +739,40 @@ source at `apps/web/src/sw.ts`. Don't import serwist under `packages/core/`,
 `packages/api/`, or `apps/admin/` — the admin console must never register a
 service worker.
 
+The production worker is built from a Nitro module's `compiled` hook, after the
+output is final — not from a Vite `closeBundle`, which fires per environment and
+before Nitro copies `public/`. Its nested `build()` sets `publicDir: false`;
+copying `public/` into the finished output overwrites the generated `_headers`.
+
+### Build identity and the update banner
+
+Each build of either app carries `__CLC_BUILD_INFO__` (schema in
+`@clc/core/features/app-updates/logic`, resolved by `tooling/build-info.ts`) and
+publishes it uncached at `/build-info.json`. Both apps poll that file and offer a
+reload when its `buildId` differs; a reload is the whole update.
+
+- `buildId` digests the build's inputs (git tree IDs, lockfile, release entry,
+  `VITE_` values), not its commit, so unrelated commits do not nag users. A Pages
+  build fails if it cannot identify itself — a dirty or uncommitted input, or no
+  git.
+- `release.json` holds each app's `version`, `buildNumber` and `minimumBuild`.
+  Bump `buildNumber` only when a release must be selectable as a minimum; set
+  `minimumBuild` to make older builds' banner persistent. CI rejects a
+  `buildNumber` that goes down.
+- A reload is enough only because `sw.ts` precaches hashed assets and never
+  serves documents. Adding document or runtime caching means revisiting the
+  updater. Keep `skipWaiting: true` / `clientsClaim: true`.
+- Web reloads only through `#/lib/page-reload`, which stale-chunk recovery shares.
+  Reload-unsafe flows are hidden by route ID in `app-update-banner.tsx`; async work
+  outside those routes should be a mutation so `useIsMutating` holds the reload.
+- Files written from a Nitro module after the Pages preset scans the output
+  (`/sw.js`, `/build-info.json`) must be explicit `cloudflare.pages.routes.exclude`
+  entries, or the SSR Function answers for them with HTML.
+- Shared build tooling lives in `tooling/` (root `/scripts` is ignored). The Vite
+  configs load `@clc/core` through Node, which cannot resolve core's extensionless
+  relative imports: anything they import from core must import nothing but npm
+  packages.
+
 ### TanStack CLI (TanStack docs only)
 
 Use the `tanstack` CLI to search **TanStack docs only** — not other libraries,

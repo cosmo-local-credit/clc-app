@@ -248,11 +248,15 @@ msgstr "قسيمة واحدة"
 msgid "A good"
 msgstr "سلعة"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "يتوفر إصدار جديد"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "تم فتح رابط محفظة ورقية. هل تريد تسجيل الدخول بهذا العنوان؟"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "تم مسح رمز QR لمحفظة ورقية. هل تريد استيراد هذا العنوان؟"
 
@@ -662,7 +666,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -1080,14 +1084,14 @@ msgid "Connecting..."
 msgstr "جارٍ الاتصال..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "جارٍ الاتصال…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "فشل الاتصال."
 
@@ -1477,6 +1481,10 @@ msgstr "تعذّر نشر صندوقك."
 msgid "Couldn't publish your voucher."
 msgstr "تعذّر نشر قسيمتك."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "تعذّر الوصول إلى التحديث. تحقق من اتصالك وحاول مرة أخرى."
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "تعذّر معرفة عدد المنازل العشرية التي تستخدمها هذه القسيمة."
@@ -1771,6 +1779,7 @@ msgstr "الاتجاهات"
 msgid "Discard changes"
 msgstr "تجاهل التغييرات"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "إغلاق"
@@ -2343,11 +2352,11 @@ msgstr "جارٍ تحديد الموقع…"
 msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "إذا ظهر الخيار، فاترك «فتح كتطبيق ويب» مفعّلًا، ثم اضغط على «إضافة»."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "هل تريد استيراد محفظة ورقية؟"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "استيراد محفظة"
 
@@ -3490,7 +3499,7 @@ msgid "Password cannot be empty."
 msgstr "لا يمكن أن تكون كلمة المرور فارغة."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "محفظة ورقية محمية بكلمة مرور"
 
@@ -4885,11 +4894,11 @@ msgstr "جارٍ المبادلة…"
 msgid "Swaps settle within the market association..."
 msgstr "تُسوّى المبادلات ضمن رابطة السوق..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "تبديل المحفظة"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "هل تريد تبديل المحفظة؟"
 
@@ -5232,6 +5241,10 @@ msgstr "هذا المنشور كبير جدًا ولا يمكن حفظه. اخت
 msgid "This QR code does not contain a valid private key."
 msgstr "لا يحتوي رمز QR هذا على مفتاح خاص صالح."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "لم يعد هذا الإصدار مدعومًا."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5408,6 +5421,10 @@ msgstr "فتح القفل والاستيراد"
 msgid "Unlocking..."
 msgstr "جارٍ فتح القفل..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "تحديث"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "تحديث الصورة"
@@ -5415,6 +5432,10 @@ msgstr "تحديث الصورة"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "تحديث المحفظة الورقية المحمية"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "التحديث مطلوب"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5428,6 +5449,10 @@ msgstr "تحديث مراجعتك"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "تم التحديث"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "جارٍ التحديث…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"

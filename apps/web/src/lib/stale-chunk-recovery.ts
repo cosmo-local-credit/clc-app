@@ -14,6 +14,8 @@
 // URL) so a fresh deploy can always recover, but a genuinely persistent failure
 // surfaces the error instead of looping.
 
+import { isReloadPending, reloadPage } from "#/lib/page-reload";
+
 const MODULE_LOAD_ERROR =
   /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/;
 
@@ -58,11 +60,16 @@ function setReloadMarker(key: string): void {
 export function reloadOnceForStaleChunk(error: unknown): boolean {
   if (typeof window === "undefined") return false;
 
+  // Another reload — the update banner's, or another chunk's — is already
+  // replacing this page. Join it without spending this chunk's one shot, which
+  // a cancelled reload would otherwise have used up.
+  if (isReloadPending()) return true;
+
   const message = error instanceof Error ? error.message : String(error);
   const key = `${RELOAD_MARKER_PREFIX}${message}`;
   if (hasReloadMarker(key)) return false;
   setReloadMarker(key);
 
-  window.location.reload();
+  reloadPage();
   return true;
 }

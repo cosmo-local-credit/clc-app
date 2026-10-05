@@ -246,12 +246,16 @@ msgstr "1 bon d’échange"
 msgid "A good"
 msgstr "Un bien"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "Une nouvelle version est disponible"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Un lien de portefeuille papier a été ouvert. Voulez-vous vous connecter "
 "avec cette adresse ?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Le code QR d’un portefeuille papier a été scanné. Voulez-vous importer "
 "cette adresse ?"
@@ -667,7 +671,7 @@ msgstr "Accès à la caméra refusé."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -1089,14 +1093,14 @@ msgid "Connecting..."
 msgstr "Connexion…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "Connexion…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "La connexion a échoué."
 
@@ -1491,6 +1495,11 @@ msgstr "Impossible de publier votre bassin."
 msgid "Couldn't publish your voucher."
 msgstr "Impossible de publier votre bon d’échange."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "Impossible d’obtenir la mise à jour. Vérifiez votre connexion, puis "
+"réessayez."
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Impossible de déterminer le nombre de décimales utilisé par ce bon "
@@ -1788,6 +1797,7 @@ msgstr "Itinéraire"
 msgid "Discard changes"
 msgstr "Abandonner les modifications"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "Fermer"
@@ -2365,11 +2375,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "Si l’option Ouvrir comme application web apparaît, laissez-la activée, "
 "puis appuyez sur Ajouter."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "Importer le portefeuille papier ?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "Importer le portefeuille"
 
@@ -3528,7 +3538,7 @@ msgid "Password cannot be empty."
 msgstr "Le mot de passe ne peut pas être vide."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "Portefeuille papier protégé par mot de passe"
 
@@ -4939,11 +4949,11 @@ msgstr "Échange en cours…"
 msgid "Swaps settle within the market association..."
 msgstr "Les échanges sont réglés au sein de l’association de marché…"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "Changer de portefeuille"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "Changer de portefeuille ?"
 
@@ -5295,6 +5305,10 @@ msgstr "Cette publication est trop volumineuse pour être enregistrée. "
 msgid "This QR code does not contain a valid private key."
 msgstr "Ce code QR ne contient pas de clé privée valide."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "Cette version n’est plus prise en charge."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5473,6 +5487,10 @@ msgstr "Déverrouiller et importer"
 msgid "Unlocking..."
 msgstr "Déverrouillage…"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "Mettre à jour"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "Mettre à jour la photo"
@@ -5480,6 +5498,10 @@ msgstr "Mettre à jour la photo"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "Mettre à jour le portefeuille papier protégé"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "Mise à jour requise"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5493,6 +5515,10 @@ msgstr "Mettre à jour votre avis"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "Mis à jour"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "Mise à jour…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"

@@ -3,6 +3,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { RouteError } from "#/components/route-error";
+import { AppUpdateBanner } from "#/features/app-updates/app-update-banner";
 import { BRAND, BRAND_ICON_BASE, BRAND_THEME_COLOR } from "#/lib/brand";
 import { themeBootstrapScript } from "#/providers/theme";
 import appCss from "../styles.css?url";
@@ -36,6 +37,8 @@ function AppContent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Outside the auth shell, so a signed-out console is told too. */}
+      <AppUpdateBanner />
       <Outlet />
     </QueryClientProvider>
   );
