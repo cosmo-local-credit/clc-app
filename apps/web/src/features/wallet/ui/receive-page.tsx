@@ -15,7 +15,6 @@ export function ReceivePage() {
   const { address } = useConnection();
   const identity = useReverseRecipientResolution(address ?? null);
   const username = identity.data?.alias ?? null;
-  const receiveName = username ?? address;
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
 
   const copy = (value: string, copyingUsername = false) => {
@@ -36,19 +35,16 @@ export function ReceivePage() {
     // Prefer the native share sheet; fall back to copying when unavailable.
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: username ? t`My wallet username` : t`My wallet address`,
-          text: receiveName,
-        });
+        await navigator.share({ title: t`My wallet address`, text: address });
       } catch (error) {
         // AbortError = user dismissed the sheet; not a failure worth surfacing.
         if (error instanceof Error && error.name !== "AbortError") {
-          copy(receiveName ?? address, Boolean(username));
+          copy(address);
         }
       }
       return;
     }
-    copy(receiveName ?? address, Boolean(username));
+    copy(address);
   };
 
   return (
@@ -75,25 +71,37 @@ export function ReceivePage() {
       </div>
 
       {address ? (
-        <button
-          type="button"
-          aria-label={username ? t`Copy wallet username` : t`Copy wallet address`}
-          className="mb-3 flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
-          onClick={() => copy(receiveName ?? address, Boolean(username))}
-        >
-          {username ? (
-            <span dir="ltr" className="break-all font-mono text-sm">
-              {username}
-            </span>
-          ) : (
+        <div className="mb-3 space-y-2">
+          <button
+            type="button"
+            aria-label={t`Copy wallet address`}
+            className="flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
+            onClick={() => copy(address)}
+          >
             <HighlightAddress
               address={address}
               tailLength={6}
               className="min-w-0 break-all text-[0.625rem] leading-tight"
             />
-          )}
-          <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        </button>
+            <RiFileCopyLine className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
+          {username ? (
+            <button
+              type="button"
+              aria-label={t`Copy wallet username`}
+              className="flex h-12 w-full items-center justify-between gap-3 border border-border bg-card px-3 text-start"
+              onClick={() => copy(username, true)}
+            >
+              <span dir="ltr" className="min-w-0 truncate font-mono text-sm">
+                {username}
+              </span>
+              <RiFileCopyLine
+                className="size-4 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="mb-3.5 border border-primary/30 bg-primary/5 p-3">
@@ -112,7 +120,7 @@ export function ReceivePage() {
           variant="outline"
           className="h-11 flex-1"
           disabled={!address}
-          onClick={() => receiveName && copy(receiveName, Boolean(username))}
+          onClick={() => address && copy(address)}
         >
           <RiFileCopyLine className="size-4" aria-hidden="true" />
           <Trans>Copy</Trans>

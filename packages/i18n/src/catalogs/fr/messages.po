@@ -432,7 +432,7 @@ msgid "Address book"
 msgstr "Carnet d’adresses"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:28
+#: apps/web/src/features/wallet/ui/receive-page.tsx:27
 msgid "Address copied"
 msgstr "Adresse copiée"
 
@@ -489,7 +489,7 @@ msgstr "Vous avez déjà un compte ?"
 #~ "Conservez-le en lieu sûr."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:105
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:208
@@ -843,7 +843,7 @@ msgstr "Choisissez Ajouter à l’écran d’accueil."
 msgid "Choose an expiration date"
 msgstr "Choisissez une date d’expiration"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:270
+#: apps/web/src/components/ui/image-crop-sheet.tsx:272
 msgid "Choose another"
 msgstr "Choisissez-en une autre"
 
@@ -1030,7 +1030,7 @@ msgid "Confirm swap"
 msgstr "Confirmer l’échange"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:181
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
@@ -1157,7 +1157,7 @@ msgstr "Adresse du contrat"
 msgid "Contract address copied"
 msgstr "Adresse du contrat copiée"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:118
+#: apps/web/src/features/wallet/ui/receive-page.tsx:126
 msgid "Copy"
 msgstr "Copier"
 
@@ -1204,19 +1204,19 @@ msgstr "Copier le reçu"
 msgid "Copy supply creation transaction hash"
 msgstr "Copier le hachage de la transaction d’émission"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:147
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:161
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 msgid "Copy transaction hash"
 msgstr "Copier le hachage de la transaction"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:80
+#: apps/web/src/features/wallet/ui/receive-page.tsx:77
 msgid "Copy wallet address"
 msgstr "Copier l’adresse du portefeuille"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:80
+#: apps/web/src/features/wallet/ui/receive-page.tsx:91
 msgid "Copy wallet username"
 msgstr "Copier le nom d’utilisateur du portefeuille"
 
@@ -1275,8 +1275,8 @@ msgstr "Impossible de vérifier votre accès aux avis."
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:30
+#: apps/web/src/features/wallet/ui/receive-page.tsx:22
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
 msgid "Couldn't copy address"
 msgstr "Impossible de copier l’adresse"
 
@@ -1325,8 +1325,8 @@ msgstr "Impossible de copier le reçu"
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "Impossible de copier le hachage de la transaction d’émission"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:51
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:57
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:63
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:132
@@ -1337,8 +1337,8 @@ msgstr "Impossible de copier le hachage de la transaction"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:23
-#: apps/web/src/features/wallet/ui/receive-page.tsx:30
+#: apps/web/src/features/wallet/ui/receive-page.tsx:22
+#: apps/web/src/features/wallet/ui/receive-page.tsx:29
 msgid "Couldn't copy username"
 msgstr "Impossible de copier le nom d’utilisateur"
 
@@ -1641,6 +1641,7 @@ msgstr "Créer votre compte"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:105
 #: apps/web/src/features/home/ui/report-page.tsx:558
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:57
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:616
 msgid "Created"
 msgstr "Créé"
@@ -1704,7 +1705,7 @@ msgid "Dark"
 msgstr "Sombre"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:139
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:149
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:589
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:726
 msgid "Date"
@@ -1750,6 +1751,7 @@ msgstr "Transaction de déploiement"
 msgid "Deployment transaction hash copied"
 msgstr "Hachage de la transaction de déploiement copié"
 
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:59
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
 msgid "Deposit"
@@ -2070,7 +2072,7 @@ msgid "Expiring"
 msgstr "Avec expiration"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
@@ -2208,8 +2210,8 @@ msgid "Frame your photo"
 msgstr "Cadrez votre photo"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
-#: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:126
+#: apps/web/src/features/home/ui/activity-page.tsx:131
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:136
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "From"
@@ -2641,7 +2643,7 @@ msgid "Loading marketplace…"
 msgstr "Chargement du marché…"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:172
-#: apps/web/src/features/home/ui/activity-page.tsx:149
+#: apps/web/src/features/home/ui/activity-page.tsx:153
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
 #: apps/web/src/features/pools/ui/pools-page.tsx:524
@@ -2952,13 +2954,13 @@ msgstr "MPESA via Pretium"
 msgid "My posts"
 msgstr "Mes publications"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:40
+#: apps/web/src/features/wallet/ui/receive-page.tsx:38
 msgid "My wallet address"
 msgstr "Adresse de mon portefeuille"
 
 #: apps/web/src/features/wallet/ui/receive-page.tsx:40
-msgid "My wallet username"
-msgstr "Nom d’utilisateur de mon portefeuille"
+#~ msgid "My wallet username"
+#~ msgstr "Nom d’utilisateur de mon portefeuille"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:194
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:205
@@ -3005,8 +3007,8 @@ msgid "New post"
 msgstr "Nouvelle publication"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:149
-#: apps/web/src/features/home/ui/activity-page.tsx:125
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
+#: apps/web/src/features/home/ui/activity-page.tsx:128
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:625
 msgid "New supply"
@@ -3213,7 +3215,7 @@ msgstr "Aucun bon d’échange à afficher pour le moment."
 msgid "No vouchers yet."
 msgstr "Aucun bon d’échange pour le moment."
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:72
+#: apps/web/src/features/wallet/ui/receive-page.tsx:68
 msgid "No wallet address available."
 msgstr "Aucune adresse de portefeuille disponible."
 
@@ -3348,7 +3350,7 @@ msgstr "Vente"
 msgid "Offramp details"
 msgstr "Détails de la vente"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:101
+#: apps/web/src/features/wallet/ui/receive-page.tsx:109
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "Envoyez uniquement des actifs du <0>réseau {chainName}</0> à cette "
@@ -3448,6 +3450,7 @@ msgstr "Réponse du propriétaire"
 msgid "Ownership transfer submitted."
 msgstr "Transfert de propriété envoyé."
 
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:60
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
 msgid "Paid out"
 msgstr "Versé"
@@ -3646,7 +3649,7 @@ msgstr "Actions du bassin"
 msgid "Pool activity"
 msgstr "Activité du bassin"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:70
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:80
 msgid "Pool activity details"
 msgstr "Détails de l’activité du bassin"
 
@@ -3730,11 +3733,11 @@ msgstr "Le nom du bassin doit contenir au maximum 80 caractères"
 msgid "Pool not found."
 msgstr "Bassin non trouvé."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:91
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
 msgid "Pool paid out"
 msgstr "Montant versé par le bassin"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:88
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:98
 msgid "Pool received"
 msgstr "Montant reçu par le bassin"
 
@@ -3792,7 +3795,7 @@ msgstr "Liste des bassins"
 msgid "Pools with this voucher"
 msgstr "Bassins avec ce bon d’échange"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:161
+#: apps/web/src/components/ui/image-crop-sheet.tsx:163
 msgid "Position your photo"
 msgstr "Positionnez votre photo"
 
@@ -3861,7 +3864,7 @@ msgstr "Préparation de votre retrait…"
 msgid "Preparing..."
 msgstr "Préparation…"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:261
+#: apps/web/src/components/ui/image-crop-sheet.tsx:263
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:82
 msgid "Preparing…"
 msgstr "Préparation…"
@@ -3974,7 +3977,7 @@ msgstr "Protéger le portefeuille papier avec un mot de passe"
 msgid "Protecting paper wallet..."
 msgstr "Protection du portefeuille papier…"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:97
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
 msgid "Protocol fee"
 msgstr "Frais de protocole"
 
@@ -4077,11 +4080,11 @@ msgstr "Reçu copié"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:60
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 msgid "Receive"
 msgstr "Recevoir"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:67
+#: apps/web/src/features/wallet/ui/receive-page.tsx:63
 msgid "Receive details"
 msgstr "Informations de réception"
 
@@ -4100,7 +4103,7 @@ msgid "Received"
 msgstr "Reçu"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:56
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:119
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
 msgid "Received voucher"
 msgstr "Bon d’échange reçu"
 
@@ -4627,7 +4630,7 @@ msgid "Settings"
 msgstr "Paramètres"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:431
-#: apps/web/src/features/wallet/ui/receive-page.tsx:122
+#: apps/web/src/features/wallet/ui/receive-page.tsx:130
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
 msgstr "Partager"
@@ -4785,7 +4788,7 @@ msgid "Starts"
 msgstr "Début"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:311
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:511
@@ -4860,6 +4863,7 @@ msgstr "Les fichiers SVG ne sont pas pris en charge. Utilisez le format PNG, "
 "JPEG ou WebP."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:411
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:55
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:135
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:378
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
@@ -5299,8 +5303,8 @@ msgid "Title must be 200 characters or fewer"
 msgstr "Le titre doit contenir au maximum 200 caractères"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:161
-#: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:135
+#: apps/web/src/features/home/ui/activity-page.tsx:131
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
@@ -5331,7 +5335,7 @@ msgstr "Outils"
 msgid "Total"
 msgstr "Total"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:154
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:157
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:204
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
@@ -5347,7 +5351,7 @@ msgstr "Détails de la transaction"
 msgid "Transaction hash"
 msgstr "Hachage de la transaction"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:56
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:68
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:131
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
@@ -5554,7 +5558,7 @@ msgid "Use only letters and numbers for the voucher symbol"
 msgstr "Utilisez uniquement des lettres et des chiffres pour le symbole du bon "
 "d’échange"
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:261
+#: apps/web/src/components/ui/image-crop-sheet.tsx:263
 msgid "Use photo"
 msgstr "Utiliser la photo"
 
@@ -5564,7 +5568,7 @@ msgid "Username"
 msgstr "Nom d’utilisateur"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:28
+#: apps/web/src/features/wallet/ui/receive-page.tsx:27
 msgid "Username copied"
 msgstr "Nom d’utilisateur copié"
 
@@ -5617,7 +5621,7 @@ msgid "View offering details: {0}"
 msgstr "Voir les détails de l’offre : {0}"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:158
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:168
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:625
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:762
 msgid "View on block explorer"
@@ -5639,7 +5643,7 @@ msgstr "bon d’échange"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:113
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
 msgstr "Bon d’échange"
@@ -5797,7 +5801,7 @@ msgstr "En attente de la chaîne…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/receive-page.tsx:52
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -6137,7 +6141,7 @@ msgid "Your wallet or session changed. Sign in again, then retry."
 msgstr "Votre portefeuille ou votre session a changé. Reconnectez-vous, puis "
 "réessayez."
 
-#: apps/web/src/components/ui/image-crop-sheet.tsx:241
-#: apps/web/src/components/ui/image-crop-sheet.tsx:244
+#: apps/web/src/components/ui/image-crop-sheet.tsx:243
+#: apps/web/src/components/ui/image-crop-sheet.tsx:246
 msgid "Zoom"
 msgstr "Zoom"

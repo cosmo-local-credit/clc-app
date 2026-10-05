@@ -90,7 +90,7 @@ describe("ReceivePage", () => {
     expect(screen.getByRole("button", { name: /^share$/i }).hasAttribute("disabled")).toBe(true);
   });
 
-  it("displays and copies the username while keeping the address in the QR payload", async () => {
+  it("shows the address and the username, each copyable, with the address in the QR payload", async () => {
     identity.data = { name: "Alice Example", alias: "alice" };
     useConnectionMock.mockReturnValue({ address: ADDRESS });
     render(
@@ -103,9 +103,16 @@ describe("ReceivePage", () => {
 
     expect(screen.getByText("alice")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Copy wallet username" }));
-
-    expect(writeText).toHaveBeenCalledWith("alice");
+    expect(writeText).toHaveBeenLastCalledWith("alice");
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Username copied"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy wallet address" }));
+    expect(writeText).toHaveBeenLastCalledWith(ADDRESS);
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Address copied"));
+
+    // The footer action stays on the address, which is what every wallet can pay.
+    fireEvent.click(screen.getByRole("button", { name: /^copy$/i }));
+    expect(writeText).toHaveBeenLastCalledWith(ADDRESS);
     expect(qrCode.toDataURL).toHaveBeenCalledWith(
       `ethereum:${ADDRESS}@${CHAIN_ID}`,
       expect.any(Object),
