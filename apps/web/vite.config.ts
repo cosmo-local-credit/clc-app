@@ -85,14 +85,13 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     // type-checking after a bump, that is which shape changed, not what it means.
     nitro({
       ignore: ["plugins/serwist.ts"],
-      // In order: the worker is built against the finished output, descriptor
-      // included (and then excluded from its precache).
+      // The descriptor joins the static output with `public/`; the worker is
+      // built against that output (excluding the descriptor from its precache)
+      // before Nitro builds the server and indexes its static files.
       modules: [buildInfoNitroModule(buildInfo), serwistNitroModule({ brand, buildInfo })],
-      // The Pages preset lists the output's static files as routes exclusions
-      // before module `compiled` hooks run, so it never sees these two. A path
-      // missing from the list reaches the SSR Function, which knows nothing of
-      // files written after its build and answers with HTML. Configured entries
-      // come first and survive the preset's 100-rule cap.
+      // A path missing from the Pages routes exclusions reaches the SSR
+      // Function, which answers with HTML. The preset lists static files itself
+      // but truncates the list at 100 rules; configured entries come first.
       cloudflare: { pages: { routes: { exclude: [APP_BUILD_INFO_PATH, "/sw.js"] } } },
     }),
     tailwindcss(),

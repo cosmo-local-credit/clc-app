@@ -20,7 +20,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -160,33 +160,41 @@ export function resolveAppBuild(options: BuildInfoOptions): AppBuild {
 }
 
 /**
- * Writes the descriptor into the finished static output.
+ * Publishes the descriptor as an ordinary Nitro public asset.
  *
- * A Nitro module rather than `hooks: { compiled }`, which in the pinned Nitro
- * replaces the Pages preset's own hook — the one that writes `_routes.json`,
- * `_headers` and the Wrangler config. Module hooks run after the preset's, so
- * the preset never lists this file among its static routes: each app's config
- * excludes the path explicitly.
+ * Written at setup into a generated directory that Nitro copies into the output
+ * alongside `public/`, so every preset indexes it like any other static file:
+ * the Node server serves it, and the Pages preset lists it among its static
+ * routes. A file written after Nitro builds the server is missing from the Node
+ * server's index. `no-store` is a route rule, which both the Node runtime and
+ * the Pages `_headers` generation read.
  */
 export function buildInfoNitroModule(info: AppBuildInfo) {
   return {
     name: "clc-build-info",
-    setup(nitro: NitroLike) {
+    async setup(nitro: NitroLike) {
       if (nitro.options.dev) return;
-      nitro.hooks.hook("compiled", async () => {
-        await writeFile(
-          path.join(nitro.options.output.publicDir, APP_BUILD_INFO_PATH),
-          `${JSON.stringify(info, null, 2)}\n`,
-        );
-      });
+      const dir = path.resolve(nitro.options.rootDir, nitro.options.buildDir, "clc-build-info");
+      await mkdir(dir, { recursive: true });
+      await writeFile(path.join(dir, APP_BUILD_INFO_PATH), `${JSON.stringify(info, null, 2)}\n`);
+      nitro.options.publicAssets.push({ dir, baseURL: "/", maxAge: 0 });
+      nitro.options.routeRules[APP_BUILD_INFO_PATH] = {
+        ...nitro.options.routeRules[APP_BUILD_INFO_PATH],
+        headers: { "cache-control": "no-store" },
+      };
     },
   };
 }
 
 /** The slice of Nitro this uses. `nitro/types` does not resolve from the repo root. */
 interface NitroLike {
-  options: { dev: boolean; output: { publicDir: string } };
-  hooks: { hook(name: "compiled", handler: () => Promise<void>): unknown };
+  options: {
+    dev: boolean;
+    rootDir: string;
+    buildDir: string;
+    publicAssets: { dir: string; baseURL?: string; maxAge?: number }[];
+    routeRules: Record<string, { headers?: Record<string, string> }>;
+  };
 }
 
 function readGitState(paths: readonly string[]): GitState | undefined {

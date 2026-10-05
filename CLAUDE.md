@@ -739,10 +739,13 @@ source at `apps/web/src/sw.ts`. Don't import serwist under `packages/core/`,
 `packages/api/`, or `apps/admin/` — the admin console must never register a
 service worker.
 
-The production worker is built from a Nitro module's `compiled` hook, after the
-output is final — not from a Vite `closeBundle`, which fires per environment and
-before Nitro copies `public/`. Its nested `build()` sets `publicDir: false`;
-copying `public/` into the finished output overwrites the generated `_headers`.
+The production worker is built from a Nitro module on `prerender:routes`, the one
+hook after Nitro copies `public/` into the output and before it builds the
+server — not from a Vite `closeBundle`, which fires per environment and before
+that copy, nor from `compiled`, after which the Node preset's server has already
+indexed its static files and would 404 `/sw.js`. The nested `build()` sets
+`publicDir: false`; copying `public/` into the output would overwrite files Nitro
+generates there.
 
 ### Build identity and the update banner
 
@@ -765,9 +768,12 @@ reload when its `buildId` differs; a reload is the whole update.
 - Web reloads only through `#/lib/page-reload`, which stale-chunk recovery shares.
   Reload-unsafe flows are hidden by route ID in `app-update-banner.tsx`; async work
   outside those routes should be a mutation so `useIsMutating` holds the reload.
-- Files written from a Nitro module after the Pages preset scans the output
-  (`/sw.js`, `/build-info.json`) must be explicit `cloudflare.pages.routes.exclude`
-  entries, or the SSR Function answers for them with HTML.
+- `/build-info.json` is an ordinary Nitro public asset with a `no-store` route
+  rule, which generates its Pages `_headers` entry too. Anything added to the
+  static output must exist before Nitro builds the server, or the Node preset
+  never serves it. `/sw.js` and `/build-info.json` are also explicit
+  `cloudflare.pages.routes.exclude` entries, so the preset's 100-rule cap cannot
+  drop them and leave the SSR Function answering with HTML.
 - Shared build tooling lives in `tooling/` (root `/scripts` is ignored). It
   reaches core by relative path, never `@clc/core`: the Vite config bundler hands
   workspace packages to Node to load as raw TypeScript, which fails on the Node

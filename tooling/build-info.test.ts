@@ -1,6 +1,14 @@
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { appBuildInfoSchema } from "../packages/core/src/features/app-updates/logic.ts";
-import { type BuildInfoOptions, type GitState, resolveAppBuild } from "./build-info.ts";
+import {
+  type BuildInfoOptions,
+  buildInfoNitroModule,
+  type GitState,
+  resolveAppBuild,
+} from "./build-info.ts";
 import type { ReleaseFile } from "./release.ts";
 
 const HEAD = "0123456789abcdef0123456789abcdef01234567";
@@ -166,5 +174,41 @@ describe("resolveBuildInfo", () => {
         /cannot identify this web build/,
       );
     });
+  });
+});
+
+describe("buildInfoNitroModule", () => {
+  // Written before Nitro copies public assets and builds the server, so the
+  // Node preset indexes it like any static file instead of answering 404.
+  it("publishes the descriptor as an uncached public asset", async () => {
+    const rootDir = await mkdtemp(path.join(tmpdir(), "clc-build-info-"));
+    const nitro = {
+      options: {
+        dev: false,
+        rootDir,
+        buildDir: "node_modules/.nitro",
+        publicAssets: [] as { dir: string; baseURL?: string; maxAge?: number }[],
+        routeRules: {} as Record<string, { headers?: Record<string, string> }>,
+      },
+    };
+    const info = resolve();
+
+    await buildInfoNitroModule(info).setup(nitro);
+
+    const [asset] = nitro.options.publicAssets;
+    expect(asset).toMatchObject({ baseURL: "/", maxAge: 0 });
+    const written = await readFile(path.join(asset?.dir ?? "", "build-info.json"), "utf8");
+    expect(JSON.parse(written)).toEqual(info);
+    expect(nitro.options.routeRules["/build-info.json"]).toEqual({
+      headers: { "cache-control": "no-store" },
+    });
+  });
+
+  it("publishes nothing from a dev server", async () => {
+    const nitro = {
+      options: { dev: true, rootDir: "/", buildDir: "", publicAssets: [], routeRules: {} },
+    };
+    await buildInfoNitroModule(resolve()).setup(nitro);
+    expect(nitro.options.publicAssets).toEqual([]);
   });
 });

@@ -41,29 +41,30 @@ export function tanstackSerwistPlugin({ brand, buildInfo }: WorkerBuildOptions):
 }
 
 /**
- * Production worker, built once Nitro has finished writing the output.
+ * Production worker, built once Nitro has assembled the static output and
+ * before it builds the server.
  *
  * A Vite `closeBundle` hook used to own this, but it fires once per environment
  * and the client environment's call lands before Nitro copies `public/` into
  * the output, so which pass produced the shipped `sw.js` — and therefore what it
- * precached — depended on build order. Nitro's `compiled` hook runs after the
- * public copy and the server build, and its `output.publicDir` is the resolved
- * static directory for every preset (`dist/` on Pages, `.output/public/`
- * locally), so no preset sniffing is needed.
+ * precached — depended on build order.
  *
- * Registered as a module rather than through `hooks: { compiled }`: the pinned
- * Nitro merges that option over the preset's own `compiled` hook, and the Pages
- * preset writes `_routes.json`, `_headers` and the Wrangler config from it.
- * Module hooks are appended after the preset's. That ordering also means the
- * preset scans the output before this file exists, so `/sw.js` has to be an
- * explicit routes exclusion in the Nitro config.
+ * `prerender:routes` is the one hook between that copy and the server build:
+ * Nitro calls it on every production build, prerendered routes or not. Later
+ * would be too late for the Node preset, whose server indexes its static files
+ * when it is built, and would then never serve `/sw.js`. `output.publicDir` is
+ * the resolved static directory for every preset (`dist/` on Pages,
+ * `.output/public/` locally), so no preset sniffing is needed.
+ *
+ * Registered as a module rather than through the `hooks` option: the pinned
+ * Nitro merges that option over the preset's own hooks of the same name.
  */
 export function serwistNitroModule({ brand, buildInfo }: WorkerBuildOptions): NitroModule {
   return {
     name: "clc-serwist",
     setup(nitro) {
       if (nitro.options.dev) return;
-      nitro.hooks.hook("compiled", async () => {
+      nitro.hooks.hook("prerender:routes", async () => {
         await buildServiceWorker({
           rootDir: nitro.options.rootDir,
           outDir: nitro.options.output.publicDir,
@@ -98,10 +99,11 @@ async function buildServiceWorker({
     await build({
       root: rootDir,
       configFile: false,
-      // Vite copies `public/` into `outDir` by default. Here `outDir` is the
-      // finished output, so the copy would overwrite the `_headers` the Pages
-      // preset has just generated with the checked-in source and drop the
-      // immutable `/assets/*` rule.
+      // Vite copies `public/` into `outDir` by default. In production `outDir`
+      // is Nitro's output, which Nitro fills from `public/` itself; a second
+      // copy at the wrong moment overwrote the `_headers` the Pages preset
+      // generates, dropping the immutable `/assets/*` rule. In development it
+      // would copy `public/` onto itself.
       publicDir: false,
       define: {
         "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),

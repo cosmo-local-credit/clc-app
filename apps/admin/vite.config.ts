@@ -40,10 +40,10 @@ export default defineConfig(({ command, mode }): import("vite-plus").UserConfig 
       ...(command === "serve" ? [devtools()] : []),
       nitro({
         modules: [buildInfoNitroModule(buildInfo)],
-        // The Pages preset lists static files as routes exclusions before
-        // module hooks write the descriptor. Unlisted, the path reaches the SSR
-        // Function and answers with HTML; configured entries survive the
-        // preset's 100-rule cap.
+        // A path missing from the Pages routes exclusions reaches the SSR
+        // Function, which answers with HTML. The preset lists static files
+        // itself but truncates the list at 100 rules; configured entries come
+        // first.
         cloudflare: { pages: { routes: { exclude: [APP_BUILD_INFO_PATH] } } },
       }),
       tailwindcss(),
