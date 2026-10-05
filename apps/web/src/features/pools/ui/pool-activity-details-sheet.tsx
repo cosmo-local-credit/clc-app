@@ -46,6 +46,18 @@ export function PoolActivityDetailsSheet({
 }) {
   const { t } = useLingui();
   const explorerUrl = entry ? explorerTxUrl(CHAIN_INFO, entry.txHash) : "#";
+  // Spelled out here rather than in a helper taking `t`: the macro only
+  // compiles calls on the `t` it destructured, and a passed-in one reaches the
+  // runtime with a bare template array and renders nothing.
+  const kind = !entry
+    ? ""
+    : entry.kind === "swap"
+      ? t`Swap`
+      : entry.kind === "mint"
+        ? t`Created`
+        : entry.direction === "IN"
+          ? t`Deposit`
+          : t`Paid out`;
   const copy = (value: string) => {
     if (!navigator.clipboard) {
       toast.error(t`Couldn't copy transaction hash`);
@@ -63,9 +75,7 @@ export function PoolActivityDetailsSheet({
         <SheetBackdrop />
         <SheetContent className="max-h-[85svh] overflow-y-auto rounded-none border-t border-border bg-background shadow-none [&>div:first-child]:hidden">
           <SheetHeader className="items-center px-6 pt-5 pb-3 text-center">
-            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">
-              {entry ? kindLabel(entry, t) : ""}
-            </Badge>
+            <Badge className="h-6 px-2 text-[0.625rem] uppercase tracking-[0.08em]">{kind}</Badge>
             <SheetTitle className="sr-only">
               <Trans>Pool activity details</Trans>
             </SheetTitle>
@@ -176,10 +186,4 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
 
 function legAmount(leg: PoolActivityLeg): string {
   return `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
-}
-
-function kindLabel(entry: PoolActivityEntry, t: (strings: TemplateStringsArray) => string): string {
-  if (entry.kind === "swap") return t`Swap`;
-  if (entry.kind === "mint") return t`Created`;
-  return entry.direction === "IN" ? t`Deposit` : t`Paid out`;
 }
