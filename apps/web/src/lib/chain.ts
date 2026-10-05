@@ -9,8 +9,7 @@
  *
  * Unset now means Gnosis (100). Do not reintroduce a Celo default.
  */
-import { resolveChainId } from "@clc/core/lib/constants/chain-id";
-import { chainMetadata } from "@clc/core/lib/constants/chains";
+import { chainMetadata, resolveChainId } from "@clc/core/lib/constants/chains";
 import type { Chain } from "viem";
 import { celo, celoAlfajores, gnosis } from "wagmi/chains";
 import { resolveRpcUrls } from "#/lib/rpc-transport";

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 import { appBuildInfoSchema } from "../packages/core/src/features/app-updates/logic.ts";
-import { type BuildInfoOptions, type GitState, resolveBuildInfo } from "./build-info.ts";
+import { type BuildInfoOptions, type GitState, resolveAppBuild } from "./build-info.ts";
 import type { ReleaseFile } from "./release.ts";
 
 const HEAD = "0123456789abcdef0123456789abcdef01234567";
@@ -41,18 +41,16 @@ function gitAt(overrides: Partial<GitState> = {}) {
 }
 
 function resolve(overrides: Partial<BuildInfoOptions> = {}) {
-  return resolveBuildInfo({
+  return resolveAppBuild({
     app: "web",
     command: "build",
-    brand: "staging",
-    chainId: 100,
     publicEnv: { VITE_API_URL: "https://api.example", VITE_BRAND: "staging" },
     processEnv: {},
     now: () => new Date("2026-10-05T09:00:00.000Z"),
     readGit: gitAt(),
     release,
     ...overrides,
-  });
+  }).buildInfo;
 }
 
 describe("resolveBuildInfo", () => {
@@ -83,7 +81,10 @@ describe("resolveBuildInfo", () => {
     ["app source", { readGit: gitAt({ objects: { ...objects, "apps/web": "x" } }) }],
     ["shared packages", { readGit: gitAt({ objects: { ...objects, packages: "x" } }) }],
     ["lockfile", { readGit: gitAt({ objects: { ...objects, "pnpm-lock.yaml": "x" } }) }],
-    ["public configuration", { publicEnv: { VITE_API_URL: "https://other.example" } }],
+    [
+      "public configuration",
+      { publicEnv: { VITE_API_URL: "https://other.example", VITE_BRAND: "staging" } },
+    ],
     ["release milestone", { release: { ...release, web: { ...release.web, buildNumber: 3 } } }],
     ["release label", { release: { ...release, web: { ...release.web, version: "0.2.0" } } }],
   ] satisfies [string, Partial<BuildInfoOptions>][])(
@@ -105,6 +106,15 @@ describe("resolveBuildInfo", () => {
     const floor = resolve({ release: { ...release, web: { ...release.web, minimumBuild: 2 } } });
     expect(floor.minimumBuild).toBe(2);
     expect(floor.buildId).toBe(resolve().buildId);
+  });
+
+  it("resolves brand and chain from the public configuration, as the app does", () => {
+    expect(resolve()).toMatchObject({ environment: "staging", chainId: 100 });
+    expect(resolve({ publicEnv: { VITE_CHAIN_ID: "42220" } })).toMatchObject({
+      environment: "prod",
+      chainId: 42220,
+    });
+    expect(() => resolve({ publicEnv: { VITE_BRAND: "stagign" } })).toThrow(/not a brand/);
   });
 
   it("marks a dev server build", () => {

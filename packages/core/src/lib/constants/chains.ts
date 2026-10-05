@@ -61,6 +61,18 @@ const CHAIN_METADATA = {
 } as const satisfies Record<number, ChainMetadata>;
 
 /**
+ * The chain id a build's `VITE_CHAIN_ID` names. Unset means Gnosis (100).
+ *
+ * Each app's `#/lib/chain` and its build identity (`tooling/build-info.ts`)
+ * both read the variable through this, so the default lives in one place.
+ * Validation stays with the caller: an id the table carries nothing for fails
+ * an app at boot. Do not reintroduce a Celo default.
+ */
+export function resolveChainId(raw: string | undefined): number {
+  return Number(raw ?? "100");
+}
+
+/**
  * Metadata for a chain, or undefined when the id is one we carry nothing for.
  *
  * Deliberately not defaulted to Celo. A caller that falls back to mainnet

@@ -10,10 +10,6 @@
  *
  * These values mirror the `--primary` token each app's stylesheet sets for
  * `:root[data-brand=...]` and `.dark[data-brand=...]`.
- *
- * Both apps' Vite configs import this, and Node loads it directly: the config
- * bundler externalizes workspace packages. Keep it free of imports — Node's
- * loader cannot resolve core's extensionless relative ones.
  */
 export type Brand = "prod" | "staging";
 

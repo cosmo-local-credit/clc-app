@@ -1,15 +1,16 @@
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { APP_BUILD_INFO_PATH, appBuildInfoSchema } from "@clc/core/features/app-updates/logic";
-import { resolveBrand } from "@clc/core/lib/constants/brand";
-import { resolveChainId } from "@clc/core/lib/constants/chain-id";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite-plus";
-import { buildInfoNitroModule, resolveBuildInfo } from "../../tooling/build-info.ts";
+import {
+  APP_BUILD_INFO_PATH,
+  buildInfoNitroModule,
+  resolveAppBuild,
+} from "../../tooling/build-info.ts";
 
 const adminRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -17,20 +18,13 @@ const adminRoot = dirname(fileURLToPath(import.meta.url));
 // not a PWA and must never register a service worker), no lingui (English-only
 // back office), no wrangler var loading.
 export default defineConfig(({ command, mode }): import("vite-plus").UserConfig => {
-  // What Vite inlines: Pages supplies `[vars]` through the process environment,
-  // a laptop build reads `.env`.
-  const publicEnv = loadEnv(mode, adminRoot, "VITE_");
-  // Validated against the schema the running console reads it with, so a
-  // producer/consumer mismatch fails the build rather than every update check.
-  const buildInfo = appBuildInfoSchema.parse(
-    resolveBuildInfo({
-      app: "admin",
-      command,
-      brand: resolveBrand(publicEnv.VITE_BRAND),
-      chainId: resolveChainId(publicEnv.VITE_CHAIN_ID),
-      publicEnv,
-    }),
-  );
+  const { buildInfo } = resolveAppBuild({
+    app: "admin",
+    command,
+    // What Vite inlines: Pages supplies `[vars]` through the process
+    // environment, a laptop build reads `.env`.
+    publicEnv: loadEnv(mode, adminRoot, "VITE_"),
+  });
 
   return {
     // The port belongs here rather than only in the `dev` script, so that
@@ -45,7 +39,7 @@ export default defineConfig(({ command, mode }): import("vite-plus").UserConfig 
     plugins: [
       ...(command === "serve" ? [devtools()] : []),
       nitro({
-        modules: [buildInfoNitroModule(buildInfo, APP_BUILD_INFO_PATH)],
+        modules: [buildInfoNitroModule(buildInfo)],
         // The Pages preset lists static files as routes exclusions before
         // module hooks write the descriptor. Unlisted, the path reaches the SSR
         // Function and answers with HTML; configured entries survive the

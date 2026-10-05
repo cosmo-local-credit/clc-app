@@ -16,10 +16,8 @@ import { z } from "zod";
  *   `minimumBuild`.
  * - `gitSha`, `builtAt` and `dirty` are diagnostics and take part in neither.
  *
- * Both apps' Vite configs validate the identity they produce against this
- * schema, and Node loads the file directly: the config bundler externalizes
- * workspace packages. Import nothing but `zod` here — Node's loader cannot
- * resolve core's extensionless relative imports.
+ * `tooling/build-info.ts` validates every build's identity against this schema
+ * before inlining or publishing it.
  */
 export const APP_BUILD_INFO_PATH = "/build-info.json";
 

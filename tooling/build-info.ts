@@ -2,11 +2,15 @@
  * Build identity for one app build, resolved once per Vite configuration.
  *
  * The result is inlined into the client, SSR and web's service worker as
- * `__CLC_BUILD_INFO__` and published by the same build as `/build-info.json`.
- * Each app's Vite config validates it against `appBuildInfoSchema` in
- * `@clc/core/features/app-updates/logic`, which is the contract a running page
- * reads it with; this module cannot import that package itself, because it
- * resolves from the repo root rather than from an app.
+ * `__CLC_BUILD_INFO__` and published by the same build as `/build-info.json`,
+ * validated against `appBuildInfoSchema` — the contract a running page reads it
+ * with — so a producer/consumer mismatch fails the build.
+ *
+ * Core is imported by relative path, not as `@clc/core`: the Vite config
+ * bundler compiles relative imports but hands workspace packages to Node, and
+ * Node can only load core's TypeScript where it strips types. Admin's Pages
+ * project builds from `apps/admin`, beyond the root `.node-version`, on a Node
+ * that does not.
  *
  * `buildId` is a digest of the build's inputs, not of its commit: git tree and
  * blob IDs for the app and every shared input, the app's release entry and its
@@ -19,7 +23,16 @@ import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  APP_BUILD_INFO_PATH,
+  type AppBuildInfo,
+  appBuildInfoSchema,
+} from "../packages/core/src/features/app-updates/logic.ts";
+import { type Brand, resolveBrand } from "../packages/core/src/lib/constants/brand.ts";
+import { resolveChainId } from "../packages/core/src/lib/constants/chains.ts";
 import { type AppName, type ReleaseFile, readReleaseFile } from "./release.ts";
+
+export { APP_BUILD_INFO_PATH };
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 
@@ -45,31 +58,14 @@ const APP_INPUTS: Record<AppName, readonly string[]> = {
   admin: ["apps/admin"],
 };
 
-export interface BuildInfo {
-  schemaVersion: 1;
-  app: AppName;
-  environment: "prod" | "staging" | "development";
-  chainId: number;
-  version: string;
-  buildNumber: number;
-  minimumBuild: number;
-  gitSha: string;
-  dirty: boolean;
-  builtAt: string;
-  buildId: string;
-}
-
 export interface BuildInfoOptions {
   app: AppName;
   /** Vite's command. A dev server's build carries the `development` marker. */
   command: "build" | "serve";
-  /** Resolved through `resolveBrand`, as the app resolves it at runtime. */
-  brand: "prod" | "staging";
-  /** Resolved through `resolveChainId`, as the app resolves it at runtime. */
-  chainId: number;
   /**
    * Every `VITE_` value Vite inlines into this build. Public by construction —
-   * Vite ships them to the browser — so hashing them exposes nothing.
+   * Vite ships them to the browser — so hashing them exposes nothing. Brand and
+   * chain are resolved from it exactly as the app resolves them at runtime.
    */
   publicEnv: Record<string, string>;
   /** Overridable for tests. */
@@ -87,7 +83,15 @@ export interface GitState {
   dirty: boolean;
 }
 
-export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
+export interface AppBuild {
+  buildInfo: AppBuildInfo;
+  /** The deploy brand, also needed by web's worker build on a dev server. */
+  brand: Brand;
+}
+
+export function resolveAppBuild(options: BuildInfoOptions): AppBuild {
+  const brand = resolveBrand(options.publicEnv.VITE_BRAND);
+  const chainId = resolveChainId(options.publicEnv.VITE_CHAIN_ID);
   const processEnv = options.processEnv ?? process.env;
   const now = options.now ?? (() => new Date());
   const readGit = options.readGit ?? readGitState;
@@ -118,7 +122,7 @@ export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
 
   const builtAt = now().toISOString();
   const dirty = problems.length > 0;
-  const environment = options.command === "serve" ? "development" : options.brand;
+  const environment = options.command === "serve" ? "development" : brand;
 
   const buildId = createHash("sha256")
     .update(
@@ -126,7 +130,7 @@ export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
         schemaVersion: 1,
         app: options.app,
         environment,
-        chainId: options.chainId,
+        chainId,
         release: { version: release.version, buildNumber: release.buildNumber },
         sources: sortedEntries(git?.objects ?? {}),
         publicEnv: sortedEntries(options.publicEnv),
@@ -137,11 +141,11 @@ export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
     )
     .digest("hex");
 
-  return {
+  const buildInfo = appBuildInfoSchema.parse({
     schemaVersion: 1,
     app: options.app,
     environment,
-    chainId: options.chainId,
+    chainId,
     version: release.version,
     buildNumber: release.buildNumber,
     // `minimumBuild` is policy, not identity: publishing a new floor must not
@@ -151,7 +155,8 @@ export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
     dirty,
     builtAt,
     buildId,
-  };
+  });
+  return { buildInfo, brand };
 }
 
 /**
@@ -163,14 +168,14 @@ export function resolveBuildInfo(options: BuildInfoOptions): BuildInfo {
  * the preset never lists this file among its static routes: each app's config
  * excludes the path explicitly.
  */
-export function buildInfoNitroModule(info: BuildInfo, publicPath: string) {
+export function buildInfoNitroModule(info: AppBuildInfo) {
   return {
     name: "clc-build-info",
     setup(nitro: NitroLike) {
       if (nitro.options.dev) return;
       nitro.hooks.hook("compiled", async () => {
         await writeFile(
-          path.join(nitro.options.output.publicDir, publicPath),
+          path.join(nitro.options.output.publicDir, APP_BUILD_INFO_PATH),
           `${JSON.stringify(info, null, 2)}\n`,
         );
       });

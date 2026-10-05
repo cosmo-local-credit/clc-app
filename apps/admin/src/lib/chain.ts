@@ -12,8 +12,7 @@
  * would otherwise link an operator to an explorer that answers "no such
  * transaction", which reads as data loss rather than as a misconfiguration.
  */
-import { resolveChainId } from "@clc/core/lib/constants/chain-id";
-import { chainMetadata } from "@clc/core/lib/constants/chains";
+import { chainMetadata, resolveChainId } from "@clc/core/lib/constants/chains";
 
 export const CHAIN_ID = resolveChainId(import.meta.env.VITE_CHAIN_ID as string | undefined);
 

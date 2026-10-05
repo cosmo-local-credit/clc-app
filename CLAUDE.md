@@ -438,9 +438,9 @@ Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
 Calibur implementation come from the table in
 `@clc/core/lib/constants/chains`; per-chain token addresses (pool oracle base
 currencies, Pretium ramp) sit beside the feature that reads them. Nothing else
-may read `VITE_CHAIN_ID` except each app's Vite config, which stamps the chain
-into the build identity; both go through `resolveChainId` in
-`@clc/core/lib/constants/chain-id`. No new `?? "42220"` — a module that defaults
+may read `VITE_CHAIN_ID` except the build identity in `tooling/build-info.ts`,
+which stamps the chain into each build; both go through `resolveChainId` in
+`@clc/core/lib/constants/chains`. No new `?? "42220"` — a module that defaults
 on its own is how the wagmi config ended up signing against Celo while the SIWE
 request claimed another chain. Unset now means `100`.
 
@@ -768,10 +768,12 @@ reload when its `buildId` differs; a reload is the whole update.
 - Files written from a Nitro module after the Pages preset scans the output
   (`/sw.js`, `/build-info.json`) must be explicit `cloudflare.pages.routes.exclude`
   entries, or the SSR Function answers for them with HTML.
-- Shared build tooling lives in `tooling/` (root `/scripts` is ignored). The Vite
-  configs load `@clc/core` through Node, which cannot resolve core's extensionless
-  relative imports: anything they import from core must import nothing but npm
-  packages.
+- Shared build tooling lives in `tooling/` (root `/scripts` is ignored). It
+  reaches core by relative path, never `@clc/core`: the Vite config bundler hands
+  workspace packages to Node to load as raw TypeScript, which fails on the Node
+  that admin's Pages project builds with (its root directory is `apps/admin`, so
+  the root `.node-version` does not apply). Keep Vite configs off `@clc/core`
+  imports for the same reason; type-only imports are fine.
 
 ### TanStack CLI (TanStack docs only)
 
