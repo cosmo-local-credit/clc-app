@@ -1,15 +1,22 @@
 import path from "node:path";
+import type { AppBuildInfo } from "@clc/core/features/app-updates/logic";
 import { injectManifest } from "@serwist/build";
 import type { NitroModule } from "nitro/types";
 import { build, type Plugin } from "vite-plus";
 
 type Brand = "prod" | "staging";
 
+interface WorkerBuildOptions {
+  brand: Brand;
+  /** The app build's identity, inlined so QA can read it from the worker. */
+  buildInfo: AppBuildInfo;
+}
+
 /**
  * Development worker, written into `public/` so the dev server serves it. The
  * production worker is built by {@link serwistNitroModule} instead.
  */
-export function tanstackSerwistPlugin({ brand }: { brand: Brand }): Plugin {
+export function tanstackSerwistPlugin({ brand, buildInfo }: WorkerBuildOptions): Plugin {
   let rootDir: string;
   let isProduction: boolean;
 
@@ -26,6 +33,7 @@ export function tanstackSerwistPlugin({ brand }: { brand: Brand }): Plugin {
           outDir: path.resolve(rootDir, "public"),
           production: false,
           brand,
+          buildInfo,
         });
       }
     },
@@ -50,7 +58,7 @@ export function tanstackSerwistPlugin({ brand }: { brand: Brand }): Plugin {
  * preset scans the output before this file exists, so `/sw.js` has to be an
  * explicit routes exclusion in the Nitro config.
  */
-export function serwistNitroModule({ brand }: { brand: Brand }): NitroModule {
+export function serwistNitroModule({ brand, buildInfo }: WorkerBuildOptions): NitroModule {
   return {
     name: "clc-serwist",
     setup(nitro) {
@@ -61,6 +69,7 @@ export function serwistNitroModule({ brand }: { brand: Brand }): NitroModule {
           outDir: nitro.options.output.publicDir,
           production: true,
           brand,
+          buildInfo,
         });
       });
     },
@@ -72,11 +81,11 @@ async function buildServiceWorker({
   outDir,
   production,
   brand,
-}: {
+  buildInfo,
+}: WorkerBuildOptions & {
   rootDir: string;
   outDir: string;
   production: boolean;
-  brand: Brand;
 }) {
   const outName = "sw.js";
   const swSrc = path.resolve(rootDir, "src", "sw.ts");
@@ -96,6 +105,8 @@ async function buildServiceWorker({
       publicDir: false,
       define: {
         "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
+        // The app config's `define` does not reach a `configFile: false` build.
+        __CLC_BUILD_INFO__: JSON.stringify(buildInfo),
       },
       build: {
         lib: {
@@ -136,6 +147,9 @@ async function buildServiceWorker({
           // trees, but only the one this build resolved is ever requested.
           `brand/${brand === "staging" ? "prod" : "staging"}/**`,
           `manifest.${brand === "staging" ? "prod" : "staging"}.webmanifest`,
+          // The deployment descriptor must always come from the network. JSON
+          // is outside globPatterns today; this keeps it out if that changes.
+          "build-info.json",
         ],
         maximumFileSizeToCacheInBytes: 300 * 1024,
         injectionPoint: "self.__SW_MANIFEST",

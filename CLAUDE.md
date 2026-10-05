@@ -438,8 +438,10 @@ Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
 Calibur implementation come from the table in
 `@clc/core/lib/constants/chains`; per-chain token addresses (pool oracle base
 currencies, Pretium ramp) sit beside the feature that reads them. Nothing else
-may read `VITE_CHAIN_ID`, and no new `?? "42220"` — a module that defaults on
-its own is how the wagmi config ended up signing against Celo while the SIWE
+may read `VITE_CHAIN_ID` except each app's Vite config, which stamps the chain
+into the build identity; both go through `resolveChainId` in
+`@clc/core/lib/constants/chain-id`. No new `?? "42220"` — a module that defaults
+on its own is how the wagmi config ended up signing against Celo while the SIWE
 request claimed another chain. Unset now means `100`.
 
 Staging backend (`~/gnosis` on the `clc-gnosis` host):

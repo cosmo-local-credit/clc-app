@@ -46,6 +46,13 @@ describe("SettingsPage", () => {
     expect(about.compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("shows this build's version and commit", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    // The vitest config inlines a dirty `0.0.0-test` build with an unknown commit.
+    expect(screen.getByText("App version")).toBeTruthy();
+    expect(screen.getByText("0.0.0-test (1) · unknown*")).toBeTruthy();
+  });
+
   it("shows the connected address", () => {
     render(
       <SettingsPage

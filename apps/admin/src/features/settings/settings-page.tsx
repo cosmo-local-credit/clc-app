@@ -1,4 +1,5 @@
 import { PageHeader } from "#/components/admin/page-header";
+import { BUILD_INFO } from "#/features/app-updates/build-info";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
 import { Label } from "#/components/ui/label";
 import { Switch } from "#/components/ui/switch";
@@ -42,7 +43,40 @@ export function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="border-b pb-4">
+            <CardTitle className="font-heading text-base font-semibold tracking-tight">
+              Build
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {/* What this tab is running. The live deployment is /build-info.json. */}
+            <dl className="-mx-1.5">
+              <BuildRow label="Version" value={BUILD_INFO.version} />
+              <BuildRow label="Build number" value={String(BUILD_INFO.buildNumber)} />
+              <BuildRow label="Minimum build" value={String(BUILD_INFO.minimumBuild)} />
+              <BuildRow
+                label="Commit"
+                value={`${BUILD_INFO.gitSha}${BUILD_INFO.dirty ? " (dirty)" : ""}`}
+              />
+              <BuildRow label="Built at" value={BUILD_INFO.builtAt} />
+              <BuildRow label="Build ID" value={BUILD_INFO.buildId.slice(0, 16)} />
+            </dl>
+          </CardContent>
+        </Card>
       </div>
+    </div>
+  );
+}
+
+function BuildRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 px-1.5 py-1">
+      <dt className="text-muted-foreground text-xs">{label}</dt>
+      <dd aria-label={label} className="font-data min-w-0 truncate text-right text-xs">
+        {value}
+      </dd>
     </div>
   );
 }

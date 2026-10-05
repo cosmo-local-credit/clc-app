@@ -7,9 +7,13 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { APP_BUILD_INFO_PATH, appBuildInfoSchema } from "@clc/core/features/app-updates/logic";
+import { resolveBrand } from "@clc/core/lib/constants/brand";
+import { resolveChainId } from "@clc/core/lib/constants/chain-id";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite-plus";
+import { buildInfoNitroModule, resolveBuildInfo } from "../../tooling/build-info.ts";
 import { serwistNitroModule, tanstackSerwistPlugin } from "./plugins/serwist";
 
 const webRoot = dirname(fileURLToPath(import.meta.url));
@@ -61,7 +65,20 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
       }
     : undefined;
 
-  const brand = (process.env.VITE_BRAND ?? localEnv.VITE_BRAND) === "staging" ? "staging" : "prod";
+  // Read again after the Wrangler vars are applied: this is what Vite inlines.
+  const publicEnv = loadEnv(mode, webRoot, "VITE_");
+  const brand = resolveBrand(publicEnv.VITE_BRAND);
+  // Validated against the schema the running page reads it with, so a
+  // producer/consumer mismatch fails the build rather than every update check.
+  const buildInfo = appBuildInfoSchema.parse(
+    resolveBuildInfo({
+      app: "web",
+      command,
+      brand,
+      chainId: resolveChainId(publicEnv.VITE_CHAIN_ID),
+      publicEnv,
+    }),
+  );
 
   const plugins: import("vite-plus").PluginOption[] = [
     ...(command === "serve" ? [devtools()] : []),
@@ -75,20 +92,25 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     // type-checking after a bump, that is which shape changed, not what it means.
     nitro({
       ignore: ["plugins/serwist.ts"],
-      modules: [serwistNitroModule({ brand })],
+      // In order: the worker is built against the finished output, descriptor
+      // included (and then excluded from its precache).
+      modules: [
+        buildInfoNitroModule(buildInfo, APP_BUILD_INFO_PATH),
+        serwistNitroModule({ brand, buildInfo }),
+      ],
       // The Pages preset lists the output's static files as routes exclusions
-      // before module `compiled` hooks run, so it never sees the worker. A path
+      // before module `compiled` hooks run, so it never sees these two. A path
       // missing from the list reaches the SSR Function, which knows nothing of
       // files written after its build and answers with HTML. Configured entries
       // come first and survive the preset's 100-rule cap.
-      cloudflare: { pages: { routes: { exclude: ["/sw.js"] } } },
+      cloudflare: { pages: { routes: { exclude: [APP_BUILD_INFO_PATH, "/sw.js"] } } },
     }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
     babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
     lingui(),
-    tanstackSerwistPlugin({ brand }),
+    tanstackSerwistPlugin({ brand, buildInfo }),
     codecovVitePlugin({
       enableBundleAnalysis: process.env.CI === "true",
       bundleName: "clc-web-client",
@@ -102,7 +124,14 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     })),
   ];
 
-  return { environments, resolve: { tsconfigPaths: true }, plugins };
+  return {
+    // Client, SSR and Nitro share one serialized copy. The worker is compiled
+    // separately with `configFile: false` and gets the same object explicitly.
+    define: { __CLC_BUILD_INFO__: JSON.stringify(buildInfo) },
+    environments,
+    resolve: { tsconfigPaths: true },
+    plugins,
+  };
 });
 
 export default config;
