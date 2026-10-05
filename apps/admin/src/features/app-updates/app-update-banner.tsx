@@ -1,8 +1,10 @@
 import { useIsMutating, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { FiRefreshCw, FiX } from "react-icons/fi";
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
+import type { FileRoutesById } from "#/routeTree.gen";
 import {
   evaluateLiveBuild,
   liveBuildInfoQueryOptions,
@@ -10,16 +12,37 @@ import {
 } from "./live-build-info";
 
 /**
+ * Screens whose work a reload would destroy outside any mutation. Paper wallet
+ * keys exist only in the tab, from generation through encryption and
+ * registration until the sheet is downloaded — a reload mid-batch can leave
+ * accounts registered whose keys nobody holds. Pool and voucher publishing
+ * track the deployment with queries after the deploy mutation settles. The post
+ * editor keeps its draft in form state.
+ */
+const RELOAD_UNSAFE_ROUTES: ReadonlySet<string> = new Set([
+  "/_shell/paper-wallets",
+  "/_shell/pools/publish",
+  "/_shell/vouchers/publish",
+  "/_shell/posts/new",
+  "/_shell/posts/$reportId/edit",
+] satisfies (keyof FileRoutesById)[]);
+
+function onReloadUnsafeRoute(matches: readonly { routeId: string }[]): boolean {
+  return matches.some((match) => RELOAD_UNSAFE_ROUTES.has(match.routeId));
+}
+
+/**
  * Offers the deployment this origin now serves, and reloads into it on click.
  *
- * Mounted above the auth boundary, so it reaches the sign-in panel too. A
- * pending mutation — sign-in, paper-wallet decryption, a relayed batch —
- * disables the action; pages with unsaved work already ask the browser to
- * confirm leaving.
+ * Mounted above the auth boundary, so it reaches the sign-in panel too. Hidden
+ * on the screens above; a pending mutation — sign-in, paper-wallet decryption,
+ * a relayed batch — disables the action.
  */
 export function AppUpdateBanner() {
   const status = useAppUpdateStatus();
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const onUnsafeRoute = useRouterState({ select: (state) => onReloadUnsafeRoute(state.matches) });
   const mutating = useIsMutating() > 0;
   const [dismissedBuildId, setDismissedBuildId] = useState<string>();
   const [checking, setChecking] = useState(false);
@@ -27,6 +50,7 @@ export function AppUpdateBanner() {
 
   const visible =
     status.kind !== "current" &&
+    !onUnsafeRoute &&
     !(status.kind === "available" && dismissedBuildId === status.target.buildId);
 
   async function handleUpdate() {
@@ -44,7 +68,8 @@ export function AppUpdateBanner() {
     } finally {
       setChecking(false);
     }
-    if (queryClient.isMutating() > 0) return;
+    // Re-read after the fetch: the operator may have started work meanwhile.
+    if (queryClient.isMutating() > 0 || onReloadUnsafeRoute(router.state.matches)) return;
     window.location.reload();
   }
 

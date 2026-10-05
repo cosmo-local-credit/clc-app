@@ -88,12 +88,16 @@ export function PaperWalletsPage({ search }: { search: PaperWalletsSearch }) {
   const [pdfDownloaded, setPdfDownloaded] = useState(false);
 
   const unprinted = batch.wallets.some((wallet) => wallet.status === "ready") && !pdfDownloaded;
+  // The keys exist only in this tab from the moment they are generated, so
+  // leaving mid-batch is as costly as leaving unprinted: registration can still
+  // land on the backend for accounts whose keys nobody holds.
+  const keysAtRisk = unprinted || batch.phase === "encrypting" || batch.phase === "registering";
   useEffect(() => {
-    if (!unprinted) return;
+    if (!keysAtRisk) return;
     const warn = (event: BeforeUnloadEvent) => event.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [unprinted]);
+  }, [keysAtRisk]);
 
   const countValue = Number(count);
   const countError =

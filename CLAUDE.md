@@ -774,6 +774,9 @@ reload when its `buildId` differs; a reload is the whole update.
   never serves it. `/sw.js` and `/build-info.json` are also explicit
   `cloudflare.pages.routes.exclude` entries, so the preset's 100-rule cap cannot
   drop them and leave the SSR Function answering with HTML.
+- Admin hides the update action on screens whose work lives outside mutations
+  (paper wallets, pool/voucher publish, the post editor); keep that list in
+  `apps/admin/src/features/app-updates/app-update-banner.tsx` current.
 - Shared build tooling lives in `tooling/` (root `/scripts` is ignored). It
   reaches core by relative path, never `@clc/core`: the Vite config bundler hands
   workspace packages to Node to load as raw TypeScript, which fails on the Node
