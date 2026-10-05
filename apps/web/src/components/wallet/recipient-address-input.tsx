@@ -1,24 +1,25 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { recipientLabel, type RecipientIdentity } from "@clc/api/features/recipients/client";
+import { useEffect, useRef, useState } from "react";
 import { RiQrScan2Line } from "react-icons/ri";
 
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { RecipientIdentityText } from "#/components/wallet/recipient-identity-label";
 import type { AddressBookRecipientSource } from "#/features/wallet/api/address-book-storage";
 import {
-  useEnsRecipientResolution,
-  usePhoneRecipientResolution,
-  useReverseEnsResolution,
+  useRecipientSearch,
+  useReverseRecipientResolution,
 } from "#/features/wallet/hooks/use-recipient-resolution";
 import {
   isAddress,
-  isEns,
-  isEnsCandidate,
   isPhone,
   normalizePhone,
   normalizeScannedRecipient,
 } from "./recipient-validation";
+import { EllipsizedAddress } from "./wallet-address";
+import { CHAIN_ID } from "#/lib/chain";
 import { cn } from "#/lib/utils";
 
 export type ResolvedRecipientAddress = {
@@ -44,6 +45,7 @@ type RecipientAddressInputProps = {
   ariaInvalid?: boolean;
   disabled?: boolean;
   className?: string;
+  allowPools?: boolean;
 };
 
 /**
@@ -62,49 +64,54 @@ export function RecipientAddressInput({
   ariaInvalid,
   disabled,
   className,
+  allowPools = false,
 }: RecipientAddressInputProps) {
   const { t } = useLingui();
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [selected, setSelected] = useState<{ query: string; identity: RecipientIdentity } | null>(
+    null,
+  );
+  const previousQuery = useRef<string | null>(null);
   const [wasScanned, setWasScanned] = useState(false);
   const latestInputChange = useRef<string | undefined>(undefined);
   const recipientChange = useRef(onRecipientChange);
   const query = value ?? uncontrolledValue;
   const trimmedQuery = query.trim();
   const normalizedPhone = isPhone(query) ? normalizePhone(query) : null;
-  const ensName = isEns(trimmedQuery) ? trimmedQuery : null;
   const directAddress = isAddress(trimmedQuery) ? (trimmedQuery as `0x${string}`) : null;
-  const phoneResolution = usePhoneRecipientResolution(normalizedPhone);
-  const ensResolution = useEnsRecipientResolution(ensName);
-  const reverseEnsResolution = useReverseEnsResolution(directAddress);
-  const phoneResolvedAddress = normalizedPhone ? (phoneResolution.data?.address ?? null) : null;
-  const phoneReverseEnsResolution = useReverseEnsResolution(phoneResolvedAddress);
-  const ensSuggestions = useMemo(() => {
-    if (!isEnsCandidate(query)) return [];
-    return [`${trimmedQuery}.eth`, `${trimmedQuery}.sarafu.eth`];
-  }, [query, trimmedQuery]);
-  const recipient: ResolvedRecipientAddress | null =
-    (directAddress
+  const reverseResolution = useReverseRecipientResolution(directAddress);
+  const searchableQuery = normalizedPhone ?? trimmedQuery;
+  const searchTerm =
+    !trimmedQuery.toLowerCase().startsWith("0x") && searchableQuery.length >= 3
+      ? searchableQuery
+      : null;
+  const search = useRecipientSearch(searchTerm, allowPools);
+  const currentSelection = selected?.query === trimmedQuery ? selected.identity : null;
+  const recipient: ResolvedRecipientAddress | null = directAddress
+    ? {
+        name: reverseResolution.data ? recipientLabel(reverseResolution.data) : null,
+        address: directAddress,
+        source: reverseResolution.data ? "reverse-name" : wasScanned ? "qr" : "manual",
+      }
+    : currentSelection
       ? {
-          name: reverseEnsResolution.data?.name ?? null,
-          address: directAddress,
-          source: reverseEnsResolution.data?.name ? "reverse-ens" : wasScanned ? "qr" : "manual",
+          name: recipientLabel(currentSelection),
+          address: currentSelection.address,
+          source: normalizedPhone ? "phone" : "alias",
         }
-      : null) ??
-    (ensName && ensResolution.data
-      ? { name: ensName, address: ensResolution.data.address, source: "ens" }
-      : null) ??
-    (normalizedPhone && phoneResolution.data
-      ? {
-          name: phoneReverseEnsResolution.data?.name ?? normalizedPhone,
-          address: phoneResolution.data.address,
-          source: phoneReverseEnsResolution.data?.name ? "reverse-ens" : "phone",
-        }
-      : null);
-  const isResolving =
-    (Boolean(normalizedPhone) && phoneResolution.isPending) ||
-    (Boolean(ensName) && ensResolution.isPending);
-  const resolutionError = phoneResolution.error ?? ensResolution.error;
+      : null;
+  const resolutionError = searchTerm ? search.error : null;
+  const matches =
+    searchTerm && !currentSelection
+      ? (search.data ?? []).filter((item) => item.chainId === CHAIN_ID || item.chainId === 0)
+      : [];
+
+  useEffect(() => {
+    if (previousQuery.current !== query) setSelected(null);
+    previousQuery.current = query;
+  }, [query]);
+
   const recipientKey = recipient
     ? `${recipient.address}:${recipient.name ?? ""}:${recipient.source}`
     : "none";
@@ -126,6 +133,7 @@ export function RecipientAddressInput({
   }, [recipientKey]);
 
   function setQuery(next: string, scanned = false) {
+    setSelected(null);
     latestInputChange.current = next;
     setWasScanned(scanned);
     if (value === undefined) setUncontrolledValue(next);
@@ -153,6 +161,7 @@ export function RecipientAddressInput({
           autoCorrect="off"
           autoComplete="off"
           spellCheck={false}
+          maxLength={120}
           disabled={disabled}
           className={cn("font-mono text-sm", className)}
         />
@@ -167,21 +176,39 @@ export function RecipientAddressInput({
         </Button>
       </div>
 
-      {ensSuggestions.length ? (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {ensSuggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              dir="ltr"
-              type="button"
-              className="border border-border bg-card px-2.5 py-1.5 font-mono text-xs"
-              disabled={disabled}
-              onClick={() => setQuery(suggestion)}
-            >
-              {suggestion}
-            </button>
+      {matches.length > 0 ? (
+        <ul className="mt-3 border border-border bg-card" aria-label={t`Matching recipients`}>
+          {matches.map((match) => (
+            <li key={`${match.kind}:${match.chainId}:${match.address}`}>
+              <button
+                type="button"
+                className="min-h-11 w-full border-b border-border px-3 py-2 text-start text-sm last:border-b-0"
+                disabled={disabled}
+                onClick={() => setSelected({ query: trimmedQuery, identity: match })}
+              >
+                <RecipientIdentityText identity={match} className="block" />
+                <span className="block text-xs text-muted-foreground">
+                  {match.kind === "pool" ? t`Pool` : t`Wallet`}
+                </span>
+                <EllipsizedAddress address={match.address} className="mt-1 block" />
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
+      ) : null}
+      {searchTerm && !currentSelection && (search.isDebouncing || search.isFetching) ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          <Trans>Searching recipients…</Trans>
+        </p>
+      ) : null}
+      {searchTerm &&
+      !currentSelection &&
+      !search.isDebouncing &&
+      search.isSuccess &&
+      matches.length === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          <Trans>No matching recipients.</Trans>
+        </p>
       ) : null}
 
       {scannerOpen ? (
@@ -192,12 +219,6 @@ export function RecipientAddressInput({
             onKeyDecoded={handleScanDecoded}
           />
         </div>
-      ) : null}
-
-      {isResolving ? (
-        <p className="mt-3 text-muted-foreground text-xs">
-          <Trans>Resolving recipient…</Trans>
-        </p>
       ) : null}
 
       {resolutionError ? (

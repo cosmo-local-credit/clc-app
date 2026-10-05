@@ -7,6 +7,7 @@ const {
   mockUpgradeAndLinkMutate,
   mockUpgradeStep,
   mockBackendSignupMutateAsync,
+  mockBackendSignupError,
   mockDelegateMutateAsync,
   mockDelegateStep,
   mockDelegateError,
@@ -26,6 +27,7 @@ const {
   mockBackendSignupMutateAsync: vi
     .fn()
     .mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" }),
+  mockBackendSignupError: { current: null as unknown },
   mockDelegateMutateAsync: vi.fn().mockResolvedValue({ result: { trackingId: "tracking-1" } }),
   mockDelegateStep: { current: "idle" as string },
   mockDelegateError: { current: null as string | null },
@@ -100,7 +102,7 @@ vi.mock("#/features/auth/hooks/use-backend-auth", () => ({
   useBackendSignup: () => ({
     mutateAsync: mockBackendSignupMutateAsync,
     isPending: false,
-    error: null,
+    error: mockBackendSignupError.current,
   }),
 }));
 
@@ -153,6 +155,7 @@ vi.mock("#/lib/api/auth", async () => ({
   authClient: await import("@clc/api/features/auth/client"),
 }));
 
+import { BackendApiError } from "@clc/api/client/errors";
 import type { ProfileInput } from "@clc/core/features/signup/logic";
 import { OnboardingWalletStep } from "./onboarding-wallet-step";
 
@@ -224,6 +227,7 @@ beforeEach(() => {
   mockUpgradeAndLinkMutate.mockClear();
   mockBackendSignupMutateAsync.mockReset();
   mockBackendSignupMutateAsync.mockResolvedValue({ userId: 1, status: "PENDING", role: "USER" });
+  mockBackendSignupError.current = null;
   mockDelegateMutateAsync.mockReset();
   mockDelegateMutateAsync.mockResolvedValue({ result: { trackingId: "tracking-1" } });
   mockDelegateStep.current = "idle";
@@ -567,6 +571,40 @@ describe("OnboardingWalletStep continue flow", () => {
       fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
     });
     expect(mockDelegateMutateAsync).not.toHaveBeenCalled();
+    expect(mockStorePrivateKey).not.toHaveBeenCalled();
+    expect(mockOnDone).not.toHaveBeenCalled();
+  });
+
+  it("renders a backend registration failure once and retains the retry prerequisites", async () => {
+    const signupError = new BackendApiError(400, "Validation failed on one or more fields", "E04");
+    mockBackendSignupMutateAsync.mockRejectedValue(signupError);
+    const { rerender } = renderWalletStep({ linkPasskey: false });
+    await completeWalletRequirements();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to wallet/i }));
+    });
+
+    mockBackendSignupError.current = signupError;
+    rerender(<WalletStepFixture />);
+
+    expect(screen.getAllByText("E04: Validation failed on one or more fields")).toHaveLength(1);
+    expect(screen.getByRole("alert").textContent).toBe(
+      "E04: Validation failed on one or more fields",
+    );
+    expect(screen.getByLabelText(/i have saved this key/i)).toHaveProperty("checked", true);
+    expect(
+      screen
+        .getByRole("checkbox", { name: "Accept Terms and Conditions" })
+        .hasAttribute("data-checked"),
+    ).toBe(true);
+    expect(screen.getByRole("button", { name: /continue to wallet/i })).toHaveProperty(
+      "disabled",
+      false,
+    );
+    expect(mockDelegateMutateAsync).not.toHaveBeenCalled();
+    expect(mockConnect).not.toHaveBeenCalled();
+    expect(mockClearPrivateKey).not.toHaveBeenCalled();
     expect(mockStorePrivateKey).not.toHaveBeenCalled();
     expect(mockOnDone).not.toHaveBeenCalled();
   });

@@ -1,10 +1,16 @@
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
+import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState } from "react";
-import { RiArrowLeftDownLine, RiArrowRightUpLine, RiChat1Line } from "react-icons/ri";
+import {
+  RiArrowLeftDownLine,
+  RiArrowRightUpLine,
+  RiChat1Line,
+  RiSparkling2Line,
+} from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { EllipsizedAddress, TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
+import { TransferDetailsSheet, type TransferDetails } from "#/components/wallet";
 import { useAccountTransfersInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 
@@ -68,7 +74,12 @@ export function ActivityPage({ address }: { address?: string }) {
         ) : null}
         {transfers.map((transfer, index, list) => {
           const incoming = transfer.direction === "IN";
-          const Icon = incoming ? RiArrowLeftDownLine : RiArrowRightUpLine;
+          const created = isVoucherCreationTransfer(transfer);
+          const Icon = created
+            ? RiSparkling2Line
+            : incoming
+              ? RiArrowLeftDownLine
+              : RiArrowRightUpLine;
           const transferDate = formatTransferDate(transfer.dateBlock);
           return (
             <button
@@ -83,14 +94,20 @@ export function ActivityPage({ address }: { address?: string }) {
               <span
                 className={[
                   "flex size-7 shrink-0 items-center justify-center bg-muted",
-                  incoming ? "text-primary" : "text-destructive",
+                  created ? "text-foreground" : incoming ? "text-primary" : "text-destructive",
                 ].join(" ")}
               >
                 <Icon className="size-3.5" aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 text-sm font-medium">
-                  {incoming ? <Trans>Received</Trans> : <Trans>Sent</Trans>}
+                  {created ? (
+                    <Trans>Created</Trans>
+                  ) : incoming ? (
+                    <Trans>Received</Trans>
+                  ) : (
+                    <Trans>Sent</Trans>
+                  )}
                   {transfer.hasNote ? (
                     <>
                       <RiChat1Line
@@ -103,14 +120,24 @@ export function ActivityPage({ address }: { address?: string }) {
                     </>
                   ) : null}
                 </p>
-                <p className="truncate text-muted-foreground text-[0.6875rem]">
-                  {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <EllipsizedAddress address={transfer.counterpartyAddress} />
+                {/* Only the counterparty truncates: a long name and username
+                    must not push the date off the row. */}
+                <p className="flex min-w-0 text-muted-foreground text-[0.6875rem]">
+                  <span className="min-w-0 truncate">
+                    {created ? (
+                      <Trans>New supply</Trans>
+                    ) : (
+                      <>
+                        {incoming ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                        <RecipientIdentityLabel address={transfer.counterpartyAddress} />
+                      </>
+                    )}
+                  </span>
                   {transferDate ? (
-                    <>
+                    <span className="shrink-0 whitespace-pre">
                       <span aria-hidden="true"> · </span>
                       <time dateTime={transfer.dateBlock}>{transferDate}</time>
-                    </>
+                    </span>
                   ) : null}
                 </p>
               </div>

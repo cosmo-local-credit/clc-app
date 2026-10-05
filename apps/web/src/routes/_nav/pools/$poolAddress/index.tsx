@@ -3,9 +3,14 @@ import { z } from "zod";
 
 import { AuthenticatedRoute } from "#/components/auth/authenticated-route";
 import { PoolDetailPage } from "#/features/pools/ui";
+import { voucherSheetSearchShape } from "#/lib/navigation/voucher-sheet-search";
 
 const searchSchema = z.object({
-  tab: z.enum(["offerings", "vouchers", "holdings", "activity"]).optional().catch(undefined),
+  tab: z
+    .enum(["offerings", "vouchers", "holdings", "credit", "activity"])
+    .optional()
+    .catch(undefined),
+  ...voucherSheetSearchShape,
 });
 
 export const Route = createFileRoute("/_nav/pools/$poolAddress/")({

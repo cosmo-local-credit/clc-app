@@ -26,6 +26,7 @@ vi.mock("sonner", () => ({
 
 import { PoolDetailPage } from "#/features/pools/ui";
 import { VoucherDetailPage } from "#/features/wallet/ui";
+import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
 
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 const TOKEN_ADDRESS = "0x2222222222222222222222222222222222222222";
@@ -45,6 +46,7 @@ describe("pool voucher navigation", () => {
     const poolRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: "/pools/$poolAddress",
+      validateSearch: (search) => parseVoucherSheetSearch(search),
       component: () => {
         const { poolAddress } = useParams({ strict: false });
         return poolAddress ? (
@@ -84,7 +86,12 @@ describe("pool voucher navigation", () => {
       </QueryClientProvider>,
     );
 
-    fireEvent.click(await screen.findByRole("link", { name: /trade token/i }));
+    // The row opens the voucher's card; its page is the card's last link.
+    fireEvent.click(await screen.findByRole("button", { name: /trade token/i }));
+    await screen.findByRole("dialog", { name: "Trade Token" });
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    fireEvent.click(await screen.findByRole("link", { name: "Open voucher page" }));
 
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
@@ -95,6 +102,64 @@ describe("pool voucher navigation", () => {
 
     await act(async () => {
       fireEvent.click(screen.getByRole("link", { name: "Pool" }));
+    });
+
+    // Back lands on the pool with the card it was opened from still open over
+    // it; the pool sits behind the card's backdrop until the card closes.
+    await waitFor(() => {
+      expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
+      expect(screen.getByRole("dialog", { name: "Trade Token" })).toBeTruthy();
+      expect(screen.getByRole("heading", { name: "Trade Pool", hidden: true })).toBeTruthy();
+    });
+  });
+
+  it("swaps for a voucher from its row and Back returns to the pool", async () => {
+    mockRequests();
+    const rootRoute = createRootRoute({ component: Outlet });
+    const poolRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/pools/$poolAddress",
+      component: () => {
+        const { poolAddress } = useParams({ strict: false });
+        return poolAddress ? (
+          <PoolDetailPage poolAddress={poolAddress} activeTab="vouchers" />
+        ) : null;
+      },
+    });
+    const swapRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/pools/$poolAddress/swap",
+      validateSearch: (search): { receive?: string } => ({
+        receive: typeof search.receive === "string" ? search.receive : undefined,
+      }),
+      component: () => <h1>Swap screen</h1>,
+    });
+    const history = createMemoryHistory({ initialEntries: [`/pools/${POOL_ADDRESS}`] });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([poolRoute, swapRoute]),
+      history,
+    });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await router.load();
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+
+    // The row's Swap stands in for the offer count and opens the pool's swap
+    // with this voucher as the one to receive.
+    fireEvent.click(await screen.findByRole("link", { name: "Swap for TTX" }));
+
+    await waitFor(() => {
+      expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}/swap`);
+      expect(history.location.search).toBe(`?receive=${TOKEN_ADDRESS.toLowerCase()}`);
+      expect(screen.getByRole("heading", { name: "Swap screen" })).toBeTruthy();
+    });
+
+    await act(async () => {
+      router.history.back();
     });
 
     await waitFor(() => {

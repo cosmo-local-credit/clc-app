@@ -124,7 +124,29 @@ describe("getMarketVouchers normalization", () => {
         lat: -1.450979,
         lng: 38.235115,
         kind: "voucher",
+        markerIcon: null,
+        markerColor: null,
       },
+    ]);
+  });
+
+  it("reads the issuer's marker and drops a slug this build cannot draw", async () => {
+    fetchMock.mockResolvedValue(
+      pageResponse({
+        vouchers: [
+          { ...VALID_ROW, markerIcon: "farm", markerColor: "cyan" },
+          { ...VALID_ROW, id: 2711, markerIcon: "rocket", markerColor: "red" },
+        ],
+        first: 2711,
+        last: 2710,
+      }),
+    );
+
+    const page = await api.getMarketVouchers({ perPage: 500 });
+
+    expect(page.vouchers.map(({ markerIcon, markerColor }) => [markerIcon, markerColor])).toEqual([
+      ["farm", "cyan"],
+      [null, null],
     ]);
   });
 
@@ -396,6 +418,24 @@ describe("updateVoucherProfile", () => {
     expect(body.iconUrl).toBe("");
   });
 
+  it("keeps the stored marker unless the caller set or reset it", async () => {
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, profile);
+    let body = JSON.parse(requestedInit().body as string) as Record<string, unknown>;
+    expect("markerIcon" in body).toBe(false);
+    expect("markerColor" in body).toBe(false);
+
+    fetchMock.mockResolvedValue(detailResponse(DETAIL_ROW));
+    await api.updateVoucherProfile(DETAIL_ROW.address, {
+      ...profile,
+      markerIcon: "health",
+      markerColor: null,
+    });
+    body = JSON.parse(requestedInit(1).body as string) as Record<string, unknown>;
+    expect(body.markerIcon).toBe("health");
+    expect(body.markerColor).toBe("");
+  });
+
   it("rejects a response without a usable voucher", async () => {
     fetchMock.mockResolvedValue(detailResponse(null));
     await expect(api.updateVoucherProfile(DETAIL_ROW.address, profile)).rejects.toThrow(
@@ -484,6 +524,19 @@ describe("getMarketVoucher", () => {
     // to tell an untagged voucher from a response that predates the field.
     expect(voucher.tags).toEqual([]);
     expect(voucher.terms).toBeNull();
+    expect(voucher.markerIcon).toBeNull();
+    expect(voucher.markerColor).toBeNull();
+  });
+
+  it("reads the issuer's marker", async () => {
+    fetchMock.mockResolvedValue(
+      detailResponse({ ...DETAIL_ROW, markerIcon: "tools", markerColor: "brown" }),
+    );
+
+    expect(await api.getMarketVoucher(DETAIL_ROW.address)).toMatchObject({
+      markerIcon: "tools",
+      markerColor: "brown",
+    });
   });
 
   it("reads the terms and tags an operator edits", async () => {

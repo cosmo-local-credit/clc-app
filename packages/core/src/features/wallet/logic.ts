@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zeroAddress } from "viem";
 
 const DECIMAL_STRING_PATTERN = /^\d+$/;
 const TOKEN_AMOUNT_PATTERN = /^\d+(?:\.\d*)?$/;
@@ -17,6 +18,13 @@ export type SendShareSelection = {
   phone: boolean;
   location: boolean;
 };
+
+export function isVoucherCreationTransfer(input: {
+  direction: "IN" | "OUT";
+  senderAddress: string;
+}): boolean {
+  return input.direction === "IN" && input.senderAddress.toLowerCase() === zeroAddress;
+}
 
 export function buildSendSharePermission(selection: SendShareSelection): number {
   let permission = 0;

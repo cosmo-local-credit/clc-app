@@ -192,6 +192,8 @@ describe("VoucherDeploymentReceiptPage", () => {
       website: "https://kilifi.example",
       phone: "+254712345678",
       terms: "https://kilifi.example/terms",
+      markerIcon: null,
+      markerColor: null,
       acceptedTerms: true,
     });
     state.trackingOutcome = { kind: "success", otx: { txHash: "0xabc" } };
@@ -222,11 +224,11 @@ describe("VoucherDeploymentReceiptPage", () => {
     expect(screen.queryByText("https://kilifi.example")).toBeNull();
     expect(screen.queryByText("Kilifi, Kenya")).toBeNull();
     expect(screen.getByText("Deployment transaction")).toBeTruthy();
-    expect(screen.getByText("Mint transaction")).toBeTruthy();
+    expect(screen.getByText("Supply creation transaction")).toBeTruthy();
     const advancedDetails = screen.getByText("Advanced details").closest("details");
     expect(advancedDetails?.open).toBe(false);
     expect(advancedDetails?.textContent).toContain("Deployment transaction");
-    expect(advancedDetails?.textContent).toContain("Mint transaction");
+    expect(advancedDetails?.textContent).toContain("Supply creation transaction");
     const copyAddress = screen.getByRole("button", { name: "Copy contract address" });
     const copyIcon = copyAddress.querySelector("svg");
     expect(copyIcon?.parentElement?.classList).toContain("size-6");
@@ -268,7 +270,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
     expect(screen.getByRole("heading", { name: "Kilifi Harvest is deployed" })).toBeTruthy();
     expect(screen.getByLabelText("Create vouchers")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Create supply" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
 
     const advancedDetails = screen.getByText("Advanced details").closest("details");
@@ -293,6 +295,8 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       website: "",
       phone: "",
       terms: "",
+      markerIcon: null,
+      markerColor: null,
       acceptedTerms: true,
     });
     renderReceipt();
@@ -320,14 +324,14 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
     expect(screen.getByRole("heading", { name: "Kilifi Harvest is live" })).toBeTruthy();
     expect(screen.getByText("10000 KES")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Mint supply" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Create supply" })).toBeNull();
   });
 
   it("rejects a supply of zero without relaying anything", () => {
     renderReceipt();
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "0" } });
-    fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create supply" }));
 
     expect(screen.getByText("Supply must be greater than zero")).toBeTruthy();
     expect(mintMock).not.toHaveBeenCalled();
@@ -338,7 +342,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     renderReceipt();
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "1.234" } });
-    fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create supply" }));
 
     expect(
       screen.getByText("Supply has more decimal places than this voucher supports"),
@@ -350,7 +354,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     renderReceipt();
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
-    fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create supply" }));
 
     await waitFor(() =>
       expect(mintMock).toHaveBeenCalledWith({
@@ -369,7 +373,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       },
       replace: true,
     });
-    await waitFor(() => expect(screen.getByRole("button", { name: "Minting…" })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Creating…" })).toBeTruthy());
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
   });
 
@@ -390,7 +394,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
       search: { trackingId: "tracking-1", mintTrackingId: "mint-1", mintAmount: "2500" },
       replace: true,
     });
-    await waitFor(() => expect(screen.getByRole("button", { name: "Minting…" })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Creating…" })).toBeTruthy());
   });
 
   it("does not auto-mint while the on-chain supply is still being read", () => {
@@ -413,7 +417,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     expect(mintMock).not.toHaveBeenCalled();
     expect(screen.queryByLabelText("Create vouchers")).toBeNull();
     expect(screen.getByText("Supply").nextElementSibling?.textContent).toBe("2500 KHV");
-    expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Create supply" })).toBeTruthy();
   });
 
   it("submits at most one mint while the relay request is unresolved", () => {
@@ -421,7 +425,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     renderReceipt();
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "10000" } });
-    const button = screen.getByRole("button", { name: "Mint supply" });
+    const button = screen.getByRole("button", { name: "Create supply" });
     fireEvent.click(button);
     fireEvent.click(button);
 
@@ -436,7 +440,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
     renderReceipt();
 
-    expect(screen.getByRole("heading", { name: "Minting failed" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Creation failed" })).toBeTruthy();
     expect(screen.getByText("Transaction failed on-chain (REVERTED).")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "View voucher" })).toBeNull();
@@ -447,7 +451,7 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
 
     renderReceipt({ mintTrackingId: "mint-1", mintAmount: "500" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Check mint status" }));
+    fireEvent.click(screen.getByRole("button", { name: "Check creation status" }));
     expect(refetchTrackingMock).toHaveBeenCalledOnce();
     expect(mintMock).not.toHaveBeenCalled();
   });
@@ -458,10 +462,10 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     renderReceipt();
 
     expect(
-      screen.getByText("Reconnect the wallet that published this voucher to mint."),
+      screen.getByText("Reconnect the wallet that published this voucher to create its supply."),
     ).toBeTruthy();
     expect(
-      (screen.getByRole("button", { name: "Mint supply" }) as HTMLButtonElement).disabled,
+      (screen.getByRole("button", { name: "Create supply" }) as HTMLButtonElement).disabled,
     ).toBe(true);
   });
 
@@ -480,12 +484,12 @@ describe("VoucherDeploymentReceiptPage mint gate", () => {
     renderReceipt();
 
     fireEvent.change(screen.getByLabelText("Create vouchers"), { target: { value: "500" } });
-    fireEvent.click(screen.getByRole("button", { name: "Mint supply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create supply" }));
 
     await waitFor(() =>
       expect(toastErrorMock).toHaveBeenCalledWith("Credential is stale; re-authenticate"),
     );
-    expect(screen.getByRole("button", { name: "Mint supply" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Create supply" })).toBeTruthy();
   });
 
   it("releases the flow once the mint confirms, showing what was minted", () => {

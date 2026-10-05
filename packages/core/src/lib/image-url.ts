@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isHttpUrl } from "./contact";
 
 /**
  * A stored image URL, or nothing.
@@ -9,10 +10,11 @@ import { z } from "zod";
  * receives it refuses anything else, and by then the transaction is signed — so
  * a malformed value has to be caught here rather than in the worker.
  */
-export const optionalStoredImageUrlSchema = z
+export const storedImageUrlSchema = z
   .string()
   .trim()
-  .refine((value) => value === "" || /^https?:\/\//i.test(value), {
+  .refine((value) => value === "" || isHttpUrl(value), {
     message: "The image must be an http(s) URL",
-  })
-  .optional();
+  });
+
+export const optionalStoredImageUrlSchema = storedImageUrlSchema.optional();

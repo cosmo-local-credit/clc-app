@@ -1,8 +1,8 @@
+import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { formatVoucherRate } from "@clc/core/features/market/logic";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
-import { formatTokenAmount } from "@clc/core/features/wallet/logic";
-import { isHttpUrl } from "@clc/core/lib/contact";
+import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
@@ -18,24 +18,22 @@ import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
   RiCoinLine,
-  RiDownloadLine,
-  RiFileCopyLine,
+  RiGroupLine,
   RiNavigationLine,
   RiSendPlane2Line,
+  RiSparkling2Line,
 } from "react-icons/ri";
-import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
+import { VoucherAbout } from "#/components/vouchers/voucher-about";
+import { VoucherOfferingsPanel } from "#/components/vouchers/voucher-offerings-panel";
 import { ReportList } from "#/components/reports/report-list";
-import { InfoRow } from "#/components/ui/info-row";
-import { MarkdownContent } from "#/components/ui/markdown-content";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
 import {
   BackChevron,
-  EllipsizedAddress,
   TransferDetailsSheet,
   VoucherAvatar,
   WALLET_TOKEN_BY_ID,
@@ -58,7 +56,6 @@ import {
   resolveVoucherNavigationOwner,
   type VoucherOrigin,
 } from "#/lib/navigation/voucher-navigation-owner";
-import { VoucherOfferingsPanel } from "./voucher-offerings-panel";
 import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
@@ -163,7 +160,6 @@ export function VoucherDetailPage({
     phone: detail?.phone ?? baseToken?.phone,
     email: detail?.email ?? baseToken?.email,
     owner: detail?.ownerAddress ?? baseToken?.owner,
-    ownerEns: baseToken?.ownerEns,
     contractAddress: detail?.address ?? baseToken?.contractAddress ?? voucherAddress,
     iconUrl: detail?.iconUrl ?? baseToken?.iconUrl,
     tokenDecimals: baseToken?.tokenDecimals ?? detail?.decimals ?? undefined,
@@ -256,11 +252,14 @@ export function VoucherDetailPage({
             </span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
-          <Link to="/wallet/receive">
-            <RiDownloadLine className="size-4" aria-hidden="true" />
+        <Button asChild variant="info" className="h-14 flex-col gap-1 px-1">
+          <Link
+            to="/pools"
+            search={{ out_voucher: (contractAddress ?? voucherAddress).toLowerCase() }}
+          >
+            <RiGroupLine className="size-4" aria-hidden="true" />
             <span className="text-[0.6875rem] font-semibold">
-              <Trans>Receive</Trans>
+              <Trans>Pools</Trans>
             </span>
           </Link>
         </Button>
@@ -587,6 +586,7 @@ function VoucherActivityPanel({
         ) : null}
         {transfers.map((transfer, index, list) => {
           const kind = transfer.direction === "IN" ? "in" : "out";
+          const created = isVoucherCreationTransfer(transfer);
           const transferDate = formatTransferDate(transfer.dateBlock);
           return (
             <button
@@ -601,18 +601,34 @@ function VoucherActivityPanel({
               <span
                 className={[
                   "flex size-7 shrink-0 items-center justify-center bg-muted",
-                  TX_ICON_CLASS[kind],
+                  created ? "text-foreground" : TX_ICON_CLASS[kind],
                 ].join(" ")}
               >
-                {TX_ICON[kind]}
+                {created ? (
+                  <RiSparkling2Line className="size-3.5" aria-hidden="true" />
+                ) : (
+                  TX_ICON[kind]
+                )}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium">
-                  {transfer.direction === "IN" ? <Trans>Received</Trans> : <Trans>Sent</Trans>}
+                  {created ? (
+                    <Trans>Created</Trans>
+                  ) : transfer.direction === "IN" ? (
+                    <Trans>Received</Trans>
+                  ) : (
+                    <Trans>Sent</Trans>
+                  )}
                 </span>
                 <span className="block truncate text-muted-foreground text-[0.6875rem]">
-                  {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
-                  <EllipsizedAddress address={transfer.counterpartyAddress} />
+                  {created ? (
+                    <Trans>New supply</Trans>
+                  ) : (
+                    <>
+                      {transfer.direction === "IN" ? <Trans>From</Trans> : <Trans>To</Trans>}{" "}
+                      <RecipientIdentityLabel address={transfer.counterpartyAddress} />
+                    </>
+                  )}
                   {transferDate ? (
                     <>
                       <span aria-hidden="true"> · </span>
@@ -647,31 +663,13 @@ function VoucherActivityPanel({
 }
 
 function VoucherInfoPanel({
-  rate,
-  symbol,
-  description,
-  contractAddress,
-  email,
-  website,
-  phone,
-  terms,
-  issuerAddress,
   locationName,
   lat,
   lng,
   editable,
   contractActions,
-}: {
-  rate: { value: string; unit: string } | null;
-  symbol: string;
-  description: string | null;
-  contractAddress: string | undefined;
-  email: string | null;
-  website: string | null;
-  phone: string | null;
-  /** Either a link to the issuer's terms or the terms themselves, as Markdown. */
-  terms: string | null;
-  issuerAddress: string | null;
+  ...about
+}: ComponentProps<typeof VoucherAbout> & {
   locationName: string | null;
   lat: number | null;
   lng: number | null;
@@ -679,7 +677,6 @@ function VoucherInfoPanel({
   editable: MarketVoucherDetail | null;
   contractActions: Omit<ComponentProps<typeof VoucherContractActionsPanel>, "editable">;
 }) {
-  const { t } = useLingui();
   const hasCoordinates = typeof lat === "number" && typeof lng === "number";
   const locationLabel = locationName ?? (hasCoordinates ? `${lat}, ${lng}` : null);
 
@@ -692,106 +689,7 @@ function VoucherInfoPanel({
     >
       <VoucherContractActionsPanel {...contractActions} editable={editable} />
 
-      {rate || description ? (
-        <div className="space-y-3 border border-border bg-card p-4">
-          {rate ? (
-            <p className="font-mono text-sm font-semibold leading-tight text-primary">
-              <Trans>
-                1 {symbol} = {rate.value} {rate.unit}
-              </Trans>
-            </p>
-          ) : null}
-          {description ? (
-            <p dir="auto" className="text-sm leading-relaxed">
-              {description}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-
-      <dl className="border border-border bg-card">
-        <InfoRow label={t`Contract address`}>
-          {contractAddress ? (
-            <button
-              type="button"
-              aria-label={t`Copy contract address`}
-              className="flex min-w-0 items-center gap-1.5"
-              onClick={() => {
-                if (!navigator.clipboard) {
-                  toast.error(t`Couldn't copy contract address`);
-                  return;
-                }
-                void navigator.clipboard
-                  .writeText(contractAddress)
-                  .then(() => toast.success(t`Contract address copied`))
-                  .catch(() => toast.error(t`Couldn't copy contract address`));
-              }}
-            >
-              <EllipsizedAddress address={contractAddress} />
-              <span className="flex size-6 shrink-0 items-center justify-center bg-muted text-muted-foreground">
-                <RiFileCopyLine className="size-3" aria-hidden="true" />
-              </span>
-            </button>
-          ) : (
-            "—"
-          )}
-        </InfoRow>
-        {email ? (
-          <InfoRow label={t`Email`}>
-            <a
-              href={`mailto:${email}`}
-              className="max-w-full truncate underline underline-offset-2"
-            >
-              {email}
-            </a>
-          </InfoRow>
-        ) : null}
-        <InfoRow label={t`Website`}>
-          {website ? (
-            <a
-              href={website}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="max-w-full truncate underline underline-offset-2"
-            >
-              {website}
-            </a>
-          ) : (
-            "—"
-          )}
-        </InfoRow>
-        {phone ? (
-          <InfoRow label={t`Phone`}>
-            <a href={`tel:${phone}`} className="max-w-full truncate underline underline-offset-2">
-              {phone}
-            </a>
-          </InfoRow>
-        ) : null}
-        {terms && isHttpUrl(terms) ? (
-          <InfoRow label={t`Terms`}>
-            <a
-              href={terms}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="max-w-full truncate underline underline-offset-2"
-            >
-              {terms}
-            </a>
-          </InfoRow>
-        ) : null}
-        <InfoRow label={t`Issuer`}>
-          {issuerAddress ? <EllipsizedAddress address={issuerAddress} /> : "—"}
-        </InfoRow>
-      </dl>
-
-      {terms && !isHttpUrl(terms) ? (
-        <div className="border border-border bg-card p-4">
-          <p className="font-heading text-sm font-semibold leading-snug">
-            <Trans>Terms</Trans>
-          </p>
-          <MarkdownContent className="mt-2">{terms}</MarkdownContent>
-        </div>
-      ) : null}
+      <VoucherAbout {...about} />
 
       {locationLabel ? (
         <div className="border border-border bg-card p-4">

@@ -1,6 +1,8 @@
 import type { ProfileDefaults } from "@clc/core/features/signup/prefill";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { $convertFromMarkdownString } from "@lexical/markdown";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import type { LexicalEditor } from "lexical";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -66,12 +68,16 @@ vi.mock("#/components/ui/location-picker", () => ({
   LocationPicker: ({
     value,
     onChange,
+    markerStyle,
   }: {
     value?: { locationName: string };
     onChange: (value: { locationName: string; country: string; lat: number; lng: number }) => void;
+    markerStyle?: { icon: string; color: string };
   }) => (
     <button
       type="button"
+      data-marker-icon={markerStyle?.icon}
+      data-marker-color={markerStyle?.color}
       onClick={() =>
         onChange({
           locationName: "Kilifi, Kenya",
@@ -109,6 +115,12 @@ vi.mock("#/hooks/use-deployment", () => ({
 
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
 
+// The shell only defers the chunk; these tests are about the editor inside it.
+vi.mock("#/components/ui/markdown-editor", async () => {
+  const editor = await import("#/components/ui/markdown-editor-lexical");
+  return { MarkdownEditor: editor.MarkdownEditorLexical };
+});
+
 // Cropping and uploading are covered by the shared field's tests. This keeps
 // this suite on form integration: stored URLs must survive the steps and reach
 // the deploy request.
@@ -145,6 +157,7 @@ vi.mock("#/components/ui/image-upload-field", () => ({
   ),
 }));
 
+import { MARKDOWN_TRANSFORMERS } from "#/components/ui/markdown-editor-lexical";
 import { BackendApiError } from "@clc/api/client/errors";
 import { toast } from "sonner";
 
@@ -160,6 +173,18 @@ function renderFlow(ui: ReactElement) {
     ),
   });
   return { ...view, queryClient };
+}
+
+/** Replaces what the terms editor holds, as if the author had formatted it. */
+async function writeTerms(label: string, markdown: string) {
+  const root = screen.getByRole("textbox", { name: label }) as HTMLElement & {
+    __lexicalEditor: LexicalEditor;
+  };
+  await act(async () => {
+    root.__lexicalEditor.update(() => {
+      $convertFromMarkdownString(markdown, MARKDOWN_TRANSFORMERS);
+    });
+  });
 }
 
 beforeEach(() => {
@@ -358,16 +383,20 @@ describe("CreateVoucherFlow", () => {
     fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
 
     // Flipping the switch discards the link: a URL is not a body of terms.
-    const editor = screen.getByLabelText("Shown to anyone holding this voucher");
-    expect((editor as HTMLTextAreaElement).value).toBe("");
+    const editor = await screen.findByRole("textbox", {
+      name: "Shown to anyone holding this voucher",
+    });
+    expect(editor.textContent).toBe("");
     expect(screen.queryByLabelText("Terms URL")).toBeNull();
 
-    fireEvent.change(editor, {
-      target: { value: "# House rules\n\nRedeemable on **market days** only." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
-    expect(screen.getByRole("heading", { name: "House rules" })).toBeTruthy();
-    expect(screen.getByText("market days").tagName).toBe("STRONG");
+    await writeTerms(
+      "Shown to anyone holding this voucher",
+      "# House rules\n\nRedeemable on **market days** only.",
+    );
+    // Formatted where it is written: no syntax to read, so nothing to preview.
+    expect(editor.querySelector("h1")?.textContent).toBe("House rules");
+    expect(editor.querySelector("strong")?.textContent).toBe("market days");
+    expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Choose Kilifi, Kenya" }));
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
@@ -539,6 +568,78 @@ describe("CreateVoucherFlow", () => {
       history: expect.any(Object),
       destination: "/vouchers/create/receipt?trackingId=tracking-1&mintAmount=10000",
     });
+  });
+
+  it("lets the issuer choose the map pin, and sends it only when chosen", async () => {
+    deployMutateAsync.mockResolvedValue({ trackingId: "tracking-1" });
+    useVoucherCreateDraft.getState().setDraft({
+      name: "Kilifi Harvest",
+      symbol: "KHV",
+      price: "1",
+      unitOfAccount: "KES",
+      description: "Fresh food from Kilifi producers.",
+      voucherType: "standard",
+      expiryDate: "",
+      decimals: "6",
+      supply: "1000",
+      location: { locationName: "Kilifi, Kenya", country: "KE", lat: -3.5107, lng: 39.9093 },
+      tags: [],
+      email: "",
+      website: "",
+      phone: "",
+      terms: "",
+      iconUrl: "",
+      markerIcon: null,
+      markerColor: null,
+      acceptedTerms: true,
+    });
+    const view = renderFlow(<CreateVoucherFlow step="place" />);
+
+    const icons = screen.getByRole("radiogroup", { name: "Pin icon" });
+    const colours = screen.getByRole("radiogroup", { name: "Pin colour" });
+    // Nothing is chosen until the issuer picks: the pin follows the offerings.
+    expect(within(icons).queryByRole("radio", { checked: true })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Use default" })).toBeNull();
+    expect(within(icons).getAllByRole("radio")).toHaveLength(8);
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("coupon");
+
+    fireEvent.click(within(icons).getByRole("radio", { name: "Education" }));
+    fireEvent.click(within(colours).getByRole("radio", { name: "Pink" }));
+    expect(
+      within(icons).getByRole("radio", { name: "Education" }).getAttribute("aria-checked"),
+    ).toBe("true");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("education");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-color"),
+    ).toBe("pink");
+
+    view.rerender(<CreateVoucherFlow step="review" />);
+    expect(screen.getByText("Education, Pink")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() =>
+      expect(deployMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ markerIcon: "education", markerColor: "pink" }),
+      ),
+    );
+
+    view.rerender(<CreateVoucherFlow step="place" />);
+    fireEvent.click(screen.getByRole("button", { name: "Use default" }));
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-icon"),
+    ).toBe("coupon");
+    expect(
+      screen.getByRole("button", { name: "Kilifi, Kenya" }).getAttribute("data-marker-color"),
+    ).toBe("orange");
+    view.rerender(<CreateVoucherFlow step="review" />);
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Publish" }));
+    await waitFor(() => expect(deployMutateAsync).toHaveBeenCalledTimes(2));
+    const payload = deployMutateAsync.mock.calls[1]?.[0] as Record<string, unknown>;
+    expect("markerIcon" in payload).toBe(false);
+    expect("markerColor" in payload).toBe(false);
   });
 
   it("always sends the standard six-decimal token defaults", async () => {
@@ -762,6 +863,8 @@ describe("CreateVoucherFlow", () => {
         phone: "",
         terms: "",
         iconUrl: "",
+        markerIcon: null,
+        markerColor: null,
         acceptedTerms: true,
       });
       renderFlow(<CreateVoucherFlow step="voucher" />);

@@ -1,4 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { LocationInput } from "@clc/core/features/location/logic";
+import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -71,6 +73,60 @@ beforeEach(() => {
 });
 
 describe("LocationPicker", () => {
+  it("does not search a saved location when effects replay in StrictMode", async () => {
+    mockSearchLocations.mockResolvedValue([
+      { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
+      { address: "Nairobi West, Kenya", lat: -1.31, lng: 36.81, score: 95 },
+    ]);
+    render(
+      <StrictMode>
+        <LocationPicker
+          value={{ locationName: "Nairobi, Kenya", country: "KE", lat: -1.2921, lng: 36.8219 }}
+          onChange={vi.fn()}
+        />
+      </StrictMode>,
+    );
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 450));
+    });
+
+    expect(mockSearchLocations).not.toHaveBeenCalled();
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("discards pending suggestions after a map selection resolves to the same search text", async () => {
+    let resolveSearch: (value: unknown) => void = () => undefined;
+    mockSearchLocations.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveSearch = resolve;
+        }),
+    );
+    mockReverseLocation.mockResolvedValue({ locationName: "Nairobi, Kenya", country: "KE" });
+    render(<LocationPicker value={undefined} onChange={vi.fn()} />);
+    fireEvent.change(screen.getByRole("searchbox", { name: /location/i }), {
+      target: { value: "Nairobi, Kenya" },
+    });
+    await waitFor(() => expect(mockSearchLocations).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /pick map location/i }));
+    });
+    await act(async () => {
+      resolveSearch([
+        { address: "Nairobi CBD, Kenya", lat: -1.2921, lng: 36.8219, score: 99 },
+        { address: "Nairobi West, Kenya", lat: -1.31, lng: 36.81, score: 95 },
+      ]);
+    });
+
+    expect(screen.queryByRole("listbox")).toBeNull();
+    expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+      "value",
+      "Nairobi, Kenya",
+    );
+  });
+
   it("does not render the browser-only map during server rendering", () => {
     const html = renderToString(<LocationPicker onChange={vi.fn()} value={undefined} />);
 
@@ -220,6 +276,55 @@ describe("LocationPicker", () => {
     expect(screen.getByTestId("map-pin").textContent).toBe(",");
     expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty("value", "");
   });
+
+  it.each([{ locationName: "Mathira, Nyeri, Kenya", country: "KE" }, null])(
+    "keeps the tapped pin while a controlled form resolves the location (%j)",
+    async (result) => {
+      let resolveReverse: (value: typeof result) => void = () => undefined;
+      mockReverseLocation.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveReverse = resolve;
+          }),
+      );
+      function ControlledPicker() {
+        const [value, setValue] = useState<LocationInput | undefined>({
+          lat: -1.2921,
+          lng: 36.8219,
+          locationName: "Nairobi, Kenya",
+          country: "KE",
+        });
+        return (
+          <LocationPicker
+            value={value}
+            onChange={setValue}
+            markerStyle={{ icon: "education", color: "blue" }}
+          />
+        );
+      }
+      render(<ControlledPicker />);
+
+      fireEvent.click(screen.getByRole("button", { name: /pick map location/i }));
+
+      expect(screen.getByTestId("map-pin").textContent).toBe("-1.29,36.82");
+      expect(screen.getByText(/identifying location/i)).toBeTruthy();
+
+      await act(async () => {
+        resolveReverse(result);
+      });
+
+      expect(screen.getByTestId("map-pin").textContent).toBe("-1.29,36.82");
+      expect(screen.queryByText(/identifying location/i)).toBeNull();
+      if (result) {
+        expect(screen.getByRole("searchbox", { name: /location/i })).toHaveProperty(
+          "value",
+          result.locationName,
+        );
+      } else {
+        expect(screen.getByText(/couldn't identify a country/i)).toBeTruthy();
+      }
+    },
+  );
 
   it("fills the visible input when the parent loads a saved location", () => {
     const { rerender } = render(<LocationPicker onChange={vi.fn()} value={undefined} />);

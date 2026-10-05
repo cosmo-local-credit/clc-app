@@ -93,6 +93,7 @@ const mocks = vi.hoisted(() => ({
     fetchNextPage: vi.fn(),
     refetch: vi.fn(),
   },
+  transfers: [] as Array<Record<string, unknown>>,
 }));
 
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
@@ -112,9 +113,12 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
-  useEnsRecipientResolution: () => ({ data: null, error: null, isPending: false }),
-  usePhoneRecipientResolution: () => ({ data: null, error: null, isPending: false }),
-  useReverseEnsResolution: () => ({ data: null, error: null, isPending: false }),
+  useRecipientSearch: () => ({ data: null, error: null, isPending: false }),
+  useReverseRecipientResolution: () => ({ data: null, error: null, isPending: false }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-send-share", () => ({
+  useSendShare: () => ({ data: null, isPending: false, isError: false }),
 }));
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
@@ -124,6 +128,10 @@ vi.mock("@tanstack/react-query", async (importOriginal) => ({
 
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => mocks.auth,
+}));
+
+vi.mock("#/features/wallet/hooks/use-address-book", () => ({
+  useAddressBookRecipients: () => ({ data: [] }),
 }));
 
 vi.mock("#/features/auth/hooks/use-profile", () => ({
@@ -228,7 +236,7 @@ vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
     isPending: false,
   }),
   useAccountTransfersInfinite: () => ({
-    data: { pages: [{ transfers: [] }] },
+    data: { pages: [{ transfers: mocks.transfers }] },
     isPending: false,
     isError: false,
     isSuccess: true,
@@ -362,6 +370,8 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     bannerUrl: "https://content.example/banner.jpg",
     tags: ["Agriculture"],
     kind: "goods",
+    markerIcon: null,
+    markerColor: null,
     active: true,
     ...overrides,
   };
@@ -478,6 +488,7 @@ beforeEach(() => {
     refetch: vi.fn(),
   };
   mocks.reportVoucher = undefined;
+  mocks.transfers = [];
   mocks.reportsEnabled = false;
   mocks.reportsResult = {
     data: { pages: [{ reports: [report()] }] },
@@ -496,6 +507,34 @@ afterEach(() => {
 });
 
 describe("VoucherDetailPage", () => {
+  it("shows voucher creation as new supply without exposing the zero address", async () => {
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+    mocks.transfers = [
+      {
+        id: 743840,
+        txHash: "0xec0810051bdd353f0d3ad60bdf6c78eef8579d8d4b19d1bd7bc4f6a73cc16783",
+        dateBlock: "2026-09-30T05:27:30Z",
+        direction: "IN",
+        counterpartyAddress: zeroAddress,
+        senderAddress: zeroAddress,
+        recipientAddress: mocks.address,
+        tokenAddress: ADDRESS,
+        tokenSymbol: "MALII",
+        tokenName: "Priscilah Malii",
+        tokenDecimals: 2,
+        amount: "100000",
+        success: true,
+      },
+    ];
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    expect(await screen.findByText("Created")).toBeTruthy();
+    expect(screen.getByText(/New supply/)).toBeTruthy();
+    expect(screen.getByText("1000")).toBeTruthy();
+    expect(document.body.textContent).not.toContain("0x0000");
+  });
+
   it("puts balance and the three voucher actions above the tabs", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
@@ -504,13 +543,17 @@ describe("VoucherDetailPage", () => {
     expect(screen.queryByText("KSH")).toBeNull();
 
     const actions = screen.getByLabelText("Voucher actions");
-    expect(actions.textContent).toBe("RedeemSendReceive");
+    expect(actions.textContent).toBe("RedeemSendPools");
     // Redeem is a send to the issuer, with the voucher already selected.
     const redeem = within(actions).getByRole("link", { name: "Redeem" });
     expect(redeem.getAttribute("data-variant")).toBe("default");
     expect(redeem.getAttribute("href")).toBe(
       `/wallet/send/amount?token=${ADDRESS}&recipient=0xDeF0000000000000000000000000000000000456`,
     );
+    const pools = within(actions).getByRole("link", { name: "Pools" });
+    expect(pools.getAttribute("data-variant")).toBe("info");
+    expect(pools.getAttribute("href")).toBe(`/pools?out_voucher=${ADDRESS.toLowerCase()}`);
+    expect(within(actions).queryByRole("link", { name: "Receive" })).toBeNull();
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
       "Offerings",
@@ -747,6 +790,7 @@ describe("VoucherDetailPage", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="info" />);
 
     const panel = screen.getByRole("tabpanel");
+    expect(within(panel).queryByRole("link", { name: "Find this voucher in a pool" })).toBeNull();
     const rate = within(panel).getByText("1 MALII = 10 KSH");
     expect(rate.className).toContain("text-sm");
     expect(rate.className).toContain("text-primary");

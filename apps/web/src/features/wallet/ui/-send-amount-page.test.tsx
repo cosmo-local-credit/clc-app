@@ -183,6 +183,7 @@ describe("SendAmountPage", () => {
           recipient: RECIPIENT,
           amount: "5",
           symbol: "USDC",
+          recipientLabel: "Trade Pool",
           returnPool: RECIPIENT,
         },
       });
@@ -270,8 +271,8 @@ describe("SendAmountPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
 
     expect(screen.getByText(/confirm send/i)).toBeTruthy();
-    expect(document.body.textContent).toContain("0xa316…5fad4");
-    expect(document.body.textContent).not.toContain(RECIPIENT);
+    expect(screen.getAllByText("Alice")).toHaveLength(2);
+    expect(document.body.textContent).toContain(RECIPIENT);
   });
 
   it("surfaces relay errors inside the open confirmation sheet", async () => {
@@ -322,6 +323,7 @@ describe("SendAmountPage", () => {
         trackingId: "tracking-1",
         token: USDC,
         recipient: RECIPIENT,
+        recipientLabel: "Alice",
         amount: "2.13",
         symbol: "USDC",
       },

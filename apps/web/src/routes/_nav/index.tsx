@@ -8,11 +8,9 @@ import {
   pickCatalogSearch,
 } from "#/lib/navigation/catalog-search";
 import {
+  type HomeRouteSearch,
   isPrivateHomeTab,
-  type HomeTab,
-  type MarketView,
-  parseHomeTab,
-  parseMarketView,
+  parseHomeSearch,
 } from "#/lib/navigation/home-tabs";
 
 const HomePage = lazy(() =>
@@ -23,9 +21,8 @@ const HomePage = lazy(() =>
 
 export const Route = createFileRoute("/_nav/")({
   staticData: { navOwner: "home" },
-  validateSearch: (search): { tab?: HomeTab; view?: MarketView } & CatalogRouteSearch => ({
-    tab: parseHomeTab(search.tab),
-    view: parseMarketView(search.view),
+  validateSearch: (search): HomeRouteSearch & CatalogRouteSearch => ({
+    ...parseHomeSearch(search),
     ...pickCatalogSearch(search),
   }),
   beforeLoad: ({ search }) => {

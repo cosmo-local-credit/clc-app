@@ -14,6 +14,8 @@ export type StubbedContext = {
   fills: string[];
   strokes: string[];
   paths: string[];
+  arcs: Array<{ x: number; y: number; radius: number }>;
+  lines: Array<{ x: number; y: number }>;
   pixel: [number, number, number, number];
 };
 
@@ -46,6 +48,8 @@ export function installCanvasStub(): Map<HTMLCanvasElement, StubbedContext> {
       fills: [],
       strokes: [],
       paths: [],
+      arcs: [],
+      lines: [],
       pixel: [0, 0, 0, 0],
     };
 
@@ -58,7 +62,13 @@ export function installCanvasStub(): Map<HTMLCanvasElement, StubbedContext> {
       scale: vi.fn(),
       clearRect: vi.fn(),
       beginPath: vi.fn(),
-      arc: vi.fn(),
+      closePath: vi.fn(),
+      arc: vi.fn((x: number, y: number, radius: number) => {
+        record.arcs.push({ x, y, radius });
+      }),
+      lineTo: vi.fn((x: number, y: number) => {
+        record.lines.push({ x, y });
+      }),
       save: vi.fn(),
       restore: vi.fn(),
       translate: vi.fn(),
@@ -69,7 +79,7 @@ export function installCanvasStub(): Map<HTMLCanvasElement, StubbedContext> {
           record.paths.push(String((path as { d?: string }).d ?? "path2d"));
           return;
         }
-        // The disc is the marker body; that is the pixel a reader sees.
+        // The pin body is the fill with no path; that is the pixel a reader sees.
         record.pixel = toRGBA(color);
       }),
       stroke: vi.fn(() => {

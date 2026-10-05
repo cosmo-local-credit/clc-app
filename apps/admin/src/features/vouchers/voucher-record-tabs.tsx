@@ -14,6 +14,7 @@ import { RecordPanel } from "#/components/admin/record-panel";
 import { SectionState } from "#/components/admin/section-state";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { StateBadge } from "#/components/admin/state-badge";
+import { transactionTypeLabel } from "#/components/admin/transaction-type-badge";
 import { Badge } from "#/components/ui/badge";
 import { Button, buttonVariants } from "#/components/ui/button";
 import {
@@ -242,7 +243,9 @@ function TransactionsPanel({ address }: { address: string }) {
                 {(query.data?.transactions ?? []).map((row) => (
                   <TableRow key={row.id}>
                     <TableCell className="font-data text-xs">{formatDateTime(row.t)}</TableCell>
-                    <TableCell className="font-mono text-xs uppercase">{row.type}</TableCell>
+                    <TableCell className="font-mono text-xs uppercase">
+                      {transactionTypeLabel(row.type)}
+                    </TableCell>
                     <TableCell>
                       <AddressCell address={row.from} />
                     </TableCell>

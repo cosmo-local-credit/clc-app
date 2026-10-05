@@ -1,3 +1,4 @@
+import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -62,8 +63,9 @@ type FilteredReportsState =
   | { status: "error"; error: Error };
 
 function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS_FILTER_PAGE_SIZE) {
+  const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: filteredReportQueryKeys.filtered(filter, perPage),
+    queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(filter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
       if (!filter) throw new Error("The filtered reports query ran without a filter.");
 
@@ -72,7 +74,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
 
       for (let index = 0; index < MAX_FILTERED_REPORT_PAGES; index++) {
         const page = await reportsClient.getFilteredReports(
-          { perPage, cursor, filter, facets: index === 0 },
+          { perPage, cursor, filter, facets: index === 0, ...(nearby ? { nearby: true } : {}) },
           signal,
         );
         pages.push(page);
@@ -106,6 +108,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
     refetchOnReconnect: false,
+    ...nearbyQueryPolicy(nearby),
     // Only a transport failure or server fault is worth replaying; a rejected
     // filter, an exhausted page budget, or a bug in our own query function
     // will fail identically. See isRetryableBackendError.
@@ -114,11 +117,17 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
 }
 
 function useReportFacetVocabulary(enabled: boolean) {
+  const nearby = useNearbyCatalog();
   return useQuery({
-    queryKey: filteredReportQueryKeys.facetVocabulary(),
+    queryKey: nearbyQueryKey(filteredReportQueryKeys.facetVocabulary(), nearby),
     queryFn: async ({ signal }) => {
       const page = await reportsClient.getFilteredReports(
-        { perPage: 1, filter: EMPTY_CATALOG_FILTER, facets: true },
+        {
+          perPage: 1,
+          filter: EMPTY_CATALOG_FILTER,
+          facets: true,
+          ...(nearby ? { nearby: true } : {}),
+        },
         signal,
       );
       return {
@@ -130,6 +139,7 @@ function useReportFacetVocabulary(enabled: boolean) {
     staleTime: REPORTS_STALE_TIME,
     gcTime: FILTERED_REPORTS_GC_TIME,
     refetchOnReconnect: false,
+    ...nearbyQueryPolicy(nearby),
     retry: (failureCount, error) => failureCount < 1 && isRetryableBackendError(error),
   });
 }

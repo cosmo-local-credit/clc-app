@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { type ReactNode, useSyncExternalStore } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
@@ -20,6 +20,9 @@ type MapProps = {
   } | null;
   userLocation: { lat: number; lng: number } | null;
   onSelectLocation: (id: string) => void;
+  onDeselect?: () => void;
+  onUserPan?: () => void;
+  bottomInset?: number;
   onViewportSettled?: (viewport: {
     west: number;
     south: number;
@@ -43,7 +46,21 @@ const {
   lastAppMenuProps,
   profileRequests,
   profileResult,
+  selection,
 } = vi.hoisted(() => ({
+  selection: {
+    voucher: null as `0x${string}` | null,
+    calls: [] as [string, string?][],
+    listeners: new Set<() => void>(),
+    subscribe: (listener: () => void) => {
+      selection.listeners.add(listener);
+      return () => selection.listeners.delete(listener);
+    },
+    set: (voucher: `0x${string}` | null) => {
+      selection.voucher = voucher;
+      for (const listener of selection.listeners) listener();
+    },
+  },
   detailResult: {
     current: { data: undefined as MarketVoucherDetail | undefined, isPending: false },
   },
@@ -103,11 +120,12 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: {
     explicit: 0,
-    savedProfile: 1,
-    liveGps: 2,
-    persistedGps: 3,
-    ipCity: 4,
-    countryDefault: 5,
+    selectedVoucher: 1,
+    savedProfile: 2,
+    liveGps: 3,
+    persistedGps: 4,
+    ipCity: 5,
+    countryDefault: 6,
   },
   REAL_FIX_ZOOM: 14,
   useMarketCamera: () => cameraResult.current,
@@ -157,7 +175,27 @@ vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOrigi
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: (address: string | undefined) => {
     detailRequests.current.push(address);
-    return detailResult.current;
+    // Disabled without an address, like the real query.
+    return address ? detailResult.current : { data: undefined, isPending: false };
+  },
+}));
+
+// One selection for the page and its sheet, as the URL is for both.
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => {
+    const voucher = useSyncExternalStore(selection.subscribe, () => selection.voucher);
+    return {
+      voucher,
+      voucherTab: "offerings",
+      open: (address: `0x${string}`) => {
+        selection.calls.push(["open", address]);
+        selection.set(address);
+      },
+      close: () => {
+        selection.calls.push(["close"]);
+        selection.set(null);
+      },
+    };
   },
 }));
 
@@ -232,6 +270,8 @@ function voucher(id: string, overrides: Partial<MarketVoucher> = {}): MarketVouc
     lat: -1.29,
     lng: 36.82,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
     ...overrides,
   };
 }
@@ -263,6 +303,8 @@ beforeEach(() => {
     retry: mockRetry,
   };
   routeSearch.current = {};
+  selection.voucher = null;
+  selection.calls = [];
   mockNavigate.mockReset();
   filteredResult.current = {
     data: undefined,
@@ -331,13 +373,13 @@ describe("MarketPage saved profile location", () => {
   it("opens on the saved location, ranked above a live fix, without moving the live marker", () => {
     cameraResult.current = {
       ...cameraResult.current,
-      camera: { ...liveFix, zoom: 14, rank: 2 },
+      camera: { ...liveFix, zoom: 14, rank: 3 },
       userLocation: liveFix,
     };
     profileResult.current = { data: SAVED, isPending: false, isError: false };
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
 
-    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 1 });
+    expect(lastMapProps.current?.camera).toEqual({ lat: -4.0435, lng: 39.6682, zoom: 14, rank: 2 });
     expect(lastMapProps.current?.userLocation).toEqual(liveFix);
   });
 
@@ -384,7 +426,7 @@ describe("MarketPage saved profile location", () => {
       { data: { geoLat: 10, geoLng: Number.NaN }, isPending: false, isError: false },
     ],
   ] as const)("falls back to the automatic camera when the saved location is %s", (_, result) => {
-    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 2 };
+    const automatic: MarketCamera = { ...liveFix, zoom: 14, rank: 3 };
     cameraResult.current = { ...cameraResult.current, camera: automatic };
     profileResult.current = result;
     renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
@@ -444,15 +486,44 @@ describe("MarketPage data states", () => {
   });
 });
 
-describe("MarketPage preview", () => {
-  it("starts with nothing selected", () => {
+function detailFor(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDetail {
+  return {
+    id: "1",
+    chainId: 42220,
+    address: "0xAbC0000000000000000000000000000000000123",
+    name: "Priscilah Malii",
+    symbol: "MALII",
+    decimals: 6,
+    ownerAddress: null,
+    description: null,
+    voucherUoa: "KSH",
+    voucherValue: "10",
+    locationName: null,
+    lat: -1.29,
+    lng: 36.82,
+    email: null,
+    website: null,
+    phone: null,
+    terms: null,
+    iconUrl: "https://content.example/icon.jpg",
+    bannerUrl: null,
+    tags: [],
+    kind: "goods",
+    active: true,
+    ...overrides,
+  } as MarketVoucherDetail;
+}
+
+describe("MarketPage voucher card", () => {
+  it("starts with no card open", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
-    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(lastMapProps.current?.selectedLocationId).toBeNull();
   });
 
-  it("shows the voucher name and translated kind after a marker tap", () => {
+  it("opens the tapped voucher's card through the URL selection", () => {
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { name: "Priscilah Malii", kind: "goods" })],
@@ -461,11 +532,10 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.getAllByText("Priscilah Malii").length).toBeGreaterThan(0);
-    expect(screen.getByText("Goods")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Priscilah Malii" }).className).toContain(
-      "top-[calc(env(safe-area-inset-top)+4.75rem)]",
-    );
+    expect(selection.calls).toEqual([["open", "0xAbC0000000000000000000000000000000000123"]]);
+    const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
+    expect(within(card).getByText("Goods")).toBeTruthy();
+    expect(lastMapProps.current?.selectedLocationId).toBe("1");
   });
 
   it.each([
@@ -478,21 +548,18 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.getByText(label)).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).getByText(label)).toBeTruthy();
   });
 
-  it("links the selected voucher to its page", () => {
-    vouchersResult.current = {
-      ...vouchersResult.current,
-      vouchers: [voucher("1", { address: "0xAbC0000000000000000000000000000000000123" })],
-    };
+  it("no longer leaves the map when the card is tapped", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Voucher 1" });
-    expect(link.getAttribute("href")).toBe("/vouchers/0xAbC0000000000000000000000000000000000123");
-    expect(link.querySelector("a")).toBeNull();
+    expect(
+      within(screen.getByRole("dialog")).queryByRole("link", { name: "Voucher 1" }),
+    ).toBeNull();
   });
 
   it("shows the symbol beside the name", () => {
@@ -504,9 +571,7 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Priscilah Malii" });
-    expect(link.textContent).toContain("Priscilah Malii");
-    expect(link.textContent).toContain("MALII");
+    expect(screen.getByRole("dialog").textContent).toContain("MALII");
   });
 
   it("requests detail for the selected voucher and nothing before that", () => {
@@ -524,34 +589,7 @@ describe("MarketPage preview", () => {
   });
 
   it("adds the profile image and rate once detail arrives", () => {
-    detailResult.current = {
-      current: undefined,
-      ...detailResult.current,
-      data: {
-        id: "1",
-        chainId: 42220,
-        address: "0xAbC0000000000000000000000000000000000123",
-        name: "Priscilah Malii",
-        symbol: "MALII",
-        decimals: 6,
-        ownerAddress: null,
-        description: null,
-        voucherUoa: "KSH",
-        voucherValue: "10",
-        locationName: null,
-        lat: -1.29,
-        lng: 36.82,
-        email: null,
-        website: null,
-        phone: null,
-        terms: null,
-        iconUrl: "https://content.example/icon.jpg",
-        bannerUrl: null,
-        tags: [],
-        kind: "goods",
-        active: true,
-      },
-    } as typeof detailResult.current;
+    detailResult.current = { data: detailFor(), isPending: false };
     vouchersResult.current = {
       ...vouchersResult.current,
       vouchers: [voucher("1", { symbol: "MALII" })],
@@ -560,9 +598,9 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Voucher 1" });
-    expect(link.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
-    expect(link.textContent).toContain("1 MALII = 10 KSH");
+    const card = screen.getByRole("dialog");
+    expect(card.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
+    expect(card.textContent).toContain("1 MALII = 10 KSH");
   });
 
   it("stays readable before detail resolves", () => {
@@ -575,15 +613,15 @@ describe("MarketPage preview", () => {
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    const link = screen.getByRole("link", { name: "Priscilah Malii" });
-    expect(link.textContent).toContain("Priscilah Malii");
-    expect(link.textContent).toContain("MALII");
-    expect(link.textContent).toContain("Goods");
-    expect(link.querySelector("img")).toBeNull();
-    expect(link.textContent).not.toContain("=");
+    const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
+    expect(card.textContent).toContain("MALII");
+    expect(card.textContent).toContain("Goods");
+    expect(card.querySelector("img")).toBeNull();
+    expect(card.textContent).not.toContain("=");
   });
 
-  it("clears the selection when a refreshed dataset drops the voucher", () => {
+  it("keeps the card when a refreshed catalog no longer holds the voucher", () => {
+    detailResult.current = { data: detailFor({ name: "Voucher 1" }), isPending: false };
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { rerender } = render(
@@ -592,16 +630,107 @@ describe("MarketPage preview", () => {
       </QueryClientProvider>,
     );
     fireEvent.click(screen.getByTestId("marker-1"));
-    expect(screen.getByRole("link", { name: "Voucher 1" })).toBeTruthy();
 
-    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("2")] };
+    vouchersResult.current = {
+      ...vouchersResult.current,
+      vouchers: [voucher("2", { address: "0xDef0000000000000000000000000000000000456" })],
+    };
     rerender(
       <QueryClientProvider client={client}>
-        <MarketPage key="same" />
+        <MarketPage />
       </QueryClientProvider>,
     );
 
-    expect(screen.queryByRole("link", { name: "Voucher 1" })).toBeNull();
+    expect(screen.getByRole("dialog", { name: "Voucher 1" })).toBeTruthy();
+    expect(lastMapProps.current?.selectedLocationId).toBeNull();
+  });
+
+  it("opens a deep-linked card before the catalog holds the voucher", () => {
+    selection.voucher = "0xAbC0000000000000000000000000000000000123";
+    detailResult.current = { data: detailFor(), isPending: false };
+    renderPage();
+
+    expect(screen.getByRole("dialog", { name: "Priscilah Malii" })).toBeTruthy();
+  });
+
+  it("closes through the URL selection", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+
+    expect(selection.calls.at(-1)).toEqual(["close"]);
+  });
+
+  it("centres a shared link on its voucher, ahead of the saved location", () => {
+    selection.voucher = "0xAbC0000000000000000000000000000000000123";
+    detailResult.current = { data: detailFor({ lat: -3.63, lng: 39.85 }), isPending: false };
+    profileResult.current = {
+      data: { geoLat: -4.0435, geoLng: 39.6682 },
+      isPending: false,
+      isError: false,
+    };
+    renderPage(<MarketPage isAuthenticated locationOwner="0xabc" />);
+
+    expect(lastMapProps.current?.camera).toEqual({ lat: -3.63, lng: 39.85, zoom: 14, rank: 1 });
+  });
+
+  it("keeps a camera already on the map when a card opens from a pin", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    detailResult.current = { data: detailFor(), isPending: false };
+    renderPage();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(lastMapProps.current?.camera).toBeNull();
+  });
+
+  it("moves the location button onto the card and hides the rest of the controls", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    expect(screen.getByRole("link", { name: /browse all/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
+    const location = screen.getByRole("button", { name: "Use current location" });
+    expect(screen.getByRole("dialog").contains(location)).toBe(true);
+  });
+
+  it("pads the map by the open card and drops the padding once it closes", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    expect(lastMapProps.current?.bottomInset).toBe(0);
+
+    fireEvent.click(screen.getByTestId("marker-1"));
+    // jsdom lays nothing out, so the peek is its fallback height.
+    expect(lastMapProps.current?.bottomInset).toBe(160);
+
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Close" }));
+    expect(lastMapProps.current?.bottomInset).toBe(0);
+  });
+
+  it("collapses a half-height card to its peek when the map is dragged", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    expect(lastMapProps.current?.bottomInset).toBe(Math.round(window.innerHeight * 0.55));
+
+    act(() => lastMapProps.current?.onUserPan?.());
+
+    expect(lastMapProps.current?.bottomInset).toBe(160);
+  });
+
+  it("closes the card on a tap on empty map", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    renderPage();
+    fireEvent.click(screen.getByTestId("marker-1"));
+
+    act(() => lastMapProps.current?.onDeselect?.());
+
+    expect(selection.calls.at(-1)).toEqual(["close"]);
   });
 
   it("links Browse all to the marketplace list without rendering it over the map", () => {
@@ -689,6 +818,8 @@ describe("MarketPage filtering", () => {
     lat,
     lng,
     kind: "voucher",
+    markerIcon: null,
+    markerColor: null,
   });
 
   it("draws the filtered set and never the unfiltered import", () => {

@@ -1,4 +1,4 @@
-import type { Recipient } from "#/components/wallet/wallet-data";
+import type { Recipient, RecipientSource } from "#/components/wallet/wallet-data";
 import {
   readOwnerScoped,
   removeOwnerScoped,
@@ -20,7 +20,7 @@ import type { StorageOwner } from "#/lib/storage/owner-tier-key";
  * each other or live in the same array, and neither is what anyone wants.
  */
 
-export type AddressBookRecipientSource = "manual" | "phone" | "ens" | "reverse-ens" | "qr";
+export type AddressBookRecipientSource = RecipientSource;
 
 export type AddressBookRecipient = Recipient & {
   address: `0x${string}`;
@@ -42,7 +42,10 @@ export function readAddressBookRecipients(owner: StorageOwner): AddressBookRecip
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isAddressBookRecipient);
+    return parsed.flatMap((value) => {
+      const recipient = parseAddressBookRecipient(value);
+      return recipient ? [recipient] : [];
+    });
   } catch {
     return [];
   }
@@ -72,26 +75,41 @@ export function clearAddressBookRecipients(owner: StorageOwner): void {
   removeOwnerScoped(owner, ADDRESS_BOOK_STORAGE_NAME);
 }
 
-function isAddressBookRecipient(value: unknown): value is AddressBookRecipient {
-  if (!isRecord(value)) return false;
-  return (
+function parseAddressBookRecipient(value: unknown): AddressBookRecipient | null {
+  if (!isRecord(value)) return null;
+  if (
     typeof value.id === "string" &&
     typeof value.label === "string" &&
     typeof value.seed === "string" &&
     typeof value.address === "string" &&
-    value.address.startsWith("0x") &&
-    isAddressBookRecipientSource(value.source)
-  );
+    /^0x[a-fA-F0-9]{40}$/.test(value.address)
+  ) {
+    const source = normalizeAddressBookRecipientSource(value.source);
+    if (!source) return null;
+    return {
+      id: value.address.toLowerCase(),
+      label: value.label,
+      seed: value.seed,
+      address: value.address as `0x${string}`,
+      source,
+    };
+  }
+  return null;
 }
 
-function isAddressBookRecipientSource(value: unknown): value is AddressBookRecipientSource {
-  return (
+function normalizeAddressBookRecipientSource(value: unknown): AddressBookRecipientSource | null {
+  if (value === "ens") return "alias";
+  if (value === "reverse-ens") return "reverse-name";
+  if (
     value === "manual" ||
     value === "phone" ||
-    value === "ens" ||
-    value === "reverse-ens" ||
+    value === "alias" ||
+    value === "reverse-name" ||
     value === "qr"
-  );
+  ) {
+    return value;
+  }
+  return null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

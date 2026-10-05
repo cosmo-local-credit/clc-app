@@ -8,6 +8,16 @@ const nameSchema = z
   .min(1, { message: "Name is required" })
   .max(80, { message: "Name must be 80 characters or fewer" });
 
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine(
+    (value) =>
+      value === "" || (/^[a-z0-9][a-z0-9-]{1,22}[a-z0-9]$/.test(value) && /[a-z]/.test(value)),
+    { message: "Username must be 3–24 letters, digits or hyphens" },
+  );
+
 const preferredCurrencySchema = z
   .string()
   // Keep the form value's TypeScript shape as `string`; the runtime catalog
@@ -30,6 +40,7 @@ function requireEmailOrPhone(data: { email: string; phone: string }, ctx: z.Refi
 export const profileSchema = z
   .object({
     name: nameSchema,
+    username: usernameSchema.optional(),
     email: optionalEmailSchema,
     phone: optionalPhoneSchema,
     location: locationSchema,

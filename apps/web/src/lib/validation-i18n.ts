@@ -2,6 +2,11 @@ import type { I18n } from "@lingui/core";
 
 export function translateValidationError(error: string, i18n: I18n) {
   switch (error) {
+    case "Username must be 3–24 letters, digits or hyphens":
+      return i18n._({
+        id: "Username must be 3–24 letters, digits or hyphens",
+        message: "Username must be 3–24 letters, digits or hyphens",
+      });
     case "Name is required":
       return i18n._({ id: "Name is required", message: "Name is required" });
     case "Name must be 80 characters or fewer":
@@ -144,20 +149,25 @@ export function translateValidationError(error: string, i18n: I18n) {
         id: "That pool name is already taken",
         message: "That pool name is already taken",
       });
-    case "Pool shortcode is required":
+    case "Pool symbol is required":
       return i18n._({
-        id: "Pool shortcode is required",
-        message: "Pool shortcode is required",
+        id: "Pool symbol is required",
+        message: "Pool symbol is required",
       });
-    case "Pool shortcode must be 6 characters or fewer":
+    case "Pool symbol must be at least 3 characters":
       return i18n._({
-        id: "Pool shortcode must be 6 characters or fewer",
-        message: "Pool shortcode must be 6 characters or fewer",
+        id: "Pool symbol must be at least 3 characters",
+        message: "Pool symbol must be at least 3 characters",
       });
-    case "Use only letters and numbers for the pool shortcode":
+    case "Pool symbol must be 6 characters or fewer":
       return i18n._({
-        id: "Use only letters and numbers for the pool shortcode",
-        message: "Use only letters and numbers for the pool shortcode",
+        id: "Pool symbol must be 6 characters or fewer",
+        message: "Pool symbol must be 6 characters or fewer",
+      });
+    case "Use only letters and numbers for the pool symbol":
+      return i18n._({
+        id: "Use only letters and numbers for the pool symbol",
+        message: "Use only letters and numbers for the pool symbol",
       });
     case "Pool description is required":
       return i18n._({

@@ -71,6 +71,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("sr")}>
         Српски
       </button>
+      <button type="button" onClick={() => setLocale("uk")}>
+        Українська
+      </button>
     </div>
   );
 }
@@ -226,6 +229,19 @@ describe("AppI18nProvider", () => {
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("dz");
       expect(document.documentElement.lang).toBe("dz");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Ukrainian from a script-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["uk-Cyrl-UA", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("uk");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("uk");
+      expect(document.documentElement.lang).toBe("uk");
       expect(document.documentElement.dir).toBe("ltr");
     });
   });
@@ -400,6 +416,23 @@ describe("AppI18nProvider", () => {
     expect(screen.getByLabelText("locale").textContent).toBe("sr");
     expect(document.documentElement.lang).toBe("sr");
     expect(localStorage.getItem("clc.locale")).toBe("sr");
+  });
+
+  it("persists a Ukrainian locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Українська" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("uk");
+    expect(document.documentElement.lang).toBe("uk");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("uk");
+    expect(Cookies.get("clc_locale")).toBe("uk");
   });
 
   it("ignores localStorage security errors and still renders", () => {

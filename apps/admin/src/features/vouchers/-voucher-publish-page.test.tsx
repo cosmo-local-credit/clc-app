@@ -376,6 +376,25 @@ describe("VoucherPublishPage images", () => {
     // empty string is not a URL clc-core would accept.
     expect("iconUrl" in payload).toBe(false);
     expect("bannerUrl" in payload).toBe(false);
+    expect("markerIcon" in payload).toBe(false);
+    expect("markerColor" in payload).toBe(false);
+  });
+
+  it("carries a chosen map marker into the deploy request and the card", async () => {
+    renderPage();
+
+    expect(await screen.findByRole("heading", { name: "Publish voucher" })).toBeTruthy();
+    await fillRequiredFields();
+    fireEvent.click(screen.getByRole("button", { name: /Farming/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Cyan" }));
+    expect(screen.getAllByText("Farming, Cyan").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Publish voucher" }));
+
+    await waitFor(() => expect(deployVoucher).toHaveBeenCalledTimes(1));
+    expect(deployVoucher.mock.calls[0]![0]).toMatchObject({
+      markerIcon: "farm",
+      markerColor: "cyan",
+    });
   });
 
   it("carries an uploaded icon and banner into the deploy request", async () => {

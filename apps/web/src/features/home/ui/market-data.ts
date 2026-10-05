@@ -1,3 +1,5 @@
+import type { MarkerColor, MarkerIcon } from "@clc/core/features/markers/logic";
+
 /**
  * Marker kinds are derived by the backend from a voucher's available
  * offerings (see `GET /api/v2/vouchers`). There is no eatery/shop/service
@@ -14,6 +16,9 @@ export type MarketLocation = {
   id: string;
   name: string;
   kind: MarketLocationKind;
+  /** The issuer's pin; null follows `kind`. */
+  markerIcon: MarkerIcon | null;
+  markerColor: MarkerColor | null;
   lat: number;
   lng: number;
   locationName: string | null;

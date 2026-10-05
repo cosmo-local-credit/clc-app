@@ -1,5 +1,6 @@
 import { tokenTagsQueryOptions } from "@clc/api/features/deployments/queries";
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import { markerColorSchema, markerIconSchema } from "@clc/core/features/markers/logic";
 import type { VoucherDeployPayload } from "@clc/core/features/vouchers/logic";
 import {
   voucherDescriptionSchema,
@@ -15,6 +16,7 @@ import {
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { tokenDecimalsSchema } from "@clc/core/lib/token";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -27,6 +29,7 @@ import { AppBreadcrumb } from "#/components/admin/app-breadcrumb";
 import { ImageUploadField } from "#/components/admin/image-upload-field";
 import { LocationField } from "#/components/admin/location-field";
 import { PageHeader } from "#/components/admin/page-header";
+import { MarkerStyleField, describeMarker } from "#/components/admin/marker-style-field";
 import { SectionHeading } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -52,12 +55,6 @@ const TYPE_OPTIONS = [
   { value: "standard", label: "Standard" },
   { value: "expiring", label: "Expiring" },
 ] as const;
-
-const optionalStoredImageSchema = z
-  .string()
-  .refine((value) => value === "" || /^https?:\/\//.test(value), {
-    message: "The image must be an http(s) URL",
-  });
 
 /**
  * Coordinates are required even though the deploy request treats them as
@@ -128,8 +125,10 @@ const voucherPublishSchema = z
     // as http(s) before it queues the deploy, because the catalog column that
     // receives them refuses anything else, and refusing it in the worker would
     // mean a signed transaction with no catalog row.
-    iconUrl: optionalStoredImageSchema,
-    bannerUrl: optionalStoredImageSchema,
+    iconUrl: storedImageUrlSchema,
+    bannerUrl: storedImageUrlSchema,
+    markerIcon: markerIconSchema.nullable(),
+    markerColor: markerColorSchema.nullable(),
   })
   .superRefine((value, ctx) => {
     if (value.voucherType === "expiring") {
@@ -189,6 +188,8 @@ function defaultValues(owner: string): VoucherPublishValues {
     terms: "",
     iconUrl: "",
     bannerUrl: "",
+    markerIcon: null,
+    markerColor: null,
   };
 }
 
@@ -260,6 +261,8 @@ function VoucherPublishForm({ operator }: { operator: string }) {
         ...(value.terms.trim() ? { terms: value.terms.trim() } : {}),
         ...(value.iconUrl ? { iconUrl: value.iconUrl } : {}),
         ...(value.bannerUrl ? { bannerUrl: value.bannerUrl } : {}),
+        ...(value.markerIcon ? { markerIcon: value.markerIcon } : {}),
+        ...(value.markerColor ? { markerColor: value.markerColor } : {}),
         tags: value.tags,
       };
 
@@ -354,7 +357,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                   label="Owner"
                   htmlFor={field.name}
                   error={fieldError(field)}
-                  hint="The wallet that will own this voucher and mint its supply."
+                  hint="The wallet that will own this voucher and create its supply."
                 >
                   <Input
                     id={field.name}
@@ -558,6 +561,23 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                 </Field>
               )}
             </form.Field>
+            <form.Subscribe
+              selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+            >
+              {([icon, color]) => (
+                <Field label="Map marker" error={null}>
+                  {/* A new voucher has no offerings, so its default pin is the voucher's. */}
+                  <MarkerStyleField
+                    kind="voucher"
+                    value={{ icon, color }}
+                    onChange={(next) => {
+                      form.setFieldValue("markerIcon", next.icon);
+                      form.setFieldValue("markerColor", next.color);
+                    }}
+                  />
+                </Field>
+              )}
+            </form.Subscribe>
           </FormPanel>
 
           <FormPanel title="Issuer contact" className="xl:col-span-2">
@@ -675,6 +695,13 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                     }
                   />
                   <BoundRow label="Tags" value={values.tags.join(", ")} />
+                  <BoundRow
+                    label="Map marker"
+                    value={describeMarker("voucher", {
+                      icon: values.markerIcon,
+                      color: values.markerColor,
+                    })}
+                  />
                   <BoundRow label="Email" value={values.email} optional />
                   <BoundRow label="Phone" value={values.phone} optional />
                   <BoundRow label="Website" value={values.website} optional />
@@ -713,7 +740,7 @@ function VoucherPublishForm({ operator }: { operator: string }) {
                     only place an operator finds out before they are asked why the
                     voucher they just published cannot be sent. */}
                 <p className="text-muted-foreground mt-4 text-xs leading-snug">
-                  Deploys with zero supply. The owner mints their opening supply from their own
+                  Deploys with zero supply. The owner creates their opening supply from their own
                   wallet.
                 </p>
                 <Button

@@ -5,6 +5,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 const { useConnectionMock } = vi.hoisted(() => ({ useConnectionMock: vi.fn() }));
 
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
+
 vi.mock("@tanstack/react-router", () => ({
   // Forwards the rest of the props so `<Button asChild>` data attributes
   // (data-slot / data-variant / data-size) reach the rendered anchor.
@@ -140,7 +154,8 @@ describe("AllVouchersPage", () => {
     expect(create.getAttribute("data-variant")).toBe("outline");
   });
 
-  it("shows account vouchers and expands a voucher link", async () => {
+  it("shows account vouchers and opens one's card from its row", async () => {
+    voucherSheet.open.mockClear();
     const token = accountToken(1);
     const fetcher = mockAccountReads([successResponse({ tokens: [token], last: 1 })]);
     renderWithQueryClient(<AllVouchersPage />);
@@ -152,9 +167,8 @@ describe("AllVouchersPage", () => {
     fireEvent.click(voucherRow);
 
     expect(voucherRow.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByRole("link", { name: /view voucher/i }).getAttribute("href")).toBe(
-      `/vouchers/${token.tokenAddress}`,
-    );
+    fireEvent.click(screen.getByRole("button", { name: /view voucher/i }));
+    expect(voucherSheet.open).toHaveBeenCalledWith(token.tokenAddress);
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(`/api/v2/accounts/${ADDRESS}/tokens?perPage=20`),
       expect.objectContaining({ method: "GET", cache: "no-store" }),

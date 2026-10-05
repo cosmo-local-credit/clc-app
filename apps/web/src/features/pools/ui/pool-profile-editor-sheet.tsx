@@ -1,3 +1,4 @@
+import { translateRecipientError } from "#/lib/recipient-error-i18n";
 import type { UserPool } from "@clc/api/features/pools/client";
 import type { LocationInput } from "@clc/core/features/location/logic";
 import { poolProfileTextSchema } from "@clc/core/features/pools/logic";
@@ -18,7 +19,7 @@ import { Field, FieldError } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
-import { MarkdownContent } from "#/components/ui/markdown-content";
+import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import {
   SheetBackdrop,
@@ -32,7 +33,6 @@ import {
 import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
-import { Toggle } from "#/components/ui/toggle";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 import { useTokenTags } from "#/hooks/use-deployment";
 import { isStorageConfigured } from "#/lib/api/storage";
@@ -100,7 +100,6 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
   const tagsQuery = useTokenTags();
   const update = useUpdatePoolProfile(pool.address);
   const [imageBusy, setImageBusy] = useState(false);
-  const [termsPreview, setTermsPreview] = useState(false);
   const storedLocation: PoolPlace | undefined =
     pool.locationName !== null && pool.geoLat !== null && pool.geoLng !== null
       ? { locationName: pool.locationName, lat: pool.geoLat, lng: pool.geoLng }
@@ -153,7 +152,10 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
         toast.success(t`Pool details updated.`);
         onClose();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t`Couldn't save the pool details.`);
+        toast.error(
+          translateRecipientError(error, i18n) ??
+            (error instanceof Error ? error.message : t`Couldn't save the pool details.`),
+        );
       }
     },
   });
@@ -373,7 +375,6 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                     onCheckedChange={(checked) => {
                       modeField.handleChange(checked ? "text" : "url");
                       form.setFieldValue("terms", "");
-                      setTermsPreview(false);
                     }}
                   />
                 </label>
@@ -387,53 +388,34 @@ function PoolProfileForm({ pool, onClose }: { pool: UserPool; onClose: () => voi
                     onSubmit: optionalTermsTextSchema,
                   }}
                 >
-                  {(field) => (
-                    <div className="mt-1.5">
-                      <div className="mb-1.5 flex items-center justify-between gap-3">
-                        <label htmlFor="pool-terms-text" className="text-muted-foreground text-xs">
+                  {(field) => {
+                    const error = getFieldError(field.state.meta.errors);
+                    return (
+                      <div className="mt-1.5">
+                        {/* `htmlFor` alone does not name a `contentEditable`,
+                            which is not a labelable element, so the editor is
+                            pointed back at this label by id. */}
+                        <label
+                          id="pool-terms-text-label"
+                          htmlFor="pool-terms-text"
+                          className="mb-1.5 block text-muted-foreground text-xs"
+                        >
                           <Trans>Shown to anyone using this pool</Trans>
                         </label>
-                        <Toggle
-                          variant="outline"
-                          pressed={termsPreview}
-                          onPressedChange={setTermsPreview}
-                          aria-label={t`Preview`}
-                        >
-                          <Trans>Preview</Trans>
-                        </Toggle>
-                      </div>
-                      {termsPreview ? (
-                        <div className="min-h-24 border border-border bg-card p-3">
-                          {field.state.value.trim() === "" ? (
-                            <p className="text-muted-foreground text-sm">
-                              <Trans>Nothing to preview yet.</Trans>
-                            </p>
-                          ) : (
-                            <MarkdownContent>{field.state.value}</MarkdownContent>
-                          )}
-                        </div>
-                      ) : (
-                        <Textarea
+                        <MarkdownEditor
                           id="pool-terms-text"
-                          rows={8}
+                          aria-labelledby="pool-terms-text-label"
+                          aria-invalid={field.state.meta.errors.length > 0}
                           maxLength={TERMS_TEXT_MAX}
-                          className="font-mono text-[0.8125rem]"
                           value={field.state.value}
-                          onChange={(event) => field.handleChange(event.target.value)}
+                          onChange={field.handleChange}
                           onBlur={field.handleBlur}
                           placeholder={t`Swaps settle within the market association...`}
-                          aria-invalid={field.state.meta.errors.length > 0}
                         />
-                      )}
-                      {getFieldError(field.state.meta.errors) ? (
-                        <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
-                      ) : (
-                        <p className="mt-1 text-muted-foreground text-xs">
-                          <Trans>Markdown: **bold**, # headings, - lists, [links](https://…)</Trans>
-                        </p>
-                      )}
-                    </div>
-                  )}
+                        {error ? <FieldError error={error} /> : null}
+                      </div>
+                    );
+                  }}
                 </form.Field>
               ) : (
                 <form.Field

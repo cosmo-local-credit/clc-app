@@ -25,6 +25,8 @@ function Slider({
   return (
     <SliderPrimitive.Root
       data-slot="slider"
+      // Dragging the thumb inside a bottom sheet must not pull the sheet down.
+      data-base-ui-swipe-ignore=""
       value={value}
       onValueChange={(next) => onValueChange(Array.isArray(next) ? (next[0] ?? 0) : next)}
       className={cn("relative flex w-full touch-none items-center select-none", className)}

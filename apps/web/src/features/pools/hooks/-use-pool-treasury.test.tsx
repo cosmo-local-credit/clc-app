@@ -70,8 +70,65 @@ describe("usePoolTreasury", () => {
       balanceRaw: "7430000",
       feesRaw: "3930000",
       withdrawableRaw: "3500000",
+      // No limiter on the pool, so nothing was asked about a cap.
+      limitRaw: null,
     });
     expect(result.current.data?.get(RYZN.toLowerCase())?.withdrawableRaw).toBe("196500000");
+  });
+
+  it("reads each token's limiter cap in the same batch as its balance", async () => {
+    const LIMITER = "0xCc774897Cd83216a82cdc68bC958eaFFAe31DE6c" as const;
+    multicallMock.mockResolvedValue(
+      [false, 50_120_000n, 0n, 1_000_000_000n, 45_880_000n, 0n, 0n].map(success),
+    );
+
+    const { result } = renderHook(
+      () => usePoolTreasury(pool({ limiterAddress: LIMITER }), [BLTI, RYZN], true),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.data).toBeTruthy());
+    const [[{ contracts }]] = multicallMock.mock.calls as Array<
+      [{ contracts: Array<{ address: string; functionName: string; args?: unknown[] }> }]
+    >;
+    expect(contracts.map((contract) => contract.functionName)).toEqual([
+      "feesDecoupled",
+      "balanceOf",
+      "fees",
+      "limitOf",
+      "balanceOf",
+      "fees",
+      "limitOf",
+    ]);
+    // Asked of the limiter about the pool — the holder `mustWithinLimit`
+    // checks — not about whoever is looking.
+    expect(contracts[3]).toMatchObject({ address: LIMITER, args: [BLTI.toLowerCase(), POOL] });
+    expect(result.current.data?.get(BLTI.toLowerCase())?.limitRaw).toBe("1000000000");
+    // A zero cap is a value, not a missing one.
+    expect(result.current.data?.get(RYZN.toLowerCase())?.limitRaw).toBe("0");
+  });
+
+  it("keeps a token's balance when only its cap read fails", async () => {
+    const LIMITER = "0xCc774897Cd83216a82cdc68bC958eaFFAe31DE6c" as const;
+    multicallMock.mockResolvedValue([
+      success(false),
+      success(7_430_000n),
+      success(0n),
+      { status: "failure", error: new Error("limiter reverted") },
+    ]);
+
+    const { result } = renderHook(
+      () => usePoolTreasury(pool({ limiterAddress: LIMITER }), [BLTI], true),
+      { wrapper: createWrapper() },
+    );
+
+    await waitFor(() => expect(result.current.data).toBeTruthy());
+    expect(result.current.data?.get(BLTI.toLowerCase())).toEqual({
+      balanceRaw: "7430000",
+      feesRaw: "0",
+      withdrawableRaw: "7430000",
+      limitRaw: null,
+    });
   });
 
   it("keeps fees in available liquidity when the contract couples them", async () => {

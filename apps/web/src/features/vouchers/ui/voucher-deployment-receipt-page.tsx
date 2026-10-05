@@ -111,7 +111,7 @@ export function VoucherDeploymentReceiptPage({
       return;
     }
     if (!walletAddress) {
-      toast.error(t`Connect your wallet to mint.`);
+      toast.error(t`Connect your wallet to create vouchers.`);
       return;
     }
     if (!contract.admin) {
@@ -119,7 +119,7 @@ export function VoucherDeploymentReceiptPage({
       return;
     }
     if (contract.admin.toLowerCase() !== walletAddress.toLowerCase()) {
-      toast.error(t`Reconnect the wallet that published this voucher to mint.`);
+      toast.error(t`Reconnect the wallet that published this voucher to create its supply.`);
       return;
     }
     if (walletPreparing) return;
@@ -134,7 +134,7 @@ export function VoucherDeploymentReceiptPage({
         includeAuthorization: delegationStatus === "not-delegated",
       })
       .catch((error: unknown) => {
-        toast.error(error instanceof Error ? error.message : t`Couldn't mint the first supply.`);
+        toast.error(error instanceof Error ? error.message : t`Couldn't create the first supply.`);
         return null;
       });
     if (!result) {
@@ -278,7 +278,7 @@ export function VoucherDeploymentReceiptPage({
     const trackingError = trackingUnavailable
       ? mintTracking.error instanceof Error
         ? mintTracking.error.message
-        : t`Mint status is temporarily unavailable.`
+        : t`Supply creation status is temporarily unavailable.`
       : null;
     const mintError =
       !trackingUnavailable && mintOutcome.kind === "error" ? mintOutcome.error : null;
@@ -305,7 +305,7 @@ export function VoucherDeploymentReceiptPage({
     };
 
     const blockingMessage = ownerMismatch
-      ? t`Reconnect the wallet that published this voucher to mint.`
+      ? t`Reconnect the wallet that published this voucher to create its supply.`
       : ownerUnavailable
         ? t`Couldn't verify who owns this voucher.`
         : trackingError;
@@ -323,13 +323,13 @@ export function VoucherDeploymentReceiptPage({
           )}
           <h1 className="mt-3.5 font-heading text-[1.75rem] font-bold leading-tight">
             {mintFailed ? (
-              <Trans>Minting failed</Trans>
+              <Trans>Creation failed</Trans>
             ) : trackingUnavailable ? (
-              <Trans>Checking mint status</Trans>
+              <Trans>Checking creation status</Trans>
             ) : supplyCheckFailed ? (
               <Trans>Supply check unavailable</Trans>
             ) : minting ? (
-              <Trans>Minting {contract.symbol}...</Trans>
+              <Trans>Creating {contract.symbol}...</Trans>
             ) : (
               <Trans>{contract.name} is deployed</Trans>
             )}
@@ -339,7 +339,7 @@ export function VoucherDeploymentReceiptPage({
               blockingMessage ??
               (supplyCheckFailed
                 ? t`We couldn't verify whether this voucher already has supply.`
-                : t`Mint the first supply to finish publishing this voucher.`)}
+                : t`Create the first supply to finish publishing this voucher.`)}
           </p>
           <div className="mt-3">
             <StatusPill
@@ -425,11 +425,11 @@ export function VoucherDeploymentReceiptPage({
               <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
             ) : null}
             {trackingUnavailable ? (
-              <Trans>Check mint status</Trans>
+              <Trans>Check creation status</Trans>
             ) : supplyCheckFailed ? (
               <Trans>Check supply again</Trans>
             ) : minting ? (
-              <Trans>Minting…</Trans>
+              <Trans>Creating…</Trans>
             ) : supplyChecking ? (
               <Trans>Checking supply…</Trans>
             ) : walletPreparing ? (
@@ -437,7 +437,7 @@ export function VoucherDeploymentReceiptPage({
             ) : mintFailed ? (
               <Trans>Try again</Trans>
             ) : (
-              <Trans>Mint supply</Trans>
+              <Trans>Create supply</Trans>
             )}
           </Button>
         </div>
@@ -497,15 +497,15 @@ export function VoucherDeploymentReceiptPage({
           </InfoRow>
         ) : null}
         {mintTxHash ? (
-          <InfoRow label={t`Mint transaction`}>
+          <InfoRow label={t`Supply creation transaction`}>
             <CopyableInfoValue
               value={mintTxHash}
-              label={t`Copy mint transaction hash`}
+              label={t`Copy supply creation transaction hash`}
               onCopy={(value) =>
                 copyValue(
                   value,
-                  t`Mint transaction hash copied`,
-                  t`Couldn't copy mint transaction hash`,
+                  t`Supply creation transaction hash copied`,
+                  t`Couldn't copy supply creation transaction hash`,
                 )
               }
             />

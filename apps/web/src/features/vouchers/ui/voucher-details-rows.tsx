@@ -1,8 +1,11 @@
+import { resolveMarkerStyle } from "@clc/core/features/markers/logic";
 import type { VoucherCreateInput } from "@clc/core/features/vouchers/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { useLingui } from "@lingui/react/macro";
 
 import { InfoRow } from "#/components/ui/info-row";
+import { MarkerPin } from "#/components/vouchers/marker-style-picker";
+import { useMarkerLabels } from "#/components/vouchers/voucher-labels";
 
 type VoucherDetails = Omit<VoucherCreateInput, "location" | "acceptedTerms"> & {
   location?: VoucherCreateInput["location"];
@@ -10,6 +13,15 @@ type VoucherDetails = Omit<VoucherCreateInput, "location" | "acceptedTerms"> & {
 
 export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
   const { t } = useLingui();
+  const markerLabels = useMarkerLabels();
+  // A new voucher has no offerings yet, so its automatic pin is the voucher's.
+  const pin = resolveMarkerStyle({
+    kind: "voucher",
+    markerIcon: values.markerIcon,
+    markerColor: values.markerColor,
+  });
+  const pinIcon = markerLabels.icon(pin.icon);
+  const pinColor = markerLabels.color(pin.color);
 
   return (
     <>
@@ -32,6 +44,14 @@ export function VoucherDetailsRows({ values }: { values: VoucherDetails }) {
       </InfoRow>
       <InfoRow label={t`Description`}>{values.description}</InfoRow>
       <InfoRow label={t`Location`}>{values.location?.locationName ?? "—"}</InfoRow>
+      <InfoRow label={t`Map pin`}>
+        <span className="flex items-center gap-2">
+          {values.markerIcon === null && values.markerColor === null
+            ? t`Default`
+            : t`${pinIcon}, ${pinColor}`}
+          <MarkerPin style={pin} size={20} />
+        </span>
+      </InfoRow>
       <InfoRow label={t`Tags`} muted>
         {values.tags.join(", ") || "—"}
       </InfoRow>

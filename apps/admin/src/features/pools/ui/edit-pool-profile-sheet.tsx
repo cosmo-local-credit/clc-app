@@ -8,6 +8,7 @@ import {
   optionalWebsiteSchema,
 } from "@clc/core/lib/contact";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
+import { storedImageUrlSchema } from "@clc/core/lib/image-url";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
@@ -42,12 +43,6 @@ import { useUpdatePoolProfile } from "../use-update-pool-profile";
  * The description reuses the publish schema so a pool cannot be edited into a
  * state its own create form would have rejected.
  */
-const optionalStoredImageSchema = z
-  .string()
-  .refine((value) => value === "" || /^https?:\/\//.test(value), {
-    message: "The image must be an http(s) URL",
-  });
-
 const profileSchema = z
   .object({
     description: poolDescriptionSchema.or(z.literal("")),
@@ -64,8 +59,8 @@ const profileSchema = z
     terms: optionalTermsSchema,
     // Uploaded before they reach the form, so the only rule left is the one the
     // catalog column enforces: a URL or nothing.
-    imageUrl: optionalStoredImageSchema,
-    bannerUrl: optionalStoredImageSchema,
+    imageUrl: storedImageUrlSchema,
+    bannerUrl: storedImageUrlSchema,
     locationName: z.string().trim().max(200, { message: "Location name is too long" }),
     latitude: z.string(),
     longitude: z.string(),

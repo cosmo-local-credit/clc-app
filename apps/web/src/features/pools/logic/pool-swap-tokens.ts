@@ -218,9 +218,17 @@ export function buildPoolSwapTokens({
     .sort(compareForPicker);
 }
 
-/** The From side's default: the largest holding this pool will actually take. */
-export function defaultPoolSwapFrom(tokens: PoolSwapToken[]): PoolSwapToken | undefined {
-  return tokens.find((token) => token.canSwapIn);
+/**
+ * The From side's default: the largest holding this pool will actually take.
+ *
+ * `excludeId` keeps it off a voucher already chosen for the other side, so a
+ * holder who arrives wanting that voucher is not handed a swap of it for itself.
+ */
+export function defaultPoolSwapFrom(
+  tokens: PoolSwapToken[],
+  excludeId?: string,
+): PoolSwapToken | undefined {
+  return tokens.find((token) => token.canSwapIn && token.id !== excludeId);
 }
 
 /**

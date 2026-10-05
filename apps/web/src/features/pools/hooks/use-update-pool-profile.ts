@@ -1,5 +1,6 @@
 import type { PoolProfileUpdate, UserPool } from "@clc/api/features/pools/client";
 import { poolKeys } from "@clc/api/features/pools/queries";
+import { recipientKeys } from "@clc/api/features/recipients/queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { poolsClient } from "#/lib/api/pools";
@@ -24,6 +25,7 @@ export function useUpdatePoolProfile(address: string) {
     onSuccess: (pool: UserPool) => {
       queryClient.setQueryData(poolKeys.detail(address), pool);
       return Promise.all([
+        queryClient.invalidateQueries({ queryKey: recipientKeys.all }),
         queryClient.invalidateQueries({
           queryKey: poolKeys.all,
           predicate: (query) => query.queryKey[2] !== "detail",

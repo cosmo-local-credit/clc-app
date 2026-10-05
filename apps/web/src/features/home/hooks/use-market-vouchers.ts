@@ -1,3 +1,4 @@
+import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -32,21 +33,26 @@ export const MARKET_QUERY_FRESHNESS = {
 export const marketVoucherQueryKeys = voucherKeys;
 
 function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
+  const nearby = useNearbyCatalog();
+  const options = voucherCatalogInfiniteQueryOptions(marketClient, perPage, nearby);
   return useInfiniteQuery({
-    ...voucherCatalogInfiniteQueryOptions(marketClient, perPage),
+    ...options,
     enabled,
     ...MARKET_QUERY_FRESHNESS,
+    ...nearbyQueryPolicy(nearby),
   });
 }
 
 export { nextMarketCursor };
 
 function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean, perPage: number) {
-  const options = voucherViewportQueryOptions(marketClient, boxes, perPage);
+  const nearby = useNearbyCatalog();
+  const options = voucherViewportQueryOptions(marketClient, boxes, perPage, nearby);
   return useQuery({
     ...options,
     enabled: enabled && options.enabled,
     ...MARKET_QUERY_FRESHNESS,
+    ...nearbyQueryPolicy(nearby),
   });
 }
 
@@ -64,18 +70,11 @@ export function useMarketMapVouchers(
   enabled = true,
 ): MarketMapVouchers {
   const catalog = useMarketVouchersInfinite(perPage, enabled);
-  const {
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    fetchNextPage,
-    isSuccess,
-    data,
-    error,
-    refetch,
-  } = catalog;
+  const { hasNextPage, isFetching, isFetchingNextPage, fetchNextPage, data, error, refetch } =
+    catalog;
 
-  const isCatalogComplete = isSuccess && !hasNextPage;
+  // A failed refresh does not invalidate the last complete catalog snapshot.
+  const isCatalogComplete = data !== undefined && !hasNextPage;
 
   useEffect(() => {
     if (!enabled || !hasNextPage || isFetching || isFetchingNextPage) return;
@@ -94,12 +93,16 @@ export function useMarketMapVouchers(
     if (!enabled) return [];
 
     const byId = new Map<string, MarketVoucher>();
-    for (const entry of bootstrap.data ?? []) byId.set(entry.id, entry);
+    // Viewport rows only bridge the initial download. A complete catalog is
+    // authoritative, including removals after a distance or visibility change.
+    if (!isCatalogComplete) {
+      for (const entry of bootstrap.data ?? []) byId.set(entry.id, entry);
+    }
     for (const catalogPage of data?.pages ?? []) {
       for (const entry of catalogPage.vouchers) byId.set(entry.id, entry);
     }
     return [...byId.values()];
-  }, [enabled, bootstrap.data, data?.pages]);
+  }, [enabled, isCatalogComplete, bootstrap.data, data?.pages]);
 
   const retry = useCallback(() => {
     void refetch();

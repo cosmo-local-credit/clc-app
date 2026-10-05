@@ -1,5 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { $convertFromMarkdownString } from "@lexical/markdown";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { LexicalEditor } from "lexical";
 import type { ReactElement, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -98,6 +100,12 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 
 vi.mock("#/lib/api/storage", () => ({ isStorageConfigured: true }));
 
+// The shell only defers the chunk; these tests are about the editor inside it.
+vi.mock("#/components/ui/markdown-editor", async () => {
+  const editor = await import("#/components/ui/markdown-editor-lexical");
+  return { MarkdownEditor: editor.MarkdownEditorLexical };
+});
+
 // Cropping and uploading are covered by the shared field's tests. This keeps
 // this suite on form integration: stored URLs must survive the steps and reach
 // the deploy request.
@@ -144,6 +152,7 @@ vi.mock("#/hooks/use-deployment", () => ({
 }));
 
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
+import { MARKDOWN_TRANSFORMERS } from "#/components/ui/markdown-editor-lexical";
 import { BackendApiError } from "@clc/api/client/errors";
 import { toast } from "sonner";
 
@@ -156,6 +165,18 @@ function renderFlow(ui: ReactElement) {
     wrapper: ({ children }) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     ),
+  });
+}
+
+/** Replaces what the terms editor holds, as if the author had formatted it. */
+async function writeTerms(label: string, markdown: string) {
+  const root = screen.getByRole("textbox", { name: label }) as HTMLElement & {
+    __lexicalEditor: LexicalEditor;
+  };
+  await act(async () => {
+    root.__lexicalEditor.update(() => {
+      $convertFromMarkdownString(markdown, MARKDOWN_TRANSFORMERS);
+    });
   });
 }
 
@@ -198,7 +219,7 @@ describe("CreatePoolFlow", () => {
 
     fireEvent.click(advancedSummary);
     expect(advancedDetails.open).toBe(true);
-    expect(advancedDetails.contains(screen.getByLabelText("Pool Shortcode"))).toBe(true);
+    expect(advancedDetails.contains(screen.getByLabelText("Pool symbol"))).toBe(true);
   });
 
   it("does not expose pool decimals for editing", () => {
@@ -345,18 +366,20 @@ describe("CreatePoolFlow", () => {
     expect(screen.getByText("Link to the terms that apply to this pool")).toBeTruthy();
   });
 
-  it("lets the steward write pool terms as Markdown instead of linking", () => {
+  it("lets the steward write pool terms in the rich text editor instead of linking", async () => {
     renderFlow(<CreatePoolFlow step="place" />);
 
     fireEvent.click(screen.getByRole("switch", { name: "Write my own" }));
-    const terms = screen.getByLabelText("Shown to anyone joining this pool");
-    fireEvent.change(terms, {
-      target: { value: "# House rules\n\nSettle every **Friday**." },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+    const terms = await screen.findByRole("textbox", { name: "Shown to anyone joining this pool" });
+    await writeTerms(
+      "Shown to anyone joining this pool",
+      "# House rules\n\nSettle every **Friday**.",
+    );
 
-    expect(screen.getByRole("heading", { level: 3, name: "House rules" })).toBeTruthy();
-    expect(screen.getByText("Friday", { selector: "strong" })).toBeTruthy();
+    expect(terms.querySelector("h1")?.textContent).toBe("House rules");
+    expect(terms.querySelector("strong")?.textContent).toBe("Friday");
+    expect(screen.queryByRole("button", { name: "Preview" })).toBeNull();
+    expect(screen.queryByText(/Markdown: \*\*bold\*\*/)).toBeNull();
   });
 
   it("defaults to relative pricing and offers equal and oracle pricing in Advanced", () => {
@@ -406,7 +429,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -504,7 +527,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -528,7 +551,7 @@ describe("CreatePoolFlow", () => {
     fireEvent.change(screen.getByLabelText("Pool Name"), {
       target: { value: "Kilifi Growers" },
     });
-    fireEvent.change(screen.getByLabelText("Pool Shortcode"), { target: { value: "kgp1" } });
+    fireEvent.change(screen.getByLabelText("Pool symbol"), { target: { value: "kgp1" } });
     fireEvent.change(screen.getByLabelText("Pool Description"), {
       target: { value: "A pool for Kilifi growers." },
     });
@@ -575,7 +598,7 @@ describe("CreatePoolFlow", () => {
   });
 
   describe("shortcode suggestion", () => {
-    const symbolInput = () => screen.getByLabelText("Pool Shortcode") as HTMLInputElement;
+    const symbolInput = () => screen.getByLabelText("Pool symbol") as HTMLInputElement;
 
     it("fills the shortcode from the name once the name blurs", async () => {
       renderFlow(<CreatePoolFlow step="pool" />);

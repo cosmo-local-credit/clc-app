@@ -24,8 +24,11 @@ export const poolQuoterQueryKeys = {
   /** The root every quoter read hangs off, so one invalidation reaches them all. */
   all: ["pool-quoter"] as const,
   kind: (quoterAddress: string) => ["pool-quoter", "kind", quoterAddress.toLowerCase()] as const,
-  rates: (quoterAddress: string, tokenAddresses: readonly string[]) =>
-    ["pool-quoter", "rates", quoterAddress.toLowerCase(), tokenAddresses] as const,
+  rates: (
+    quoterAddress: string,
+    tokenAddresses: readonly string[],
+    failureMode: "fallback" | "strict" = "fallback",
+  ) => ["pool-quoter", "rates", quoterAddress.toLowerCase(), tokenAddresses, failureMode] as const,
 };
 
 /**
@@ -67,27 +70,48 @@ export function usePoolQuoterKind(pool: UserPool | null | undefined) {
 /**
  * Every pool voucher's rate, keyed by lowercased token address.
  *
- * One multicall rather than a read per row, and failures are tolerated: an
- * unpriced token reads back as `0`, which the quoter itself treats as parity,
- * so both that and a reverted read normalize to parity here. Showing a rate of
- * zero would claim the pool values the voucher at nothing, which is the one
- * thing the contract never means by it.
+ * One multicall rather than a read per row. An unpriced token reads back as
+ * `0`, which the quoter itself treats as parity. Catalog lists tolerate an
+ * individual reverted read as parity; configuration opts into strict failures
+ * so it never writes a fallback over an unread current rate.
  */
 export function usePoolVoucherRates(
   pool: UserPool | null | undefined,
   vouchers: PoolVoucher[],
   enabled: boolean,
 ) {
+  return usePoolVoucherRatesByAddress(
+    pool,
+    vouchers.map((voucher) => voucher.tokenAddress),
+    enabled,
+  );
+}
+
+/**
+ * Relative-quoter rates for arbitrary voucher addresses.
+ *
+ * The catalog wrapper above remains the normal list consumer. Approval needs
+ * the address form because a voucher can have retained on-chain configuration
+ * and pool deposits before the catalog projects it as a member.
+ */
+export function usePoolVoucherRatesByAddress(
+  pool: UserPool | null | undefined,
+  addresses: readonly string[],
+  enabled: boolean,
+  options: { failOnReadError?: boolean } = {},
+) {
   const client = useClient();
   const quoterAddress =
     pool?.quoterAddress && isAddress(pool.quoterAddress) ? pool.quoterAddress : undefined;
-  const tokenAddresses = vouchers
-    .map((voucher) => voucher.tokenAddress)
-    .filter((address) => isAddress(address))
-    .map((address) => address.toLowerCase());
+  const tokenAddresses = [
+    ...new Set(
+      addresses.filter((address) => isAddress(address)).map((address) => address.toLowerCase()),
+    ),
+  ].sort();
+  const failureMode = options.failOnReadError ? "strict" : "fallback";
 
   return useQuery({
-    queryKey: poolQuoterQueryKeys.rates(quoterAddress ?? "none", tokenAddresses),
+    queryKey: poolQuoterQueryKeys.rates(quoterAddress ?? "none", tokenAddresses, failureMode),
     queryFn: async () => {
       if (!client || !quoterAddress) throw new Error("The rate read is missing a client.");
       const results = await multicall(client, {
@@ -103,6 +127,9 @@ export function usePoolVoucherRates(
       return new Map(
         tokenAddresses.map((address, index) => {
           const result = results[index];
+          if (result?.status !== "success" && options.failOnReadError) {
+            throw new Error(`The rate read failed for ${address}.`);
+          }
           const value = result?.status === "success" ? result.result : 0n;
           return [address, value > 0n ? value : parity];
         }),

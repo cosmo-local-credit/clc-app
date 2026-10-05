@@ -7,6 +7,14 @@ vi.mock("#/components/install-app-link", () => ({
   InstallAppLink: () => <a href="/install">Install CLC</a>,
 }));
 
+vi.mock("#/components/language-selector", () => ({
+  LanguageSelector: () => <div data-testid="language-selector" />,
+}));
+
+vi.mock("#/components/theme-selector", () => ({
+  ThemeSelector: () => <div data-testid="theme-selector" />,
+}));
+
 vi.mock("./notification-settings-section", () => ({
   NotificationSettingsSection: ({ walletAddress }: { walletAddress?: string }) => (
     <div data-testid="notification-settings">{walletAddress}</div>
@@ -64,10 +72,11 @@ describe("SettingsPage", () => {
     );
   });
 
-  it("leaves theme and language to the app menu", () => {
+  it("offers theme and language under Preferences, as the app menu does", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
-    expect(screen.queryByRole("heading", { name: /preferences/i })).toBeNull();
-    expect(screen.queryByRole("combobox", { name: /theme|language/i })).toBeNull();
+    expect(screen.getByRole("heading", { name: /preferences/i })).toBeTruthy();
+    expect(screen.getByTestId("theme-selector")).toBeTruthy();
+    expect(screen.getByTestId("language-selector")).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {

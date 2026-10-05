@@ -1,31 +1,50 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
   Link: ({
     to,
     params,
+    search,
     children,
     ...props
   }: {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, boolean | string>;
     children: React.ReactNode;
-  }) => (
-    <a
-      href={Object.entries(params ?? {}).reduce(
-        (value, [key, replacement]) => value.replace(`$${key}`, replacement),
-        to,
-      )}
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  }) => {
+    const pathname = Object.entries(params ?? {}).reduce(
+      (value, [key, replacement]) => value.replace(`$${key}`, replacement),
+      to,
+    );
+    const query = new URLSearchParams(
+      Object.entries(search ?? {}).map(([key, value]) => [key, String(value)]),
+    ).toString();
+    return (
+      <a href={query ? `${pathname}?${query}` : pathname} {...props}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 // The profile nudge reads the connected wallet; it has its own test.
@@ -174,7 +193,10 @@ describe("WalletPage", () => {
       "/wallet/receive",
     );
     // Exact, not /pools/i: the Your Pools header also links out to "All pools".
-    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe("/pools");
+    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
+      "/pools?creditable=true",
+    );
+    expect(screen.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
     expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
 
     if (chainHasPretiumRamp(CHAIN_ID)) {
@@ -202,6 +224,16 @@ describe("WalletPage", () => {
       'img[src="https://content.sarafu.network/voucher/icon.jpg"]',
     );
     expect(logo?.getAttribute("loading")).toBe("lazy");
+  });
+
+  it("opens a balance's card on the wallet rather than leaving for its page", async () => {
+    voucherSheet.open.mockClear();
+    mockLatestTokens();
+    renderWithQueryClient(<WalletPage address={ADDRESS} />);
+
+    fireEvent.click((await screen.findByText("USD₮")).closest("button")!);
+
+    expect(voucherSheet.open).toHaveBeenCalledWith("0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e");
   });
 
   it("lists vouchers the account issued separately from the ones it holds", async () => {

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 import { translateValidationError } from "./validation-i18n";
 
 const knownErrors = [
+  "Username must be 3–24 letters, digits or hyphens",
   "Name is required",
   "Name must be 80 characters or fewer",
   "Invalid email address",
@@ -27,9 +28,10 @@ const knownErrors = [
   "Accept the terms to publish your voucher",
   "Pool name is required",
   "Pool name must be 80 characters or fewer",
-  "Pool shortcode is required",
-  "Pool shortcode must be 6 characters or fewer",
-  "Use only letters and numbers for the pool shortcode",
+  "Pool symbol is required",
+  "Pool symbol must be at least 3 characters",
+  "Pool symbol must be 6 characters or fewer",
+  "Use only letters and numbers for the pool symbol",
   "Pool description is required",
   "Pool description must be 500 characters or fewer",
   "Swap fee must be a number from 0 to 100",
@@ -176,8 +178,19 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Ukrainian", async () => {
+    await activateLocale("uk");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Оберіть місце");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Недійсний номер телефону");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Назва ваучера обов’язкова",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Назва пулу обов’язкова");
+  });
+
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw"] as const) {
+    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

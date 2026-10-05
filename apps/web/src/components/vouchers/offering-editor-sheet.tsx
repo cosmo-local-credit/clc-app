@@ -26,11 +26,10 @@ import {
 import { Textarea } from "#/components/ui/textarea";
 import { isStorageConfigured } from "#/lib/api/storage";
 import { useOfferingUnits } from "#/hooks/use-vocabulary";
-
 import {
   useCreateVoucherOffering,
   useUpdateVoucherOffering,
-} from "../hooks/use-offering-mutations";
+} from "#/features/wallet/hooks/use-offering-mutations";
 
 /** Adding a new offering, or editing one that exists. */
 export type OfferingEditor = { kind: "create" } | { kind: "edit"; offering: Offering };

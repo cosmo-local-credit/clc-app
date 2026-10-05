@@ -8,6 +8,8 @@ import {
 } from "react-icons/ri";
 
 import { InstallAppLink } from "#/components/install-app-link";
+import { LanguageSelector } from "#/components/language-selector";
+import { ThemeSelector } from "#/components/theme-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
@@ -55,6 +57,27 @@ export function SettingsPage({
       <PasskeySettingsSection address={address} isSigningOut={isSigningOut} />
 
       <InstallAppLink />
+
+      <section aria-labelledby="preferences-title" className="space-y-3">
+        <h2 id="preferences-title">
+          <Trans>Preferences</Trans>
+        </h2>
+        <div className="border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>Choose between light and dark mode.</Trans>
+            </p>
+            <ThemeSelector triggerClassName="w-32" />
+          </div>
+          <div className="-mx-4 my-3 h-px bg-border" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>Choose the app display language.</Trans>
+            </p>
+            <LanguageSelector triggerClassName="w-32" />
+          </div>
+        </div>
+      </section>
 
       <NotificationSettingsSection walletAddress={address} />
 

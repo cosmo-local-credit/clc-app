@@ -1,5 +1,10 @@
 import { type LocationInput, locationSchema } from "@clc/core/features/location/logic";
 import {
+  type MarkerColor,
+  type MarkerIcon,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
+import {
   toVoucherDeployPayload,
   type VoucherUnit,
   voucherCreateSchema,
@@ -37,12 +42,12 @@ import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { MarkdownContent } from "#/components/ui/markdown-content";
+import { MarkdownEditor } from "#/components/ui/markdown-editor";
 import { PhoneInputField } from "#/components/ui/phone-input";
 import { StepProgress } from "#/components/ui/step-progress";
 import { Switch } from "#/components/ui/switch";
 import { TagCombobox } from "#/components/ui/tag-combobox";
 import { Textarea } from "#/components/ui/textarea";
-import { Toggle } from "#/components/ui/toggle";
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
@@ -58,6 +63,7 @@ import {
 } from "#/lib/navigation/voucher-create-history";
 import { translateValidationError } from "#/lib/validation-i18n";
 import { VoucherDetailsRows } from "./voucher-details-rows";
+import { MarkerStylePicker } from "#/components/vouchers/marker-style-picker";
 import { UnitOfAccountCombobox } from "#/components/ui/unit-of-account-combobox";
 
 export type VoucherCreateStep = "voucher" | "place" | "review";
@@ -81,6 +87,8 @@ type VoucherFormValues = {
   /** Form-only: whether `terms` is a link or the terms themselves. */
   termsMode: "url" | "text";
   iconUrl: string;
+  markerIcon: MarkerIcon | null;
+  markerColor: MarkerColor | null;
   acceptedTerms: boolean;
 };
 
@@ -102,6 +110,8 @@ const DEFAULT_VALUES: VoucherFormValues = {
   terms: "",
   termsMode: "url",
   iconUrl: "",
+  markerIcon: null,
+  markerColor: null,
   acceptedTerms: false,
 };
 
@@ -132,7 +142,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
   const checkNameAvailable = useNameAvailabilityValidator("voucher");
   const [tagsOpen, setTagsOpen] = useState(false);
   const [iconBusy, setIconBusy] = useState(false);
-  const [termsPreview, setTermsPreview] = useState(false);
 
   const defaultValues: VoucherFormValues = draft
     ? {
@@ -636,14 +645,45 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                 {(field) => {
                   const error = getFieldError(field.state.meta.errors);
                   return (
-                    <LocationPicker
-                      value={field.state.value}
-                      onChange={(value) => field.handleChange(value)}
-                      error={error ? translateValidationError(error, i18n) : undefined}
-                    />
+                    <form.Subscribe
+                      selector={(state) =>
+                        [state.values.markerIcon, state.values.markerColor] as const
+                      }
+                    >
+                      {([markerIcon, markerColor]) => (
+                        <LocationPicker
+                          value={field.state.value}
+                          onChange={(value) => field.handleChange(value)}
+                          error={error ? translateValidationError(error, i18n) : undefined}
+                          markerStyle={resolveMarkerStyle({
+                            kind: "voucher",
+                            markerIcon,
+                            markerColor,
+                          })}
+                        />
+                      )}
+                    </form.Subscribe>
                   );
                 }}
               </form.Field>
+
+              <form.Subscribe
+                selector={(state) => [state.values.markerIcon, state.values.markerColor] as const}
+              >
+                {([icon, color]) => (
+                  <div className="border border-border bg-card p-4">
+                    <MarkerStylePicker
+                      kind="voucher"
+                      value={{ icon, color }}
+                      onChange={(next) => {
+                        form.setFieldValue("markerIcon", next.icon);
+                        form.setFieldValue("markerColor", next.color);
+                      }}
+                      disabled={deployVoucher.isPending}
+                    />
+                  </div>
+                )}
+              </form.Subscribe>
 
               <form.Field name="tags">
                 {(field) => (
@@ -778,7 +818,6 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                             // A link and a body of text are different things;
                             // one does not become the other by flipping the switch.
                             form.setFieldValue("terms", "");
-                            setTermsPreview(false);
                           }}
                         />
                       </label>
@@ -792,58 +831,34 @@ export function CreateVoucherFlow({ step }: { step: VoucherCreateStep }) {
                           onSubmit: optionalTermsTextSchema,
                         }}
                       >
-                        {(field) => (
-                          <div className="mt-1.5">
-                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                        {(field) => {
+                          const error = getFieldError(field.state.meta.errors);
+                          return (
+                            <div className="mt-1.5">
+                              {/* `htmlFor` alone does not name a `contentEditable`,
+                                  which is not a labelable element, so the editor is
+                                  pointed back at this label by id. */}
                               <label
+                                id="voucher-terms-text-label"
                                 htmlFor="voucher-terms-text"
-                                className="text-muted-foreground text-xs"
+                                className="mb-1.5 block text-muted-foreground text-xs"
                               >
                                 <Trans>Shown to anyone holding this voucher</Trans>
                               </label>
-                              <Toggle
-                                variant="outline"
-                                pressed={termsPreview}
-                                onPressedChange={setTermsPreview}
-                                aria-label={t`Preview`}
-                              >
-                                <Trans>Preview</Trans>
-                              </Toggle>
-                            </div>
-                            {termsPreview ? (
-                              <div className="min-h-24 border border-border bg-card p-3">
-                                {field.state.value.trim() === "" ? (
-                                  <p className="text-muted-foreground text-sm">
-                                    <Trans>Nothing to preview yet.</Trans>
-                                  </p>
-                                ) : (
-                                  <MarkdownContent>{field.state.value}</MarkdownContent>
-                                )}
-                              </div>
-                            ) : (
-                              <Textarea
+                              <MarkdownEditor
                                 id="voucher-terms-text"
-                                rows={8}
+                                aria-labelledby="voucher-terms-text-label"
+                                aria-invalid={field.state.meta.errors.length > 0}
                                 maxLength={TERMS_TEXT_MAX}
-                                className="font-mono text-[0.8125rem]"
                                 value={field.state.value}
-                                onChange={(event) => field.handleChange(event.target.value)}
+                                onChange={field.handleChange}
                                 onBlur={field.handleBlur}
                                 placeholder={t`Redeemable at our stall on market days...`}
-                                aria-invalid={field.state.meta.errors.length > 0}
                               />
-                            )}
-                            {getFieldError(field.state.meta.errors) ? (
-                              <FieldError error={getFieldError(field.state.meta.errors) ?? ""} />
-                            ) : (
-                              <p className="mt-1 text-muted-foreground text-xs">
-                                <Trans>
-                                  Markdown: **bold**, # headings, - lists, [links](https://…)
-                                </Trans>
-                              </p>
-                            )}
-                          </div>
-                        )}
+                              {error ? <FieldError error={error} /> : null}
+                            </div>
+                          );
+                        }}
                       </form.Field>
                     ) : (
                       <form.Field

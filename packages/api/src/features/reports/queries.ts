@@ -76,10 +76,18 @@ export const reportKeys = {
   adminDetail: (id: string) => [...reportKeys.adminRoot(), "detail", id] as const,
 } as const;
 
-export function reportFeedInfiniteQueryOptions(reports: ReportsClient, perPage: number) {
+export function reportFeedInfiniteQueryOptions(
+  reports: ReportsClient,
+  perPage: number,
+  nearby?: string,
+) {
   return infiniteQueryOptions({
-    queryKey: reportKeys.feed(perPage),
-    queryFn: ({ pageParam, signal }) => reports.getReports({ perPage, cursor: pageParam }, signal),
+    queryKey: nearby ? ([...reportKeys.feed(perPage), nearby] as const) : reportKeys.feed(perPage),
+    queryFn: ({ pageParam, signal }) =>
+      reports.getReports(
+        { perPage, cursor: pageParam, ...(nearby ? { nearby: true } : {}) },
+        signal,
+      ),
     initialPageParam: undefined as ReportCursor | undefined,
     getNextPageParam: (lastPage) => lastPage.next ?? undefined,
   });

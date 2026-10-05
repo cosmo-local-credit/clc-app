@@ -2,18 +2,29 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { createShare, navigate, shareState, trackRelay, useOtxTracking } = vi.hoisted(() => ({
-  createShare: vi.fn(),
-  navigate: vi.fn(),
-  shareState: {
-    eligible: true,
-    error: null as Error | null,
-    isPending: false,
-    isSuccess: false,
-  },
-  trackRelay: vi.fn(),
-  useOtxTracking: vi.fn(),
-}));
+const { createShare, identity, navigate, shareState, trackRelay, useOtxTracking } = vi.hoisted(
+  () => ({
+    createShare: vi.fn(),
+    identity: {
+      data: null as null | {
+        name: string;
+        alias: string;
+        address: string;
+        chainId: number;
+        kind: "user" | "pool";
+      },
+    },
+    navigate: vi.fn(),
+    shareState: {
+      eligible: true,
+      error: null as Error | null,
+      isPending: false,
+      isSuccess: false,
+    },
+    trackRelay: vi.fn(),
+    useOtxTracking: vi.fn(),
+  }),
+);
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...props }: { children: ReactNode }) => <a {...props}>{children}</a>,
@@ -35,6 +46,16 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
   }),
 }));
 
+vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
+  useStorageOwner: () => "0xowner",
+}));
+
+vi.mock("#/features/wallet/hooks/use-address-book", () => ({
+  useAddressBookRecipients: () => ({
+    data: [{ label: "Alice", address: RECIPIENT, source: "manual" }],
+  }),
+}));
+
 vi.mock("#/features/wallet/hooks/use-send-share", () => ({
   useCreateSendShare: () => ({
     error: shareState.error,
@@ -47,6 +68,10 @@ vi.mock("#/features/wallet/hooks/use-send-share", () => ({
     isError: false,
     isPending: false,
   }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-recipient-resolution", () => ({
+  useReverseRecipientResolution: () => identity,
 }));
 
 vi.mock("@clc/api/features/relayer/client", () => ({
@@ -66,6 +91,7 @@ const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 beforeEach(() => {
+  identity.data = null;
   createShare.mockResolvedValue({ id: 1, txHash: TX_HASH });
   shareState.eligible = true;
   shareState.error = null;
@@ -82,6 +108,84 @@ afterEach(() => {
 });
 
 describe("SendReceiptPage", () => {
+  it("shows and shares the pool name passed from a deposit without an address-book entry", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        trackingId="tracking-1"
+        recipient={POOL_ADDRESS}
+        recipientLabel="Trade Pool"
+        amount="5"
+        symbol="USDC"
+        returnPool={POOL_ADDRESS}
+      />,
+    );
+
+    expect(screen.getByText("Trade Pool")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Share receipt" }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    expect(share.mock.calls[0]?.[0].text).toContain("I sent 5 USDC to Trade Pool.");
+    Reflect.deleteProperty(navigator, "share");
+  });
+
+  it("shares the receipt text with the recipient alias and explorer link", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
+    );
+
+    expect(screen.getByText("Alice")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
+
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    const payload = share.mock.calls[0]?.[0] as { text: string };
+    expect(payload.text).toContain("2.13 USDC");
+    expect(payload.text).toContain("Alice");
+    expect(payload.text).toContain(`Address: ${RECIPIENT}`);
+    expect(payload.text).toContain(TX_HASH);
+    Reflect.deleteProperty(navigator, "share");
+  });
+
+  it("shows the current backend identity and exact destination in one recipient row", async () => {
+    identity.data = {
+      kind: "user",
+      name: "Alice Updated",
+      alias: "alice-new",
+      address: RECIPIENT,
+      chainId: 100,
+    };
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} amount="2.13" symbol="USDC" />,
+    );
+
+    expect(screen.getAllByText("Recipient")).toHaveLength(1);
+    expect(screen.getByText("Alice Updated").parentElement?.textContent).toBe(
+      "Alice Updated (alice-new)",
+    );
+    expect(screen.queryByText("Alice")).toBeNull();
+    expect(screen.getByText("Recipient").parentElement?.textContent).toContain(RECIPIENT);
+  });
+
+  it("offers no share button until the transfer is confirmed", () => {
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+    render(<SendReceiptPage trackingId="tracking-1" recipient={RECIPIENT} />);
+    expect(screen.queryByRole("button", { name: /share receipt/i })).toBeNull();
+  });
+
   it("shows the review prompt only after a successful transfer", () => {
     const props = {
       token: "0x1111111111111111111111111111111111111111",

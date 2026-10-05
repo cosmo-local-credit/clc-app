@@ -184,7 +184,7 @@ export function PoolDeploymentReceiptPage({ trackingId }: { trackingId?: string 
         ) : (
           <>
             <InfoRow label={t`Pool`}>{contract.name}</InfoRow>
-            <InfoRow label={t`Shortcode`}>{contract.symbol}</InfoRow>
+            <InfoRow label={t`Symbol`}>{contract.symbol}</InfoRow>
           </>
         )}
         <InfoRow label={t`Contract address`}>

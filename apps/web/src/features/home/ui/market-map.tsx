@@ -1,22 +1,30 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import {
+  MARKER_COLORS,
+  MARKER_COLOR_HEX,
+  type MarkerColor,
+  resolveMarkerStyle,
+} from "@clc/core/features/markers/logic";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
   type FilterSpecification,
   type GeoJSONSource,
+  type LayerSpecification,
   type MapMouseEvent,
 } from "maplibre-gl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
+import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
+import { keepMarketLabelsInsideViewport } from "./market-label-edges";
 import {
-  MAP_MAX_ZOOM,
-  MARKET_SOURCE_ID,
-  type MarketLocation,
-  type MarketLocationKind,
-} from "./market-data";
-import { addMarketMarkerImages, markerImageIds } from "./market-markers";
+  SELECTED_PIN_SUFFIX,
+  addMarketMarkerImages,
+  markerImageId,
+  markerPin,
+} from "./market-markers";
 import {
   type MarketStack,
   groupByProximity,
@@ -31,6 +39,8 @@ const DEFAULT_ZOOM = 12;
 const CLUSTER_MAX_ZOOM = 13;
 const CLUSTER_RADIUS = 50;
 
+const LABEL_LAYER_ID = "market-point-labels";
+const SELECTED_LABEL_LAYER_ID = "market-point-selected-label";
 const CLUSTERS_LAYER_ID = "market-clusters";
 const CLUSTER_COUNT_LAYER_ID = "market-cluster-count";
 const UNCLUSTERED_LAYER_ID = "market-points";
@@ -49,12 +59,52 @@ const INTERACTIVE_LAYER_IDS = [
   STACK_COUNT_LAYER_ID,
   SELECTED_LAYER_ID,
   SPIDER_POINT_LAYER_ID,
+  LABEL_LAYER_ID,
+  SELECTED_LABEL_LAYER_ID,
 ];
 
 const VIEWPORT_SETTLE_MS = 400;
 const BADGE_COLOR = "#1f2430";
 
+/** Font stacks the basemap style already uses, so names need no extra glyphs. */
+const LABEL_FONT = ["Inter Medium", "Noto Sans Medium"];
+const SELECTED_LABEL_FONT = ["Inter Semi Bold", "Noto Sans Semi Bold"];
+const LABEL_SIZE = 12;
+const LABEL_GAP = 5;
+const LABEL_PADDING = 1;
+
+/**
+ * Pins point at their location, so the image sits above the coordinate. The
+ * offset cancels the transparent padding under the tip.
+ */
+const PIN_OFFSET: [number, number] = [0, markerPin.padding];
+
+/**
+ * The pin image already carries a transparent margin, so its collision box
+ * gets no more. MapLibre's default of 2 px pushes the box past the gap to the
+ * pin's own name, and every name is then dropped as colliding with its pin.
+ */
+const PIN_COLLISION_PADDING = 0;
+
+/**
+ * A fanned pin is drawn with its disc on the end of its leg, at the 24 px the
+ * spiral spacing in `market-stacks` is laid out for.
+ */
+const FAN_PIN_SIZE = 24 / (markerPin.base.radius * 2);
+const FAN_PIN_OFFSET: [number, number] = [0, markerPin.base.tail / 2];
+
+/**
+ * Inflates a badge count's collision box to roughly the badge around it, so a
+ * name beside a nearby pin does not run underneath the badge.
+ */
+const BADGE_COLLISION_PADDING = 6;
+
+/** The Material place pin, the silhouette Google Maps drops on a location. */
+const USER_PIN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="36" viewBox="4.25 1.25 15.5 21.5" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="currentColor" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><circle cx="12" cy="9" r="2.75" fill="#000000" fill-opacity="0.3"/></svg>`;
+
 type UserLocation = { lat: number; lng: number };
+
+type SymbolLayer = Extract<LayerSpecification, { type: "symbol" }>;
 
 export type MarketCamera = {
   lat: number;
@@ -85,6 +135,9 @@ const FILTER_FIT_MAX_ZOOM = 14;
 
 const FILTER_FIT_PADDING = { top: 96, bottom: 160, left: 48, right: 48 };
 
+/** How far above a sheet's edge a selected pin's tip must sit to count as visible. */
+const REVEAL_MARGIN = 24;
+
 type MarketMapProps = {
   locations: MarketLocation[];
   selectedLocationId: string | null;
@@ -93,6 +146,15 @@ type MarketMapProps = {
   cameraScope?: string;
   userLocation: UserLocation | null;
   onSelectLocation: (id: string) => void;
+  /** A tap on the map that lands on nothing. */
+  onDeselect?: () => void;
+  /** The viewer started dragging the map. */
+  onUserPan?: () => void;
+  /**
+   * Pixels covered at the bottom by a sheet and the controls riding it. The
+   * camera frames the area above, and names keep clear of it.
+   */
+  bottomInset?: number;
   onViewportSettled?: (viewport: MarketViewport) => void;
   className?: string;
 };
@@ -103,15 +165,17 @@ type StackFeature = {
     key: string;
     count: number;
     id: string;
-    kind: MarketLocationKind;
     name: string;
-  };
+  } & PinProperties;
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
+/** The pin's image id and its colour, which the name beside it is shaded by. */
+type PinProperties = { pin: string; color: MarkerColor };
+
 type SpiderFeature = {
   type: "Feature";
-  properties: { id: string; kind: MarketLocationKind; name: string };
+  properties: { id: string; name: string } & PinProperties;
   geometry:
     | { type: "Point"; coordinates: [number, number] }
     | { type: "LineString"; coordinates: [number, number][] };
@@ -128,6 +192,13 @@ function emptyCollection<T>(): FeatureCollection<T> {
   return { type: "FeatureCollection", features: [] };
 }
 
+function pinProperties(location: MarketLocation | undefined): PinProperties {
+  const style = resolveMarkerStyle(
+    location ?? { kind: "voucher", markerIcon: null, markerColor: null },
+  );
+  return { pin: markerImageId(style), color: style.color };
+}
+
 function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
   return {
     type: "FeatureCollection",
@@ -140,8 +211,8 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
           key: stack.key,
           count: stack.members.length,
           id: single ? single.id : "",
-          kind: single?.kind ?? first?.kind ?? "voucher",
           name: single?.name ?? "",
+          ...pinProperties(first),
         },
         geometry: { type: "Point", coordinates: [stack.lng, stack.lat] },
       };
@@ -151,10 +222,12 @@ function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFe
 
 function createUserMarker(): HTMLDivElement {
   const marker = document.createElement("div");
-  // `bg-primary` follows `data-brand`: green on prod, red on staging, and the
-  // dark-scheme variant of the same token. The white ring is the stroke that
-  // keeps the dot readable on the basemap. No pulse.
-  marker.className = "size-3 rounded-full bg-primary ring-2 ring-white";
+  // `text-primary` follows `data-brand`: green on prod, red on staging, and the
+  // dark-scheme variant of the same token. The white stroke keeps the pin
+  // readable on the basemap, and its taller, glyph-free silhouette sets it
+  // apart from the voucher pins. No pulse.
+  marker.className = "text-primary drop-shadow-sm";
+  marker.innerHTML = USER_PIN_SVG;
   return marker;
 }
 
@@ -169,18 +242,60 @@ function lockMapUpright(map: MapLibreGL.Map): void {
   map.setBearing(0);
 }
 
-function kindMatchExpression(selected: boolean): DataDrivenPropertyValueSpecification<string> {
-  const ids = selected ? markerImageIds.selected : markerImageIds.base;
-  return [
+/**
+ * Each feature names its own pin, so the expression stays the same size
+ * however many icons and colours the palette grows to.
+ */
+function pinImage(selected: boolean): DataDrivenPropertyValueSpecification<string> {
+  return selected ? ["concat", ["get", "pin"], SELECTED_PIN_SUFFIX] : ["get", "pin"];
+}
+
+/**
+ * A voucher's name, Google Maps style: beside the pin's disc in a darker shade
+ * of the pin, on the right where it fits and the left where it does not.
+ */
+function labelLayout(
+  shape: { radius: number; tail: number },
+  font: string[],
+): NonNullable<SymbolLayer["layout"]> {
+  // Offsets are in ems of the label size, measured from the pin's tip.
+  const x = (shape.radius + LABEL_GAP) / LABEL_SIZE;
+  const y = -(shape.radius + shape.tail) / LABEL_SIZE;
+  return {
+    "text-field": ["get", "name"],
+    "text-font": font,
+    "text-size": LABEL_SIZE,
+    "text-max-width": 8,
+    "text-line-height": 1.15,
+    "text-justify": "auto",
+    "text-variable-anchor-offset": ["left", [x, y], "right", [-x, y]],
+    "text-padding": LABEL_PADDING,
+  };
+}
+
+const [FIRST_COLOR, ...OTHER_COLORS] = MARKER_COLORS;
+
+const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
+  "text-color": [
     "match",
-    ["get", "kind"],
-    "goods",
-    ids.goods,
-    "services",
-    ids.services,
-    "voucher",
-    ids.voucher,
-    ids.voucher,
+    ["get", "color"],
+    FIRST_COLOR,
+    MARKER_COLOR_HEX[FIRST_COLOR].label,
+    ...OTHER_COLORS.flatMap((color) => [color, MARKER_COLOR_HEX[color].label]),
+    MARKER_COLOR_HEX.orange.label,
+  ],
+  "text-halo-color": "#ffffff",
+  "text-halo-width": 1.5,
+  "text-halo-blur": 0.5,
+};
+
+/** The selected voucher uses its own text layer, below every pin and badge. */
+function labelFilter(selectedId: string | null): FilterSpecification {
+  return [
+    "all",
+    ["!", ["has", "point_count"]],
+    ["==", ["get", "count"], 1],
+    ["!=", ["get", "id"], selectedId ?? ""],
   ];
 }
 
@@ -219,8 +334,8 @@ function badgeRadius(property: string): DataDrivenPropertyValueSpecification<num
   return ["step", ["get", property], 14, 10, 16, 100, 18, 1000, 20];
 }
 
-function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
-  addMarketMarkerImages(map);
+function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stacks: MarketStack[]) {
+  addMarketMarkerImages(map, locations);
 
   map.addSource(MARKET_SOURCE_ID, {
     type: "geojson",
@@ -231,6 +346,26 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     clusterProperties: { voucherCount: ["+", ["get", "count"]] },
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
+
+  // Lowest of the market layers. MapLibre places symbols from the top layer
+  // down, so every pin and badge count above has claimed its space by the time
+  // names are placed: a name gives way to a pin and never runs under one.
+  map.addLayer({
+    id: LABEL_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: labelFilter(null),
+    layout: labelLayout(markerPin.base, LABEL_FONT),
+    paint: LABEL_PAINT,
+  });
+  map.addLayer({
+    id: SELECTED_LABEL_LAYER_ID,
+    type: "symbol",
+    source: MARKET_SOURCE_ID,
+    filter: selectedFilter(null),
+    layout: labelLayout(markerPin.selected, SELECTED_LABEL_FONT),
+    paint: LABEL_PAINT,
+  });
 
   map.addLayer({
     id: CLUSTERS_LAYER_ID,
@@ -252,7 +387,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "text-field": countLabel("voucherCount"),
       "text-size": 11,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-padding": BADGE_COLLISION_PADDING,
     },
     paint: { "text-color": "#ffffff" },
   });
@@ -263,10 +398,12 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: MARKET_SOURCE_ID,
     filter: singleFilter,
     layout: {
-      "icon-image": kindMatchExpression(false),
+      "icon-image": pinImage(false),
       "icon-size": 1,
+      "icon-anchor": "bottom",
+      "icon-offset": PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
     },
   });
 
@@ -291,7 +428,7 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
       "text-field": countLabel("count"),
       "text-size": 11,
       "text-allow-overlap": true,
-      "text-ignore-placement": true,
+      "text-padding": BADGE_COLLISION_PADDING,
     },
     paint: { "text-color": "#ffffff" },
   });
@@ -302,10 +439,12 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: MARKET_SOURCE_ID,
     filter: selectedFilter(null),
     layout: {
-      "icon-image": kindMatchExpression(true),
+      "icon-image": pinImage(true),
       "icon-size": 1,
+      "icon-anchor": "bottom",
+      "icon-offset": PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
     },
   });
 
@@ -322,10 +461,11 @@ function addMarketLayers(map: MapLibreGL.Map, stacks: MarketStack[]) {
     source: SPIDER_SOURCE_ID,
     filter: ["==", ["geometry-type"], "Point"],
     layout: {
-      "icon-image": kindMatchExpression(false),
-      "icon-size": 1,
+      "icon-image": pinImage(false),
+      "icon-size": FAN_PIN_SIZE,
+      "icon-offset": FAN_PIN_OFFSET,
+      "icon-padding": PIN_COLLISION_PADDING,
       "icon-allow-overlap": true,
-      "icon-ignore-placement": true,
     },
   });
 }
@@ -338,6 +478,9 @@ export function MarketMap({
   cameraScope,
   userLocation,
   onSelectLocation,
+  onDeselect,
+  onUserPan,
+  bottomInset = 0,
   onViewportSettled,
   className,
 }: MarketMapProps) {
@@ -346,6 +489,7 @@ export function MarketMap({
   const userMarkerRef = useRef<MapLibreGL.Marker | null>(null);
   const appliedCameraRef = useRef<MarketCamera | null>(null);
   const appliedFitKeyRef = useRef<string | null>(null);
+  const appliedInsetRef = useRef(0);
   const userHasInteractedRef = useRef(false);
   const loadedRef = useRef(false);
   const [failure, setFailure] = useState<"unsupported" | "error" | null>(null);
@@ -362,8 +506,16 @@ export function MarketMap({
 
   const stacksRef = useRef(stacks);
   stacksRef.current = stacks;
+  const locationsRef = useRef(locations);
+  locationsRef.current = locations;
+  const bottomInsetRef = useRef(bottomInset);
+  bottomInsetRef.current = bottomInset;
   const onSelectRef = useRef(onSelectLocation);
   onSelectRef.current = onSelectLocation;
+  const onDeselectRef = useRef(onDeselect);
+  onDeselectRef.current = onDeselect;
+  const onUserPanRef = useRef(onUserPan);
+  onUserPanRef.current = onUserPan;
   const onViewportSettledRef = useRef(onViewportSettled);
   onViewportSettledRef.current = onViewportSettled;
 
@@ -412,6 +564,7 @@ export function MarketMap({
 
     mapRef.current = map;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    let removeLabelEdgeListeners: (() => void) | undefined;
 
     function handleMapClick(event: MapMouseEvent) {
       const [feature] = map.queryRenderedFeatures(event.point, {
@@ -420,6 +573,7 @@ export function MarketMap({
 
       if (!feature) {
         setSpider(null);
+        onDeselectRef.current?.();
         return;
       }
 
@@ -469,6 +623,11 @@ export function MarketMap({
       if (event?.originalEvent) userHasInteractedRef.current = true;
     }
 
+    function handleDragStart(event: { originalEvent?: unknown }) {
+      handleUserInteraction(event);
+      if (event?.originalEvent) onUserPanRef.current?.();
+    }
+
     function handleZoomStart() {
       setSpider(null);
     }
@@ -479,7 +638,8 @@ export function MarketMap({
     }
 
     function handleLoad() {
-      addMarketLayers(map, stacksRef.current);
+      addMarketLayers(map, locationsRef.current, stacksRef.current);
+      removeLabelEdgeListeners = keepMarketLabelsInsideViewport(map, () => bottomInsetRef.current);
       loadedRef.current = true;
       setLoaded(true);
     }
@@ -492,17 +652,18 @@ export function MarketMap({
     map.on("load", handleLoad);
     map.on("error", handleError);
     map.on("click", handleMapClick);
-    map.on("dragstart", handleUserInteraction);
+    map.on("dragstart", handleDragStart);
     map.on("zoomstart", handleUserInteraction);
     map.on("zoomstart", handleZoomStart);
     map.on("moveend", handleMoveEnd);
 
     return () => {
       clearTimeout(settleTimer);
+      removeLabelEdgeListeners?.();
       map.off("load", handleLoad);
       map.off("error", handleError);
       map.off("click", handleMapClick);
-      map.off("dragstart", handleUserInteraction);
+      map.off("dragstart", handleDragStart);
       map.off("zoomstart", handleUserInteraction);
       map.off("zoomstart", handleZoomStart);
       map.off("moveend", handleMoveEnd);
@@ -512,6 +673,7 @@ export function MarketMap({
       mapRef.current = null;
       appliedCameraRef.current = null;
       appliedFitKeyRef.current = null;
+      appliedInsetRef.current = 0;
       userHasInteractedRef.current = false;
       loadedRef.current = false;
       setLoaded(false);
@@ -522,7 +684,10 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     const source = map.getSource(MARKET_SOURCE_ID) as GeoJSONSource | undefined;
-    source?.setData(createStackCollection(stacks));
+    if (!source) return;
+    // Every member, not only lone pins: a fanned stack draws its members' pins.
+    addMarketMarkerImages(map, locationsRef.current);
+    source.setData(createStackCollection(stacks));
   }, [loaded, stacks]);
 
   useEffect(() => {
@@ -551,14 +716,15 @@ export function MarketMap({
       if (!member) return;
       const point = map.unproject([anchor.x + offset.dx, anchor.y + offset.dy]);
       const coordinates: [number, number] = [point.lng, point.lat];
+      const properties = { id: member.id, name: member.name, ...pinProperties(member) };
       features.push({
         type: "Feature",
-        properties: { id: member.id, kind: member.kind, name: member.name },
+        properties,
         geometry: { type: "LineString", coordinates: [[stack.lng, stack.lat], coordinates] },
       });
       features.push({
         type: "Feature",
-        properties: { id: member.id, kind: member.kind, name: member.name },
+        properties,
         geometry: { type: "Point", coordinates },
       });
     });
@@ -579,13 +745,43 @@ export function MarketMap({
     const map = mapRef.current;
     if (!map || !loaded) return;
     map.setFilter(SELECTED_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setFilter(SELECTED_LABEL_LAYER_ID, selectedFilter(selectedLocationId));
+    map.setFilter(LABEL_LAYER_ID, labelFilter(selectedLocationId));
     map.setLayoutProperty(SPIDER_POINT_LAYER_ID, "icon-image", [
       "case",
       ["==", ["get", "id"], selectedLocationId ?? ""],
-      kindMatchExpression(true),
-      kindMatchExpression(false),
+      pinImage(true),
+      pinImage(false),
     ]);
   }, [loaded, selectedLocationId]);
+
+  // Pads the camera by the sheet without moving the view: whatever sits at the
+  // centre of the area left above the sheet becomes the camera's centre. Every
+  // later move then frames that area.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || appliedInsetRef.current === bottomInset) return;
+    appliedInsetRef.current = bottomInset;
+    const { clientWidth, clientHeight } = map.getCanvas();
+    const center = map.unproject([clientWidth / 2, (clientHeight - bottomInset) / 2]);
+    map.easeTo({
+      center: [center.lng, center.lat],
+      padding: { top: 0, right: 0, bottom: bottomInset, left: 0 },
+      duration: 0,
+    });
+  }, [bottomInset, loaded]);
+
+  // A selected pin the sheet would cover is panned into the area above it, on
+  // selection and whenever the sheet grows. A pin already in view stays put.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !selectedLocationId) return;
+    const location = locationsRef.current.find((candidate) => candidate.id === selectedLocationId);
+    if (!location) return;
+    const tip = map.project([location.lng, location.lat]);
+    if (tip.y <= map.getCanvas().clientHeight - bottomInset - REVEAL_MARGIN) return;
+    map.easeTo({ center: [location.lng, location.lat] });
+  }, [bottomInset, loaded, selectedLocationId]);
 
   useEffect(() => {
     appliedCameraRef.current = null;
@@ -628,7 +824,14 @@ export function MarketMap({
         [fitBounds.west, fitBounds.south],
         [fitBounds.east, fitBounds.north],
       ],
-      { maxZoom: FILTER_FIT_MAX_ZOOM, padding: FILTER_FIT_PADDING },
+      {
+        maxZoom: FILTER_FIT_MAX_ZOOM,
+        // Added to the camera's own padding, which already clears the sheet.
+        padding: {
+          ...FILTER_FIT_PADDING,
+          bottom: Math.max(0, FILTER_FIT_PADDING.bottom - bottomInsetRef.current),
+        },
+      },
     );
   }, [fitBounds, loaded]);
 
@@ -646,7 +849,7 @@ export function MarketMap({
       userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat]);
       return;
     }
-    userMarkerRef.current = new MapLibreGL.Marker({ element: createUserMarker() })
+    userMarkerRef.current = new MapLibreGL.Marker({ element: createUserMarker(), anchor: "bottom" })
       .setLngLat([userLocation.lng, userLocation.lat])
       .addTo(map);
   }, [loaded, userLocation]);

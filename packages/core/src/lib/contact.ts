@@ -5,10 +5,12 @@ import { z } from "zod";
  * they are collected (signup profile, voucher issuer contact). An empty string
  * means "not provided"; callers decide whether that is acceptable.
  */
+const emailSchema = z.email();
+
 export const optionalEmailSchema = z
   .string()
   .trim()
-  .refine((value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), {
+  .refine((value) => value === "" || emailSchema.safeParse(value).success, {
     message: "Invalid email address",
   });
 
@@ -20,13 +22,11 @@ export const optionalPhoneSchema = z
     message: "Invalid phone number",
   });
 
+/** Unlike `z.httpUrl()`, accepts `localhost` and bare IPs, which dev storage uses. */
+const httpUrlSchema = z.url({ protocol: /^https?$/ });
+
 export function isHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname.length > 0;
-  } catch {
-    return false;
-  }
+  return httpUrlSchema.safeParse(value).success;
 }
 
 function isOptionalHttpUrl(value: string): boolean {

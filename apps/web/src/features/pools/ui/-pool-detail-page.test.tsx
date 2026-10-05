@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { $getRoot, $selectAll, type LexicalEditor } from "lexical";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -24,6 +25,20 @@ const mocks = vi.hoisted(() => ({
   },
   updateProfile: vi.fn(),
 }));
+
+// The card is covered on its own; here only that a voucher opens it.
+const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
+
+vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
+  useVoucherSheetSelection: () => ({
+    voucher: null,
+    voucherTab: "offerings",
+    open: voucherSheet.open,
+    close: () => {},
+  }),
+}));
+
+vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null }));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -131,6 +146,12 @@ vi.mock("#/components/ui/location-picker", () => ({
     </button>
   ),
 }));
+
+// The shell only defers the chunk; these tests are about the editor inside it.
+vi.mock("#/components/ui/markdown-editor", async () => {
+  const editor = await import("#/components/ui/markdown-editor-lexical");
+  return { MarkdownEditor: editor.MarkdownEditorLexical };
+});
 
 import { PoolDetailPage } from "./pool-detail-page";
 
@@ -298,6 +319,54 @@ describe("PoolDetailPage pool details editor", () => {
       "Pool name must be at least 3 characters",
     );
     expect(mocks.updateProfile).not.toHaveBeenCalled();
+  });
+
+  it("opens written terms formatted in the editor, with no syntax hint to read", async () => {
+    mocks.poolResult.data = pool({ terms: "## House rules\n\nSettle every **Friday**." });
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    const terms = await within(dialog).findByRole("textbox", {
+      name: "Shown to anyone using this pool",
+    });
+    expect(terms.querySelector("h2")?.textContent).toBe("House rules");
+    expect(terms.querySelector("strong")?.textContent).toBe("Friday");
+    expect(within(dialog).queryByRole("button", { name: "Preview" })).toBeNull();
+    expect(within(dialog).queryByText(/Markdown: \*\*bold\*\*/)).toBeNull();
+  });
+
+  it("saves terms formatted from the toolbar as markdown", async () => {
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+    fireEvent.click(screen.getByRole("button", { name: "Edit details" }));
+    const dialog = await screen.findByRole("dialog");
+
+    // Flipping the switch discards the link: a URL is not a body of terms.
+    fireEvent.click(within(dialog).getByRole("switch", { name: "Write my own" }));
+    const terms = (await within(dialog).findByRole("textbox", {
+      name: "Shown to anyone using this pool",
+    })) as HTMLElement & { __lexicalEditor: LexicalEditor };
+    expect(terms.textContent).toBe("");
+
+    await act(async () => {
+      terms.__lexicalEditor.update(() => {
+        $getRoot().selectEnd().insertText("Settle every Friday");
+      });
+    });
+    await act(async () => {
+      terms.__lexicalEditor.update(() => {
+        $selectAll();
+      });
+    });
+    await act(async () => {
+      fireEvent.click(within(dialog).getByRole("button", { name: "Bulleted list" }));
+    });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mocks.updateProfile).toHaveBeenCalledTimes(1));
+    expect(mocks.updateProfile.mock.calls[0]?.[0]).toMatchObject({
+      terms: "- Settle every Friday",
+    });
   });
 
   it("shows the currency it was switched to", async () => {

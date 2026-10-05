@@ -36,6 +36,7 @@ export type PoolVoucherFacet = VoucherRef & {
 };
 
 export type FilteredPoolsParams = CursorParams & {
+  nearby?: boolean;
   filter: CatalogFilter;
   facets?: boolean;
   /** Only pools whose `ownerAddress` is this address. Compared case-insensitively. */
@@ -309,9 +310,12 @@ export type PoolsClient = ReturnType<typeof createPoolsClient>;
 
 export function createPoolsClient(http: HttpClient) {
   return {
-    async getPools(params: CursorParams, signal?: AbortSignal): Promise<UserPoolPage> {
+    async getPools(
+      params: CursorParams & { nearby?: boolean },
+      signal?: AbortSignal,
+    ): Promise<UserPoolPage> {
       const result = await http.request<BackendPoolPage>(
-        `/api/v2/pools${formatCursorQuery(params)}`,
+        `/api/v2/pools${formatCursorQuery(params)}${params.nearby ? "&nearby=true" : ""}`,
         poolReadRequest(signal),
       );
       const received = result.pools ?? [];
@@ -323,7 +327,7 @@ export function createPoolsClient(http: HttpClient) {
     },
 
     async getFilteredPools(
-      { filter, facets, owner, ...cursor }: FilteredPoolsParams,
+      { filter, facets, owner, nearby, ...cursor }: FilteredPoolsParams,
       signal?: AbortSignal,
     ): Promise<FilteredPoolPage> {
       const search = new URLSearchParams(formatCursorQuery(cursor));
@@ -338,6 +342,7 @@ export function createPoolsClient(http: HttpClient) {
       }
       if (owner) search.set("owner", owner);
       if (facets) search.set("facets", "true");
+      if (nearby) search.set("nearby", "true");
 
       const result = await http.request<BackendFilteredPoolPage>(
         `/api/v2/pools?${search.toString()}`,

@@ -17,14 +17,19 @@ export const CAMERA_RANK = {
   /** The black location button — an explicit request, exempt from the latch. */
   explicit: EXPLICIT_CAMERA_RANK,
   /**
+   * The voucher a link opened the market on. A shared card centres on its
+   * voucher, not on wherever the viewer happens to be.
+   */
+  selectedVoucher: 1,
+  /**
    * The location saved on the signed-in profile. The map opens there, and only
    * the location button moves it to a live fix.
    */
-  savedProfile: 1,
-  liveGps: 2,
-  persistedGps: 3,
-  ipCity: 4,
-  countryDefault: 5,
+  savedProfile: 2,
+  liveGps: 3,
+  persistedGps: 4,
+  ipCity: 5,
+  countryDefault: 6,
 } as const;
 
 export const REAL_FIX_ZOOM = 14;
