@@ -617,7 +617,7 @@ msgstr "ཡིག་གཟུགས་སྦོམ།"
 msgid "Brown"
 msgstr "ཀ་ཕི་ཁ་དོག"
 
-#: apps/web/src/features/home/ui/market-page.tsx:243
+#: apps/web/src/features/home/ui/market-page.tsx:265
 msgid "Browse all"
 msgstr "ཆ་མཉམ་བལྟ།"
 
@@ -908,7 +908,7 @@ msgstr "ཚགས་མ་བསལ།"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:39
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:158
-#: apps/web/src/features/home/ui/market-page.tsx:226
+#: apps/web/src/features/home/ui/market-page.tsx:248
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -1385,6 +1385,7 @@ msgstr "གོ་སྐབས་ཚུ་མངོན་གསལ་འབད་
 msgid "Couldn't load pool tags."
 msgstr "དངུལ་ཁུངས་ཀྱི་ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
+#: apps/web/src/features/home/ui/market-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 msgid "Couldn't load pools."
 msgstr "དངུལ་ཁུངས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -2181,7 +2182,7 @@ msgstr "ཚགས་མ་ཚུ།"
 msgid "Finding a name…"
 msgstr "མིང་འཚོལ་དོ…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:127
+#: apps/web/src/features/home/ui/market-page.tsx:138
 msgid "Finding location"
 msgstr "ས་གནས་འཚོལ་དོ།"
 
@@ -2737,7 +2738,7 @@ msgstr "མངོན་གསལ་འབད་དོ…"
 msgid "Location"
 msgstr "ས་གནས།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:129
+#: apps/web/src/features/home/ui/market-page.tsx:140
 msgid "Location denied"
 msgstr "ས་གནས་གནང་བ་མ་བྱིན།"
 
@@ -2746,7 +2747,7 @@ msgid "Location map"
 msgstr "ས་གནས་ས་ཁྲ།"
 
 #: apps/web/src/components/ui/location-picker.tsx:219
-#: apps/web/src/features/home/ui/market-page.tsx:131
+#: apps/web/src/features/home/ui/market-page.tsx:142
 msgid "Location unavailable"
 msgstr "ས་གནས་མི་འཐོབ།"
 
@@ -3194,12 +3195,12 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
-#: apps/web/src/features/home/ui/market-page.tsx:223
+#: apps/web/src/features/home/ui/market-page.tsx:245
 msgid "No vouchers match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
-#: apps/web/src/features/home/ui/market-page.tsx:230
+#: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག་མེད།"
 
@@ -4293,7 +4294,8 @@ msgstr "ལག་ལེན་ལས་བཏོན་དོ…"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:151
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
-#: apps/web/src/features/home/ui/market-map.tsx:881
+#: apps/web/src/features/home/ui/market-map.tsx:859
+#: apps/web/src/features/home/ui/market-page.tsx:168
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:712
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
@@ -5074,11 +5076,11 @@ msgstr "དངུལ་ཁུངས་འདི་ནང་གནས་གོང
 msgid "The end of the period must not be before its start"
 msgstr "དུས་ཡུན་གྱི་མཇུག་འདི་འགོ་ལས་ཧེ་མ་འོང་མི་ཆོག"
 
-#: apps/web/src/features/home/ui/market-map.tsx:869
+#: apps/web/src/features/home/ui/market-map.tsx:847
 msgid "The map could not be loaded."
 msgstr "ས་ཁྲ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/home/ui/market-map.tsx:871
+#: apps/web/src/features/home/ui/market-map.tsx:849
 msgid "The map is not supported on this device."
 msgstr "ཐབས་འཕྲུལ་འདི་གུ་ས་ཁྲ་རྒྱབ་སྐྱོར་མེད།"
 
@@ -5506,7 +5508,7 @@ msgstr "ཡར་བཙུགས་འབད་དོ…"
 msgid "Use “{unit}”"
 msgstr "“{unit}” ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/home/ui/market-page.tsx:132
+#: apps/web/src/features/home/ui/market-page.tsx:143
 msgid "Use current location"
 msgstr "ད་ལྟོའི་ས་གནས་ལག་ལེན་འཐབ།"
 

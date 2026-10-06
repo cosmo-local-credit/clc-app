@@ -89,7 +89,8 @@ export function MarketPage({
   const { vouchers, isCatalogComplete, error, retry } = catalog;
   // The filter's terms and tags are a voucher vocabulary, so a filtered map
   // shows only the vouchers it matched.
-  const pools = useMarketMapPools(!filter.isRestoringPreference && !filter.isFiltered);
+  const poolCatalog = useMarketMapPools(!filter.isRestoringPreference && !filter.isFiltered);
+  const { pools } = poolCatalog;
   // Pools go last: a stack is keyed by its first member, so pools arriving
   // after the vouchers do not re-key a fan the viewer has open.
   const locations = useMemo(
@@ -160,7 +161,12 @@ export function MarketPage({
     setViewport(settled);
   }, []);
 
-  const notice = useMarketFilterNotice(filter, error, retry);
+  // The vouchers' notice wins: their retry is the one that fills an empty map.
+  const notice =
+    useMarketFilterNotice(filter, error, retry) ??
+    (poolCatalog.error
+      ? { message: t`Couldn't load pools.`, actionLabel: t`Retry`, onAction: poolCatalog.retry }
+      : null);
 
   const locationButton = (
     <Button

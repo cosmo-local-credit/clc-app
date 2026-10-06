@@ -53,6 +53,8 @@ const {
 } = vi.hoisted(() => ({
   poolsResult: {
     current: [] as MarketPoolLocation[],
+    error: null as Error | null,
+    retry: vi.fn(),
     enabled: [] as boolean[],
   },
   selection: {
@@ -169,7 +171,11 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
 vi.mock("#/features/home/hooks/use-market-pools", () => ({
   useMarketMapPools: (enabled: boolean) => {
     poolsResult.enabled.push(enabled);
-    return enabled ? poolsResult.current : [];
+    return {
+      pools: enabled ? poolsResult.current : [],
+      error: enabled ? poolsResult.error : null,
+      retry: poolsResult.retry,
+    };
   },
 }));
 
@@ -328,6 +334,8 @@ beforeEach(() => {
   };
   lastAppMenuProps.current = null;
   poolsResult.current = [];
+  poolsResult.error = null;
+  poolsResult.retry = vi.fn();
   poolsResult.enabled = [];
   profileRequests.current = 0;
   profileResult.current = {
@@ -806,6 +814,29 @@ describe("MarketPage pools", () => {
 
     expect(poolsResult.enabled.at(-1)).toBe(false);
     expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
+  });
+
+  it("offers Retry when the pools fail to load", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    poolsResult.error = new Error("pools are down");
+    renderPage();
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Couldn't load pools.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(poolsResult.retry).toHaveBeenCalledTimes(1);
+    expect(mockRetry).not.toHaveBeenCalled();
+  });
+
+  it("puts the vouchers' failure first when both fail", () => {
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+    poolsResult.error = new Error("pools are down");
+    renderPage();
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Could not load vouchers.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(mockRetry).toHaveBeenCalledTimes(1);
   });
 });
 

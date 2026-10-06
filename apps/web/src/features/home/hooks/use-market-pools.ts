@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import type { HexAddress } from "@clc/core/features/catalog/logic";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -9,6 +9,12 @@ const MARKET_POOLS_PAGE_SIZE = 100;
 
 export type MarketPoolLocation = MarketLocation & { kind: "pool"; address: HexAddress };
 
+export type MarketMapPools = {
+  pools: MarketPoolLocation[];
+  error: Error | null;
+  retry: () => void;
+};
+
 /**
  * Every pool with a location, as markers for the market map.
  *
@@ -16,18 +22,33 @@ export type MarketPoolLocation = MarketLocation & { kind: "pool"; address: HexAd
  * thousands of vouchers. Ids are namespaced because a pool's catalog id and a
  * voucher's are both plain integers, and the map tells markers apart by id.
  */
-export function useMarketMapPools(enabled: boolean): MarketPoolLocation[] {
-  const { data, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage } = useUserPoolsInfinite(
-    MARKET_POOLS_PAGE_SIZE,
-    enabled,
-  );
+export function useMarketMapPools(enabled: boolean): MarketMapPools {
+  const {
+    data,
+    error,
+    isError,
+    isFetchNextPageError,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    fetchNextPage,
+    refetch,
+  } = useUserPoolsInfinite(MARKET_POOLS_PAGE_SIZE, enabled);
 
+  // A failed page keeps `hasNextPage`, so walking on through an error would
+  // request it again each time the last attempt settles, past every retry
+  // limit. It waits for `retry` instead.
   useEffect(() => {
-    if (!enabled || !hasNextPage || isFetching || isFetchingNextPage) return;
+    if (!enabled || isError || !hasNextPage || isFetching || isFetchingNextPage) return;
     void fetchNextPage();
-  }, [enabled, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage]);
+  }, [enabled, isError, hasNextPage, isFetching, isFetchingNextPage, fetchNextPage]);
 
-  return useMemo(() => {
+  // Resumes from the page that failed; the walk picks up again once it lands.
+  const retry = useCallback(() => {
+    void (isFetchNextPageError ? fetchNextPage() : refetch());
+  }, [isFetchNextPageError, fetchNextPage, refetch]);
+
+  const pools = useMemo(() => {
     if (!enabled) return [];
 
     const byAddress = new Map<string, MarketPoolLocation>();
@@ -52,4 +73,9 @@ export function useMarketMapPools(enabled: boolean): MarketPoolLocation[] {
     }
     return [...byAddress.values()];
   }, [enabled, data?.pages]);
+
+  return useMemo(
+    () => ({ pools, error: enabled ? error : null, retry }),
+    [pools, enabled, error, retry],
+  );
 }

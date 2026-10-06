@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -32,6 +32,15 @@ function page(pools: UserPool[], perPage = 100): UserPoolPage {
   };
 }
 
+/**
+ * A request that fails after a moment, as a real one does. One that rejects in
+ * the same tick lets React batch the fetching flags straight back to idle, and
+ * the walk never sees them change.
+ */
+function failLater(message: string) {
+  return () => new Promise<never>((_, reject) => setTimeout(() => reject(new Error(message)), 10));
+}
+
 function renderPools(enabled = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -51,8 +60,8 @@ describe("useMarketMapPools", () => {
 
     const { result } = renderPools();
 
-    await waitFor(() => expect(result.current).toHaveLength(1));
-    expect(result.current[0]).toEqual({
+    await waitFor(() => expect(result.current.pools).toHaveLength(1));
+    expect(result.current.pools[0]).toEqual({
       id: "pool:0x49d3e72becc7870cd9d1981d5f4ec8e1cb5394e2",
       name: "Pool 7",
       kind: "pool",
@@ -82,7 +91,9 @@ describe("useMarketMapPools", () => {
     const { result } = renderPools();
 
     await waitFor(() => expect(getPools).toHaveBeenCalled());
-    await waitFor(() => expect(result.current.map((entry) => entry.name)).toEqual(["Pool 1"]));
+    await waitFor(() =>
+      expect(result.current.pools.map((entry) => entry.name)).toEqual(["Pool 1"]),
+    );
   });
 
   it("walks every page of the catalog", async () => {
@@ -93,16 +104,75 @@ describe("useMarketMapPools", () => {
     const { result } = renderPools();
 
     await waitFor(() =>
-      expect(result.current.map((entry) => entry.name)).toEqual(["Pool 9", "Pool 8", "Pool 2"]),
+      expect(result.current.pools.map((entry) => entry.name)).toEqual([
+        "Pool 9",
+        "Pool 8",
+        "Pool 2",
+      ]),
     );
     expect(getPools).toHaveBeenCalledTimes(2);
     expect(getPools.mock.calls[1]?.[0]).toMatchObject({ cursor: 8, next: true });
   });
 
+  it("stops walking at a failed page rather than refetching it in a loop", async () => {
+    getPools
+      .mockResolvedValueOnce(page([pool(9), pool(8)]))
+      .mockImplementation(failLater("page 2 is down"));
+
+    const { result } = renderPools();
+
+    await waitFor(() => expect(result.current.error?.message).toBe("page 2 is down"));
+    // Long enough for a looping walk to have re-requested the page many times.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(getPools).toHaveBeenCalledTimes(2);
+    // The pools already loaded stay on the map.
+    expect(result.current.pools.map((entry) => entry.name)).toEqual(["Pool 9", "Pool 8"]);
+  });
+
+  it("resumes the walk from the failed page on retry", async () => {
+    getPools
+      .mockResolvedValueOnce(page([pool(9), pool(8)]))
+      .mockImplementationOnce(failLater("page 2 is down"))
+      .mockResolvedValueOnce({ ...page([pool(2)]), receivedCount: 1 });
+
+    const { result } = renderPools();
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    act(() => result.current.retry());
+
+    await waitFor(() =>
+      expect(result.current.pools.map((entry) => entry.name)).toEqual([
+        "Pool 9",
+        "Pool 8",
+        "Pool 2",
+      ]),
+    );
+    expect(result.current.error).toBeNull();
+    expect(getPools).toHaveBeenCalledTimes(3);
+    expect(getPools.mock.calls[2]?.[0]).toMatchObject({ cursor: 8, next: true });
+  });
+
+  it("refetches from the start when the first page failed", async () => {
+    getPools
+      .mockImplementationOnce(failLater("pools are down"))
+      .mockResolvedValueOnce({ ...page([pool(1)]), receivedCount: 1 });
+
+    const { result } = renderPools();
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+
+    act(() => result.current.retry());
+
+    await waitFor(() =>
+      expect(result.current.pools.map((entry) => entry.name)).toEqual(["Pool 1"]),
+    );
+    expect(getPools.mock.calls[1]?.[0]).toMatchObject({ cursor: undefined });
+  });
+
   it("requests nothing while disabled", () => {
     const { result } = renderPools(false);
 
-    expect(result.current).toEqual([]);
+    expect(result.current.pools).toEqual([]);
+    expect(result.current.error).toBeNull();
     expect(getPools).not.toHaveBeenCalled();
   });
 });
