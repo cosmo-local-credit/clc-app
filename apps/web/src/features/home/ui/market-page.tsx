@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
 import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
 
@@ -15,6 +15,7 @@ import {
   useMarketCamera,
 } from "#/features/home/hooks/use-market-camera";
 import { useMarketCatalogVouchers } from "#/features/home/hooks/use-market-catalog";
+import { useMarketMapPools } from "#/features/home/hooks/use-market-pools";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
@@ -86,6 +87,15 @@ export function MarketPage({
   const filter = useMarketFilter(useStorageOwner());
   const catalog = useMarketCatalogVouchers(filter, viewport, !filter.isRestoringPreference);
   const { vouchers, isCatalogComplete, error, retry } = catalog;
+  // The filter's terms and tags are a voucher vocabulary, so a filtered map
+  // shows only the vouchers it matched.
+  const pools = useMarketMapPools(!filter.isRestoringPreference && !filter.isFiltered);
+  // Pools go last: a stack is keyed by its first member, so pools arriving
+  // after the vouchers do not re-key a fan the viewer has open.
+  const locations = useMemo(
+    () => (pools.length === 0 ? vouchers : [...vouchers, ...pools]),
+    [vouchers, pools],
+  );
 
   const fitBounds = useMemo(() => {
     if (!filter.isFiltered || catalog.status !== "ready" || vouchers.length === 0) return null;
@@ -131,13 +141,19 @@ export function MarketPage({
           ? t`Location unavailable`
           : t`Use current location`;
 
+  const navigate = useNavigate();
   const { open } = selection;
   const handleSelectLocation = useCallback(
     (id: string) => {
+      const pool = pools.find((candidate) => candidate.id === id);
+      if (pool) {
+        void navigate({ to: "/pools/$poolAddress", params: { poolAddress: pool.address } });
+        return;
+      }
       const voucher = vouchers.find((candidate) => candidate.id === id);
       if (voucher) open(voucher.address);
     },
-    [open, vouchers],
+    [navigate, open, pools, vouchers],
   );
 
   const handleViewportSettled = useCallback((settled: MarketViewport) => {
@@ -173,7 +189,7 @@ export function MarketPage({
         fallback={<div className="market-map-fallback absolute inset-0 h-full w-full bg-card" />}
       >
         <MarketMap
-          locations={vouchers}
+          locations={locations}
           selectedLocationId={selectedLocationId}
           camera={camera}
           fitBounds={fitBounds}

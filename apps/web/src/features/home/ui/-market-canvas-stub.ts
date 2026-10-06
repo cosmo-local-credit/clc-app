@@ -16,6 +16,7 @@ export type StubbedContext = {
   paths: string[];
   arcs: Array<{ x: number; y: number; radius: number }>;
   lines: Array<{ x: number; y: number }>;
+  moves: Array<{ x: number; y: number }>;
   pixel: [number, number, number, number];
 };
 
@@ -50,6 +51,7 @@ export function installCanvasStub(): Map<HTMLCanvasElement, StubbedContext> {
       paths: [],
       arcs: [],
       lines: [],
+      moves: [],
       pixel: [0, 0, 0, 0],
     };
 
@@ -65,6 +67,9 @@ export function installCanvasStub(): Map<HTMLCanvasElement, StubbedContext> {
       closePath: vi.fn(),
       arc: vi.fn((x: number, y: number, radius: number) => {
         record.arcs.push({ x, y, radius });
+      }),
+      moveTo: vi.fn((x: number, y: number) => {
+        record.moves.push({ x, y });
       }),
       lineTo: vi.fn((x: number, y: number) => {
         record.lines.push({ x, y });

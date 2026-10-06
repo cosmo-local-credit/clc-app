@@ -209,7 +209,12 @@ vi.mock("maplibre-gl", () => ({
 import { installCanvasStub, installPath2DStub } from "./-market-canvas-stub";
 import { type MarketLocation, MARKET_SOURCE_ID } from "./market-data";
 import { EXPLICIT_CAMERA_RANK, type MarketCamera, MarketMap } from "./market-map";
-import { markerPin, resetMarketMarkerCache } from "./market-markers";
+import {
+  POOL_PIN_HEX,
+  POOL_PIN_IMAGE_ID,
+  markerPin,
+  resetMarketMarkerCache,
+} from "./market-markers";
 import { SPIDER_PAGE_SIZE } from "./market-stacks";
 
 const LOCATIONS: MarketLocation[] = [
@@ -378,7 +383,7 @@ describe("MarketMap lifecycle", () => {
 
     const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
       features: Array<{
-        properties: { id: string; name: string; pin: string; color: string };
+        properties: { id: string; name: string; pin: string; label: string };
         geometry: { coordinates: [number, number] };
       }>;
     };
@@ -388,7 +393,7 @@ describe("MarketMap lifecycle", () => {
       id: "1",
       name: "Alpha",
       pin: "market-pin-basket-blue",
-      color: "blue",
+      label: "#1d4ed8",
     });
     expect(data.features.map((feature) => feature.properties.pin)).toEqual([
       "market-pin-basket-blue",
@@ -399,6 +404,39 @@ describe("MarketMap lifecycle", () => {
     // Registered before the source that references them, so no pin is skipped.
     expect(map.hasImage("market-pin-farm-cyan")).toBe(true);
     expect(map.hasImage("market-pin-farm-cyan-selected")).toBe(true);
+  });
+
+  it("gives a pool its own pin, named in the pool's blue", () => {
+    render(
+      <MarketMap
+        locations={[
+          ...LOCATIONS,
+          {
+            id: "pool:0x49d3e72becc7870cd9d1981d5f4ec8e1cb5394e2",
+            name: "Mina G Pool",
+            kind: "pool",
+            markerIcon: null,
+            markerColor: null,
+            lat: -3.6457,
+            lng: 39.85,
+            locationName: "Mnarani, Kilifi, Kenya",
+          },
+        ]}
+        selectedLocationId={null}
+        camera={null}
+        userLocation={null}
+        onSelectLocation={vi.fn()}
+      />,
+    );
+    const map = loadedMap();
+
+    const data = map.getSource(MARKET_SOURCE_ID)?.spec.data as {
+      features: Array<{ properties: { id: string; pin: string; label: string } }>;
+    };
+    const pool = data.features.find((feature) => feature.properties.id.startsWith("pool:"));
+
+    expect(pool?.properties).toMatchObject({ pin: POOL_PIN_IMAGE_ID, label: POOL_PIN_HEX.label });
+    expect(map.hasImage(POOL_PIN_IMAGE_ID)).toBe(true);
   });
 
   it("removes the map on unmount", () => {
@@ -1274,7 +1312,7 @@ describe("MarketMap badge counts", () => {
     locationName: null,
   }));
 
-  it("makes a distance cluster count vouchers, not locations", () => {
+  it("makes a distance cluster count markers, not locations", () => {
     renderMap([...CBD_STACK, ...LOCATIONS]);
     const map = loadedMap();
     const spec = map.getSource(MARKET_SOURCE_ID)?.spec as {
@@ -1282,17 +1320,17 @@ describe("MarketMap badge counts", () => {
     };
 
     expect(spec.clusterProperties).toBeDefined();
-    expect(spec.clusterProperties?.voucherCount).toEqual(["+", ["get", "count"]]);
+    expect(spec.clusterProperties?.markerCount).toEqual(["+", ["get", "count"]]);
   });
 
-  it("labels clusters from the summed voucher count", () => {
+  it("labels clusters from the summed marker count", () => {
     renderMap(CBD_STACK);
     const map = loadedMap();
     const layer = map.getLayer("market-cluster-count") as {
       layout?: { "text-field"?: unknown };
     };
 
-    expect(JSON.stringify(layer.layout?.["text-field"])).toContain("voucherCount");
+    expect(JSON.stringify(layer.layout?.["text-field"])).toContain("markerCount");
     expect(JSON.stringify(layer.layout?.["text-field"])).not.toContain("point_count");
   });
 
@@ -1387,9 +1425,7 @@ describe("MarketMap pins and names", () => {
       ["==", ["get", "count"], 1],
       ["!=", ["get", "id"], ""],
     ]);
-    expect(layer.paint?.["text-color"]).toEqual(
-      expect.arrayContaining(["match", ["get", "color"], "blue", "#1d4ed8", "pink", "#be185d"]),
-    );
+    expect(layer.paint?.["text-color"]).toEqual(["get", "label"]);
     expect(layer.paint?.["text-halo-color"]).toBe("#ffffff");
   });
 
