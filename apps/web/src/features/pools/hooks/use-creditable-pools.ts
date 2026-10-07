@@ -1,4 +1,10 @@
-import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  type NearbyCatalogFilter,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryKey,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import { isRetryableBackendError } from "@clc/api/client/errors";
 import type { UserPool } from "@clc/api/features/pools/client";
 import {
@@ -76,6 +82,7 @@ type MulticallEntry = { status: "success"; result: unknown } | { status: "failur
  */
 export function useCreditablePools(holderAddress: string | undefined): CreditablePoolsResult {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   const client = useClient();
   const holder = holderAddress && isAddress(holderAddress) ? holderAddress : undefined;
   const holdings = useAllAccountTokens(holder);
@@ -104,7 +111,8 @@ export function useCreditablePools(holderAddress: string | undefined): Creditabl
   const sourceReady = Boolean(holder) && !holdings.isPending && vocabulary.data !== undefined;
   const candidates = useQuery({
     queryKey: nearbyQueryKey(poolCreditQueryKeys.candidates(heldVoucherRefs), nearby),
-    queryFn: ({ signal }) => fetchPoolCreditCandidates(heldVoucherRefs, signal, !!nearby),
+    queryFn: ({ signal }) =>
+      fetchPoolCreditCandidates(heldVoucherRefs, signal, !!nearby, visibilityFilter),
     enabled: sourceReady,
     staleTime: CANDIDATE_STALE_TIME_MS,
     ...nearbyQueryPolicy(nearby),
@@ -182,6 +190,7 @@ async function fetchPoolCreditCandidates(
   vouchers: readonly VoucherRef[],
   signal: AbortSignal,
   nearby = false,
+  visibilityFilter?: NearbyCatalogFilter,
 ): Promise<PoolCreditCandidate[]> {
   const chunks = chunkPoolCreditVouchers(vouchers);
   if (chunks.length === 0) return [];
@@ -197,6 +206,7 @@ async function fetchPoolCreditCandidates(
       },
       signal,
       nearby,
+      visibilityFilter,
     });
     return {
       pools: catalog.pools,

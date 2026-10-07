@@ -647,7 +647,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{ar,dz,en,es,fr,it,pt,sr,sw,uk}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,de,dz,en,es,fr,it,pt,sr,sw,uk}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -679,6 +679,11 @@ Ukrainian uses the `uk` catalog, stays `ltr`, and uses `uk` Intl formatting with
 a decimal comma and non-breaking-space grouping. Its CLDR plural categories are
 `one`, `few`, `many`, and `other`. Editable amounts and machine-readable values
 remain canonical ASCII.
+
+German uses the `de` catalog, stays `ltr`, and uses `de` Intl formatting with a
+decimal comma and period grouping. Its CLDR plural categories are `one` and
+`other`. Product terminology uses **Fonds**, **Gutschein**, and **Geldbörse**;
+editable amounts and machine-readable values remain canonical ASCII.
 
 ### Client / server / URL state
 

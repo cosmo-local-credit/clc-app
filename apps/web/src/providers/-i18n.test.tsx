@@ -53,6 +53,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("dz")}>
         རྫོང་ཁ
       </button>
+      <button type="button" onClick={() => setLocale("de")}>
+        Deutsch
+      </button>
       <button type="button" onClick={() => setLocale("sw")}>
         Kiswahili
       </button>
@@ -233,6 +236,19 @@ describe("AppI18nProvider", () => {
     });
   });
 
+  it("detects German from a region-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["de-CH", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("de");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("de");
+      expect(document.documentElement.lang).toBe("de");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
   it("detects Ukrainian from a script-tagged device language and applies LTR", async () => {
     setNavigatorLanguages(["uk-Cyrl-UA", "en"]);
 
@@ -247,7 +263,7 @@ describe("AppI18nProvider", () => {
   });
 
   it("falls back to the default locale when the device language is unsupported", () => {
-    setNavigatorLanguages(["de-DE"]);
+    setNavigatorLanguages(["ja-JP"]);
 
     renderProvider();
 
@@ -292,6 +308,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("fr");
     expect(localStorage.getItem("clc.locale")).toBe("fr");
     expect(Cookies.get("clc_locale")).toBe("fr");
+  });
+
+  it("persists a German locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Deutsch" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("de");
+    expect(document.documentElement.lang).toBe("de");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("de");
+    expect(Cookies.get("clc_locale")).toBe("de");
   });
 
   it("persists a Spanish locale selection", async () => {

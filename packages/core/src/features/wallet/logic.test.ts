@@ -55,6 +55,7 @@ describe("formatTokenAmountFixed", () => {
 
   it.each([
     ["ar-u-nu-arab", "١٠٬٠٠٠٫٠٠"],
+    ["de", "10.000,00"],
     ["dz", "༡༠,༠༠༠.༠༠"],
     ["en", "10,000.00"],
     ["es", "10.000,00"],
@@ -77,6 +78,11 @@ describe("formatTokenAmountFixed", () => {
   it("preserves large values with French grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "fr")).toBe(
       "90 071 992 547 409 931 234,56",
+    );
+  });
+  it("preserves large values with German grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "de")).toBe(
+      "90.071.992.547.409.931.234,56",
     );
   });
   it("preserves large values with Spanish grouping", () => {

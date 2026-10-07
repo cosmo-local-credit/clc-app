@@ -237,8 +237,18 @@ function VoucherCard({
           {/* A pointer shortcut, as on the place sheet. The handle above is the
               control that names the action for everyone else. */}
           <div
-            className="flex min-w-0 flex-1 items-center gap-3"
-            onClick={snap === "peek" ? () => onSnapChange("half") : undefined}
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-3 select-none",
+              snap !== "full" && "cursor-pointer",
+            )}
+            onClick={
+              snap === "peek"
+                ? () => onSnapChange("half")
+                : snap === "half"
+                  ? () => onSnapChange("full")
+                  : undefined
+            }
+            onDoubleClick={snap === "full" ? undefined : () => onSnapChange("full")}
           >
             <VoucherAvatar
               address={address}

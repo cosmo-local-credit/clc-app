@@ -15,6 +15,10 @@ vi.mock("#/components/theme-selector", () => ({
   ThemeSelector: () => <div data-testid="theme-selector" />,
 }));
 
+vi.mock("#/components/visibility-selector", () => ({
+  VisibilitySelector: () => <div data-testid="visibility-selector" />,
+}));
+
 vi.mock("./notification-settings-section", () => ({
   NotificationSettingsSection: ({ walletAddress }: { walletAddress?: string }) => (
     <div data-testid="notification-settings">{walletAddress}</div>
@@ -79,11 +83,12 @@ describe("SettingsPage", () => {
     );
   });
 
-  it("offers theme and language under Preferences, as the app menu does", () => {
+  it("offers theme, language, and visibility under Preferences, as the app menu does", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
     expect(screen.getByRole("heading", { name: /preferences/i })).toBeTruthy();
     expect(screen.getByTestId("theme-selector")).toBeTruthy();
     expect(screen.getByTestId("language-selector")).toBeTruthy();
+    expect(screen.getByTestId("visibility-selector")).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {

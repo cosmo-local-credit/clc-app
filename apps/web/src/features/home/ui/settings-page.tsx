@@ -10,6 +10,7 @@ import {
 import { InstallAppLink } from "#/components/install-app-link";
 import { LanguageSelector } from "#/components/language-selector";
 import { ThemeSelector } from "#/components/theme-selector";
+import { VisibilitySelector } from "#/components/visibility-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
 import { BUILD_INFO } from "#/features/app-updates/build-info";
@@ -76,6 +77,13 @@ export function SettingsPage({
               <Trans>Choose the app display language.</Trans>
             </p>
             <LanguageSelector triggerClassName="w-32" />
+          </div>
+          <div className="-mx-4 my-3 h-px bg-border" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>Choose how far away marketplace results can be.</Trans>
+            </p>
+            <VisibilitySelector triggerClassName="w-32" />
           </div>
         </div>
       </section>

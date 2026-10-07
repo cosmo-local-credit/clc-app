@@ -7,7 +7,7 @@ import {
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vite-plus/test";
-import { NearbyCatalog, useNearbyCatalog } from "./nearby-catalog";
+import { NearbyCatalog, isWithinNearbyCatalog, useNearbyCatalog } from "./nearby-catalog";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
 import { useReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -18,6 +18,11 @@ import {
 import { useReportFeed } from "#/features/home/hooks/use-filtered-reports";
 import { usePoolCatalog } from "#/features/pools/hooks/use-filtered-pools";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import {
+  CATALOG_VISIBILITY_STORAGE_KEY,
+  DEFAULT_CATALOG_VISIBILITY,
+  useCatalogVisibilityStore,
+} from "#/features/home/state/catalog-visibility";
 
 const state = vi.hoisted(() => ({
   auth: {
@@ -60,6 +65,10 @@ beforeEach(() => {
   state.auth.isLoading = false;
   state.auth.address = "0xaaa";
   state.profile.data = { geoLat: 0, geoLng: 0 };
+  state.profile.isPending = false;
+  state.profile.isError = false;
+  window.localStorage.clear();
+  useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
   state.market.mockReset().mockResolvedValue({ vouchers: [], receivedCount: 0, first: 0, last: 0 });
   state.pools.mockReset().mockResolvedValue({ pools: [], receivedCount: 0 });
   state.reports.mockReset().mockResolvedValue({ reports: [] });
@@ -72,6 +81,42 @@ beforeEach(() => {
   state.filteredReports
     .mockReset()
     .mockResolvedValue({ reports: [], tagFacets: [], voucherFacets: [] });
+});
+
+it("uses exact saved-location radii and lets Global include every coordinate", () => {
+  expect(isWithinNearbyCatalog(undefined, { lat: 80, lng: 80 })).toBe(true);
+  const filter = { lat: 0, lng: 0, radiusKm: 100 };
+  expect(isWithinNearbyCatalog(filter, { lat: 0.5, lng: 0 })).toBe(true);
+  expect(isWithinNearbyCatalog(filter, { lat: 2, lng: 0 })).toBe(false);
+  expect(isWithinNearbyCatalog(filter, { lat: null, lng: null })).toBe(false);
+});
+
+it("filters nearby results to the selected distance", async () => {
+  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "100");
+  state.market.mockResolvedValue({
+    vouchers: [
+      { id: "near", name: "Near", lat: 0.5, lng: 0 },
+      { id: "far", name: "Far", lat: 2, lng: 0 },
+    ],
+    receivedCount: 2,
+    first: 2,
+    last: 0,
+  });
+  mount();
+  expect(await screen.findByText("Near")).toBeTruthy();
+  expect(screen.queryByText("Far")).toBeNull();
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toContain(":100");
+});
+
+it("Global bypasses profile and authenticated nearby filtering", async () => {
+  window.localStorage.setItem(CATALOG_VISIBILITY_STORAGE_KEY, "global");
+  state.auth.isLoading = true;
+  state.profile.isError = true;
+  mount();
+  await waitFor(() => expect(state.market).toHaveBeenCalled());
+  expect(state.market.mock.lastCall?.[0].nearby).toBeUndefined();
+  expect(screen.getByTestId("lists").getAttribute("data-scope")).toBeNull();
+  state.profile.isError = false;
 });
 
 afterEach(() => {
@@ -242,7 +287,7 @@ it("all three screen lists request nearby results", async () => {
 
 it("drops old rows and local state immediately when profile location or account changes", async () => {
   state.market.mockResolvedValueOnce({
-    vouchers: [{ id: "1", name: "Old place" }],
+    vouchers: [{ id: "1", name: "Old place", lat: 0, lng: 0 }],
     receivedCount: 1,
     first: 1,
     last: 1,

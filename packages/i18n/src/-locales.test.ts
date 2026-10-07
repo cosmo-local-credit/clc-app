@@ -25,7 +25,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Arabic in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "ar-EG", "fr-FR"])).toBe("ar");
+    expect(matchSupportedLocale(["ja-JP", "ar-EG", "fr-FR"])).toBe("ar");
   });
 
   it("exposes Arabic direction and numbering metadata", () => {
@@ -47,12 +47,29 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Dzongkha in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "dz-BT", "en-US"])).toBe("dz");
+    expect(matchSupportedLocale(["ja-JP", "dz-BT", "en-US"])).toBe("dz");
   });
 
   it("exposes Dzongkha direction and numbering metadata", () => {
     expect(getLocaleDirection("dz")).toBe("ltr");
     expect(getLocaleFormattingLocale("dz")).toBe("dz");
+  });
+
+  it("matches generic and region-tagged German locales", () => {
+    expect(matchSupportedLocale(["de"])).toBe("de");
+    expect(matchSupportedLocale(["de-DE"])).toBe("de");
+    expect(matchSupportedLocale(["de-AT"])).toBe("de");
+    expect(matchSupportedLocale(["de-CH"])).toBe("de");
+    expect(matchSupportedLocale(["de_LI"])).toBe("de");
+  });
+
+  it("honors German in the preferred-language order", () => {
+    expect(matchSupportedLocale(["ja-JP", "de-CH", "fr-FR"])).toBe("de");
+  });
+
+  it("exposes German direction and formatting metadata", () => {
+    expect(getLocaleDirection("de")).toBe("ltr");
+    expect(getLocaleFormattingLocale("de")).toBe("de");
   });
 
   it("matches generic and region-tagged Spanish locales", () => {
@@ -64,7 +81,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Spanish in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "es-MX", "fr-FR"])).toBe("es");
+    expect(matchSupportedLocale(["ja-JP", "es-MX", "fr-FR"])).toBe("es");
   });
 
   it("matches generic and region-tagged French locales", () => {
@@ -75,7 +92,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors French in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "fr-CA", "en-US"])).toBe("fr");
+    expect(matchSupportedLocale(["ja-JP", "fr-CA", "en-US"])).toBe("fr");
   });
 
   it("matches generic and region-tagged Italian locales", () => {
@@ -87,7 +104,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Italian in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "it-CH", "fr-FR"])).toBe("it");
+    expect(matchSupportedLocale(["ja-JP", "it-CH", "fr-FR"])).toBe("it");
   });
 
   it("matches generic and region-tagged Portuguese locales", () => {
@@ -100,7 +117,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Portuguese in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "pt-AO", "es-ES"])).toBe("pt");
+    expect(matchSupportedLocale(["ja-JP", "pt-AO", "es-ES"])).toBe("pt");
   });
 
   it("matches generic, regional, and script-tagged Ukrainian locales", () => {
@@ -111,7 +128,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("honors Ukrainian in the preferred-language order", () => {
-    expect(matchSupportedLocale(["de-DE", "uk-UA", "en-US"])).toBe("uk");
+    expect(matchSupportedLocale(["ja-JP", "uk-UA", "en-US"])).toBe("uk");
   });
 
   it("exposes Ukrainian direction and formatting metadata", () => {
@@ -120,7 +137,7 @@ describe("matchSupportedLocale", () => {
   });
 
   it("falls back to the default locale when nothing matches", () => {
-    expect(matchSupportedLocale(["de", "ja"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["ja", "ko"])).toBe(DEFAULT_LOCALE);
   });
 
   it("falls back to the default locale for an empty list", () => {
@@ -130,6 +147,7 @@ describe("matchSupportedLocale", () => {
   it("is case-insensitive", () => {
     expect(matchSupportedLocale(["AR-eg"])).toBe("ar");
     expect(matchSupportedLocale(["DZ-bt"])).toBe("dz");
+    expect(matchSupportedLocale(["DE-ch"])).toBe("de");
     expect(matchSupportedLocale(["SW"])).toBe("sw");
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
     expect(matchSupportedLocale(["IT-ch"])).toBe("it");
@@ -140,6 +158,7 @@ describe("matchSupportedLocale", () => {
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
     expect(matchSupportedLocale(["sw_KE", "en_US"])).toBe("sw");
     expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
+    expect(matchSupportedLocale(["de_LI"])).toBe("de");
     expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
   });
 
