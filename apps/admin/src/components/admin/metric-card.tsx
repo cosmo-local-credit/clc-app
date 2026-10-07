@@ -27,7 +27,9 @@ const iconShellClass: Record<MetricTone, string> = {
  * always land on the default first page rather than inheriting whatever view the
  * operator last had.
  */
-type MetricLink = { to: "/pools" | "/vouchers" | "/users" | "/transactions/vouchers" };
+type MetricLink =
+  | { to: "/pools" | "/vouchers" | "/users" | "/transactions/vouchers" }
+  | { href: string };
 
 export function MetricCard({
   label,
@@ -127,6 +129,19 @@ export function MetricCard({
   );
 
   if (!link) return body;
+
+  if ("href" in link) {
+    return (
+      <a
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="focus-visible:ring-ring block h-full outline-none focus-visible:ring-1"
+      >
+        {body}
+      </a>
+    );
+  }
 
   return (
     <Link

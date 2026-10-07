@@ -72,6 +72,10 @@ describe("DashboardPage", () => {
     expect(screen.getByText("40")).toBeTruthy();
     expect(screen.getByText("88")).toBeTruthy();
     expect(screen.getByText(`12 ${CHAIN_INFO.nativeSymbol}`)).toBeTruthy();
+    const relayerLink = screen.getByRole("link", { name: /Relayer gas/ });
+    expect(relayerLink.getAttribute("href")).toBe(`${CHAIN_INFO.explorerUrl}/address/0xabc`);
+    expect(relayerLink.getAttribute("target")).toBe("_blank");
+    expect(relayerLink.getAttribute("rel")).toBe("noopener noreferrer");
     expect(screen.getAllByText("last 1d").length).toBeGreaterThan(0);
     expect(screen.getByText("Catalog")).toBeTruthy();
     expect(screen.getAllByText("Transactions").length).toBeGreaterThan(1);
