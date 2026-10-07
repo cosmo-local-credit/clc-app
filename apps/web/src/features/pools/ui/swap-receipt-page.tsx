@@ -1,7 +1,8 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
+import { RiCoinLine, RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
+import { isAddress } from "viem";
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 
 import { Button } from "#/components/ui/button";
@@ -15,6 +16,7 @@ import {
   SuccessCheck,
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { CHAIN_INFO } from "#/lib/chain";
@@ -45,6 +47,15 @@ export function SwapReceiptPage({
     queryKey: "pool-swap-relay-track",
     queryFn: async (trackingId) => (await relayerClient.trackRelay(trackingId)).result,
   });
+  const outcome = tracking.outcome;
+  const receivedToken =
+    details.receiveToken && isAddress(details.receiveToken) ? details.receiveToken : undefined;
+  // The URL names the voucher but never its issuer. Resolve the current issuer
+  // from the canonical voucher detail only after the swap has succeeded, so a
+  // stale or edited receipt URL cannot redirect a redemption.
+  const receivedVoucher = useMarketVoucherDetail(
+    details.trackingId && outcome.kind === "success" ? receivedToken : undefined,
+  );
   const localizedReceiveAmount = details.receiveAmount
     ? localizeCanonicalAmount(details.receiveAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
@@ -72,8 +83,13 @@ export function SwapReceiptPage({
   // received token is known — a prefill missing either half would silently open
   // the flow on some other voucher.
   const sendReceived =
-    details.receiveToken && details.receiveAmount
-      ? { token: details.receiveToken, amount: details.receiveAmount }
+    receivedToken && details.receiveAmount
+      ? { token: receivedToken, amount: details.receiveAmount }
+      : null;
+  const issuerAddress = receivedVoucher.data?.ownerAddress;
+  const redeemReceived =
+    sendReceived && issuerAddress && isAddress(issuerAddress)
+      ? { ...sendReceived, recipient: issuerAddress }
       : null;
 
   if (!details.trackingId) {
@@ -90,7 +106,6 @@ export function SwapReceiptPage({
     );
   }
 
-  const outcome = tracking.outcome;
   if (outcome.kind === "pending") {
     return (
       <ReceiptShell
@@ -199,7 +214,22 @@ export function SwapReceiptPage({
         />
       ) : null}
       {sendReceived ? (
-        <Button asChild className="mb-2.5 h-11 w-full">
+        redeemReceived ? (
+          <Button asChild className="mb-2.5 h-11 w-full">
+            <Link to="/wallet/send/amount" search={redeemReceived}>
+              <RiCoinLine className="size-4" aria-hidden="true" />
+              <Trans>Redeem</Trans>
+            </Link>
+          </Button>
+        ) : (
+          <Button className="mb-2.5 h-11 w-full" disabled>
+            <RiCoinLine className="size-4" aria-hidden="true" />
+            <Trans>Redeem</Trans>
+          </Button>
+        )
+      ) : null}
+      {sendReceived ? (
+        <Button asChild className="mb-2.5 h-11 w-full" variant="outline">
           <Link to="/wallet/send" search={sendReceived}>
             <RiSendPlane2Line className="size-4" aria-hidden="true" />
             <Trans>Send {details.receiveSymbol}</Trans>

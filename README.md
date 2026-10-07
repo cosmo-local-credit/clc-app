@@ -1,6 +1,6 @@
 # CLC App
 
-> Route redeemable claims across curated markets with shared standards.
+> Cosmo-Local Credit helps people and organizations support, share, and exchange goods and services.
 
 [![codecov](https://codecov.io/gh/cosmo-local-credit/clc-app/branch/master/graph/badge.svg?token=WNZV9550PY)](https://codecov.io/gh/cosmo-local-credit/clc-app)
 

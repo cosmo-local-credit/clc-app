@@ -1,17 +1,58 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { createContext, type ReactNode, useContext } from "react";
+import { haversineMeters } from "@clc/core/lib/geo/distance";
 
 import { Button } from "#/components/ui/button";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import {
+  catalogVisibilityRadiusKm,
+  useHydratedCatalogVisibility,
+} from "#/features/home/state/catalog-visibility";
 
 // Only Market, Pools browsing, and Posts opt in. Other consumers of the same
 // catalog hooks (wallet, pickers, and details) retain ordinary reads.
 const NearbyCatalogContext = createContext<string | undefined>(undefined);
 
+export type NearbyCatalogFilter = {
+  lat: number;
+  lng: number;
+  radiusKm: number;
+};
+
+const NearbyCatalogFilterContext = createContext<NearbyCatalogFilter | undefined>(undefined);
+
 export function useNearbyCatalog() {
   return useContext(NearbyCatalogContext);
+}
+
+export function useNearbyCatalogFilter() {
+  return useContext(NearbyCatalogFilterContext);
+}
+
+export function isWithinNearbyCatalog(
+  filter: NearbyCatalogFilter | undefined,
+  coordinates: { lat?: number | null; lng?: number | null },
+): boolean {
+  if (!filter) return true;
+  const { lat, lng } = coordinates;
+  if (
+    typeof lat !== "number" ||
+    typeof lng !== "number" ||
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng)
+  ) {
+    return false;
+  }
+  return haversineMeters(filter, { lat, lng }) <= filter.radiusKm * 1_000;
+}
+
+export function filterNearbyCatalog<T extends { lat?: number | null; lng?: number | null }>(
+  rows: readonly T[],
+  filter: NearbyCatalogFilter | undefined,
+): T[] {
+  return filter ? rows.filter((row) => isWithinNearbyCatalog(filter, row)) : [...rows];
 }
 
 export function nearbyQueryKey<T extends readonly unknown[]>(key: T, scope: string | undefined) {
@@ -33,10 +74,30 @@ export function nearbyQueryPolicy(scope: string | undefined) {
 }
 
 export function NearbyCatalog({ children }: { children: ReactNode }) {
+  const { visibility, hydrated } = useHydratedCatalogVisibility();
   const auth = useAuthStatus();
-  const profile = useAuthProfile({ enabled: auth.isAuthenticated });
+  const radiusKm = catalogVisibilityRadiusKm(visibility);
+  const profile = useAuthProfile({ enabled: radiusKm !== null && auth.isAuthenticated });
   const lat = profile.data?.geoLat;
   const lng = profile.data?.geoLng;
+
+  if (!hydrated) {
+    return (
+      <p className="p-6">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  }
+
+  if (radiusKm === null) {
+    return (
+      <NearbyCatalogContext.Provider key="global" value={undefined}>
+        <NearbyCatalogFilterContext.Provider value={undefined}>
+          {children}
+        </NearbyCatalogFilterContext.Provider>
+      </NearbyCatalogContext.Provider>
+    );
+  }
 
   if (auth.isLoading || (auth.isAuthenticated && profile.isPending)) {
     return (
@@ -94,12 +155,15 @@ export function NearbyCatalog({ children }: { children: ReactNode }) {
     );
   }
 
-  const scope = `nearby:${auth.address?.toLowerCase()}:${auth.chainId}:${lat}:${lng}`;
+  const scope = `nearby:${auth.address?.toLowerCase()}:${auth.chainId}:${lat}:${lng}:${radiusKm}`;
+  const filter = { lat, lng, radiusKm };
   // Remount on identity/location change so previous-data placeholders and local
   // selections cannot carry records from the old radius into the new screen.
   return (
     <NearbyCatalogContext.Provider key={scope} value={scope}>
-      {children}
+      <NearbyCatalogFilterContext.Provider value={filter}>
+        {children}
+      </NearbyCatalogFilterContext.Provider>
     </NearbyCatalogContext.Provider>
   );
 }

@@ -1,4 +1,11 @@
-import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  filterNearbyCatalog,
+  type NearbyCatalogFilter,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryKey,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -84,12 +91,14 @@ export async function fetchFilteredPoolCatalog({
   perPage = POOLS_FILTER_PAGE_SIZE,
   signal,
   nearby = false,
+  visibilityFilter,
 }: {
   filter: CatalogFilter;
   facets?: boolean;
   perPage?: number;
   signal?: AbortSignal;
   nearby?: boolean;
+  visibilityFilter?: NearbyCatalogFilter;
 }): Promise<FilteredPoolCatalog> {
   const pages: FilteredPoolPage[] = [];
   let cursor: number | undefined;
@@ -119,7 +128,10 @@ export async function fetchFilteredPoolCatalog({
   }
 
   return {
-    pools: [...byAddress.values()],
+    pools: filterNearbyCatalog(
+      [...byAddress.values()].map((pool) => ({ ...pool, lat: pool.geoLat, lng: pool.geoLng })),
+      visibilityFilter,
+    ).map(({ lat: _lat, lng: _lng, ...pool }) => pool),
     tagFacets: pages[0]?.tagFacets ?? null,
     voucherFacets: pages[0]?.voucherFacets ?? null,
   };
@@ -127,11 +139,19 @@ export async function fetchFilteredPoolCatalog({
 
 function useFilteredPools(filter: CatalogFilter | null, perPage = POOLS_FILTER_PAGE_SIZE) {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   return useQuery({
     queryKey: nearbyQueryKey(filteredPoolQueryKeys.filtered(filter, perPage), nearby),
     queryFn: ({ signal }): Promise<FilteredPoolCatalog> => {
       if (!filter) throw new Error("The filtered pools query ran without a filter.");
-      return fetchFilteredPoolCatalog({ filter, facets: true, perPage, signal, nearby: !!nearby });
+      return fetchFilteredPoolCatalog({
+        filter,
+        facets: true,
+        perPage,
+        signal,
+        nearby: !!nearby,
+        visibilityFilter,
+      });
     },
     enabled: filter !== null,
     placeholderData: keepPreviousData,

@@ -1,4 +1,9 @@
-import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryKey,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import { BackendApiError, isRetryableBackendError } from "@clc/api/client/errors";
 import type { UserPool } from "@clc/api/features/pools/client";
 import type { VoucherRef } from "@clc/core/features/catalog/logic";
@@ -56,6 +61,7 @@ export function usePoolOutputAvailability(
   voucher: VoucherRef | undefined,
 ): PoolOutputAvailabilityResult {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   const client = useClient();
   const candidates = useQuery({
     queryKey: nearbyQueryKey(
@@ -77,6 +83,7 @@ export function usePoolOutputAvailability(
           },
           signal,
           nearby: !!nearby,
+          visibilityFilter,
         }).then((catalog) => catalog.pools);
       } catch (error) {
         // A syntactically valid deep-link address that is not in the catalog is

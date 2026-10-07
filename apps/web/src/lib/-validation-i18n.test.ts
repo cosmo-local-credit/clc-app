@@ -178,6 +178,19 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into German", async () => {
+    await activateLocale("de");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Wählen Sie einen Standort");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Ungültige Telefonnummer");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Der Name des Gutscheins ist erforderlich",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Der Name des Fonds ist erforderlich",
+    );
+  });
+
   it("translates known validation errors into Ukrainian", async () => {
     await activateLocale("uk");
 
@@ -190,7 +203,7 @@ describe("translateValidationError", () => {
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
+    for (const locale of ["ar", "de", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

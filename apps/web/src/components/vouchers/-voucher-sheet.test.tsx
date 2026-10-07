@@ -218,6 +218,33 @@ describe("VoucherSheet peek", () => {
     expect(card.textContent).not.toContain("=");
   });
 
+  it("advances from peek to half and then full when the voucher header is clicked", async () => {
+    const onSnapChange = vi.fn();
+    renderSheet({ onSnapChange });
+    const title = screen.getByRole("heading", { name: "Priscilah Malii" });
+    const header = title.parentElement?.parentElement;
+    if (!header) throw new Error("expected the voucher header");
+
+    fireEvent.click(header);
+    fireEvent.click(header);
+
+    expect(onSnapChange.mock.calls).toEqual([["half"], ["full"]]);
+    expect(await screen.findByRole("tab", { name: "Offerings" })).toBeTruthy();
+  });
+
+  it("opens the full voucher details when its header is double-clicked", async () => {
+    const onSnapChange = vi.fn();
+    renderSheet({ initialSnap: "half", onSnapChange });
+    const title = screen.getByRole("heading", { name: "Priscilah Malii" });
+    const header = title.parentElement?.parentElement;
+    if (!header) throw new Error("expected the voucher header");
+
+    fireEvent.doubleClick(header);
+
+    expect(onSnapChange).toHaveBeenCalledWith("full");
+    expect(await screen.findByRole("tab", { name: "Offerings" })).toBeTruthy();
+  });
+
   it("says so when a linked voucher cannot be loaded, and offers a retry", () => {
     detailError.current = true;
     renderSheet({ placeholder: null });

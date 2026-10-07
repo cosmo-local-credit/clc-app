@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { navigate, trackRelay, useOtxTracking } = vi.hoisted(() => ({
+const { navigate, trackRelay, useMarketVoucherDetail, useOtxTracking } = vi.hoisted(() => ({
   navigate: vi.fn(),
   trackRelay: vi.fn(),
+  useMarketVoucherDetail: vi.fn(),
   useOtxTracking: vi.fn(),
 }));
 
@@ -26,6 +27,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({ useOtxTracking }));
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({ useMarketVoucherDetail }));
 
 vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
@@ -37,6 +39,7 @@ const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
+const ISSUER_ADDRESS = "0x3333333333333333333333333333333333333333";
 
 const details = {
   trackingId: "swap-tracking-1",
@@ -63,10 +66,19 @@ const confirmed = {
   },
 };
 
+beforeEach(() => {
+  useMarketVoucherDetail.mockReturnValue({
+    data: { ownerAddress: ISSUER_ADDRESS },
+    isPending: false,
+    isError: false,
+  });
+});
+
 afterEach(() => {
   vi.restoreAllMocks();
   navigate.mockReset();
   trackRelay.mockReset();
+  useMarketVoucherDetail.mockReset();
   useOtxTracking.mockReset();
 });
 
@@ -269,6 +281,62 @@ describe("SwapReceiptPage", () => {
     expect(target.searchParams.get("amount")).toBe("2.00");
   });
 
+  it("offers to redeem the exact received amount to the current issuer above Send", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    expect(useMarketVoucherDetail).toHaveBeenCalledWith(TTX_ADDRESS);
+    const redeem = screen.getByRole("link", { name: /^redeem$/i });
+    const send = screen.getByRole("link", { name: /send ttx/i });
+    expect(redeem.nextElementSibling).toBe(send);
+
+    const target = new URL(redeem.getAttribute("href") ?? "", "https://example.test");
+    expect(target.pathname).toBe("/wallet/send/amount");
+    expect(target.searchParams.get("token")).toBe(TTX_ADDRESS);
+    expect(target.searchParams.get("recipient")).toBe(ISSUER_ADDRESS);
+    expect(target.searchParams.get("amount")).toBe("2.00");
+  });
+
+  it("keeps Redeem disabled when the current issuer is not available", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+    useMarketVoucherDetail.mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+    });
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: /^redeem$/i }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("link", { name: /send ttx/i })).toBeTruthy();
+  });
+
+  it("does not resolve an issuer or offer actions for a malformed received token", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: "not-an-address" }}
+      />,
+    );
+
+    expect(useMarketVoucherDetail).toHaveBeenCalledWith(undefined);
+    expect(screen.queryByRole("button", { name: /^redeem$/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: /send ttx/i })).toBeNull();
+  });
+
   it("withholds the send shortcut when the received token is unknown", () => {
     // A receipt deep-linked from an older URL carries a symbol but no address,
     // and a prefill missing that half would open the flow on another voucher.
@@ -277,5 +345,6 @@ describe("SwapReceiptPage", () => {
     render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
 
     expect(screen.queryByRole("link", { name: /send ttx/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^redeem$/i })).toBeNull();
   });
 });

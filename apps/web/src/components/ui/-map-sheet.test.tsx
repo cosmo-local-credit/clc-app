@@ -98,6 +98,15 @@ describe("MapSheet", () => {
     expect(onSnapChange.mock.calls).toEqual([["half"], ["full"], ["peek"]]);
   });
 
+  it("gives the mouse drag handle a full touch target", () => {
+    render(<Harness />);
+
+    const handle = screen.getByRole("button", { name: "Expand" });
+    expect(handle.className).toContain("h-11");
+    expect(handle.className).toContain("cursor-ns-resize");
+    expect(handle.className).toContain("touch-none");
+  });
+
   it("closes on Escape", () => {
     const onClose = vi.fn();
     render(<Harness onClose={onClose} />);
