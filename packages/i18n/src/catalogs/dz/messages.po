@@ -245,12 +245,16 @@ msgstr "འཛིན་ཤོག་ ༡"
 msgid "A good"
 msgstr "ཅ་ཆས་ཅིག"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "ཐོན་རིམ་གསརཔ་ཐོབ་ཚུགས།"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་འབྲེལ་ལམ་ཁ་ཕྱེ་ཡོད། "
 "ཁ་བྱང་འདི་གིས་ནང་འཛུལ་འབད་ནི་ཨིན་ན?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་གི་ QR བཤེར་ཡོད། ཁ་བྱང་འདི་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
@@ -275,7 +279,7 @@ msgstr "འཛིན་ཤོག་འདི་ཁྱོད་ཀྱི་གོ
 msgid "About"
 msgstr "སྐོར་ལས།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit གི་སྐོར་ལས།"
@@ -322,7 +326,7 @@ msgstr "བཀག་ཐག་གུ་ཤུགས་ལྡན་བཟོ་ད
 msgid "Activating smart wallet..."
 msgstr "རིག་པ་ཅན་གྱི་དངུལ་ཁུག་ཤུགས་ལྡན་བཟོ་དོ..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Active"
 msgstr "ཤུགས་ལྡན།"
 
@@ -526,6 +530,10 @@ msgstr "ལས་རིམ་གཞི་བཙུགས།"
 msgid "App menu"
 msgstr "ལས་རིམ་དཀར་ཆག"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:136
+msgid "App version"
+msgstr "ལས་རིམ་ཐོན་རིམ།"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "ལག་ལེན་འཐབ།"
@@ -660,7 +668,7 @@ msgstr "པར་ཆས་ལག་ལེན་ཆོག་ཐམ་མ་བྱ
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "ཆ་མེད།"
 
@@ -789,7 +797,7 @@ msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤ
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 #: apps/web/src/features/pools/ui/pools-page.tsx:435
 msgid "Checking…"
 msgstr "ཞིབ་དཔྱད་འབད་དོ…"
@@ -854,7 +862,7 @@ msgstr "གཞན་ཅིག་གདམ་ཁ་རྐྱབ།"
 msgid "Choose at most 12 tags"
 msgstr "ངོ་རྟགས་ ༡༢ ལས་མ་བརྒལ་བར་གདམ་ཁ་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Choose between light and dark mode."
 msgstr "དཀརཔོ་དང་གནགཔོའི་བཟོ་རྣམ་གཉིས་ལས་གཅིག་གདམ་ཁ་རྐྱབ།"
 
@@ -877,7 +885,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "ཆ་ཕྲན་ལུ་གནས་གོང་གི་གནས་ཚུལ་མེད་པ་ཅིན་ "
 "ཁྱོད་ཀྱིས་བཀལ་མི་ཚད་གཞི་ཡང་ན་གནས་གོང་འདྲ་མཉམ་གདམ་ཁ་རྐྱབ།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:75
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Choose the app display language."
 msgstr "ལས་རིམ་གྱི་བཀྲམ་སྟོན་སྐད་ཡིག་གདམ་ཁ་རྐྱབ།"
 
@@ -1069,7 +1077,7 @@ msgstr "འཛིན་ཤོག་གསར་བཏོན་འབད་ནི
 msgid "Connect your wallet to use MPESA."
 msgstr "MPESA ལག་ལེན་འཐབ་ནིའི་དོན་ལུ་ཁྱོད་ཀྱི་དངུལ་ཁུག་མཐུད།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:96
+#: apps/web/src/features/home/ui/settings-page.tsx:97
 msgid "Connected address"
 msgstr "མཐུད་ཡོད་པའི་ཁ་བྱང་།"
 
@@ -1083,14 +1091,14 @@ msgid "Connecting..."
 msgstr "མཐུད་དོ..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "མཐུད་དོ…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "མཐུད་ལམ་མ་འགྲུབ།"
 
@@ -1483,6 +1491,10 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་ཁྱབ་བ
 msgid "Couldn't publish your voucher."
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་མ་ཚུགས།"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "དུས་མཐུན་ལུ་ལྷོད་མ་ཚུགས། ཁྱོད་ཀྱི་མཐུད་ལམ་ཞིབ་དཔྱད་འབད་དེ་ལོག་འབད།"
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "འཛིན་ཤོག་འདི་གིས་བཅུ་ཚག་ག་དེམ་ཅིག་ལག་ལེན་འཐབ་ཨིན་ན་ལྷག་མ་ཚུགས།"
@@ -1733,7 +1745,7 @@ msgstr "མང་ཉུང་ཕབ།"
 msgid "Default"
 msgstr "སྔོན་སྒྲིག"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 msgid "Delegated to Calibur"
 msgstr "Calibur ལུ་འགན་སྤྲོད་འབད་ཡོད།"
 
@@ -1778,6 +1790,7 @@ msgstr "ལམ་སྟོན།"
 msgid "Discard changes"
 msgstr "བསྒྱུར་བཅོས་ཚུ་བཀོག་བཞག"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "ཁ་བསྡམ།"
@@ -2352,11 +2365,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "སྟོན་པ་ཅིན་ ཡོངས་འབྲེལ་ལས་རིམ་སྦེ་ཁ་ཕྱེ་ཟེར་མི་ཨཱོན་རང་བཞག་སྟེ་ "
 "ཁ་སྐོང་ལུ་ཨེབ།"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་ནང་འདྲེན་འབད་ནི་ཨིན་ན?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "དངུལ་ཁུག་ནང་འདྲེན།"
 
@@ -2369,7 +2382,7 @@ msgstr "ཡོངས་འབྲེལ་ནང་།"
 msgid "In this pool"
 msgstr "དངུལ་ཁུངས་འདི་ནང་།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Inactive"
 msgstr "ཤུགས་མེད།"
 
@@ -2782,7 +2795,7 @@ msgstr "འཛིན་ཤོག་འཛིན་སྐྱོང་།"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "འཛིན་ཤོག་ དངུལ་ཁུངས་ དང་ས་གནས་ཀྱི་སྤྲོད་ལེན་འཛིན་སྐྱོང་འབད།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:41
+#: apps/web/src/features/home/ui/settings-page.tsx:42
 msgid "Manage your wallet session and app preferences."
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་ལཱ་ཡུན་དང་ལས་རིམ་དགའ་མོས་འཛིན་སྐྱོང་འབད།"
 
@@ -3038,7 +3051,7 @@ msgstr "ད་ཚུན་ {0} གླ་ཡོན་གསོག་འཇོག�
 msgid "No activity yet."
 msgstr "ད་ཚུན་བྱ་བ་མེད།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "No address available"
 msgstr "ཁ་བྱང་ཐོབ་མི་ཚུགས།"
 
@@ -3510,7 +3523,7 @@ msgid "Password cannot be empty."
 msgstr "གསང་ཚིག་སྟོངམ་བཞག་མི་ཆོག"
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག"
 
@@ -3827,7 +3840,7 @@ msgstr "གསལ་བསྒྲགས་ཚུ།"
 msgid "Posts aren't available for this voucher."
 msgstr "འཛིན་ཤོག་འདིའི་དོན་ལུ་གསལ་བསྒྲགས་མི་འཐོབ།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Preferences"
 msgstr "དགའ་གདམ་ཚུ།"
 
@@ -4612,7 +4625,7 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་སྒྲིག་
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:38
+#: apps/web/src/features/home/ui/settings-page.tsx:39
 msgid "Settings"
 msgstr "སྒྲིག་འགོད།"
 
@@ -4716,7 +4729,7 @@ msgstr "སྒེར་ལྡེ་གིས་ནང་འཛུལ།"
 #~ msgstr "ཁྱོད་ཀྱི་ཤོག་བྱང་གི་ཚབ་ལུ་ཐབས་འཕྲུལ་གྱི་གསལ་ངོས་སྒོ་ལྕགས་ཀྱིས་ནང་འཛུལ་འ"
 #~ "བད། ཐབས་འཕྲུལ་གྱིས་ {platformLabel} བརྒྱུད་དེ་ཞུ་འོང་།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Sign out"
 msgstr "ཕྱིར་འཐོན།"
 
@@ -4728,7 +4741,7 @@ msgstr "ནང་འཛུལ་ཐབས་ལམ།"
 msgid "Sign-in methods"
 msgstr "ནང་འཛུལ་ཐབས་ལམ་ཚུ།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out..."
 msgstr "ཕྱིར་འཐོན་འབད་དོ..."
 
@@ -4914,11 +4927,11 @@ msgstr "བརྗེ་ལེན་འབད་དོ…"
 msgid "Swaps settle within the market association..."
 msgstr "བརྗེ་ལེན་ཚུ་ཚོང་རའི་ཚོགས་པ་ནང་གཏན་འཁེལ་འབདཝ་ཨིན..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "དངུལ་ཁུག་བསྒྱུར།"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "དངུལ་ཁུག་བསྒྱུར་ནི་ཨིན་ན?"
 
@@ -5270,6 +5283,10 @@ msgstr "གསལ་བསྒྲགས་འདི་སྲུང་ནི་ལ
 msgid "This QR code does not contain a valid private key."
 msgstr "QR ཨང་རྟགས་འདི་ནང་ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་མེད།"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "ཐོན་རིམ་འདི་ད་ལས་ཕར་རྒྱབ་སྐྱོར་མེད།"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5447,6 +5464,10 @@ msgstr "ཁ་ཕྱེ་སྟེ་ནང་འདྲེན།"
 msgid "Unlocking..."
 msgstr "ཁ་ཕྱེ་དོ..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "དུས་མཐུན་བཟོ།"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "པར་དུས་མཐུན་བཟོ།"
@@ -5454,6 +5475,10 @@ msgstr "པར་དུས་མཐུན་བཟོ།"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "སྲུང་ཡོད་པའི་ཤོག་གུའི་དངུལ་ཁུག་དུས་མཐུན་བཟོ།"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "དུས་མཐུན་བཟོ་དགོཔ་ཨིན།"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5467,6 +5492,10 @@ msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་དུས་མ
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "དུས་མཐུན་བཟོ་ཡོད།"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "དུས་མཐུན་བཟོ་དོ…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"
@@ -5796,7 +5825,7 @@ msgstr "དངུལ་ཁུག་བྱ་བ།"
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "ཁྱོད་ཀྱིས་ཐོ་བཀོད་ཡང་ན་ནང་འཛུལ་འབད་ཚར་ཞིནམ་ལས་དངུལ་ཁུག་བྱ་བ་ཚུ་ཐོབ།"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Wallet session"
 msgstr "དངུལ་ཁུག་ལཱ་ཡུན།"
 

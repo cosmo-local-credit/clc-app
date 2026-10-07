@@ -10,7 +10,12 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig, loadEnv } from "vite-plus";
-import { tanstackSerwistPlugin } from "./plugins/serwist";
+import {
+  APP_BUILD_INFO_PATH,
+  buildInfoNitroModule,
+  resolveAppBuild,
+} from "../../tooling/build-info.ts";
+import { serwistNitroModule, tanstackSerwistPlugin } from "./plugins/serwist";
 
 const webRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -61,6 +66,13 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
       }
     : undefined;
 
+  const { buildInfo, brand } = resolveAppBuild({
+    app: "web",
+    command,
+    // Read again after the Wrangler vars are applied: this is what Vite inlines.
+    publicEnv: loadEnv(mode, webRoot, "VITE_"),
+  });
+
   const plugins: import("vite-plus").PluginOption[] = [
     ...(command === "serve" ? [devtools()] : []),
     // `plugins/` is Nitro's runtime-plugin convention, but this file is a Vite
@@ -71,15 +83,23 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     // `NitroPluginConfig extends NitroConfig`, so its options sit at the top
     // level. A later nightly moves them back under `config` — if this line stops
     // type-checking after a bump, that is which shape changed, not what it means.
-    nitro({ ignore: ["plugins/serwist.ts"] }),
+    nitro({
+      ignore: ["plugins/serwist.ts"],
+      // The descriptor joins the static output with `public/`; the worker is
+      // built against that output (excluding the descriptor from its precache)
+      // before Nitro builds the server and indexes its static files.
+      modules: [buildInfoNitroModule(buildInfo), serwistNitroModule({ brand, buildInfo })],
+      // A path missing from the Pages routes exclusions reaches the SSR
+      // Function, which answers with HTML. The preset lists static files itself
+      // but truncates the list at 100 rules; configured entries come first.
+      cloudflare: { pages: { routes: { exclude: [APP_BUILD_INFO_PATH, "/sw.js"] } } },
+    }),
     tailwindcss(),
     tanstackStart(),
     viteReact(),
     babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
     lingui(),
-    tanstackSerwistPlugin({
-      brand: (process.env.VITE_BRAND ?? localEnv.VITE_BRAND) === "staging" ? "staging" : "prod",
-    }),
+    tanstackSerwistPlugin({ brand, buildInfo }),
     codecovVitePlugin({
       enableBundleAnalysis: process.env.CI === "true",
       bundleName: "clc-web-client",
@@ -93,7 +113,14 @@ const config = defineConfig(({ mode, command }): import("vite-plus").UserConfig 
     })),
   ];
 
-  return { environments, resolve: { tsconfigPaths: true }, plugins };
+  return {
+    // Client, SSR and Nitro share one serialized copy. The worker is compiled
+    // separately with `configFile: false` and gets the same object explicitly.
+    define: { __CLC_BUILD_INFO__: JSON.stringify(buildInfo) },
+    environments,
+    resolve: { tsconfigPaths: true },
+    plugins,
+  };
 });
 
 export default config;

@@ -245,12 +245,16 @@ msgstr "1 vale"
 msgid "A good"
 msgstr "Um bem"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "Está disponível uma nova versão"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Foi aberta uma ligação de carteira de papel. Deseja iniciar sessão com "
 "este endereço?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Foi lido o código QR de uma carteira de papel. Deseja importar este "
 "endereço?"
@@ -276,7 +280,7 @@ msgstr "Um vale funciona como um cartão-presente para as suas ofertas. Quando "
 msgid "About"
 msgstr "Sobre"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "Sobre a Cosmo-Local Credit"
@@ -323,7 +327,7 @@ msgstr "A ativar na blockchain..."
 msgid "Activating smart wallet..."
 msgstr "A ativar a carteira inteligente..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Active"
 msgstr "Ativo"
 
@@ -528,6 +532,10 @@ msgstr "Instalação da aplicação"
 msgid "App menu"
 msgstr "Menu da aplicação"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:136
+msgid "App version"
+msgstr "Versão do app"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "Aplicar"
@@ -662,7 +670,7 @@ msgstr "Acesso à câmara recusada."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -791,7 +799,7 @@ msgstr "A verificar quais vales este fundo aceita…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 #: apps/web/src/features/pools/ui/pools-page.tsx:435
 msgid "Checking…"
 msgstr "A verificar…"
@@ -856,7 +864,7 @@ msgstr "Escolha outro"
 msgid "Choose at most 12 tags"
 msgstr "Escolha no máximo 12 etiquetas"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Choose between light and dark mode."
 msgstr "Escolha entre o modo claro e o escuro."
 
@@ -879,7 +887,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Escolha as taxas de câmbio definidas por si ou um valor equivalente "
 "quando a unidade não tiver uma fonte de preços"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:75
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Choose the app display language."
 msgstr "Escolha a língua de visualização da aplicação."
 
@@ -1070,7 +1078,7 @@ msgstr "Ligue a sua carteira para emitir vales."
 msgid "Connect your wallet to use MPESA."
 msgstr "Ligue a sua carteira para usar o MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:96
+#: apps/web/src/features/home/ui/settings-page.tsx:97
 msgid "Connected address"
 msgstr "Endereço ligado"
 
@@ -1084,14 +1092,14 @@ msgid "Connecting..."
 msgstr "A ligar..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "A ligar…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "Não foi possível estabelecer a ligação."
 
@@ -1484,6 +1492,11 @@ msgstr "Não foi possível publicar o seu fundo."
 msgid "Couldn't publish your voucher."
 msgstr "Não foi possível publicar o seu vale."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "Não foi possível obter a atualização. Verifique a sua ligação e tente "
+"de novo."
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Não foi possível determinar quantos decimais utiliza este vale."
@@ -1734,7 +1747,7 @@ msgstr "Diminuir a quantidade"
 msgid "Default"
 msgstr "Predefinição"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 msgid "Delegated to Calibur"
 msgstr "Delegado a Calibur"
 
@@ -1779,6 +1792,7 @@ msgstr "Direções"
 msgid "Discard changes"
 msgstr "Descartar alterações"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "Descartar"
@@ -2355,11 +2369,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "Se aparecer, mantenha a opção Abrir como aplicação Web e toque em "
 "Adicionar."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "Importar carteira de papel?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "Importar a carteira"
 
@@ -2372,7 +2386,7 @@ msgstr "Na rede"
 msgid "In this pool"
 msgstr "Neste fundo"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Inactive"
 msgstr "Inativo"
 
@@ -2784,7 +2798,7 @@ msgstr "Gerir vale"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Gerir vales, fundos e pagamentos locais."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:41
+#: apps/web/src/features/home/ui/settings-page.tsx:42
 msgid "Manage your wallet session and app preferences."
 msgstr "Gerir a sessão da sua carteira e as preferências da aplicação."
 
@@ -3041,7 +3055,7 @@ msgstr "Ainda não foram acumuladas taxas de {0}."
 msgid "No activity yet."
 msgstr "Ainda não há atividade."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "No address available"
 msgstr "Não existe endereço disponível"
 
@@ -3514,7 +3528,7 @@ msgid "Password cannot be empty."
 msgstr "A palavra-passe não pode estar vazia."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "Carteira de papel protegida por palavra-passe"
 
@@ -3831,7 +3845,7 @@ msgstr "Publicações"
 msgid "Posts aren't available for this voucher."
 msgstr "As publicações não estão disponíveis para este vale."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Preferences"
 msgstr "Preferências"
 
@@ -4616,7 +4630,7 @@ msgstr "A configurar a sua carteira..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:38
+#: apps/web/src/features/home/ui/settings-page.tsx:39
 msgid "Settings"
 msgstr "Definições"
 
@@ -4720,7 +4734,7 @@ msgstr "Inicie sessão com uma chave privada"
 #~ msgstr "Inicie sessão com o bloqueio de ecrã do dispositivo em vez do cartão de "
 #~ "papel. O pedido aparecerá através de {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Sign out"
 msgstr "Terminar sessão"
 
@@ -4732,7 +4746,7 @@ msgstr "Método de autenticação"
 msgid "Sign-in methods"
 msgstr "Métodos de autenticação"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out..."
 msgstr "A terminar sessão..."
 
@@ -4918,11 +4932,11 @@ msgstr "A trocar…"
 msgid "Swaps settle within the market association..."
 msgstr "As trocas são liquidadas dentro da associação do mercado..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "Mudar de carteira"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "Quer mudar de carteira?"
 
@@ -5271,6 +5285,10 @@ msgstr "Esta publicação é demasiado grande para ser guardada. Encurte o texto
 msgid "This QR code does not contain a valid private key."
 msgstr "Este código QR não contém uma chave privada válida."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "Esta versão já não é suportada."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5450,6 +5468,10 @@ msgstr "Desbloquear e importar"
 msgid "Unlocking..."
 msgstr "A desbloquear..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "Atualizar"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "Atualizar foto"
@@ -5457,6 +5479,10 @@ msgstr "Atualizar foto"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "Atualizar carteira de papel protegida"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "Atualização necessária"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5470,6 +5496,10 @@ msgstr "Atualizar sua avaliação"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "Atualizado"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "A atualizar…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"
@@ -5801,7 +5831,7 @@ msgid "Wallet actions are available after you sign up or sign in."
 msgstr "As ações da carteira ficam disponíveis depois de criar uma conta ou "
 "iniciar sessão."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Wallet session"
 msgstr "Sessão da carteira"
 

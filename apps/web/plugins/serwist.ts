@@ -1,8 +1,22 @@
 import path from "node:path";
+import type { AppBuildInfo } from "@clc/core/features/app-updates/logic";
 import { injectManifest } from "@serwist/build";
+import type { NitroModule } from "nitro/types";
 import { build, type Plugin } from "vite-plus";
 
-export function tanstackSerwistPlugin({ brand }: { brand: "prod" | "staging" }): Plugin {
+type Brand = "prod" | "staging";
+
+interface WorkerBuildOptions {
+  brand: Brand;
+  /** The app build's identity, inlined so QA can read it from the worker. */
+  buildInfo: AppBuildInfo;
+}
+
+/**
+ * Development worker, written into `public/` so the dev server serves it. The
+ * production worker is built by {@link serwistNitroModule} instead.
+ */
+export function tanstackSerwistPlugin({ brand, buildInfo }: WorkerBuildOptions): Plugin {
   let rootDir: string;
   let isProduction: boolean;
 
@@ -14,29 +28,67 @@ export function tanstackSerwistPlugin({ brand }: { brand: "prod" | "staging" }):
     },
     async buildStart() {
       if (!isProduction) {
-        await buildServiceWorker(rootDir, false, brand);
-      }
-    },
-    async closeBundle() {
-      if (isProduction) {
-        await buildServiceWorker(rootDir, true, brand);
+        await buildServiceWorker({
+          rootDir,
+          outDir: path.resolve(rootDir, "public"),
+          production: false,
+          brand,
+          buildInfo,
+        });
       }
     },
   };
 }
 
-function getPublicOutputDir(rootDir: string, production: boolean): string {
-  if (!production) return path.resolve(rootDir, "public");
-  // cloudflare-pages preset (set by build:cf or Cloudflare CI) outputs static
-  // assets to dist/ rather than .output/public/ used by the node preset.
-  const isCfPages =
-    process.env.NITRO_PRESET === "cloudflare-pages" || Boolean(process.env.CF_PAGES);
-  return isCfPages ? path.resolve(rootDir, "dist") : path.resolve(rootDir, ".output", "public");
+/**
+ * Production worker, built once Nitro has assembled the static output and
+ * before it builds the server.
+ *
+ * A Vite `closeBundle` hook used to own this, but it fires once per environment
+ * and the client environment's call lands before Nitro copies `public/` into
+ * the output, so which pass produced the shipped `sw.js` — and therefore what it
+ * precached — depended on build order.
+ *
+ * `prerender:routes` is the one hook between that copy and the server build:
+ * Nitro calls it on every production build, prerendered routes or not. Later
+ * would be too late for the Node preset, whose server indexes its static files
+ * when it is built, and would then never serve `/sw.js`. `output.publicDir` is
+ * the resolved static directory for every preset (`dist/` on Pages,
+ * `.output/public/` locally), so no preset sniffing is needed.
+ *
+ * Registered as a module rather than through the `hooks` option: the pinned
+ * Nitro merges that option over the preset's own hooks of the same name.
+ */
+export function serwistNitroModule({ brand, buildInfo }: WorkerBuildOptions): NitroModule {
+  return {
+    name: "clc-serwist",
+    setup(nitro) {
+      if (nitro.options.dev) return;
+      nitro.hooks.hook("prerender:routes", async () => {
+        await buildServiceWorker({
+          rootDir: nitro.options.rootDir,
+          outDir: nitro.options.output.publicDir,
+          production: true,
+          brand,
+          buildInfo,
+        });
+      });
+    },
+  };
 }
 
-async function buildServiceWorker(rootDir: string, production: boolean, brand: "prod" | "staging") {
+async function buildServiceWorker({
+  rootDir,
+  outDir,
+  production,
+  brand,
+  buildInfo,
+}: WorkerBuildOptions & {
+  rootDir: string;
+  outDir: string;
+  production: boolean;
+}) {
   const outName = "sw.js";
-  const outDir = getPublicOutputDir(rootDir, production);
   const swSrc = path.resolve(rootDir, "src", "sw.ts");
   const swDest = path.resolve(outDir, outName);
   const env = production ? "production" : "dev";
@@ -47,8 +99,16 @@ async function buildServiceWorker(rootDir: string, production: boolean, brand: "
     await build({
       root: rootDir,
       configFile: false,
+      // Vite copies `public/` into `outDir` by default. In production `outDir`
+      // is Nitro's output, which Nitro fills from `public/` itself; a second
+      // copy at the wrong moment overwrote the `_headers` the Pages preset
+      // generates, dropping the immutable `/assets/*` rule. In development it
+      // would copy `public/` onto itself.
+      publicDir: false,
       define: {
         "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
+        // The app config's `define` does not reach a `configFile: false` build.
+        __CLC_BUILD_INFO__: JSON.stringify(buildInfo),
       },
       build: {
         lib: {
@@ -89,6 +149,9 @@ async function buildServiceWorker(rootDir: string, production: boolean, brand: "
           // trees, but only the one this build resolved is ever requested.
           `brand/${brand === "staging" ? "prod" : "staging"}/**`,
           `manifest.${brand === "staging" ? "prod" : "staging"}.webmanifest`,
+          // The deployment descriptor must always come from the network. JSON
+          // is outside globPatterns today; this keeps it out if that changes.
+          "build-info.json",
         ],
         maximumFileSizeToCacheInBytes: 300 * 1024,
         injectionPoint: "self.__SW_MANIFEST",

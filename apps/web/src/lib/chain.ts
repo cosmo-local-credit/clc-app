@@ -9,14 +9,14 @@
  *
  * Unset now means Gnosis (100). Do not reintroduce a Celo default.
  */
-import { chainMetadata } from "@clc/core/lib/constants/chains";
+import { chainMetadata, resolveChainId } from "@clc/core/lib/constants/chains";
 import type { Chain } from "viem";
 import { celo, celoAlfajores, gnosis } from "wagmi/chains";
 import { resolveRpcUrls } from "#/lib/rpc-transport";
 
 const SUPPORTED_CHAINS: readonly Chain[] = [celo, celoAlfajores, gnosis];
 
-export const CHAIN_ID = Number(import.meta.env.VITE_CHAIN_ID ?? "100");
+export const CHAIN_ID = resolveChainId(import.meta.env.VITE_CHAIN_ID as string | undefined);
 
 const configured = SUPPORTED_CHAINS.find((chain) => chain.id === CHAIN_ID);
 const metadata = chainMetadata(CHAIN_ID);

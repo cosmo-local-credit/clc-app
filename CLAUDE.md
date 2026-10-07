@@ -438,8 +438,10 @@ Which chain a build settles on is `VITE_CHAIN_ID`, resolved once per app in
 Calibur implementation come from the table in
 `@clc/core/lib/constants/chains`; per-chain token addresses (pool oracle base
 currencies, Pretium ramp) sit beside the feature that reads them. Nothing else
-may read `VITE_CHAIN_ID`, and no new `?? "42220"` — a module that defaults on
-its own is how the wagmi config ended up signing against Celo while the SIWE
+may read `VITE_CHAIN_ID` except the build identity in `tooling/build-info.ts`,
+which stamps the chain into each build; both go through `resolveChainId` in
+`@clc/core/lib/constants/chains`. No new `?? "42220"` — a module that defaults
+on its own is how the wagmi config ended up signing against Celo while the SIWE
 request claimed another chain. Unset now means `100`.
 
 Staging backend (`~/gnosis` on the `clc-gnosis` host):
@@ -736,6 +738,51 @@ for wagmi: read from hooks at point of use, don't mirror chain/account.
 source at `apps/web/src/sw.ts`. Don't import serwist under `packages/core/`,
 `packages/api/`, or `apps/admin/` — the admin console must never register a
 service worker.
+
+The production worker is built from a Nitro module on `prerender:routes`, the one
+hook after Nitro copies `public/` into the output and before it builds the
+server — not from a Vite `closeBundle`, which fires per environment and before
+that copy, nor from `compiled`, after which the Node preset's server has already
+indexed its static files and would 404 `/sw.js`. The nested `build()` sets
+`publicDir: false`; copying `public/` into the output would overwrite files Nitro
+generates there.
+
+### Build identity and the update banner
+
+Each build of either app carries `__CLC_BUILD_INFO__` (schema in
+`@clc/core/features/app-updates/logic`, resolved by `tooling/build-info.ts`) and
+publishes it uncached at `/build-info.json`. Both apps poll that file and offer a
+reload when its `buildId` differs; a reload is the whole update.
+
+- `buildId` digests the build's inputs (git tree IDs, lockfile, release entry,
+  `VITE_` values), not its commit, so unrelated commits do not nag users. A Pages
+  build fails if it cannot identify itself — a dirty or uncommitted input, or no
+  git.
+- `release.json` holds each app's `version`, `buildNumber` and `minimumBuild`.
+  Bump `buildNumber` only when a release must be selectable as a minimum; set
+  `minimumBuild` to make older builds' banner persistent. CI rejects a
+  `buildNumber` that goes down.
+- A reload is enough only because `sw.ts` precaches hashed assets and never
+  serves documents. Adding document or runtime caching means revisiting the
+  updater. Keep `skipWaiting: true` / `clientsClaim: true`.
+- Web reloads only through `#/lib/page-reload`, which stale-chunk recovery shares.
+  Reload-unsafe flows are hidden by route ID in `app-update-banner.tsx`; async work
+  outside those routes should be a mutation so `useIsMutating` holds the reload.
+- `/build-info.json` is an ordinary Nitro public asset with a `no-store` route
+  rule, which generates its Pages `_headers` entry too. Anything added to the
+  static output must exist before Nitro builds the server, or the Node preset
+  never serves it. `/sw.js` and `/build-info.json` are also explicit
+  `cloudflare.pages.routes.exclude` entries, so the preset's 100-rule cap cannot
+  drop them and leave the SSR Function answering with HTML.
+- Admin hides the update action on screens whose work lives outside mutations
+  (paper wallets, pool/voucher publish, the post editor); keep that list in
+  `apps/admin/src/features/app-updates/app-update-banner.tsx` current.
+- Shared build tooling lives in `tooling/` (root `/scripts` is ignored). It
+  reaches core by relative path, never `@clc/core`: the Vite config bundler hands
+  workspace packages to Node to load as raw TypeScript, which fails on the Node
+  that admin's Pages project builds with (its root directory is `apps/admin`, so
+  the root `.node-version` does not apply). Keep Vite configs off `@clc/core`
+  imports for the same reason; type-only imports are fine.
 
 ### TanStack CLI (TanStack docs only)
 

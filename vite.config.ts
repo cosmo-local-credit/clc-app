@@ -273,6 +273,7 @@ export default defineConfig({
       "apps/web/vitest.config.ts",
       "packages/api/vitest.config.ts",
       "packages/core/vitest.config.ts",
+      "tooling/vitest.config.ts",
     ],
   },
 });

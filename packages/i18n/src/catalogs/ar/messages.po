@@ -248,11 +248,15 @@ msgstr "قسيمة واحدة"
 msgid "A good"
 msgstr "سلعة"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "يتوفر إصدار جديد"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "تم فتح رابط محفظة ورقية. هل تريد تسجيل الدخول بهذا العنوان؟"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "تم مسح رمز QR لمحفظة ورقية. هل تريد استيراد هذا العنوان؟"
 
@@ -275,7 +279,7 @@ msgstr "تعمل القسيمة مثل بطاقة هدية لعروضك. عند�
 msgid "About"
 msgstr "حول"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "حول Cosmo-Local Credit"
@@ -322,7 +326,7 @@ msgstr "جارٍ التفعيل على السلسلة..."
 msgid "Activating smart wallet..."
 msgstr "جارٍ تفعيل المحفظة الذكية..."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Active"
 msgstr "نشط"
 
@@ -524,6 +528,10 @@ msgstr "تثبيت التطبيق"
 msgid "App menu"
 msgstr "قائمة التطبيق"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:136
+msgid "App version"
+msgstr "إصدار التطبيق"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "تطبيق"
@@ -658,7 +666,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -785,7 +793,7 @@ msgstr "جارٍ التحقق من القسائم التي يقبلها هذا �
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 #: apps/web/src/features/pools/ui/pools-page.tsx:435
 msgid "Checking…"
 msgstr "جارٍ التحقق…"
@@ -850,7 +858,7 @@ msgstr "اختر خيارًا آخر"
 msgid "Choose at most 12 tags"
 msgstr "اختر 12 وسمًا كحد أقصى"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Choose between light and dark mode."
 msgstr "اختر بين الوضع الفاتح والداكن."
 
@@ -872,7 +880,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "اختر الأسعار التي تحددها أو القيمة المتساوية عندما لا تتوفر تغذية أسعار "
 "لوحدة الحساب"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:75
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Choose the app display language."
 msgstr "اختر لغة عرض التطبيق."
 
@@ -1062,7 +1070,7 @@ msgstr "اربط محفظتك لإصدار القسائم."
 msgid "Connect your wallet to use MPESA."
 msgstr "اربط محفظتك لاستخدام MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:96
+#: apps/web/src/features/home/ui/settings-page.tsx:97
 msgid "Connected address"
 msgstr "العنوان المتصل"
 
@@ -1076,14 +1084,14 @@ msgid "Connecting..."
 msgstr "جارٍ الاتصال..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "جارٍ الاتصال…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "فشل الاتصال."
 
@@ -1473,6 +1481,10 @@ msgstr "تعذّر نشر صندوقك."
 msgid "Couldn't publish your voucher."
 msgstr "تعذّر نشر قسيمتك."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "تعذّر الوصول إلى التحديث. تحقق من اتصالك وحاول مرة أخرى."
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "تعذّر معرفة عدد المنازل العشرية التي تستخدمها هذه القسيمة."
@@ -1722,7 +1734,7 @@ msgstr "تقليل الكمية"
 msgid "Default"
 msgstr "افتراضي"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 msgid "Delegated to Calibur"
 msgstr "مفوّض إلى Calibur"
 
@@ -1767,6 +1779,7 @@ msgstr "الاتجاهات"
 msgid "Discard changes"
 msgstr "تجاهل التغييرات"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "إغلاق"
@@ -2339,11 +2352,11 @@ msgstr "جارٍ تحديد الموقع…"
 msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "إذا ظهر الخيار، فاترك «فتح كتطبيق ويب» مفعّلًا، ثم اضغط على «إضافة»."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "هل تريد استيراد محفظة ورقية؟"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "استيراد محفظة"
 
@@ -2356,7 +2369,7 @@ msgstr "ضمن الشبكة"
 msgid "In this pool"
 msgstr "في هذا الصندوق"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Inactive"
 msgstr "غير نشط"
 
@@ -2765,7 +2778,7 @@ msgstr "إدارة القسيمة"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "أدِر القسائم والصناديق والمدفوعات المحلية."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:41
+#: apps/web/src/features/home/ui/settings-page.tsx:42
 msgid "Manage your wallet session and app preferences."
 msgstr "أدِر جلسة محفظتك وتفضيلات التطبيق."
 
@@ -3020,7 +3033,7 @@ msgstr "لم تتراكم أي رسوم {0} بعد."
 msgid "No activity yet."
 msgstr "لا يوجد نشاط بعد."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "No address available"
 msgstr "لا يوجد عنوان متاح"
 
@@ -3486,7 +3499,7 @@ msgid "Password cannot be empty."
 msgstr "لا يمكن أن تكون كلمة المرور فارغة."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "محفظة ورقية محمية بكلمة مرور"
 
@@ -3801,7 +3814,7 @@ msgstr "المنشورات"
 msgid "Posts aren't available for this voucher."
 msgstr "المنشورات غير متاحة لهذه القسيمة."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Preferences"
 msgstr "التفضيلات"
 
@@ -4580,7 +4593,7 @@ msgstr "جارٍ إعداد محفظتك..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:38
+#: apps/web/src/features/home/ui/settings-page.tsx:39
 msgid "Settings"
 msgstr "الإعدادات"
 
@@ -4684,7 +4697,7 @@ msgstr "سجّل الدخول باستخدام المفتاح الخاص"
 #~ msgstr "سجّل الدخول باستخدام قفل شاشة جهازك بدلاً من بطاقتك الورقية. سيطلب "
 #~ "جهازك ذلك عبر {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Sign out"
 msgstr "تسجيل الخروج"
 
@@ -4696,7 +4709,7 @@ msgstr "طريقة تسجيل الدخول"
 msgid "Sign-in methods"
 msgstr "طرق تسجيل الدخول"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out..."
 msgstr "جارٍ تسجيل الخروج..."
 
@@ -4881,11 +4894,11 @@ msgstr "جارٍ المبادلة…"
 msgid "Swaps settle within the market association..."
 msgstr "تُسوّى المبادلات ضمن رابطة السوق..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "تبديل المحفظة"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "هل تريد تبديل المحفظة؟"
 
@@ -5228,6 +5241,10 @@ msgstr "هذا المنشور كبير جدًا ولا يمكن حفظه. اخت
 msgid "This QR code does not contain a valid private key."
 msgstr "لا يحتوي رمز QR هذا على مفتاح خاص صالح."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "لم يعد هذا الإصدار مدعومًا."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5404,6 +5421,10 @@ msgstr "فتح القفل والاستيراد"
 msgid "Unlocking..."
 msgstr "جارٍ فتح القفل..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "تحديث"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "تحديث الصورة"
@@ -5411,6 +5432,10 @@ msgstr "تحديث الصورة"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "تحديث المحفظة الورقية المحمية"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "التحديث مطلوب"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5424,6 +5449,10 @@ msgstr "تحديث مراجعتك"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "تم التحديث"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "جارٍ التحديث…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"
@@ -5753,7 +5782,7 @@ msgstr "إجراءات المحفظة"
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "تتاح إجراءات المحفظة بعد إنشاء حساب أو تسجيل الدخول."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Wallet session"
 msgstr "جلسة المحفظة"
 

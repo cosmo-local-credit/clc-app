@@ -1,7 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { reloadPage } from "./page-reload";
 import { isModuleLoadError, reloadOnceForStaleChunk } from "./stale-chunk-recovery";
 
 const IMPORT_ERROR = "Failed to fetch dynamically imported module: https://app/assets/home-page.js";
+
+/**
+ * The page a reload produces starts with no reload pending. Markers persist in
+ * sessionStorage / window.name; the in-memory guard is per page and settles on
+ * a timer, so advancing past it stands in for the next page load.
+ */
+function nextPage() {
+  vi.advanceTimersByTime(10_000);
+}
 
 describe("isModuleLoadError", () => {
   it("matches the browser dynamic-import failure messages", () => {
@@ -23,6 +33,7 @@ describe("reloadOnceForStaleChunk", () => {
   let sessionStorageDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     sessionStorageDescriptor = Object.getOwnPropertyDescriptor(window, "sessionStorage");
     sessionStorage.clear();
     reload = vi.fn();
@@ -34,6 +45,8 @@ describe("reloadOnceForStaleChunk", () => {
   });
 
   afterEach(() => {
+    nextPage();
+    vi.useRealTimers();
     if (sessionStorageDescriptor) {
       Object.defineProperty(window, "sessionStorage", sessionStorageDescriptor);
     }
@@ -50,6 +63,7 @@ describe("reloadOnceForStaleChunk", () => {
   it("does not reload a second time for the same chunk", () => {
     reloadOnceForStaleChunk(new Error(IMPORT_ERROR));
     reload.mockClear();
+    nextPage();
 
     expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(false);
     expect(reload).not.toHaveBeenCalled();
@@ -58,6 +72,7 @@ describe("reloadOnceForStaleChunk", () => {
   it("reloads again for a different chunk (a later deploy)", () => {
     reloadOnceForStaleChunk(new Error(IMPORT_ERROR));
     reload.mockClear();
+    nextPage();
 
     const nextDeploy =
       "Failed to fetch dynamically imported module: https://app/assets/home-page.NEW.js";
@@ -87,7 +102,27 @@ describe("reloadOnceForStaleChunk", () => {
     expect(window.name).toContain(IMPORT_ERROR);
 
     reload.mockClear();
+    nextPage();
     expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(false);
     expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("joins a reload already under way instead of issuing another", () => {
+    reloadPage();
+    reload.mockClear();
+
+    expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(true);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("keeps the chunk's one shot when the reload it joined was cancelled", () => {
+    // e.g. the user chose to stay on a page with unsaved work.
+    reloadPage();
+    reloadOnceForStaleChunk(new Error(IMPORT_ERROR));
+    reload.mockClear();
+    nextPage();
+
+    expect(reloadOnceForStaleChunk(new Error(IMPORT_ERROR))).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 });

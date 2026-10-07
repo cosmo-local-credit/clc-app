@@ -21,6 +21,15 @@ describe("SettingsPage", () => {
     expect(screen.queryByLabelText(/switch to .* theme/i)).toBeNull();
   });
 
+  it("shows the identity of the build this tab is running", () => {
+    render(<SettingsPage />);
+
+    // The vitest config inlines a dirty `0.0.0-test` build with an unknown commit.
+    expect(screen.getByLabelText("Version").textContent).toBe("0.0.0-test");
+    expect(screen.getByLabelText("Build number").textContent).toBe("1");
+    expect(screen.getByLabelText("Commit").textContent).toBe("unknown (dirty)");
+  });
+
   it("applies the dark class when the switch is turned on", () => {
     render(<SettingsPage />);
 

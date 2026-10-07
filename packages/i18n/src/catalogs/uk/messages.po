@@ -241,11 +241,15 @@ msgstr "1 ваучер"
 msgid "A good"
 msgstr "Товар"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "Доступна нова версія"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Відкрито посилання на паперовий гаманець. Увійти за цією адресою?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Відскановано QR-код паперового гаманця. Імпортувати цю адресу?"
 
@@ -269,7 +273,7 @@ msgstr "Ваучер працює як подарункова картка дл�
 msgid "About"
 msgstr "Про застосунок"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
+#: apps/web/src/features/home/ui/settings-page.tsx:50
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:44
 msgid "About Cosmo-Local Credit"
 msgstr "Про Cosmo-Local Credit"
@@ -316,7 +320,7 @@ msgstr "Активація в блокчейні…"
 msgid "Activating smart wallet..."
 msgstr "Активація смартгаманця…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Active"
 msgstr "Активний"
 
@@ -520,6 +524,10 @@ msgstr "Встановлення застосунку"
 msgid "App menu"
 msgstr "Меню застосунку"
 
+#: apps/web/src/features/home/ui/settings-page.tsx:136
+msgid "App version"
+msgstr "Версія застосунку"
+
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
 msgstr "Застосувати"
@@ -654,7 +662,7 @@ msgstr "Доступ до камери заборонено."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -782,7 +790,7 @@ msgstr "Перевіряємо, які ваучери приймає цей пу
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 #: apps/web/src/features/pools/ui/pools-page.tsx:435
 msgid "Checking…"
 msgstr "Перевірка…"
@@ -847,7 +855,7 @@ msgstr "Обрати інший"
 msgid "Choose at most 12 tags"
 msgstr "Оберіть не більше 12 тегів"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:69
 msgid "Choose between light and dark mode."
 msgstr "Оберіть світлу або темну тему."
 
@@ -870,7 +878,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Оберіть установлені вами курси або однакову вартість, якщо для "
 "розрахункової одиниці немає цінового джерела"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:75
+#: apps/web/src/features/home/ui/settings-page.tsx:76
 msgid "Choose the app display language."
 msgstr "Оберіть мову інтерфейсу застосунку."
 
@@ -1060,7 +1068,7 @@ msgstr "Під’єднайте гаманець, щоб випустити ва
 msgid "Connect your wallet to use MPESA."
 msgstr "Під’єднайте гаманець, щоб користуватися MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:96
+#: apps/web/src/features/home/ui/settings-page.tsx:97
 msgid "Connected address"
 msgstr "Під’єднана адреса"
 
@@ -1074,14 +1082,14 @@ msgid "Connecting..."
 msgstr "Під’єднання..."
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "Під’єднання…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "Не вдалося під’єднатися."
 
@@ -1474,6 +1482,10 @@ msgstr "Не вдалося опублікувати ваш пул."
 msgid "Couldn't publish your voucher."
 msgstr "Не вдалося опублікувати ваш ваучер."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "Не вдалося отримати оновлення. Перевірте з’єднання та спробуйте ще раз."
+
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Не вдалося прочитати кількість десяткових знаків цього ваучера."
@@ -1724,7 +1736,7 @@ msgstr "Зменшити кількість"
 msgid "Default"
 msgstr "За замовчуванням"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:114
 msgid "Delegated to Calibur"
 msgstr "Делеговано Calibur"
 
@@ -1769,6 +1781,7 @@ msgstr "Маршрут"
 msgid "Discard changes"
 msgstr "Відхилити зміни"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "Закрити"
@@ -2338,11 +2351,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "Якщо з’явиться відповідний параметр, залиште «Відкрити як "
 "вебзастосунок» увімкненим, а потім торкніться «Додати»."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "Імпортувати паперовий гаманець?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "Імпортувати гаманець"
 
@@ -2355,7 +2368,7 @@ msgstr "У мережі"
 msgid "In this pool"
 msgstr "У цьому пулі"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:151
 msgid "Inactive"
 msgstr "Неактивний"
 
@@ -2765,7 +2778,7 @@ msgstr "Керувати ваучером"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Керуйте ваучерами, пулами та місцевими платежами."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:41
+#: apps/web/src/features/home/ui/settings-page.tsx:42
 msgid "Manage your wallet session and app preferences."
 msgstr "Керуйте сеансом гаманця та налаштуваннями застосунку."
 
@@ -3019,7 +3032,7 @@ msgstr "Комісії {0} ще не накопичилися."
 msgid "No activity yet."
 msgstr "Активності ще немає."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:100
 msgid "No address available"
 msgstr "Адреса недоступна"
 
@@ -3487,7 +3500,7 @@ msgid "Password cannot be empty."
 msgstr "Пароль не може бути порожнім."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "Захищений паролем паперовий гаманець"
 
@@ -3802,7 +3815,7 @@ msgstr "Дописи"
 msgid "Posts aren't available for this voucher."
 msgstr "Дописи недоступні для цього ваучера."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:64
 msgid "Preferences"
 msgstr "Налаштування"
 
@@ -4582,7 +4595,7 @@ msgstr "Налаштування гаманця..."
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:38
+#: apps/web/src/features/home/ui/settings-page.tsx:39
 msgid "Settings"
 msgstr "Налаштування"
 
@@ -4683,7 +4696,7 @@ msgstr "Увійти за допомогою приватного ключа"
 #~ msgstr "Увійдіть за допомогою блокування екрана пристрою замість паперової "
 #~ "картки. Пристрій надішле запит через {platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Sign out"
 msgstr "Вийти"
 
@@ -4695,7 +4708,7 @@ msgstr "Спосіб входу"
 msgid "Sign-in methods"
 msgstr "Способи входу"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:129
 msgid "Signing out..."
 msgstr "Вихід..."
 
@@ -4880,11 +4893,11 @@ msgstr "Обмін…"
 msgid "Swaps settle within the market association..."
 msgstr "Обміни виконуються в межах ринкового об’єднання..."
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "Змінити гаманець"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "Змінити гаманець?"
 
@@ -5230,6 +5243,10 @@ msgstr "Цей допис завеликий для збереження. Ско
 msgid "This QR code does not contain a valid private key."
 msgstr "Цей QR-код не містить дійсного приватного ключа."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "Ця версія більше не підтримується."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5408,6 +5425,10 @@ msgstr "Розблокувати й імпортувати"
 msgid "Unlocking..."
 msgstr "Розблокування..."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "Оновити"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "Оновити фото"
@@ -5415,6 +5436,10 @@ msgstr "Оновити фото"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "Оновити захищений паперовий гаманець"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "Потрібне оновлення"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5428,6 +5453,10 @@ msgstr "Оновити ваш відгук"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "Оновлено"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "Оновлення…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"
@@ -5757,7 +5786,7 @@ msgstr "Дії з гаманцем"
 msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Дії з гаманцем стануть доступні після реєстрації або входу."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/home/ui/settings-page.tsx:87
 msgid "Wallet session"
 msgstr "Сеанс гаманця"
 

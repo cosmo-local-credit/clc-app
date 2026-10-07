@@ -130,4 +130,22 @@ describe("PaperWalletsPage", () => {
     expect(mocks.downloadBlob).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("progressbar", { name: "PDF generation" })).toBeNull();
   });
+
+  it.each(["encrypting", "registering"])("asks before leaving while the batch is %s", (phase) => {
+    mocks.phase = phase;
+    mocks.wallets = [];
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
+
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("lets an idle page go without asking", () => {
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
+
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
 });
