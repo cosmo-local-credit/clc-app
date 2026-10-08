@@ -165,7 +165,7 @@ msgstr "{amount} {0} је повучено."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{available} од {limit} {denomination} расположивог кредита"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/receive-page.tsx:108
 msgid "{chainName} address"
 msgstr "{chainName} адреса"
 
@@ -449,7 +449,7 @@ msgid "Address book"
 msgstr "Адресар"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Address copied"
 msgstr "Адреса је копирана"
 
@@ -527,6 +527,10 @@ msgstr "Износ премашује ваше стање"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "Износ у пулу"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:175
+msgid "Amount to collect"
+msgstr "Износ за наплату"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -681,6 +685,7 @@ msgstr "Приступ камери је одбијен."
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
+#: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
@@ -702,6 +707,18 @@ msgstr "Опис фотографије {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "Опис мора имати 500 знакова или мање"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:129
+msgid "Card collection isn't available on this server yet."
+msgstr "Наплата картицом још није доступна на овом серверу."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:313
+msgid "Card held:"
+msgstr "Тренутна картица:"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:325
+msgid "Card read — processing {amount}"
+msgstr "Картица је очитана — обрада {amount}"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:318
 msgid "Card read — signing in"
@@ -745,6 +762,10 @@ msgstr "Мења како се пул приказује. Постављени �
 msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "Мења како се ваучер приказује. Постављени уговор задржава своје име."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:225
+msgid "Charge this card {amountText}"
+msgstr "Наплати са ове картице {amountText}"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:491
 msgid "Charged on every swap this pool settles."
 msgstr "Наплаћује се на сваку размену коју овај пул изврши."
@@ -764,6 +785,10 @@ msgstr "Проверите статус издавања"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
 msgid "Check supply again"
 msgstr "Поново провери количину"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+msgid "Checking"
+msgstr "Провјера"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
@@ -797,6 +822,10 @@ msgstr "Провјера подршке за обавјештења на ово�
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "Провјера стања приступног кључа…"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:338
+msgid "Checking payment…"
+msgstr "Провјера плаћања…"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
 msgid "Checking review eligibility…"
@@ -992,6 +1021,15 @@ msgstr "Затвори образац за приватни кључ"
 msgid "Collapse"
 msgstr "Скупи"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:258
+msgid "Collect again from this card"
+msgstr "Поново наплати са ове картице"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:113
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+msgid "Collect by card"
+msgstr "Наплата картицом"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 msgid "Collect fees"
 msgstr "Наплати накнаде"
@@ -1065,6 +1103,7 @@ msgstr "Потврдите размјену"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/wallet/ui/collect-page.tsx:430
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "Потврђено"
@@ -1188,7 +1227,7 @@ msgstr "Адреса уговора"
 msgid "Contract address copied"
 msgstr "Адреса уговора је копирана"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:136
+#: apps/web/src/features/wallet/ui/receive-page.tsx:151
 msgid "Copy"
 msgstr "Копирај"
 
@@ -1242,12 +1281,12 @@ msgstr "Копирајте хеш трансакције издавања"
 msgid "Copy transaction hash"
 msgstr "Копирај хеш трансакције"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:98
+#: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "Копирај адресу новчаника"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:78
+#: apps/web/src/features/wallet/ui/receive-page.tsx:82
 msgid "Copy wallet username"
 msgstr "Копирај корисничко име новчаника"
 
@@ -1311,8 +1350,8 @@ msgstr "Није могуће провјерити ваш приступ рец�
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy address"
 msgstr "Адресу није могуће копирати"
 
@@ -1373,8 +1412,8 @@ msgstr "Хеш трансакције није могуће копирати"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy username"
 msgstr "Није могуће копирати корисничко име"
 
@@ -1483,6 +1522,10 @@ msgstr "Није могуће учитати избор ваучера."
 msgid "Couldn't load voucher tags."
 msgstr "Није могуће учитати ознаке ваучера."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:162
+msgid "Couldn't load vouchers"
+msgstr "Ваучере није могуће учитати"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:965
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
@@ -1519,6 +1562,11 @@ msgstr "Није могуће објавити ваш пул."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "Couldn't publish your voucher."
 msgstr "Није могуће објавити ваучер."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:122
+msgid "Couldn't reach the payment relay. Check your connection and try again."
+msgstr "Повезивање са сервисом за плаћања није успјело. Провјерите везу и "
+"покушајте поново."
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
 msgid "Couldn’t reach the update. Check your connection and try again."
@@ -1854,6 +1902,10 @@ msgstr "Име за приказ мора имати највише 120 знак
 msgid "Done"
 msgstr "Готово"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:261
+msgid "Done with this customer"
+msgstr "Готово са овим купцем"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:286
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Download card"
@@ -2121,6 +2173,7 @@ msgstr "Са роком трајања"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/collect-page.tsx:432
 msgid "Failed"
 msgstr "Неуспјешно"
 
@@ -2762,6 +2815,7 @@ msgstr "Учитавање ваучера…"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
+#: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "Учитавање ваучера…"
 
@@ -3004,7 +3058,7 @@ msgstr "MPESA преко Pretium-а"
 msgid "My posts"
 msgstr "Моје објаве"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:38
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 msgid "My wallet address"
 msgstr "Адреса мог новчаника"
 
@@ -3266,6 +3320,10 @@ msgstr "Ниједан ваучер не одговара тој претраз�
 msgid "No vouchers match this search."
 msgstr "Нема ваучера који одговарају овој претрази."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:164
+msgid "No vouchers to collect"
+msgstr "Нема ваучера за наплату"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
@@ -3276,7 +3334,7 @@ msgstr "Још нема ваучера за приказ."
 msgid "No vouchers yet."
 msgstr "Још нема ваучера."
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
 msgstr "Адреса новчаника није доступна."
 
@@ -3410,7 +3468,7 @@ msgstr "Исплата"
 msgid "Offramp details"
 msgstr "Детаљи исплате"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:119
+#: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "На ову адресу шаљите средства само преко <0>{chainName} мреже</0>. "
@@ -3586,16 +3644,33 @@ msgstr "Папирни новчаник заштићен лозинком"
 msgid "Passwords do not match."
 msgstr "Лозинке се не подударају."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:409
+msgid "Payment accepted — confirming"
+msgstr "Плаћање прихваћено — потврђивање"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:405
+msgid "Payment confirmed"
+msgstr "Плаћање потврђено"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:407
+msgid "Payment failed"
+msgstr "Плаћање није успјело"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
 msgid "Payment receipt"
 msgstr "Признаница о плаћању"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:354
+msgid "Payment status unknown"
+msgstr "Статус плаћања непознат"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
@@ -3934,6 +4009,10 @@ msgstr "Припрема..."
 msgid "Preparing…"
 msgstr "Припрема…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:194
+msgid "Present card to pay {armedAmount}"
+msgstr "Прислоните картицу да платите {armedAmount}"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Pritisnite i zadržite sliku ispod, pa izaberite Sačuvaj sliku."
@@ -4137,6 +4216,14 @@ msgstr "Учитавање накнаде овог пула…"
 msgid "Reading…"
 msgstr "Учитавање…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:245
+msgid "Ready to collect"
+msgstr "Спремно за наплату"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:243
+msgid "Ready to collect {amountText}"
+msgstr "Спремно за наплату {amountText}"
+
 #: apps/web/src/components/reviews/review-editor.tsx:89
 msgid "Reason for reporting"
 msgstr "Разлог пријаве"
@@ -4147,11 +4234,12 @@ msgstr "Признаница је копирана"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/collect-page.tsx:110
+#: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "Прими"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:63
+#: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
 msgstr "Детаљи пријема"
 
@@ -4173,6 +4261,11 @@ msgstr "Примљено"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
 msgid "Received voucher"
 msgstr "Примљен ваучер"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:270
+#: apps/web/src/features/wallet/ui/collect-page.tsx:272
+msgid "Recent collections"
+msgstr "Недавне наплате"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:208
@@ -4695,7 +4788,7 @@ msgid "Settings"
 msgstr "Подешавања"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:441
-#: apps/web/src/features/wallet/ui/receive-page.tsx:140
+#: apps/web/src/features/wallet/ui/receive-page.tsx:155
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
 msgstr "Подијели"
@@ -5057,6 +5150,10 @@ msgstr "Снимите фотографију"
 msgid "Tap NFC card"
 msgstr "Прислони NFC картицу"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:461
+msgid "Tap Ready to collect before presenting a card."
+msgstr "Додирните „Спремно за наплату“ прије него што прислоните картицу."
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Додирните мени са три тачке, па „Додај на почетни екран“ или "
@@ -5153,9 +5250,19 @@ msgstr "Читач картица се није покренуо. Покушај
 msgid "The card reader stopped."
 msgstr "Читач картица је заустављен."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:376
+msgid "The card wasn't unlocked. Nothing was charged."
+msgstr "Картица није откључана. Ништа није наплаћено."
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
 msgstr "Корпа још није спремна."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:341
+msgid "The connection dropped before the relay answered. Don't charge this card "
+"again until this resolves."
+msgstr "Веза је прекинута прије него што је сервис за плаћања одговорио. Не "
+"наплаћујте поново са ове картице док се ово не ријеши."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:969
 msgid "The credit limit has been reached. No more can be added to this pool."
@@ -5189,6 +5296,30 @@ msgid "The passkey on this device is linked. Switch to it to sign with your "
 msgstr "Приступни кључ на овом уређају је повезан. Пређите на њега да бисте "
 "потписивали приступним кључем."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:385
+msgid "The payment couldn't be prepared: {detail}"
+msgstr "Плаћање није могуће припремити: {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:386
+msgid "The payment couldn't be prepared. Nothing was charged."
+msgstr "Плаћање није могуће припремити. Ништа није наплаћено."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:127
+msgid "The payment relay is on a different network."
+msgstr "Сервис за плаћања је на другој мрежи."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:378
+msgid "The payment relay is on a different network. Nothing was charged."
+msgstr "Сервис за плаћања је на другој мрежи. Ништа није наплаћено."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:381
+msgid "The payment was refused: {detail}"
+msgstr "Плаћање је одбијено: {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:382
+msgid "The payment was refused. Nothing was charged."
+msgstr "Плаћање је одбијено. Ништа није наплаћено."
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:48
 msgid "The pool"
 msgstr "Пул"
@@ -5205,6 +5336,12 @@ msgstr "Пул нема толико {0}."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Процјена се промијенила. Прегледајте ажуриране износе прије потврде."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:357
+msgid "The request expired without an answer from the relay. Check the "
+"customer's balance before charging the card again."
+msgstr "Захтјев је истекао без одговора сервиса за плаћања. Провјерите стање "
+"купца прије него што поново наплатите са картице."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "The selected unit does not have a configured price feed."
@@ -5247,6 +5384,10 @@ msgstr "Овај налог не може бити одобрен. Обрати�
 msgid "This browser cannot store notification registration safely."
 msgstr "Овај прегледач не може безбједно да сачува регистрацију за обавјештења."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:374
+msgid "This card doesn't have enough {symbol}. Nothing was charged."
+msgstr "На овој картици нема довољно {symbol}. Ништа није наплаћено."
+
 #: apps/web/src/components/nfc-card-prompt.tsx:40
 msgid "This card doesn't hold a CLC wallet."
 msgstr "Ова картица не садржи CLC новчаник."
@@ -5255,9 +5396,28 @@ msgstr "Ова картица не садржи CLC новчаник."
 msgid "This card holds more than one wallet. Use another card."
 msgstr "Ова картица садржи више од једног новчаника. Користите другу картицу."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:372
+msgid "This card holds your own wallet. Nothing was charged."
+msgstr "Ова картица садржи ваш новчаник. Ништа није наплаћено."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:459
+msgid "This card holds your own wallet. Use the customer's card."
+msgstr "Ова картица садржи ваш новчаник. Користите картицу купца."
+
 #: apps/web/src/components/nfc-card-prompt.tsx:34
 msgid "This card is blank."
 msgstr "Ова картица је празна."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:452
+msgid "This card just paid. To charge it again, choose Charge this card."
+msgstr "Овом картицом је управо плаћено. Да бисте поново наплатили, изаберите "
+"„Наплати са ове картице“."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:454
+msgid "This card's last payment is still being confirmed. Wait for it before "
+"charging the card again."
+msgstr "Посљедње плаћање овом картицом се још потврђује. Сачекајте потврду "
+"прије него што поново наплатите са картице."
 
 #: apps/web/src/components/nfc-card-prompt.tsx:38
 msgid "This card's wallet key is damaged and can't be used."
@@ -5299,6 +5459,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Ова понуда је увезена са јединицом „{legacyUnit}“. Изаберите једну "
 "испод да бисте сачували измене."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:118
+msgid "This phone or browser can't read NFC cards."
+msgstr "Овај телефон или прегледач не може да очита NFC картице."
 
 #: apps/web/src/components/nfc-card-prompt.tsx:20
 msgid "This phone or browser can't read NFC cards. Use the QR code instead."
@@ -5406,6 +5570,7 @@ msgstr "Наслов мора имати 200 знакова или мање"
 #: apps/web/src/features/home/ui/activity-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/wallet/ui/collect-page.tsx:137
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "To"
@@ -5552,6 +5717,10 @@ msgstr "Обрачунска јединица"
 msgid "Unit of Account"
 msgstr "Обрачунска јединица"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:434
+msgid "Unknown"
+msgstr "Непознато"
+
 #. placeholder {0}: option.label
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:154
 msgid "Unlink {0}"
@@ -5674,12 +5843,12 @@ msgstr "Употреби фотографију"
 
 #: apps/web/src/components/profile/username-input.tsx:38
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:57
-#: apps/web/src/features/wallet/ui/receive-page.tsx:84
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Username"
 msgstr "Корисничко име"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Username copied"
 msgstr "Корисничко име је копирано"
 
@@ -5916,7 +6085,7 @@ msgstr "Чекање на мрежу…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:52
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -6239,6 +6408,7 @@ msgid "Your Vouchers"
 msgstr "Ваши ваучери"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:50
+#: apps/web/src/features/wallet/ui/collect-page.tsx:143
 msgid "Your wallet"
 msgstr "Ваш новчаник"
 

@@ -168,7 +168,7 @@ msgstr "{amount} {0} retiré."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "Crédit disponible : {available} sur {limit} {denomination}"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/receive-page.tsx:108
 msgid "{chainName} address"
 msgstr "Adresse {chainName}"
 
@@ -456,7 +456,7 @@ msgid "Address book"
 msgstr "Carnet d’adresses"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Address copied"
 msgstr "Adresse copiée"
 
@@ -534,6 +534,10 @@ msgstr "Montant supérieur à votre solde"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "Montant dans le bassin"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:175
+msgid "Amount to collect"
+msgstr "Montant à encaisser"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -688,6 +692,7 @@ msgstr "Accès à la caméra refusé."
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
+#: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
@@ -709,6 +714,18 @@ msgstr "Légende pour photo {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "La légende doit contenir au maximum 500 caractères"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:129
+msgid "Card collection isn't available on this server yet."
+msgstr "L’encaissement par carte n’est pas encore disponible sur ce serveur."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:313
+msgid "Card held:"
+msgstr "Carte actuelle :"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:325
+msgid "Card read — processing {amount}"
+msgstr "Carte lue — traitement de {amount}"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:318
 msgid "Card read — signing in"
@@ -753,6 +770,10 @@ msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "Modifie l’affichage du bon d’échange. Le contrat déployé conserve son "
 "nom."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:225
+msgid "Charge this card {amountText}"
+msgstr "Débiter cette carte de {amountText}"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:491
 msgid "Charged on every swap this pool settles."
 msgstr "Prélevés sur chaque échange réglé par ce bassin."
@@ -772,6 +793,10 @@ msgstr "Vérifier l’état de l’émission"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
 msgid "Check supply again"
 msgstr "Vérifier à nouveau la quantité émise"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+msgid "Checking"
+msgstr "Vérification"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
@@ -805,6 +830,10 @@ msgstr "Vérification du support de notification sur cet appareil."
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "Vérification de l’état de la clé d’accès…"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:338
+msgid "Checking payment…"
+msgstr "Vérification du paiement…"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
 msgid "Checking review eligibility…"
@@ -1000,6 +1029,15 @@ msgstr "Fermer le formulaire de clé privée"
 msgid "Collapse"
 msgstr "Réduire"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:258
+msgid "Collect again from this card"
+msgstr "Encaisser à nouveau avec cette carte"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:113
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+msgid "Collect by card"
+msgstr "Encaisser par carte"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 msgid "Collect fees"
 msgstr "Collecter les frais"
@@ -1074,6 +1112,7 @@ msgstr "Confirmer l’échange"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/wallet/ui/collect-page.tsx:430
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "Confirmé"
@@ -1198,7 +1237,7 @@ msgstr "Adresse du contrat"
 msgid "Contract address copied"
 msgstr "Adresse du contrat copiée"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:136
+#: apps/web/src/features/wallet/ui/receive-page.tsx:151
 msgid "Copy"
 msgstr "Copier"
 
@@ -1252,12 +1291,12 @@ msgstr "Copier le hachage de la transaction d’émission"
 msgid "Copy transaction hash"
 msgstr "Copier le hachage de la transaction"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:98
+#: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "Copier l’adresse du portefeuille"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:78
+#: apps/web/src/features/wallet/ui/receive-page.tsx:82
 msgid "Copy wallet username"
 msgstr "Copier le nom d’utilisateur du portefeuille"
 
@@ -1322,8 +1361,8 @@ msgstr "Impossible de vérifier votre accès aux avis."
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy address"
 msgstr "Impossible de copier l’adresse"
 
@@ -1384,8 +1423,8 @@ msgstr "Impossible de copier le hachage de la transaction"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy username"
 msgstr "Impossible de copier le nom d’utilisateur"
 
@@ -1494,6 +1533,10 @@ msgstr "Impossible de charger les choix de bons d’échange."
 msgid "Couldn't load voucher tags."
 msgstr "Impossible de charger les étiquettes des bons d’échange."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:162
+msgid "Couldn't load vouchers"
+msgstr "Impossible de charger les bons d’échange"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:965
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
@@ -1530,6 +1573,11 @@ msgstr "Impossible de publier votre bassin."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "Couldn't publish your voucher."
 msgstr "Impossible de publier votre bon d’échange."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:122
+msgid "Couldn't reach the payment relay. Check your connection and try again."
+msgstr "Impossible de joindre le service de paiement. Vérifiez votre connexion, "
+"puis réessayez."
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
 msgid "Couldn’t reach the update. Check your connection and try again."
@@ -1867,6 +1915,10 @@ msgstr "Le nom affiché doit contenir au maximum 120 caractères"
 msgid "Done"
 msgstr "Terminé"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:261
+msgid "Done with this customer"
+msgstr "Terminer avec ce client"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:286
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Download card"
@@ -2137,6 +2189,7 @@ msgstr "Avec expiration"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/collect-page.tsx:432
 msgid "Failed"
 msgstr "Échec"
 
@@ -2779,6 +2832,7 @@ msgstr "Chargement du bon d’échange…"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
+#: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "Chargement des bons d’échange…"
 
@@ -3023,7 +3077,7 @@ msgstr "MPESA via Pretium"
 msgid "My posts"
 msgstr "Mes publications"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:38
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 msgid "My wallet address"
 msgstr "Adresse de mon portefeuille"
 
@@ -3285,6 +3339,10 @@ msgstr "Aucun bon d’échange ne correspond à cette recherche."
 msgid "No vouchers match this search."
 msgstr "Aucun bon d’échange ne correspond à cette recherche."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:164
+msgid "No vouchers to collect"
+msgstr "Aucun bon d’échange à encaisser"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
@@ -3295,7 +3353,7 @@ msgstr "Aucun bon d’échange à afficher pour le moment."
 msgid "No vouchers yet."
 msgstr "Aucun bon d’échange pour le moment."
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
 msgstr "Aucune adresse de portefeuille disponible."
 
@@ -3430,7 +3488,7 @@ msgstr "Vente"
 msgid "Offramp details"
 msgstr "Détails de la vente"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:119
+#: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "Envoyez uniquement des actifs du <0>réseau {chainName}</0> à cette "
@@ -3608,16 +3666,33 @@ msgstr "Portefeuille papier protégé par mot de passe"
 msgid "Passwords do not match."
 msgstr "Les mots de passe ne correspondent pas."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:409
+msgid "Payment accepted — confirming"
+msgstr "Paiement accepté — confirmation en cours"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:405
+msgid "Payment confirmed"
+msgstr "Paiement confirmé"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:407
+msgid "Payment failed"
+msgstr "Échec du paiement"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
 msgid "Payment receipt"
 msgstr "Reçu de paiement"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:354
+msgid "Payment status unknown"
+msgstr "État du paiement inconnu"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
@@ -3959,6 +4034,10 @@ msgstr "Préparation…"
 msgid "Preparing…"
 msgstr "Préparation…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:194
+msgid "Present card to pay {armedAmount}"
+msgstr "Présentez la carte pour payer {armedAmount}"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "Appuyez et maintenez l’image ci-dessous, puis choisissez Enregistrer "
@@ -4163,6 +4242,14 @@ msgstr "Lecture des frais de ce bassin…"
 msgid "Reading…"
 msgstr "Lecture…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:245
+msgid "Ready to collect"
+msgstr "Prêt à encaisser"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:243
+msgid "Ready to collect {amountText}"
+msgstr "Prêt à encaisser {amountText}"
+
 #: apps/web/src/components/reviews/review-editor.tsx:89
 msgid "Reason for reporting"
 msgstr "Motif du signalement"
@@ -4173,11 +4260,12 @@ msgstr "Reçu copié"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/collect-page.tsx:110
+#: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "Recevoir"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:63
+#: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
 msgstr "Informations de réception"
 
@@ -4199,6 +4287,11 @@ msgstr "Reçu"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
 msgid "Received voucher"
 msgstr "Bon d’échange reçu"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:270
+#: apps/web/src/features/wallet/ui/collect-page.tsx:272
+msgid "Recent collections"
+msgstr "Encaissements récents"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:208
@@ -4721,7 +4814,7 @@ msgid "Settings"
 msgstr "Paramètres"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:441
-#: apps/web/src/features/wallet/ui/receive-page.tsx:140
+#: apps/web/src/features/wallet/ui/receive-page.tsx:155
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
 msgstr "Partager"
@@ -5087,6 +5180,10 @@ msgstr "Prendre une photo"
 msgid "Tap NFC card"
 msgstr "Approcher une carte NFC"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:461
+msgid "Tap Ready to collect before presenting a card."
+msgstr "Appuyez sur Prêt à encaisser avant de présenter une carte."
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Appuyez sur le menu à trois points, puis Ajouter à l’écran d’accueil ou "
@@ -5184,9 +5281,20 @@ msgstr "Impossible de démarrer le lecteur de carte. Réessayez."
 msgid "The card reader stopped."
 msgstr "Le lecteur de carte s’est arrêté."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:376
+msgid "The card wasn't unlocked. Nothing was charged."
+msgstr "La carte n’a pas été déverrouillée. Rien n’a été débité."
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
 msgstr "Le panier n’est pas encore disponible."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:341
+msgid "The connection dropped before the relay answered. Don't charge this card "
+"again until this resolves."
+msgstr "La connexion a été interrompue avant la réponse du service de paiement. "
+"Ne débitez pas cette carte à nouveau tant que la situation n’est pas "
+"résolue."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:969
 msgid "The credit limit has been reached. No more can be added to this pool."
@@ -5221,6 +5329,30 @@ msgid "The passkey on this device is linked. Switch to it to sign with your "
 msgstr "La clé d’accès de cet appareil est liée. Utilisez-la pour signer avec "
 "votre clé d’accès."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:385
+msgid "The payment couldn't be prepared: {detail}"
+msgstr "Impossible de préparer le paiement : {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:386
+msgid "The payment couldn't be prepared. Nothing was charged."
+msgstr "Impossible de préparer le paiement. Rien n’a été débité."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:127
+msgid "The payment relay is on a different network."
+msgstr "Le service de paiement est sur un autre réseau."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:378
+msgid "The payment relay is on a different network. Nothing was charged."
+msgstr "Le service de paiement est sur un autre réseau. Rien n’a été débité."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:381
+msgid "The payment was refused: {detail}"
+msgstr "Le paiement a été refusé : {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:382
+msgid "The payment was refused. Nothing was charged."
+msgstr "Le paiement a été refusé. Rien n’a été débité."
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:48
 msgid "The pool"
 msgstr "Le bassin"
@@ -5237,6 +5369,12 @@ msgstr "Le bassin ne contient pas autant de {0}."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "Le devis a changé. Vérifiez les montants mis à jour avant de confirmer."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:357
+msgid "The request expired without an answer from the relay. Check the "
+"customer's balance before charging the card again."
+msgstr "La demande a expiré sans réponse du service de paiement. Vérifiez le "
+"solde du client avant de débiter à nouveau la carte."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "The selected unit does not have a configured price feed."
@@ -5280,6 +5418,10 @@ msgid "This browser cannot store notification registration safely."
 msgstr "Ce navigateur ne peut pas conserver l’inscription aux notifications de "
 "manière sécurisée."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:374
+msgid "This card doesn't have enough {symbol}. Nothing was charged."
+msgstr "Cette carte ne contient pas assez de {symbol}. Rien n’a été débité."
+
 #: apps/web/src/components/nfc-card-prompt.tsx:40
 msgid "This card doesn't hold a CLC wallet."
 msgstr "Cette carte ne contient pas de portefeuille CLC."
@@ -5288,9 +5430,29 @@ msgstr "Cette carte ne contient pas de portefeuille CLC."
 msgid "This card holds more than one wallet. Use another card."
 msgstr "Cette carte contient plusieurs portefeuilles. Utilisez une autre carte."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:372
+msgid "This card holds your own wallet. Nothing was charged."
+msgstr "Cette carte contient votre propre portefeuille. Rien n’a été débité."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:459
+msgid "This card holds your own wallet. Use the customer's card."
+msgstr "Cette carte contient votre propre portefeuille. Utilisez la carte du "
+"client."
+
 #: apps/web/src/components/nfc-card-prompt.tsx:34
 msgid "This card is blank."
 msgstr "Cette carte est vierge."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:452
+msgid "This card just paid. To charge it again, choose Charge this card."
+msgstr "Cette carte vient de payer. Pour la débiter à nouveau, choisissez "
+"Débiter cette carte."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:454
+msgid "This card's last payment is still being confirmed. Wait for it before "
+"charging the card again."
+msgstr "Le dernier paiement de cette carte est toujours en cours de "
+"confirmation. Attendez-le avant de débiter à nouveau la carte."
 
 #: apps/web/src/components/nfc-card-prompt.tsx:38
 msgid "This card's wallet key is damaged and can't be used."
@@ -5334,6 +5496,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Cette offre a été importée avec l’unité « {legacyUnit} ». Sélectionnez "
 "une unité ci-dessous pour enregistrer vos modifications."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:118
+msgid "This phone or browser can't read NFC cards."
+msgstr "Ce téléphone ou ce navigateur ne peut pas lire les cartes NFC."
 
 #: apps/web/src/components/nfc-card-prompt.tsx:20
 msgid "This phone or browser can't read NFC cards. Use the QR code instead."
@@ -5443,6 +5609,7 @@ msgstr "Le titre doit contenir au maximum 200 caractères"
 #: apps/web/src/features/home/ui/activity-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/wallet/ui/collect-page.tsx:137
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "To"
@@ -5590,6 +5757,10 @@ msgstr "Unité de compte"
 msgid "Unit of Account"
 msgstr "Unité de compte"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:434
+msgid "Unknown"
+msgstr "Inconnu"
+
 #. placeholder {0}: option.label
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:154
 msgid "Unlink {0}"
@@ -5714,12 +5885,12 @@ msgstr "Utiliser la photo"
 
 #: apps/web/src/components/profile/username-input.tsx:38
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:57
-#: apps/web/src/features/wallet/ui/receive-page.tsx:84
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Username"
 msgstr "Nom d’utilisateur"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Username copied"
 msgstr "Nom d’utilisateur copié"
 
@@ -5957,7 +6128,7 @@ msgstr "En attente de la chaîne…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:52
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -6283,6 +6454,7 @@ msgid "Your Vouchers"
 msgstr "Vos bons d’échange"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:50
+#: apps/web/src/features/wallet/ui/collect-page.tsx:143
 msgid "Your wallet"
 msgstr "Votre portefeuille"
 

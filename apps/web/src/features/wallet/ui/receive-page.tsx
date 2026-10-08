@@ -1,5 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "@tanstack/react-router";
 import { RiFileCopyLine, RiShareLine } from "react-icons/ri";
+import { TbNfc } from "react-icons/tb";
 import { toast } from "sonner";
 import { useConnection } from "wagmi";
 
@@ -8,11 +10,13 @@ import { AddressQRCode, HighlightAddress, NetworkBadge } from "#/components/wall
 import { BackChevron } from "#/components/wallet/wallet-kit";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
+import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
 
 export function ReceivePage() {
   const chainName = CHAIN_INFO.name;
   const { t } = useLingui();
   const { address } = useConnection();
+  const nfcSupported = useWebNfcSupported();
   const identity = useReverseRecipientResolution(address ?? null);
   const username = identity.data?.alias ?? null;
   const receiveQrValue = address ? `ethereum:${address}@${CHAIN_ID}` : null;
@@ -124,6 +128,17 @@ export function ReceivePage() {
       </div>
 
       <div className="flex-1" />
+
+      {/* Collecting from a card is its own operation — the payer's card signs a
+          transfer to this wallet — not this address QR delivered over NFC. */}
+      {nfcSupported && address ? (
+        <Button asChild variant="outline" className="mb-2 h-11 w-full">
+          <Link to="/wallet/collect">
+            <TbNfc className="size-4" aria-hidden="true" />
+            <Trans>Collect by card</Trans>
+          </Link>
+        </Button>
+      ) : null}
 
       <div className="flex gap-2">
         <Button

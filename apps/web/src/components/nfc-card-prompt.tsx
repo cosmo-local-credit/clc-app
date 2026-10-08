@@ -10,7 +10,7 @@ import { cn } from "#/lib/utils";
 /** What a tap produced that is not a usable card, for the prompt to explain. */
 export type NfcCardProblem = Exclude<NfcCardContent["kind"], "credential">;
 
-function useNfcMessages() {
+export function useNfcMessages() {
   const { t } = useLingui();
   return {
     unreadable: t`Couldn't read that card. Hold it still against the back of your phone and try again.`,

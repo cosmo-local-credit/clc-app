@@ -167,7 +167,7 @@ msgstr "{amount} {0} ཕྱིར་བཏོན་ཡོད།"
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{limit} {denomination} ལས་ {available} སྤྱོད་ཆོག་པའི་ཡིད་རྟོན།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/receive-page.tsx:108
 msgid "{chainName} address"
 msgstr "{chainName} ཁ་བྱང་།"
 
@@ -454,7 +454,7 @@ msgid "Address book"
 msgstr "ཁ་བྱང་དེབ།"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Address copied"
 msgstr "ཁ་བྱང་འདྲ་བཤུས་གྲུབ།"
 
@@ -531,6 +531,10 @@ msgstr "དངུལ་བསྡོམས་འདི་ཁྱོད་ཀྱི
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "དངུལ་ཁུངས་ནང་གི་དངུལ་བསྡོམས།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:175
+msgid "Amount to collect"
+msgstr "བསྡུ་ལེན་འབད་ནིའི་དངུལ་བསྡོམས།"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:26
 msgid "Another card scan is already running. Try again."
@@ -685,6 +689,7 @@ msgstr "པར་ཆས་ལག་ལེན་ཆོག་ཐམ་མ་བྱ
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
+#: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
@@ -706,6 +711,18 @@ msgstr "པར་ {0} གི་པར་བཤད།"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "པར་བཤད་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:129
+msgid "Card collection isn't available on this server yet."
+msgstr "ཞབས་ཏོག་འཕྲུལ་ཆས་འདི་གུ་ཤོག་བྱང་གིས་བསྡུ་ལེན་འབད་ནི་ད་ཚུན་མི་འཐོབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:313
+msgid "Card held:"
+msgstr "ད་ལྟོའི་ཤོག་བྱང་:"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:325
+msgid "Card read — processing {amount}"
+msgstr "ཤོག་བྱང་ལྷག་ཚར་ཡོད་ — {amount} སྤྲོད་ལེན་འབད་དོ"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:318
 msgid "Card read — signing in"
@@ -751,6 +768,10 @@ msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "འཛིན་ཤོག་སྟོན་ཐངས་བསྒྱུར་འོང་། "
 "གསར་སྤེལ་འབད་ཡོད་པའི་གན་རྒྱ་གིས་མིང་རང་འཇགས་བཞག་འོང་།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:225
+msgid "Charge this card {amountText}"
+msgstr "ཤོག་བྱང་འདི་ལུ་ {amountText} བཀལ།"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:491
 msgid "Charged on every swap this pool settles."
 msgstr "དངུལ་ཁུངས་འདི་གིས་གཏན་འཁེལ་འབད་མི་བརྗེ་ལེན་རེ་རེ་ལུ་གླ་ཡོན་བཀལ་འོང་།"
@@ -770,6 +791,10 @@ msgstr "གསར་བཏོན་གནས་ཚད་ཞིབ་དཔྱད
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
 msgid "Check supply again"
 msgstr "བཀྲམ་སྤེལ་ལོག་སྟེ་ཞིབ་དཔྱད་འབད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+msgid "Checking"
+msgstr "ཞིབ་དཔྱད་འབད་དོ།"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
@@ -803,6 +828,10 @@ msgstr "ཐབས་འཕྲུལ་འདི་གུ་བརྡ་བསྐ
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "ནང་འཛུལ་ལྡེ་མིག་གནས་ཚད་ཞིབ་དཔྱད་འབད་དོ…"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:338
+msgid "Checking payment…"
+msgstr "སྤྲོད་ལེན་ཞིབ་དཔྱད་འབད་དོ…"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
 msgid "Checking review eligibility…"
@@ -998,6 +1027,15 @@ msgstr "སྒེར་ལྡེའི་འབྲི་ཤོག་ཁ་བས
 msgid "Collapse"
 msgstr "བསྡུ།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:258
+msgid "Collect again from this card"
+msgstr "ཤོག་བྱང་འདི་ལས་ལོག་སྟེ་བསྡུ་ལེན་འབད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:113
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+msgid "Collect by card"
+msgstr "ཤོག་བྱང་གིས་བསྡུ་ལེན་འབད།"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 msgid "Collect fees"
 msgstr "གླ་ཡོན་བསྡུ་ལེན་འབད།"
@@ -1072,6 +1110,7 @@ msgstr "བརྗེ་ལེན་ངེས་གཏན་བཟོ།"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/wallet/ui/collect-page.tsx:430
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "ངེས་གཏན་གྲུབ།"
@@ -1196,7 +1235,7 @@ msgstr "གན་རྒྱའི་ཁ་བྱང་།"
 msgid "Contract address copied"
 msgstr "གན་རྒྱའི་ཁ་བྱང་འདྲ་བཤུས་གྲུབ།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:136
+#: apps/web/src/features/wallet/ui/receive-page.tsx:151
 msgid "Copy"
 msgstr "འདྲ་བཤུས།"
 
@@ -1250,12 +1289,12 @@ msgstr "བཀྲམ་སྤེལ་གསར་བཏོན་ཉོ་ཚོ
 msgid "Copy transaction hash"
 msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:98
+#: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "དངུལ་ཁུག་ཁ་བྱང་འདྲ་བཤུས།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:78
+#: apps/web/src/features/wallet/ui/receive-page.tsx:82
 msgid "Copy wallet username"
 msgstr "དངུལ་ཁུག་གི་ལག་ལེན་པའི་མིང་འདྲ་བཤུས།"
 
@@ -1320,8 +1359,8 @@ msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་འཛུལ་
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy address"
 msgstr "ཁ་བྱང་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
@@ -1382,8 +1421,8 @@ msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་འབད་
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy username"
 msgstr "ལག་ལེན་པའི་མིང་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
@@ -1491,6 +1530,10 @@ msgstr "འཛིན་ཤོག་གདམ་ཁ་ཚུ་མངོན་ག
 msgid "Couldn't load voucher tags."
 msgstr "འཛིན་ཤོག་ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:162
+msgid "Couldn't load vouchers"
+msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:965
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
@@ -1527,6 +1570,11 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་ཁྱབ་བ
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "Couldn't publish your voucher."
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་མ་ཚུགས།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:122
+msgid "Couldn't reach the payment relay. Check your connection and try again."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་ལུ་ལྷོད་མ་ཚུགས། "
+"ཁྱོད་ཀྱི་མཐུད་ལམ་ཞིབ་དཔྱད་འབད་དེ་ལོག་འབད།"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
 msgid "Couldn’t reach the update. Check your connection and try again."
@@ -1861,6 +1909,10 @@ msgstr "སྟོན་མིང་ཡིག་འབྲུ་ ༡༢༠ ཡང�
 msgid "Done"
 msgstr "འགྲུབ།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:261
+msgid "Done with this customer"
+msgstr "ཉོ་མི་འདི་མཇུག་བསྡུ།"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:286
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Download card"
@@ -2130,6 +2182,7 @@ msgstr "དུས་ཡོལ་འགྱོ་དོ།"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/collect-page.tsx:432
 msgid "Failed"
 msgstr "མ་འགྲུབ།"
 
@@ -2770,6 +2823,7 @@ msgstr "འཛིན་ཤོག་མངོན་གསལ་འབད་དོ
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
+#: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -3013,7 +3067,7 @@ msgstr "Pretium བརྒྱུད་དེ་ MPESA"
 msgid "My posts"
 msgstr "ངའི་གསལ་བསྒྲགས།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:38
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 msgid "My wallet address"
 msgstr "ངའི་དངུལ་ཁུག་ཁ་བྱང་།"
 
@@ -3274,6 +3328,10 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 msgid "No vouchers match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:164
+msgid "No vouchers to collect"
+msgstr "བསྡུ་ལེན་འབད་ནིའི་འཛིན་ཤོག་མེད།"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
@@ -3284,7 +3342,7 @@ msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག
 msgid "No vouchers yet."
 msgstr "ད་ཚུན་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
 msgstr "དངུལ་ཁུག་ཁ་བྱང་ཐོབ་མི་ཚུགས།"
 
@@ -3418,7 +3476,7 @@ msgstr "དངུལ་ཕྱིར་བཏོན།"
 msgid "Offramp details"
 msgstr "དངུལ་ཕྱིར་བཏོན་ཁ་གསལ།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:119
+#: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "ཁ་བྱང་འདི་ལུ་ <0>{chainName} ཡོངས་འབྲེལ</0> "
@@ -3594,16 +3652,33 @@ msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི
 msgid "Passwords do not match."
 msgstr "གསང་ཚིག་ཚུ་མི་མཐུན།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:409
+msgid "Payment accepted — confirming"
+msgstr "སྤྲོད་ལེན་དང་ལེན་འབད་ཡོད་ — ངེས་གཏན་བཟོ་དོ"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:405
+msgid "Payment confirmed"
+msgstr "སྤྲོད་ལེན་ངེས་གཏན་གྲུབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:407
+msgid "Payment failed"
+msgstr "སྤྲོད་ལེན་མ་འགྲུབ།"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
 msgid "Payment receipt"
 msgstr "སྐྱེལ་འབབ་ཀྱི་འབྱོར་ཡིག"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:354
+msgid "Payment status unknown"
+msgstr "སྤྲོད་ལེན་གྱི་གནས་ཚད་མ་ཤེས།"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
@@ -3943,6 +4018,10 @@ msgstr "གྲ་སྒྲིག་འབད་དོ..."
 msgid "Preparing…"
 msgstr "གྲ་སྒྲིག་འབད་དོ…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:194
+msgid "Present card to pay {armedAmount}"
+msgstr "{armedAmount} སྤྲོད་ནིའི་དོན་ལུ་ཤོག་བྱང་སྟོན།"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "འོག་གི་པར་ཨེབ་སྟེ་བཟུང་བཞག་ དེ་ལས་པར་སྲུང་བཞག་གདམ་ཁ་རྐྱབ།"
@@ -4146,6 +4225,14 @@ msgstr "དངུལ་ཁུངས་འདིའི་གླ་ཡོན་ལ
 msgid "Reading…"
 msgstr "ལྷག་དོ…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:245
+msgid "Ready to collect"
+msgstr "བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:243
+msgid "Ready to collect {amountText}"
+msgstr "{amountText} བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག"
+
 #: apps/web/src/components/reviews/review-editor.tsx:89
 msgid "Reason for reporting"
 msgstr "སྙན་ཞུ་འབད་དགོ་པའི་རྒྱུ་མཚན།"
@@ -4156,11 +4243,12 @@ msgstr "འབྱོར་ཡིག་འདྲ་བཤུས་གྲུབ།
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/collect-page.tsx:110
+#: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "ལེན།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:63
+#: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
 msgstr "ལེན་ནིའི་ཁ་གསལ།"
 
@@ -4182,6 +4270,11 @@ msgstr "ལེན་ཚར།"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
 msgid "Received voucher"
 msgstr "འཛིན་ཤོག་ལེན་ཚར།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:270
+#: apps/web/src/features/wallet/ui/collect-page.tsx:272
+msgid "Recent collections"
+msgstr "ཉེ་ཆར་གྱི་བསྡུ་ལེན།"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:208
@@ -4704,7 +4797,7 @@ msgid "Settings"
 msgstr "སྒྲིག་འགོད།"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:441
-#: apps/web/src/features/wallet/ui/receive-page.tsx:140
+#: apps/web/src/features/wallet/ui/receive-page.tsx:155
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
 msgstr "རུབ་སྤྱོད།"
@@ -5066,6 +5159,10 @@ msgstr "པར་བཏབ།"
 msgid "Tap NFC card"
 msgstr "NFC ཤོག་བྱང་ཐུག་བཅུག"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:461
+msgid "Tap Ready to collect before presenting a card."
+msgstr "ཤོག་བྱང་མ་སྟོན་པའི་ཧེ་མ་ བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག་ཟེར་མི་ཨེབ།"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "ཚག་གསུམ་དཀར་ཆག་ལུ་ཨེབ་ "
@@ -5163,9 +5260,19 @@ msgstr "ཤོག་བྱང་ལྷག་ཆས་འགོ་བཙུགས
 msgid "The card reader stopped."
 msgstr "ཤོག་བྱང་ལྷག་ཆས་ཀྱི་ལཱ་མཚམས་བཞག་ཡོད།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:376
+msgid "The card wasn't unlocked. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ཁ་མ་ཕྱེ། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
 msgstr "ཉོ་སྣོད་ད་ཚུན་གྲ་སྒྲིག་མེད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:341
+msgid "The connection dropped before the relay answered. Don't charge this card "
+"again until this resolves."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་གིས་ལན་མ་སླབ་པའི་ཧེ་མ་ མཐུད་ལམ་ཆད་ཡོད། "
+"འདི་གསལ་ཏོག་ཏོ་མ་ཐོན་ཚུན་ ཤོག་བྱང་འདི་ལུ་ལོག་སྟེ་མ་བཀལ།"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:969
 msgid "The credit limit has been reached. No more can be added to this pool."
@@ -5199,6 +5306,30 @@ msgid "The passkey on this device is linked. Switch to it to sign with your "
 msgstr "ཐབས་འཕྲུལ་འདི་གུ་ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་ཡོད། "
 "ནང་འཛུལ་ལྡེ་མིག་གིས་མིང་རྟགས་བཀོད་ནིའི་དོན་ལུ་དེ་ལུ་བསྒྱུར།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:385
+msgid "The payment couldn't be prepared: {detail}"
+msgstr "སྤྲོད་ལེན་གྲ་སྒྲིག་འབད་མ་ཚུགས། {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:386
+msgid "The payment couldn't be prepared. Nothing was charged."
+msgstr "སྤྲོད་ལེན་གྲ་སྒྲིག་འབད་མ་ཚུགས། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:127
+msgid "The payment relay is on a different network."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་འདི་ཡོངས་འབྲེལ་སོ་སོ་ཅིག་གུ་ཡོད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:378
+msgid "The payment relay is on a different network. Nothing was charged."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་འདི་ཡོངས་འབྲེལ་སོ་སོ་ཅིག་གུ་ཡོད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:381
+msgid "The payment was refused: {detail}"
+msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:382
+msgid "The payment was refused. Nothing was charged."
+msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:48
 msgid "The pool"
 msgstr "དངུལ་ཁུངས།"
@@ -5216,6 +5347,12 @@ msgstr "དངུལ་ཁུངས་ནང་ {0} དེ་ཅིག་མེ�
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "གོང་ཚད་བསྒྱུར་ཡོད། "
 "ངེས་གཏན་མ་བཟོ་བའི་ཧེ་མ་དུས་མཐུན་དངུལ་བསྡོམས་ཚུ་བསྐྱར་ཞིབ་འབད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:357
+msgid "The request expired without an answer from the relay. Check the "
+"customer's balance before charging the card again."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་ལས་ལན་མ་ཐོབ་པར་ཞུ་བའི་དུས་ཡུན་ཡོལ་ཡོད། "
+"ཤོག་བྱང་ལུ་ལོག་སྟེ་མ་བཀལ་བའི་ཧེ་མ་ ཉོ་མིའི་ལྷག་དངུལ་ཞིབ་དཔྱད་འབད།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "The selected unit does not have a configured price feed."
@@ -5259,6 +5396,10 @@ msgid "This browser cannot store notification registration safely."
 msgstr "བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་བརྡ་བསྐུལ་ཐོ་བཀོད་ཉེན་སྲུང་ཐོག་གསོག་འཇོག་འབད་མ"
 "ི་ཚུགས།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:374
+msgid "This card doesn't have enough {symbol}. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ནང་ {symbol} ལངམ་མེད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
 #: apps/web/src/components/nfc-card-prompt.tsx:40
 msgid "This card doesn't hold a CLC wallet."
 msgstr "ཤོག་བྱང་འདི་ནང་ CLC དངུལ་ཁུག་མེད།"
@@ -5267,9 +5408,28 @@ msgstr "ཤོག་བྱང་འདི་ནང་ CLC དངུལ་ཁུ�
 msgid "This card holds more than one wallet. Use another card."
 msgstr "ཤོག་བྱང་འདི་ནང་དངུལ་ཁུག་གཅིག་ལས་ལྷགཔ་ཡོད། ཤོག་བྱང་གཞན་ཅིག་ལག་ལེན་འཐབ།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:372
+msgid "This card holds your own wallet. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ནང་ཁྱོད་རའི་དངུལ་ཁུག་ཡོད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:459
+msgid "This card holds your own wallet. Use the customer's card."
+msgstr "ཤོག་བྱང་འདི་ནང་ཁྱོད་རའི་དངུལ་ཁུག་ཡོད། ཉོ་མིའི་ཤོག་བྱང་ལག་ལེན་འཐབ།"
+
 #: apps/web/src/components/nfc-card-prompt.tsx:34
 msgid "This card is blank."
 msgstr "ཤོག་བྱང་འདི་སྟོངམ་ཨིན།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:452
+msgid "This card just paid. To charge it again, choose Charge this card."
+msgstr "ཤོག་བྱང་འདི་གིས་ད་ལྟོ་རང་སྤྲོད་ཚར་ཡོད། ལོག་སྟེ་བཀལ་ནི་ཨིན་པ་ཅིན་ "
+"ཤོག་བྱང་འདི་ལུ་བཀལ་ཟེར་མི་གདམ་ཁ་རྐྱབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:454
+msgid "This card's last payment is still being confirmed. Wait for it before "
+"charging the card again."
+msgstr "ཤོག་བྱང་འདི་གི་མཇུག་གི་སྤྲོད་ལེན་ད་ལྟོ་ཡང་ངེས་གཏན་བཟོ་དོ། "
+"ཤོག་བྱང་ལུ་ལོག་སྟེ་མ་བཀལ་བའི་ཧེ་མ་ དེ་ལུ་བསྒུག"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:38
 msgid "This card's wallet key is damaged and can't be used."
@@ -5312,6 +5472,10 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "ཐོ་ཡིག་འདི་ “{legacyUnit}” ཆ་ཕྲན་དང་ཅིག་ཁར་ནང་འདྲེན་འབད་ཡོད། "
 "ཁྱོད་ཀྱི་བསྒྱུར་བཅོས་སྲུང་ནིའི་དོན་ལུ་འོག་ལས་གཅིག་གདམ་ཁ་རྐྱབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:118
+msgid "This phone or browser can't read NFC cards."
+msgstr "ཁ་པར་ཡང་ན་བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་ NFC ཤོག་བྱང་ལྷག་མི་ཚུགས།"
 
 #: apps/web/src/components/nfc-card-prompt.tsx:20
 msgid "This phone or browser can't read NFC cards. Use the QR code instead."
@@ -5420,6 +5584,7 @@ msgstr "མགོ་མིང་ཡིག་འབྲུ་ ༢༠༠ ཡང་�
 #: apps/web/src/features/home/ui/activity-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/wallet/ui/collect-page.tsx:137
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "To"
@@ -5567,6 +5732,10 @@ msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
 msgid "Unit of Account"
 msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:434
+msgid "Unknown"
+msgstr "མ་ཤེས།"
+
 #. placeholder {0}: option.label
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:154
 msgid "Unlink {0}"
@@ -5689,12 +5858,12 @@ msgstr "པར་ལག་ལེན་འཐབ།"
 
 #: apps/web/src/components/profile/username-input.tsx:38
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:57
-#: apps/web/src/features/wallet/ui/receive-page.tsx:84
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Username"
 msgstr "ལག་ལེན་པའི་མིང་།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Username copied"
 msgstr "ལག་ལེན་པའི་མིང་འདྲ་བཤུས་གྲུབ།"
 
@@ -5931,7 +6100,7 @@ msgstr "བཀག་ཐག་བསྒུག་དོ…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:52
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -6257,6 +6426,7 @@ msgid "Your Vouchers"
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཚུ།"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:50
+#: apps/web/src/features/wallet/ui/collect-page.tsx:143
 msgid "Your wallet"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག"
 

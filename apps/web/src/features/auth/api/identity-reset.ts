@@ -2,6 +2,8 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { clearPrivateKey } from "#/connectors/privateKey";
 import { usePoolCreateDraft } from "#/features/pools/state/pool-create-draft";
+import { useCollectPayerKey } from "#/features/wallet/state/collect-payer-key";
+import { useCollectSession } from "#/features/wallet/state/collect-session";
 import { useVoucherCreateDraft } from "#/features/vouchers/state/voucher-create-draft";
 import { clearWebAuthnCredential } from "#/lib/webauthn-storage";
 
@@ -50,6 +52,10 @@ export function clearIdentitySecrets(retain: RetainedSecretSlot): void {
       // As above.
     }
   }
+  // A card-collection payer's key is never stored, but a sign-out must not
+  // leave it in memory for whoever picks the phone up next.
+  useCollectPayerKey.getState().clear();
+  useCollectSession.getState().reset();
 }
 
 /**
@@ -91,4 +97,6 @@ export function clearScopedQueries(queryClient: QueryClient): void {
 export function clearInMemoryDrafts(): void {
   usePoolCreateDraft.getState().clearDraft();
   useVoucherCreateDraft.getState().clearDraft();
+  useCollectPayerKey.getState().clear();
+  useCollectSession.getState().reset();
 }

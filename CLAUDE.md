@@ -750,16 +750,29 @@ for wagmi: read from hooks at point of use, don't mirror chain/account.
 
 An NFC card is another carrier of the paper-wallet credential: one NDEF URL
 record holding the same `?w=` link a printed QR does. `apps/web` reads cards
-(sign-in); `apps/admin` writes them (the batch writer).
+(sign-in, card collection); `apps/admin` writes them (the batch writer).
 
 - **Split:** everything that decides what a tag means — record decoding,
-  `classifyNfcError`, the reader lifecycle and the writer state machine — is
-  pure and lives in `@clc/core/features/nfc/*`. Each app has its own
-  `NDEFReader` adapter under `#/lib/nfc/`, constructor injected so tests pass
-  a fake rather than patching `window`. No shared NFC package.
+  `classifyNfcError`, the reader lifecycle, the collect-intent rules and the
+  writer state machine — is pure and lives in `@clc/core/features/nfc/*`. Each
+  app has its own `NDEFReader` adapter under `#/lib/nfc/`, constructor injected
+  so tests pass a fake rather than patching `window`. No shared NFC package.
 - **Visibility is the capability check alone** (`useWebNfcSupported`). No
   feature flag; QR stays available everywhere.
 - **A card's URL is data.** Decode the `?w=` payload; never navigate to it.
+- **Collection keeps the collector's identity.** The payer's key is a transient
+  signer held only in `useCollectPayerKey` — no `persist`, no `devtools`, never
+  selected into a component, never `storePrivateKey`, never connected to wagmi.
+  It is cleared on sign-out, route exit and "Done with this customer". Every
+  charge consumes one explicitly armed intent; the card's absence is not a
+  guard, the armed-intent rule and the same-wallet latch are.
+- **Collection depends on an idempotent relay.** A lost relay response is
+  reconciled by resending the identical signed request under its
+  `operationId`, never by signing again. The collect page stays disarmed until
+  `/relayer/health` reports `idempotentRelay: true` (clc-core migration
+  `047_relay_operations`).
+- Signing as an explicit account goes through `signCaliburBatchWithAccount`;
+  the connected send path keeps choosing its own signer through the connector.
 
 ### Serwist (PWA)
 
