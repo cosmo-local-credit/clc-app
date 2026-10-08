@@ -5,10 +5,12 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { BackendApiError } from "@clc/api/client/errors";
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
+import type { MarketPoolLocation } from "#/features/home/hooks/use-market-pools";
+import type { MarketLocation } from "./market-data";
 import type { MarketCamera } from "./market-map";
 
 type MapProps = {
-  locations: MarketVoucher[];
+  locations: MarketLocation[];
   selectedLocationId: string | null;
   camera: MarketCamera | null;
   fitBounds?: {
@@ -47,7 +49,14 @@ const {
   profileRequests,
   profileResult,
   selection,
+  poolsResult,
 } = vi.hoisted(() => ({
+  poolsResult: {
+    current: [] as MarketPoolLocation[],
+    error: null as Error | null,
+    retry: vi.fn(),
+    enabled: [] as boolean[],
+  },
   selection: {
     voucher: null as `0x${string}` | null,
     calls: [] as [string, string?][],
@@ -158,6 +167,17 @@ vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
       enabled ? vouchersResult.current : { ...vouchersResult.current, vouchers: [] },
   };
 });
+
+vi.mock("#/features/home/hooks/use-market-pools", () => ({
+  useMarketMapPools: (enabled: boolean) => {
+    poolsResult.enabled.push(enabled);
+    return {
+      pools: enabled ? poolsResult.current : [],
+      error: enabled ? poolsResult.error : null,
+      retry: poolsResult.retry,
+    };
+  },
+}));
 
 vi.mock("#/features/home/hooks/use-filtered-market-vouchers", async (importOriginal) => {
   const actual =
@@ -313,6 +333,10 @@ beforeEach(() => {
     refetch: vi.fn(),
   };
   lastAppMenuProps.current = null;
+  poolsResult.current = [];
+  poolsResult.error = null;
+  poolsResult.retry = vi.fn();
+  poolsResult.enabled = [];
   profileRequests.current = 0;
   profileResult.current = {
     data: undefined,
@@ -740,6 +764,79 @@ describe("MarketPage voucher card", () => {
       "/?tab=market&view=list",
     );
     expect(screen.queryByRole("list")).toBeNull();
+  });
+});
+
+describe("MarketPage pools", () => {
+  const pool: MarketPoolLocation = {
+    id: "pool:0x49d3e72becc7870cd9d1981d5f4ec8e1cb5394e2",
+    name: "Mina G Pool",
+    kind: "pool",
+    markerIcon: null,
+    markerColor: null,
+    lat: -3.6457,
+    lng: 39.85,
+    locationName: "Mnarani, Kilifi, Kenya",
+    address: "0x49D3E72BECC7870Cd9d1981d5F4eC8e1CB5394E2",
+  };
+
+  it("draws pools after the vouchers, so a stack keeps its voucher anchor", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    poolsResult.current = [pool];
+    renderPage();
+
+    expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1", pool.id]);
+  });
+
+  it("opens the tapped pool's page and leaves the voucher card closed", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    poolsResult.current = [pool];
+    renderPage();
+
+    fireEvent.click(screen.getByTestId(`marker-${pool.id}`));
+
+    expect(mockNavigate).toHaveBeenCalledWith({
+      to: "/pools/$poolAddress",
+      params: { poolAddress: pool.address },
+    });
+    expect(selection.calls).toEqual([]);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("leaves pools off a filtered map, whose terms and tags only match vouchers", () => {
+    routeSearch.current = { q: "art" };
+    poolsResult.current = [pool];
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucher("1")], tagFacets: null },
+    };
+    renderPage();
+
+    expect(poolsResult.enabled.at(-1)).toBe(false);
+    expect(lastMapProps.current?.locations.map((location) => location.id)).toEqual(["1"]);
+  });
+
+  it("offers Retry when the pools fail to load", () => {
+    vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
+    poolsResult.error = new Error("pools are down");
+    renderPage();
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Couldn't load pools.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(poolsResult.retry).toHaveBeenCalledTimes(1);
+    expect(mockRetry).not.toHaveBeenCalled();
+  });
+
+  it("puts the vouchers' failure first when both fail", () => {
+    vouchersResult.current = { ...vouchersResult.current, error: new Error("network down") };
+    poolsResult.error = new Error("pools are down");
+    renderPage();
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toContain("Could not load vouchers.");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(mockRetry).toHaveBeenCalledTimes(1);
   });
 });
 

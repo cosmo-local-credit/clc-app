@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   MARKER_COLORS,
   MARKER_COLOR_HEX,
@@ -5,11 +8,14 @@ import {
   type MarkerColor,
   type MarkerIcon,
 } from "@clc/core/features/markers/logic";
+import { RiGroupFill } from "react-icons/ri";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { installCanvasStub, installPath2DStub, type StubbedContext } from "./-market-canvas-stub";
 import type { MarketLocation, MarketLocationKind } from "./market-data";
 import {
+  POOL_PIN_HEX,
+  POOL_PIN_IMAGE_ID,
   SELECTED_PIN_SUFFIX,
   addMarketMarkerImages,
   markerImageId,
@@ -36,11 +42,13 @@ function fakeMap() {
   };
 }
 
+type VoucherKind = Exclude<MarketLocationKind, "pool">;
+
 function automatic(kind: MarketLocationKind): MarkerSource {
   return { kind, markerIcon: null, markerColor: null };
 }
 
-const KINDS: MarketLocationKind[] = ["goods", "services", "voucher"];
+const KINDS: VoucherKind[] = ["goods", "services", "voucher"];
 const AUTOMATIC = KINDS.map(automatic);
 
 function pixelOf(image: AddedImage): [number, number, number, number] {
@@ -201,7 +209,7 @@ describe("market marker colours", () => {
   // Goods is blue, services is purple, and a voucher with no offerings is
   // orange. None of these may follow the brand primary: that colour belongs
   // to the live-location pin, and it changes between prod and staging.
-  const EXPECTED: Record<MarketLocationKind, [number, number, number]> = {
+  const EXPECTED: Record<VoucherKind, [number, number, number]> = {
     goods: rgbOf("#2563eb"),
     services: rgbOf("#7c3aed"),
     voucher: rgbOf("#ea580c"),
@@ -261,5 +269,96 @@ describe("market marker colours", () => {
     expect(pixelOf(paintedImage(map, "basket", "blue")).slice(0, 3)).toEqual(EXPECTED.goods);
     const fills = [...contexts.values()].flatMap((record) => record.fills);
     expect(fills).not.toContain("oklch(0.72 0.13 178)");
+  });
+});
+
+/** The CSS Color 4 OKLCH to sRGB conversion, rounded to 8-bit channels. */
+function oklchToHex(lightness: number, chroma: number, hue: number): string {
+  const a = chroma * Math.cos((hue * Math.PI) / 180);
+  const b = chroma * Math.sin((hue * Math.PI) / 180);
+  const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const linear = [
+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+  ];
+  return `#${linear
+    .map((channel) => {
+      const encoded = channel <= 0.0031308 ? 12.92 * channel : 1.055 * channel ** (1 / 2.4) - 0.055;
+      return Math.round(Math.min(1, Math.max(0, encoded)) * 255)
+        .toString(16)
+        .padStart(2, "0");
+    })
+    .join("")}`;
+}
+
+describe("pool marker", () => {
+  const POOL = automatic("pool");
+
+  it("draws one pin for every pool, plus its selected variant", () => {
+    const map = fakeMap();
+
+    addMarketMarkerImages(map as never, [POOL, POOL, ...AUTOMATIC]);
+
+    expect(map.images.has(POOL_PIN_IMAGE_ID)).toBe(true);
+    expect(map.images.has(POOL_PIN_IMAGE_ID + SELECTED_PIN_SUFFIX)).toBe(true);
+    expect(map.images.size).toBe(8);
+  });
+
+  it("draws a square, as wide as a voucher's disc, that points at its location", () => {
+    const map = fakeMap();
+
+    addMarketMarkerImages(map as never, [POOL]);
+
+    for (const [canvas, record] of contexts) {
+      expect(record.arcs).toEqual([]);
+      const [corner] = record.moves;
+      const tip = record.lines.reduce((lowest, point) => (point.y > lowest.y ? point : lowest));
+      if (!corner) throw new Error("expected the square's first corner");
+      expect(corner.x).toBe(markerPin.padding);
+      expect(tip.x).toBe(canvas.width / 2);
+      expect(tip.y).toBe(canvas.height - markerPin.padding);
+      expect(record.strokes).toContain("#ffffff");
+    }
+    expect(new Set([...contexts.keys()].map((canvas) => canvas.width))).toEqual(
+      new Set([
+        (markerPin.base.radius + markerPin.padding) * 2,
+        (markerPin.selected.radius + markerPin.padding) * 2,
+      ]),
+    );
+  });
+
+  it("wears the Pools button's colour and glyph", () => {
+    const map = fakeMap();
+
+    addMarketMarkerImages(map as never, [POOL]);
+
+    const [r, g, b, a] = pixelOf(map.images.get(POOL_PIN_IMAGE_ID) as AddedImage);
+    expect([r, g, b]).toEqual(rgbOf(POOL_PIN_HEX.pin));
+    expect(a).toBe(255);
+    const glyph = (RiGroupFill({}) as { props: { children: { props: { d: string } }[] } }).props
+      .children;
+    for (const record of contexts.values()) {
+      expect(record.paths).toEqual(glyph.map((child) => child.props.d));
+    }
+  });
+
+  it("matches the --info token the Pools button is filled with", () => {
+    const css = readFileSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../styles.css"),
+      "utf8",
+    );
+    const root = /:root\s*\{([^}]*)\}/.exec(css)?.[1] ?? "";
+    const info = /--info:\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/.exec(root);
+    if (!info) throw new Error("expected --info as oklch in :root");
+
+    expect(POOL_PIN_HEX.pin).toBe(oklchToHex(Number(info[1]), Number(info[2]), Number(info[3])));
+  });
+
+  it("names a pool in a darker shade of its pin", () => {
+    const sum = (hex: string) => rgbOf(hex).reduce((total, channel) => total + channel, 0);
+    expect(sum(POOL_PIN_HEX.label)).toBeLessThan(sum(POOL_PIN_HEX.pin));
   });
 });

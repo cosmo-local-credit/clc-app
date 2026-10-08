@@ -1,10 +1,4 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import {
-  MARKER_COLORS,
-  MARKER_COLOR_HEX,
-  type MarkerColor,
-  resolveMarkerStyle,
-} from "@clc/core/features/markers/logic";
 import { Trans } from "@lingui/react/macro";
 import MapLibreGL, {
   type DataDrivenPropertyValueSpecification,
@@ -19,12 +13,7 @@ import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 import { MAP_MAX_ZOOM, MARKET_SOURCE_ID, type MarketLocation } from "./market-data";
 import { keepMarketLabelsInsideViewport } from "./market-label-edges";
-import {
-  SELECTED_PIN_SUFFIX,
-  addMarketMarkerImages,
-  markerImageId,
-  markerPin,
-} from "./market-markers";
+import { SELECTED_PIN_SUFFIX, addMarketMarkerImages, markerArt, markerPin } from "./market-markers";
 import {
   type MarketStack,
   groupByProximity,
@@ -170,8 +159,8 @@ type StackFeature = {
   geometry: { type: "Point"; coordinates: [number, number] };
 };
 
-/** The pin's image id and its colour, which the name beside it is shaded by. */
-type PinProperties = { pin: string; color: MarkerColor };
+/** The pin's image id and the darker shade of it the name beside it takes. */
+type PinProperties = { pin: string; label: string };
 
 type SpiderFeature = {
   type: "Feature";
@@ -193,10 +182,8 @@ function emptyCollection<T>(): FeatureCollection<T> {
 }
 
 function pinProperties(location: MarketLocation | undefined): PinProperties {
-  const style = resolveMarkerStyle(
-    location ?? { kind: "voucher", markerIcon: null, markerColor: null },
-  );
-  return { pin: markerImageId(style), color: style.color };
+  const art = markerArt(location ?? { kind: "voucher", markerIcon: null, markerColor: null });
+  return { pin: art.image, label: art.label };
 }
 
 function createStackCollection(stacks: MarketStack[]): FeatureCollection<StackFeature> {
@@ -251,7 +238,7 @@ function pinImage(selected: boolean): DataDrivenPropertyValueSpecification<strin
 }
 
 /**
- * A voucher's name, Google Maps style: beside the pin's disc in a darker shade
+ * A location's name, Google Maps style: beside the pin's body in a darker shade
  * of the pin, on the right where it fits and the left where it does not.
  */
 function labelLayout(
@@ -273,23 +260,14 @@ function labelLayout(
   };
 }
 
-const [FIRST_COLOR, ...OTHER_COLORS] = MARKER_COLORS;
-
 const LABEL_PAINT: NonNullable<SymbolLayer["paint"]> = {
-  "text-color": [
-    "match",
-    ["get", "color"],
-    FIRST_COLOR,
-    MARKER_COLOR_HEX[FIRST_COLOR].label,
-    ...OTHER_COLORS.flatMap((color) => [color, MARKER_COLOR_HEX[color].label]),
-    MARKER_COLOR_HEX.orange.label,
-  ],
+  "text-color": ["get", "label"],
   "text-halo-color": "#ffffff",
   "text-halo-width": 1.5,
   "text-halo-blur": 0.5,
 };
 
-/** The selected voucher uses its own text layer, below every pin and badge. */
+/** The selected location uses its own text layer, below every pin and badge. */
 function labelFilter(selectedId: string | null): FilterSpecification {
   return [
     "all",
@@ -343,7 +321,7 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     cluster: true,
     clusterMaxZoom: CLUSTER_MAX_ZOOM,
     clusterRadius: CLUSTER_RADIUS,
-    clusterProperties: { voucherCount: ["+", ["get", "count"]] },
+    clusterProperties: { markerCount: ["+", ["get", "count"]] },
   });
   map.addSource(SPIDER_SOURCE_ID, { type: "geojson", data: emptyCollection<SpiderFeature>() });
 
@@ -374,7 +352,7 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     filter: ["has", "point_count"],
     paint: {
       "circle-color": BADGE_COLOR,
-      "circle-radius": badgeRadius("voucherCount"),
+      "circle-radius": badgeRadius("markerCount"),
       "circle-stroke-width": 0,
     },
   });
@@ -384,7 +362,7 @@ function addMarketLayers(map: MapLibreGL.Map, locations: MarketLocation[], stack
     source: MARKET_SOURCE_ID,
     filter: ["has", "point_count"],
     layout: {
-      "text-field": countLabel("voucherCount"),
+      "text-field": countLabel("markerCount"),
       "text-size": 11,
       "text-allow-overlap": true,
       "text-padding": BADGE_COLLISION_PADDING,
