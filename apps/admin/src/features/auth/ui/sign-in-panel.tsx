@@ -25,6 +25,7 @@
  * replaces the cookie in place.
  */
 
+import { useMutation } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { FaChrome, FaSafari } from "react-icons/fa";
 import { FiChevronDown, FiKey, FiLoader } from "react-icons/fi";
@@ -66,7 +67,13 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [pastedKey, setPastedKey] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [decrypting, setDecrypting] = useState(false);
+  // A mutation, though nothing leaves the browser, so the update banner's
+  // pending-mutation check holds a reload until the unlock finishes.
+  const decrypt = useMutation({
+    mutationFn: (input: { encryptedKey: string; passphrase: string }) =>
+      decryptPaperWalletPrivateKey(input.encryptedKey, input.passphrase),
+  });
+  const decrypting = decrypt.isPending;
 
   const busy = privateKeySignin.isPending || passkeySignin.isPending || decrypting;
 
@@ -100,18 +107,15 @@ export function SignInPanel({ notice }: { notice?: SignInNotice }) {
     if (!encryptedKey) return;
 
     setError(null);
-    setDecrypting(true);
     try {
       // scrypt at the Sarafu parameters takes a noticeable moment even on a
       // desktop CPU, so the button says what it is doing.
-      const key = await decryptPaperWalletPrivateKey(encryptedKey, passphrase);
+      const key = await decrypt.mutateAsync({ encryptedKey, passphrase });
       setPassphrase("");
       setEncryptedKey(null);
       await signInWithKey(key);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not decrypt this paper wallet.");
-    } finally {
-      setDecrypting(false);
     }
   }
 

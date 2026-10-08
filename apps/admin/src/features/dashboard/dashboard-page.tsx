@@ -21,6 +21,7 @@ import {
   ChartTooltipContent,
 } from "#/components/ui/chart";
 import { isFigureAvailable } from "#/lib/data-state";
+import { addressUrl } from "#/lib/explorer";
 import { useDataState } from "#/lib/use-data-state";
 import {
   DEFAULT_TIME_RANGE,
@@ -133,6 +134,7 @@ export function DashboardPage({
               : undefined
           }
           icon={<HiOutlineLightningBolt />}
+          link={gasQuery.data?.address ? { href: addressUrl(gasQuery.data.address) } : undefined}
         />
         <MetricCard
           label="Transactions"

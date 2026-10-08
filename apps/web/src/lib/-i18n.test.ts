@@ -21,6 +21,7 @@ describe("i18n catalogs", () => {
 
   it.each([
     ["ar", "لا توجد مراجعات بعد."],
+    ["de", "Noch keine Bewertungen."],
     ["dz", "ད་ཚུན་བསྐྱར་ཞིབ་མེད།"],
     ["en", "No reviews yet."],
     ["es", "Aún no hay reseñas."],
@@ -42,6 +43,34 @@ describe("i18n catalogs", () => {
     await activateLocale("sw");
 
     expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("Chagua eneo");
+  });
+
+  it("activates the German catalog with formal product terminology", async () => {
+    await activateLocale("de");
+
+    expect(i18n.locales).toEqual(["de"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Wählen Sie einen Standort",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Fonds");
+    expect(i18n._(msg`Wallet`)).toBe("Geldbörse");
+    expect(i18n._(msg`Swap`)).toBe("Tauschen");
+    expect(i18n._(msg`Redeem`)).toBe("Einlösen");
+    expect(maxAmount("55,00")).toBe("Max. 55,00");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 1 },
+      }),
+    ).toBe("1 Gutschein");
+    expect(
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count: 3 },
+      }),
+    ).toBe("3 Gutscheine");
   });
 
   it("activates the French catalog on demand", async () => {
@@ -270,6 +299,7 @@ describe("i18n catalogs", () => {
 
   it.each([
     ["ar", "فتح القائمة", "الانتقال إلى الموقع المحفوظ", "شروط الخدمة"],
+    ["de", "Menü öffnen", "Zum gespeicherten Standort", "Nutzungsbedingungen"],
     ["es", "Abrir menú", "Ir a la ubicación guardada", "Términos del servicio"],
     ["fr", "Ouvrir le menu", "Accéder à l’emplacement enregistré", "Conditions d’utilisation"],
     ["it", "Apra il menu", "Vada alla posizione salvata", "Termini di servizio"],

@@ -1,4 +1,9 @@
-import { useNearbyCatalog, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  filterNearbyCatalog,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -34,12 +39,20 @@ export const marketVoucherQueryKeys = voucherKeys;
 
 function useMarketVouchersInfinite(perPage = MARKET_MAP_PAGE_SIZE, enabled = true) {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   const options = voucherCatalogInfiniteQueryOptions(marketClient, perPage, nearby);
   return useInfiniteQuery({
     ...options,
     enabled,
     ...MARKET_QUERY_FRESHNESS,
     ...nearbyQueryPolicy(nearby),
+    select: (data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        vouchers: filterNearbyCatalog(page.vouchers, visibilityFilter),
+      })),
+    }),
   });
 }
 
@@ -47,12 +60,14 @@ export { nextMarketCursor };
 
 function useMarketViewportVouchers(boxes: MarketBoundingBox[], enabled: boolean, perPage: number) {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   const options = voucherViewportQueryOptions(marketClient, boxes, perPage, nearby);
   return useQuery({
     ...options,
     enabled: enabled && options.enabled,
     ...MARKET_QUERY_FRESHNESS,
     ...nearbyQueryPolicy(nearby),
+    select: (data) => filterNearbyCatalog(data, visibilityFilter),
   });
 }
 

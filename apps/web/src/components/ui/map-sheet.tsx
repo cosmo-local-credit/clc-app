@@ -251,7 +251,7 @@ export function MapSheet({
             <button
               type="button"
               aria-label={snap === "full" ? t`Collapse` : t`Expand`}
-              className="flex h-7 w-full shrink-0 items-center justify-center"
+              className="flex h-11 w-full shrink-0 cursor-ns-resize touch-none select-none items-center justify-center"
               onClick={() => onSnapChange(nextSnap)}
             >
               <span aria-hidden="true" className="h-1 w-10 rounded-full bg-muted-foreground/30" />

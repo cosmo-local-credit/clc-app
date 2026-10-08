@@ -20,6 +20,7 @@ import { BackendApiError, formatBackendApiError } from "@clc/api/client/errors";
 import { clearIdentitySecrets } from "#/features/auth/api/identity-reset";
 import { useBackendPrivateKeySignin } from "#/features/auth/hooks/use-backend-auth";
 import { useIdentityTransitionTeardown } from "#/features/auth/hooks/use-identity-transition";
+import { AppUpdateBanner } from "#/features/app-updates/ui/app-update-banner";
 import { authSessionQueryKey, useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { whenNotificationIdentitySettled } from "#/features/notifications/recovery/identity-reset";
 import { runNotificationRecovery } from "#/features/notifications/recovery/recovery";
@@ -260,6 +261,8 @@ function AppInner() {
 
   return (
     <>
+      {/* Above every shell, so it reaches pre-auth routes too. */}
+      <AppUpdateBanner suppressed={Boolean(pendingKey || pendingEncryptedKey || switching)} />
       <Outlet />
       {pendingEncryptedKey ? (
         <DialogRoot

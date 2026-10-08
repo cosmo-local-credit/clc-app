@@ -34,7 +34,10 @@ export function LandingPage({ redirectTo }: { redirectTo?: string }) {
             <Trans>Cosmo-Local Credit</Trans>
           </h1>
           <p className="text-muted-foreground text-[0.9375rem] leading-relaxed">
-            <Trans>Route redeemable claims across curated markets with shared standards.</Trans>{" "}
+            <Trans>
+              Cosmo-Local Credit helps people and organizations support, share, and exchange goods
+              and services.
+            </Trans>{" "}
             <a
               href={PLATFORM_ABOUT_URL}
               target="_blank"

@@ -22,6 +22,17 @@ jobs:
 
       - run: vp install
 
+      - name: Release milestones
+        # Compares release.json with the branch's previous tip, which the
+        # shallow checkout does not include.
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -n "$BEFORE" ] && ! printf '%s' "$BEFORE" | grep -qE '^0+$'; then
+            git fetch --no-tags --depth=1 origin "$BEFORE" || true
+          fi
+          node tooling/check-release.ts "$BEFORE"
+
       - name: Lint
         run: vp check
 

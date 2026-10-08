@@ -1,4 +1,10 @@
-import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  filterNearbyCatalog,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryKey,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
@@ -44,6 +50,7 @@ export function useFilteredMarketVouchers(
   perPage = MARKET_MAP_PAGE_SIZE,
 ) {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   const query = useQuery({
     queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredMarketCatalog> => {
@@ -76,7 +83,10 @@ export function useFilteredMarketVouchers(
         for (const voucher of page.vouchers) byId.set(voucher.id, voucher);
       }
 
-      return { vouchers: [...byId.values()], tagFacets: pages[0]?.tagFacets ?? null };
+      return {
+        vouchers: filterNearbyCatalog([...byId.values()], visibilityFilter),
+        tagFacets: pages[0]?.tagFacets ?? null,
+      };
     },
     enabled: filter !== null,
     placeholderData: keepPreviousData,

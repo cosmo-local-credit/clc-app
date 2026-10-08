@@ -57,6 +57,8 @@ vi.mock("#/components/ui/select", () => ({
 
 const { AppMenu } = await import("./app-menu");
 const { THEME_STORAGE_KEY, useThemeStore } = await import("#/providers/theme");
+const { DEFAULT_CATALOG_VISIBILITY, useCatalogVisibilityStore } =
+  await import("#/features/home/state/catalog-visibility");
 
 function mockPrefersColorScheme(dark: boolean) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
@@ -79,6 +81,7 @@ describe("AppMenu", () => {
     window.localStorage.clear();
     document.documentElement.classList.remove("dark");
     useThemeStore.setState({ theme: "light" });
+    useCatalogVisibilityStore.setState({ visibility: DEFAULT_CATALOG_VISIBILITY });
     mockPrefersColorScheme(false);
   });
 
@@ -103,7 +106,7 @@ describe("AppMenu", () => {
     render(<AppMenu />);
     await openMenu();
 
-    const [theme, language] = screen.getAllByRole("combobox") as HTMLSelectElement[];
+    const [theme, language, visibility] = screen.getAllByRole("combobox") as HTMLSelectElement[];
     fireEvent.change(theme!, { target: { value: "dark" } });
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
     expect(screen.getByText("About")).toBeTruthy();
@@ -111,16 +114,22 @@ describe("AppMenu", () => {
     fireEvent.change(language!, { target: { value: "it" } });
     expect(setLocale).toHaveBeenCalledWith("it");
     expect(screen.getByText("About")).toBeTruthy();
+
+    fireEvent.change(visibility!, { target: { value: "global" } });
+    expect(useCatalogVisibilityStore.getState().visibility).toBe("global");
+    expect(screen.getByText("About")).toBeTruthy();
   });
 
-  it("gives the theme and language selectors one width", async () => {
+  it("gives all preference selectors one width", async () => {
     render(<AppMenu />);
     await openMenu();
 
     const theme = screen.getByLabelText("Theme", { selector: "span" });
     const language = screen.getByLabelText("Language", { selector: "span" });
+    const visibility = screen.getByLabelText("Visibility", { selector: "span" });
     expect(theme.className).toContain("w-32");
     expect(language.className).toBe(theme.className);
+    expect(visibility.className).toBe(theme.className);
   });
 
   it("has no saved-location row", async () => {

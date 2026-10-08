@@ -40,7 +40,7 @@ describe("LandingPage", () => {
     expect(about.getAttribute("target")).toBe("_blank");
     expect(about.getAttribute("rel")).toBe("noopener noreferrer");
     expect(about.closest("p")?.textContent).toBe(
-      "Route redeemable claims across curated markets with shared standards. About Cosmo-Local Credit",
+      "Cosmo-Local Credit helps people and organizations support, share, and exchange goods and services. About Cosmo-Local Credit",
     );
   });
 

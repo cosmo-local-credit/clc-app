@@ -153,7 +153,7 @@ msgid "{0} updated."
 msgstr "{0} mis à jour."
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:400
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:410
 #: apps/web/src/features/home/ui/wallet-page.tsx:353
 #: apps/web/src/features/pools/ui/pools-page.tsx:550
 msgid "{0} vouchers"
@@ -228,7 +228,7 @@ msgstr "{withdrawable} {0} disponibles. Les frais en attente de collecte "
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:48
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:280
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:290
 msgid "1 {symbol} = {0} {1}"
 msgstr "1 {symbol} = {0} {1}"
 
@@ -236,22 +236,42 @@ msgstr "1 {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "1 offre"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:398
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:408
 #: apps/web/src/features/home/ui/wallet-page.tsx:351
 #: apps/web/src/features/pools/ui/pools-page.tsx:548
 msgid "1 voucher"
 msgstr "1 bon d’échange"
 
+#: apps/web/src/components/visibility-selector.tsx:22
+msgid "1,000 km"
+msgstr "1 000 km"
+
+#: apps/web/src/components/visibility-selector.tsx:24
+msgid "100 km"
+msgstr "100 km"
+
+#: apps/web/src/components/visibility-selector.tsx:25
+msgid "50 km"
+msgstr "50 km"
+
+#: apps/web/src/components/visibility-selector.tsx:23
+msgid "500 km"
+msgstr "500 km"
+
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:273
 msgid "A good"
 msgstr "Un bien"
 
-#: apps/web/src/routes/__root.tsx:306
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "A new version is available"
+msgstr "Une nouvelle version est disponible"
+
+#: apps/web/src/routes/__root.tsx:309
 msgid "A paper wallet link was opened. Sign in with this address?"
 msgstr "Un lien de portefeuille papier a été ouvert. Voulez-vous vous connecter "
 "avec cette adresse ?"
 
-#: apps/web/src/routes/__root.tsx:304
+#: apps/web/src/routes/__root.tsx:307
 msgid "A paper wallet QR was scanned. Import this address?"
 msgstr "Le code QR d’un portefeuille papier a été scanné. Voulez-vous importer "
 "cette adresse ?"
@@ -273,12 +293,12 @@ msgstr "Un bon d’échange fonctionne comme une carte-cadeau pour vos offres. "
 "Lorsqu’une personne l’utilise, vous vous engagez à lui fournir les "
 "offres correspondantes."
 
-#: apps/web/src/components/app-menu.tsx:64
+#: apps/web/src/components/app-menu.tsx:65
 msgid "About"
 msgstr "À propos"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:49
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:44
+#: apps/web/src/features/home/ui/settings-page.tsx:51
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:47
 msgid "About Cosmo-Local Credit"
 msgstr "À propos de Cosmo-Local Credit"
 
@@ -324,7 +344,7 @@ msgstr "Activation sur la chaîne…"
 msgid "Activating smart wallet..."
 msgstr "Activation du portefeuille intelligent…"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:159
 msgid "Active"
 msgstr "Actif"
 
@@ -524,10 +544,14 @@ msgstr "Au moins un sélectionné"
 msgid "App installation"
 msgstr "Installation de l’application"
 
-#: apps/web/src/components/app-menu.tsx:49
-#: apps/web/src/components/app-menu.tsx:52
+#: apps/web/src/components/app-menu.tsx:50
+#: apps/web/src/components/app-menu.tsx:53
 msgid "App menu"
 msgstr "Menu de l’application"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:144
+msgid "App version"
+msgstr "Version de l’app"
 
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:587
 msgid "Apply"
@@ -620,7 +644,7 @@ msgstr "Gras"
 msgid "Brown"
 msgstr "Marron"
 
-#: apps/web/src/features/home/ui/market-page.tsx:243
+#: apps/web/src/features/home/ui/market-page.tsx:265
 msgid "Browse all"
 msgstr "Tout voir"
 
@@ -640,7 +664,7 @@ msgstr "Achetez ou vendez des stablecoins en monnaie locale."
 msgid "Buy USD₮ with KES."
 msgstr "Achetez des USD₮ avec des KES."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:309
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:319
 msgid "Call"
 msgstr "Appeler"
 
@@ -663,7 +687,7 @@ msgstr "Accès à la caméra refusé."
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:529
-#: apps/web/src/routes/__root.tsx:320
+#: apps/web/src/routes/__root.tsx:323
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -791,7 +815,7 @@ msgstr "Vérification des bons d’échange acceptés par ce bassin…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:32
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:53
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:159
 #: apps/web/src/features/pools/ui/pools-page.tsx:435
 msgid "Checking…"
 msgstr "Vérification…"
@@ -811,7 +835,7 @@ msgstr "Choisissez une image JPEG, PNG ou WebP."
 msgid "Choose a location"
 msgstr "Choisissez un emplacement"
 
-#: apps/web/src/components/nearby-catalog.tsx:86
+#: apps/web/src/components/nearby-catalog.tsx:147
 msgid "Choose a location"
 msgstr "Choisissez un emplacement"
 
@@ -856,13 +880,17 @@ msgstr "Choisissez-en une autre"
 msgid "Choose at most 12 tags"
 msgstr "Choisissez au maximum 12 étiquettes"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:68
+#: apps/web/src/features/home/ui/settings-page.tsx:70
 msgid "Choose between light and dark mode."
 msgstr "Choisissez entre le mode clair et le mode sombre."
 
 #: apps/web/src/components/ui/photo-source-picker.tsx:115
 msgid "Choose from photos"
 msgstr "Choisissez parmi les photos"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+msgid "Choose how far away marketplace results can be."
+msgstr "Choisissez la distance maximale des résultats de la place de marché."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -879,7 +907,7 @@ msgid "Choose rates you set or equal value when the unit has no price feed"
 msgstr "Choisissez les taux que vous définissez ou la valeur égale lorsque "
 "l’unité n’a pas de flux de prix"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:75
+#: apps/web/src/features/home/ui/settings-page.tsx:77
 msgid "Choose the app display language."
 msgstr "Choisissez la langue d’affichage de l’application."
 
@@ -910,7 +938,7 @@ msgstr "Effacer le filtre"
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:39
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:51
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:158
-#: apps/web/src/features/home/ui/market-page.tsx:226
+#: apps/web/src/features/home/ui/market-page.tsx:248
 #: apps/web/src/features/home/ui/posts-page.tsx:124
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:62
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:71
@@ -933,7 +961,7 @@ msgstr "Effacer la recherche"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:389
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:143
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:264
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:274
 #: apps/web/src/features/home/ui/report-page.tsx:290
 msgid "Close"
 msgstr "Fermer"
@@ -943,7 +971,7 @@ msgstr "Fermer"
 msgid "Close filters"
 msgstr "Fermer les filtres"
 
-#: apps/web/src/components/app-menu.tsx:101
+#: apps/web/src/components/app-menu.tsx:109
 msgid "Close menu"
 msgstr "Fermer le menu"
 
@@ -1036,7 +1064,7 @@ msgstr "Confirmer l’échange"
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:181
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "Confirmé"
@@ -1071,7 +1099,7 @@ msgstr "Connectez votre portefeuille pour émettre des bons d’échange."
 msgid "Connect your wallet to use MPESA."
 msgstr "Connectez votre portefeuille pour utiliser MPESA."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:96
+#: apps/web/src/features/home/ui/settings-page.tsx:105
 msgid "Connected address"
 msgstr "Adresse connectée"
 
@@ -1085,14 +1113,14 @@ msgid "Connecting..."
 msgstr "Connexion…"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:159
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Connecting…"
 msgstr "Connexion…"
 
 #: apps/web/src/components/auth/sign-in-panel.tsx:126
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
-#: apps/web/src/routes/__root.tsx:225
-#: apps/web/src/routes/__root.tsx:256
+#: apps/web/src/routes/__root.tsx:226
+#: apps/web/src/routes/__root.tsx:257
 msgid "Connection failed."
 msgstr "La connexion a échoué."
 
@@ -1179,7 +1207,7 @@ msgstr "Copier le hachage de la transaction de déploiement"
 msgid "Copy fee recipient"
 msgstr "Copier l’adresse du bénéficiaire des frais"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:431
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:441
 msgid "Copy link"
 msgstr "Copier le lien"
 
@@ -1210,7 +1238,7 @@ msgstr "Copier le hachage de la transaction d’émission"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:161
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:176
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 msgid "Copy transaction hash"
 msgstr "Copier le hachage de la transaction"
@@ -1227,6 +1255,12 @@ msgstr "Copier le nom d’utilisateur du portefeuille"
 #: apps/web/src/features/onboarding/ui/landing-page.tsx:34
 msgid "Cosmo-Local Credit"
 msgstr "Cosmo-Local Credit"
+
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
+msgid "Cosmo-Local Credit helps people and organizations support, share, and "
+"exchange goods and services."
+msgstr "Cosmo-Local Credit aide les personnes et les organisations à soutenir, "
+"partager et échanger des biens et des services."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:47
 msgid "Could not import this paper wallet."
@@ -1299,8 +1333,8 @@ msgstr "Impossible de copier le hachage de la transaction de déploiement"
 msgid "Couldn't copy fee recipient"
 msgstr "Impossible de copier le destinataire des frais"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:440
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:446
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:450
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:456
 msgid "Couldn't copy link"
 msgstr "Impossible de copier le lien"
 
@@ -1332,8 +1366,8 @@ msgstr "Impossible de copier le hachage de la transaction d’émission"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:63
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:132
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:141
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:147
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:132
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:138
 msgid "Couldn't copy transaction hash"
@@ -1389,6 +1423,7 @@ msgstr "Impossible de charger les offres."
 msgid "Couldn't load pool tags."
 msgstr "Impossible de charger les étiquettes du bassin."
 
+#: apps/web/src/features/home/ui/market-page.tsx:168
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 msgid "Couldn't load pools."
 msgstr "Impossible de charger les bassins."
@@ -1486,6 +1521,11 @@ msgstr "Impossible de publier votre bassin."
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "Couldn't publish your voucher."
 msgstr "Impossible de publier votre bon d’échange."
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
+msgid "Couldn’t reach the update. Check your connection and try again."
+msgstr "Impossible d’obtenir la mise à jour. Vérifiez votre connexion, puis "
+"réessayez."
 
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
@@ -1596,7 +1636,7 @@ msgid "Create"
 msgstr "Créer"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:70
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:52
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:158
 msgid "Create account"
 msgstr "Créer un compte"
@@ -1739,7 +1779,7 @@ msgstr "Réduire la quantité"
 msgid "Default"
 msgstr "Par défaut"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:113
+#: apps/web/src/features/home/ui/settings-page.tsx:122
 msgid "Delegated to Calibur"
 msgstr "Délégué à Calibur"
 
@@ -1776,7 +1816,7 @@ msgstr "Décrivez votre bassin"
 msgid "Description"
 msgstr "Description"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:302
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:312
 msgid "Directions"
 msgstr "Itinéraire"
 
@@ -1784,6 +1824,7 @@ msgstr "Itinéraire"
 msgid "Discard changes"
 msgstr "Abandonner les modifications"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:132
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:53
 msgid "Dismiss"
 msgstr "Fermer"
@@ -1804,8 +1845,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "Le nom affiché doit contenir au maximum 120 caractères"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:97
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:215
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:265
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:295
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:248
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:521
 msgid "Done"
@@ -1898,7 +1939,7 @@ msgstr "Modifier les détails du bassin"
 msgid "Edit post"
 msgstr "Modifier la publication"
 
-#: apps/web/src/components/nearby-catalog.tsx:90
+#: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
@@ -2189,7 +2230,7 @@ msgstr "Filtres"
 msgid "Finding a name…"
 msgstr "Recherche d’un nom…"
 
-#: apps/web/src/features/home/ui/market-page.tsx:127
+#: apps/web/src/features/home/ui/market-page.tsx:138
 msgid "Finding location"
 msgstr "Recherche de l’emplacement"
 
@@ -2221,9 +2262,13 @@ msgstr "Cadrez votre photo"
 msgid "From"
 msgstr "De"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:291
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:301
 msgid "Get"
 msgstr "Obtenir"
+
+#: apps/web/src/components/visibility-selector.tsx:21
+msgid "Global"
+msgstr "Mondial"
 
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:430
 msgid "Go back to sign in"
@@ -2306,7 +2351,7 @@ msgid "How was your experience?"
 msgstr "Comment s’est passée votre expérience ?"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:75
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:55
+#: apps/web/src/features/onboarding/ui/landing-page.tsx:58
 msgid "I already have an account"
 msgstr "J’ai déjà un compte"
 
@@ -2323,7 +2368,7 @@ msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "J’ai enregistré cette clé. Si je la perds, mon portefeuille ne pourra "
 "pas être récupéré."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:193
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:208
 msgid "I made a swap."
 msgstr "J’ai effectué un échange."
 
@@ -2344,11 +2389,11 @@ msgstr "J’ai envoyé {amountLabel} à {recipientLabel}."
 msgid "I sent a payment."
 msgstr "J’ai envoyé un paiement."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:191
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:206
 msgid "I swapped {sentLabel} for {amountLabel} in {poolName}."
 msgstr "J’ai échangé {sentLabel} contre {amountLabel} dans {poolName}."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:192
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:207
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "J’ai échangé {sentLabel} contre {amountLabel}."
 
@@ -2361,11 +2406,11 @@ msgid "If shown, keep Open as Web App switched on, then tap Add."
 msgstr "Si l’option Ouvrir comme application web apparaît, laissez-la activée, "
 "puis appuyez sur Ajouter."
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Import paper wallet?"
 msgstr "Importer le portefeuille papier ?"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Import wallet"
 msgstr "Importer le portefeuille"
 
@@ -2378,7 +2423,7 @@ msgstr "Sur le réseau"
 msgid "In this pool"
 msgstr "Dans ce bassin"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:139
+#: apps/web/src/features/home/ui/settings-page.tsx:159
 msgid "Inactive"
 msgstr "Inactif"
 
@@ -2461,7 +2506,7 @@ msgstr "Conserver"
 msgid "Kilogram"
 msgstr "Kilogramme"
 
-#: apps/web/src/components/app-menu.tsx:79
+#: apps/web/src/components/app-menu.tsx:80
 #: apps/web/src/components/language-selector.tsx:33
 msgid "Language"
 msgstr "Langue"
@@ -2538,7 +2583,7 @@ msgstr "Adresse du lien"
 msgid "Link at most 12 vouchers"
 msgstr "Liez au maximum 12 bons d’échange"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:445
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:455
 msgid "Link copied"
 msgstr "Lien copié"
 
@@ -2731,7 +2776,8 @@ msgstr "Chargement de vos publications…"
 msgid "Loading your profile…"
 msgstr "Chargement de votre profil…"
 
-#: apps/web/src/components/nearby-catalog.tsx:44
+#: apps/web/src/components/nearby-catalog.tsx:87
+#: apps/web/src/components/nearby-catalog.tsx:105
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -2746,7 +2792,7 @@ msgstr "Chargement…"
 msgid "Location"
 msgstr "Emplacement"
 
-#: apps/web/src/features/home/ui/market-page.tsx:129
+#: apps/web/src/features/home/ui/market-page.tsx:140
 msgid "Location denied"
 msgstr "Accès à la position refusé"
 
@@ -2755,7 +2801,7 @@ msgid "Location map"
 msgstr "Carte de localisation"
 
 #: apps/web/src/components/ui/location-picker.tsx:219
-#: apps/web/src/features/home/ui/market-page.tsx:131
+#: apps/web/src/features/home/ui/market-page.tsx:142
 msgid "Location unavailable"
 msgstr "Emplacement non disponible"
 
@@ -2791,7 +2837,7 @@ msgstr "Gérer le bon d’échange"
 msgid "Manage vouchers, pools, and local payments."
 msgstr "Gérez les bons d’échange, les bassins et les paiements locaux."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:41
+#: apps/web/src/features/home/ui/settings-page.tsx:43
 msgid "Manage your wallet session and app preferences."
 msgstr "Gérez votre session de portefeuille et vos préférences d’application."
 
@@ -2993,7 +3039,7 @@ msgstr "Nom sur le portefeuille"
 msgid "Name, symbol or address"
 msgstr "Nom, symbole ou adresse"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:171
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:208
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
 msgid "Network"
@@ -3048,7 +3094,7 @@ msgstr "Aucun frais de {0} n’a encore été perçu."
 msgid "No activity yet."
 msgstr "Aucune activité pour le moment."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:99
+#: apps/web/src/features/home/ui/settings-page.tsx:108
 msgid "No address available"
 msgstr "Aucune adresse disponible"
 
@@ -3205,12 +3251,12 @@ msgstr "Aucun bon d’échange ne correspond à cette recherche."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:388
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:155
-#: apps/web/src/features/home/ui/market-page.tsx:223
+#: apps/web/src/features/home/ui/market-page.tsx:245
 msgid "No vouchers match this search."
 msgstr "Aucun bon d’échange ne correspond à cette recherche."
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
-#: apps/web/src/features/home/ui/market-page.tsx:230
+#: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "Aucun bon d’échange à afficher pour le moment."
 
@@ -3375,7 +3421,7 @@ msgstr "Détails de l’achat"
 msgid "Open in Maps"
 msgstr "Ouvrir dans Plans"
 
-#: apps/web/src/components/app-menu.tsx:40
+#: apps/web/src/components/app-menu.tsx:41
 msgid "Open menu"
 msgstr "Ouvrir le menu"
 
@@ -3524,7 +3570,7 @@ msgid "Password cannot be empty."
 msgstr "Le mot de passe ne peut pas être vide."
 
 #: apps/web/src/components/encrypted-paper-wallet-import-form.tsx:62
-#: apps/web/src/routes/__root.tsx:275
+#: apps/web/src/routes/__root.tsx:278
 msgid "Password-protected paper wallet"
 msgstr "Portefeuille papier protégé par mot de passe"
 
@@ -3539,7 +3585,7 @@ msgstr "Reçu de paiement"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:102
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:117
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
@@ -3639,8 +3685,8 @@ msgstr "Lieu"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:615
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:946
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:150
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:256
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:165
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:286
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:97
 msgid "Pool"
 msgstr "Bassin"
@@ -3795,7 +3841,7 @@ msgstr "Bassins"
 msgid "Pools list"
 msgstr "Liste des bassins"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:367
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:377
 msgid "Pools with this voucher"
 msgstr "Bassins avec ce bon d’échange"
 
@@ -3843,7 +3889,7 @@ msgstr "Publications"
 msgid "Posts aren't available for this voucher."
 msgstr "Les publications ne sont pas disponibles pour ce bon d’échange."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:63
+#: apps/web/src/features/home/ui/settings-page.tsx:65
 msgid "Preferences"
 msgstr "Préférences"
 
@@ -4150,6 +4196,8 @@ msgstr "Reconnectez le portefeuille qui a publié ce bon d’échange pour en "
 #~ msgstr "Reconnectez le portefeuille qui a publié ce bon d’échange pour procéder "
 #~ "à l’émission."
 
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:221
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:227
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:200
 msgid "Redeem"
 msgstr "Utiliser"
@@ -4307,7 +4355,8 @@ msgstr "Retrait…"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:151
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
-#: apps/web/src/features/home/ui/market-map.tsx:881
+#: apps/web/src/features/home/ui/market-map.tsx:859
+#: apps/web/src/features/home/ui/market-page.tsx:168
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:712
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
@@ -4342,7 +4391,7 @@ msgstr "Réessayer la connexion"
 #~ msgstr "Inverser le sens de l’échange"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:114
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:129
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:159
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:164
 msgid "Reverted"
@@ -4356,11 +4405,6 @@ msgstr "Avis"
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:387
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "Les avis pour ce bon d’échange apparaîtront ici."
-
-#: apps/web/src/features/onboarding/ui/landing-page.tsx:37
-msgid "Route redeemable claims across curated markets with shared standards."
-msgstr "Acheminez des créances utilisables entre des marchés sélectionnés selon "
-"des normes communes."
 
 #: apps/web/src/components/reviews/review-editor.tsx:129
 msgid "Save"
@@ -4513,7 +4557,7 @@ msgstr "Recherche de bons d’échange…"
 msgid "Searching…"
 msgstr "Recherche…"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:374
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:384
 msgid "See all"
 msgstr "Tout voir"
 
@@ -4555,7 +4599,7 @@ msgid "Send"
 msgstr "Envoyer"
 
 #. placeholder {0}: details.receiveSymbol
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:205
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:235
 msgid "Send {0}"
 msgstr "Envoyer {0}"
 
@@ -4629,11 +4673,11 @@ msgstr "Configuration de votre portefeuille…"
 
 #: apps/web/src/components/navigation/bottom-navigation.tsx:48
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:41
-#: apps/web/src/features/home/ui/settings-page.tsx:38
+#: apps/web/src/features/home/ui/settings-page.tsx:40
 msgid "Settings"
 msgstr "Paramètres"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:431
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:441
 #: apps/web/src/features/wallet/ui/receive-page.tsx:140
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
@@ -4734,7 +4778,7 @@ msgstr "Connectez-vous avec une clé privée"
 #~ "qu’avec votre carte papier. Votre appareil vous sollicitera via "
 #~ "{platformLabel}."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:137
 msgid "Sign out"
 msgstr "Se déconnecter"
 
@@ -4746,7 +4790,7 @@ msgstr "Méthode de connexion"
 msgid "Sign-in methods"
 msgstr "Méthodes de connexion"
 
-#: apps/web/src/features/home/ui/settings-page.tsx:128
+#: apps/web/src/features/home/ui/settings-page.tsx:137
 msgid "Signing out..."
 msgstr "Déconnexion…"
 
@@ -4793,7 +4837,7 @@ msgstr "Début"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:311
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:341
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:511
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
@@ -4805,7 +4849,7 @@ msgstr "État"
 msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "Étape {clampedStep} sur {clampedTotal}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:175
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:190
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
 msgid "Submitted"
 msgstr "Envoyé"
@@ -4866,7 +4910,7 @@ msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "Les fichiers SVG ne sont pas pris en charge. Utilisez le format PNG, "
 "JPEG ou WebP."
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:411
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:421
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:55
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:135
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:378
@@ -4897,23 +4941,23 @@ msgstr "Les frais d’échange doivent être un nombre compris entre 0 et 100"
 msgid "Swap for {0}"
 msgstr "Échanger contre {0}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:187
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:202
 msgid "Swap receipt"
 msgstr "Reçu d’échange"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:110
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:125
 msgid "Swap reverted"
 msgstr "Échange annulé"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:85
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
 msgid "Swap tracking details are missing."
 msgstr "Les informations de suivi de l’échange sont manquantes."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:83
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:99
 msgid "Swap unavailable"
 msgstr "Échange indisponible"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:137
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
 msgid "Swapped"
 msgstr "Échangé"
 
@@ -4923,7 +4967,7 @@ msgstr "Échangé"
 msgid "Swapped {0} for {1}"
 msgstr "{0} échangé contre {1}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:98
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:113
 msgid "Swapping"
 msgstr "Échange en cours"
 
@@ -4935,11 +4979,11 @@ msgstr "Échange en cours…"
 msgid "Swaps settle within the market association..."
 msgstr "Les échanges sont réglés au sein de l’association de marché…"
 
-#: apps/web/src/routes/__root.tsx:312
+#: apps/web/src/routes/__root.tsx:315
 msgid "Switch wallet"
 msgstr "Changer de portefeuille"
 
-#: apps/web/src/routes/__root.tsx:300
+#: apps/web/src/routes/__root.tsx:303
 msgid "Switch wallet?"
 msgstr "Changer de portefeuille ?"
 
@@ -5023,7 +5067,7 @@ msgstr "Conditions"
 msgid "Terms and Conditions"
 msgstr "Conditions générales"
 
-#: apps/web/src/components/app-menu.tsx:95
+#: apps/web/src/components/app-menu.tsx:103
 msgid "Terms of Service"
 msgstr "Conditions d’utilisation"
 
@@ -5095,11 +5139,11 @@ msgstr "La monnaie utilisée pour décrire la valeur de ce bassin"
 msgid "The end of the period must not be before its start"
 msgstr "La période ne peut pas se terminer avant son début"
 
-#: apps/web/src/features/home/ui/market-map.tsx:869
+#: apps/web/src/features/home/ui/market-map.tsx:847
 msgid "The map could not be loaded."
 msgstr "Impossible de charger la carte."
 
-#: apps/web/src/features/home/ui/market-map.tsx:871
+#: apps/web/src/features/home/ui/market-map.tsx:849
 msgid "The map is not supported on this device."
 msgstr "La carte n’est pas prise en charge sur cet appareil."
 
@@ -5147,7 +5191,7 @@ msgstr "La transaction a échoué."
 msgid "The voucher could not be published."
 msgstr "Impossible de publier le bon d’échange."
 
-#: apps/web/src/components/app-menu.tsx:73
+#: apps/web/src/components/app-menu.tsx:74
 #: apps/web/src/components/theme-selector.tsx:32
 msgid "Theme"
 msgstr "Thème"
@@ -5291,6 +5335,10 @@ msgstr "Cette publication est trop volumineuse pour être enregistrée. "
 msgid "This QR code does not contain a valid private key."
 msgstr "Ce code QR ne contient pas de clé privée valide."
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:116
+msgid "This version is no longer supported."
+msgstr "Cette version n’est plus prise en charge."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
 msgid "This voucher's decimals are unknown, so a limit can't be set."
@@ -5340,7 +5388,7 @@ msgid "Total"
 msgstr "Total"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:154
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:157
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:172
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:204
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
@@ -5357,7 +5405,7 @@ msgstr "Hachage de la transaction"
 
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:68
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:131
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:146
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
 msgid "Transaction hash copied"
 msgstr "Hachage de la transaction copié"
@@ -5382,7 +5430,7 @@ msgstr "Voyage"
 
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
-#: apps/web/src/components/nearby-catalog.tsx:63
+#: apps/web/src/components/nearby-catalog.tsx:124
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
@@ -5432,7 +5480,7 @@ msgstr "Impossible de charger la langue. Retour à l’anglais."
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:770
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:784
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:87
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:103
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
 msgid "Unavailable"
@@ -5469,6 +5517,10 @@ msgstr "Déverrouiller et importer"
 msgid "Unlocking..."
 msgstr "Déverrouillage…"
 
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Update"
+msgstr "Mettre à jour"
+
 #: apps/web/src/components/ui/image-upload-field.tsx:146
 msgid "Update photo"
 msgstr "Mettre à jour la photo"
@@ -5476,6 +5528,10 @@ msgstr "Mettre à jour la photo"
 #: apps/web/src/features/onboarding/ui/paper-wallet-protection.tsx:158
 msgid "Update protected paper wallet"
 msgstr "Mettre à jour le portefeuille papier protégé"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:112
+msgid "Update required"
+msgstr "Mise à jour requise"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:48
 msgid "Update your contact details and location."
@@ -5489,6 +5545,10 @@ msgstr "Mettre à jour votre avis"
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:101
 msgid "Updated"
 msgstr "Mis à jour"
+
+#: apps/web/src/features/app-updates/ui/app-update-banner.tsx:125
+msgid "Updating…"
+msgstr "Mise à jour…"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:146
 msgid "Upload Image"
@@ -5528,7 +5588,7 @@ msgstr "Importation…"
 msgid "Use “{unit}”"
 msgstr "Utiliser « {unit} »"
 
-#: apps/web/src/features/home/ui/market-page.tsx:132
+#: apps/web/src/features/home/ui/market-page.tsx:143
 msgid "Use current location"
 msgstr "Utiliser la position actuelle"
 
@@ -5641,6 +5701,11 @@ msgstr "Voir le bassin"
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:69
 msgid "View voucher"
 msgstr "Voir le bon d’échange"
+
+#: apps/web/src/components/app-menu.tsx:87
+#: apps/web/src/components/visibility-selector.tsx:39
+msgid "Visibility"
+msgstr "Visibilité"
 
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:599
 msgid "voucher"
@@ -5789,7 +5854,7 @@ msgstr "En attente de la confirmation de la blockchain…"
 msgid "Waiting for confirmation…"
 msgstr "En attente de confirmation…"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:100
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:115
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
 msgid "Waiting for on-chain confirmation"
 msgstr "En attente de la confirmation sur la chaîne"
@@ -5822,7 +5887,7 @@ msgid "Wallet actions are available after you sign up or sign in."
 msgstr "Les actions du portefeuille sont disponibles après la création d’un "
 "compte ou la connexion."
 
-#: apps/web/src/features/home/ui/settings-page.tsx:86
+#: apps/web/src/features/home/ui/settings-page.tsx:95
 msgid "Wallet session"
 msgstr "Session du portefeuille"
 
@@ -5835,7 +5900,7 @@ msgstr "Nous n’avons pas pu vérifier votre session. Vérifiez votre connexion
 msgid "We couldn't load your profile phone number."
 msgstr "Nous n’avons pas pu charger le numéro de téléphone de votre profil."
 
-#: apps/web/src/components/nearby-catalog.tsx:55
+#: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
 msgid "We couldn't load your profile."
 msgstr "Nous n’avons pas pu charger votre profil."
@@ -5851,7 +5916,7 @@ msgid "We couldn't verify whether this voucher already has supply."
 msgstr "Nous n’avons pas pu vérifier si ce bon d’échange avait déjà été émis."
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:317
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:327
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:336
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:352
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
@@ -6006,13 +6071,13 @@ msgstr "Vous n’avez encore rédigé aucune publication."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:48
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:609
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:155
 msgid "You receive"
 msgstr "Vous recevez"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:49
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:612
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:145
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:160
 msgid "You send"
 msgstr "Vous envoyez"
 

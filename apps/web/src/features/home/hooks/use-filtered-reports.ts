@@ -1,4 +1,10 @@
-import { useNearbyCatalog, nearbyQueryKey, nearbyQueryPolicy } from "#/components/nearby-catalog";
+import {
+  filterNearbyCatalog,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+  nearbyQueryKey,
+  nearbyQueryPolicy,
+} from "#/components/nearby-catalog";
 import {
   type CatalogFilter,
   type VoucherRef,
@@ -64,6 +70,7 @@ type FilteredReportsState =
 
 function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS_FILTER_PAGE_SIZE) {
   const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
   return useQuery({
     queryKey: nearbyQueryKey(filteredReportQueryKeys.filtered(filter, perPage), nearby),
     queryFn: async ({ signal }): Promise<FilteredReportFeed> => {
@@ -98,7 +105,7 @@ function useFilteredReportsQuery(filter: CatalogFilter | null, perPage = REPORTS
       }
 
       return {
-        reports: [...byId.values()],
+        reports: filterNearbyCatalog([...byId.values()], visibilityFilter),
         tagFacets: pages[0]?.tagFacets ?? null,
         voucherFacets: pages[0]?.voucherFacets ?? null,
       };

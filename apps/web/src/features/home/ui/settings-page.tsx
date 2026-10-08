@@ -10,8 +10,10 @@ import {
 import { InstallAppLink } from "#/components/install-app-link";
 import { LanguageSelector } from "#/components/language-selector";
 import { ThemeSelector } from "#/components/theme-selector";
+import { VisibilitySelector } from "#/components/visibility-selector";
 import { Badge } from "#/components/ui/badge";
 import { Button } from "#/components/ui/button";
+import { BUILD_INFO } from "#/features/app-updates/build-info";
 import type { CaliburDelegationStatus } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { PLATFORM_ABOUT_URL } from "#/lib/legal";
 import { AccountSettingsSection } from "./account-settings-section";
@@ -76,6 +78,13 @@ export function SettingsPage({
             </p>
             <LanguageSelector triggerClassName="w-32" />
           </div>
+          <div className="-mx-4 my-3 h-px bg-border" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">
+              <Trans>Choose how far away marketplace results can be.</Trans>
+            </p>
+            <VisibilitySelector triggerClassName="w-32" />
+          </div>
         </div>
       </section>
 
@@ -128,6 +137,17 @@ export function SettingsPage({
           {isSigningOut ? <Trans>Signing out...</Trans> : <Trans>Sign out</Trans>}
         </Button>
       </section>
+
+      {/* Support asks for this; QA matches it against /build-info.json. */}
+      <div className="flex items-center justify-between gap-3 border border-border bg-card p-4">
+        <p className="text-muted-foreground text-sm">
+          <Trans>App version</Trans>
+        </p>
+        <p dir="ltr" className="font-mono text-xs">
+          {BUILD_INFO.version} ({BUILD_INFO.buildNumber}) · {BUILD_INFO.gitSha.slice(0, 7)}
+          {BUILD_INFO.dirty ? "*" : ""}
+        </p>
+      </div>
     </div>
   );
 }

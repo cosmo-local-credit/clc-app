@@ -15,6 +15,10 @@ vi.mock("#/components/theme-selector", () => ({
   ThemeSelector: () => <div data-testid="theme-selector" />,
 }));
 
+vi.mock("#/components/visibility-selector", () => ({
+  VisibilitySelector: () => <div data-testid="visibility-selector" />,
+}));
+
 vi.mock("./notification-settings-section", () => ({
   NotificationSettingsSection: ({ walletAddress }: { walletAddress?: string }) => (
     <div data-testid="notification-settings">{walletAddress}</div>
@@ -46,6 +50,13 @@ describe("SettingsPage", () => {
     expect(about.compareDocumentPosition(account) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("shows this build's version and commit", () => {
+    render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
+    // The vitest config inlines a dirty `0.0.0-test` build with an unknown commit.
+    expect(screen.getByText("App version")).toBeTruthy();
+    expect(screen.getByText("0.0.0-test (1) · unknown*")).toBeTruthy();
+  });
+
   it("shows the connected address", () => {
     render(
       <SettingsPage
@@ -72,11 +83,12 @@ describe("SettingsPage", () => {
     );
   });
 
-  it("offers theme and language under Preferences, as the app menu does", () => {
+  it("offers theme, language, and visibility under Preferences, as the app menu does", () => {
     render(<SettingsPage delegationStatus="checking" isSigningOut={false} onSignOut={vi.fn()} />);
     expect(screen.getByRole("heading", { name: /preferences/i })).toBeTruthy();
     expect(screen.getByTestId("theme-selector")).toBeTruthy();
     expect(screen.getByTestId("language-selector")).toBeTruthy();
+    expect(screen.getByTestId("visibility-selector")).toBeTruthy();
   });
 
   it("shows 'No address available' when address is undefined", () => {

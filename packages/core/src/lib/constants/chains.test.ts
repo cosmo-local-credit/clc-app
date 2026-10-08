@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
 import { CELO_MAINNET_CHAIN_ID } from "./celo";
-import { type ChainMetadata, chainMetadata, explorerAddressUrl, explorerTxUrl } from "./chains";
+import {
+  type ChainMetadata,
+  chainMetadata,
+  explorerAddressUrl,
+  explorerTxUrl,
+  resolveChainId,
+} from "./chains";
 import { GNOSIS_MAINNET_CHAIN_ID } from "./gnosis";
 
 describe("chainMetadata", () => {
@@ -29,5 +35,15 @@ describe("explorer urls", () => {
 
   it("links an address to the explorer of the chain it lives on", () => {
     expect(explorerAddressUrl(gnosis, "0xdef")).toBe("https://gnosisscan.io/address/0xdef");
+  });
+});
+
+describe("resolveChainId", () => {
+  it("defaults an unset variable to Gnosis", () => {
+    expect(resolveChainId(undefined)).toBe(GNOSIS_MAINNET_CHAIN_ID);
+  });
+
+  it("reads a configured chain", () => {
+    expect(resolveChainId(String(CELO_MAINNET_CHAIN_ID))).toBe(CELO_MAINNET_CHAIN_ID);
   });
 });

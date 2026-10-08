@@ -140,7 +140,8 @@ function validateRecipient(recipient: PaperWalletRecipient): string[] {
 /**
  * Parses and validates an operator's CSV. Header names are matched loosely
  * ("Phone Number", "phone_number" and "mobile" all map to phone) and unknown
- * columns are ignored. Blank lines are skipped. Emails and phones must be
+ * columns are ignored. Blank lines are skipped. International phones with a
+ * spreadsheet-stripped leading `+` have it restored. Emails and phones must be
  * unique within the file, because the backend rejects a second account
  * claiming either.
  */
@@ -177,6 +178,11 @@ export function parsePaperWalletCsv(text: string): PaperWalletCsvResult {
             ? value.toLowerCase()
             : value;
     });
+    // Spreadsheets may treat international phones as numbers and strip the +.
+    const internationalPhone = `+${recipient.phone}`;
+    if (optionalPhoneSchema.safeParse(internationalPhone).success) {
+      recipient.phone = internationalPhone;
+    }
     const errors = validateRecipient(recipient);
     if (password && password.length < MIN_PAPER_WALLET_PASSWORD) {
       errors.push(`Password must be at least ${MIN_PAPER_WALLET_PASSWORD} characters`);

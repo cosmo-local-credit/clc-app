@@ -62,33 +62,36 @@ describe("PaperWalletsPage", () => {
     expect(entries[0]).toMatchObject({ passphrase: "sunflower" });
   });
 
-  it("issues only the valid rows of an uploaded CSV, each with its own password", async () => {
-    render(<PaperWalletsPage search={{ source: "csv" }} />);
-    expect(screen.queryByText("QR protection")).toBeNull();
+  it.each(["+254712345678", "254712345678"])(
+    "issues valid CSV rows with phone %s normalised and each with its own password",
+    async (phone) => {
+      render(<PaperWalletsPage search={{ source: "csv" }} />);
+      expect(screen.queryByText("QR protection")).toBeNull();
 
-    const file = new File(
-      ["name,phone,country,password\nAmina,+254712345678,KE,sunflower\nBad,0712,KE,\nBaraka,,,\n"],
-      "people.csv",
-      { type: "text/csv" },
-    );
-    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+      const file = new File(
+        [`name,phone,country,password\nAmina,${phone},KE,sunflower\nBad,0712,KE,\nBaraka,,,\n`],
+        "people.csv",
+        { type: "text/csv" },
+      );
+      fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
 
-    const generate = await screen.findByRole("button", { name: "Generate 2 wallets" });
-    expect(screen.getByText(/with issues, skipped/)).toBeTruthy();
-    fireEvent.click(generate);
+      const generate = await screen.findByRole("button", { name: "Generate 2 wallets" });
+      expect(screen.getByText(/with issues, skipped/)).toBeTruthy();
+      fireEvent.click(generate);
 
-    expect(mocks.start).toHaveBeenCalledWith([
-      {
-        recipient: expect.objectContaining({
-          name: "Amina",
-          phone: "+254712345678",
-          country: "KE",
-        }),
-        passphrase: "sunflower",
-      },
-      { recipient: expect.objectContaining({ name: "Baraka" }), passphrase: null },
-    ]);
-  });
+      expect(mocks.start).toHaveBeenCalledWith([
+        {
+          recipient: expect.objectContaining({
+            name: "Amina",
+            phone: "+254712345678",
+            country: "KE",
+          }),
+          passphrase: "sunflower",
+        },
+        { recipient: expect.objectContaining({ name: "Baraka" }), passphrase: null },
+      ]);
+    },
+  );
 
   it("shows PDF progress from click through worker assembly", async () => {
     mocks.phase = "done";
@@ -126,5 +129,23 @@ describe("PaperWalletsPage", () => {
     await act(async () => finish(new Blob(["%PDF-1.4"], { type: "application/pdf" })));
     expect(mocks.downloadBlob).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole("progressbar", { name: "PDF generation" })).toBeNull();
+  });
+
+  it.each(["encrypting", "registering"])("asks before leaving while the batch is %s", (phase) => {
+    mocks.phase = phase;
+    mocks.wallets = [];
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
+
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("lets an idle page go without asking", () => {
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
+
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 });

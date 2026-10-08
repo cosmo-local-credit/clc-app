@@ -41,6 +41,57 @@ describe("parsePaperWalletCsv", () => {
     });
   });
 
+  it.each([
+    ["254712345678", "+254712345678"],
+    ["447911123456", "+447911123456"],
+    ["12125551234", "+12125551234"],
+    ["12345678", "+12345678"],
+    ["123456789012345", "+123456789012345"],
+    [" 254712345678 ", "+254712345678"],
+    ["+254712345678", "+254712345678"],
+    ["  +254712345678  ", "+254712345678"],
+    ["", ""],
+  ])("normalises CSV phone %s to %s without errors", (phone, expected) => {
+    const result = parsePaperWalletCsv(`name,phone\nA,${phone}\n`);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.rows[0]?.recipient.phone).toBe(expected);
+    expect(result.rows[0]?.errors).toEqual([]);
+  });
+
+  it.each([
+    "0712345678",
+    "254",
+    "1234567890123456",
+    "25471234567a",
+    "254 712345678",
+    "2.54712345678E+11",
+    "++254712345678",
+  ])("keeps invalid CSV phone %s flagged", (phone) => {
+    const result = parsePaperWalletCsv(`name,phone\nA,${phone}\n`);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.rows[0]?.recipient.phone).toBe(phone);
+    expect(result.rows[0]?.errors).toEqual([
+      "Invalid phone number (use international format, e.g. +254712345678)",
+    ]);
+  });
+
+  it.each([
+    ["+254712345678", "254712345678"],
+    ["254712345678", "+254712345678"],
+  ])("detects duplicate phones after normalising %s and %s", (first, second) => {
+    const result = parsePaperWalletCsv(`name,phone\nA,${first}\nB,${second}\n`);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.rows[0]?.errors).toEqual([]);
+    expect(result.rows[1]).toMatchObject({
+      line: 3,
+      recipient: { phone: "+254712345678" },
+      errors: ["Same phone as line 2"],
+    });
+  });
+
   it("flags invalid fields and in-file duplicates by line", () => {
     const result = parsePaperWalletCsv(
       "name,email,phone,country,currency\nA,bad,0712,Kenya,XXX\nB,b@x.io,,,\n\nC,B@X.io,,,\n",
