@@ -1,6 +1,7 @@
 import { formatVoucherAddress } from "@clc/core/features/catalog/logic";
+import type { CardIssuanceStatus } from "@clc/core/features/nfc/issuance";
 import type { ColumnDef } from "@tanstack/react-table";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { FiLoader } from "react-icons/fi";
 import { HiOutlineDocumentDownload, HiOutlinePrinter, HiOutlineRefresh } from "react-icons/hi";
 
@@ -9,14 +10,26 @@ import { DataTable } from "#/components/admin/data-table";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Button } from "#/components/ui/button";
+import type { PaperWalletCarrier } from "../paper-wallets-search";
 import type { BatchPhase, BatchWallet } from "../use-paper-wallet-batch";
 
 const STATE: Record<BatchWallet["status"], string> = {
   queued: "queued",
+  preparing: "preparing",
   registering: "registering",
   ready: "registered",
   failed: "failed",
 };
+
+const ISSUANCE_STATE: Record<CardIssuanceStatus, string> = {
+  pending: "no card",
+  written: "written",
+  verified: "verified",
+  skipped: "skipped",
+};
+
+/** Row id → physical issuance, for an NFC batch. Absent for a printed one. */
+export type IssuanceByRow = Readonly<Record<number, CardIssuanceStatus>>;
 
 const columns: Array<ColumnDef<BatchWallet>> = [
   {
@@ -66,11 +79,30 @@ const columns: Array<ColumnDef<BatchWallet>> = [
 ];
 
 /** PDF progress changes often; the wallet rows do not change during export. */
-const WalletTable = memo(function WalletTable({ wallets }: { wallets: BatchWallet[] }) {
-  return <DataTable columns={columns} data={wallets} />;
+const WalletTable = memo(function WalletTable({
+  wallets,
+  issuance,
+}: {
+  wallets: BatchWallet[];
+  issuance: IssuanceByRow | null;
+}) {
+  const withIssuance = useMemo<Array<ColumnDef<BatchWallet>>>(() => {
+    if (!issuance) return columns;
+    const card: ColumnDef<BatchWallet> = {
+      id: "card",
+      header: "Card",
+      accessorFn: (wallet) =>
+        wallet.status === "ready" ? ISSUANCE_STATE[issuance[wallet.id] ?? "pending"] : "—",
+      cell: ({ getValue }) => <span className="font-mono text-xs">{String(getValue())}</span>,
+    };
+    return [...columns.slice(0, 5), card, ...columns.slice(5)];
+  }, [issuance]);
+  return <DataTable columns={withIssuance} data={wallets} />;
 });
 
 export function BatchResults({
+  carrier = "print",
+  issuance = null,
   wallets,
   phase,
   encrypted,
@@ -83,6 +115,8 @@ export function BatchResults({
   onRetryFailed,
   onReset,
 }: {
+  carrier?: PaperWalletCarrier;
+  issuance?: IssuanceByRow | null;
   wallets: BatchWallet[];
   phase: BatchPhase;
   encrypted: number;
@@ -97,21 +131,21 @@ export function BatchResults({
 }) {
   const ready = wallets.filter((wallet) => wallet.status === "ready").length;
   const failed = wallets.filter((wallet) => wallet.status === "failed").length;
-  const busy = phase === "encrypting" || phase === "registering";
+  const busy = phase === "preparing";
   const rendering = renderStage !== null;
 
   const progress =
-    phase === "encrypting"
-      ? `Encrypting keys… ${encrypted} / ${toEncrypt}`
-      : phase === "registering"
-        ? `Registering accounts… ${ready + failed} / ${wallets.length}`
-        : renderStage === "preparing"
-          ? "Preparing card design…"
-          : renderStage === "cards"
-            ? `Drawing cards… ${rendered} / ${ready}`
-            : renderStage === "assembling"
-              ? "Assembling PDF…"
-              : `${ready} of ${wallets.length} wallets registered and approved${failed ? `, ${failed} failed` : ""}.`;
+    phase === "preparing"
+      ? toEncrypt > 0
+        ? `Preparing wallets… ${encrypted} / ${toEncrypt} encrypted · ${ready + failed} / ${wallets.length} registered`
+        : `Registering accounts… ${ready + failed} / ${wallets.length}`
+      : renderStage === "preparing"
+        ? "Preparing card design…"
+        : renderStage === "cards"
+          ? `Drawing cards… ${rendered} / ${ready}`
+          : renderStage === "assembling"
+            ? "Assembling PDF…"
+            : `${ready} of ${wallets.length} wallets registered and approved${failed ? `, ${failed} failed` : ""}.`;
 
   return (
     <div className="space-y-4">
@@ -147,9 +181,15 @@ export function BatchResults({
               </div>
             </div>
           ) : null}
-          {phase === "done" && !pdfDownloaded ? (
+          {carrier === "print" && phase === "done" && !pdfDownloaded ? (
             <p className="text-muted-foreground text-xs">
               Download the PDF before leaving. Keys cannot be recovered.
+            </p>
+          ) : null}
+          {carrier === "nfc" ? (
+            <p className="text-muted-foreground text-xs">
+              Keep this page open until every card is written. Unwritten keys cannot be recovered;
+              issue replacements instead.
             </p>
           ) : null}
         </div>
@@ -178,7 +218,7 @@ export function BatchResults({
           </Button>
         </div>
       </div>
-      <WalletTable wallets={wallets} />
+      <WalletTable wallets={wallets} issuance={issuance} />
     </div>
   );
 }
