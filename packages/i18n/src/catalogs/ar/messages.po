@@ -171,7 +171,7 @@ msgstr "تم سحب {amount} {0}."
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "رصيد متاح بقيمة {available} من أصل {limit} {denomination}"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/receive-page.tsx:108
 msgid "{chainName} address"
 msgstr "عنوان {chainName}"
 
@@ -326,7 +326,7 @@ msgstr "الحساب بانتظار الموافقة"
 msgid "Account not approved"
 msgstr "لم تتم الموافقة على الحساب"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "لم يتم العثور على الحساب"
 
@@ -453,7 +453,7 @@ msgid "Address book"
 msgstr "دفتر العناوين"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Address copied"
 msgstr "تم نسخ العنوان"
 
@@ -475,7 +475,7 @@ msgstr "متقدم"
 msgid "Advanced details"
 msgstr "تفاصيل متقدمة"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "خيارات متقدمة"
 
@@ -529,6 +529,14 @@ msgstr "المبلغ يتجاوز رصيدك"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "المبلغ في الصندوق"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:175
+msgid "Amount to collect"
+msgstr "المبلغ المطلوب تحصيله"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "تجري قراءة بطاقة أخرى بالفعل. حاول مرة أخرى."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -667,7 +675,8 @@ msgstr "اتصال"
 msgid "Camera access denied."
 msgstr "رُفض الوصول إلى الكاميرا."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
@@ -678,6 +687,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
+#: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
@@ -699,6 +709,22 @@ msgstr "التسمية التوضيحية للصورة {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "يجب ألا تتجاوز التسمية التوضيحية 500 حرف"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:129
+msgid "Card collection isn't available on this server yet."
+msgstr "التحصيل بالبطاقة غير متاح على هذا الخادم بعد."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:313
+msgid "Card held:"
+msgstr "البطاقة الحالية:"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:325
+msgid "Card read — processing {amount}"
+msgstr "تمت قراءة البطاقة — جارٍ معالجة {amount}"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "تمت قراءة البطاقة — جارٍ تسجيل الدخول"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
@@ -738,6 +764,10 @@ msgstr "يغيّر طريقة عرض الصندوق. يحتفظ العقد ال�
 msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "يغيّر طريقة عرض القسيمة. يحتفظ العقد المنشور باسمها."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:225
+msgid "Charge this card {amountText}"
+msgstr "خصم {amountText} من هذه البطاقة"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:491
 msgid "Charged on every swap this pool settles."
 msgstr "تُفرض على كل مبادلة يسويها هذا الصندوق."
@@ -757,6 +787,10 @@ msgstr "التحقق من حالة الإصدار"
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:430
 msgid "Check supply again"
 msgstr "التحقق من المعروض مجددًا"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+msgid "Checking"
+msgstr "جارٍ التحقق"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
@@ -790,6 +824,10 @@ msgstr "جارٍ التحقق من دعم الإشعارات على هذا ال�
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "جارٍ التحقق من حالة مفتاح المرور…"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:338
+msgid "Checking payment…"
+msgstr "جارٍ التحقق من الدفع…"
 
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
 msgid "Checking review eligibility…"
@@ -976,13 +1014,22 @@ msgstr "إغلاق ماسح المحفظة الورقية"
 msgid "Close password-protected wallet import"
 msgstr "إغلاق استيراد المحفظة المحمية بكلمة مرور"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "إغلاق نموذج المفتاح الخاص"
 
 #: apps/web/src/components/ui/map-sheet.tsx:253
 msgid "Collapse"
 msgstr "طيّ"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:258
+msgid "Collect again from this card"
+msgstr "التحصيل مرة أخرى من هذه البطاقة"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:113
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+msgid "Collect by card"
+msgstr "التحصيل بالبطاقة"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 msgid "Collect fees"
@@ -1057,6 +1104,7 @@ msgstr "تأكيد المبادلة"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/wallet/ui/collect-page.tsx:430
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "تم التأكيد"
@@ -1098,8 +1146,8 @@ msgstr "العنوان المتصل"
 msgid "Connecting wallet..."
 msgstr "جارٍ ربط المحفظة..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "جارٍ الاتصال..."
 
@@ -1108,7 +1156,7 @@ msgstr "جارٍ الاتصال..."
 msgid "Connecting…"
 msgstr "جارٍ الاتصال…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1156,7 +1204,7 @@ msgstr "المتابعة إلى CLC"
 msgid "Continue to wallet"
 msgstr "المتابعة إلى المحفظة"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "المتابعة باستخدام {providerLabel}"
 
@@ -1164,7 +1212,7 @@ msgstr "المتابعة باستخدام {providerLabel}"
 msgid "Continue with paper wallet"
 msgstr "المتابعة باستخدام المحفظة الورقية"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "المتابعة باستخدام المحفظة الورقية"
 
@@ -1180,7 +1228,7 @@ msgstr "عنوان العقد"
 msgid "Contract address copied"
 msgstr "تم نسخ عنوان العقد"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:136
+#: apps/web/src/features/wallet/ui/receive-page.tsx:151
 msgid "Copy"
 msgstr "نسخ"
 
@@ -1234,12 +1282,12 @@ msgstr "نسخ تجزئة معاملة إصدار المعروض"
 msgid "Copy transaction hash"
 msgstr "نسخ تجزئة المعاملة"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:98
+#: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "نسخ عنوان المحفظة"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:78
+#: apps/web/src/features/wallet/ui/receive-page.tsx:82
 msgid "Copy wallet username"
 msgstr "نسخ اسم مستخدم المحفظة"
 
@@ -1303,8 +1351,8 @@ msgstr "تعذّر التحقق من صلاحية وصولك إلى المراج
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy address"
 msgstr "تعذّر نسخ العنوان"
 
@@ -1365,8 +1413,8 @@ msgstr "تعذّر نسخ تجزئة المعاملة"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy username"
 msgstr "تعذّر نسخ اسم المستخدم"
 
@@ -1473,6 +1521,10 @@ msgstr "تعذّر تحميل خيارات القسائم."
 msgid "Couldn't load voucher tags."
 msgstr "تعذّر تحميل وسوم القسائم."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:162
+msgid "Couldn't load vouchers"
+msgstr "تعذّر تحميل القسائم"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:218
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:965
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
@@ -1508,6 +1560,10 @@ msgstr "تعذّر نشر صندوقك."
 msgid "Couldn't publish your voucher."
 msgstr "تعذّر نشر قسيمتك."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:122
+msgid "Couldn't reach the payment relay. Check your connection and try again."
+msgstr "تعذّر الوصول إلى خدمة الدفع. تحقق من اتصالك وحاول مرة أخرى."
+
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
 msgid "Couldn’t reach the update. Check your connection and try again."
 msgstr "تعذّر الوصول إلى التحديث. تحقق من اتصالك وحاول مرة أخرى."
@@ -1515,6 +1571,11 @@ msgstr "تعذّر الوصول إلى التحديث. تحقق من اتصال�
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:104
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "تعذّر معرفة عدد المنازل العشرية التي تستخدمها هذه القسيمة."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "تعذّرت قراءة تلك البطاقة. أمسكها ثابتة على ظهر هاتفك وحاول مرة أخرى."
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
@@ -1624,8 +1685,8 @@ msgstr "إنشاء"
 msgid "Create account"
 msgstr "إنشاء حساب"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "إنشاء حساب"
 
@@ -1834,6 +1895,10 @@ msgstr "يجب ألا يتجاوز اسم العرض 120 حرفًا"
 msgid "Done"
 msgstr "تم"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:261
+msgid "Done with this customer"
+msgstr "إنهاء التعامل مع هذا العميل"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:286
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
 msgid "Download card"
@@ -1998,7 +2063,7 @@ msgstr "أدخل اسم مستخدم أو اسم صندوق أو رقم هاتف
 msgid "Enter a valid date and time"
 msgstr "أدخل تاريخًا ووقتًا صالحين"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "أدخل مفتاحًا خاصًا صالحًا أو محفظة ورقية صالحة."
 
@@ -2101,6 +2166,7 @@ msgstr "قريب الانتهاء"
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/collect-page.tsx:432
 msgid "Failed"
 msgstr "فشل"
 
@@ -2281,6 +2347,10 @@ msgstr "الصحة"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 msgid "Helps members find and understand your pool"
 msgstr "يساعد الأعضاء على العثور على صندوقك وفهمه"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "ضع البطاقة مسطّحة على ظهر هاتفك."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
@@ -2733,6 +2803,7 @@ msgstr "جارٍ تحميل القسيمة…"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
+#: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "جارٍ تحميل القسائم…"
 
@@ -2975,7 +3046,7 @@ msgstr "MPESA عبر Pretium"
 msgid "My posts"
 msgstr "منشوراتي"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:38
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 msgid "My wallet address"
 msgstr "عنوان محفظتي"
 
@@ -3035,7 +3106,7 @@ msgstr "منشور جديد"
 msgid "New supply"
 msgstr "إصدار جديد"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "هل أنت جديد في CLC؟"
 
@@ -3050,6 +3121,16 @@ msgstr "التالي"
 #: apps/web/src/features/home/ui/report-page.tsx:335
 msgid "Next image"
 msgstr "الصورة التالية"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "تم حظر الوصول إلى NFC. اسمح باستخدام NFC لهذا الموقع في إعدادات "
+"المتصفح، ثم حاول مرة أخرى."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "تقنية NFC متوقفة. فعّلها من إعدادات هاتفك، ثم حاول مرة أخرى."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
@@ -3085,7 +3166,7 @@ msgstr "لا توجد فئات متاحة للنتائج الحالية."
 msgid "No category filters are available."
 msgstr "لا تتوفر عوامل تصفية للفئات."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "لم يُعثر على حساب CLC لتسجيل الدخول هذا."
 
@@ -3224,6 +3305,10 @@ msgstr "لا توجد قسائم تطابق ذلك البحث."
 msgid "No vouchers match this search."
 msgstr "لا توجد قسائم تطابق هذا البحث."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:164
+msgid "No vouchers to collect"
+msgstr "لا توجد قسائم للتحصيل"
+
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
@@ -3234,7 +3319,7 @@ msgstr "لا توجد قسائم لعرضها بعد."
 msgid "No vouchers yet."
 msgstr "لا توجد قسائم بعد."
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
 msgstr "لا يوجد عنوان محفظة متاح."
 
@@ -3365,7 +3450,7 @@ msgstr "بيع الرصيد"
 msgid "Offramp details"
 msgstr "تفاصيل بيع الرصيد"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:119
+#: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "أرسل الأصول إلى هذا العنوان على <0>شبكة {chainName}</0> فقط. قد تضيع "
@@ -3539,16 +3624,33 @@ msgstr "محفظة ورقية محمية بكلمة مرور"
 msgid "Passwords do not match."
 msgstr "كلمتا المرور غير متطابقتين."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:409
+msgid "Payment accepted — confirming"
+msgstr "تم قبول الدفع — جارٍ التأكيد"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:405
+msgid "Payment confirmed"
+msgstr "تم تأكيد الدفع"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:407
+msgid "Payment failed"
+msgstr "فشل الدفع"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
 msgid "Payment receipt"
 msgstr "إيصال الدفع"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:354
+msgid "Payment status unknown"
+msgstr "حالة الدفع غير معروفة"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
@@ -3886,6 +3988,10 @@ msgstr "جارٍ الإعداد..."
 msgid "Preparing…"
 msgstr "جارٍ الإعداد…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:194
+msgid "Present card to pay {armedAmount}"
+msgstr "قدّم البطاقة لدفع {armedAmount}"
+
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Press and hold the image below, then choose Save Image."
 msgstr "اضغط مطولاً على الصورة أدناه، ثم اختر «حفظ الصورة»."
@@ -3967,9 +4073,9 @@ msgstr "طباعة"
 msgid "Private attachment"
 msgstr "مرفق خاص"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "المفتاح الخاص"
 
@@ -4089,6 +4195,14 @@ msgstr "جارٍ قراءة رسوم هذا الصندوق…"
 msgid "Reading…"
 msgstr "جارٍ القراءة…"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:245
+msgid "Ready to collect"
+msgstr "جاهز للتحصيل"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:243
+msgid "Ready to collect {amountText}"
+msgstr "جاهز لتحصيل {amountText}"
+
 #: apps/web/src/components/reviews/review-editor.tsx:89
 msgid "Reason for reporting"
 msgstr "سبب الإبلاغ"
@@ -4099,11 +4213,12 @@ msgstr "تم نسخ الإيصال"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/wallet/ui/collect-page.tsx:110
+#: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "استلام"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:63
+#: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
 msgstr "تفاصيل الاستلام"
 
@@ -4124,6 +4239,11 @@ msgstr "تم الاستلام"
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
 msgid "Received voucher"
 msgstr "قسيمة مستلمة"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:270
+#: apps/web/src/features/wallet/ui/collect-page.tsx:272
+msgid "Recent collections"
+msgstr "عمليات التحصيل الأخيرة"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:208
@@ -4642,7 +4762,7 @@ msgid "Settings"
 msgstr "الإعدادات"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:441
-#: apps/web/src/features/wallet/ui/receive-page.tsx:140
+#: apps/web/src/features/wallet/ui/receive-page.tsx:155
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
 msgid "Share"
 msgstr "مشاركة"
@@ -4731,7 +4851,7 @@ msgstr "سجّل الدخول لعرض النشاط."
 msgid "Sign in to view posts."
 msgstr "سجّل الدخول لعرض المنشورات."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "سجّل الدخول باستخدام المفتاح الخاص"
 
@@ -4787,6 +4907,10 @@ msgstr "قياسي"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:352
 msgid "Start over"
 msgstr "البدء من جديد"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "جارٍ تشغيل قارئ البطاقات…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
@@ -4995,10 +5119,22 @@ msgstr "تحصيل الرسوم بصورة منفصلة"
 msgid "Take photo"
 msgstr "التقاط صورة"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "قرّب بطاقة NFC"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:461
+msgid "Tap Ready to collect before presenting a card."
+msgstr "اضغط على «جاهز للتحصيل» قبل تقديم البطاقة."
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "اضغط على قائمة النقاط الثلاث، ثم «إضافة إلى الشاشة الرئيسية» أو «تثبيت "
 "التطبيق»."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "قرّب بطاقة NFC الخاصة بك"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5079,9 +5215,27 @@ msgstr "اسم القسيمة هذا مستخدم بالفعل"
 msgid "That voucher name was taken while you were filling this in."
 msgstr "أصبح اسم القسيمة هذا مستخدمًا أثناء تعبئتك للنموذج."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "تعذّر تشغيل قارئ البطاقات. حاول مرة أخرى."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "توقف قارئ البطاقات."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:376
+msgid "The card wasn't unlocked. Nothing was charged."
+msgstr "لم يُفتح قفل البطاقة. لم يُخصم أي مبلغ."
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
 msgstr "سلة التسوق ليست جاهزة بعد."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:341
+msgid "The connection dropped before the relay answered. Don't charge this card "
+"again until this resolves."
+msgstr "انقطع الاتصال قبل أن تستجيب خدمة الدفع. لا تخصم من هذه البطاقة مرة أخرى "
+"حتى تتضح النتيجة."
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:969
 msgid "The credit limit has been reached. No more can be added to this pool."
@@ -5114,6 +5268,30 @@ msgid "The passkey on this device is linked. Switch to it to sign with your "
 msgstr "مفتاح المرور الموجود على هذا الجهاز مرتبط. بدّل إليه للتوقيع باستخدام "
 "مفتاح مرورك."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:385
+msgid "The payment couldn't be prepared: {detail}"
+msgstr "تعذّر تجهيز الدفع: {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:386
+msgid "The payment couldn't be prepared. Nothing was charged."
+msgstr "تعذّر تجهيز الدفع. لم يُخصم أي مبلغ."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:127
+msgid "The payment relay is on a different network."
+msgstr "خدمة الدفع على شبكة مختلفة."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:378
+msgid "The payment relay is on a different network. Nothing was charged."
+msgstr "خدمة الدفع على شبكة مختلفة. لم يُخصم أي مبلغ."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:381
+msgid "The payment was refused: {detail}"
+msgstr "رُفض الدفع: {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:382
+msgid "The payment was refused. Nothing was charged."
+msgstr "رُفض الدفع. لم يُخصم أي مبلغ."
+
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:48
 msgid "The pool"
 msgstr "الصندوق"
@@ -5130,6 +5308,12 @@ msgstr "لا يحتوي الصندوق على هذا المقدار من {0}."
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "تغيّر عرض السعر. راجع المبالغ المحدّثة قبل التأكيد."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:357
+msgid "The request expired without an answer from the relay. Check the "
+"customer's balance before charging the card again."
+msgstr "انتهت مهلة الطلب دون استجابة من خدمة الدفع. تحقق من رصيد العميل قبل "
+"الخصم من البطاقة مرة أخرى."
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "The selected unit does not have a configured price feed."
@@ -5171,6 +5355,44 @@ msgstr "لا يمكن اعتماد هذا الحساب. تواصل مع الدع
 msgid "This browser cannot store notification registration safely."
 msgstr "لا يستطيع هذا المتصفح تخزين تسجيل الإشعارات بأمان."
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:374
+msgid "This card doesn't have enough {symbol}. Nothing was charged."
+msgstr "لا تحتوي هذه البطاقة على ما يكفي من {symbol}. لم يُخصم أي مبلغ."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "لا تحتوي هذه البطاقة على محفظة CLC."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "تحتوي هذه البطاقة على أكثر من محفظة. استخدم بطاقة أخرى."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:372
+msgid "This card holds your own wallet. Nothing was charged."
+msgstr "تحتوي هذه البطاقة على محفظتك أنت. لم يُخصم أي مبلغ."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:459
+msgid "This card holds your own wallet. Use the customer's card."
+msgstr "تحتوي هذه البطاقة على محفظتك أنت. استخدم بطاقة العميل."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "هذه البطاقة فارغة."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:452
+msgid "This card just paid. To charge it again, choose Charge this card."
+msgstr "دفعت هذه البطاقة للتو. للخصم منها مرة أخرى، اختر «خصم من هذه البطاقة»."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:454
+msgid "This card's last payment is still being confirmed. Wait for it before "
+"charging the card again."
+msgstr "لا يزال تأكيد آخر دفعة من هذه البطاقة جاريًا. انتظر اكتماله قبل الخصم "
+"من البطاقة مرة أخرى."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "مفتاح المحفظة في هذه البطاقة تالف ولا يمكن استخدامه."
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
@@ -5207,6 +5429,15 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "تم استيراد هذا العرض بالوحدة «{legacyUnit}». اختر وحدة أدناه لحفظ "
 "تغييراتك."
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:118
+msgid "This phone or browser can't read NFC cards."
+msgstr "لا يمكن لهذا الهاتف أو المتصفح قراءة بطاقات NFC."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "لا يمكن لهذا الهاتف أو المتصفح قراءة بطاقات NFC. استخدم رمز QR بدلاً من "
+"ذلك."
 
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
@@ -5281,7 +5512,7 @@ msgstr "تغيّر حد الإيداع لهذا الصندوق. راجع الم�
 msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "هذا المنشور كبير جدًا ولا يمكن حفظه. اختصر النص أو أزل بعض الوسائط."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "لا يحتوي رمز QR هذا على مفتاح خاص صالح."
 
@@ -5307,6 +5538,7 @@ msgstr "يجب ألا يتجاوز العنوان 200 حرف"
 #: apps/web/src/features/home/ui/activity-page.tsx:131
 #: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/wallet/ui/collect-page.tsx:137
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "To"
@@ -5380,6 +5612,7 @@ msgstr "رحلة"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
+#: apps/web/src/components/nfc-card-prompt.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
@@ -5451,6 +5684,10 @@ msgstr "وحدة الحساب"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:402
 msgid "Unit of Account"
 msgstr "وحدة الحساب"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:434
+msgid "Unknown"
+msgstr "غير معروف"
 
 #. placeholder {0}: option.label
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:154
@@ -5574,12 +5811,12 @@ msgstr "استخدام الصورة"
 
 #: apps/web/src/components/profile/username-input.tsx:38
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:57
-#: apps/web/src/features/wallet/ui/receive-page.tsx:84
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Username"
 msgstr "اسم المستخدم"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Username copied"
 msgstr "تم نسخ اسم المستخدم"
 
@@ -5816,7 +6053,7 @@ msgstr "في انتظار السلسلة…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:52
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -6135,6 +6372,7 @@ msgid "Your Vouchers"
 msgstr "قسائمك"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:50
+#: apps/web/src/features/wallet/ui/collect-page.tsx:143
 msgid "Your wallet"
 msgstr "محفظتك"
 
