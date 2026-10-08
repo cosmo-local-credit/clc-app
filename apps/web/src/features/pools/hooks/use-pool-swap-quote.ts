@@ -1,9 +1,12 @@
 import { limiterLimitOfAbi } from "@clc/core/features/pool-admin/logic";
 import {
   erc20BalanceOfAbi,
+  POOL_FEE_PPM,
   poolAvailableLiquidityRaw,
+  splitPoolSwapFees,
   swapPoolFeesAbi,
   swapPoolFeesDecoupledAbi,
+  swapPoolGetFeeAbi,
 } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { useQuery } from "@tanstack/react-query";
@@ -162,6 +165,16 @@ export function usePoolSwapQuote(input: {
               functionName: "fees",
               args: [tokenOut],
             },
+            // The pair's pool fee rate, from the pool rather than the catalog's
+            // FeePolicy address, which a steward can repoint. `getFee` scales
+            // its third argument by the rate over PPM, so passing PPM returns
+            // the rate itself.
+            {
+              address: poolAddress,
+              abi: swapPoolGetFeeAbi,
+              functionName: "getFee",
+              args: [tokenIn, tokenOut, POOL_FEE_PPM],
+            },
           ],
         }),
         // The deposit half's own two reads, issued alongside the rest at the same
@@ -191,7 +204,7 @@ export function usePoolSwapQuote(input: {
             })
           : undefined,
       ]);
-      const [outputBalanceRaw, feesDecoupled, outputFeesRaw] = poolState;
+      const [outputBalanceRaw, feesDecoupled, outputFeesRaw, poolFeePpm] = poolState;
       const availableAmountOutRaw = poolAvailableLiquidityRaw({
         balanceRaw: outputBalanceRaw.toString(),
         feesRaw: outputFeesRaw.toString(),
@@ -210,7 +223,6 @@ export function usePoolSwapQuote(input: {
             ).toString();
       const quotedDecimals =
         input.mode === "exact-input" ? input.tokenOutDecimals : input.tokenInDecimals;
-      const feeAmountRaw = BigInt(grossAmountOutRaw) - BigInt(netAmountOutRaw);
       return {
         amountRaw: quotedAmountRaw,
         amount: formatTokenAmountFixed(quotedAmountRaw, quotedDecimals, 2),
@@ -218,11 +230,17 @@ export function usePoolSwapQuote(input: {
         amountOutRaw,
         grossAmountOutRaw,
         /**
-         * What the pool and the protocol keep, in the output voucher: the gross quote
-         * for the input spent less what that input delivers. Null if the two ever
-         * disagree in sign, rather than a negative fee.
+         * What the gross quote for the input spent loses on the way to what that
+         * input delivers, split into the pool's share and the protocol's, in the
+         * output voucher. Null if the figures cannot come from one swap: the fee
+         * rows then read "—", but the router's quote still stands, so the swap
+         * itself is not blocked over a breakdown.
          */
-        feeAmountRaw: feeAmountRaw >= 0n ? feeAmountRaw.toString() : null,
+        feeBreakdown: splitPoolSwapFees({
+          grossAmountOutRaw,
+          netAmountOutRaw,
+          poolFeePpm: poolFeePpm.toString(),
+        }),
         availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
           availableAmountOutRaw,
@@ -241,8 +259,21 @@ export function usePoolSwapQuote(input: {
       };
     },
     enabled: !!client && !!poolAddress && !!tokenIn && !!tokenOut && !!amountRaw,
-    placeholderData: (previousData, previousQuery) =>
-      previousQuery?.queryKey[1] === input.mode ? previousData : undefined,
+    placeholderData: (previousData, previousQuery) => {
+      const previousInput = previousQuery?.queryKey[2] as
+        | {
+            poolAddress?: string;
+            tokenIn?: string;
+            tokenOut?: string;
+          }
+        | undefined;
+      return previousQuery?.queryKey[1] === input.mode &&
+        previousInput?.poolAddress === poolAddress &&
+        previousInput?.tokenIn === tokenIn &&
+        previousInput?.tokenOut === tokenOut
+        ? previousData
+        : undefined;
+    },
     staleTime: 4_000,
     retry: false,
   });

@@ -1,3 +1,4 @@
+import { poolSwapFeeBreakdownRaw } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmount } from "@clc/core/features/wallet/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -17,9 +18,11 @@ import {
   SheetTitle,
 } from "#/components/ui/sheet";
 import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
+import { usePoolSwapSettlement } from "#/features/pools/hooks/use-pool-swap-settlement";
 import type { PoolActivityEntry, PoolActivityLeg } from "#/features/pools/logic/pool-activity";
 import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
 import { CHAIN_INFO } from "#/lib/chain";
+import { PoolSwapFeeValue } from "./pool-swap-fee-value";
 
 /**
  * One pool event, with everything the transfers feed recorded about it.
@@ -29,22 +32,33 @@ import { CHAIN_INFO } from "#/lib/chain";
  * fits a pool. A swap here is two legs and sometimes a third for the protocol's
  * cut, and the whole point of the activity list is that those belong together.
  *
- * Every row comes from `token_transfer` — the legs, the addresses on each side,
- * the block timestamp and whether the transaction succeeded. The pool's own
- * swap fee is not among them: `SwapPool` credits it to `fees[token]` without
- * moving it, so nothing in this feed can see it. Only the protocol's cut leaves
- * in the same transaction, and that is the fee shown.
+ * The activity entry comes from `token_transfer`, while an opened swap also
+ * reads its transaction receipt. The transfer feed reconstructs the legs and
+ * can spot a separate protocol transfer; the settlement event supplies the
+ * pool fee that never moved and the authoritative complete fee split.
  */
 export function PoolActivityDetailsSheet({
+  poolAddress,
   entry,
   open,
   onOpenChange,
 }: {
+  poolAddress: string;
   entry: PoolActivityEntry | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
+  const swapEntry = entry?.kind === "swap" ? entry : null;
+  const settlement = usePoolSwapSettlement({
+    txHash: open && swapEntry ? swapEntry.txHash : undefined,
+    poolAddress,
+    tokenIn: swapEntry?.received.tokenAddress,
+    tokenOut: swapEntry?.sent.tokenAddress,
+    amountInRaw: swapEntry?.received.amount,
+    amountOutRaw: swapEntry?.sent.amount,
+  });
+  const feeBreakdown = activityFeeBreakdown(swapEntry, settlement.data);
   const explorerUrl = entry ? explorerTxUrl(CHAIN_INFO, entry.txHash) : "#";
   // Spelled out here rather than in a helper taking `t`: the macro only
   // compiles calls on the `t` it destructured, and a passed-in one reaches the
@@ -101,15 +115,42 @@ export function PoolActivityDetailsSheet({
                     <DetailRow label={t`Pool paid out`}>
                       <SignedAmount direction="out" amount={legAmount(entry.sent)} />
                     </DetailRow>
-                    {entry.protocolFee ? (
-                      // Apart from the trader's side: it left in the same
-                      // transaction but went to the protocol, not to them.
-                      <DetailRow label={t`Protocol fee`}>
-                        <span className="font-mono text-xs font-semibold">
-                          {legAmount(entry.protocolFee)}
-                        </span>
-                      </DetailRow>
-                    ) : null}
+                    <DetailRow label={t`Pool fee`}>
+                      <PoolSwapFeeValue
+                        breakdown={feeBreakdown}
+                        part="pool"
+                        decimals={entry.sent.tokenDecimals}
+                        symbol={entry.sent.tokenSymbol}
+                        locale={i18n.locales?.[0] ?? i18n.locale}
+                        pending={settlement.isFetching}
+                        amountRaw={
+                          settlement.data?.source === "legacy"
+                            ? settlement.data.poolFeeRaw
+                            : undefined
+                        }
+                      />
+                    </DetailRow>
+                    <DetailRow label={t`Protocol fee`}>
+                      <PoolSwapFeeValue
+                        breakdown={feeBreakdown}
+                        part="protocol"
+                        decimals={entry.sent.tokenDecimals}
+                        symbol={entry.sent.tokenSymbol}
+                        locale={i18n.locales?.[0] ?? i18n.locale}
+                        pending={settlement.isFetching && !entry.protocolFee}
+                        amountRaw={entry.protocolFee?.amount}
+                      />
+                    </DetailRow>
+                    <DetailRow label={t`Total fees`}>
+                      <PoolSwapFeeValue
+                        breakdown={feeBreakdown}
+                        part="total"
+                        decimals={entry.sent.tokenDecimals}
+                        symbol={entry.sent.tokenSymbol}
+                        locale={i18n.locales?.[0] ?? i18n.locale}
+                        pending={settlement.isFetching}
+                      />
+                    </DetailRow>
                   </>
                 ) : (
                   <DetailRow label={t`Amount`}>
@@ -159,6 +200,29 @@ export function PoolActivityDetailsSheet({
                   />
                 </DetailRow>
               </div>
+              {entry.kind === "swap" && settlement.data?.source === "legacy" && !feeBreakdown ? (
+                <p role="status" className="text-muted-foreground text-xs">
+                  <Trans>Complete fee details are unavailable for this swap.</Trans>
+                </p>
+              ) : entry.kind === "swap" &&
+                !settlement.data &&
+                (!settlement.canLoad || settlement.isError) ? (
+                <div className="flex items-center justify-between gap-3">
+                  <p role="alert" className="text-muted-foreground text-xs">
+                    <Trans>Fee details unavailable.</Trans>
+                  </p>
+                  {settlement.canLoad ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 bg-card"
+                      onClick={() => settlement.refetch()}
+                    >
+                      <Trans>Try again</Trans>
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -186,4 +250,27 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
 
 function legAmount(leg: PoolActivityLeg): string {
   return `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
+}
+
+function activityFeeBreakdown(
+  entry: Extract<PoolActivityEntry, { kind: "swap" }> | null,
+  settlement: ReturnType<typeof usePoolSwapSettlement>["data"],
+) {
+  if (settlement?.source === "settlement") return settlement.breakdown;
+  if (!entry || settlement?.source !== "legacy" || !entry.protocolFee) return null;
+  if (entry.protocolFee.tokenAddress.toLowerCase() !== entry.sent.tokenAddress.toLowerCase()) {
+    return null;
+  }
+  try {
+    const poolFee = BigInt(settlement.poolFeeRaw);
+    const protocolFee = BigInt(entry.protocolFee.amount);
+    const net = BigInt(entry.sent.amount);
+    return poolSwapFeeBreakdownRaw({
+      grossAmountOutRaw: (net + poolFee + protocolFee).toString(),
+      netAmountOutRaw: net.toString(),
+      poolFeeRaw: poolFee.toString(),
+    });
+  } catch {
+    return null;
+  }
 }

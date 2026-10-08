@@ -1,20 +1,33 @@
 import { REVIEW_TEXT_LIMIT } from "@clc/core/features/reviews/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useId, useState } from "react";
-import { RiStarFill, RiStarLine } from "react-icons/ri";
+import { RiStarFill, RiStarHalfFill, RiStarLine } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
 
 export function ReviewStars({ stars }: { stars: number }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
+  const safeStars = Number.isFinite(stars) ? Math.min(5, Math.max(0, stars)) : 0;
+  const visualStars = Math.round(safeStars * 2) / 2;
+  const formattedStars = new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale, {
+    maximumFractionDigits: 1,
+  }).format(safeStars);
   return (
-    <span className="inline-flex text-amber-600" role="img" aria-label={t`${stars} out of 5 stars`}>
-      {[1, 2, 3, 4, 5].map((value) =>
-        value <= stars ? (
-          <RiStarFill key={value} className="size-4" aria-hidden="true" />
-        ) : (
-          <RiStarLine key={value} className="size-4" aria-hidden="true" />
-        ),
-      )}
+    <span
+      className="inline-flex text-amber-600"
+      role="img"
+      aria-label={t`${formattedStars} out of 5 stars`}
+    >
+      {[1, 2, 3, 4, 5].map((value) => {
+        if (visualStars >= value) {
+          return <RiStarFill key={value} className="size-4" data-state="full" aria-hidden="true" />;
+        }
+        if (visualStars === value - 0.5) {
+          return (
+            <RiStarHalfFill key={value} className="size-4" data-state="half" aria-hidden="true" />
+          );
+        }
+        return <RiStarLine key={value} className="size-4" data-state="empty" aria-hidden="true" />;
+      })}
     </span>
   );
 }

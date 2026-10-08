@@ -1,5 +1,5 @@
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { OfferingPage, OfferingsClient } from "./client";
+import type { OfferingPage, OfferingReadOverrides, OfferingsClient } from "./client";
 
 /**
  * Canonical query identity and base options for offerings.
@@ -90,15 +90,20 @@ export function voucherOfferingsInfiniteQueryOptions(
   offerings: OfferingsClient,
   address: string | undefined,
   perPage: number,
+  overrides?: OfferingReadOverrides,
 ) {
   return infiniteQueryOptions({
     queryKey: offeringKeys.byVoucherInfinite(address ?? "none", perPage),
-    queryFn: ({ pageParam, signal }) =>
-      offerings.getVoucherOfferings(
-        requireAddress(address),
-        { perPage, cursor: pageParam, next: pageParam === undefined ? undefined : true },
-        signal,
-      ),
+    queryFn: ({ pageParam, signal }) => {
+      const params = {
+        perPage,
+        cursor: pageParam,
+        next: pageParam === undefined ? undefined : true,
+      };
+      return overrides
+        ? offerings.getVoucherOfferings(requireAddress(address), params, signal, overrides)
+        : offerings.getVoucherOfferings(requireAddress(address), params, signal);
+    },
     enabled: Boolean(address),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: nextOfferingCursor(perPage),

@@ -1,3 +1,4 @@
+import type { PoolSwapFeeBreakdownRaw } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
@@ -35,6 +36,7 @@ import {
 } from "#/features/pools/logic/pool-swap-tokens";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
+import { PoolSwapFeeValue } from "./pool-swap-fee-value";
 
 export function PoolSwapPage({
   poolAddress,
@@ -45,6 +47,7 @@ export function PoolSwapPage({
   receiveTokenAddress?: string;
 }) {
   const { i18n, t } = useLingui();
+  const locale = i18n.locales?.[0] ?? i18n.locale;
   const receiveLabel = t`You receive`;
   const sendLabel = t`You send`;
   const navigate = useNavigate();
@@ -140,31 +143,21 @@ export function PoolSwapPage({
       : "";
   const localizedQuoteFromAmount =
     quote.data && fromDecimals !== null
-      ? formatTokenAmountFixed(
-          quote.data.amountInRaw,
-          fromDecimals,
-          2,
-          i18n.locales?.[0] ?? i18n.locale,
-        )
+      ? formatTokenAmountFixed(quote.data.amountInRaw, fromDecimals, 2, locale)
       : "";
   const localizedQuoteToAmount =
     quote.data && toDecimals !== null
-      ? formatTokenAmountFixed(
-          quote.data.amountOutRaw,
-          toDecimals,
-          2,
-          i18n.locales?.[0] ?? i18n.locale,
-        )
+      ? formatTokenAmountFixed(quote.data.amountOutRaw, toDecimals, 2, locale)
       : "";
   const editableFromAmount = quoteMode === "exact-input" ? fromAmount : quoteFromAmount;
   const editableToAmount = quoteMode === "exact-output" ? toAmount : quoteToAmount;
   const settledFromAmount =
     quoteMode === "exact-input"
-      ? fixedEnteredAmount(fromAmount, fromDecimals, i18n.locales?.[0] ?? i18n.locale)
+      ? fixedEnteredAmount(fromAmount, fromDecimals, locale)
       : localizedQuoteFromAmount;
   const settledToAmount =
     quoteMode === "exact-output"
-      ? fixedEnteredAmount(toAmount, toDecimals, i18n.locales?.[0] ?? i18n.locale)
+      ? fixedEnteredAmount(toAmount, toDecimals, locale)
       : localizedQuoteToAmount;
   const displayedFromAmount = focusedField === "from" ? editableFromAmount : settledFromAmount;
   const displayedToAmount = focusedField === "to" ? editableToAmount : settledToAmount;
@@ -176,7 +169,7 @@ export function PoolSwapPage({
       const rateRaw =
         (BigInt(quote.data.amountOutRaw) * 10n ** BigInt(fromDecimals) * 100n) /
         (amountInRaw * 10n ** BigInt(toDecimals));
-      rate = formatTokenAmountFixed(rateRaw.toString(), 2, 2, i18n.locales?.[0] ?? i18n.locale);
+      rate = formatTokenAmountFixed(rateRaw.toString(), 2, 2, locale);
     }
   }
 
@@ -191,9 +184,12 @@ export function PoolSwapPage({
   const maxReceiveRaw = maximum.data?.maxAmountOutRaw;
   const maxReceiveAmount =
     maxReceiveRaw && toDecimals !== null && isPositiveRawAmount(maxReceiveRaw)
-      ? formatTokenAmountFixed(maxReceiveRaw, toDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
+      ? formatTokenAmountFixed(maxReceiveRaw, toDecimals, 2, locale)
       : null;
   const receiveSymbol = selectedTo?.token.symbol ?? "";
+  const displayedFeeBreakdown =
+    quote.isError || quote.isPlaceholderData ? null : (quote.data?.feeBreakdown ?? null);
+  const feesPending = quote.isFetching && !displayedFeeBreakdown;
   const maxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
       ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2)
@@ -212,20 +208,9 @@ export function PoolSwapPage({
     setFromAmount(maxFromAmount);
   };
 
-  // What the pool and the protocol keep, from the contract, in the voucher being
-  // received.
-  const feeAmount =
-    quote.data && quote.data.feeAmountRaw !== null && toDecimals !== null
-      ? formatTokenAmountFixed(
-          quote.data.feeAmountRaw,
-          toDecimals,
-          2,
-          i18n.locales?.[0] ?? i18n.locale,
-        )
-      : null;
   const localizedMaxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
-      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, i18n.locales?.[0] ?? i18n.locale)
+      ? formatTokenAmountFixed(maxFromRaw, fromDecimals, 2, locale)
       : undefined;
 
   let exceedsBalance = false;
@@ -246,21 +231,11 @@ export function PoolSwapPage({
       quote.data?.depositHeadroomRaw !== null &&
       quote.data?.depositHeadroomRaw !== undefined &&
       fromDecimals !== null
-        ? formatTokenAmountFixed(
-            quote.data.depositHeadroomRaw,
-            fromDecimals,
-            2,
-            i18n.locales?.[0] ?? i18n.locale,
-          )
+        ? formatTokenAmountFixed(quote.data.depositHeadroomRaw, fromDecimals, 2, locale)
         : null,
     availableAmountOut:
       quote.data && toDecimals !== null
-        ? formatTokenAmountFixed(
-            quote.data.availableAmountOutRaw,
-            toDecimals,
-            2,
-            i18n.locales?.[0] ?? i18n.locale,
-          )
+        ? formatTokenAmountFixed(quote.data.availableAmountOutRaw, toDecimals, 2, locale)
         : null,
   };
   const hasSwappableFrom = swapTokens.some((token) => token.canSwapIn);
@@ -269,6 +244,7 @@ export function PoolSwapPage({
     delegationStatus !== "checking" &&
     Number(sourceAmount) > 0 &&
     !!quote.data &&
+    !quote.isError &&
     !quote.isDebouncing &&
     !quote.isFetching &&
     !quote.isPlaceholderData &&
@@ -354,13 +330,44 @@ export function PoolSwapPage({
             1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
           </span>
         </div>
-        <div className="flex items-center justify-between px-3 py-2">
+        <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2">
           <span className="text-muted-foreground text-xs">
-            <Trans>Fees</Trans>
+            <Trans>Pool fee</Trans>
           </span>
-          <span dir="ltr" className="font-mono text-xs font-semibold">
-            {feeAmount !== null ? `${feeAmount} ${receiveSymbol}` : "—"}
+          <PoolSwapFeeValue
+            breakdown={displayedFeeBreakdown}
+            part="pool"
+            decimals={toDecimals}
+            symbol={receiveSymbol}
+            locale={locale}
+            pending={feesPending}
+          />
+        </div>
+        <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2">
+          <span className="text-muted-foreground text-xs">
+            <Trans>Protocol fee</Trans>
           </span>
+          <PoolSwapFeeValue
+            breakdown={displayedFeeBreakdown}
+            part="protocol"
+            decimals={toDecimals}
+            symbol={receiveSymbol}
+            locale={locale}
+            pending={feesPending}
+          />
+        </div>
+        <div className="flex min-h-11 items-center justify-between gap-3 px-3 py-2">
+          <span className="text-muted-foreground text-xs">
+            <Trans>Total fees</Trans>
+          </span>
+          <PoolSwapFeeValue
+            breakdown={displayedFeeBreakdown}
+            part="total"
+            decimals={toDecimals}
+            symbol={receiveSymbol}
+            locale={locale}
+            pending={feesPending}
+          />
         </div>
       </div>
 
@@ -394,13 +401,23 @@ export function PoolSwapPage({
           <Trans>You don't hold any voucher this pool takes.</Trans>
         </p>
       ) : quote.isError && !quote.isDebouncing ? (
-        <p
-          role="alert"
-          aria-label={t`Couldn't estimate this swap.`}
-          className="mt-2 text-destructive text-xs"
-        >
-          <Trans>Couldn't estimate this swap.</Trans>
-        </p>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p
+            role="alert"
+            aria-label={t`Couldn't estimate this swap.`}
+            className="text-destructive text-xs"
+          >
+            <Trans>Couldn't estimate this swap.</Trans>
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 shrink-0 bg-card"
+            onClick={() => quote.refetch()}
+          >
+            <Trans>Try again</Trans>
+          </Button>
+        </div>
       ) : exceedsBalance ? (
         <p role="alert" className="mt-2 text-destructive text-xs">
           <Trans>Amount exceeds your balance</Trans>
@@ -462,7 +479,7 @@ export function PoolSwapPage({
         selectedId={selectedFrom?.id}
         isPending={tokensPending}
         isError={tokensError}
-        locale={i18n.locales?.[0] ?? i18n.locale}
+        locale={locale}
         onSelect={(token) => {
           setFromMaxAmountRaw(null);
           if (token.id === selectedTo?.id) setToTokenId(selectedFrom?.id);
@@ -480,7 +497,7 @@ export function PoolSwapPage({
         selectedId={selectedTo?.id}
         isPending={tokensPending}
         isError={tokensError}
-        locale={i18n.locales?.[0] ?? i18n.locale}
+        locale={locale}
         onSelect={(token) => setToTokenId(token.id)}
       />
       <SwapConfirmationSheet
@@ -490,6 +507,9 @@ export function PoolSwapPage({
         fromSymbol={selectedFrom?.token.symbol ?? ""}
         toAmount={localizedQuoteToAmount}
         toSymbol={selectedTo?.token.symbol ?? ""}
+        feeBreakdown={quote.data?.feeBreakdown ?? null}
+        feeDecimals={toDecimals}
+        locale={locale}
         poolName={pool.name}
         error={
           confirmError ?? (swapTransfer.error instanceof Error ? swapTransfer.error.message : null)
@@ -498,7 +518,7 @@ export function PoolSwapPage({
         onConfirm={async () => {
           if (!address || !selectedFrom || !selectedTo || !quote.data || !isValidAmount) return;
           setConfirmError(null);
-          const previousQuoteRaw = quote.data.amountRaw;
+          const previousQuoteFingerprint = quoteFingerprint(quote.data);
           const refreshed = await quote.refetch();
           if (refreshed.isError || !refreshed.data) {
             setConfirmError(t`Couldn't verify this swap. Try again.`);
@@ -514,7 +534,7 @@ export function PoolSwapPage({
             );
             return;
           }
-          if (refreshed.data.amountRaw !== previousQuoteRaw) {
+          if (quoteFingerprint(refreshed.data) !== previousQuoteFingerprint) {
             setConfirmError(t`The quote changed. Review the updated amounts before confirming.`);
             return;
           }
@@ -559,9 +579,13 @@ export function PoolSwapPage({
               trackingId: result.trackingId,
               sendAmount: confirmedSendAmount,
               sendSymbol: selectedFrom.token.symbol,
+              sendToken: tokenIn,
               receiveAmount: confirmedReceiveAmount,
               receiveSymbol: selectedTo.token.symbol,
               receiveToken: tokenOut,
+              // The receipt reads its fees from the settlement event, which states
+              // them raw in the received voucher.
+              receiveDecimals: selectedTo.decimals,
               poolName: pool.name,
             },
           });
@@ -578,6 +602,9 @@ function SwapConfirmationSheet({
   fromSymbol,
   toAmount,
   toSymbol,
+  feeBreakdown,
+  feeDecimals,
+  locale,
   poolName,
   error,
   isPending,
@@ -589,6 +616,9 @@ function SwapConfirmationSheet({
   fromSymbol: string;
   toAmount: string;
   toSymbol: string;
+  feeBreakdown: PoolSwapFeeBreakdownRaw | null;
+  feeDecimals: number | null;
+  locale: string;
   poolName: string;
   error: string | null;
   isPending: boolean;
@@ -611,6 +641,33 @@ function SwapConfirmationSheet({
               </SwapConfirmationRow>
               <SwapConfirmationRow label={<Trans>You send</Trans>}>
                 {fromAmount} {fromSymbol}
+              </SwapConfirmationRow>
+              <SwapConfirmationRow label={<Trans>Pool fee</Trans>}>
+                <PoolSwapFeeValue
+                  breakdown={feeBreakdown}
+                  part="pool"
+                  decimals={feeDecimals}
+                  symbol={toSymbol}
+                  locale={locale}
+                />
+              </SwapConfirmationRow>
+              <SwapConfirmationRow label={<Trans>Protocol fee</Trans>}>
+                <PoolSwapFeeValue
+                  breakdown={feeBreakdown}
+                  part="protocol"
+                  decimals={feeDecimals}
+                  symbol={toSymbol}
+                  locale={locale}
+                />
+              </SwapConfirmationRow>
+              <SwapConfirmationRow label={<Trans>Total fees</Trans>}>
+                <PoolSwapFeeValue
+                  breakdown={feeBreakdown}
+                  part="total"
+                  decimals={feeDecimals}
+                  symbol={toSymbol}
+                  locale={locale}
+                />
               </SwapConfirmationRow>
               <SwapConfirmationRow label={<Trans>Pool</Trans>} last>
                 {poolName}
@@ -956,6 +1013,26 @@ function fixedEnteredAmount(amount: string, decimals: number | null, locale?: st
   } catch {
     return amount;
   }
+}
+
+/**
+ * What the confirmation sheet showed. Both amounts plus the gross and the two fees
+ * pin everything else: the total is their sum and the delivered output is the
+ * gross less it.
+ */
+function quoteFingerprint(quote: {
+  amountInRaw: string;
+  amountOutRaw: string;
+  feeBreakdown: PoolSwapFeeBreakdownRaw | null;
+}): string {
+  const fees = quote.feeBreakdown;
+  return [
+    quote.amountInRaw,
+    quote.amountOutRaw,
+    fees?.grossAmountOutRaw,
+    fees?.poolFeeRaw,
+    fees?.protocolFeeRaw,
+  ].join(":");
 }
 
 function isPositiveRawAmount(value: string): boolean {

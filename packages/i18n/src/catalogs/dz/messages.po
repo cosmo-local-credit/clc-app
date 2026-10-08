@@ -55,7 +55,7 @@ msgstr "{count, plural, other {# གསལ་བསྒྲགས}}"
 
 #. placeholder {0}: selected.symbol
 #. placeholder {1}: pool.name
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:414
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:435
 msgid "{0} approved for {1}."
 msgstr "{0} འདི་ {1} གི་དོན་ལུ་ཆ་འཇོག་གྲུབ་ཡོད།"
 
@@ -135,24 +135,28 @@ msgstr "{max} ལས་ {0}"
 #~ msgid "{0} offers"
 #~ msgstr "གོ་སྐབས་ {0}"
 
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offering-order-picker.tsx:150
+msgid "{0} quantity"
+msgstr "{0} གི་གྲངས་ཚད།"
+
 #. placeholder {0}: voucher.symbol
 #. placeholder {1}: pool.name
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:433
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:454
 msgid "{0} removed from {1}."
 msgstr "{0} འདི་ {1} ནང་ལས་བཏོན་ཡོད།"
 
 #. placeholder {0}: summary.total
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
-msgid "{0} reviews"
-msgstr "བསྐྱར་ཞིབ་ {0}"
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:92
+#~ msgid "{0} reviews"
+#~ msgstr "བསྐྱར་ཞིབ་ {0}"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:413
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:434
 msgid "{0} updated."
 msgstr "{0} དུས་མཐུན་བཟོ་ཡོད།"
 
 #. placeholder {0}: pool.voucherCount
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:410
 #: apps/web/src/features/home/ui/wallet-page.tsx:353
 #: apps/web/src/features/pools/ui/pools-page.tsx:550
 msgid "{0} vouchers"
@@ -167,7 +171,7 @@ msgstr "{amount} {0} ཕྱིར་བཏོན་ཡོད།"
 msgid "{available} of {limit} {denomination} available credit"
 msgstr "{limit} {denomination} ལས་ {available} སྤྱོད་ཆོག་པའི་ཡིད་རྟོན།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:104
+#: apps/web/src/features/wallet/ui/receive-page.tsx:108
 msgid "{chainName} address"
 msgstr "{chainName} ཁ་བྱང་།"
 
@@ -195,19 +199,27 @@ msgstr "{0} ལས་ {completedCount} ངེས་གཏན་བཟོ་ཡ�
 msgid "{current} / {0}"
 msgstr "{current} / {0}"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:189
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:198
 msgid "{filter}-star reviews · newest first"
 msgstr "སྐར་མ་ {filter} གི་བསྐྱར་ཞིབ་ · གསརཔ་ཧེ་མ།"
+
+#: apps/web/src/components/reviews/review-editor.tsx:18
+msgid "{formattedStars} out of 5 stars"
+msgstr "སྐར་མ་ ༥ ལས་ {formattedStars}"
 
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:51
 msgid "{pinIcon}, {pinColor}"
 msgstr "{pinIcon}, {pinColor}"
 
 #: apps/web/src/components/reviews/review-editor.tsx:10
-msgid "{stars} out of 5 stars"
-msgstr "སྐར་མ་ ༥ ལས་ {stars}"
+#~ msgid "{stars} out of 5 stars"
+#~ msgstr "སྐར་མ་ ༥ ལས་ {stars}"
 
-#: apps/web/src/components/reviews/review-editor.tsx:70
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
+msgid "{summaryTotal} reviews"
+msgstr "བསྐྱར་ཞིབ་ {summaryTotal}"
+
+#: apps/web/src/components/reviews/review-editor.tsx:83
 msgid "{value} stars"
 msgstr "སྐར་མ་ {value}"
 
@@ -227,7 +239,6 @@ msgstr "{withdrawable} {0} སྤྱོད་ཆོག "
 #. placeholder {0}: rate.value
 #. placeholder {1}: rate.unit
 #: apps/web/src/components/vouchers/voucher-about.tsx:48
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:290
 msgid "1 {symbol} = {0} {1}"
 msgstr "༡ {symbol} = {0} {1}"
 
@@ -235,7 +246,6 @@ msgstr "༡ {symbol} = {0} {1}"
 #~ msgid "1 offer"
 #~ msgstr "གོ་སྐབས་ ༡"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:408
 #: apps/web/src/features/home/ui/wallet-page.tsx:351
 #: apps/web/src/features/pools/ui/pools-page.tsx:548
 msgid "1 voucher"
@@ -326,7 +336,7 @@ msgstr "རྩིས་ཐོ་ཆ་འཇོག་བསྒུག་པའི
 msgid "Account not approved"
 msgstr "རྩིས་ཐོ་ཆ་འཇོག་མ་གྲུབ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "རྩིས་ཐོ་མ་ཐོབ།"
 
@@ -357,6 +367,11 @@ msgstr "བྱ་བ།"
 msgid "Add “{customValue}”"
 msgstr "“{customValue}” ཁ་སྐོང་རྐྱབ།"
 
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offering-order-picker.tsx:129
+msgid "Add {0} to order"
+msgstr "མངགས་ཐོ་ནང་ {0} ཁ་སྐོང་རྐྱབ།"
+
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:130
 msgid "Add a link"
 msgstr "འབྲེལ་ལམ་ཅིག་ཁ་སྐོང་རྐྱབ།"
@@ -366,6 +381,10 @@ msgstr "འབྲེལ་ལམ་ཅིག་ཁ་སྐོང་རྐྱབ
 msgid "Add a message or choose profile details"
 msgstr "འཕྲིན་དོན་ཅིག་ཁ་སྐོང་རྐྱབ་ ཡང་ན་ གསལ་སྡུད་ཁ་གསལ་གདམ་ཁ་རྐྱབ།"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:482
+msgid "Add a message or place an order"
+msgstr "འཕྲིན་དོན་ཁ་སྐོང་རྐྱབ་ ཡང་ན་ མངགས་ཐོ་བཀོད།"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:91
 msgid "Add a phone number to your profile to use MPESA."
 msgstr "MPESA ལག་ལེན་འཐབ་ནིའི་དོན་ལུ་ཁྱོད་ཀྱི་གསལ་སྡུད་ནང་ཁ་པར་ཨང་ཁ་སྐོང་རྐྱབ།"
@@ -374,7 +393,7 @@ msgstr "MPESA ལག་ལེན་འཐབ་ནིའི་དོན་ལུ
 msgid "Add a photo"
 msgstr "པར་ཅིག་ཁ་སྐོང་རྐྱབ།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:345
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:484
 msgid "Add a private message"
 msgstr "སྒེར་གྱི་འཕྲིན་དོན་ཅིག་ཁ་སྐོང་རྐྱབ།"
 
@@ -409,7 +428,7 @@ msgid "Add link"
 msgstr "འབྲེལ་ལམ་ཁ་སྐོང་རྐྱབ།"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:123
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:97
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:112
 msgid "Add offering"
 msgstr "གོ་སྐབས་ཁ་སྐོང་རྐྱབ།"
 
@@ -428,10 +447,10 @@ msgid "Add stables"
 msgstr "གཏན་འཇགས་དངུལ་ཁ་སྐོང་རྐྱབ།"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:497
-msgid "Add to cart"
-msgstr "ཉོ་སྣོད་ནང་ཁ་སྐོང་རྐྱབ།"
+#~ msgid "Add to cart"
+#~ msgstr "ཉོ་སྣོད་ནང་ཁ་སྐོང་རྐྱབ།"
 
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:117
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:135
 msgid "Add what you accept this voucher for, and it appears in the marketplace."
 msgstr "འཛིན་ཤོག་འདི་ག་ཅིའི་དོན་ལུ་དང་ལེན་འབདཝ་ཨིན་ན་ཁ་སྐོང་རྐྱབ། "
 "དེ་ལས་ཚོང་ར་ནང་མཐོང་འོང་།"
@@ -443,7 +462,7 @@ msgstr "ཁྱོད་ཀྱི་འབྲེལ་བ་ཁ་གསལ་ཁ
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:188
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:193
 #: apps/web/src/features/wallet/ui/recent-recipient-row.tsx:28
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:239
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:261
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:165
 msgid "Address"
 msgstr "ཁ་བྱང་།"
@@ -454,7 +473,7 @@ msgid "Address book"
 msgstr "ཁ་བྱང་དེབ།"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:41
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Address copied"
 msgstr "ཁ་བྱང་འདྲ་བཤུས་གྲུབ།"
 
@@ -462,7 +481,7 @@ msgstr "ཁ་བྱང་འདྲ་བཤུས་གྲུབ།"
 msgid "Admin"
 msgstr "བདག་སྐྱོང་པ།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:114
+#: apps/web/src/components/reviews/review-editor.tsx:127
 msgid "Admins will review your report. The review stays visible until they make "
 "a decision."
 msgstr "བདག་སྐྱོང་པ་ཚུ་གིས་ཁྱོད་ཀྱི་སྙན་ཞུ་བསྐྱར་ཞིབ་འབད་འོང་། "
@@ -477,7 +496,7 @@ msgstr "མཐོ་རིམ།"
 msgid "Advanced details"
 msgstr "མཐོ་རིམ་ཁ་གསལ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "མཐོ་རིམ་གདམ་ཁ།"
 
@@ -485,7 +504,7 @@ msgstr "མཐོ་རིམ་གདམ་ཁ།"
 msgid "All pools"
 msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས་ཆ་མཉམ།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:189
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:198
 msgid "All reviews · newest first"
 msgstr "བསྐྱར་ཞིབ་ཆ་མཉམ་ · གསརཔ་ཧེ་མ།"
 
@@ -510,12 +529,12 @@ msgstr "ཧེ་མ་ལས་རྩིས་ཐོ་ཡོད་ག?"
 #~ "ཉེན་སྲུང་ཐོག་བཞག"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:156
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:208
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:367
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:190
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:325
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:581
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:692
@@ -523,14 +542,22 @@ msgstr "ཧེ་མ་ལས་རྩིས་ཐོ་ཡོད་ག?"
 msgid "Amount"
 msgstr "དངུལ་བསྡོམས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:406
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:423
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:264
 msgid "Amount exceeds your balance"
 msgstr "དངུལ་བསྡོམས་འདི་ཁྱོད་ཀྱི་ལྷག་དངུལ་ལས་བརྒལ་ཡོད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:776
 msgid "Amount in pool"
 msgstr "དངུལ་ཁུངས་ནང་གི་དངུལ་བསྡོམས།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:175
+msgid "Amount to collect"
+msgstr "བསྡུ་ལེན་འབད་ནིའི་དངུལ་བསྡོམས།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "ཤོག་བྱང་བཤེར་ནི་གཞན་ཅིག་ད་ལྟོ་རང་འབད་དེ་ཡོད། ལོག་སྟེ་འབད།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -558,10 +585,10 @@ msgstr "ལག་ལེན་འཐབ།"
 msgid "Apply filters"
 msgstr "ཚགས་མ་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:241
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:111
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:575
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:246
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:118
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:587
 msgid "Approve voucher"
 msgstr "འཛིན་ཤོག་ཆ་འཇོག་འབད།"
 
@@ -593,7 +620,7 @@ msgstr "རྒྱབ་ལོག"
 msgid "Back to market"
 msgstr "ཚོང་ར་ལུ་ལོག"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:248
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
 msgid "Back to pool"
 msgstr "དངུལ་ཁུངས་ལུ་ལོག"
 
@@ -661,7 +688,7 @@ msgstr "ས་གནས་དངུལ་གྱིས་གཏན་འཇགས
 msgid "Buy USD₮ with KES."
 msgstr "KES གིས་ USD₮ ཉོ།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:319
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:361
 msgid "Call"
 msgstr "ཁ་པར་གཏང་།"
 
@@ -669,17 +696,19 @@ msgstr "ཁ་པར་གཏང་།"
 msgid "Camera access denied."
 msgstr "པར་ཆས་ལག་ལེན་ཆོག་ཐམ་མ་བྱིན།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
-#: apps/web/src/components/reviews/review-editor.tsx:132
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
+#: apps/web/src/components/reviews/review-editor.tsx:145
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:476
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:635
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:692
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:347
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:597
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
 #: apps/web/src/features/wallet/ui/address-book-sheet.tsx:73
+#: apps/web/src/features/wallet/ui/collect-page.tsx:229
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:404
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:83
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:492
@@ -702,6 +731,22 @@ msgstr "པར་ {0} གི་པར་བཤད།"
 msgid "Caption must be 500 characters or fewer"
 msgstr "པར་བཤད་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:129
+msgid "Card collection isn't available on this server yet."
+msgstr "ཞབས་ཏོག་འཕྲུལ་ཆས་འདི་གུ་ཤོག་བྱང་གིས་བསྡུ་ལེན་འབད་ནི་ད་ཚུན་མི་འཐོབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:313
+msgid "Card held:"
+msgstr "ད་ལྟོའི་ཤོག་བྱང་:"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:325
+msgid "Card read — processing {amount}"
+msgstr "ཤོག་བྱང་ལྷག་ཚར་ཡོད་ — {amount} སྤྲོད་ལེན་འབད་དོ"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "ཤོག་བྱང་ལྷག་ཚར་ཡོད་ — ནང་འཛུལ་འབད་དོ"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
 msgid "Cash"
@@ -718,7 +763,7 @@ msgstr "{0} གུ་དངུལ་རྐྱང་ཞབས་ཏོག་མ�
 msgid "Categories"
 msgstr "དབྱེ་རིམ་ཚུ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:756
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:768
 msgid "Change"
 msgstr "བསྒྱུར།"
 
@@ -742,6 +787,10 @@ msgid "Changes how the voucher is shown. The deployed contract keeps its name."
 msgstr "འཛིན་ཤོག་སྟོན་ཐངས་བསྒྱུར་འོང་། "
 "གསར་སྤེལ་འབད་ཡོད་པའི་གན་རྒྱ་གིས་མིང་རང་འཇགས་བཞག་འོང་།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:225
+msgid "Charge this card {amountText}"
+msgstr "ཤོག་བྱང་འདི་ལུ་ {amountText} བཀལ།"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:491
 msgid "Charged on every swap this pool settles."
 msgstr "དངུལ་ཁུངས་འདི་གིས་གཏན་འཁེལ་འབད་མི་བརྗེ་ལེན་རེ་རེ་ལུ་གླ་ཡོན་བཀལ་འོང་།"
@@ -762,6 +811,15 @@ msgstr "གསར་བཏོན་གནས་ཚད་ཞིབ་དཔྱད
 msgid "Check supply again"
 msgstr "བཀྲམ་སྤེལ་ལོག་སྟེ་ཞིབ་དཔྱད་འབད།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+msgid "Checking"
+msgstr "ཞིབ་དཔྱད་འབད་དོ།"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:308
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:887
+msgid "Checking approved vouchers…"
+msgstr "ཆ་འཇོག་གྲུབ་པའི་འཛིན་ཤོག་ཚུ་ཞིབ་དཔྱད་འབད་དོ…"
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:122
 msgid "Checking availability..."
 msgstr "ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་དོ..."
@@ -775,11 +833,11 @@ msgstr "ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད
 msgid "Checking creation status"
 msgstr "གསར་བཏོན་གནས་ཚད་ཞིབ་དཔྱད་འབད་དོ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:285
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:303
 msgid "Checking how this pool prices vouchers…"
 msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤོག་གནས་གོང་ག་དེ་སྦེ་བཀལཝ་ཨིན་ན་ཞིབ་དཔྱད་འབད་དོ…"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:302
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:403
 msgid "Checking message availability…"
 msgstr "འཕྲིན་དོན་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་དོ…"
 
@@ -791,11 +849,19 @@ msgstr "འཕྲིན་དོན་ཐོབ་ཚུགས་མི་ཞི
 msgid "Checking notification support on this device."
 msgstr "ཐབས་འཕྲུལ་འདི་གུ་བརྡ་བསྐུལ་རྒྱབ་སྐྱོར་ཡོད་མེད་ཞིབ་དཔྱད་འབད་དོ།"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:450
+msgid "Checking order availability…"
+msgstr "མངགས་ཐོ་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་དོ…"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:31
 msgid "Checking passkey status…"
 msgstr "ནང་འཛུལ་ལྡེ་མིག་གནས་ཚད་ཞིབ་དཔྱད་འབད་དོ…"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:125
+#: apps/web/src/features/wallet/ui/collect-page.tsx:338
+msgid "Checking payment…"
+msgstr "སྤྲོད་ལེན་ཞིབ་དཔྱད་འབད་དོ…"
+
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:134
 msgid "Checking review eligibility…"
 msgstr "བསྐྱར་ཞིབ་འབད་ཆོག་མི་ཞིབ་དཔྱད་འབད་དོ…"
 
@@ -807,7 +873,7 @@ msgstr "བཀྲམ་སྤེལ་ཞིབ་དཔྱད་འབད་ད
 msgid "Checking voucher availability…"
 msgstr "འཛིན་ཤོག་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་དོ…"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:369
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:376
 msgid "Checking which vouchers this pool takes…"
 msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤོག་ག་ཅི་དང་ལེན་འབདཝ་ཨིན་ན་ཞིབ་དཔྱད་འབད་དོ…"
 
@@ -957,9 +1023,9 @@ msgstr "ས་གནས་བསལ།"
 msgid "Clear search"
 msgstr "འཚོལ་ཞིབ་བསལ།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:389
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:143
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:274
+#: apps/web/src/components/offerings/offerings-panel.tsx:388
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:142
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:296
 #: apps/web/src/features/home/ui/report-page.tsx:290
 msgid "Close"
 msgstr "ཁ་བསྡམ།"
@@ -981,13 +1047,22 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་བཤེར་ཆ
 msgid "Close password-protected wallet import"
 msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་དངུལ་ཁུག་ནང་འདྲེན་ཁ་བསྡམ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "སྒེར་ལྡེའི་འབྲི་ཤོག་ཁ་བསྡམ།"
 
 #: apps/web/src/components/ui/map-sheet.tsx:253
 msgid "Collapse"
 msgstr "བསྡུ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:258
+msgid "Collect again from this card"
+msgstr "ཤོག་བྱང་འདི་ལས་ལོག་སྟེ་བསྡུ་ལེན་འབད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:113
+#: apps/web/src/features/wallet/ui/receive-page.tsx:138
+msgid "Collect by card"
+msgstr "ཤོག་བྱང་གིས་བསྡུ་ལེན་འབད།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 msgid "Collect fees"
@@ -1003,7 +1078,7 @@ msgid "Collected swap fees are paid here. Your own wallet is {0}."
 msgstr "བསྡུ་ལེན་འབད་མི་བརྗེ་ལེན་གླ་ཡོན་ཚུ་ནཱ་ལུ་སྤྲོད་འོང་། "
 "ཁྱོད་རའི་དངུལ་ཁུག་འདི་ {0} ཨིན།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:86
+#: apps/web/src/components/reviews/review-editor.tsx:99
 msgid "Comment (optional)"
 msgstr "བསམ་འཆར་ (གདམ་ཁ་ཅན)"
 
@@ -1014,6 +1089,11 @@ msgstr "མི་སྡེའི་འཛིན་ཤོག་ཚུ་དང་
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 msgid "Complete"
 msgstr "མཇུག་བསྡུ།"
+
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:205
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
+msgid "Complete fee details are unavailable for this swap."
+msgstr "བརྗེ་སོར་འདིའི་གླ་ཡོན་ཁ་གསལ་ཆ་ཚང་མི་ཐོབ།"
 
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:130
 msgid "Complete the browser permission prompt to continue."
@@ -1054,16 +1134,17 @@ msgstr "གསང་ཚིག་ངེས་གཏན་བཟོ།"
 msgid "Confirm send"
 msgstr "གཏང་ནི་ངེས་གཏན་བཟོ།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:604
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:627
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:634
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
 msgid "Confirm swap"
 msgstr "བརྗེ་ལེན་ངེས་གཏན་བཟོ།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:196
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:251
+#: apps/web/src/features/wallet/ui/collect-page.tsx:430
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
 msgid "Confirmed"
 msgstr "ངེས་གཏན་གྲུབ།"
 
@@ -1105,8 +1186,8 @@ msgstr "མཐུད་ཡོད་པའི་ཁ་བྱང་།"
 msgid "Connecting wallet..."
 msgstr "དངུལ་ཁུག་མཐུད་དོ..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "མཐུད་དོ..."
 
@@ -1115,7 +1196,7 @@ msgstr "མཐུད་དོ..."
 msgid "Connecting…"
 msgstr "མཐུད་དོ…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1163,7 +1244,7 @@ msgstr "CLC ལུ་འཕྲོ་མཐུད།"
 msgid "Continue to wallet"
 msgstr "དངུལ་ཁུག་ལུ་འཕྲོ་མཐུད།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "{providerLabel} དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
@@ -1171,7 +1252,7 @@ msgstr "{providerLabel} དང་ཅིག་ཁར་འཕྲོ་མཐུ�
 msgid "Continue with paper wallet"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
@@ -1187,7 +1268,7 @@ msgstr "གན་རྒྱའི་ཁ་བྱང་།"
 msgid "Contract address copied"
 msgstr "གན་རྒྱའི་ཁ་བྱང་འདྲ་བཤུས་གྲུབ།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:136
+#: apps/web/src/features/wallet/ui/receive-page.tsx:151
 msgid "Copy"
 msgstr "འདྲ་བཤུས།"
 
@@ -1205,7 +1286,7 @@ msgstr "གསར་སྤེལ་ཉོ་ཚོང་ཧེཤ་འདྲ་
 msgid "Copy fee recipient"
 msgstr "གླ་ཡོན་ལེན་མི་འདྲ་བཤུས།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:441
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:393
 msgid "Copy link"
 msgstr "འབྲེལ་ལམ་འདྲ་བཤུས།"
 
@@ -1234,19 +1315,19 @@ msgstr "འབྱོར་ཡིག་འདྲ་བཤུས།"
 msgid "Copy supply creation transaction hash"
 msgstr "བཀྲམ་སྤེལ་གསར་བཏོན་ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:198
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:176
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
 msgid "Copy transaction hash"
 msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:98
+#: apps/web/src/features/wallet/ui/receive-page.tsx:102
 msgid "Copy wallet address"
 msgstr "དངུལ་ཁུག་ཁ་བྱང་འདྲ་བཤུས།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:75
-#: apps/web/src/features/wallet/ui/receive-page.tsx:78
+#: apps/web/src/features/wallet/ui/receive-page.tsx:82
 msgid "Copy wallet username"
 msgstr "དངུལ་ཁུག་གི་ལག་ལེན་པའི་མིང་འདྲ་བཤུས།"
 
@@ -1293,26 +1374,35 @@ msgstr "ཁྱོད་ཀྱི་པར་ཡར་བཙུགས་འབད
 msgid "Couldn't check creditable pools."
 msgstr "བརྗེ་ལེན་འབད་བཏུབ་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:311
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:412
 msgid "Couldn't check message availability."
 msgstr "འཕྲིན་དོན་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:460
+msgid "Couldn't check order availability."
+msgstr "མངགས་ཐོ་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/pools/ui/pools-page.tsx:340
 msgid "Couldn't check voucher availability."
 msgstr "འཛིན་ཤོག་ཐོབ་ཚུགས་མི་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:374
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:209
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:894
+msgid "Couldn't check which vouchers are already approved."
+msgstr "ཧེ་མ་ལས་ཆ་འཇོག་གྲུབ་པའི་འཛིན་ཤོག་ཚུ་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤོག་ག་ཅི་དང་ལེན་འབདཝ་ཨིན་ན་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:130
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:139
 msgid "Couldn't check your review access."
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་འཛུལ་སྤྱོད་ཞིབ་དཔྱད་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:36
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:42
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy address"
 msgstr "ཁ་བྱང་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
@@ -1331,8 +1421,8 @@ msgstr "གསར་སྤེལ་ཉོ་ཚོང་ཧེཤ་འདྲ་
 msgid "Couldn't copy fee recipient"
 msgstr "གླ་ཡོན་ལེན་མི་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:450
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:456
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:402
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:408
 msgid "Couldn't copy link"
 msgstr "འབྲེལ་ལམ་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
@@ -1361,20 +1451,20 @@ msgstr "འབྱོར་ཡིག་འདྲ་བཤུས་འབད་མ
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "བཀྲམ་སྤེལ་གསར་བཏོན་ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:63
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:83
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:141
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:147
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:132
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:138
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:163
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:169
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:153
 msgid "Couldn't copy transaction hash"
 msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:43
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:49
-#: apps/web/src/features/wallet/ui/receive-page.tsx:22
-#: apps/web/src/features/wallet/ui/receive-page.tsx:29
+#: apps/web/src/features/wallet/ui/receive-page.tsx:26
+#: apps/web/src/features/wallet/ui/receive-page.tsx:33
 msgid "Couldn't copy username"
 msgstr "ལག་ལེན་པའི་མིང་འདྲ་བཤུས་འབད་མ་ཚུགས།"
 
@@ -1386,8 +1476,8 @@ msgstr "བཀྲམ་སྤེལ་དང་པ་གསར་བཏོན་
 msgid "Couldn't create vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་བཟོ་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:399
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:402
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:407
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:410
 msgid "Couldn't estimate this swap."
 msgstr "བརྗེ་ལེན་འདིའི་ཚོད་རྩིས་རྐྱབ་མ་ཚུགས།"
 
@@ -1398,12 +1488,12 @@ msgstr "ནཱ་ལུ་རྒྱལ་ཁབ་ངོས་འཛིན་འ
 #: apps/web/src/features/home/ui/activity-page.tsx:58
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:77
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:218
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:570
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:571
 msgid "Couldn't load activity."
 msgstr "བྱ་བ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:36
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:201
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:215
 msgid "Couldn't load credit limits."
 msgstr "ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1411,7 +1501,7 @@ msgstr "ཡིད་རྟོན་ཚད་ཚུ་མངོན་གསལ་
 msgid "Couldn't load holdings."
 msgstr "བཟུང་བཞག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:134
+#: apps/web/src/components/offerings/offerings-panel.tsx:143
 msgid "Couldn't load offerings."
 msgstr "གོ་སྐབས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1426,7 +1516,7 @@ msgid "Couldn't load pools."
 msgstr "དངུལ་ཁུངས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
 #: apps/web/src/features/home/ui/report-filter-ui.tsx:85
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:461
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:462
 msgid "Couldn't load posts."
 msgstr "གསལ་བསྒྲགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1434,7 +1524,7 @@ msgstr "གསལ་བསྒྲགས་ཚུ་མངོན་གསལ་འ
 msgid "Couldn't load Pretium history."
 msgstr "Pretium ལོ་རྒྱུས་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:68
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:77
 msgid "Couldn't load reviews."
 msgstr "བསྐྱར་ཞིབ་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1446,12 +1536,12 @@ msgstr "ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་
 msgid "Couldn't load the private attachment."
 msgstr "སྒེར་གྱི་མཐུད་ཡིག་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:93
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:284
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:98
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:260
 msgid "Couldn't load this pool."
 msgstr "དངུལ་ཁུངས་འདི་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:822
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:879
 msgid "Couldn't load this pool's vouchers."
 msgstr "དངུལ་ཁུངས་འདིའི་འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
@@ -1464,7 +1554,7 @@ msgid "Couldn't load this post. You can only edit posts you wrote."
 msgstr "གསལ་བསྒྲགས་འདི་མངོན་གསལ་འབད་མ་ཚུགས། "
 "ཁྱོད་རང་གིས་བྲིས་མི་གསལ་བསྒྲགས་རྐྱངམ་ཅིག་ཞུན་དག་འབད་ཚུགས།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:141
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:140
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:137
 msgid "Couldn't load this voucher."
 msgstr "འཛིན་ཤོག་འདི་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -1482,8 +1572,11 @@ msgstr "འཛིན་ཤོག་གདམ་ཁ་ཚུ་མངོན་ག
 msgid "Couldn't load voucher tags."
 msgstr "འཛིན་ཤོག་ངོ་རྟགས་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:162
+msgid "Couldn't load vouchers"
+msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:218
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:965
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:152
 msgid "Couldn't load vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་མ་ཚུགས།"
@@ -1511,6 +1604,10 @@ msgid "Couldn't open installation. Follow these instructions or try again "
 msgstr "གཞི་བཙུགས་ཁ་ཕྱེ་མ་ཚུགས། བཀོད་རྒྱ་འདི་ཚུ་ལག་ལེན་འཐབ་ "
 "ཡང་ན་ཤུལ་ལས་ལོག་འབད།"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:378
+msgid "Couldn't prepare this order. Please review it and try again."
+msgstr "མངགས་ཐོ་འདི་བཟོ་མ་ཚུགས། བསྐྱར་ཞིབ་འབད་དེ་ལོག་འབད་གནང་།"
+
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:201
 msgid "Couldn't publish your pool."
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་ཁྱབ་བསྒྲགས་འབད་མ་ཚུགས།"
@@ -1518,6 +1615,11 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་ཁྱབ་བ
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:220
 msgid "Couldn't publish your voucher."
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་མ་ཚུགས།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:122
+msgid "Couldn't reach the payment relay. Check your connection and try again."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་ལུ་ལྷོད་མ་ཚུགས། "
+"ཁྱོད་ཀྱི་མཐུད་ལམ་ཞིབ་དཔྱད་འབད་དེ་ལོག་འབད།"
 
 #: apps/web/src/features/app-updates/ui/app-update-banner.tsx:77
 msgid "Couldn’t reach the update. Check your connection and try again."
@@ -1527,12 +1629,18 @@ msgstr "དུས་མཐུན་ལུ་ལྷོད་མ་ཚུགས།
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "འཛིན་ཤོག་འདི་གིས་བཅུ་ཚག་ག་དེམ་ཅིག་ལག་ལེན་འཐབ་ཨིན་ན་ལྷག་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "ཤོག་བྱང་འདི་ལྷག་མ་ཚུགས། "
+"ཁྱོད་ཀྱི་ཁ་པར་གྱི་རྒྱབ་ཁར་མ་གཡོ་བར་བཞག་སྟེ་ལོག་འབད།"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:213
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
 msgstr "འཛིན་ཤོག་འདིའི་ད་ལྟོའི་ཚད་གཞི་ལྷག་མ་ཚུགས་པས། ད་ལྟོ་བསྒྱུར་མི་ཚུགས།"
 
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:83
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:94
 msgid "Couldn't remove the offering."
 msgstr "གོ་སྐབས་བཏོན་མ་ཚུགས།"
 
@@ -1572,17 +1680,17 @@ msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་སྲུང་
 msgid "Couldn't save your username."
 msgstr "ལག་ལེན་པའི་མིང་སྲུང་མ་ཚུགས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:40
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:49
 msgid "Couldn't save. Please try again."
 msgstr "སྲུང་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:367
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:907
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:935
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:213
 msgid "Couldn't search vouchers."
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་མ་ཚུགས།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:418
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:584
 msgid "Couldn't share this message."
 msgstr "འཕྲིན་དོན་འདི་རུབ་སྤྱོད་འབད་མ་ཚུགས།"
 
@@ -1606,8 +1714,8 @@ msgstr "བདག་དབང་སྤོ་བཤུད་འབད་མ་ཚ
 msgid "Couldn't upload that photo. Try again."
 msgstr "པར་འདི་ཡར་བཙུགས་འབད་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:504
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:532
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:524
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:552
 msgid "Couldn't verify this swap. Try again."
 msgstr "བརྗེ་ལེན་འདི་བདེན་དཔྱད་འབད་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
@@ -1635,8 +1743,8 @@ msgstr "གསར་བཟོ།"
 msgid "Create account"
 msgstr "རྩིས་ཐོ་གསར་བཟོ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "རྩིས་ཐོ་ཅིག་གསར་བཟོ།"
 
@@ -1679,12 +1787,12 @@ msgstr "ཁྱོད་ཀྱི་རྩིས་ཐོ་གསར་བཟོ
 
 #: apps/web/src/features/home/ui/activity-page.tsx:105
 #: apps/web/src/features/home/ui/report-page.tsx:558
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:57
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:616
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:71
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:617
 msgid "Created"
 msgstr "གསར་བཟོ་གྲུབ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:196
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:197
 msgid "Created in the pool"
 msgstr "དངུལ་ཁུངས་ནང་གསར་བཏོན་འབད་ཡི།"
 
@@ -1718,7 +1826,7 @@ msgstr "གསར་བཏོན་འབད་མ་ཚུགས།"
 msgid "Credit"
 msgstr "ཡིད་རྟོན།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:498
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:510
 msgid "Credit limit"
 msgstr "ཡིད་རྟོན་ཚད།"
 
@@ -1734,7 +1842,7 @@ msgstr "སྒེར་མོས་བཟོ།"
 msgid "Cyan"
 msgstr "སྔོན་སྐྱ།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:567
+#: apps/web/src/components/offerings/offerings-panel.tsx:521
 msgid "Daily"
 msgstr "ཉིན་བསྟར།"
 
@@ -1743,7 +1851,7 @@ msgid "Dark"
 msgstr "གནགཔོ།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:149
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:589
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:726
 msgid "Date"
@@ -1764,9 +1872,14 @@ msgstr "བཅུ་ཚག"
 msgid "Decimals must be a whole number from 0 to 18"
 msgstr "བཅུ་ཚག་འདི་ ༠ ལས་ ༡༨ ཚུན་གྱི་ཧྲིལ་གྲངས་ཅིག་དགོ"
 
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offering-order-picker.tsx:143
+msgid "Decrease {0} quantity"
+msgstr "{0} གི་གྲངས་ཚད་མར་ཕབ་འབད།"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:451
-msgid "Decrease quantity"
-msgstr "མང་ཉུང་ཕབ།"
+#~ msgid "Decrease quantity"
+#~ msgstr "མང་ཉུང་ཕབ།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:1015
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:50
@@ -1789,11 +1902,15 @@ msgstr "གསར་སྤེལ་ཉོ་ཚོང་།"
 msgid "Deployment transaction hash copied"
 msgstr "གསར་སྤེལ་ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་གྲུབ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:59
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:158
 msgid "Deposit"
 msgstr "བཙུགས་དངུལ།"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:986
+msgid "Deposited in this pool"
+msgstr "དངུལ་ཁུངས་འདི་ནང་བཙུགས་བཞག་ཡོད་པ།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:858
 msgid "Describe the rules for joining and using this pool..."
@@ -1810,7 +1927,7 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུངས་བཤད།"
 msgid "Description"
 msgstr "འགྲེལ་བཤད།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:312
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:354
 msgid "Directions"
 msgstr "ལམ་སྟོན།"
 
@@ -1839,12 +1956,16 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "སྟོན་མིང་ཡིག་འབྲུ་ ༡༢༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:97
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:295
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:248
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:521
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:333
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:383
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:270
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:716
 msgid "Done"
 msgstr "འགྲུབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:261
+msgid "Done with this customer"
+msgstr "ཉོ་མི་འདི་མཇུག་བསྡུ།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:286
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:293
@@ -1905,7 +2026,7 @@ msgstr "ངོ་རྟགས་རེ་རེ་ཐེངས་གཅིག་
 msgid "Each voucher can only be linked once"
 msgstr "འཛིན་ཤོག་རེ་རེ་ཐེངས་གཅིག་རྐྱངམ་ཅིག་འབྲེལ་མཐུད་འབད་ཆོག"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:301
+#: apps/web/src/components/offerings/offerings-panel.tsx:313
 #: apps/web/src/features/home/ui/report-page.tsx:89
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:117
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:150
@@ -1944,11 +2065,11 @@ msgstr "གསལ་སྡུད་ཞུན་དག"
 msgid "Edit voucher details"
 msgstr "འཛིན་ཤོག་ཁ་གསལ་ཞུན་དག"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:228
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:237
 msgid "Edit your reply"
 msgstr "ཁྱོད་ཀྱི་ལན་ཞུན་དག"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:170
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:179
 msgid "Edit your review"
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་ཞུན་དག"
 
@@ -1964,7 +2085,7 @@ msgstr "ཤེས་ཡོན་"
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:249
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:69
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:58
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:381
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:528
 msgid "Email"
 msgstr "གློག་འཕྲིན།"
 
@@ -2012,7 +2133,7 @@ msgstr "ལག་ལེན་པའི་མིང་ མཉམ་སྤྱོ�
 msgid "Enter a valid date and time"
 msgstr "ཆ་གནས་ཅན་གྱི་ཚེས་གྲངས་དང་ཆུ་ཚོད་བཙུགས།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་ཡང་ན་ཤོག་གུའི་དངུལ་ཁུག་བཙུགས།"
 
@@ -2026,7 +2147,7 @@ msgid "Enter a valid website URL including https://"
 msgstr "https:// རྩིས་ཏེ་ཆ་གནས་ཅན་གྱི་ཡོངས་འབྲེལ་ས་ཚིགས་ URL བཙུགས།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:234
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:435
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:452
 msgid "Enter an amount greater than zero."
 msgstr "ཀླད་ཀོར་ལས་སྦོམ་པའི་དངུལ་བསྡོམས་བཙུགས།"
 
@@ -2083,11 +2204,11 @@ msgid "Every account gets a paper wallet. Linking {providerLabel} adds another "
 msgstr "རྩིས་ཐོ་རེ་རེ་ལུ་ཤོག་གུའི་དངུལ་ཁུག་ཅིག་ཐོབ། {providerLabel} "
 "འབྲེལ་མཐུད་འབད་བ་ཅིན་ནང་འཛུལ་གྱི་ཐབས་ལམ་གཞན་ཅིག་ཁ་སྐོང་འགྱོ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:478
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:490
 msgid "Exchange rate"
 msgstr "བརྗེ་སྤོར་ཚད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:485
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:497
 msgid "Exchange rate relative to the default voucher ({unitSymbol})"
 msgstr "སྔོན་སྒྲིག་འཛིན་ཤོག་ ({unitSymbol}) དང་བསྡུར་བའི་བརྗེ་སྤོར་ཚད།"
 
@@ -2110,11 +2231,12 @@ msgid "Expiring"
 msgstr "དུས་ཡོལ་འགྱོ་དོ།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/collect-page.tsx:432
 msgid "Failed"
 msgstr "མ་འགྲུབ།"
 
@@ -2127,8 +2249,8 @@ msgid "Farming"
 msgstr "སོ་ནམ།"
 
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:246
-msgid "fee"
-msgstr "གླ་ཡོན།"
+#~ msgid "fee"
+#~ msgstr "གླ་ཡོན།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:101
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:150
@@ -2137,6 +2259,11 @@ msgstr "གླ་ཡོན་ % དང་ལེན་མི།"
 
 #~ msgid "Fee calculated at confirmation"
 #~ msgstr "གླ་ཡོན་འདི་ངེས་གཏན་བཟོ་བའི་སྐབས་རྩིས་བཏོན་འབད་འོང་།"
+
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:212
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:261
+msgid "Fee details unavailable."
+msgstr "གླ་ཡོན་ཁ་གསལ་མི་ཐོབ།"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:46
 msgid "Fee policy"
@@ -2155,8 +2282,8 @@ msgid "Fee recipient copied"
 msgstr "གླ་ཡོན་ལེན་མི་འདྲ་བཤུས་གྲུབ།"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:359
-msgid "Fees"
-msgstr "གླ་ཡོན་ཚུ།"
+#~ msgid "Fees"
+#~ msgstr "གླ་ཡོན་ཚུ།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:583
 msgid "Fees are held apart from pool liquidity"
@@ -2248,13 +2375,13 @@ msgstr "ཁྱོད་ཀྱི་པར་གཞི་སྒྲོམ་ནང
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
 #: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:136
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:177
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:629
 msgid "From"
 msgstr "གང་ལས།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:301
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:324
 msgid "Get"
 msgstr "ཐོབ།"
 
@@ -2293,6 +2420,10 @@ msgstr "འཕྲོད་བསྟེན།"
 msgid "Helps members find and understand your pool"
 msgstr "འཐུས་མི་ཚུ་གིས་ཁྱོད་ཀྱི་དངུལ་ཁུངས་འཚོལ་ནི་དང་ཧ་གོ་ནི་ལུ་ཕན་ཐོགས།"
 
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "ཤོག་བྱང་འདི་ཁྱོད་ཀྱི་ཁ་པར་གྱི་རྒྱབ་ཁར་ལེབ་ཏོག་ཏོ་སྦེ་བཞག"
+
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
 msgid "Holdings"
@@ -2322,7 +2453,7 @@ msgid "How many vouchers to create once this voucher is published"
 msgstr "འཛིན་ཤོག་འདི་ཁྱབ་བསྒྲགས་འབད་ཚརཝ་ད་འཛིན་ཤོག་ག་དེམ་ཅིག་གསར་བཟོ་ནི་ཨིན་ན།"
 
 #. placeholder {0}: selected.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:505
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:517
 msgid "How much value in {unitSymbol} can be swapped from the pool using {0} "
 "vouchers?"
 msgstr "{0} འཛིན་ཤོག་ལག་ལེན་འཐབ་སྟེ་དངུལ་ཁུངས་ནང་ལས་ {unitSymbol} "
@@ -2358,7 +2489,7 @@ msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "ང་གིས་ལྡེ་མིག་འདི་སྲུང་ཡོད། "
 "བྱང་སྟོར་ཤོར་བ་ཅིན་ངའི་དངུལ་ཁུག་སླར་གསོ་འབད་མི་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:208
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:285
 msgid "I made a swap."
 msgstr "ང་གིས་བརྗེ་ལེན་ཅིག་འབད་ཡོད།"
 
@@ -2371,20 +2502,20 @@ msgstr "ང་གིས་ {senderLabel} ལས་ {amountLabel} ཐོབ་ཅ
 #~ msgstr "ང་གིས་ {amountLabel} ཐོབ་ཡོད།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:185
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:237
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:259
 msgid "I sent {amountLabel} to {recipientLabel}."
 msgstr "ང་གིས་{amountLabel} འདི་ {recipientLabel} ལུ་བཏང་ཡོད།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:238
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:260
 msgid "I sent a payment."
 msgstr "ང་གིས་སྐྱེལ་འབབ་ཅིག་བཏང་ཡོད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:206
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:283
 msgid "I swapped {sentLabel} for {amountLabel} in {poolName}."
 msgstr "ང་གིས་{sentLabel} འདི་ {poolName} ནང་ {amountLabel} "
 "དང་བརྗེ་ལེན་འབད་ཡོད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:207
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:284
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "ང་གིས་{sentLabel} འདི་ {amountLabel} དང་བརྗེ་ལེན་འབད་ཡོད།"
 
@@ -2411,16 +2542,21 @@ msgid "In network"
 msgstr "ཡོངས་འབྲེལ་ནང་།"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:952
-msgid "In this pool"
-msgstr "དངུལ་ཁུངས་འདི་ནང་།"
+#~ msgid "In this pool"
+#~ msgstr "དངུལ་ཁུངས་འདི་ནང་།"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:159
 msgid "Inactive"
 msgstr "ཤུགས་མེད།"
 
+#. placeholder {0}: offering.name
+#: apps/web/src/components/offerings/offering-order-picker.tsx:159
+msgid "Increase {0} quantity"
+msgstr "{0} གི་གྲངས་ཚད་ཡར་སེང་འབད།"
+
 #: apps/web/src/components/offerings/offerings-panel.tsx:466
-msgid "Increase quantity"
-msgstr "མང་ཉུང་ཡར་སེང་།"
+#~ msgid "Increase quantity"
+#~ msgstr "མང་ཉུང་ཡར་སེང་།"
 
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:280
 msgid "Info"
@@ -2489,7 +2625,7 @@ msgstr "གསེག་ཡིག"
 msgid "Item"
 msgstr "ཅ་ཆས།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:547
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:559
 msgid "Keep"
 msgstr "བཞག"
 
@@ -2574,7 +2710,7 @@ msgstr "འབྲེལ་ལམ་ཁ་བྱང་།"
 msgid "Link at most 12 vouchers"
 msgstr "འཛིན་ཤོག་ ༡༢ ལས་མ་བརྒལ་བར་འབྲེལ་མཐུད།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:455
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:407
 msgid "Link copied"
 msgstr "འབྲེལ་ལམ་འདྲ་བཤུས་གྲུབ།"
 
@@ -2642,14 +2778,14 @@ msgstr "ལི་ཊར།"
 msgid "Load more"
 msgstr "ཧེང་བཀལ་མངོན་གསལ།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
 msgid "Load more reviews"
 msgstr "བསྐྱར་ཞིབ་ཧེང་བཀལ་མངོན་གསལ།"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:52
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:71
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:212
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:564
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:565
 msgid "Loading activity…"
 msgstr "བྱ་བ་མངོན་གསལ་འབད་དོ…"
 
@@ -2682,22 +2818,22 @@ msgstr "ས་གནས་ས་ཁྲ་མངོན་གསལ་འབད་
 msgid "Loading marketplace…"
 msgstr "ཚོང་ར་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:172
+#: apps/web/src/components/offerings/offerings-panel.tsx:182
 #: apps/web/src/features/home/ui/activity-page.tsx:153
 #: apps/web/src/features/home/ui/posts-page.tsx:139
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:105
 #: apps/web/src/features/pools/ui/pools-page.tsx:524
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:508
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:649
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:509
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:650
 msgid "Loading more…"
 msgstr "ཧེང་བཀལ་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:127
+#: apps/web/src/components/offerings/offerings-panel.tsx:136
 msgid "Loading offerings…"
 msgstr "གོ་སྐབས་ཚུ་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:281
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:95
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:257
 msgid "Loading pool…"
 msgstr "དངུལ་ཁུངས་མངོན་གསལ་འབད་དོ…"
 
@@ -2711,8 +2847,8 @@ msgid "Loading post…"
 msgstr "གསལ་བསྒྲགས་མངོན་གསལ་འབད་དོ…"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:106
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:436
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:454
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:437
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:455
 msgid "Loading posts…"
 msgstr "གསལ་བསྒྲགས་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -2720,7 +2856,7 @@ msgstr "གསལ་བསྒྲགས་ཚུ་མངོན་གསལ་འ
 msgid "Loading private attachment…"
 msgstr "སྒེར་གྱི་མཐུད་ཡིག་མངོན་གསལ་འབད་དོ…"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:62
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 msgid "Loading reviews…"
 msgstr "བསྐྱར་ཞིབ་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -2747,10 +2883,10 @@ msgstr "འཛིན་ཤོག་མངོན་གསལ་འབད་དོ
 #: apps/web/src/features/home/ui/wallet-page.tsx:212
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:118
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:157
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:818
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:875
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
+#: apps/web/src/features/wallet/ui/collect-page.tsx:166
 msgid "Loading vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་མངོན་གསལ་འབད་དོ…"
 
@@ -2769,7 +2905,8 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 
 #: apps/web/src/components/nearby-catalog.tsx:87
 #: apps/web/src/components/nearby-catalog.tsx:105
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:258
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:267
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
 msgstr "མངོན་གསལ་འབད་དོ…"
@@ -2779,7 +2916,7 @@ msgstr "མངོན་གསལ་འབད་དོ…"
 #: apps/web/src/features/home/ui/report-page.tsx:577
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:65
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:46
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:405
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:552
 msgid "Location"
 msgstr "ས་གནས།"
 
@@ -2816,11 +2953,11 @@ msgstr "ཁྱོད་ཀྱི་བརྡ་འཚོལ་མཉེན་ཆ
 "ཡོད་པའི་ Mac གུ་ ཡིག་ཆ་གདམ་ཞིནམ་ལས་ Dock ནང་ཁ་སྐོང་རྐྱབ།"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:384
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:389
 msgid "Manage {0}"
 msgstr "{0} འཛིན་སྐྱོང་།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:111
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:118
 msgid "Manage voucher"
 msgstr "འཛིན་ཤོག་འཛིན་སྐྱོང་།"
 
@@ -2877,7 +3014,7 @@ msgstr "མཐོ་ཚད།"
 #~ msgid "Max {max}"
 #~ msgstr "མཐོ་ཚད་ {max}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:724
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:781
 msgid "Max {max} {symbol}"
 msgstr "མཐོ་ཚད་ {max} {symbol}"
 
@@ -2886,7 +3023,8 @@ msgstr "མཐོ་ཚད་ {max} {symbol}"
 msgid "Media must be an uploaded http(s) URL"
 msgstr "བརྡ་ལམ་འདི་ཡར་བཙུགས་འབད་ཡོད་པའི་ http(s) URL ཅིག་དགོ"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:358
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:351
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:498
 msgid "Message"
 msgstr "འཕྲིན་དོན།"
 
@@ -2895,11 +3033,15 @@ msgstr "འཕྲིན་དོན།"
 msgid "Message must be 500 characters or fewer"
 msgstr "འཕྲིན་དོན་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:337
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:439
+msgid "Message or order shared."
+msgstr "འཕྲིན་དོན་ ཡང་ན་ མངགས་ཐོ་རུབ་སྤྱོད་གྲུབ།"
+
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:441
 msgid "Message shared."
 msgstr "འཕྲིན་དོན་རུབ་སྤྱོད་གྲུབ།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:329
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:430
 msgid "Messages are available only for registered Cosmo users."
 msgstr "འཕྲིན་དོན་ཚུ་ཐོ་བཀོད་འབད་ཡོད་པའི་ Cosmo ལག་ལེན་པ་ཚུ་ལུ་རྐྱངམ་ཅིག་ཐོབ།"
 
@@ -2949,7 +3091,7 @@ msgstr "མི་ཊར།"
 #~ msgid "Minting…"
 #~ msgstr "གསར་བཏོན་འབད་དོ…"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:571
+#: apps/web/src/components/offerings/offerings-panel.tsx:525
 msgid "Monthly"
 msgstr "ཟླ་བསྟར།"
 
@@ -2994,7 +3136,7 @@ msgstr "Pretium བརྒྱུད་དེ་ MPESA"
 msgid "My posts"
 msgstr "ངའི་གསལ་བསྒྲགས།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:38
+#: apps/web/src/features/wallet/ui/receive-page.tsx:42
 msgid "My wallet address"
 msgstr "ངའི་དངུལ་ཁུག་ཁ་བྱང་།"
 
@@ -3025,13 +3167,13 @@ msgstr "མིང་ཡིག་འབྲུ་ ༨༠ ཡང་ན་དེ་�
 msgid "Name on wallet"
 msgstr "དངུལ་ཁུག་གུ་མིང་།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:859
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:872
 msgid "Name, symbol or address"
 msgstr "མིང་ མཚོན་རྟགས་ ཡང་ན་ཁ་བྱང་།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:208
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:223
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:701
 msgid "Network"
 msgstr "ཡོངས་འབྲེལ།"
 
@@ -3048,13 +3190,13 @@ msgstr "གསལ་བསྒྲགས་གསརཔ།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:149
 #: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:139
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:625
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:180
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:204
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:626
 msgid "New supply"
 msgstr "བཀྲམ་སྤེལ་གསརཔ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "CLC ལུ་གསརཔ་ཨིན་ན?"
 
@@ -3070,6 +3212,17 @@ msgstr "ཤུལ་མམ།"
 msgid "Next image"
 msgstr "པར་ཤུལ་མམ།"
 
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "NFC ལག་ལེན་བཀག་ཡོད། ཁྱོད་ཀྱི་བརྡ་འཚོལ་མཉེན་ཆས་སྒྲིག་འགོད་ནང་ "
+"ཡོངས་འབྲེལ་ས་ཚིགས་འདི་ལུ་ NFC གནང་བ་བྱིན་ཞིནམ་ལས་ ལོག་འབད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "NFC ལྕོགས་མེད་བཟོ་ཡོད། "
+"ཁྱོད་ཀྱི་ཁ་པར་སྒྲིག་འགོད་ནང་ལྕོགས་ཅན་བཟོ་ཞིནམ་ལས་ ལོག་འབད།"
+
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
 msgstr "མེན།"
@@ -3080,7 +3233,7 @@ msgid "No {0} fees have accrued yet."
 msgstr "ད་ཚུན་ {0} གླ་ཡོན་གསོག་འཇོག་མ་འབད།"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:72
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:584
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:585
 msgid "No activity yet."
 msgstr "ད་ཚུན་བྱ་བ་མེད།"
 
@@ -3104,7 +3257,7 @@ msgstr "ད་ལྟོའི་གྲུབ་འབྲས་ཀྱི་དོ
 msgid "No category filters are available."
 msgstr "དབྱེ་རིམ་ཚགས་མ་ཐོབ་མི་ཚུགས།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "ནང་འཛུལ་འདིའི་དོན་ལུ་ CLC རྩིས་ཐོ་མ་ཐོབ།"
 
@@ -3154,7 +3307,7 @@ msgstr "དངུལ་རིགས་མ་ཐོབ།"
 msgid "No matching recipients."
 msgstr "མཐུན་པའི་ལེན་མཁན་མིན་འདུག"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:183
+#: apps/web/src/components/offerings/offerings-panel.tsx:193
 msgid "No offerings yet"
 msgstr "ད་ཚུན་གོ་སྐབས་མེད།"
 
@@ -3187,7 +3340,7 @@ msgid "No posts match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་གསལ་བསྒྲགས་མེད།"
 
 #: apps/web/src/features/home/ui/posts-page.tsx:119
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:476
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:477
 msgid "No posts yet."
 msgstr "ད་ཚུན་གསལ་བསྒྲགས་མེད།"
 
@@ -3195,12 +3348,12 @@ msgstr "ད་ཚུན་གསལ་བསྒྲགས་མེད།"
 msgid "No QR code found. Try again with a clearer image."
 msgstr "QR ཨང་རྟགས་མ་ཐོབ། པར་གསལ་ཏོག་ཏོ་ཅིག་གིས་ལོག་འབད།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:199
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:208
 msgid "No reviews with this rating."
 msgstr "སྐར་གྲངས་འདི་ཡོད་པའི་བསྐྱར་ཞིབ་མེད།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:77
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:199
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:86
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:208
 msgid "No reviews yet."
 msgstr "ད་ཚུན་བསྐྱར་ཞིབ་མེད།"
 
@@ -3229,11 +3382,11 @@ msgid "No voucher in this pool is offering anything yet."
 msgstr "དངུལ་ཁུངས་འདི་ནང་གི་འཛིན་ཤོག་ག་གིས་ཡང་ད་ཚུན་གོ་སྐབས་ག་ཅི་ཡང་མ་བྱིན།"
 
 #: apps/web/src/features/pools/ui/pool-credit-panel.tsx:37
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:247
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:252
 msgid "No vouchers in this pool yet."
 msgstr "ད་ཚུན་དངུལ་ཁུངས་འདི་ནང་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:923
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:232
 msgid "No vouchers match that search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
@@ -3243,6 +3396,10 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 #: apps/web/src/features/home/ui/market-page.tsx:245
 msgid "No vouchers match this search."
 msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི་འཛིན་ཤོག་མེད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:164
+msgid "No vouchers to collect"
+msgstr "བསྡུ་ལེན་འབད་ནིའི་འཛིན་ཤོག་མེད།"
 
 #: apps/web/src/features/home/ui/market-list-page.tsx:180
 #: apps/web/src/features/home/ui/market-page.tsx:252
@@ -3254,7 +3411,7 @@ msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག
 msgid "No vouchers yet."
 msgstr "ད་ཚུན་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:68
+#: apps/web/src/features/wallet/ui/receive-page.tsx:72
 msgid "No wallet address available."
 msgstr "དངུལ་ཁུག་ཁ་བྱང་ཐོབ་མི་ཚུགས།"
 
@@ -3262,7 +3419,7 @@ msgstr "དངུལ་ཁུག་ཁ་བྱང་ཐོབ་མི་ཚུ
 msgid "No. of participants"
 msgstr "བཅའ་མར་གཏོགས་མིའི་གྱངས་ཁ།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:935
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:992
 msgid "None left to swap for"
 msgstr "བརྗེ་ལེན་འབད་ནིའི་དོན་ལུ་ག་ཅི་ཡང་ལྷག་མེད།"
 
@@ -3283,7 +3440,7 @@ msgstr "འདི་ཚད་ལྡན་ Safaricom ཨང་མེན། "
 msgid "Not approved"
 msgstr "ཆ་འཇོག་མ་གྲུབ།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:833
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:890
 msgid "Not held"
 msgstr "བཟུང་བཞག་མེད།"
 
@@ -3299,7 +3456,7 @@ msgstr "མ་གཏང་།"
 msgid "Not set"
 msgstr "མ་བཀལ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:392
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:413
 msgid "Nothing has changed."
 msgstr "ག་ཅི་ཡང་བསྒྱུར་བ་མེད།"
 
@@ -3365,7 +3522,7 @@ msgstr "ཨང་བཀོད་ཐོ་ཡིག"
 msgid "Offering published."
 msgstr "གོ་སྐབས་ཁྱབ་བསྒྲགས་གྲུབ།"
 
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:81
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:92
 msgid "Offering removed."
 msgstr "གོ་སྐབས་བཏོན་ཡོད།"
 
@@ -3373,7 +3530,7 @@ msgstr "གོ་སྐབས་བཏོན་ཡོད།"
 msgid "Offering updated."
 msgstr "གོ་སྐབས་དུས་མཐུན་བཟོ་ཡོད།"
 
-#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:47
+#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:34
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:39
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:276
 msgid "Offerings"
@@ -3388,7 +3545,7 @@ msgstr "དངུལ་ཕྱིར་བཏོན།"
 msgid "Offramp details"
 msgstr "དངུལ་ཕྱིར་བཏོན་ཁ་གསལ།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:119
+#: apps/web/src/features/wallet/ui/receive-page.tsx:123
 msgid "Only send assets on the <0>{chainName} network</0> to this address. "
 "Other networks may be lost."
 msgstr "ཁ་བྱང་འདི་ལུ་ <0>{chainName} ཡོངས་འབྲེལ</0> "
@@ -3405,7 +3562,7 @@ msgid "Onramp details"
 msgstr "དངུལ་ནང་བཙུགས་ཁ་གསལ།"
 
 #: apps/web/src/features/home/ui/report-page.tsx:596
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:708
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:709
 msgid "Open in Maps"
 msgstr "ས་ཁྲ་ནང་ཁ་ཕྱེ།"
 
@@ -3427,7 +3584,9 @@ msgstr "ཤོག་ངོས་འདི་ Chrome ནང་ཁ་ཕྱེ།"
 msgid "Open this page in Safari or Chrome and tap Share."
 msgstr "ཤོག་ངོས་འདི་ Safari ཡང་ན་ Chrome ནང་ཁ་ཕྱེ་སྟེ་རུབ་སྤྱོད་ལུ་ཨེབ།"
 
-#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:147
+#: apps/web/src/components/offerings/offerings-panel.tsx:439
+#: apps/web/src/components/offerings/offerings-panel.tsx:449
+#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:66
 msgid "Open voucher page"
 msgstr "འཛིན་ཤོག་གི་ཤོག་ལེབ་ཁ་ཕྱེ།"
 
@@ -3454,7 +3613,7 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་ཁ་ཕྱེ་
 msgid "Optional"
 msgstr "གདམ་ཁ་ཅན།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:366
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
 msgid "Optional message"
 msgstr "གདམ་ཁ་ཅན་གྱི་འཕྲིན་དོན།"
 
@@ -3467,6 +3626,19 @@ msgstr "Oracle གནས་གོང་།"
 msgid "Orange"
 msgstr "ཚ་ལུ་མའི་ཁ་དོག"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:349
+msgid "Order"
+msgstr "མངགས་ཐོ།"
+
+#: apps/web/src/components/offerings/offering-order-picker.tsx:85
+msgid "Order (optional)"
+msgstr "མངགས་ཐོ་ (གདམ་ཁ་ཅན)"
+
+#: apps/web/src/components/offerings/offering-order-picker.tsx:197
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:350
+msgid "Order total"
+msgstr "མངགས་ཐོའི་བསྡོམས།"
+
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:115
 msgid "Output voucher"
 msgstr "ལེན་ནིའི་འཛིན་ཤོག"
@@ -3476,10 +3648,10 @@ msgid "Output voucher search results"
 msgstr "ལེན་ནིའི་འཛིན་ཤོག་འཚོལ་ཞིབ་གྲུབ་འབྲས།"
 
 #: apps/web/src/components/vouchers/voucher-sheet-full.tsx:51
-msgid "Overview"
-msgstr "སྤྱི་མཐོང་།"
+#~ msgid "Overview"
+#~ msgstr "སྤྱི་མཐོང་།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:215
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:224
 msgid "Owner reply"
 msgstr "བདག་པོའི་ལན།"
 
@@ -3487,8 +3659,8 @@ msgstr "བདག་པོའི་ལན།"
 msgid "Ownership transfer submitted."
 msgstr "བདག་དབང་སྤོ་བཤུད་ཞུ་འབུལ་གྲུབ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:60
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:74
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 msgid "Paid out"
 msgstr "སྤྲོད་ཚར།"
 
@@ -3564,17 +3736,34 @@ msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི
 msgid "Passwords do not match."
 msgstr "གསང་ཚིག་ཚུ་མི་མཐུན།"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:409
+msgid "Payment accepted — confirming"
+msgstr "སྤྲོད་ལེན་དང་ལེན་འབད་ཡོད་ — ངེས་གཏན་བཟོ་དོ"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:405
+msgid "Payment confirmed"
+msgstr "སྤྲོད་ལེན་ངེས་གཏན་གྲུབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:407
+msgid "Payment failed"
+msgstr "སྤྲོད་ལེན་མ་འགྲུབ།"
+
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:180
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:234
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:256
 msgid "Payment receipt"
 msgstr "སྐྱེལ་འབབ་ཀྱི་འབྱོར་ཡིག"
 
+#: apps/web/src/features/wallet/ui/collect-page.tsx:354
+msgid "Payment status unknown"
+msgstr "སྤྲོད་ལེན་གྱི་གནས་ཚད་མ་ཤེས།"
+
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:117
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
+#: apps/web/src/features/wallet/ui/collect-page.tsx:439
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:165
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:504
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:613
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:750
@@ -3608,7 +3797,7 @@ msgstr "མི་གཞན་ཚུ་གིས་མིང་འདི་ལག
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:267
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:75
 #: apps/web/src/features/vouchers/ui/voucher-details-rows.tsx:64
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:393
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:540
 msgid "Phone"
 msgstr "ཁ་པར།"
 
@@ -3666,16 +3855,16 @@ msgstr "ས་གནས།"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:292
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:615
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:946
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:165
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:286
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:268
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:672
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:1003
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:220
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:374
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:97
 msgid "Pool"
 msgstr "མཉམ་སྤྱོད་དངུལ་ཁུངས།"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:131
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:136
 msgid "Pool actions"
 msgstr "དངུལ་ཁུངས་བྱ་བ།"
 
@@ -3683,7 +3872,7 @@ msgstr "དངུལ་ཁུངས་བྱ་བ།"
 msgid "Pool activity"
 msgstr "དངུལ་ཁུངས་ཀྱི་བྱ་བ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:80
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:94
 msgid "Pool activity details"
 msgstr "དངུལ་ཁུངས་ཀྱི་བྱ་བའི་ཁ་གསལ།"
 
@@ -3695,7 +3884,7 @@ msgstr "དངུལ་ཁུངས་ཁ་བྱང་།"
 msgid "Pool balances"
 msgstr "དངུལ་ཁུངས་ལྷག་དངུལ།"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:177
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:182
 msgid "Pool contents"
 msgstr "དངུལ་ཁུངས་ནང་དོན།"
 
@@ -3726,11 +3915,24 @@ msgstr "དངུལ་ཁུངས་འགྲེལ་བཤད་ཡིག་
 msgid "Pool details updated."
 msgstr "དངུལ་ཁུངས་ཁ་གསལ་དུས་མཐུན་བཟོ་ཡོད།"
 
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:118
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:335
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:645
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:292
+msgid "Pool fee"
+msgstr "དངུལ་ཁུངས་གླ་ཡོན།"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:223
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
+#~ msgid "Pool fee ({poolFeePercent})"
+#~ msgstr "དངུལ་ཁུངས་གླ་ཡོན། ({poolFeePercent})"
+
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:468
 msgid "Pool fee updated."
 msgstr "དངུལ་ཁུངས་གླ་ཡོན་དུས་མཐུན་བཟོ་ཡོད།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:508
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "དངུལ་ཁུངས་ཀྱི་དངུལ་རྒྱུན་བསྒྱུར་ཡོད། "
 "དུས་མཐུན་གོང་ཚད་བསྐྱར་ཞིབ་འབད་དེ་ལོག་འབད།"
@@ -3762,16 +3964,16 @@ msgstr "དངུལ་ཁུངས་མིང་དགོ"
 msgid "Pool name must be 80 characters or fewer"
 msgstr "དངུལ་ཁུངས་མིང་ཡིག་འབྲུ་ ༨༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:96
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:101
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:263
 msgid "Pool not found."
 msgstr "དངུལ་ཁུངས་མ་ཐོབ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
 msgid "Pool paid out"
 msgstr "དངུལ་ཁུངས་ཀྱིས་སྤྲོད་ཚར།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:98
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:112
 msgid "Pool received"
 msgstr "དངུལ་ཁུངས་ཀྱིས་ལེན་ཚར།"
 
@@ -3814,8 +4016,8 @@ msgstr "དངུལ་ཁུངས་རྗེས་འདེད་ཁ་གས
 #: apps/web/src/features/home/ui/market-list-page.tsx:123
 #: apps/web/src/features/home/ui/wallet-page.tsx:111
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:316
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:101
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:311
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:106
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:316
 #: apps/web/src/features/pools/ui/pools-page.tsx:258
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:262
 msgid "Pools"
@@ -3826,8 +4028,8 @@ msgid "Pools list"
 msgstr "དངུལ་ཁུངས་ཐོ་ཡིག"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:377
-msgid "Pools with this voucher"
-msgstr "འཛིན་ཤོག་འདི་ཡོད་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ།"
+#~ msgid "Pools with this voucher"
+#~ msgstr "འཛིན་ཤོག་འདི་ཡོད་པའི་མཉམ་སྤྱོད་དངུལ་ཁུངས་ཚུ།"
 
 #: apps/web/src/components/ui/image-crop-sheet.tsx:163
 msgid "Position your photo"
@@ -3865,11 +4067,11 @@ msgstr "གསལ་བསྒྲགས་དུས་མཐུན་བཟོ་
 #: apps/web/src/features/home/ui/report-page.tsx:629
 #: apps/web/src/features/posts/ui/my-posts-page.tsx:27
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:284
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:480
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:481
 msgid "Posts"
 msgstr "གསལ་བསྒྲགས་ཚུ།"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:448
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:449
 msgid "Posts aren't available for this voucher."
 msgstr "འཛིན་ཤོག་འདིའི་དོན་ལུ་གསལ་བསྒྲགས་མི་འཐོབ།"
 
@@ -3902,6 +4104,10 @@ msgstr "གྲ་སྒྲིག་འབད་དོ..."
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:82
 msgid "Preparing…"
 msgstr "གྲ་སྒྲིག་འབད་དོ…"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:194
+msgid "Present card to pay {armedAmount}"
+msgstr "{armedAmount} སྤྲོད་ནིའི་དོན་ལུ་ཤོག་བྱང་སྟོན།"
 
 #: apps/web/src/features/onboarding/ui/paper-wallet-setup.tsx:325
 msgid "Press and hold the image below, then choose Save Image."
@@ -3950,8 +4156,12 @@ msgstr "གནས་གོང་།"
 msgid "Price must be greater than zero"
 msgstr "གནས་གོང་ཀླད་ཀོར་ལས་སྦོམ་དགོ"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:278
-#: apps/web/src/components/offerings/offerings-panel.tsx:416
+#: apps/web/src/components/offerings/offering-order-picker.tsx:121
+#: apps/web/src/components/offerings/offering-order-picker.tsx:173
+#: apps/web/src/components/offerings/offering-order-picker.tsx:201
+#: apps/web/src/components/offerings/offerings-panel.tsx:290
+#: apps/web/src/components/offerings/offerings-panel.tsx:414
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:352
 msgid "Price on request"
 msgstr "ཞུ་བ་འབད་བའི་གནས་གོང་།"
 
@@ -3964,6 +4174,11 @@ msgstr "{priceCurrency} ནང་ཆ་ཕྲན་རེའི་གནས་�
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:249
 msgid "Priced in"
 msgstr "གནས་གོང་བཀལ་མི་དངུལ་རིགས།"
+
+#: apps/web/src/components/offerings/offering-order-picker.tsx:191
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:353
+msgid "Priced subtotal"
+msgstr "གནས་གོང་བཀོད་པའི་བསྡོམས་ཆུང་།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:492
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:501
@@ -3984,9 +4199,9 @@ msgstr "དཔར་བཏབ།"
 msgid "Private attachment"
 msgstr "སྒེར་གྱི་མཐུད་ཡིག"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "སྒེར་ལྡེ།"
 
@@ -4010,7 +4225,12 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་གསང་ཚི
 msgid "Protecting paper wallet..."
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་སྲུང་སྐྱོབ་འབད་དོ..."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:133
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:247
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:348
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:654
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:199
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:293
 msgid "Protocol fee"
 msgstr "ལམ་ལུགས་གླ་ཡོན།"
 
@@ -4069,27 +4289,27 @@ msgid "QR currently contains the raw private key."
 msgstr "ད་ལྟོ་ QR ནང་མ་བསྒྱུར་བའི་སྒེར་ལྡེ་ཡོད།"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:444
-msgid "Quantity"
-msgstr "མང་ཉུང་།"
+#~ msgid "Quantity"
+#~ msgstr "མང་ཉུང་།"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:55
 msgid "Queued"
 msgstr "གྲལ་ནང་བཙུགས་ཡོད།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:351
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:327
 msgid "Rate"
 msgstr "ཚད་གཞི།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:89
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:98
 msgid "Ratings distribution"
 msgstr "སྐར་གྲངས་བགོ་བཀྲམ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:290
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:313
 msgid "Reading the current rate…"
 msgstr "ད་ལྟོའི་ཚད་གཞི་ལྷག་དོ…"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:282
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:295
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:318
 msgid "Reading the pool's balance…"
 msgstr "དངུལ་ཁུངས་ཀྱི་ལྷག་དངུལ་ལྷག་དོ…"
 
@@ -4098,12 +4318,20 @@ msgid "Reading this pool's fee…"
 msgstr "དངུལ་ཁུངས་འདིའི་གླ་ཡོན་ལྷག་དོ…"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:107
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:768
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:782
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:780
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:794
 msgid "Reading…"
 msgstr "ལྷག་དོ…"
 
-#: apps/web/src/components/reviews/review-editor.tsx:89
+#: apps/web/src/features/wallet/ui/collect-page.tsx:245
+msgid "Ready to collect"
+msgstr "བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:243
+msgid "Ready to collect {amountText}"
+msgstr "{amountText} བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག"
+
+#: apps/web/src/components/reviews/review-editor.tsx:102
 msgid "Reason for reporting"
 msgstr "སྙན་ཞུ་འབད་དགོ་པའི་རྒྱུ་མཚན།"
 
@@ -4112,12 +4340,13 @@ msgid "Receipt copied"
 msgstr "འབྱོར་ཡིག་འདྲ་བཤུས་གྲུབ།"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:99
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:164
-#: apps/web/src/features/wallet/ui/receive-page.tsx:56
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:169
+#: apps/web/src/features/wallet/ui/collect-page.tsx:110
+#: apps/web/src/features/wallet/ui/receive-page.tsx:60
 msgid "Receive"
 msgstr "ལེན།"
 
-#: apps/web/src/features/wallet/ui/receive-page.tsx:63
+#: apps/web/src/features/wallet/ui/receive-page.tsx:67
 msgid "Receive details"
 msgstr "ལེན་ནིའི་ཁ་གསལ།"
 
@@ -4131,14 +4360,19 @@ msgid "Receive vouchers"
 msgstr "འཛིན་ཤོག་ལེན།"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:107
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:618
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:619
 msgid "Received"
 msgstr "ལེན་ཚར།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:56
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:170
 msgid "Received voucher"
 msgstr "འཛིན་ཤོག་ལེན་ཚར།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:270
+#: apps/web/src/features/wallet/ui/collect-page.tsx:272
+msgid "Recent collections"
+msgstr "ཉེ་ཆར་གྱི་བསྡུ་ལེན།"
 
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:134
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:208
@@ -4150,8 +4384,8 @@ msgid "Recent voucher transfers for this wallet."
 msgstr "དངུལ་ཁུག་འདིའི་ཉེ་ཆར་གྱི་འཛིན་ཤོག་སྤོ་བཤུད།"
 
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:375
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:195
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:498
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:210
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:693
 msgid "Recipient"
 msgstr "ལེན་མི།"
 
@@ -4180,18 +4414,19 @@ msgstr "འཛིན་ཤོག་འདི་ཁྱབ་བསྒྲགས་
 #~ msgstr "གསར་བཏོན་འབད་ནིའི་དོན་ལུ་འཛིན་ཤོག་འདི་ཁྱབ་བསྒྲགས་འབད་མི་དངུལ་ཁུག་ལོག་མཐ"
 #~ "ུད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:221
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:227
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:342
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:309
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:315
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:200
 msgid "Redeem"
 msgstr "བསྐྱར་ཉོ།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:177
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:186
 msgid "Redeem this voucher again to update your review."
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་དུས་མཐུན་བཟོ་ནིའི་དོན་ལུ་འཛིན་ཤོག་འདི་ལོག་སྟེ་བསྐྱར་"
 "ཉོ་འབད།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:178
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:187
 msgid "Redeem this voucher to leave a review within seven days."
 msgstr "ཉིནམ་བདུན་གྱི་ནང་འཁོད་བསྐྱར་ཞིབ་བཞག་ནིའི་དོན་ལུ་འཛིན་ཤོག་འདི་བསྐྱར་ཉོ་འ"
 "བད།"
@@ -4227,17 +4462,17 @@ msgstr "འབྲེལ་ཡོད་འཛིན་ཤོག"
 msgid "Relative pricing"
 msgstr "བསྡུར་བའི་གནས་གོང་།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:312
+#: apps/web/src/components/offerings/offerings-panel.tsx:324
 #: apps/web/src/components/ui/avatar-picker.tsx:120
 #: apps/web/src/components/ui/image-upload-field.tsx:166
 #: apps/web/src/components/ui/markdown-editor-lexical.tsx:599
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:538
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:550
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:118
 msgid "Remove"
 msgstr "བཏོན།"
 
 #. placeholder {0}: offering.name
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:77
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:88
 msgid "Remove “{0}” from the marketplace?"
 msgstr "“{0}” འདི་ཚོང་ར་ནང་ལས་བཏོན་ནི་ཨིན་ན?"
 
@@ -4254,7 +4489,7 @@ msgstr "{0} བཏོན།"
 msgid "Remove {tag}"
 msgstr "{tag} བཏོན།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:560
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:572
 msgid "Remove from pool"
 msgstr "དངུལ་ཁུངས་ནང་ལས་བཏོན།"
 
@@ -4269,17 +4504,17 @@ msgid "Remove photo {0}"
 msgstr "པར་ {0} བཏོན།"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:525
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:537
 msgid "Removing {0} stops it being swapped in or out of this pool. Its rate and "
 "limit are kept."
 msgstr "{0} བཏོན་པ་ཅིན་དངུལ་ཁུངས་འདིའི་ནང་ཡང་ན་ཕྱི་ཁར་བརྗེ་ལེན་འབད་མི་ཚུགས། "
 "དེའི་ཚད་གཞི་དང་ཚད་རང་འཇགས་བཞག་འོང་།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:310
+#: apps/web/src/components/offerings/offerings-panel.tsx:322
 msgid "Removing…"
 msgstr "བཏོན་དོ…"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:228
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:237
 msgid "Reply"
 msgstr "ལན།"
 
@@ -4293,7 +4528,7 @@ msgstr "སྙན་ཞུའི་ཁ་གསལ།"
 msgid "Report images"
 msgstr "སྙན་ཞུའི་པར་ཚུ།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:239
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:248
 msgid "Report inappropriate"
 msgstr "འོས་མིན་སྙན་ཞུ་འབད།"
 
@@ -4305,7 +4540,7 @@ msgstr "སྙན་ཞུའི་དུས་ཡུན།"
 msgid "Report provenance"
 msgstr "སྙན་ཞུའི་འབྱུང་ཁུངས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:238
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:247
 msgid "Reported"
 msgstr "སྙན་ཞུ་གྲུབ།"
 
@@ -4339,17 +4574,19 @@ msgstr "འཛིན་ཤོག་ལག་ལེན་ལས་བཏོན།
 msgid "Retiring…"
 msgstr "ལག་ལེན་ལས་བཏོན་དོ…"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:151
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:150
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
 #: apps/web/src/features/home/ui/report-page.tsx:59
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:712
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:282
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:311
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:800
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:916
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:974
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:334
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:812
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:903
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:944
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1029
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1045
 #: apps/web/src/features/pools/ui/pools-page.tsx:348
 #: apps/web/src/features/pools/ui/pools-page.tsx:367
 #: apps/web/src/features/pools/ui/pools-page.tsx:474
@@ -4358,7 +4595,8 @@ msgstr "ལག་ལེན་ལས་བཏོན་དོ…"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:561
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:222
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:711
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:320
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:421
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:475
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:144
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:335
 msgid "Retry"
@@ -4376,13 +4614,13 @@ msgstr "མཐུད་ལམ་ལོག་འབད།"
 #~ msgstr "བརྗེ་ལེན་ཁ་ཕྱོགས་ལྡོག"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:129
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:159
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:164
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:174
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:179
 msgid "Reverted"
 msgstr "ལོག་བཏང་ཡོད།"
 
-#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:49
+#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:55
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:282
 msgid "Reviews"
 msgstr "བསྐྱར་ཞིབ་ཚུ།"
@@ -4390,15 +4628,15 @@ msgstr "བསྐྱར་ཞིབ་ཚུ།"
 #~ msgid "Reviews for this voucher will appear here."
 #~ msgstr "འཛིན་ཤོག་འདིའི་བསྐྱར་ཞིབ་ཚུ་ནཱ་ལུ་མཐོང་འོང་།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:129
+#: apps/web/src/components/reviews/review-editor.tsx:142
 msgid "Save"
 msgstr "སྲུང་བཞག"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:384
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:466
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:321
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:573
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:344
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:638
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:519
 msgid "Save changes"
@@ -4430,7 +4668,7 @@ msgstr "ལག་ལེན་པའི་མིང་སྲུང་བཞག"
 msgid "Saved. Your post is awaiting approval again."
 msgstr "སྲུང་བཞག་གྲུབ། ཁྱོད་ཀྱི་གསལ་བསྒྲགས་ལོག་སྟེ་ཆ་འཇོག་བསྒུག་པའི་སྒང་ཨིན།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:129
+#: apps/web/src/components/reviews/review-editor.tsx:142
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:382
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:414
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:218
@@ -4513,7 +4751,7 @@ msgid "Search voucher tags"
 msgstr "འཛིན་ཤོག་ངོ་རྟགས་འཚོལ།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:340
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:858
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:871
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:162
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:163
 msgid "Search vouchers"
@@ -4535,14 +4773,14 @@ msgstr "ལེན་མཁན་འཚོལ་དོ…"
 msgid "Searching vouchers…"
 msgstr "འཛིན་ཤོག་ཚུ་འཚོལ་དོ…"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:900
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:928
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:206
 msgid "Searching…"
 msgstr "འཚོལ་དོ…"
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:384
-msgid "See all"
-msgstr "ཆ་མཉམ་བལྟ།"
+#~ msgid "See all"
+#~ msgstr "ཆ་མཉམ་བལྟ།"
 
 #: apps/web/src/features/wallet/ui/token-picker-sheet.tsx:42
 msgid "Select a token"
@@ -4574,6 +4812,7 @@ msgstr "གདམ་ཁ་རྐྱབ་མི་འཛིན་ཤོག"
 msgid "Sell stables to local money."
 msgstr "གཏན་འཇགས་དངུལ་ས་གནས་དངུལ་ལུ་བཙོང་།"
 
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:331
 #: apps/web/src/features/home/ui/wallet-page.tsx:96
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:120
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:277
@@ -4582,11 +4821,11 @@ msgid "Send"
 msgstr "གཏང་།"
 
 #. placeholder {0}: details.receiveSymbol
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:235
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:323
 msgid "Send {0}"
 msgstr "{0} གཏང་།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:129
+#: apps/web/src/components/reviews/review-editor.tsx:142
 msgid "Send report"
 msgstr "སྙན་ཞུ་གཏང་།"
 
@@ -4603,7 +4842,7 @@ msgstr "མི་གཞན་ཅིག་གིས་ CLC "
 msgid "Send to"
 msgstr "གཏང་ཡུལ།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:145
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:160
 msgid "Sending"
 msgstr "གཏང་དོ།"
 
@@ -4612,8 +4851,8 @@ msgid "Sending…"
 msgstr "གཏང་དོ…"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:109
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:184
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:620
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:199
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:621
 msgid "Sent"
 msgstr "གཏང་ཚར།"
 
@@ -4660,9 +4899,9 @@ msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་སྒྲིག་
 msgid "Settings"
 msgstr "སྒྲིག་འགོད།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:441
-#: apps/web/src/features/wallet/ui/receive-page.tsx:140
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:393
+#: apps/web/src/features/wallet/ui/receive-page.tsx:155
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
 msgid "Share"
 msgstr "རུབ་སྤྱོད།"
 
@@ -4688,7 +4927,7 @@ msgstr "འབྱོར་ཡིག་རུབ་སྤྱོད།"
 msgid "Shared by {0}"
 msgstr "{0} གིས་རུབ་སྤྱོད་འབད་ཡོད།"
 
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:432
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:607
 msgid "Sharing…"
 msgstr "རུབ་སྤྱོད་འབད་དོ…"
 
@@ -4701,13 +4940,17 @@ msgstr "ཅ་ཆས་ཉོ་ནི།"
 #~ msgid "Shortcode"
 #~ msgstr "བསྡུས་ཡིག"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:95
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:104
 msgid "Show {stars}-star reviews"
 msgstr "སྐར་མ་ {stars} གི་བསྐྱར་ཞིབ་སྟོན།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:193
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:202
 msgid "Show all"
 msgstr "ཆ་མཉམ་སྟོན།"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
+msgid "Showing recent vouchers only."
+msgstr "ཉེ་ཆར་གྱི་འཛིན་ཤོག་ཚུ་རྐྱངམ་ཅིག་སྟོན་དོ།"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -4730,7 +4973,7 @@ msgstr "དངུལ་ཁུངས་འདི་ནང་འཛུལ་མི
 msgid "Shown to anyone using this pool"
 msgstr "དངུལ་ཁུངས་འདི་ལག་ལེན་འཐབ་མི་ག་ར་ལུ་སྟོན་འོང་།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:121
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:130
 msgid "Sign in after redeeming this voucher to leave a review."
 msgstr "འཛིན་ཤོག་འདི་བསྐྱར་ཉོ་འབད་ཚར་ཞིནམ་ལས་བསྐྱར་ཞིབ་བཞག་ནིའི་དོན་ལུ་ནང་འཛུལ་"
 "འབད།"
@@ -4743,15 +4986,15 @@ msgstr "ནང་འཛུལ་ཡང་ན་ཐོ་བཀོད།"
 msgid "Sign in to continue"
 msgstr "འཕྲོ་མཐུད་ནིའི་དོན་ལུ་ནང་འཛུལ།"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:559
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:560
 msgid "Sign in to view activity."
 msgstr "བྱ་བ་བལྟ་ནིའི་དོན་ལུ་ནང་འཛུལ།"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:442
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:443
 msgid "Sign in to view posts."
 msgstr "གསལ་བསྒྲགས་བལྟ་ནིའི་དོན་ལུ་ནང་འཛུལ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "སྒེར་ལྡེ་གིས་ནང་འཛུལ།"
 
@@ -4808,6 +5051,10 @@ msgstr "ཚད་ལྡན།"
 msgid "Start over"
 msgstr "འགོ་ལས་ལོག་འབད།"
 
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "ཤོག་བྱང་ལྷག་ཆས་འགོ་བཙུགས་དོ…"
+
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
 msgstr "འགོ་བཙུགས་དོ…"
@@ -4817,10 +5064,10 @@ msgid "Starts"
 msgstr "འགོ་བཙུགས་ས།"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:341
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:511
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:429
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:235
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:706
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:681
 msgid "Status"
@@ -4830,8 +5077,8 @@ msgstr "གནས་ཚད།"
 msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "གོ་རིམ་ {clampedTotal} ལས་ {clampedStep}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:190
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:227
 msgid "Submitted"
 msgstr "ཞུ་འབུལ་གྲུབ།"
 
@@ -4889,12 +5136,11 @@ msgstr "བཀྲམ་སྤེལ་ཀླད་ཀོར་ལས་སྦོ
 msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "SVG ཡིག་ཆ་རྒྱབ་སྐྱོར་མེད། PNG, JPEG ཡང་ན་ WebP ལག་ལེན་འཐབ།"
 
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:421
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:55
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:135
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:378
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:295
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:451
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:140
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:383
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:271
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:468
 msgid "Swap"
 msgstr "བརྗེ་ལེན།"
 
@@ -4916,41 +5162,41 @@ msgid "Swap fee must be a number from 0 to 100"
 msgstr "བརྗེ་ལེན་གླ་ཡོན་འདི་ ༠ ལས་ ༡༠༠ ཚུན་གྱི་གྲངས་ཅིག་དགོ"
 
 #. placeholder {0}: voucher.symbol
-#: apps/web/src/features/pools/ui/pool-detail-page.tsx:375
+#: apps/web/src/features/pools/ui/pool-detail-page.tsx:380
 msgid "Swap for {0}"
 msgstr "{0} དང་བརྗེ་ལེན།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:202
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:279
 msgid "Swap receipt"
 msgstr "བརྗེ་ལེན་གྱི་འབྱོར་ཡིག"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:125
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:148
 msgid "Swap reverted"
 msgstr "བརྗེ་ལེན་ལོག་བཏང་ཡོད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:101
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:124
 msgid "Swap tracking details are missing."
 msgstr "བརྗེ་ལེན་རྗེས་འདེད་ཁ་གསལ་མེད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:99
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:122
 msgid "Swap unavailable"
 msgstr "བརྗེ་ལེན་མི་འཐོབ།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:174
 msgid "Swapped"
 msgstr "བརྗེ་ལེན་གྲུབ།"
 
 #. placeholder {0}: entry.received.tokenSymbol
 #. placeholder {1}: entry.sent.tokenSymbol
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:191
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:192
 msgid "Swapped {0} for {1}"
 msgstr "{0} འདི་ {1} དང་བརྗེ་ལེན་འབད་ཡོད།"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:113
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
 msgid "Swapping"
 msgstr "བརྗེ་ལེན་འབད་དོ།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:627
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:684
 msgid "Swapping…"
 msgstr "བརྗེ་ལེན་འབད་དོ…"
 
@@ -5015,10 +5261,22 @@ msgstr "གླ་ཡོན་སོ་སོར་ལེན།"
 msgid "Take photo"
 msgstr "པར་བཏབ།"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "NFC ཤོག་བྱང་ཐུག་བཅུག"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:461
+msgid "Tap Ready to collect before presenting a card."
+msgstr "ཤོག་བྱང་མ་སྟོན་པའི་ཧེ་མ་ བསྡུ་ལེན་འབད་ནི་ལུ་གྲ་སྒྲིག་ཟེར་མི་ཨེབ།"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "ཚག་གསུམ་དཀར་ཆག་ལུ་ཨེབ་ "
 "དེ་ལས་ཁྱིམ་ཤོག་ནང་ཁ་སྐོང་ཡང་ན་ལས་རིམ་གཞི་བཙུགས་འབད།"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "ཁྱོད་ཀྱི་ NFC ཤོག་བྱང་ཐུག་བཅུག"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5100,11 +5358,29 @@ msgstr "འཛིན་ཤོག་མིང་འདི་ཧེ་མ་ལས
 msgid "That voucher name was taken while you were filling this in."
 msgstr "ཁྱོད་ཀྱིས་འདི་བཀང་བའི་བསྒང་འཛིན་ཤོག་མིང་འདི་གཞན་གྱིས་ལེན་ཡོད།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:493
-msgid "The cart isn't ready yet."
-msgstr "ཉོ་སྣོད་ད་ཚུན་གྲ་སྒྲིག་མེད།"
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "ཤོག་བྱང་ལྷག་ཆས་འགོ་བཙུགས་མ་ཚུགས། ལོག་སྟེ་འབད།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:928
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "ཤོག་བྱང་ལྷག་ཆས་ཀྱི་ལཱ་མཚམས་བཞག་ཡོད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:376
+msgid "The card wasn't unlocked. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ཁ་མ་ཕྱེ། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/components/offerings/offerings-panel.tsx:493
+#~ msgid "The cart isn't ready yet."
+#~ msgstr "ཉོ་སྣོད་ད་ཚུན་གྲ་སྒྲིག་མེད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:341
+msgid "The connection dropped before the relay answered. Don't charge this card "
+"again until this resolves."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་གིས་ལན་མ་སླབ་པའི་ཧེ་མ་ མཐུད་ལམ་ཆད་ཡོད། "
+"འདི་གསལ་ཏོག་ཏོ་མ་ཐོན་ཚུན་ ཤོག་བྱང་འདི་ལུ་ལོག་སྟེ་མ་བཀལ།"
+
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:985
 msgid "The credit limit has been reached. No more can be added to this pool."
 msgstr "ཡིད་རྟོན་ཚད་ལུ་ལྷོད་ཡོདཔ། "
 "མཉམ་སྤྱོད་དངུལ་ཁུངས་འདི་ནང་ཧེང་བཀལ་བཙུགས་མི་ཚུགས།"
@@ -5126,6 +5402,10 @@ msgstr "ས་ཁྲ་མངོན་གསལ་འབད་མ་ཚུགས
 msgid "The map is not supported on this device."
 msgstr "ཐབས་འཕྲུལ་འདི་གུ་ས་ཁྲ་རྒྱབ་སྐྱོར་མེད།"
 
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:377
+msgid "The message and order must be 500 characters or fewer."
+msgstr "འཕྲིན་དོན་དང་མངགས་ཐོ་གཉིས་བསྡོམས་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
+
 #: apps/web/src/features/wallet/ui/voucher-contract-actions-panel.tsx:361
 msgid "The new owner can create vouchers and transfer ownership."
 msgstr "བདག་པོ་གསརཔ་གིས་འཛིན་ཤོག་གསར་བཟོ་དང་བདག་དབང་སྤོ་བཤུད་འབད་ཚུགས།"
@@ -5135,6 +5415,30 @@ msgid "The passkey on this device is linked. Switch to it to sign with your "
 "passkey."
 msgstr "ཐབས་འཕྲུལ་འདི་གུ་ནང་འཛུལ་ལྡེ་མིག་འབྲེལ་མཐུད་ཡོད། "
 "ནང་འཛུལ་ལྡེ་མིག་གིས་མིང་རྟགས་བཀོད་ནིའི་དོན་ལུ་དེ་ལུ་བསྒྱུར།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:385
+msgid "The payment couldn't be prepared: {detail}"
+msgstr "སྤྲོད་ལེན་གྲ་སྒྲིག་འབད་མ་ཚུགས། {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:386
+msgid "The payment couldn't be prepared. Nothing was charged."
+msgstr "སྤྲོད་ལེན་གྲ་སྒྲིག་འབད་མ་ཚུགས། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:127
+msgid "The payment relay is on a different network."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་འདི་ཡོངས་འབྲེལ་སོ་སོ་ཅིག་གུ་ཡོད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:378
+msgid "The payment relay is on a different network. Nothing was charged."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་འདི་ཡོངས་འབྲེལ་སོ་སོ་ཅིག་གུ་ཡོད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:381
+msgid "The payment was refused: {detail}"
+msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། {detail}"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:382
+msgid "The payment was refused. Nothing was charged."
+msgstr "སྤྲོད་ལེན་དང་ལེན་མ་འབད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:48
 msgid "The pool"
@@ -5149,10 +5453,16 @@ msgstr "དངུལ་ཁུངས་ཁྱབ་བསྒྲགས་འབད
 msgid "The pool doesn't hold that much {0}."
 msgstr "དངུལ་ཁུངས་ནང་ {0} དེ་ཅིག་མེད།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:518
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:538
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "གོང་ཚད་བསྒྱུར་ཡོད། "
 "ངེས་གཏན་མ་བཟོ་བའི་ཧེ་མ་དུས་མཐུན་དངུལ་བསྡོམས་ཚུ་བསྐྱར་ཞིབ་འབད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:357
+msgid "The request expired without an answer from the relay. Check the "
+"customer's balance before charging the card again."
+msgstr "སྤྲོད་ལེན་ཞབས་ཏོག་ལས་ལན་མ་ཐོབ་པར་ཞུ་བའི་དུས་ཡུན་ཡོལ་ཡོད། "
+"ཤོག་བྱང་ལུ་ལོག་སྟེ་མ་བཀལ་བའི་ཧེ་མ་ ཉོ་མིའི་ལྷག་དངུལ་ཞིབ་དཔྱད་འབད།"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:198
 msgid "The selected unit does not have a configured price feed."
@@ -5161,8 +5471,8 @@ msgstr "གདམ་ཁ་རྐྱབ་མི་ཆ་ཕྲན་ལུ་ས
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:254
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:367
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:471
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:419
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:436
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:440
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:457
 msgid "The transaction failed."
 msgstr "ཉོ་ཚོང་མ་འགྲུབ།"
 
@@ -5175,7 +5485,7 @@ msgstr "འཛིན་ཤོག་ཁྱབ་བསྒྲགས་འབད་
 msgid "Theme"
 msgstr "བཟོ་རྣམ།"
 
-#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:119
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:137
 msgid "There is nothing available for exchange with this voucher yet."
 msgstr "ད་ཚུན་འཛིན་ཤོག་འདི་དང་བརྗེ་ལེན་འབད་ནི་ག་ཅི་ཡང་མེད།"
 
@@ -5195,6 +5505,45 @@ msgstr "རྩིས་ཐོ་འདི་ཆ་འཇོག་འབད་མ
 msgid "This browser cannot store notification registration safely."
 msgstr "བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་བརྡ་བསྐུལ་ཐོ་བཀོད་ཉེན་སྲུང་ཐོག་གསོག་འཇོག་འབད་མ"
 "ི་ཚུགས།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:374
+msgid "This card doesn't have enough {symbol}. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ནང་ {symbol} ལངམ་མེད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "ཤོག་བྱང་འདི་ནང་ CLC དངུལ་ཁུག་མེད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "ཤོག་བྱང་འདི་ནང་དངུལ་ཁུག་གཅིག་ལས་ལྷགཔ་ཡོད། ཤོག་བྱང་གཞན་ཅིག་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:372
+msgid "This card holds your own wallet. Nothing was charged."
+msgstr "ཤོག་བྱང་འདི་ནང་ཁྱོད་རའི་དངུལ་ཁུག་ཡོད། དངུལ་ག་ནི་ཡང་མ་བཀལ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:459
+msgid "This card holds your own wallet. Use the customer's card."
+msgstr "ཤོག་བྱང་འདི་ནང་ཁྱོད་རའི་དངུལ་ཁུག་ཡོད། ཉོ་མིའི་ཤོག་བྱང་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "ཤོག་བྱང་འདི་སྟོངམ་ཨིན།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:452
+msgid "This card just paid. To charge it again, choose Charge this card."
+msgstr "ཤོག་བྱང་འདི་གིས་ད་ལྟོ་རང་སྤྲོད་ཚར་ཡོད། ལོག་སྟེ་བཀལ་ནི་ཨིན་པ་ཅིན་ "
+"ཤོག་བྱང་འདི་ལུ་བཀལ་ཟེར་མི་གདམ་ཁ་རྐྱབ།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:454
+msgid "This card's last payment is still being confirmed. Wait for it before "
+"charging the card again."
+msgstr "ཤོག་བྱང་འདི་གི་མཇུག་གི་སྤྲོད་ལེན་ད་ལྟོ་ཡང་ངེས་གཏན་བཟོ་དོ། "
+"ཤོག་བྱང་ལུ་ལོག་སྟེ་མ་བཀལ་བའི་ཧེ་མ་ དེ་ལུ་བསྒུག"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "ཤོག་བྱང་འདི་གི་དངུལ་ཁུག་ལྡེ་མིག་འདི་ཉམས་ཏེ་ཡོདཔ་ལས་ལག་ལེན་འཐབ་མི་ཚུགས།"
 
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
@@ -5234,36 +5583,51 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 msgstr "ཐོ་ཡིག་འདི་ “{legacyUnit}” ཆ་ཕྲན་དང་ཅིག་ཁར་ནང་འདྲེན་འབད་ཡོད། "
 "ཁྱོད་ཀྱི་བསྒྱུར་བཅོས་སྲུང་ནིའི་དོན་ལུ་འོག་ལས་གཅིག་གདམ་ཁ་རྐྱབ།"
 
+#: apps/web/src/components/offerings/offering-order-picker.tsx:88
+msgid "This order is shared as a private message. It does not change the "
+"voucher amount already sent."
+msgstr "མངགས་ཐོ་འདི་སྒེར་གྱི་འཕྲིན་དོན་སྦེ་རུབ་སྤྱོད་འབདཝ་ཨིན། "
+"ཧེ་མ་བཏང་མི་བཱའུ་ཅར་གྱི་དངུལ་བསྡོམས་ལུ་འགྱུར་བ་མེད།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:118
+msgid "This phone or browser can't read NFC cards."
+msgstr "ཁ་པར་ཡང་ན་བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་ NFC ཤོག་བྱང་ལྷག་མི་ཚུགས།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "ཁ་པར་ཡང་ན་བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་ NFC ཤོག་བྱང་ལྷག་མི་ཚུགས། ཚབ་ལུ་ QR "
+"ཨང་རྟགས་ལག་ལེན་འཐབ།"
+
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
-msgid "This pool already allows {0}. Saving updates its rate and limit instead "
-"of adding it again."
-msgstr "དངུལ་ཁུངས་འདི་གིས་ {0} ཧེ་མ་ལས་ཆོག "
-"སྲུང་བཞག་འབད་བ་ཅིན་ལོག་སྟེ་ཁ་སྐོང་མ་རྐྱབ་པར་དེའི་ཚད་གཞི་དང་ཚད་དུས་མཐུན་"
-"བཟོ་འོང་།"
+#~ msgid "This pool already allows {0}. Saving updates its rate and limit instead "
+#~ "of adding it again."
+#~ msgstr "དངུལ་ཁུངས་འདི་གིས་ {0} ཧེ་མ་ལས་ཆོག "
+#~ "སྲུང་བཞག་འབད་བ་ཅིན་ལོག་སྟེ་ཁ་སྐོང་མ་རྐྱབ་པར་དེའི་ཚད་གཞི་དང་ཚད་དུས་མཐུན་"
+#~ "བཟོ་འོང་།"
 
 #. placeholder {0}: localizedAmounts.depositHeadroom
 #. placeholder {1}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:413
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:430
 msgid "This pool can only take {0} more {1} right now."
 msgstr "ད་ལྟོ་དངུལ་ཁུངས་འདི་གིས་ {0} {1} ཧེང་བཀལ་རྐྱངམ་ཅིག་ལེན་ཚུགས།"
 
 #. placeholder {0}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:411
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:428
 msgid "This pool can't take any more {0} right now."
 msgstr "ད་ལྟོ་དངུལ་ཁུངས་འདི་གིས་ {0} ཧེང་བཀལ་ལེན་མི་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:390
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:826
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:397
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:883
 msgid "This pool doesn't take any vouchers yet."
 msgstr "དངུལ་ཁུངས་འདི་གིས་ད་ཚུན་འཛིན་ཤོག་ག་ཅི་ཡང་ལེན་མི་འབད།"
 
 #. placeholder {0}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:425
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:442
 msgid "This pool has no {0} available to swap."
 msgstr "དངུལ་ཁུངས་འདི་ལུ་བརྗེ་ལེན་འབད་ནིའི་ {0} མེད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:514
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:526
 msgid "This pool has no limiter, so deposits are uncapped and no credit limit "
 "can be set."
 msgstr "དངུལ་ཁུངས་འདི་ལུ་ཚད་འཛིན་མེད་པས། "
@@ -5283,23 +5647,23 @@ msgstr "དངུལ་ཁུངས་འདི་གིས་ད་ཚུན་
 
 #. placeholder {0}: localizedAmounts.availableAmountOut
 #. placeholder {1}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:427
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:444
 msgid "This pool only has {0} {1} available to swap."
 msgstr "དངུལ་ཁུངས་འདི་ལུ་བརྗེ་ལེན་འབད་ཆོག་པའི་ {0} {1} རྐྱངམ་ཅིག་ཡོད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:611
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:623
 msgid "This pool prices from a live feed. Feed settings aren't editable here "
 "yet."
 msgstr "དངུལ་ཁུངས་འདི་གིས་ད་ལྟོའི་གནས་ཚུལ་ལས་གནས་གོང་བཀལཝ་ཨིན། "
 "གནས་ཚུལ་སྒྲིག་འགོད་ད་ཚུན་ནཱ་ལུ་ཞུན་དག་འབད་མི་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:616
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:628
 msgid "This pool values every voucher equally, so there is no rate to set. "
 "Adding vouchers to it isn't available here yet."
 msgstr "དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤོག་ཆ་མཉམ་གནས་གོང་འདྲ་མཉམ་སྦེ་རྩིཝ་ལས་ "
 "བཀལ་ནིའི་ཚད་གཞི་མེད། ད་ཚུན་ནཱ་ལུ་འཛིན་ཤོག་ཁ་སྐོང་རྐྱབ་མི་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:513
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
 msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "དངུལ་ཁུངས་འདིའི་བཙུགས་དངུལ་ཚད་བསྒྱུར་ཡོད། "
@@ -5310,7 +5674,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "གསལ་བསྒྲགས་འདི་སྲུང་ནི་ལུ་སྦོམ་དྲགས་པས། ཡི་གུ་ཐུང་ཀུ་བཟོ་ "
 "ཡང་ན་བརྡ་ལམ་ལ་ལོ་བཏོན།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "QR ཨང་རྟགས་འདི་ནང་ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་མེད།"
 
@@ -5318,8 +5682,12 @@ msgstr "QR ཨང་རྟགས་འདི་ནང་ཆ་གནས་ཅན
 msgid "This version is no longer supported."
 msgstr "ཐོན་རིམ་འདི་ད་ལས་ཕར་རྒྱབ་སྐྱོར་མེད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:203
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:377
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:207
+msgid "This voucher is already approved."
+msgstr "འཛིན་ཤོག་འདི་ཧེ་མ་ལས་ཆ་འཇོག་གྲུབ་ཡོད།"
+
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:217
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:398
 msgid "This voucher's decimals are unknown, so a limit can't be set."
 msgstr "འཛིན་ཤོག་འདིའི་བཅུ་ཚག་མ་ཤེསཔ་ལས་ ཚད་བཀལ་མི་ཚུགས།"
 
@@ -5334,10 +5702,11 @@ msgstr "མགོ་མིང་ཡིག་འབྲུ་ ༢༠༠ ཡང་�
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:161
 #: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:186
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
+#: apps/web/src/features/wallet/ui/collect-page.tsx:137
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:629
 msgid "To"
 msgstr "གང་ལུ།"
 
@@ -5362,12 +5731,20 @@ msgid "Tools"
 msgstr "ལག་ཆ།"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:476
-msgid "Total"
-msgstr "བསྡོམས།"
+#~ msgid "Total"
+#~ msgstr "བསྡོམས།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:154
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:172
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:204
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:361
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:663
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:209
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:294
+msgid "Total fees"
+msgstr "གླ་ཡོན་བསྡོམས།"
+
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:195
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:227
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:219
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
 msgid "Transaction"
@@ -5381,10 +5758,10 @@ msgstr "ཉོ་ཚོང་ཁ་གསལ།"
 msgid "Transaction hash"
 msgstr "ཉོ་ཚོང་ཧེཤ།"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:68
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:146
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:152
 msgid "Transaction hash copied"
 msgstr "ཉོ་ཚོང་ཧེཤ་འདྲ་བཤུས་གྲུབ།"
 
@@ -5409,9 +5786,10 @@ msgstr "འགྲུལ་བཞུད།"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
-#: apps/web/src/components/offerings/offerings-panel.tsx:142
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133
+#: apps/web/src/components/nfc-card-prompt.tsx:116
+#: apps/web/src/components/offerings/offerings-panel.tsx:151
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:80
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:142
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:65
 #: apps/web/src/features/home/ui/activity-page.tsx:66
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:146
@@ -5419,18 +5797,21 @@ msgstr "འགྲུལ་བཞུད།"
 #: apps/web/src/features/home/ui/wallet-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:229
 #: apps/web/src/features/home/ui/wallet-page.tsx:320
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:221
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:54
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:385
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:392
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:270
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:224
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:227
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:459
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:469
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:578
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:470
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:579
 #: apps/web/src/features/wallet/ui/withdraw-sheet.tsx:214
 msgid "Try again"
 msgstr "ལོག་སྟེ་འབད།"
@@ -5445,7 +5826,7 @@ msgid "Type at least {VOUCHER_SEARCH_MIN_CHARS} characters to search vouchers."
 msgstr "འཛིན་ཤོག་འཚོལ་ནིའི་དོན་ལུ་ཉུང་མཐའ་ {VOUCHER_SEARCH_MIN_CHARS} "
 "ཡིག་འབྲུ་བཙུགས།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:868
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:881
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:200
 msgid "Type at least two characters."
 msgstr "ཉུང་མཐའ་ཡིག་འབྲུ་གཉིས་བཙུགས།"
@@ -5456,9 +5837,10 @@ msgstr "སྐད་ཡིག་མངོན་གསལ་འབད་མ་ཚ
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:770
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:784
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:103
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:782
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:796
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1020
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
 msgid "Unavailable"
@@ -5481,6 +5863,10 @@ msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:402
 msgid "Unit of Account"
 msgstr "རྩིས་ཀྱི་ཆ་ཕྲན།"
+
+#: apps/web/src/features/wallet/ui/collect-page.tsx:434
+msgid "Unknown"
+msgstr "མ་ཤེས།"
 
 #. placeholder {0}: option.label
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:154
@@ -5604,12 +5990,12 @@ msgstr "པར་ལག་ལེན་འཐབ།"
 
 #: apps/web/src/components/profile/username-input.tsx:38
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:57
-#: apps/web/src/features/wallet/ui/receive-page.tsx:84
+#: apps/web/src/features/wallet/ui/receive-page.tsx:88
 msgid "Username"
 msgstr "ལག་ལེན་པའི་མིང་།"
 
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:48
-#: apps/web/src/features/wallet/ui/receive-page.tsx:27
+#: apps/web/src/features/wallet/ui/receive-page.tsx:31
 msgid "Username copied"
 msgstr "ལག་ལེན་པའི་མིང་འདྲ་བཤུས་གྲུབ།"
 
@@ -5626,7 +6012,7 @@ msgstr "ལག་ལེན་པའི་མིང་དུས་མཐུན་
 msgid "Uses voucher rates set for this pool"
 msgstr "དངུལ་ཁུངས་འདིའི་དོན་ལུ་བཀལ་ཡོད་པའི་འཛིན་ཤོག་ཚད་གཞི་ལག་ལེན་འཐབ།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:778
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:790
 msgid "Value in {unitSymbol}"
 msgstr "{unitSymbol} ནང་གི་གནས་གོང་།"
 
@@ -5656,12 +6042,12 @@ msgid "View image full screen"
 msgstr "པར་གསལ་གངམ་སྦེ་བལྟ།"
 
 #. placeholder {0}: offering.name
-#: apps/web/src/components/offerings/offerings-panel.tsx:235
+#: apps/web/src/components/offerings/offerings-panel.tsx:247
 msgid "View offering details: {0}"
 msgstr "གོ་སྐབས་ཁ་གསལ་བལྟ་: {0}"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:168
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:232
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:625
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:762
 msgid "View on block explorer"
@@ -5688,7 +6074,7 @@ msgstr "འཛིན་ཤོག"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:164
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
 msgstr "འཛིན་ཤོག"
@@ -5728,12 +6114,11 @@ msgstr "འཛིན་ཤོག་འགྲེལ་བཤད་དགོ"
 msgid "Voucher description must be 500 characters or fewer"
 msgstr "འཛིན་ཤོག་འགྲེལ་བཤད་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
 
-#: apps/web/src/components/vouchers/voucher-sheet-full.tsx:42
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:271
 msgid "Voucher details"
 msgstr "འཛིན་ཤོག་ཁ་གསལ།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:921
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:978
 msgid "Voucher details unavailable"
 msgstr "འཛིན་ཤོག་ཁ་གསལ་མི་འཐོབ།"
 
@@ -5767,7 +6152,7 @@ msgstr "འཛིན་ཤོག་ཐོ་བཀོད།"
 msgid "Voucher retired."
 msgstr "འཛིན་ཤོག་ལག་ལེན་ལས་བཏོན་ཡོད།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:206
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:215
 msgid "Voucher review"
 msgstr "འཛིན་ཤོག་བསྐྱར་ཞིབ།"
 
@@ -5810,11 +6195,11 @@ msgstr "འཛིན་ཤོག་ཚུ།"
 msgid "Vouchers swap one for one"
 msgstr "འཛིན་ཤོག་གཅིག་ལུ་གཅིག་བརྗེ་ལེན་འབད།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:951
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:980
 msgid "Vouchers you hold"
 msgstr "ཁྱོད་ཀྱིས་བཟུང་ཡོད་པའི་འཛིན་ཤོག"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:950
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:992
 msgid "Vouchers you issued"
 msgstr "ཁྱོད་ཀྱིས་གསར་བཏོན་འབད་མི་འཛིན་ཤོག"
 
@@ -5829,15 +6214,15 @@ msgstr "བཀག་ཐག་ངེས་གཏན་བསྒུག་དོ...
 msgid "Waiting for confirmation…"
 msgstr "ངེས་གཏན་བསྒུག་དོ…"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:115
-#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
+#: apps/web/src/features/wallet/ui/send-receipt-page.tsx:162
 msgid "Waiting for on-chain confirmation"
 msgstr "བཀག་ཐག་གུ་ངེས་གཏན་བསྒུག་དོ།"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:317
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:404
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:538
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:571
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:583
 msgid "Waiting for the chain…"
 msgstr "བཀག་ཐག་བསྒུག་དོ…"
 
@@ -5846,7 +6231,7 @@ msgstr "བཀག་ཐག་བསྒུག་དོ…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:143
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
-#: apps/web/src/features/wallet/ui/receive-page.tsx:52
+#: apps/web/src/features/wallet/ui/receive-page.tsx:56
 #: apps/web/src/features/wallet/ui/send-recipient-page.tsx:107
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:106
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:99
@@ -5879,7 +6264,7 @@ msgstr "ང་བཅས་ཀྱིས་ཁྱོད་ཀྱི་གསལ་
 msgid "We couldn't load your profile."
 msgstr "ང་བཅས་ཀྱིས་ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་གསལ་འབད་མ་ཚུགས།"
 
-#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:623
+#: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:635
 msgid "We couldn't tell how this pool prices vouchers, so it can't be changed "
 "here."
 msgstr "ང་བཅས་ཀྱིས་དངུལ་ཁུངས་འདི་གིས་འཛིན་ཤོག་ལུ་གནས་གོང་ག་དེ་སྦེ་བཀལཝ་ཨིན་ན་ཤེ"
@@ -5891,7 +6276,7 @@ msgstr "ང་བཅས་ཀྱིས་འཛིན་ཤོག་འདི་
 "གས།"
 
 #: apps/web/src/components/vouchers/voucher-about.tsx:98
-#: apps/web/src/components/vouchers/voucher-sheet.tsx:327
+#: apps/web/src/components/vouchers/voucher-sheet.tsx:369
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:336
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:352
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:353
@@ -5902,7 +6287,7 @@ msgstr "ང་བཅས་ཀྱིས་འཛིན་ཤོག་འདི་
 msgid "Website"
 msgstr "ཡོངས་འབྲེལ་ས་ཚིགས།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:569
+#: apps/web/src/components/offerings/offerings-panel.tsx:523
 msgid "Weekly"
 msgstr "བདུན་ཕྲག་རེའི།"
 
@@ -5956,11 +6341,11 @@ msgstr "དངུལ་རྒྱུན་ཕྱིར་བཏོན།"
 msgid "Withdrawal submitted"
 msgstr "ཕྱིར་བཏོན་ཞུ་འབུལ་གྲུབ།"
 
-#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:500
+#: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:501
 msgid "Write a post"
 msgstr "གསལ་བསྒྲགས་ཅིག་བྲིས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:170
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:179
 msgid "Write a review"
 msgstr "བསྐྱར་ཞིབ་ཅིག་བྲིས།"
 
@@ -5984,7 +6369,7 @@ msgstr "ཁྱོད་ཀྱི་གསལ་བསྒྲགས་དང་པ
 msgid "Written below"
 msgstr "འོག་ལུ་བྲིས་ཡོད།"
 
-#: apps/web/src/components/offerings/offerings-panel.tsx:573
+#: apps/web/src/components/offerings/offerings-panel.tsx:527
 msgid "Yearly"
 msgstr "ལོ་བསྟར།"
 
@@ -5996,6 +6381,10 @@ msgstr "ཨིན།"
 msgid "You are signed in with the passkey on this device."
 msgstr "ཁྱོད་ཐབས་འཕྲུལ་འདི་གུ་ནང་འཛུལ་ལྡེ་མིག་གིས་ནང་འཛུལ་ཡོད།"
 
+#: apps/web/src/components/offerings/offering-order-picker.tsx:185
+msgid "You can add up to three offerings to one order."
+msgstr "མངགས་ཐོ་གཅིག་ནང་གོ་སྐབས་མང་ཤོས་གསུམ་ཚུན་ཁ་སྐོང་རྐྱབ་ཚུགས།"
+
 #: apps/web/src/features/posts/ui/post-voucher-picker.tsx:194
 msgid "You can link up to {max} vouchers."
 msgstr "ཁྱོད་ཀྱིས་འཛིན་ཤོག་ {max} ཚུན་འབྲེལ་མཐུད་འབད་ཚུགས།"
@@ -6003,14 +6392,14 @@ msgstr "ཁྱོད་ཀྱིས་འཛིན་ཤོག་ {max} ཚུ�
 #~ msgid "You can receive up to {maxReceiveAmount} {receiveSymbol}"
 #~ msgstr "ཁྱོད་ཀྱིས་ {maxReceiveAmount} {receiveSymbol} ཚུན་ལེན་ཚུགས།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:138
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:147
 msgid "You can reply to reviews and report inappropriate content. You can edit "
 "only replies you wrote yourself."
 msgstr "ཁྱོད་ཀྱིས་བསྐྱར་ཞིབ་ལུ་ལན་བྱིན་ནི་དང་འོས་མིན་ནང་དོན་སྙན་ཞུ་འབད་ཚུགས། "
 "ཁྱོད་རང་གིས་བྲིས་མི་ལན་རྐྱངམ་ཅིག་ཞུན་དག་འབད་ཚུགས།"
 
 #. placeholder {0}: new Date(viewer!.editableUntil!).toLocaleString()
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:161
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:170
 msgid "You can write or edit your review until {0}."
 msgstr "{0} ཚུན་ཁྱོད་ཀྱིས་བསྐྱར་ཞིབ་བྲིས་ཡང་ན་ཞུན་དག་འབད་ཚུགས།"
 
@@ -6022,7 +6411,7 @@ msgstr "འདི་ཚུ་ནང་ལས་ཁྱོད་ཀྱིས་ག
 msgid "You don't have a username yet."
 msgstr "ཁྱོད་ལུ་ད་ལྟོ་ཚུན་ ལག་ལེན་པའི་མིང་མིན་འདུག"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:394
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:401
 msgid "You don't hold any voucher this pool takes."
 msgstr "ཁྱོད་ཀྱིས་དངུལ་ཁུངས་འདི་གིས་ལེན་མི་འཛིན་ཤོག་ག་ཅི་ཡང་མ་བཟུང་།"
 
@@ -6043,15 +6432,15 @@ msgstr "ཁྱོད་ཀྱིས་ད་ཚུན་འཛིན་ཤོག
 msgid "You haven't written any posts yet."
 msgstr "ཁྱོད་ཀྱིས་ད་ཚུན་གསལ་བསྒྲགས་ག་ཅི་ཡང་མ་བྲིས།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:48
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:609
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:155
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:51
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:639
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:177
 msgid "You receive"
 msgstr "ཁྱོད་ཀྱིས་ལེན་མི།"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:49
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:612
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:160
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:52
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:642
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:182
 msgid "You send"
 msgstr "ཁྱོད་ཀྱིས་གཏང་མི།"
 
@@ -6096,7 +6485,7 @@ msgstr "ཁྱོད་ཀྱི་ MPESA སྤྲོད་དངུལ་མ�
 msgid "Your name"
 msgstr "ཁྱོད་ཀྱི་མིང་།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:106
+#: apps/web/src/components/reviews/review-editor.tsx:119
 msgid "Your name and wallet address will not be shown. Avoid including personal "
 "details in your comment."
 msgstr "ཁྱོད་ཀྱི་མིང་དང་དངུལ་ཁུག་ཁ་བྱང་མི་སྟོན། "
@@ -6135,15 +6524,15 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད།"
 msgid "Your profile photo"
 msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་པར།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:55
+#: apps/web/src/components/reviews/review-editor.tsx:68
 msgid "Your rating"
 msgstr "ཁྱོད་ཀྱི་སྐར་གྲངས།"
 
-#: apps/web/src/components/reviews/review-editor.tsx:88
+#: apps/web/src/components/reviews/review-editor.tsx:101
 msgid "Your reply"
 msgstr "ཁྱོད་ཀྱི་ལན།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:152
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:161
 msgid "Your review"
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ།"
 
@@ -6151,7 +6540,7 @@ msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ།"
 msgid "Your review has been saved."
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་སྲུང་བཞག་གྲུབ།"
 
-#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:145
+#: apps/web/src/components/reviews/voucher-reviews-panel.tsx:154
 msgid "Your review was hidden by an admin."
 msgstr "ཁྱོད་ཀྱི་བསྐྱར་ཞིབ་བདག་སྐྱོང་པ་གིས་སྦ་བཞག་ཡོད།"
 
@@ -6172,6 +6561,7 @@ msgid "Your Vouchers"
 msgstr "ཁྱོད་ཀྱི་འཛིན་ཤོག་ཚུ།"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:50
+#: apps/web/src/features/wallet/ui/collect-page.tsx:143
 msgid "Your wallet"
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག"
 

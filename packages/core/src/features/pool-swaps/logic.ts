@@ -1,4 +1,5 @@
 import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
+import { formatTokenAmountFixed } from "../wallet/logic";
 import type { CaliburCall } from "../webauthn/index";
 
 export const erc20ApproveAbi = parseAbi([
@@ -40,6 +41,12 @@ export const poolQuoterReverseValueForAbi = parseAbi([
 export const swapPoolGetFeeAbi = parseAbi([
   "function getFee(address inToken, address outToken, uint256 value) view returns (uint256)",
 ]);
+export const swapPoolSwapEventAbi = parseAbi([
+  "event Swap(address indexed initiator, address indexed tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut, uint256 fee)",
+]);
+export const swapPoolSwapSettlementEventAbi = parseAbi([
+  "event SwapSettlement(address indexed initiator, address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 quotedAmountOut, uint256 nominalAmountOut, uint256 amountOut, uint256 poolFee, uint256 protocolFee)",
+]);
 export const swapPoolFeesAbi = parseAbi(["function fees(address token) view returns (uint256)"]);
 export const swapPoolFeesDecoupledAbi = parseAbi(["function feesDecoupled() view returns (bool)"]);
 export const swapRouterQuoteExactInputAbi = parseAbi([
@@ -50,6 +57,110 @@ export const swapRouterQuoteExactOutputAbi = parseAbi([
   "struct Hop { address pool; address tokenIn; address tokenOut }",
   "function quoteExactOutput(Hop[] path, uint256 amountOut) returns (uint256)",
 ]);
+
+export type PoolSwapFeeBreakdownRaw = {
+  grossAmountOutRaw: string;
+  poolFeeRaw: string;
+  protocolFeeRaw: string;
+  totalFeeRaw: string;
+};
+
+/**
+ * What one swap took out of its output, given the pool fee as an amount.
+ *
+ * The protocol fee is not recomputed: `SwapPool._swap` subtracts both fees from
+ * the gross, so it is whatever the gross lost beyond the pool fee, and the
+ * controller never has to be read. A settlement event states both, which is how
+ * the event's own figures are checked against each other.
+ *
+ * All inputs are raw on-chain integers. Null when they cannot be the output of
+ * one swap — malformed, a net above the gross, or a pool fee above what the gross
+ * lost — rather than a negative fee.
+ */
+export function poolSwapFeeBreakdownRaw(input: {
+  grossAmountOutRaw: string;
+  netAmountOutRaw: string;
+  poolFeeRaw: string;
+}): PoolSwapFeeBreakdownRaw | null {
+  try {
+    const gross = BigInt(input.grossAmountOutRaw);
+    const net = BigInt(input.netAmountOutRaw);
+    const poolFee = BigInt(input.poolFeeRaw);
+    if (gross < 0n || net < 0n || poolFee < 0n || net > gross) return null;
+
+    const totalFee = gross - net;
+    if (poolFee > totalFee) return null;
+
+    return {
+      grossAmountOutRaw: gross.toString(),
+      poolFeeRaw: poolFee.toString(),
+      protocolFeeRaw: (totalFee - poolFee).toString(),
+      totalFeeRaw: totalFee.toString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * `SwapPool`'s fee denominator. `getFee(inToken, outToken, POOL_FEE_PPM)` therefore
+ * returns the pair's pool fee rate itself, in ppm.
+ */
+export const POOL_FEE_PPM = 1_000_000n;
+
+/**
+ * The same split for a quote, which knows the pool's fee rate rather than its fee.
+ *
+ * The pool fee is the FeePolicy rate on the gross quote, floored, exactly as
+ * `SwapPool._swap` computes it. The protocol fee is the controller's cut of the
+ * larger of that fee and a 1% floor, so a pool charging nothing still pays one —
+ * which is why a single "fees" figure read as wrong.
+ */
+export function splitPoolSwapFees(input: {
+  grossAmountOutRaw: string;
+  netAmountOutRaw: string;
+  poolFeePpm: string;
+}): PoolSwapFeeBreakdownRaw | null {
+  let poolFee: bigint;
+  try {
+    poolFee = (BigInt(input.grossAmountOutRaw) * BigInt(input.poolFeePpm)) / POOL_FEE_PPM;
+  } catch {
+    return null;
+  }
+  return poolSwapFeeBreakdownRaw({
+    grossAmountOutRaw: input.grossAmountOutRaw,
+    netAmountOutRaw: input.netAmountOutRaw,
+    poolFeeRaw: poolFee.toString(),
+  });
+}
+
+/**
+ * Formats one fee as an effective percentage of the gross output quote.
+ *
+ * The calculation remains integer-only. Two decimal places means the scaled
+ * value is hundredths of one percent (`fee * 10_000 / gross`). A positive fee
+ * below that display boundary is called out instead of being shown as 0.00%.
+ */
+export function formatPoolSwapFeePercentage(input: {
+  feeRaw: string;
+  grossAmountOutRaw: string;
+  locale?: string;
+}): string | null {
+  try {
+    const fee = BigInt(input.feeRaw);
+    const gross = BigInt(input.grossAmountOutRaw);
+    if (fee < 0n || gross <= 0n || fee > gross) return null;
+    if (fee === 0n) return `${formatTokenAmountFixed("0", 2, 2, input.locale)}%`;
+
+    const hundredthsOfPercent = (fee * 10_000n) / gross;
+    if (hundredthsOfPercent === 0n) {
+      return `<${formatTokenAmountFixed("1", 2, 2, input.locale)}%`;
+    }
+    return `${formatTokenAmountFixed(hundredthsOfPercent.toString(), 2, 2, input.locale)}%`;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * What the pool can actually pay out of a voucher.

@@ -13,10 +13,12 @@ export type EncryptJob = { privateKey: `0x${string}`; passphrase: string };
  *
  * Runs on a small pool of Web Workers. Where workers are unavailable (tests,
  * very old browsers) it falls back to the main thread one key at a time.
+ * `maxWorkers` caps the pool below the desktop default, for a phone.
  */
 export async function encryptKeys(
   jobs: readonly EncryptJob[],
   onEncrypted: (index: number, payload: string) => void,
+  { maxWorkers = MAX_WORKERS }: { maxWorkers?: number } = {},
 ): Promise<void> {
   if (typeof Worker === "undefined") {
     for (const [index, job] of jobs.entries()) {
@@ -27,7 +29,7 @@ export async function encryptKeys(
 
   const workerCount = Math.max(
     1,
-    Math.min(MAX_WORKERS, (navigator.hardwareConcurrency || 2) - 1, jobs.length),
+    Math.min(maxWorkers, MAX_WORKERS, (navigator.hardwareConcurrency || 2) - 1, jobs.length),
   );
   const workers = Array.from(
     { length: workerCount },

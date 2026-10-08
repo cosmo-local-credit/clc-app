@@ -338,6 +338,7 @@ export function VoucherDetailPage({
           voucherUoa={voucherUoa}
           ownerAddress={detail?.ownerAddress ?? null}
           isKnownEmpty={detail?.kind === "voucher"}
+          openVoucherPageAction="close"
         />
       ) : null}
       {activeTab === "activity" ? (

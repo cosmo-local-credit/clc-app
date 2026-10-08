@@ -352,10 +352,14 @@ function inboxMessage(overrides: Partial<NotificationInboxMessage> = {}): Notifi
   };
 }
 
-function waitForClockTick(): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, 1);
-  });
+// Waits until the millisecond clock has moved, not merely for a 1ms timer: timers
+// run on the monotonic clock and can fire before `Date.now()` ticks over, which
+// left two records with one `createdAt` and their order to the random key.
+async function waitForClockTick(): Promise<void> {
+  const start = Date.now();
+  while (Date.now() === start) {
+    await new Promise((resolve) => setTimeout(resolve, 1));
+  }
 }
 
 function openRawDatabase(name: string, version: number): Promise<IDBDatabase> {

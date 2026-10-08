@@ -2,14 +2,21 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { offeringKeys } from "@clc/api/features/offerings/queries";
 
-import { useVoucherOfferingsInfinite } from "./use-voucher-offerings";
+import {
+  useCurrentVoucherOfferingsInfinite,
+  useVoucherOfferingsInfinite,
+} from "./use-voucher-offerings";
 
 const VOUCHER_ADDRESS = "0x4444444444444444444444444444444444444444";
 const SELLER_ADDRESS = "0x6666666666666666666666666666666666666666";
 
-function wrapper() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function newClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
+
+function wrapper(queryClient = newClient()) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
   };
@@ -79,5 +86,28 @@ describe("useVoucherOfferingsInfinite", () => {
 
     expect(result.current.fetchStatus).toBe("idle");
     expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("bypasses the public browser cache when verifying receipt order availability", async () => {
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(response({ offerings: [offering(10)], first: 10, last: 10 }));
+    vi.stubGlobal("fetch", fetcher);
+
+    const client = newClient();
+    client.setQueryData(offeringKeys.byVoucherInfinite(VOUCHER_ADDRESS, 20), {
+      pages: [{ offerings: [], first: 0, last: 0, receivedCount: 0 }],
+      pageParams: [undefined],
+    });
+    const { result } = renderHook(() => useCurrentVoucherOfferingsInfinite(VOUCHER_ADDRESS), {
+      wrapper: wrapper(client),
+    });
+
+    expect(result.current.isFetching).toBe(true);
+    await waitFor(() => expect(result.current.data?.pages[0]?.offerings).toHaveLength(1));
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/v2/vouchers/${VOUCHER_ADDRESS}/offerings`),
+      expect.objectContaining({ cache: "no-store", credentials: "omit", method: "GET" }),
+    );
   });
 });

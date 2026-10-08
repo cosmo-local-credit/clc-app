@@ -18,7 +18,12 @@ const { quoteData, swapMutateAsync } = vi.hoisted(() => ({
     availableAmountOut: "1000.00",
     availableAmountOutRaw: "1000000000",
     grossAmountOutRaw: "50000000",
-    feeAmountRaw: "0",
+    feeBreakdown: {
+      grossAmountOutRaw: "50000000",
+      poolFeeRaw: "0",
+      protocolFeeRaw: "0",
+      totalFeeRaw: "0",
+    },
     hasLiquidity: true,
     blockNumber: 100n,
   },

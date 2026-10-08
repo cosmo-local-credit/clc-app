@@ -267,13 +267,17 @@ describe("CreateVoucherFlow", () => {
 
     const currency = screen.getByRole("combobox", { name: "Priced in" });
     fireEvent.click(currency);
-    expect(screen.getByRole("option", { name: "KES - Kenyan Shillings" })).toBeTruthy();
+    // Found by text, then checked for its role: a role query computes the
+    // accessible name of every one of the ~160 currencies, which under a loaded
+    // full-suite run took this test past its timeout.
+    expect(screen.getByText("KES - Kenyan Shillings").closest('[role="option"]')).toBeTruthy();
     expect(screen.queryByText(/KES —/)).toBeNull();
 
     fireEvent.change(currency, { target: { value: "Tanzanian" } });
-    const tanzanianShilling = await screen.findByRole("option", {
-      name: "TZS - Tanzanian Shilling",
-    });
+    const tanzanianShilling = (await screen.findByText("TZS - Tanzanian Shilling")).closest(
+      '[role="option"]',
+    );
+    if (!tanzanianShilling) throw new Error("TZS is not offered as an option");
     fireEvent.pointerDown(tanzanianShilling, { pointerType: "touch" });
     fireEvent.click(tanzanianShilling);
 

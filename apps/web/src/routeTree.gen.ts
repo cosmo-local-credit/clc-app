@@ -19,6 +19,7 @@ import { Route as PostsIndexRouteImport } from './routes/posts/index'
 import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
+import { Route as WalletCollectRouteImport } from './routes/wallet/collect'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
 import { Route as NavPoolsIndexRouteImport } from './routes/_nav/pools/index'
@@ -85,6 +86,11 @@ const WalletTopUpRoute = WalletTopUpRouteImport.update({
 const WalletReceiveRoute = WalletReceiveRouteImport.update({
   id: '/wallet/receive',
   path: '/wallet/receive',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletCollectRoute = WalletCollectRouteImport.update({
+  id: '/wallet/collect',
+  path: '/wallet/collect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/posts/': typeof PostsIndexRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/': typeof NavIndexRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/install': typeof InstallRoute
   '/onboarding': typeof OnboardingRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
   '/_nav/': typeof NavIndexRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/install'
     | '/onboarding'
     | '/settings/profile'
+    | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/posts/'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/install'
     | '/onboarding'
     | '/settings/profile'
+    | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/install'
     | '/onboarding'
     | '/settings/profile'
+    | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
     | '/_nav/'
@@ -367,6 +379,7 @@ export interface RootRouteChildren {
   InstallRoute: typeof InstallRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
+  WalletCollectRoute: typeof WalletCollectRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
   PostsIndexRoute: typeof PostsIndexRoute
@@ -454,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet/receive'
       fullPath: '/wallet/receive'
       preLoaderRoute: typeof WalletReceiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet/collect': {
+      id: '/wallet/collect'
+      path: '/wallet/collect'
+      fullPath: '/wallet/collect'
+      preLoaderRoute: typeof WalletCollectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/profile': {
@@ -616,6 +636,7 @@ const rootRouteChildren: RootRouteChildren = {
   InstallRoute: InstallRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsProfileRoute: SettingsProfileRoute,
+  WalletCollectRoute: WalletCollectRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletTopUpRoute: WalletTopUpRoute,
   PostsIndexRoute: PostsIndexRoute,

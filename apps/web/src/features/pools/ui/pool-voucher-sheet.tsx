@@ -40,14 +40,21 @@ import {
   useVoucherSearch,
   VOUCHER_SEARCH_MIN_CHARS,
 } from "#/features/home/hooks/use-voucher-search";
-import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
+import {
+  type ApprovalSuggestionSource,
+  useApprovalSuggestions,
+} from "#/features/pools/hooks/use-approval-suggestions";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import {
   usePoolQuoterKind,
   usePoolVoucherRatesByAddress,
   type PoolQuoterKind,
 } from "#/features/pools/hooks/use-pool-quoter";
-import { usePoolTokenMembership } from "#/features/pools/hooks/use-pool-registry";
+import {
+  poolTokenRegistryAddress,
+  usePoolRegistryTokens,
+  usePoolTokenMembership,
+} from "#/features/pools/hooks/use-pool-registry";
 import { usePoolTreasury } from "#/features/pools/hooks/use-pool-treasury";
 import {
   type ApprovalCandidate,
@@ -167,12 +174,15 @@ function PoolVoucherForm({
   // is already a member the catalog does not list — and `add` on a member
   // reverts `TokenAlreadyExists`, taking the rate and the limit with it.
   const membership = usePoolTokenMembership(pool, selected?.address);
-  const alreadyRegistered = membership.data === true;
+  const membershipRequired = !voucher && poolTokenRegistryAddress(pool) !== null;
+  const membershipPending = membershipRequired && membership.isPending;
+  const membershipUnread = membershipRequired && membership.isError;
+  const approvalAlreadyRegistered = !voucher && membership.data === true;
   // Only register on a positive "not a member". An unread membership defaults to
   // not registering, because a redundant `add` reverts the whole batch while a
   // missing one merely leaves the voucher unlisted and re-approvable.
-  const register = !voucher && membership.data === false;
-  const registrationUnknown = !voucher && membership.data === undefined;
+  const register = membershipRequired && membership.data === false;
+  const registrationUnknown = membershipRequired && membership.data === undefined;
   const hasLimiter = pool.limiterAddress !== null;
   const unitSymbol = pool.unitOfAccount ?? pool.symbol;
   const canConfigure = POOL_QUOTER_SUPPORT[quoter.kind];
@@ -193,15 +203,19 @@ function PoolVoucherForm({
   const capUnread = !!selected && hasLimiter && !treasuryPending && seedCapRaw === null;
   const blockedReason = quoter.isPending
     ? null
-    : !canConfigure
-      ? quoterNotice(quoter.kind)
-      : rateUnread
-        ? t`Couldn't read this voucher's current rate, so it can't be changed right now.`
-        : capUnread
-          ? t`Couldn't load credit limits.`
-          : decimalsUnread
-            ? t`This voucher's decimals are unknown, so a limit can't be set.`
-            : null;
+    : approvalAlreadyRegistered
+      ? t`This voucher is already approved.`
+      : membershipUnread
+        ? t`Couldn't check which vouchers are already approved.`
+        : !canConfigure
+          ? quoterNotice(quoter.kind)
+          : rateUnread
+            ? t`Couldn't read this voucher's current rate, so it can't be changed right now.`
+            : capUnread
+              ? t`Couldn't load credit limits.`
+              : decimalsUnread
+                ? t`This voucher's decimals are unknown, so a limit can't be set.`
+                : null;
   const balance: VoucherBalanceState = !selected
     ? { status: "loading" }
     : decimalsPending || treasuryPending
@@ -212,6 +226,10 @@ function PoolVoucherForm({
   const retryReads = () => {
     if (canConfigure) void rates.refetch();
     void treasury.refetch();
+  };
+  const retryBlockedReads = () => {
+    if (membershipUnread) void membership.refetch();
+    if (rateUnread || capUnread) retryReads();
   };
   const seed =
     selected && seedRatePpm && (!hasLimiter || seedCapRaw !== null)
@@ -226,6 +244,7 @@ function PoolVoucherForm({
     seed &&
     canConfigure &&
     !quoter.isPending &&
+    !membershipPending &&
     !ratePending &&
     !treasuryPending &&
     !blockedReason
@@ -247,7 +266,6 @@ function PoolVoucherForm({
         balance={balance}
         register={register}
         registrationUnknown={registrationUnknown}
-        alreadyRegistered={alreadyRegistered}
         onRetryReads={retryReads}
         onChange={voucher ? undefined : () => setPicked(null)}
         onClose={onClose}
@@ -277,12 +295,17 @@ function PoolVoucherForm({
             onChange={voucher ? undefined : () => setPicked(null)}
           />
         ) : (
-          <VoucherPicker excluded={poolVouchers} onSelect={setPicked} />
+          <VoucherPicker pool={pool} approvedCatalog={poolVouchers} onSelect={setPicked} />
         )}
 
         {quoter.isPending ? (
           <p className="text-muted-foreground text-xs">
             <Trans>Checking how this pool prices vouchers…</Trans>
+          </p>
+        ) : null}
+        {membershipPending ? (
+          <p className="text-muted-foreground text-xs">
+            <Trans>Checking approved vouchers…</Trans>
           </p>
         ) : null}
         {ratePending ? (
@@ -300,13 +323,13 @@ function PoolVoucherForm({
             <p role="alert" className="text-destructive text-xs">
               {blockedReason}
             </p>
-            {(rateUnread || capUnread) && selected ? (
+            {(membershipUnread || rateUnread || capUnread) && selected ? (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="bg-card"
-                onClick={retryReads}
+                onClick={retryBlockedReads}
               >
                 <Trans>Retry</Trans>
               </Button>
@@ -345,7 +368,6 @@ function PoolVoucherConfigurationForm({
   balance,
   register,
   registrationUnknown,
-  alreadyRegistered,
   onRetryReads,
   onChange,
   onClose,
@@ -361,7 +383,6 @@ function PoolVoucherConfigurationForm({
   balance: VoucherBalanceState;
   register: boolean;
   registrationUnknown: boolean;
-  alreadyRegistered: boolean;
   onRetryReads: () => void;
   onChange?: () => void;
   onClose: () => void;
@@ -461,15 +482,6 @@ function PoolVoucherConfigurationForm({
             />
           )}
         </form.Subscribe>
-
-        {!voucher && alreadyRegistered ? (
-          <p className="border border-border bg-card p-4 text-muted-foreground text-xs">
-            <Trans>
-              This pool already allows {selected.symbol}. Saving updates its rate and limit instead
-              of adding it again.
-            </Trans>
-          </p>
-        ) : null}
 
         <form.Field name="exchangeRate">
           {(field) => (
@@ -805,44 +817,45 @@ function SelectedVoucher({
 }
 
 /**
- * Before a search, offer the vouchers a steward can name without typing:
- * ones they issued, ones they hold, and ones this pool already allows.
- *
- * Search stays the way to reach every other voucher. Pool members stay out of
- * those results — `TokenUniqueSymbolIndex.add` reverts on a token the registry
- * holds, which would take the rate and limit in the same batch — but they stay
- * in the idle list, because choosing one updates the rate and limit instead.
+ * Before a search, offer unapproved vouchers the steward can name without
+ * typing: wallet holdings first, then deposits waiting at this pool, then
+ * vouchers they issued. The chain registry is authoritative; the complete
+ * catalog list is used only for older pools without a registry contract.
  */
 function VoucherPicker({
-  excluded,
+  pool,
+  approvedCatalog,
   onSelect,
 }: {
-  excluded: PoolVoucher[];
+  pool: UserPool;
+  approvedCatalog: PoolVoucher[];
   onSelect: (voucher: ApprovalCandidate) => void;
 }) {
   const { t } = useLingui();
   const [query, setQuery] = useState("");
   const search = useVoucherSearch(query, setQuery, true);
-  const suggestions = useApprovalSuggestions();
+  const suggestions = useApprovalSuggestions(pool.address);
+  const registryAddress = poolTokenRegistryAddress(pool);
+  const registry = usePoolRegistryTokens(pool);
   const term = query.trim();
   const searching = term.length >= VOUCHER_SEARCH_MIN_CHARS;
-  const inPool = excluded.flatMap((voucher) => {
-    const candidate = toApprovalCandidate({
-      id: voucher.id,
-      address: voucher.tokenAddress,
-      name: voucher.name,
-      symbol: voucher.symbol,
-    });
-    return candidate ? [candidate] : [];
-  });
+  const registryReady = registryAddress === null || registry.isSuccess;
+  const registryError = registryAddress !== null && registry.isError;
+  // A real registry is authoritative in both directions. The complete catalog
+  // is only the fallback for older pools with no registry contract at all.
+  const approvedAddresses =
+    registryAddress === null
+      ? approvedCatalog.map((voucher) => voucher.tokenAddress)
+      : (registry.data ?? []);
   const suggested = suggestApprovalVouchers({
-    issued: suggestions.isPending ? [] : suggestions.issued,
-    holdings: suggestions.isPending ? [] : suggestions.holdings,
-    inPool,
+    holdings: suggestions.holdings.rows,
+    deposited: suggestions.deposited.rows,
+    issued: suggestions.issued.rows,
+    approvedAddresses,
   });
-  const held = new Set(inPool.map((voucher) => voucher.address.toLowerCase()));
+  const approved = new Set(approvedAddresses.map((address) => address.toLowerCase()));
   const results = search.results.flatMap((voucher) => {
-    if (held.has(voucher.address.toLowerCase())) return [];
+    if (approved.has(voucher.address.toLowerCase())) return [];
     const candidate = toApprovalCandidate(voucher);
     return candidate ? [candidate] : [];
   });
@@ -869,17 +882,32 @@ function VoucherPicker({
         </p>
       ) : null}
 
-      {searching ? (
+      {!registryReady && !registryError ? (
+        <p className="text-muted-foreground text-xs">
+          <Trans>Checking approved vouchers…</Trans>
+        </p>
+      ) : null}
+
+      {registryError ? (
+        <div className="space-y-2">
+          <p role="alert" className="text-destructive text-sm">
+            <Trans>Couldn't check which vouchers are already approved.</Trans>
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 bg-card"
+            onClick={() => void registry.refetch()}
+          >
+            <Trans>Retry</Trans>
+          </Button>
+        </div>
+      ) : registryReady && searching ? (
         <SearchResults search={search} results={results} onSelect={onSelect} />
-      ) : (
-        <SuggestionLists
-          suggested={suggested}
-          pending={suggestions.isPending}
-          failed={suggestions.isError}
-          onRetry={suggestions.refetch}
-          onSelect={onSelect}
-        />
-      )}
+      ) : registryReady ? (
+        <SuggestionLists suggested={suggested} sources={suggestions} onSelect={onSelect} />
+      ) : null}
     </div>
   );
 }
@@ -935,52 +963,89 @@ function SearchResults({
 
 function SuggestionLists({
   suggested,
-  pending,
-  failed,
-  onRetry,
+  sources,
   onSelect,
 }: {
   suggested: ReturnType<typeof suggestApprovalVouchers>;
-  pending: boolean;
-  failed: boolean;
-  onRetry: () => void;
+  sources: {
+    issued: ApprovalSuggestionSource;
+    holdings: ApprovalSuggestionSource;
+    deposited: ApprovalSuggestionSource;
+  };
   onSelect: (voucher: ApprovalCandidate) => void;
 }) {
   const groups = [
-    { id: "issued", label: <Trans>Vouchers you issued</Trans>, rows: suggested.issued },
-    { id: "holdings", label: <Trans>Vouchers you hold</Trans>, rows: suggested.holdings },
-    { id: "pool", label: <Trans>In this pool</Trans>, rows: suggested.inPool },
-  ].filter((group) => group.rows.length > 0);
+    {
+      id: "holdings",
+      label: <Trans>Vouchers you hold</Trans>,
+      rows: suggested.holdings,
+      source: sources.holdings,
+    },
+    {
+      id: "deposited",
+      label: <Trans>Deposited in this pool</Trans>,
+      rows: suggested.deposited,
+      source: sources.deposited,
+    },
+    {
+      id: "issued",
+      label: <Trans>Vouchers you issued</Trans>,
+      rows: suggested.issued,
+      source: sources.issued,
+    },
+  ].filter(
+    (group) =>
+      group.rows.length > 0 ||
+      group.source?.status === "loading" ||
+      group.source?.status === "error" ||
+      group.source?.completeness === "partial",
+  );
 
   return (
     <div className="space-y-3">
-      {pending ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Loading vouchers…</Trans>
-        </p>
-      ) : null}
-      {failed ? (
-        <div className="space-y-2">
-          <p role="alert" className="text-destructive text-sm">
-            <Trans>Couldn't load vouchers.</Trans>
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
-            <Trans>Retry</Trans>
-          </Button>
-        </div>
-      ) : null}
       {groups.map((group) => (
         <section key={group.id} aria-labelledby={`approve-${group.id}`} className="space-y-1">
           <p id={`approve-${group.id}`} className="text-muted-foreground text-xs">
             {group.label}
           </p>
-          <CandidateList candidates={group.rows} onSelect={onSelect} />
+          {group.rows.length > 0 ? (
+            <CandidateList candidates={group.rows} onSelect={onSelect} />
+          ) : group.source?.status === "loading" ? (
+            <p className="text-muted-foreground text-xs">
+              <Trans>Loading…</Trans>
+            </p>
+          ) : group.source?.status === "error" ? (
+            <div className="flex items-center justify-between gap-2">
+              <p role="status" className="text-muted-foreground text-xs">
+                <Trans>Unavailable</Trans>
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 bg-card"
+                onClick={group.source.retry}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
+          {group.source?.status === "ready" && group.source.completeness === "partial" ? (
+            <div className="flex items-center justify-between gap-2">
+              <p role="status" className="text-muted-foreground text-xs">
+                <Trans>Showing recent vouchers only.</Trans>
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 bg-card"
+                onClick={group.source.retry}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
         </section>
       ))}
     </div>

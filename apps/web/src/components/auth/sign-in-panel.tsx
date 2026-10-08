@@ -5,10 +5,11 @@ import type { FormEvent } from "react";
 import { lazy, Suspense, useState } from "react";
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { FiKey, FiLoader, FiX } from "react-icons/fi";
-import { TbScan } from "react-icons/tb";
+import { TbNfc, TbScan } from "react-icons/tb";
 import { useConnection, useDisconnect } from "wagmi";
 import { connect as connectAction } from "wagmi/actions";
 
+import { NfcCardPrompt, type NfcCardProblem } from "#/components/nfc-card-prompt";
 import { PaperWalletScanner } from "#/components/paper-wallet-scanner";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
@@ -31,7 +32,11 @@ import { onboardingSearch } from "#/lib/onboarding-search";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { useCaliburSignin } from "#/features/webauthn/hooks/use-calibur-signin";
 import { usePlatformPasskeyLabel } from "#/features/webauthn/hooks/use-platform-passkey-label";
+import { markNfc } from "#/lib/nfc/metrics";
+import { useWebNfcSupported } from "#/lib/nfc/ndef-adapter";
+import { useNfcScan } from "#/lib/nfc/use-nfc-scan";
 import { RELAYER_URL } from "#/lib/relayer-config";
+import { readNfcCardContent } from "@clc/core/features/nfc/logic";
 import { parsePaperWalletImportPayload } from "@clc/core/features/wallet/paper-wallet";
 import { caliburConnector, pkConnector, wagmiConfig } from "#/providers/web3-config";
 import { ApprovalPending, ApprovalRejected } from "./auth-states";
@@ -85,6 +90,10 @@ export function SignInPanel({
   const [encryptedPaperWallet, setEncryptedPaperWallet] = useState<string | null>(null);
   const [retryAction, setRetryAction] = useState<(() => void) | null>(null);
   const [accountNotFoundOpen, setAccountNotFoundOpen] = useState(false);
+  const [showNfc, setShowNfc] = useState(false);
+  const [nfcProblem, setNfcProblem] = useState<NfcCardProblem | null>(null);
+  const [cardRead, setCardRead] = useState(false);
+  const nfcSupported = useWebNfcSupported();
   const { available, provider, label: providerLabel } = usePlatformPasskeyLabel();
   const ProviderIcon = provider === "apple" ? FaApple : FaGoogle;
   const { step: signinStep, signin } = useCaliburSignin(relayerClient);
@@ -213,6 +222,48 @@ export function SignInPanel({
     }
   }
 
+  // A login scan ends after one valid card. Like the QR scanner, tapping the
+  // card is already the choice to import it, so a raw card signs in without a
+  // further confirmation and an encrypted one goes to the password step.
+  const nfcScan = useNfcScan({
+    onTag: (reading) => {
+      const operationId = crypto.randomUUID();
+      markNfc(operationId, "event");
+      const content = readNfcCardContent(reading);
+      if (content.kind !== "credential") {
+        setNfcProblem(content.kind);
+        return "continue";
+      }
+      markNfc(operationId, "decoded");
+      setNfcProblem(null);
+      setShowNfc(false);
+      if (content.credential.type === "encrypted") {
+        setEncryptedPaperWallet(content.credential.encryptedKey);
+        return "done";
+      }
+      setCardRead(true);
+      markNfc(operationId, "login-started");
+      void connectWithKey(content.credential.key).then((connected) => {
+        setCardRead(false);
+        if (connected) markNfc(operationId, "login-completed");
+      });
+      return "done";
+    },
+  });
+
+  function startNfc() {
+    setError(null);
+    setNfcProblem(null);
+    setShowNfc(true);
+    nfcScan.start();
+  }
+
+  function closeNfc() {
+    nfcScan.stop();
+    setShowNfc(false);
+    setNfcProblem(null);
+  }
+
   function handlePkSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -263,8 +314,8 @@ export function SignInPanel({
       {connecting ? (
         <div className="flex flex-col items-center gap-2 py-3">
           <FiLoader className="size-6 animate-spin text-primary" />
-          <p className="text-muted-foreground text-sm">
-            <Trans>Connecting...</Trans>
+          <p className="text-muted-foreground text-sm" aria-live="polite">
+            {cardRead ? <Trans>Card read — signing in</Trans> : <Trans>Connecting...</Trans>}
           </p>
         </div>
       ) : null}
@@ -276,6 +327,18 @@ export function SignInPanel({
             setShowScanner(false);
             setError(null);
           }}
+        />
+      ) : null}
+
+      {showNfc && !connecting ? (
+        <NfcCardPrompt
+          phase={nfcScan.phase}
+          error={nfcScan.error}
+          readFailed={nfcScan.readFailed}
+          problem={nfcProblem}
+          title={<Trans>Tap your NFC card</Trans>}
+          onRetry={startNfc}
+          onCancel={closeNfc}
         />
       ) : null}
 
@@ -303,7 +366,7 @@ export function SignInPanel({
         </p>
       ) : null}
 
-      {!showScanner && !showPkInput && !encryptedPaperWallet && !connecting ? (
+      {!showScanner && !showPkInput && !showNfc && !encryptedPaperWallet && !connecting ? (
         <>
           {available ? (
             <Button
@@ -326,6 +389,13 @@ export function SignInPanel({
             <TbScan className="me-2 size-4" />
             <Trans>Continue with Paper Wallet</Trans>
           </Button>
+
+          {nfcSupported ? (
+            <Button variant="outline" className="h-11 w-full" onClick={startNfc}>
+              <TbNfc className="me-2 size-4" />
+              <Trans>Tap NFC card</Trans>
+            </Button>
+          ) : null}
 
           <button
             type="button"

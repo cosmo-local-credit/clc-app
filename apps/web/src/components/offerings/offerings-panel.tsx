@@ -1,12 +1,10 @@
 import {
   formatOfferingDisplayPrice,
-  formatOfferingDisplayTotal,
   formatOfferingQuantity,
 } from "@clc/core/features/market/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
-import { RiAddLine, RiShoppingCartLine, RiSubtractLine } from "react-icons/ri";
-import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 
 import { Button } from "#/components/ui/button";
 import { ProgressiveImage } from "#/components/ui/progressive-image";
@@ -79,6 +77,9 @@ export function OfferingsPanel({
   suppressed = false,
   management,
   resolveVoucherRate,
+  maxItems,
+  autoLoadMore = true,
+  openVoucherPageAction = "navigate",
   ...props
 }: ComponentProps<"div"> & {
   query: OfferingsQueryLike;
@@ -94,15 +95,23 @@ export function OfferingsPanel({
   management?: OfferingManagement;
   /** Resolves the voucher conversion attached to this row's parent voucher. */
   resolveVoucherRate?: (offering: Offering) => OfferingVoucherRate | null;
+  /** A compact preview may intentionally show only the first few rows. */
+  maxItems?: number;
+  /** Infinite catalog screens load on intersection; bounded previews do not. */
+  autoLoadMore?: boolean;
+  /** The voucher page itself only needs to dismiss the informational rollup. */
+  openVoucherPageAction?: "navigate" | "close";
 }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
+  const visibleOfferings = maxItems === undefined ? offerings : offerings.slice(0, maxItems);
 
   useEffect(() => {
     const target = loadMoreRef.current;
     if (
       !target ||
       suppressed ||
+      !autoLoadMore ||
       !query.hasNextPage ||
       typeof IntersectionObserver === "undefined"
     ) {
@@ -116,7 +125,7 @@ export function OfferingsPanel({
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [suppressed, query.fetchNextPage, query.hasNextPage, query.isFetchingNextPage]);
+  }, [autoLoadMore, suppressed, query.fetchNextPage, query.hasNextPage, query.isFetchingNextPage]);
 
   return (
     <div {...props}>
@@ -153,7 +162,7 @@ export function OfferingsPanel({
           each offering happens to have. */}
       {offerings.length > 0 ? (
         <div className="grid auto-rows-fr grid-cols-2 gap-2">
-          {offerings.map((offering) => (
+          {visibleOfferings.map((offering) => (
             <OfferingTile
               key={offering.id}
               offering={offering}
@@ -161,13 +170,14 @@ export function OfferingsPanel({
               showVoucher={showVoucher}
               management={management}
               voucherRate={resolveVoucherRate?.(offering) ?? null}
+              openVoucherPageAction={openVoucherPageAction}
             />
           ))}
         </div>
       ) : null}
 
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-      {query.isFetchingNextPage ? (
+      {autoLoadMore && query.isFetchingNextPage ? (
         <p className="py-3 text-center text-muted-foreground text-xs">
           <Trans>Loading more…</Trans>
         </p>
@@ -193,12 +203,14 @@ function OfferingTile({
   showVoucher,
   management,
   voucherRate,
+  openVoucherPageAction,
 }: {
   offering: Offering;
   voucherSymbol: string;
   showVoucher: boolean;
   management?: OfferingManagement;
   voucherRate: OfferingVoucherRate | null;
+  openVoucherPageAction: "navigate" | "close";
 }) {
   const { i18n, t } = useLingui();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -324,13 +336,16 @@ function OfferingTile({
         onOpenChange={setDetailsOpen}
         onImageError={() => setFailedImage(imageUrl)}
         voucherRate={voucherRate}
+        openVoucherPageAction={openVoucherPageAction}
       />
     </div>
   );
 }
 
 /**
- * The buying surface for one offering: what it is, how many, what that costs.
+ * The browsing surface for one offering. Ordering is deliberately absent here:
+ * a private order belongs to a confirmed owner-directed transfer, not to a
+ * public marketplace preview.
  *
  * Dismissal is the backdrop, not a labelled button. Base UI closes a dialog on
  * an outside press by default (`disablePointerDismissal` is false), so the only
@@ -346,6 +361,7 @@ function OfferingDetailsSheet({
   onOpenChange,
   onImageError,
   voucherRate,
+  openVoucherPageAction,
 }: {
   offering: Offering;
   voucherSymbol: string;
@@ -355,33 +371,16 @@ function OfferingDetailsSheet({
   onOpenChange: (open: boolean) => void;
   onImageError: () => void;
   voucherRate: OfferingVoucherRate | null;
+  openVoucherPageAction: "navigate" | "close";
 }) {
-  const { t } = useLingui();
-  const [count, setCount] = useState(1);
   const price = formatOfferingDisplayPrice(
     offering.pricePerUnit,
     voucherRate?.value ?? null,
     voucherRate?.unit ?? null,
     voucherSymbol,
   );
-  const total = formatOfferingDisplayTotal(
-    offering.pricePerUnit,
-    voucherRate?.value ?? null,
-    voucherRate?.unit ?? null,
-    voucherSymbol,
-    count,
-  );
-
   return (
-    <SheetRoot
-      open={open}
-      onOpenChange={(next) => {
-        // Nothing is committed on close, so a reopened sheet starts at one
-        // rather than resuming a quantity the user walked away from.
-        if (next) setCount(1);
-        onOpenChange(next);
-      }}
-    >
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
         <SheetBackdrop />
         <SheetContent className="rounded-none border-t border-border bg-background shadow-none">
@@ -389,8 +388,7 @@ function OfferingDetailsSheet({
             <Trans>Close</Trans>
           </SheetClose>
 
-          {/* A wide, shallow crop: the sheet has width to spare and height to
-              protect, and the stepper and total have to stay reachable. */}
+          {/* A wide, shallow crop leaves room for long descriptions on a phone. */}
           <span
             data-slot="offering-media"
             className="relative mt-3 block h-40 w-full shrink-0 overflow-hidden bg-muted"
@@ -433,69 +431,25 @@ function OfferingDetailsSheet({
                 ))}
               </div>
             ) : null}
-
-            <div className="mx-6 mt-4 border border-border bg-card">
-              {/* Both rows are h-14 so the stepper and the total read as one
-                  control. The buttons stay 44px rather than shrinking to fit a
-                  shorter row: they are the only touch targets in the sheet
-                  besides the CTA. */}
-              <div className="flex h-14 items-center justify-between gap-3 px-3">
-                <span className="text-sm">
-                  <Trans>Quantity</Trans>
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-11 bg-card"
-                    aria-label={t`Decrease quantity`}
-                    disabled={count <= 1}
-                    onClick={() => setCount((current) => Math.max(1, current - 1))}
-                  >
-                    <RiSubtractLine className="size-4" aria-hidden="true" />
-                  </Button>
-                  {/* An output is announced on change, so the stepper reports
-                      the new quantity without a separate live region. */}
-                  <output className="w-9 text-center font-heading text-base font-semibold tabular-nums">
-                    {count}
-                  </output>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="size-11 bg-card"
-                    aria-label={t`Increase quantity`}
-                    onClick={() => setCount((current) => current + 1)}
-                  >
-                    <RiAddLine className="size-4" aria-hidden="true" />
-                  </Button>
-                </div>
-              </div>
-              {total ? (
-                <div className="flex h-14 items-center justify-between gap-3 border-t border-border px-3">
-                  <span className="text-sm">
-                    <Trans>Total</Trans>
-                  </span>
-                  <span className="font-mono text-lg font-semibold text-primary">
-                    {total.value} {total.unit}
-                  </span>
-                </div>
-              ) : null}
-            </div>
           </div>
 
           <SheetFooter className="px-6 pt-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-            <Button
-              className="h-11 w-full"
-              onClick={() => {
-                // Placeholder until the cart lands: a primary action that
-                // silently does nothing reads as a broken screen.
-                onOpenChange(false);
-                toast.info(t`The cart isn't ready yet.`);
-              }}
-            >
-              <RiShoppingCartLine className="size-4" aria-hidden="true" />
-              <Trans>Add to cart</Trans>
-            </Button>
+            {openVoucherPageAction === "close" ? (
+              <Button className="h-11 w-full" onClick={() => onOpenChange(false)}>
+                <Trans>Open voucher page</Trans>
+              </Button>
+            ) : (
+              <Button asChild className="h-11 w-full">
+                <Link
+                  to="/vouchers/$voucherAddress"
+                  params={{ voucherAddress: offering.voucherAddress }}
+                  search={{}}
+                  onClick={() => onOpenChange(false)}
+                >
+                  <Trans>Open voucher page</Trans>
+                </Link>
+              </Button>
+            )}
           </SheetFooter>
         </SheetContent>
       </SheetPortal>

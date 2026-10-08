@@ -40,6 +40,11 @@ export function VoucherOfferingsPanel({
   voucherUoa,
   ownerAddress,
   isKnownEmpty,
+  maxItems,
+  autoLoadMore,
+  presentation = "tabpanel",
+  readOnly = false,
+  openVoucherPageAction = "navigate",
 }: {
   voucherAddress: string | undefined;
   voucherSymbol: string;
@@ -49,6 +54,11 @@ export function VoucherOfferingsPanel({
   ownerAddress: string | null;
   /** `kind === "voucher"` already proves the result is empty — skip the request. */
   isKnownEmpty: boolean;
+  maxItems?: number;
+  autoLoadMore?: boolean;
+  presentation?: "tabpanel" | "section";
+  readOnly?: boolean;
+  openVoucherPageAction?: "navigate" | "close";
 }) {
   const { t } = useLingui();
   const { isAuthenticated, session } = useAuthStatus();
@@ -58,6 +68,7 @@ export function VoucherOfferingsPanel({
   // authorized against the cookie, so a connector that has moved on from the
   // session would show controls whose requests then fail with a 403.
   const isOwner =
+    !readOnly &&
     isAuthenticated &&
     Boolean(session?.address) &&
     Boolean(ownerAddress) &&
@@ -87,7 +98,11 @@ export function VoucherOfferingsPanel({
   }
 
   return (
-    <div id="voucher-panel-offerings" role="tabpanel" aria-labelledby="voucher-tab-offerings">
+    <div
+      id={presentation === "tabpanel" ? "voucher-panel-offerings" : undefined}
+      role={presentation === "tabpanel" ? "tabpanel" : undefined}
+      aria-labelledby={presentation === "tabpanel" ? "voucher-tab-offerings" : undefined}
+    >
       {isOwner ? (
         <Button
           className="mb-3 h-11 w-full"
@@ -103,6 +118,9 @@ export function VoucherOfferingsPanel({
         suppressed={!isOwner && isKnownEmpty}
         fallbackSymbol={voucherSymbol}
         resolveVoucherRate={() => ({ value: voucherValue, unit: voucherUoa })}
+        maxItems={maxItems}
+        autoLoadMore={autoLoadMore}
+        openVoucherPageAction={openVoucherPageAction}
         management={
           isOwner
             ? {

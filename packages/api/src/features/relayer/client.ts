@@ -33,6 +33,14 @@ export type RelayPreviewPayload = {
 };
 
 export type RelayPayload = {
+  /**
+   * Makes a submission idempotent on relayers that advertise `idempotentRelay`:
+   * resending the identical signed request under the same id returns the
+   * original tracking id instead of queueing a second job, and reusing the id
+   * for any other request is refused with a 409. Holding the signed request is
+   * the proof that lets a caller look its submission up again.
+   */
+  operationId?: string;
   userAddress: `0x${string}`;
   signedBatch: SignedBatch;
   signature: `0x${string}`;
@@ -48,6 +56,13 @@ export type RecoverPayload = {
   authenticatorData: string;
   clientDataJSON: string;
   signature: string;
+};
+
+export type RelayerHealth = {
+  relayerAddress?: string;
+  chainId: number;
+  /** The relay honours `operationId`, so a lost response can be reconciled by resending. */
+  idempotentRelay?: boolean;
 };
 
 export function createRelayerClient(baseUrl: string) {
@@ -68,7 +83,7 @@ export function createRelayerClient(baseUrl: string) {
   };
 
   return {
-    getHealth: () => get<{ relayerAddress?: string; chainId: number }>("/health"),
+    getHealth: () => get<RelayerHealth>("/health"),
 
     getEOANonce: (address: string) => get<{ nonce: string }>(`/nonce/${address}`),
 
@@ -114,4 +129,18 @@ async function handleResponse<T>(res: Response): Promise<OKResponse<T>> {
     throw new RelayerError(code, json?.description ?? "Unknown error", res.status, json?.result);
   }
   return json as OKResponse<T>;
+}
+
+/**
+ * Whether a failed `relay()` may still have queued the job.
+ *
+ * A 4xx is the relay refusing the request before anything was queued. Anything
+ * else — no response at all, a body that is not the relay's JSON, a 5xx that a
+ * gateway may have produced after the relay committed — leaves the outcome
+ * unknown. An unknown outcome is reconciled by resending the same signed
+ * request, never by signing a new one.
+ */
+export function isRelaySubmissionUncertain(error: unknown): boolean {
+  if (error instanceof RelayerError) return error.status >= 500;
+  return true;
 }

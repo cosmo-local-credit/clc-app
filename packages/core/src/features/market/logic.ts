@@ -1,3 +1,5 @@
+import { formatTokenAmountFixed } from "../wallet/logic";
+
 /**
  * A voucher's exchange rate, ready for display: "1 {symbol} = {value} {unit}".
  *
@@ -26,6 +28,14 @@ export type OfferingDisplayPrice = {
  * that does is corrupt rather than merely unusual.
  */
 const DECIMAL = /^\d+(\.\d+)?$/;
+
+/** Localizes one exact decimal display value without crossing through Number. */
+export function formatOfferingDisplayValue(value: string, locale?: string): string | null {
+  const trimmed = value.trim();
+  if (!DECIMAL.test(trimmed)) return null;
+  const [whole = "", fraction = ""] = trimmed.split(".");
+  return formatTokenAmountFixed(`${whole}${fraction}`, fraction.length, fraction.length, locale);
+}
 
 export function formatVoucherRate(value: string | null, unit: string | null): VoucherRate | null {
   // The unit is free text (KSH, Ksh, usd, Hour all occur), so it is only
@@ -102,12 +112,16 @@ export function formatOfferingQuantity(
  * than going through `Number`: a price may carry more digits than a double
  * holds exactly, and a total that silently rounds is a total nobody can check.
  */
-export function formatOfferingTotal(price: string | null, count: number): { value: string } | null {
+export function formatOfferingTotal(
+  price: string | null,
+  count: number | string | bigint,
+): { value: string } | null {
   const unitPrice = formatOfferingPrice(price);
-  if (!unitPrice || !Number.isInteger(count) || count < 1) return null;
+  const quantity = parsePositiveInteger(count);
+  if (!unitPrice || quantity === null) return null;
 
   const [whole = "", fraction = ""] = unitPrice.value.split(".");
-  const scaled = BigInt(whole + fraction) * BigInt(count);
+  const scaled = BigInt(whole + fraction) * quantity;
   if (!fraction) return { value: scaled.toString() };
 
   // Pad so a product smaller than one unit keeps its leading zero: 0.5 × 1
@@ -123,7 +137,7 @@ export function formatOfferingDisplayTotal(
   voucherValue: string | null,
   voucherUoa: string | null,
   voucherSymbol: string,
-  count: number,
+  count: number | string | bigint,
 ): OfferingDisplayPrice | null {
   const displayPrice = formatOfferingDisplayPrice(price, voucherValue, voucherUoa, voucherSymbol);
   if (!displayPrice) return null;
@@ -132,8 +146,33 @@ export function formatOfferingDisplayTotal(
   return total ? { ...total, unit: displayPrice.unit } : null;
 }
 
+/** Adds non-negative decimal strings exactly, preserving no unnecessary scale. */
+export function sumDecimalAmounts(values: readonly string[]): string | null {
+  if (values.length === 0) return "0";
+  if (values.some((value) => !DECIMAL.test(value.trim()))) return null;
+
+  const scale = Math.max(...values.map((value) => value.trim().split(".")[1]?.length ?? 0));
+  const sum = values.reduce((total, value) => {
+    const [whole = "", fraction = ""] = value.trim().split(".");
+    return total + BigInt(`${whole}${fraction.padEnd(scale, "0")}`);
+  }, 0n);
+
+  if (scale === 0) return sum.toString();
+  const digits = sum.toString().padStart(scale + 1, "0");
+  const boundary = digits.length - scale;
+  return trimScale(`${digits.slice(0, boundary)}.${digits.slice(boundary)}`);
+}
+
 function isZero(value: string): boolean {
   return /^0+(\.0+)?$/.test(value);
+}
+
+function parsePositiveInteger(value: number | string | bigint): bigint | null {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value > 0 ? BigInt(value) : null;
+  }
+  const text = value.toString();
+  return /^[1-9]\d*$/.test(text) ? BigInt(text) : null;
 }
 
 /** Multiplies two valid decimal strings exactly and returns an unpadded decimal. */

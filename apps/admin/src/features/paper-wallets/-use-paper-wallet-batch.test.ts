@@ -54,7 +54,7 @@ describe("usePaperWalletBatch", () => {
     expect(JSON.stringify(result.current.wallets)).not.toContain(key.slice(2));
   });
 
-  it("encrypts with the batch password before registering", async () => {
+  it("encrypts with the batch password", async () => {
     mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
       jobs.forEach((_, index) => onEncrypted(index, `6Pencrypted${index}`));
     });
@@ -116,14 +116,81 @@ describe("usePaperWalletBatch", () => {
     expect(mocks.provision).toHaveBeenCalledTimes(1);
   });
 
-  it("abandons the batch when encryption fails, before anything is registered", async () => {
-    mocks.encryptKeys.mockRejectedValue(new Error("out of memory"));
+  it("registers a row as soon as its key is encrypted, while later keys still encrypt", async () => {
+    let finishEncryption!: () => void;
+    mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
+      onEncrypted(0, "6Pencrypted0");
+      await new Promise<void>((resolve) => {
+        finishEncryption = resolve;
+      });
+      jobs.slice(1).forEach((_, index) => onEncrypted(index + 1, `6Pencrypted${index + 1}`));
+    });
+    const { result } = renderHook(() => usePaperWalletBatch());
+    let started!: Promise<void>;
+    act(() => {
+      started = result.current.start(entries("secret1"), { encryptWorkers: 2 });
+    });
+
+    await waitFor(() => expect(result.current.wallets[0]?.status).toBe("ready"));
+    expect(result.current.phase).toBe("preparing");
+    expect(result.current.wallets.slice(1).map((wallet) => wallet.status)).toEqual([
+      "preparing",
+      "preparing",
+    ]);
+    expect(mocks.encryptKeys.mock.calls[0]?.[2]).toEqual({ maxWorkers: 2 });
+
+    await act(async () => {
+      finishEncryption();
+      await started;
+    });
+    expect(result.current.phase).toBe("done");
+    expect(result.current.wallets.map((wallet) => wallet.status)).toEqual([
+      "ready",
+      "ready",
+      "ready",
+    ]);
+  });
+
+  it("keeps registered rows when encryption fails mid-batch and retries only the rest", async () => {
+    mocks.encryptKeys.mockImplementationOnce(async (_jobs: unknown[], onEncrypted) => {
+      onEncrypted(0, "6Pencrypted0");
+      throw new Error("out of memory");
+    });
     const { result } = renderHook(() => usePaperWalletBatch());
     await act(() => result.current.start(entries("secret1")));
 
-    expect(result.current.phase).toBe("idle");
-    expect(result.current.wallets).toEqual([]);
-    expect(result.current.fatalError).toBe("out of memory");
-    expect(mocks.provision).not.toHaveBeenCalled();
+    expect(result.current.phase).toBe("done");
+    expect(result.current.wallets[0]?.status).toBe("ready");
+    expect(result.current.wallets[1]).toMatchObject({
+      status: "failed",
+      error: "Encryption failed: out of memory",
+    });
+    expect(result.current.qrUrlFor(1)).toBeNull();
+    expect(mocks.provision).toHaveBeenCalledTimes(1);
+
+    mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
+      jobs.forEach((_, index) => onEncrypted(index, `6Pretry${index}`));
+    });
+    act(() => result.current.retryFailed());
+    await waitFor(() => expect(result.current.phase).toBe("done"));
+    await waitFor(() =>
+      expect(result.current.wallets.every((wallet) => wallet.status === "ready")).toBe(true),
+    );
+    // The retry encrypted the two missing keys with the same passphrase, and
+    // registered only them.
+    expect(mocks.encryptKeys.mock.calls[1]?.[0]).toEqual([
+      expect.objectContaining({ passphrase: "secret1" }),
+      expect.objectContaining({ passphrase: "secret1" }),
+    ]);
+    expect(mocks.provision).toHaveBeenCalledTimes(3);
+    expect(result.current.qrUrlFor(2)).toBe("https://app.test/?w=6Pretry1");
+  });
+
+  it("maps a prepared link back to its row", async () => {
+    const { result } = renderHook(() => usePaperWalletBatch());
+    await act(() => result.current.start(entries(null)));
+    const url = result.current.qrUrlFor(1) as string;
+    expect(result.current.rowForUrl(url)).toBe(1);
+    expect(result.current.rowForUrl("https://app.test/?w=other")).toBeNull();
   });
 });

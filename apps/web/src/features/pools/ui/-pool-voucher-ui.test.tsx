@@ -16,6 +16,7 @@ const {
   poolLiquidityBalance,
   poolExactOutputRounding,
   poolNetFee,
+  poolOwnFee,
   poolQuoteRate,
   poolRegistry,
   poolTreasuryState,
@@ -38,6 +39,8 @@ const {
   poolQuoteRate: { numerator: 2n, denominator: 1n },
   /** Pool fee plus protocol fee, in ppm, taken out of an exact-input quote's output. */
   poolNetFee: { ppm: 0n },
+  /** The pool's own share of `poolNetFee`, as `getFee(in, out, PPM)` returns it. */
+  poolOwnFee: { ppm: 0n },
   /**
    * What `getAmountIn`'s trailing +1 wei adds to an exact-output input, in raw
    * input units. Zero by default; raised to make that rounding show at two
@@ -343,15 +346,22 @@ beforeEach(() => {
   poolQuoteRate.numerator = 2n;
   poolQuoteRate.denominator = 1n;
   poolNetFee.ppm = 0n;
+  poolOwnFee.ppm = 0n;
   poolExactOutputRounding.raw = 0n;
   chainHead.value = 100n;
   poolRegistry.address = null;
   poolRegistry.entries = [];
   poolRegistry.metadata = {};
-  publicClientRead.mockImplementation(({ functionName }: { functionName: string }) => {
-    if (functionName === "entryCount") return Promise.resolve(BigInt(poolRegistry.entries.length));
-    return Promise.reject(new Error(`Unexpected read: ${functionName}`));
-  });
+  publicClientRead.mockImplementation(
+    ({ functionName, args }: { functionName: string; args?: readonly unknown[] }) => {
+      if (functionName === "getFee") {
+        return Promise.resolve((BigInt(String(args?.[2])) * poolOwnFee.ppm) / 1_000_000n);
+      }
+      if (functionName === "entryCount")
+        return Promise.resolve(BigInt(poolRegistry.entries.length));
+      return Promise.reject(new Error(`Unexpected read: ${functionName}`));
+    },
+  );
   poolTreasuryState.balances = {
     [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
     [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
@@ -450,6 +460,7 @@ beforeEach(() => {
         poolLiquidityBalance.value,
         poolTreasuryState.feesDecoupled,
         poolTreasuryState.fees[String(contracts[2]?.args?.[0]).toLowerCase()] ?? 0n,
+        poolOwnFee.ppm,
       ]);
     },
   );
@@ -565,11 +576,9 @@ describe("pool voucher UI", () => {
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
     expect(within(dialog).getByText("25 USD / bag")).toBeTruthy();
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USD");
-    expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USD");
+    expect(within(dialog).queryByText("Quantity")).toBeNull();
+    expect(within(dialog).queryByText("Total")).toBeNull();
+    expect(within(dialog).getByText("Open voucher page")).toBeTruthy();
   });
 
   it("puts offerings first and links the vouchers tab without stacking history", async () => {
@@ -1121,14 +1130,39 @@ describe("pool voucher UI", () => {
         trackingId: "swap-tracking-1",
         sendAmount: "1.00",
         sendSymbol: "USDC",
+        sendToken: USDC_ADDRESS,
         receiveAmount: "2.00",
         receiveSymbol: "TTX",
         // Carried so the receipt can prefill a send of what was swapped out; a
         // symbol alone would not identify the token to send.
         receiveToken: TTX_ADDRESS,
+        receiveDecimals: 6,
         poolName: "Trade Pool",
       },
     });
+  });
+
+  it("requires review again when the fee split changes without changing the net quote", async () => {
+    poolNetFee.ppm = 20_000n;
+    poolOwnFee.ppm = 15_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "1" },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^swap$/i }));
+
+    // The total remains 2%, so the delivered amount is unchanged. Only who
+    // receives the fee changed, which must still invalidate confirmation.
+    poolOwnFee.ppm = 10_000n;
+    fireEvent.click(screen.getByRole("button", { name: /^confirm swap$/i }));
+
+    expect(await screen.findByText(/quote changed/i)).toBeTruthy();
+    expect(swapMutateAsync).not.toHaveBeenCalled();
   });
 
   it("relays the full raw voucher balance when Max is selected", async () => {
@@ -1229,6 +1263,7 @@ describe("pool voucher UI", () => {
     });
 
     expect(await screen.findByRole("alert", { name: /couldn't estimate this swap/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
@@ -1412,8 +1447,11 @@ describe("pool voucher UI", () => {
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
-  it("shows the fees the pool and protocol take, in the voucher you receive", async () => {
-    poolNetFee.ppm = 20_000n;
+  it("shows the pool fee and the protocol fee apart, in the voucher you receive", async () => {
+    // A 2% pool under a 2% protocol controller: the protocol takes 2% of the pool's
+    // fee on top, so 2.04% comes off in all.
+    poolNetFee.ppm = 20_400n;
+    poolOwnFee.ppm = 20_000n;
     mockPoolRequests();
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
 
@@ -1421,14 +1459,81 @@ describe("pool voucher UI", () => {
       target: { value: "25" },
     });
 
-    // 25 USDC is 50.00 TTX gross; 2% comes off, so 49.00 arrives and 1.00 is fees.
+    // 25 USDC is 50.00 TTX gross: 1.00 to the pool, 0.02 to the protocol, 48.98 arrives.
     await waitFor(() =>
       expect((screen.getByRole("textbox", { name: "You receive" }) as HTMLInputElement).value).toBe(
-        "49.00",
+        "48.98",
       ),
     );
-    expect(screen.getByText("Fees").parentElement?.textContent).toContain("1.00 TTX");
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("1.00 TTX2.00%");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.02 TTX0.04%");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.02 TTX2.04%");
     expect(screen.queryByText(/fee calculated at confirmation/i)).toBeNull();
+  });
+
+  it("names the protocol fee a zero-fee pool still pays, and keeps a sub-cent one visible", async () => {
+    // No pool fee: the protocol's 2% is of the 1% floor, 0.02% of the gross.
+    poolNetFee.ppm = 200n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "1" },
+    });
+
+    // 2.00 TTX gross loses 0.0004 TTX, which two decimals would show as nothing.
+    await waitFor(() =>
+      expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX"),
+    );
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("0.00 TTX0.00%");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX0.02%");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("<0.01 TTX0.02%");
+  });
+
+  it("still lets the swap through when the fee split does not add up", async () => {
+    // A pool fee larger than all the gross loses cannot come from one swap. The
+    // router's quote is still what the swap delivers, so only the split is withheld.
+    poolNetFee.ppm = 10_000n;
+    poolOwnFee.ppm = 20_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "1" },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("—");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("—");
+    expect(screen.queryByText(/couldn't estimate this swap/i)).toBeNull();
+  });
+
+  it("repeats the fee split on the confirmation sheet", async () => {
+    poolNetFee.ppm = 20_400n;
+    poolOwnFee.ppm = 20_000n;
+    mockPoolRequests({ usdcBalance: "30000000" });
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "25" },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^swap$/i }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Pool fee").parentElement?.textContent).toContain(
+      "1.00 TTX2.00%",
+    );
+    expect(within(dialog).getByText("Protocol fee").parentElement?.textContent).toContain(
+      "0.02 TTX0.04%",
+    );
+    expect(within(dialog).getByText("Total fees").parentElement?.textContent).toContain(
+      "1.02 TTX2.04%",
+    );
   });
 
   it("states the most you can receive once every fee is out", async () => {
@@ -1468,6 +1573,7 @@ describe("pool voucher UI", () => {
     // `getAmountIn` rounds the input up, so the swap delivers a little more than
     // was asked. Exaggerated here to half a USDC so it shows at two decimals.
     poolNetFee.ppm = 20_000n;
+    poolOwnFee.ppm = 20_000n;
     poolExactOutputRounding.raw = 500_000n;
     mockPoolRequests({ usdcBalance: "20000000" });
     renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
@@ -1485,8 +1591,9 @@ describe("pool voucher UI", () => {
       ),
     );
     await waitFor(() =>
-      expect(screen.getByText("Fees").parentElement?.textContent).toContain("0.52 TTX"),
+      expect(screen.getByText("Total fees").parentElement?.textContent).toContain("0.52 TTX"),
     );
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.00 TTX");
   });
 
   it("keeps Max in view while a newer block is read, but will not spend the old figure", async () => {

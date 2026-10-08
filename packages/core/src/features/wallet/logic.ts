@@ -44,9 +44,11 @@ export const sendShareFormSchema = z
     email: z.boolean(),
     phone: z.boolean(),
     location: z.boolean(),
+    /** Client-only evidence that a generated order note will be attached on submit. */
+    order: z.boolean(),
   })
   .superRefine((value, ctx) => {
-    if (value.note || value.email || value.phone || value.location) return;
+    if (value.note || value.email || value.phone || value.location || value.order) return;
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Add a message or choose profile details",
