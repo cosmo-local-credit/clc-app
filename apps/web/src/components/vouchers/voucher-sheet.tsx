@@ -1,23 +1,23 @@
 import type { MarketVoucherDetail, MarketVoucherKind } from "@clc/api/features/market/client";
-import { poolFilteredPageQueryOptions } from "@clc/api/features/pools/queries";
-import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
-import { formatVoucherRate } from "@clc/core/features/market/logic";
 import { isHttpUrl } from "@clc/core/lib/contact";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Suspense, useState, type ReactNode } from "react";
 import {
   RiCloseLine,
+  RiCoinLine,
   RiFileCopyLine,
   RiGlobalLine,
   RiHandCoinLine,
   RiNavigationLine,
   RiPhoneLine,
+  RiSendPlane2Line,
   RiShareLine,
 } from "react-icons/ri";
 import { toast } from "sonner";
+import { isAddress, zeroAddress } from "viem";
 
+import { ReviewStars } from "#/components/reviews/review-editor";
 import { Button } from "#/components/ui/button";
 import {
   MapSheet,
@@ -27,15 +27,16 @@ import {
   type MapSheetSnap,
 } from "#/components/ui/map-sheet";
 import { Skeleton } from "#/components/ui/skeleton";
-import { PoolLogo, VoucherAvatar } from "#/components/wallet";
+import { TagBadge } from "#/components/ui/tag-badge";
+import { VoucherAvatar } from "#/components/wallet";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { poolsClient } from "#/lib/api/pools";
-import { CHAIN_ID } from "#/lib/chain";
+import { useVoucherReviewSummary } from "#/features/reviews/hooks/use-voucher-reviews";
+import { useAllAccountTokens } from "#/features/wallet/hooks/use-account-balances";
 import { openDefaultMaps } from "#/lib/default-maps";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
-import type { VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 import { cn } from "#/lib/utils";
-import { useMarketDistanceLabel, useMarketKindLabel } from "./voucher-labels";
+import { useMarketDistanceLabel } from "./voucher-labels";
 import type { VoucherPageOrigin } from "./voucher-sheet-full";
 import { VoucherSheetFull } from "./voucher-sheet-full.lazy";
 
@@ -55,8 +56,6 @@ export type VoucherPlaceholder = {
   chainId?: number | null;
 };
 
-const POOL_CARD_LIMIT = 10;
-
 /** A pill draws at 36 px; the inset widens its tap target to 44. */
 const PILL =
   "relative h-9 shrink-0 gap-1.5 px-3 before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']";
@@ -75,9 +74,9 @@ export function useVoucherSheetSnap(isOpen: boolean) {
 
 /**
  * The card a voucher opens, wherever it is tapped: the market, the wallet, a
- * pool or a post. It shows the essentials at the peek, adds the pools that hold
- * the voucher at half, and reads as the voucher's page at full. Only its own
- * button leaves for that page.
+ * pool or a post. It shows the essentials at the peek, then one continuous
+ * offerings-and-reviews view from half onward. Only its own button leaves for
+ * the complete voucher page.
  *
  * The selection lives in the opening screen's URL (`useVoucherSheetSelection`).
  * Everything below the peek mounts the first time its tier is reached and
@@ -161,7 +160,6 @@ export function VoucherSheet({
           realFix={realFix}
           snap={snap}
           onSnapChange={setSnap}
-          voucherTab={selection.voucherTab}
           origin={origin}
           onClose={selection.close}
         />
@@ -197,7 +195,6 @@ function VoucherCard({
   realFix,
   snap,
   onSnapChange,
-  voucherTab,
   origin,
   onClose,
 }: {
@@ -208,27 +205,50 @@ function VoucherCard({
   realFix: Coordinates | null;
   snap: MapSheetSnap;
   onSnapChange: (snap: MapSheetSnap) => void;
-  voucherTab: VoucherSheetTab;
   origin: VoucherPageOrigin | undefined;
   onClose: () => void;
 }) {
-  const { t } = useLingui();
+  const { i18n, t } = useLingui();
   const [reachedHalf, setReachedHalf] = useState(false);
-  const [reachedFull, setReachedFull] = useState(false);
   if (snap !== "peek" && !reachedHalf) setReachedHalf(true);
-  if (snap === "full" && !reachedFull) setReachedFull(true);
 
   const symbol = detail?.symbol ?? placeholder?.symbol ?? "";
-  const kindLabel = useMarketKindLabel(detail?.kind ?? placeholder?.kind ?? "voucher");
   const lat = detail?.lat ?? placeholder?.lat ?? null;
   const lng = detail?.lng ?? placeholder?.lng ?? null;
   const coordinates = lat !== null && lng !== null ? { lat, lng } : null;
   const locationName = detail?.locationName ?? placeholder?.locationName ?? null;
   const distanceLabel = useMarketDistanceLabel(realFix, coordinates);
   const place = distanceLabel ?? locationName;
-  const rate = formatVoucherRate(detail?.voucherValue ?? null, detail?.voucherUoa ?? null);
   const phone = detail?.phone ?? null;
   const website = detail?.website && isHttpUrl(detail.website) ? detail.website : null;
+  const reviewQuery = useVoucherReviewSummary(address);
+  const reviewSummary = reviewQuery.summary;
+  const reviewCount = reviewSummary?.total ?? 0;
+  const reviewAverage = reviewCount > 0 ? (reviewSummary?.average ?? 0) : 0;
+  const numberLocale = i18n.locales?.[0] ?? i18n.locale;
+  const formattedAverage = new Intl.NumberFormat(numberLocale, {
+    maximumFractionDigits: 1,
+  }).format(reviewAverage);
+  const formattedReviewCount = new Intl.NumberFormat(numberLocale).format(reviewCount);
+  const auth = useAuthStatus();
+  const holdings = useAllAccountTokens(
+    auth.isAuthenticated ? (auth.session?.address ?? undefined) : undefined,
+  );
+  const holding = holdings.tokens.find(
+    (token) => token.tokenAddress.toLowerCase() === address.toLowerCase(),
+  );
+  const hasPositiveBalance =
+    auth.isAuthenticated &&
+    !!holding &&
+    /^\d+$/.test(holding.balance) &&
+    BigInt(holding.balance) > 0n;
+  const voucherPageAddress = detail?.address ?? address;
+  const verifiedOwnerAddress =
+    detail?.ownerAddress &&
+    isAddress(detail.ownerAddress, { strict: false }) &&
+    detail.ownerAddress.toLowerCase() !== zeroAddress
+      ? detail.ownerAddress
+      : null;
 
   return (
     <>
@@ -271,36 +291,58 @@ function VoucherCard({
               </span>
             </div>
           </div>
-          <CloseButton label={t`Close`} onClick={onClose} />
+          <div className="-me-3 flex shrink-0 items-center">
+            <ShareVoucherButton name={name} address={address} />
+            <CloseButton label={t`Close`} onClick={onClose} />
+          </div>
         </div>
-        <MapSheetDescription className="mt-1 flex min-w-0 items-center gap-2 text-muted-foreground text-xs">
-          <span className="inline-flex shrink-0 border border-border bg-background px-1.5 py-0.5 font-medium text-[0.6875rem]">
-            {kindLabel}
-          </span>
+        <MapSheetDescription className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
+          <span className="font-mono tabular-nums">{formattedAverage}</span>
+          <ReviewStars stars={reviewAverage} />
+          <span className="font-mono tabular-nums">({formattedReviewCount})</span>
           {place ? (
-            <span dir="auto" className="truncate">
-              {place}
-            </span>
+            <>
+              <span aria-hidden="true">·</span>
+              <span dir="auto" className="min-w-0 truncate">
+                {place}
+              </span>
+            </>
           ) : null}
         </MapSheetDescription>
-        {rate ? (
-          <p className="mt-1.5 truncate font-mono text-[0.6875rem] text-muted-foreground">
-            {/* An equation of symbols and figures reads left to right everywhere. */}
-            <span dir="ltr">
-              <Trans>
-                1 {symbol} = {rate.value} {rate.unit}
-              </Trans>
-            </span>
-          </p>
+        {detail?.tags && detail.tags.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {detail.tags.slice(0, 3).map((tag) => (
+              <TagBadge key={tag} tag={tag} />
+            ))}
+          </div>
         ) : null}
 
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-3 flex flex-wrap gap-2 py-1">
           <Button asChild size="sm" className={PILL}>
             <Link to="/pools" search={{ out_voucher: address.toLowerCase() }}>
               <RiHandCoinLine aria-hidden="true" />
               <Trans>Get</Trans>
             </Link>
           </Button>
+          {hasPositiveBalance ? (
+            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
+              <Link to="/wallet/send" search={{ token: voucherPageAddress }}>
+                <RiSendPlane2Line aria-hidden="true" />
+                <Trans>Send</Trans>
+              </Link>
+            </Button>
+          ) : null}
+          {hasPositiveBalance && verifiedOwnerAddress ? (
+            <Button asChild variant="outline" size="sm" className={cn(PILL, "bg-card")}>
+              <Link
+                to="/wallet/send/amount"
+                search={{ token: voucherPageAddress, recipient: verifiedOwnerAddress }}
+              >
+                <RiCoinLine aria-hidden="true" />
+                <Trans>Redeem</Trans>
+              </Link>
+            </Button>
+          ) : null}
           {coordinates || locationName ? (
             <Button
               variant="outline"
@@ -328,105 +370,15 @@ function VoucherCard({
               </a>
             </Button>
           ) : null}
-          <ShareVoucherButton name={name} address={address} />
         </div>
       </MapSheetPeek>
 
       {reachedHalf ? (
-        <HalfTier address={address} chainId={detail?.chainId ?? placeholder?.chainId ?? CHAIN_ID} />
-      ) : null}
-
-      {reachedFull ? (
         <Suspense fallback={<Skeleton className="mx-4 mt-6 h-40 rounded-none" />}>
-          <VoucherSheetFull
-            address={address}
-            detail={detail}
-            activeTab={voucherTab}
-            origin={origin}
-          />
+          <VoucherSheetFull address={address} detail={detail} origin={origin} />
         </Suspense>
       ) : null}
     </>
-  );
-}
-
-/**
- * Where to get the voucher. Its offerings and description read once, in the
- * tabs at full: repeated here they only pushed the pools down.
- */
-function HalfTier({ address, chainId }: { address: `0x${string}`; chainId: number }) {
-  const poolsQuery = useQuery({
-    ...poolFilteredPageQueryOptions(poolsClient, {
-      perPage: POOL_CARD_LIMIT,
-      filter: { ...EMPTY_CATALOG_FILTER, vouchers: [{ chainId, address }] },
-    }),
-    // Each card is its own query; another voucher's pools must never stand in.
-    placeholderData: undefined,
-  });
-  const pools = poolsQuery.data?.pools ?? [];
-
-  return (
-    <div className="pb-6">
-      {pools.length > 0 ? (
-        <section aria-labelledby="market-voucher-pools">
-          <div className="flex items-center justify-between gap-3 px-4">
-            <h3
-              id="market-voucher-pools"
-              className="font-heading font-semibold text-[1.125rem] tracking-[-0.015em]"
-            >
-              <Trans>Pools with this voucher</Trans>
-            </h3>
-            <Link
-              to="/pools"
-              search={{ out_voucher: address.toLowerCase() }}
-              className="relative shrink-0 font-semibold text-primary text-xs before:absolute before:-inset-3 before:content-['']"
-            >
-              <Trans>See all</Trans>
-            </Link>
-          </div>
-          <ul className="mt-2 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {pools.map((pool) => (
-              // Tinted in the brand colour: on the white sheet a white tile
-              // reads as more of the same, and these are where to act.
-              <li
-                key={pool.address}
-                className="flex w-56 shrink-0 snap-start flex-col border border-primary/25 bg-primary/5 p-3"
-              >
-                <div className="flex min-w-0 items-center gap-2.5">
-                  <PoolLogo
-                    imageUrl={pool.imageUrl}
-                    name={pool.name}
-                    seed={pool.address}
-                    size={36}
-                  />
-                  <div className="min-w-0">
-                    <p dir="auto" className="truncate font-bold text-sm tracking-tight">
-                      {pool.name}
-                    </p>
-                    <p className="font-semibold text-[0.6875rem] text-primary">
-                      {pool.voucherCount === 1 ? (
-                        <Trans>1 voucher</Trans>
-                      ) : (
-                        <Trans>{pool.voucherCount} vouchers</Trans>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <Button asChild variant="outline" size="sm" className="mt-3 h-9 bg-card">
-                  <Link
-                    to="/pools/$poolAddress/swap"
-                    params={{ poolAddress: pool.address }}
-                    search={{ receive: address }}
-                  >
-                    <Trans>Swap</Trans>
-                  </Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </div>
   );
 }
 
@@ -476,9 +428,14 @@ function ShareVoucherButton({ name, address }: { name: string; address: string }
   };
 
   return (
-    <Button variant="outline" size="sm" className={cn(PILL, "bg-card")} onClick={onClick}>
-      <Icon aria-hidden="true" />
-      {label}
+    <Button
+      variant="ghost"
+      size="icon-lg"
+      className="size-11 shrink-0 border-0 text-muted-foreground"
+      aria-label={label}
+      onClick={onClick}
+    >
+      <Icon className="size-5" aria-hidden="true" />
     </Button>
   );
 }

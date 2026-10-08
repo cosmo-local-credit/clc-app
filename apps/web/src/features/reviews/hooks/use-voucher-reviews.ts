@@ -9,6 +9,23 @@ import {
   saveReviewReply,
 } from "../api/reviews-client";
 
+function publicReviewsQuery(address: string, stars?: number) {
+  const key = ["voucher-reviews", address.toLowerCase()] as const;
+  return {
+    queryKey: [...key, "public", stars] as const,
+    queryFn: ({ pageParam, signal }: { pageParam: number | undefined; signal: AbortSignal }) =>
+      getReviews(address, stars, pageParam, signal),
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (page: Awaited<ReturnType<typeof getReviews>>) => page.next ?? undefined,
+  };
+}
+
+/** The header and full panel share this exact public cache entry. */
+export function useVoucherReviewSummary(address: string) {
+  const reviews = useInfiniteQuery(publicReviewsQuery(address));
+  return { ...reviews, summary: reviews.data?.pages[0] };
+}
+
 export function useReviewAccess(address: string, poll = false) {
   const auth = useAuthStatus();
   const key = ["voucher-reviews", address.toLowerCase()] as const;
@@ -34,12 +51,7 @@ export function useVoucherReviews(address: string, stars?: number) {
   const client = useQueryClient();
   const key = ["voucher-reviews", address.toLowerCase()] as const;
   const { auth, access } = useReviewAccess(address);
-  const reviews = useInfiniteQuery({
-    queryKey: [...key, "public", stars],
-    queryFn: ({ pageParam, signal }) => getReviews(address, stars, pageParam, signal),
-    initialPageParam: undefined as number | undefined,
-    getNextPageParam: (page) => page.next ?? undefined,
-  });
+  const reviews = useInfiniteQuery(publicReviewsQuery(address, stars));
   const mutation = useMutation({
     mutationFn: (
       action:

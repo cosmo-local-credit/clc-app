@@ -145,8 +145,13 @@ describe("send share permissions", () => {
 
   it("requires an attachment to contain a note or selected profile details", () => {
     expect(
-      sendShareFormSchema.safeParse({ note: "", email: false, phone: false, location: false })
-        .success,
+      sendShareFormSchema.safeParse({
+        note: "",
+        email: false,
+        phone: false,
+        location: false,
+        order: false,
+      }).success,
     ).toBe(false);
     expect(
       sendShareFormSchema.parse({
@@ -154,7 +159,17 @@ describe("send share permissions", () => {
         email: false,
         phone: false,
         location: false,
+        order: false,
       }).note,
     ).toBe("Thanks");
+    expect(
+      sendShareFormSchema.safeParse({
+        note: "",
+        email: false,
+        phone: false,
+        location: false,
+        order: true,
+      }).success,
+    ).toBe(true);
   });
 });

@@ -126,6 +126,14 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({ isAuthenticated: false, session: null }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({ tokens: [] }),
+}));
+
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   CAMERA_RANK: {
     explicit: 0,
@@ -558,7 +566,8 @@ describe("MarketPage voucher card", () => {
 
     expect(selection.calls).toEqual([["open", "0xAbC0000000000000000000000000000000000123"]]);
     const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
-    expect(within(card).getByText("Goods")).toBeTruthy();
+    expect(within(card).queryByText("Goods")).toBeNull();
+    expect(within(card).getByRole("link", { name: "Get" })).toBeTruthy();
     expect(lastMapProps.current?.selectedLocationId).toBe("1");
   });
 
@@ -566,13 +575,13 @@ describe("MarketPage voucher card", () => {
     ["goods", "Goods"],
     ["services", "Services"],
     ["voucher", "Voucher"],
-  ] as const)("labels a %s voucher as %s", (kind, label) => {
+  ] as const)("does not show the retired %s voucher-kind label %s", (kind, label) => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1", { kind })] };
     renderPage();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(within(screen.getByRole("dialog")).getByText(label)).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).queryByText(label)).toBeNull();
   });
 
   it("no longer leaves the map when the card is tapped", () => {
@@ -612,7 +621,7 @@ describe("MarketPage voucher card", () => {
     expect(detailRequests.current).toContain("0xAbC0000000000000000000000000000000000123");
   });
 
-  it("adds the profile image and rate once detail arrives", () => {
+  it("adds the profile image but omits the retired exchange-rate line", () => {
     detailResult.current = { data: detailFor(), isPending: false };
     vouchersResult.current = {
       ...vouchersResult.current,
@@ -624,7 +633,7 @@ describe("MarketPage voucher card", () => {
 
     const card = screen.getByRole("dialog");
     expect(card.querySelector('img[src="https://content.example/icon.jpg"]')).not.toBeNull();
-    expect(card.textContent).toContain("1 MALII = 10 KSH");
+    expect(card.textContent).not.toContain("1 MALII = 10 KSH");
   });
 
   it("stays readable before detail resolves", () => {
@@ -639,7 +648,7 @@ describe("MarketPage voucher card", () => {
 
     const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
     expect(card.textContent).toContain("MALII");
-    expect(card.textContent).toContain("Goods");
+    expect(card.textContent).not.toContain("Goods");
     expect(card.querySelector("img")).toBeNull();
     expect(card.textContent).not.toContain("=");
   });

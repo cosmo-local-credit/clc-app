@@ -2,12 +2,28 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   formatOfferingDisplayPrice,
+  formatOfferingDisplayValue,
   formatOfferingDisplayTotal,
   formatOfferingPrice,
   formatOfferingQuantity,
   formatOfferingTotal,
   formatVoucherRate,
+  sumDecimalAmounts,
 } from "./logic";
+
+describe("formatOfferingDisplayValue", () => {
+  it("localizes exact decimal strings without losing large values", () => {
+    expect(formatOfferingDisplayValue("10000.25", "en")).toBe("10,000.25");
+    expect(formatOfferingDisplayValue("10000.25", "de")).toBe("10.000,25");
+    expect(formatOfferingDisplayValue("90071992547409931234.5", "de")).toBe(
+      "90.071.992.547.409.931.234,5",
+    );
+  });
+
+  it("rejects malformed values", () => {
+    expect(formatOfferingDisplayValue("1,000", "en")).toBeNull();
+  });
+});
 
 describe("formatVoucherRate", () => {
   it("pairs a whole value with its unit of account", () => {
@@ -188,5 +204,22 @@ describe("formatOfferingDisplayTotal", () => {
       value: "1200",
       unit: "MOK",
     });
+  });
+
+  it("accepts a canonical integer string without crossing through Number", () => {
+    expect(formatOfferingDisplayTotal("0.5", null, null, "MOK", "9007199254740993")).toEqual({
+      value: "4503599627370496.5",
+      unit: "MOK",
+    });
+  });
+});
+
+describe("sumDecimalAmounts", () => {
+  it("adds decimal text exactly", () => {
+    expect(sumDecimalAmounts(["0.1", "1.15", "9007199254740993.25"])).toBe("9007199254740994.5");
+  });
+
+  it("rejects malformed values", () => {
+    expect(sumDecimalAmounts(["1", "not-a-number"])).toBeNull();
   });
 });

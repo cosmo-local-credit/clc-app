@@ -1,12 +1,26 @@
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import { recipientLabel as formatRecipientLabel } from "@clc/api/features/recipients/client";
+import {
+  buildOfferingOrderNote,
+  OFFERING_ORDER_NOTE_MAX_LENGTH,
+  type OfferingOrderLabels,
+  type OfferingOrderLine,
+} from "@clc/core/features/offerings/order";
+import { formatOfferingDisplayPrice } from "@clc/core/features/market/logic";
 import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { RiFileCopyLine } from "react-icons/ri";
 import { toast } from "sonner";
+import { isAddress } from "viem";
+import { useEffect, useState } from "react";
 
+import {
+  OfferingOrderPicker,
+  selectedOfferingOrderLines,
+  type OfferingOrderQuantities,
+} from "#/components/offerings";
 import { RedemptionReviewPrompt } from "#/components/reviews/redemption-review-prompt";
 import { Button } from "#/components/ui/button";
 import { Checkbox } from "#/components/ui/checkbox";
@@ -23,6 +37,8 @@ import {
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useAuthProfile } from "#/features/auth/hooks/use-profile";
+import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useVoucherOfferingsInfinite } from "#/features/home/hooks/use-voucher-offerings";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
@@ -223,7 +239,14 @@ export function SendReceiptPage({
         </div>
       </div>
 
-      {txHash && toAddress ? <SendSharePanel txHash={txHash} recipientAddress={toAddress} /> : null}
+      {txHash && toAddress ? (
+        <SendSharePanel
+          txHash={txHash}
+          recipientAddress={toAddress}
+          tokenAddress={token}
+          voucherSymbol={symbol ?? ""}
+        />
+      ) : null}
       {token && recipient ? <RedemptionReviewPrompt address={token} recipient={recipient} /> : null}
 
       <div className="flex-1" />
@@ -262,14 +285,56 @@ export function SendReceiptPage({
 function SendSharePanel({
   txHash,
   recipientAddress,
+  tokenAddress,
+  voucherSymbol,
 }: {
   txHash: string;
   recipientAddress: string;
+  tokenAddress: string | undefined;
+  voucherSymbol: string;
 }) {
   const { t } = useLingui();
   const eligibility = useSendShareEligibility(recipientAddress);
   const profile = useAuthProfile();
   const createShare = useCreateSendShare(txHash);
+  const verifiedTokenAddress =
+    tokenAddress && isAddress(tokenAddress, { strict: false }) ? tokenAddress : undefined;
+  const voucher = useMarketVoucherDetail(verifiedTokenAddress);
+  const isVoucherOwner =
+    !!voucher.data?.ownerAddress &&
+    voucher.data.ownerAddress.toLowerCase() === recipientAddress.toLowerCase();
+  const offeringsQuery = useVoucherOfferingsInfinite(
+    isVoucherOwner ? verifiedTokenAddress : undefined,
+  );
+  const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = offeringsQuery;
+  useEffect(() => {
+    if (!isVoucherOwner || isError || !hasNextPage || isFetchingNextPage) return;
+    void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage, isVoucherOwner]);
+  const offerings = offeringsQuery.data?.pages.flatMap((page) => page.offerings) ?? [];
+  const orderableOfferings = offerings.filter(
+    (offering) =>
+      formatOfferingDisplayPrice(
+        offering.pricePerUnit,
+        voucher.data?.voucherValue ?? null,
+        voucher.data?.voucherUoa ?? null,
+        offering.voucherSymbol ?? voucher.data?.symbol ?? voucherSymbol,
+      ) !== null,
+  );
+  const orderReady =
+    isVoucherOwner &&
+    offeringsQuery.isSuccess &&
+    !offeringsQuery.hasNextPage &&
+    orderableOfferings.length > 0;
+  const [orderQuantities, setOrderQuantities] = useState<OfferingOrderQuantities>({});
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const orderContext = {
+    voucherSymbol: voucher.data?.symbol ?? voucherSymbol,
+    voucherValue: voucher.data?.voucherValue ?? null,
+    voucherUoa: voucher.data?.voucherUoa ?? null,
+  };
+  const orderLines = selectedOfferingOrderLines(orderableOfferings, orderQuantities, orderContext);
+  const orderLabels = { order: t`Order`, total: t`Order total`, message: t`Message` };
   const hasEmail = !!profile.data?.email && !profile.data.email.endsWith("@clc.local");
   const hasPhone = !!profile.data?.phone;
   const hasLocation =
@@ -280,10 +345,29 @@ function SendSharePanel({
       email: false,
       phone: false,
       location: false,
+      order: false,
     },
     validators: { onSubmit: sendShareFormSchema },
     onSubmit: async ({ value }) => {
-      const parsed = sendShareFormSchema.parse(value);
+      const orderNote = buildOfferingOrderNote({
+        message: value.note,
+        lines: orderLines,
+        labels: orderLabels,
+      });
+      if (!orderNote.ok) {
+        setOrderError(
+          orderNote.reason === "too-long"
+            ? t`The message and order must be 500 characters or fewer.`
+            : t`Couldn't prepare this order. Please review it and try again.`,
+        );
+        return;
+      }
+      setOrderError(null);
+      const parsed = sendShareFormSchema.parse({
+        ...value,
+        note: orderLines.length > 0 ? orderNote.note : value.note,
+        order: orderLines.length > 0,
+      });
       const permission = buildSendSharePermission(parsed);
       try {
         await createShare.mutateAsync({
@@ -334,7 +418,11 @@ function SendSharePanel({
   if (createShare.isSuccess) {
     return (
       <p className="mb-5 border border-primary/30 bg-card p-3 font-semibold text-primary text-sm">
-        <Trans>Message shared.</Trans>
+        {orderLines.length > 0 ? (
+          <Trans>Message or order shared.</Trans>
+        ) : (
+          <Trans>Message shared.</Trans>
+        )}
       </p>
     );
   }
@@ -342,7 +430,11 @@ function SendSharePanel({
   return (
     <details className="mb-5 border border-border bg-card">
       <summary className="flex min-h-11 cursor-pointer items-center px-3 font-semibold text-sm">
-        <Trans>Add a private message</Trans>
+        {orderReady ? (
+          <Trans>Add a message or place an order</Trans>
+        ) : (
+          <Trans>Add a private message</Trans>
+        )}
       </summary>
       <form
         className="space-y-3 border-border border-t p-3"
@@ -368,6 +460,13 @@ function SendSharePanel({
                 onBlur={field.handleBlur}
                 aria-invalid={field.state.meta.errors.length > 0}
               />
+              {orderLines.length > 0 ? (
+                <OrderNoteLength
+                  message={field.state.value}
+                  lines={orderLines}
+                  labels={orderLabels}
+                />
+              ) : null}
             </Field>
           )}
         </form.Field>
@@ -411,6 +510,25 @@ function SendSharePanel({
           ) : null}
         </div>
 
+        {orderReady ? (
+          <OfferingOrderPicker
+            offerings={orderableOfferings}
+            quantities={orderQuantities}
+            onQuantitiesChange={(next) => {
+              setOrderError(null);
+              setOrderQuantities(next);
+              form.setFieldValue("order", Object.keys(next).length > 0);
+            }}
+            {...orderContext}
+          />
+        ) : null}
+
+        {orderError ? (
+          <p className="text-destructive text-xs" role="alert">
+            {orderError}
+          </p>
+        ) : null}
+
         {createShare.error ? (
           <p className="text-destructive text-xs" role="alert">
             {createShare.error instanceof Error
@@ -421,13 +539,22 @@ function SendSharePanel({
 
         <form.Subscribe selector={(state) => state.values}>
           {(values) => {
+            const note = buildOfferingOrderNote({
+              message: values.note,
+              lines: orderLines,
+              labels: orderLabels,
+            });
             const hasContent =
-              values.note.trim() !== "" || values.email || values.phone || values.location;
+              values.note.trim() !== "" ||
+              orderLines.length > 0 ||
+              values.email ||
+              values.phone ||
+              values.location;
             return (
               <Button
                 type="submit"
                 className="h-11 w-full"
-                disabled={!hasContent || createShare.isPending}
+                disabled={!hasContent || !note.ok || createShare.isPending}
               >
                 {createShare.isPending ? <Trans>Sharing…</Trans> : <Trans>Share</Trans>}
               </Button>
@@ -436,6 +563,25 @@ function SendSharePanel({
         </form.Subscribe>
       </form>
     </details>
+  );
+}
+
+function OrderNoteLength({
+  message,
+  lines,
+  labels,
+}: {
+  message: string;
+  lines: readonly OfferingOrderLine[];
+  labels: OfferingOrderLabels;
+}) {
+  const result = buildOfferingOrderNote({ message, lines, labels });
+  return (
+    <p className="text-end text-muted-foreground text-xs">
+      {result.ok
+        ? `${result.note.length}/${OFFERING_ORDER_NOTE_MAX_LENGTH}`
+        : `>${OFFERING_ORDER_NOTE_MAX_LENGTH}`}
+    </p>
   );
 }
 
