@@ -32,6 +32,12 @@ describe("useNfcScan", () => {
     expect(onTag).not.toHaveBeenCalled();
   });
 
+  it("marks the moment the reader is ready for the pilot timings", async () => {
+    performance.clearMarks("clc-nfc:ready");
+    await started(vi.fn((): NfcTagOutcome => "continue"));
+    expect(performance.getEntriesByName("clc-nfc:ready")).toHaveLength(1);
+  });
+
   it("reports unsupported without a reader and never retries", () => {
     const hook = renderHook(() => useNfcScan({ onTag: vi.fn(), Reader: null }));
     act(() => hook.result.current.start());

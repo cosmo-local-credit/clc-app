@@ -15,6 +15,7 @@ import {
   type NdefReaderConstructor,
   releaseNfc,
 } from "./ndef-adapter";
+import { markNfc } from "./metrics";
 
 /** What a workflow tells the session after handling a tag. */
 export type NfcTagOutcome = "done" | "continue";
@@ -121,7 +122,9 @@ export function useNfcScan({ onTag, Reader }: UseNfcScanOptions) {
       )
       .then(
         () => {
-          if (current()) advance({ type: "started" });
+          if (!current()) return;
+          advance({ type: "started" });
+          markNfc(crypto.randomUUID(), "ready");
         },
         (scanError: unknown) => {
           if (!current()) return;
