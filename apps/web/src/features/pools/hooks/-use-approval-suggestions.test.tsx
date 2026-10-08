@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -43,7 +43,8 @@ describe("useApprovalSuggestions", () => {
   it("does not ask for personal vouchers with no wallet", () => {
     const { result } = renderHook(() => useApprovalSuggestions(), { wrapper: wrapper(client()) });
 
-    expect(result.current.isPending).toBe(false);
+    expect(result.current.issued.status).toBe("idle");
+    expect(result.current.holdings.status).toBe("idle");
     expect(getFilteredMarketVouchers).not.toHaveBeenCalled();
     expect(getAccountTokens).not.toHaveBeenCalled();
   });
@@ -87,9 +88,10 @@ describe("useApprovalSuggestions", () => {
 
     const { result } = renderHook(() => useApprovalSuggestions(), { wrapper: wrapper(client()) });
 
-    await waitFor(() => expect(result.current.isPending).toBe(false));
-    expect(result.current.issued.map((row) => row.symbol)).toEqual(["WLLR"]);
-    expect(result.current.holdings.map((row) => row.symbol)).toEqual(["SRF"]);
+    await waitFor(() => expect(result.current.issued.status).toBe("ready"));
+    expect(result.current.holdings.status).toBe("ready");
+    expect(result.current.issued.rows.map((row) => row.symbol)).toEqual(["WLLR"]);
+    expect(result.current.holdings.rows.map((row) => row.symbol)).toEqual(["SRF"]);
     expect(getFilteredMarketVouchers).toHaveBeenCalledWith(
       expect.objectContaining({
         perPage: 20,
@@ -102,5 +104,43 @@ describe("useApprovalSuggestions", () => {
       address: ADDRESS.toLowerCase(),
       perPage: 20,
     });
+  });
+
+  it("keeps successful issued suggestions when the independent holdings request fails", async () => {
+    connection.address = ADDRESS;
+    getFilteredMarketVouchers.mockResolvedValue({
+      vouchers: [
+        {
+          id: "1",
+          chainId: 100,
+          address: "0xaaa0000000000000000000000000000000000001",
+          name: "Will",
+          symbol: "WLLR",
+          iconUrl: null,
+          locationName: null,
+          lat: 0,
+          lng: 0,
+          kind: "voucher",
+        },
+      ],
+      first: 1,
+      last: 1,
+      receivedCount: 1,
+      tagFacets: null,
+    });
+    getAccountTokens.mockRejectedValue(new Error("federation unavailable"));
+
+    const { result } = renderHook(() => useApprovalSuggestions(), { wrapper: wrapper(client()) });
+
+    await waitFor(() => expect(result.current.holdings.status).toBe("error"));
+    expect(result.current.issued.status).toBe("ready");
+    expect(result.current.issued.rows.map((row) => row.symbol)).toEqual(["WLLR"]);
+    expect(result.current.holdings.rows).toEqual([]);
+
+    await act(async () => {
+      result.current.holdings.retry();
+    });
+    await waitFor(() => expect(getAccountTokens).toHaveBeenCalledTimes(2));
+    expect(getFilteredMarketVouchers).toHaveBeenCalledTimes(1);
   });
 });

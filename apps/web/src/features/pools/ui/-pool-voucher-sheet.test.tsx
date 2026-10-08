@@ -27,11 +27,16 @@ const mocks = vi.hoisted(() => ({
   },
   searchResults: [] as { id: string; address: string; name: string; symbol: string }[],
   suggestions: {
-    issued: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
-    holdings: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
+    issued: {
+      rows: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
+      status: "ready" as "idle" | "loading" | "ready" | "error",
+      retry: vi.fn(),
+    },
+    holdings: {
+      rows: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
+      status: "ready" as "idle" | "loading" | "ready" | "error",
+      retry: vi.fn(),
+    },
   },
   membership: { data: false as boolean | undefined, isPending: false },
   rates: {
@@ -216,11 +221,8 @@ beforeEach(() => {
   };
   mocks.searchResults = [];
   mocks.suggestions = {
-    issued: [],
-    holdings: [],
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
+    issued: { rows: [], status: "ready", retry: vi.fn() },
+    holdings: { rows: [], status: "ready", retry: vi.fn() },
   };
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
@@ -366,14 +368,19 @@ describe("PoolVoucherSheet approving", () => {
     const issued = "0x1111000000000000000000000000000000000001" as const;
     const held = "0x2222000000000000000000000000000000000002" as const;
     mocks.suggestions = {
-      issued: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
-      holdings: [
-        { id: "own-again", address: issued, name: "Will", symbol: "WLLR" },
-        { id: "held", address: held, name: "Sarafu", symbol: "SRF" },
-      ],
-      isPending: false,
-      isError: false,
-      refetch: vi.fn(),
+      issued: {
+        rows: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
+        status: "ready",
+        retry: vi.fn(),
+      },
+      holdings: {
+        rows: [
+          { id: "own-again", address: issued, name: "Will", symbol: "WLLR" },
+          { id: "held", address: held, name: "Sarafu", symbol: "SRF" },
+        ],
+        status: "ready",
+        retry: vi.fn(),
+      },
     };
     mocks.searchResults = [
       { id: "m1", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
@@ -407,6 +414,51 @@ describe("PoolVoucherSheet approving", () => {
     expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
     expect(within(dialog).queryByRole("button", { name: /Will/ })).toBeNull();
     expect(within(dialog).getByRole("button", { name: /Juan's Voucher/ })).toBeTruthy();
+  });
+
+  it("keeps usable suggestion groups visible when holdings are unavailable", async () => {
+    const issued = "0x1111000000000000000000000000000000000001" as const;
+    const issuedRetry = vi.fn();
+    const holdingsRetry = vi.fn();
+    mocks.suggestions = {
+      issued: {
+        rows: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
+        status: "ready",
+        retry: issuedRetry,
+      },
+      holdings: { rows: [], status: "error", retry: holdingsRetry },
+    };
+
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(within(dialog).getByRole("region", { name: "Vouchers you issued" })).getByRole(
+        "button",
+        { name: /Will/ },
+      ),
+    ).toBeTruthy();
+    expect(
+      within(within(dialog).getByRole("region", { name: "In this pool" })).getByRole("button", {
+        name: /Pepas Voucher/,
+      }),
+    ).toBeTruthy();
+
+    const holdings = within(within(dialog).getByRole("region", { name: "Vouchers you hold" }));
+    expect(holdings.getByText("Unavailable")).toBeTruthy();
+    expect(within(dialog).queryByText("Couldn't load vouchers.")).toBeNull();
+
+    fireEvent.click(holdings.getByRole("button", { name: "Retry" }));
+    expect(holdingsRetry).toHaveBeenCalledOnce();
+    expect(issuedRetry).not.toHaveBeenCalled();
   });
 });
 

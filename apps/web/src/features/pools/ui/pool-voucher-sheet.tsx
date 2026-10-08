@@ -40,7 +40,10 @@ import {
   useVoucherSearch,
   VOUCHER_SEARCH_MIN_CHARS,
 } from "#/features/home/hooks/use-voucher-search";
-import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
+import {
+  type ApprovalSuggestionSource,
+  useApprovalSuggestions,
+} from "#/features/pools/hooks/use-approval-suggestions";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import {
   usePoolQuoterKind,
@@ -836,8 +839,8 @@ function VoucherPicker({
     return candidate ? [candidate] : [];
   });
   const suggested = suggestApprovalVouchers({
-    issued: suggestions.isPending ? [] : suggestions.issued,
-    holdings: suggestions.isPending ? [] : suggestions.holdings,
+    issued: suggestions.issued.rows,
+    holdings: suggestions.holdings.rows,
     inPool,
   });
   const held = new Set(inPool.map((voucher) => voucher.address.toLowerCase()));
@@ -872,13 +875,7 @@ function VoucherPicker({
       {searching ? (
         <SearchResults search={search} results={results} onSelect={onSelect} />
       ) : (
-        <SuggestionLists
-          suggested={suggested}
-          pending={suggestions.isPending}
-          failed={suggestions.isError}
-          onRetry={suggestions.refetch}
-          onSelect={onSelect}
-        />
+        <SuggestionLists suggested={suggested} sources={suggestions} onSelect={onSelect} />
       )}
     </div>
   );
@@ -935,52 +932,66 @@ function SearchResults({
 
 function SuggestionLists({
   suggested,
-  pending,
-  failed,
-  onRetry,
+  sources,
   onSelect,
 }: {
   suggested: ReturnType<typeof suggestApprovalVouchers>;
-  pending: boolean;
-  failed: boolean;
-  onRetry: () => void;
+  sources: {
+    issued: ApprovalSuggestionSource;
+    holdings: ApprovalSuggestionSource;
+  };
   onSelect: (voucher: ApprovalCandidate) => void;
 }) {
   const groups = [
-    { id: "issued", label: <Trans>Vouchers you issued</Trans>, rows: suggested.issued },
-    { id: "holdings", label: <Trans>Vouchers you hold</Trans>, rows: suggested.holdings },
-    { id: "pool", label: <Trans>In this pool</Trans>, rows: suggested.inPool },
-  ].filter((group) => group.rows.length > 0);
+    {
+      id: "issued",
+      label: <Trans>Vouchers you issued</Trans>,
+      rows: suggested.issued,
+      source: sources.issued,
+    },
+    {
+      id: "holdings",
+      label: <Trans>Vouchers you hold</Trans>,
+      rows: suggested.holdings,
+      source: sources.holdings,
+    },
+    { id: "pool", label: <Trans>In this pool</Trans>, rows: suggested.inPool, source: null },
+  ].filter(
+    (group) =>
+      group.rows.length > 0 ||
+      group.source?.status === "loading" ||
+      group.source?.status === "error",
+  );
 
   return (
     <div className="space-y-3">
-      {pending ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Loading vouchers…</Trans>
-        </p>
-      ) : null}
-      {failed ? (
-        <div className="space-y-2">
-          <p role="alert" className="text-destructive text-sm">
-            <Trans>Couldn't load vouchers.</Trans>
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
-            <Trans>Retry</Trans>
-          </Button>
-        </div>
-      ) : null}
       {groups.map((group) => (
         <section key={group.id} aria-labelledby={`approve-${group.id}`} className="space-y-1">
           <p id={`approve-${group.id}`} className="text-muted-foreground text-xs">
             {group.label}
           </p>
-          <CandidateList candidates={group.rows} onSelect={onSelect} />
+          {group.rows.length > 0 ? (
+            <CandidateList candidates={group.rows} onSelect={onSelect} />
+          ) : group.source?.status === "loading" ? (
+            <p className="text-muted-foreground text-xs">
+              <Trans>Loading…</Trans>
+            </p>
+          ) : group.source?.status === "error" ? (
+            <div className="flex items-center justify-between gap-2">
+              <p role="status" className="text-muted-foreground text-xs">
+                <Trans>Unavailable</Trans>
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 bg-card"
+                onClick={group.source.retry}
+              >
+                <Trans>Retry</Trans>
+              </Button>
+            </div>
+          ) : null}
         </section>
       ))}
     </div>
