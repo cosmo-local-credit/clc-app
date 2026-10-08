@@ -80,6 +80,48 @@ export function poolAvailableLiquidityRaw(input: {
   return (balance > fees ? balance - fees : 0n).toString();
 }
 
+/**
+ * `SwapPool`'s fee denominator. `getFee(inToken, outToken, POOL_FEE_PPM)` therefore
+ * returns the pair's pool fee rate itself, in ppm.
+ */
+export const POOL_FEE_PPM = 1_000_000n;
+
+/**
+ * Splits what a single-pool swap takes out of its output into the pool's fee and
+ * the protocol's, exactly as `SwapPool._swap` computes them.
+ *
+ * The pool fee is the FeePolicy rate on the gross quote, floored, and is credited
+ * to the pool. The protocol fee is the controller's cut of the larger of that fee
+ * and a 1% floor, so a pool charging nothing still pays one — which is why a
+ * single "fees" figure read as wrong. It is not recomputed here: the contract
+ * subtracts both from the gross, so it is whatever the gross loses beyond the
+ * pool fee, and the controller never has to be read.
+ *
+ * All inputs are raw on-chain integers. Null when they cannot be the output of
+ * one swap — malformed, or a net above the gross — rather than a negative fee.
+ */
+export function splitPoolSwapFees(input: {
+  grossAmountOutRaw: string;
+  netAmountOutRaw: string;
+  poolFeePpm: string;
+}): { poolFeeRaw: string; protocolFeeRaw: string } | null {
+  let gross: bigint;
+  let net: bigint;
+  let feePpm: bigint;
+  try {
+    gross = BigInt(input.grossAmountOutRaw);
+    net = BigInt(input.netAmountOutRaw);
+    feePpm = BigInt(input.poolFeePpm);
+  } catch {
+    return null;
+  }
+  if (gross < 0n || net < 0n || feePpm < 0n || net > gross) return null;
+  const poolFee = (gross * feePpm) / POOL_FEE_PPM;
+  const protocolFee = gross - net - poolFee;
+  if (protocolFee < 0n) return null;
+  return { poolFeeRaw: poolFee.toString(), protocolFeeRaw: protocolFee.toString() };
+}
+
 /** The holder/cap ceiling before output-token liquidity is considered. */
 export function poolSwapInputUpperBoundRaw(input: {
   walletBalanceRaw: string;

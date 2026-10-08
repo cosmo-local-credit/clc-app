@@ -17,6 +17,7 @@ import {
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { formatPoolFeePercent, formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { createRelayerClient } from "@clc/api/features/relayer/client";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { CHAIN_INFO } from "#/lib/chain";
@@ -32,6 +33,11 @@ export type SwapReceiptSearch = {
   receiveSymbol?: string;
   receiveToken?: string;
   poolName?: string;
+  receiveDecimals?: number;
+  /** Raw, in the received voucher. */
+  poolFee?: string;
+  protocolFee?: string;
+  poolFeePpm?: string;
 };
 
 export function SwapReceiptPage({
@@ -69,6 +75,21 @@ export function SwapReceiptPage({
   const sentLabel =
     localizedSendAmount && details.sendSymbol
       ? `${localizedSendAmount} ${details.sendSymbol}`
+      : null;
+  // The fees as quoted when the swap was confirmed, the same source as the two
+  // amounts above. Absent from an older receipt URL, which then shows none.
+  const feeDecimals = details.receiveDecimals;
+  const poolFeeAmount =
+    feeDecimals !== undefined && details.poolFee !== undefined && details.receiveSymbol
+      ? `${formatPoolSwapFee(details.poolFee, feeDecimals, i18n.locales?.[0] ?? i18n.locale)} ${details.receiveSymbol}`
+      : null;
+  const protocolFeeAmount =
+    feeDecimals !== undefined && details.protocolFee !== undefined && details.receiveSymbol
+      ? `${formatPoolSwapFee(details.protocolFee, feeDecimals, i18n.locales?.[0] ?? i18n.locale)} ${details.receiveSymbol}`
+      : null;
+  const poolFeePercent =
+    details.poolFeePpm !== undefined
+      ? formatPoolFeePercent(details.poolFeePpm, i18n.locales?.[0] ?? i18n.locale)
       : null;
   const exitReceipt = () => {
     void navigate({
@@ -159,6 +180,20 @@ export function SwapReceiptPage({
         {sentLabel ? (
           <ReceiptRow label={<Trans>You send</Trans>}>
             <SignedAmount direction="out" amount={sentLabel} />
+          </ReceiptRow>
+        ) : null}
+        {poolFeeAmount ? (
+          <ReceiptRow label={poolFeePercent ? t`Pool fee (${poolFeePercent})` : t`Pool fee`}>
+            <span dir="ltr" className="font-mono text-xs font-semibold">
+              {poolFeeAmount}
+            </span>
+          </ReceiptRow>
+        ) : null}
+        {protocolFeeAmount ? (
+          <ReceiptRow label={<Trans>Protocol fee</Trans>}>
+            <span dir="ltr" className="font-mono text-xs font-semibold">
+              {protocolFeeAmount}
+            </span>
           </ReceiptRow>
         ) : null}
         {details.poolName ? (

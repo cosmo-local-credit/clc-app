@@ -224,6 +224,36 @@ describe("SwapReceiptPage", () => {
     expect(target.searchParams.get("amount")).toBe("10000.00");
   });
 
+  it("states the pool fee and the protocol fee the swap was confirmed on", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{
+          ...details,
+          receiveDecimals: 6,
+          poolFee: "0",
+          protocolFee: "400",
+          poolFeePpm: "0",
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Pool fee (0%)").parentElement?.textContent).toContain("0.00 TTX");
+    // 0.0004 TTX: rounded to two decimals it would read as no fee at all.
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX");
+  });
+
+  it("shows no fee rows for a receipt link that predates them", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+
+    expect(screen.queryByText(/pool fee/i)).toBeNull();
+    expect(screen.queryByText("Protocol fee")).toBeNull();
+  });
+
   it("shows the backend on-chain failure instead of a successful receipt", () => {
     useOtxTracking.mockReturnValue({
       outcome: { kind: "error", error: "Transaction failed on-chain (REVERTED)." },

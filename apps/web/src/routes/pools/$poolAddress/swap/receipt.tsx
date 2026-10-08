@@ -13,6 +13,11 @@ const searchSchema = z.object({
   /** Contract address of the received voucher, so the receipt can prefill a send. */
   receiveToken: z.string().optional().catch(undefined),
   poolName: z.string().optional().catch(undefined),
+  /** Decimals of the received voucher, which the two raw fees below are in. */
+  receiveDecimals: z.number().int().min(0).max(255).optional().catch(undefined),
+  poolFee: z.string().regex(/^\d+$/).optional().catch(undefined),
+  protocolFee: z.string().regex(/^\d+$/).optional().catch(undefined),
+  poolFeePpm: z.string().regex(/^\d+$/).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/pools/$poolAddress/swap/receipt")({

@@ -8,6 +8,7 @@ import {
   erc20ApproveAbi,
   poolSwapInputUpperBoundRaw,
   poolSwapMaxInputRaw,
+  splitPoolSwapFees,
   swapPoolDepositAbi,
   swapPoolWithdrawAllFeesAbi,
   swapPoolWithdrawExactFeesAbi,
@@ -195,6 +196,51 @@ describe("pool swap maximum input", () => {
         depositHeadroomRaw: "-1",
         liquidityInputCeilingRaw: "55",
       }),
+    ).toBeNull();
+  });
+});
+
+describe("pool swap fee split", () => {
+  it("charges a zero-fee pool only the protocol's cut of the 1% floor", () => {
+    // Kiriba chama pool on Gnosis: no pool fee, a 2% controller. 100 AGGIE quotes
+    // 100 AMID gross and `getAmountOut` returns 99.98.
+    expect(
+      splitPoolSwapFees({
+        grossAmountOutRaw: "100000000",
+        netAmountOutRaw: "99980000",
+        poolFeePpm: "0",
+      }),
+    ).toEqual({ poolFeeRaw: "0", protocolFeeRaw: "20000" });
+  });
+
+  it("takes the protocol's cut of the pool fee once it is above the floor", () => {
+    // 2% pool fee, 2% controller: 2.00 to the pool, 0.04 to the protocol.
+    expect(
+      splitPoolSwapFees({
+        grossAmountOutRaw: "100000000",
+        netAmountOutRaw: "97960000",
+        poolFeePpm: "20000",
+      }),
+    ).toEqual({ poolFeeRaw: "2000000", protocolFeeRaw: "40000" });
+  });
+
+  it("floors the pool fee as FeePolicy's rate does, leaving the remainder to the protocol", () => {
+    // 0.57% of 333 raw is 1.898, floored to 1.
+    expect(
+      splitPoolSwapFees({ grossAmountOutRaw: "333", netAmountOutRaw: "332", poolFeePpm: "5700" }),
+    ).toEqual({ poolFeeRaw: "1", protocolFeeRaw: "0" });
+  });
+
+  it("returns no split for figures one swap cannot produce", () => {
+    expect(
+      splitPoolSwapFees({ grossAmountOutRaw: "100", netAmountOutRaw: "101", poolFeePpm: "0" }),
+    ).toBeNull();
+    // A pool fee larger than what the gross lost would mean a negative protocol fee.
+    expect(
+      splitPoolSwapFees({ grossAmountOutRaw: "100", netAmountOutRaw: "99", poolFeePpm: "50000" }),
+    ).toBeNull();
+    expect(
+      splitPoolSwapFees({ grossAmountOutRaw: "x", netAmountOutRaw: "99", poolFeePpm: "0" }),
     ).toBeNull();
   });
 });

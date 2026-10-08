@@ -33,6 +33,7 @@ import {
   defaultPoolSwapFrom,
   defaultPoolSwapTo,
 } from "#/features/pools/logic/pool-swap-tokens";
+import { formatPoolFeePercent, formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 
@@ -212,16 +213,21 @@ export function PoolSwapPage({
     setFromAmount(maxFromAmount);
   };
 
-  // What the pool and the protocol keep, from the contract, in the voucher being
-  // received.
-  const feeAmount =
-    quote.data && quote.data.feeAmountRaw !== null && toDecimals !== null
-      ? formatTokenAmountFixed(
-          quote.data.feeAmountRaw,
-          toDecimals,
-          2,
-          i18n.locales?.[0] ?? i18n.locale,
-        )
+  // What the pool and the protocol each keep, from the contract, in the voucher
+  // being received. Shown apart because the protocol charges even a zero-fee
+  // pool, and one combined figure read as the pool overcharging.
+  const fees = quote.data?.fees ?? null;
+  const poolFeePercent = fees
+    ? formatPoolFeePercent(fees.poolFeePpm, i18n.locales?.[0] ?? i18n.locale)
+    : null;
+  const poolFeeLabel = poolFeePercent ? t`Pool fee (${poolFeePercent})` : t`Pool fee`;
+  const poolFeeAmount =
+    fees && toDecimals !== null
+      ? `${formatPoolSwapFee(fees.poolFeeRaw, toDecimals, i18n.locales?.[0] ?? i18n.locale)} ${receiveSymbol}`
+      : null;
+  const protocolFeeAmount =
+    fees && toDecimals !== null
+      ? `${formatPoolSwapFee(fees.protocolFeeRaw, toDecimals, i18n.locales?.[0] ?? i18n.locale)} ${receiveSymbol}`
       : null;
   const localizedMaxFromAmount =
     maxFromRaw !== null && fromDecimals !== null
@@ -354,12 +360,18 @@ export function PoolSwapPage({
             1 {selectedFrom?.token.symbol ?? "—"} = {rate} {selectedTo?.token.symbol ?? "—"}
           </span>
         </div>
+        <div className="flex items-center justify-between border-b border-border px-3 py-2">
+          <span className="text-muted-foreground text-xs">{poolFeeLabel}</span>
+          <span dir="ltr" className="font-mono text-xs font-semibold">
+            {poolFeeAmount ?? "—"}
+          </span>
+        </div>
         <div className="flex items-center justify-between px-3 py-2">
           <span className="text-muted-foreground text-xs">
-            <Trans>Fees</Trans>
+            <Trans>Protocol fee</Trans>
           </span>
           <span dir="ltr" className="font-mono text-xs font-semibold">
-            {feeAmount !== null ? `${feeAmount} ${receiveSymbol}` : "—"}
+            {protocolFeeAmount ?? "—"}
           </span>
         </div>
       </div>
@@ -490,6 +502,9 @@ export function PoolSwapPage({
         fromSymbol={selectedFrom?.token.symbol ?? ""}
         toAmount={localizedQuoteToAmount}
         toSymbol={selectedTo?.token.symbol ?? ""}
+        poolFeeLabel={poolFeeLabel}
+        poolFee={poolFeeAmount}
+        protocolFee={protocolFeeAmount}
         poolName={pool.name}
         error={
           confirmError ?? (swapTransfer.error instanceof Error ? swapTransfer.error.message : null)
@@ -552,6 +567,7 @@ export function PoolSwapPage({
             selectedTo.decimals,
             2,
           );
+          const confirmedFees = refreshed.data.fees;
           void navigate({
             to: "/pools/$poolAddress/swap/receipt",
             params: { poolAddress },
@@ -563,6 +579,16 @@ export function PoolSwapPage({
               receiveSymbol: selectedTo.token.symbol,
               receiveToken: tokenOut,
               poolName: pool.name,
+              // Raw, with the decimals to read them by, so the receipt can show a
+              // sub-cent protocol fee as "<0.01" instead of rounding it away.
+              ...(confirmedFees
+                ? {
+                    receiveDecimals: selectedTo.decimals,
+                    poolFee: confirmedFees.poolFeeRaw,
+                    protocolFee: confirmedFees.protocolFeeRaw,
+                    poolFeePpm: confirmedFees.poolFeePpm,
+                  }
+                : {}),
             },
           });
         }}
@@ -578,6 +604,9 @@ function SwapConfirmationSheet({
   fromSymbol,
   toAmount,
   toSymbol,
+  poolFeeLabel,
+  poolFee,
+  protocolFee,
   poolName,
   error,
   isPending,
@@ -589,6 +618,10 @@ function SwapConfirmationSheet({
   fromSymbol: string;
   toAmount: string;
   toSymbol: string;
+  poolFeeLabel: string;
+  /** Formatted with its symbol; null hides the row while the split is unknown. */
+  poolFee: string | null;
+  protocolFee: string | null;
   poolName: string;
   error: string | null;
   isPending: boolean;
@@ -612,6 +645,14 @@ function SwapConfirmationSheet({
               <SwapConfirmationRow label={<Trans>You send</Trans>}>
                 {fromAmount} {fromSymbol}
               </SwapConfirmationRow>
+              {poolFee !== null ? (
+                <SwapConfirmationRow label={poolFeeLabel}>{poolFee}</SwapConfirmationRow>
+              ) : null}
+              {protocolFee !== null ? (
+                <SwapConfirmationRow label={<Trans>Protocol fee</Trans>}>
+                  {protocolFee}
+                </SwapConfirmationRow>
+              ) : null}
               <SwapConfirmationRow label={<Trans>Pool</Trans>} last>
                 {poolName}
               </SwapConfirmationRow>
