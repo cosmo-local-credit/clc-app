@@ -63,19 +63,6 @@ export function latestAccountTokensQueryOptions(
   });
 }
 
-/** One page of balances, for a list that offers them rather than pages through them. */
-export function accountTokensPageQueryOptions(
-  accounts: AccountsClient,
-  address: string | undefined,
-  perPage: number,
-) {
-  return queryOptions({
-    queryKey: accountKeys.tokens(address ?? "none", perPage),
-    queryFn: () => accounts.getAccountTokens({ address: requireAddress(address), perPage }),
-    enabled: Boolean(address),
-  });
-}
-
 export function accountTokensInfiniteQueryOptions(
   accounts: AccountsClient,
   address: string | undefined,

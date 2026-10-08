@@ -13,9 +13,9 @@ export type ApprovalCandidate = {
 };
 
 export type ApprovalSuggestionGroups = {
-  issued: ApprovalCandidate[];
   holdings: ApprovalCandidate[];
-  inPool: ApprovalCandidate[];
+  deposited: ApprovalCandidate[];
+  issued: ApprovalCandidate[];
 };
 
 const HEX_ADDRESS = /^0x[0-9a-fA-F]{40}$/;
@@ -42,20 +42,23 @@ export function toApprovalCandidate(input: {
 /**
  * The vouchers worth offering before a search, in the order a steward scans.
  *
- * Issued first, then other vouchers they hold, then members of this pool that
- * are neither. One address appears once: the same voucher is often all three,
- * and a second row would approve the same token.
+ * Holdings first, then unapproved deposits already at the pool, then other
+ * vouchers the steward issued. One address appears once: the same voucher is
+ * often in more than one source, and a second row would approve the same token.
+ * Registry members are removed before that priority pass so an approved token
+ * can never be offered as a new approval.
  */
 export function suggestApprovalVouchers(input: {
-  issued: readonly ApprovalCandidate[];
   holdings: readonly ApprovalCandidate[];
-  inPool: readonly ApprovalCandidate[];
+  deposited: readonly ApprovalCandidate[];
+  issued: readonly ApprovalCandidate[];
+  approvedAddresses: readonly string[];
 }): ApprovalSuggestionGroups {
-  const seen = new Set<string>();
+  const seen = new Set(input.approvedAddresses.map((address) => address.toLowerCase()));
   return {
-    issued: takeNew(input.issued, seen),
     holdings: takeNew(input.holdings, seen),
-    inPool: takeNew(input.inPool, seen),
+    deposited: takeNew(input.deposited, seen),
+    issued: takeNew(input.issued, seen),
   };
 }
 

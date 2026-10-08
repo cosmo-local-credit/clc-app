@@ -8,7 +8,8 @@ import {
 
 const ISSUED = "0xaaa0000000000000000000000000000000000001";
 const HELD = "0xbbb0000000000000000000000000000000000002";
-const POOL = "0xccc0000000000000000000000000000000000003";
+const DEPOSITED = "0xccc0000000000000000000000000000000000003";
+const APPROVED = "0xddd0000000000000000000000000000000000004";
 
 function candidate(address: string, symbol: string): ApprovalCandidate {
   return { id: address, address: address as `0x${string}`, name: symbol, symbol };
@@ -29,15 +30,24 @@ describe("toApprovalCandidate", () => {
 });
 
 describe("suggestApprovalVouchers", () => {
-  it("lists issued, then other holdings, then the rest of the pool, once each", () => {
+  it("lists unapproved holdings, deposits, then issued vouchers once each", () => {
     const groups = suggestApprovalVouchers({
-      issued: [candidate(ISSUED, "WLLR")],
-      holdings: [candidate(ISSUED.toUpperCase(), "WLLR"), candidate(HELD, "SRF")],
-      inPool: [candidate(HELD, "SRF"), candidate(POOL, "PEPAS"), candidate(ISSUED, "WLLR")],
+      holdings: [candidate(HELD, "SRF"), candidate(APPROVED, "OLD")],
+      deposited: [
+        candidate(HELD.toUpperCase(), "SRF"),
+        candidate(DEPOSITED, "PEPAS"),
+        candidate(APPROVED.toUpperCase(), "OLD"),
+      ],
+      issued: [
+        candidate(DEPOSITED, "PEPAS"),
+        candidate(ISSUED, "WLLR"),
+        candidate(APPROVED, "OLD"),
+      ],
+      approvedAddresses: [APPROVED.toUpperCase()],
     });
 
-    expect(groups.issued.map((row) => row.symbol)).toEqual(["WLLR"]);
     expect(groups.holdings.map((row) => row.symbol)).toEqual(["SRF"]);
-    expect(groups.inPool.map((row) => row.symbol)).toEqual(["PEPAS"]);
+    expect(groups.deposited.map((row) => row.symbol)).toEqual(["PEPAS"]);
+    expect(groups.issued.map((row) => row.symbol)).toEqual(["WLLR"]);
   });
 });

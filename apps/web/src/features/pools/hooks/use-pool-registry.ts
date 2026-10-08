@@ -68,7 +68,10 @@ export function usePoolTokenMembership(
     },
     enabled: !!client && !!registryAddress && !!token,
     retry: false,
-    staleTime: 15_000,
+    // Approval uses this read as a race check after selection. Treat a cached
+    // answer as stale so reopening or choosing the same voucher revalidates it
+    // instead of trusting a recent `false` after another steward approved it.
+    staleTime: 0,
   });
 }
 

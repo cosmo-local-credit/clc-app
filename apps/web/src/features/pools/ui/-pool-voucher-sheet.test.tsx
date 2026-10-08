@@ -30,15 +30,35 @@ const mocks = vi.hoisted(() => ({
     issued: {
       rows: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
       status: "ready" as "idle" | "loading" | "ready" | "error",
+      completeness: "complete" as "complete" | "partial",
       retry: vi.fn(),
     },
     holdings: {
       rows: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
       status: "ready" as "idle" | "loading" | "ready" | "error",
+      completeness: "complete" as "complete" | "partial",
+      retry: vi.fn(),
+    },
+    deposited: {
+      rows: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
+      status: "ready" as "idle" | "loading" | "ready" | "error",
+      completeness: "complete" as "complete" | "partial",
       retry: vi.fn(),
     },
   },
-  membership: { data: false as boolean | undefined, isPending: false },
+  membership: {
+    data: false as boolean | undefined,
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  },
+  registry: {
+    data: ["0x3aa7000000000000000000000000000000000102"] as string[] | undefined,
+    isPending: false,
+    isSuccess: true,
+    isError: false,
+    refetch: vi.fn(),
+  },
   rates: {
     data: new Map<string, bigint>(),
     isPending: false,
@@ -72,6 +92,9 @@ vi.mock("#/features/pools/hooks/use-pool-treasury", () => ({
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-registry", () => ({
+  poolTokenRegistryAddress: (value: UserPool | null | undefined) =>
+    value?.tokenRegistryAddress ?? null,
+  usePoolRegistryTokens: () => mocks.registry,
   usePoolTokenMembership: () => mocks.membership,
 }));
 
@@ -189,7 +212,14 @@ beforeEach(() => {
   mocks.relay.mockReset();
   mocks.relay.mockResolvedValue({ trackingId: "t1", txHash: `0x${"ab".repeat(32)}` });
   mocks.quoterKind = { kind: "relative", isPending: false };
-  mocks.membership = { data: false, isPending: false };
+  mocks.membership = { data: false, isPending: false, isError: false, refetch: vi.fn() };
+  mocks.registry = {
+    data: [TOKEN],
+    isPending: false,
+    isSuccess: true,
+    isError: false,
+    refetch: vi.fn(),
+  };
   mocks.rates = {
     data: new Map([
       [TOKEN.toLowerCase(), 2_500_000n],
@@ -221,8 +251,9 @@ beforeEach(() => {
   };
   mocks.searchResults = [];
   mocks.suggestions = {
-    issued: { rows: [], status: "ready", retry: vi.fn() },
-    holdings: { rows: [], status: "ready", retry: vi.fn() },
+    issued: { rows: [], status: "ready", completeness: "complete", retry: vi.fn() },
+    holdings: { rows: [], status: "ready", completeness: "complete", retry: vi.fn() },
+    deposited: { rows: [], status: "ready", completeness: "complete", retry: vi.fn() },
   };
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
@@ -364,21 +395,34 @@ describe("PoolVoucherSheet approving", () => {
     ).toBe(true);
   });
 
-  it("offers likely vouchers before a search, and keeps pool members out of the results", async () => {
+  it("offers unapproved holdings, deposits, then issued vouchers and filters registry members", async () => {
     const issued = "0x1111000000000000000000000000000000000001" as const;
     const held = "0x2222000000000000000000000000000000000002" as const;
+    const deposited = "0x3333000000000000000000000000000000000003" as const;
     mocks.suggestions = {
       issued: {
         rows: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
         status: "ready",
+        completeness: "complete",
         retry: vi.fn(),
       },
       holdings: {
         rows: [
-          { id: "own-again", address: issued, name: "Will", symbol: "WLLR" },
           { id: "held", address: held, name: "Sarafu", symbol: "SRF" },
+          { id: "approved", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
         ],
         status: "ready",
+        completeness: "complete",
+        retry: vi.fn(),
+      },
+      deposited: {
+        rows: [
+          { id: "held-again", address: held, name: "Sarafu", symbol: "SRF" },
+          { id: "deposit", address: deposited, name: "Waiting Voucher", symbol: "WAIT" },
+          { id: "approved-again", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
+        ],
+        status: "ready",
+        completeness: "complete",
         retry: vi.fn(),
       },
     };
@@ -397,18 +441,23 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
-    const issuedGroup = within(within(dialog).getByRole("region", { name: "Vouchers you issued" }));
     const heldGroup = within(within(dialog).getByRole("region", { name: "Vouchers you hold" }));
-    const poolGroup = within(within(dialog).getByRole("region", { name: "In this pool" }));
+    const depositGroup = within(
+      within(dialog).getByRole("region", { name: "Deposited in this pool" }),
+    );
+    const issuedGroup = within(within(dialog).getByRole("region", { name: "Vouchers you issued" }));
     expect(issuedGroup.getByRole("button", { name: /Will/ })).toBeTruthy();
     expect(heldGroup.getByRole("button", { name: /Sarafu/ })).toBeTruthy();
-    expect(heldGroup.queryByRole("button", { name: /Will/ })).toBeNull();
-    expect(poolGroup.getByRole("button", { name: /Pepas Voucher/ })).toBeTruthy();
+    expect(heldGroup.queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
+    expect(depositGroup.getByRole("button", { name: /Waiting Voucher/ })).toBeTruthy();
+    expect(depositGroup.queryByRole("button", { name: /Sarafu/ })).toBeNull();
     expect(within(dialog).queryByRole("button", { name: /Juan's Voucher/ })).toBeNull();
 
     const text = dialog.textContent ?? "";
-    expect(text.indexOf("Vouchers you issued")).toBeLessThan(text.indexOf("Vouchers you hold"));
-    expect(text.indexOf("Vouchers you hold")).toBeLessThan(text.indexOf("In this pool"));
+    expect(text.indexOf("Vouchers you hold")).toBeLessThan(text.indexOf("Deposited in this pool"));
+    expect(text.indexOf("Deposited in this pool")).toBeLessThan(
+      text.indexOf("Vouchers you issued"),
+    );
 
     searchVouchers(dialog);
     expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
@@ -424,9 +473,16 @@ describe("PoolVoucherSheet approving", () => {
       issued: {
         rows: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
         status: "ready",
+        completeness: "complete",
         retry: issuedRetry,
       },
-      holdings: { rows: [], status: "error", retry: holdingsRetry },
+      holdings: {
+        rows: [],
+        status: "error",
+        completeness: "partial",
+        retry: holdingsRetry,
+      },
+      deposited: { rows: [], status: "ready", completeness: "complete", retry: vi.fn() },
     };
 
     renderSheet(
@@ -446,12 +502,6 @@ describe("PoolVoucherSheet approving", () => {
         { name: /Will/ },
       ),
     ).toBeTruthy();
-    expect(
-      within(within(dialog).getByRole("region", { name: "In this pool" })).getByRole("button", {
-        name: /Pepas Voucher/,
-      }),
-    ).toBeTruthy();
-
     const holdings = within(within(dialog).getByRole("region", { name: "Vouchers you hold" }));
     expect(holdings.getByText("Unavailable")).toBeTruthy();
     expect(within(dialog).queryByText("Couldn't load vouchers.")).toBeNull();
@@ -460,11 +510,107 @@ describe("PoolVoucherSheet approving", () => {
     expect(holdingsRetry).toHaveBeenCalledOnce();
     expect(issuedRetry).not.toHaveBeenCalled();
   });
+
+  it("shows partial fallback suggestions with a targeted retry", async () => {
+    const holdingsRetry = vi.fn();
+    mocks.suggestions.holdings = {
+      rows: [{ id: "held", address: CANDIDATE, name: "Recent", symbol: "RCNT" }],
+      status: "ready",
+      completeness: "partial",
+      retry: holdingsRetry,
+    };
+
+    renderSheet(
+      <PoolVoucherSheet
+        pool={pool()}
+        poolVouchers={[poolVoucher()]}
+        voucher={null}
+        open
+        onClose={vi.fn()}
+      />,
+    );
+
+    const holdings = within(
+      within(await screen.findByRole("dialog")).getByRole("region", {
+        name: "Vouchers you hold",
+      }),
+    );
+    expect(holdings.getByRole("button", { name: /Recent/ })).toBeTruthy();
+    expect(holdings.getByText("Showing recent vouchers only.")).toBeTruthy();
+    fireEvent.click(holdings.getByRole("button", { name: "Retry" }));
+    expect(holdingsRetry).toHaveBeenCalledOnce();
+  });
+
+  it("does not expose candidates until registry membership is verified", async () => {
+    mocks.registry = {
+      data: undefined,
+      isPending: true,
+      isSuccess: false,
+      isError: false,
+      refetch: vi.fn(),
+    };
+    mocks.suggestions.holdings = {
+      rows: [{ id: "held", address: CANDIDATE, name: "Recent", symbol: "RCNT" }],
+      status: "ready",
+      completeness: "complete",
+      retry: vi.fn(),
+    };
+
+    renderSheet(
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("Checking approved vouchers…")).toBeTruthy();
+    expect(within(dialog).queryByRole("button", { name: /Recent/ })).toBeNull();
+  });
+
+  it("keeps the picker blocked and retries when registry enumeration fails", async () => {
+    const retry = vi.fn();
+    mocks.registry = {
+      data: undefined,
+      isPending: false,
+      isSuccess: false,
+      isError: true,
+      refetch: retry,
+    };
+    mocks.searchResults = [
+      { id: "approved", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
+    ];
+
+    renderSheet(
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByText("Couldn't check which vouchers are already approved."),
+    ).toBeTruthy();
+    expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+    expect(retry).toHaveBeenCalledOnce();
+  });
+
+  it("filters a registry member even when the catalog has not projected it", async () => {
+    mocks.searchResults = [
+      { id: "approved", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
+      { id: "new", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
+    ];
+
+    renderSheet(
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog);
+    expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
+    expect(within(dialog).getByRole("button", { name: /Juan's Voucher/ })).toBeTruthy();
+  });
 });
 
 describe("PoolVoucherSheet managing", () => {
   beforeEach(() => {
-    mocks.membership = { data: true, isPending: false };
+    mocks.membership = { data: true, isPending: false, isError: false, refetch: vi.fn() };
   });
 
   it("seeds the fields from the stored rate and cap", async () => {
@@ -588,12 +734,7 @@ describe("PoolVoucherSheet managing", () => {
 });
 
 describe("PoolVoucherSheet registration", () => {
-  it("omits add for a token the registry already holds", async () => {
-    // The catalog can miss a member — one seeded when the pool was published, or
-    // one the indexer has not projected — so the picker will offer it. Sending
-    // `add` anyway reverts TokenAlreadyExists and, with revertOnFailure, takes
-    // the rate and the limit down with it.
-    mocks.membership = { data: true, isPending: false };
+  it("stops approval when the selected token became registered", async () => {
     mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
     renderSheet(
       <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
@@ -601,20 +742,20 @@ describe("PoolVoucherSheet registration", () => {
 
     const dialog = await screen.findByRole("dialog");
     searchVouchers(dialog, "pl");
+    mocks.membership = { data: true, isPending: false, isError: false, refetch: vi.fn() };
     fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
-    expect(within(dialog).getByText(/already allows PLKD/)).toBeTruthy();
 
-    fireEvent.change(within(dialog).getByLabelText("Exchange rate"), { target: { value: "500" } });
-    fireEvent.change(within(dialog).getByLabelText("Credit limit"), { target: { value: "100" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Approve voucher" }));
-
-    await waitFor(() => expect(mocks.relay).toHaveBeenCalledTimes(1));
-    const calls = relayedCalls();
-    expect(calls.map((call) => call.to)).toEqual([LIMITER, QUOTER]);
+    expect(await within(dialog).findByText("This voucher is already approved.")).toBeTruthy();
+    expect(within(dialog).queryByLabelText("Exchange rate")).toBeNull();
+    expect(
+      (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(mocks.relay).not.toHaveBeenCalled();
   });
 
   it("waits for the registry before letting an approval be signed", async () => {
-    mocks.membership = { data: undefined, isPending: true };
+    mocks.membership = { data: undefined, isPending: true, isError: false, refetch: vi.fn() };
     mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
     renderSheet(
       <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
@@ -627,5 +768,33 @@ describe("PoolVoucherSheet registration", () => {
       (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
         .disabled,
     ).toBe(true);
+  });
+
+  it("keeps the selected voucher blocked and retries a failed membership check", async () => {
+    const retry = vi.fn();
+    mocks.membership = {
+      data: undefined,
+      isPending: false,
+      isError: true,
+      refetch: retry,
+    };
+    mocks.searchResults = [{ id: "m1", address: CANDIDATE, name: "Plakad", symbol: "PLKD" }];
+    renderSheet(
+      <PoolVoucherSheet pool={pool()} poolVouchers={[]} voucher={null} open onClose={vi.fn()} />,
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    searchVouchers(dialog, "pl");
+    fireEvent.click(within(dialog).getByRole("button", { name: /Plakad/ }));
+
+    expect(
+      within(dialog).getByText("Couldn't check which vouchers are already approved."),
+    ).toBeTruthy();
+    expect(
+      (within(dialog).getByRole("button", { name: "Approve voucher" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    fireEvent.click(within(dialog).getByRole("button", { name: "Retry" }));
+    expect(retry).toHaveBeenCalledOnce();
   });
 });
