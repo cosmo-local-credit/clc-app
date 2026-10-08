@@ -21,3 +21,19 @@ export function useMarketVoucherDetail(address: string | undefined) {
     ...MARKET_QUERY_FRESHNESS,
   });
 }
+
+/**
+ * A receipt must verify the voucher's current owner before offering an order.
+ * It shares the canonical detail cache key, but bypasses both the browser's
+ * public response cache and the market screen's ten-minute freshness window.
+ */
+export function useCurrentMarketVoucherDetail(address: string | undefined) {
+  return useQuery({
+    ...voucherQueryOptions(marketClient, address, { cache: "no-store" }),
+    gcTime: MARKET_QUERY_FRESHNESS.gcTime,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+}

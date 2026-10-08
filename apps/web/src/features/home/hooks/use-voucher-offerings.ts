@@ -22,6 +22,29 @@ export function useVoucherOfferingsInfinite(
 }
 
 /**
+ * Current public offerings for a completed-transfer receipt.
+ *
+ * This keeps the canonical voucher-offerings cache identity while bypassing
+ * the browser cache and forcing a mount-time refresh, so a cached empty list
+ * cannot silently hide an order that has since been published.
+ */
+export function useCurrentVoucherOfferingsInfinite(
+  voucherAddress: string | undefined,
+  perPage = VOUCHER_OFFERINGS_PAGE_SIZE,
+) {
+  return useInfiniteQuery({
+    ...voucherOfferingsInfiniteQueryOptions(offeringsClient, voucherAddress, perPage, {
+      cache: "no-store",
+    }),
+    gcTime: MARKET_QUERY_FRESHNESS.gcTime,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+}
+
+/**
  * The same rows, read by the voucher's own issuer.
  *
  * A separate query with `cache: "no-store"`, not a flag on the one above. The

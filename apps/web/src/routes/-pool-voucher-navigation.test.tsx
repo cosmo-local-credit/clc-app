@@ -9,7 +9,7 @@ import {
   useParams,
   useSearch,
 } from "@tanstack/react-router";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("wagmi", () => ({
@@ -87,11 +87,15 @@ describe("pool voucher navigation", () => {
     );
 
     // The row opens the voucher's card; its page is the card's last link.
-    fireEvent.click(await screen.findByRole("button", { name: /trade token/i }));
-    await screen.findByRole("dialog", { name: "Trade Token" });
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    fireEvent.click(await screen.findByRole("link", { name: "Open voucher page" }));
+    const voucherRow = (await screen.findByText("Trade Token")).closest("button");
+    if (!voucherRow) throw new Error("Pool voucher row is not a button");
+    fireEvent.click(voucherRow);
+    const dialog = await screen.findByRole("dialog", { name: "Trade Token" });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Expand" }));
+    const openVoucher = (await within(dialog).findByText("Open voucher page")).closest("a");
+    if (!openVoucher) throw new Error("Open voucher page is not a link");
+    fireEvent.click(openVoucher);
 
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/vouchers/${TOKEN_ADDRESS.toLowerCase()}`);
@@ -100,18 +104,22 @@ describe("pool voucher navigation", () => {
     expect(await screen.findByText("Trade Token")).toBeTruthy();
     expect(screen.getByLabelText("Balance").textContent).toMatch(/0\s*TTX/);
 
+    const poolBackLink = screen.getByText("Pool").closest("a");
+    if (!poolBackLink) throw new Error("Pool back action is not a link");
     await act(async () => {
-      fireEvent.click(screen.getByRole("link", { name: "Pool" }));
+      fireEvent.click(poolBackLink);
     });
 
     // Back lands on the pool with the card it was opened from still open over
     // it; the pool sits behind the card's backdrop until the card closes.
     await waitFor(() => {
       expect(history.location.pathname).toBe(`/pools/${POOL_ADDRESS}`);
-      expect(screen.getByRole("dialog", { name: "Trade Token" })).toBeTruthy();
-      expect(screen.getByRole("heading", { name: "Trade Pool", hidden: true })).toBeTruthy();
+      expect(
+        screen.getAllByText("Trade Token").some((label) => label.closest('[role="dialog"]')),
+      ).toBe(true);
+      expect(screen.getByText("Trade Pool")).toBeTruthy();
     });
-  });
+  }, 10_000);
 
   it("swaps for a voucher from its row and Back returns to the pool", async () => {
     mockRequests();

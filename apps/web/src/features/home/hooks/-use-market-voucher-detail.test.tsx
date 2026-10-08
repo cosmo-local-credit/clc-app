@@ -5,7 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import { voucherKeys } from "@clc/api/features/market/queries";
-import { marketVoucherDetailQuery, useMarketVoucherDetail } from "./use-market-voucher-detail";
+import {
+  marketVoucherDetailQuery,
+  useCurrentMarketVoucherDetail,
+  useMarketVoucherDetail,
+} from "./use-market-voucher-detail";
 
 const getMarketVoucher = vi.hoisted(() => vi.fn());
 
@@ -85,6 +89,29 @@ describe("useMarketVoucherDetail", () => {
 
     await waitFor(() => expect(result.current.data?.symbol).toBe("MALII"));
     expect(getMarketVoucher).toHaveBeenCalledWith(CHECKSUMMED, expect.anything());
+  });
+
+  it("refreshes cached detail with a no-store owner verification on receipt mount", async () => {
+    const client = newClient();
+    client.setQueryData(
+      voucherKeys.detail(CHECKSUMMED),
+      detail({ ownerAddress: "0x1111111111111111111111111111111111111111" }),
+    );
+    getMarketVoucher.mockResolvedValue(
+      detail({ ownerAddress: "0x2222222222222222222222222222222222222222" }),
+    );
+
+    const { result } = renderHook(() => useCurrentMarketVoucherDetail(CHECKSUMMED), {
+      wrapper: wrapper(client),
+    });
+
+    expect(result.current.isFetching).toBe(true);
+    await waitFor(() =>
+      expect(result.current.data?.ownerAddress).toBe("0x2222222222222222222222222222222222222222"),
+    );
+    expect(getMarketVoucher).toHaveBeenCalledWith(CHECKSUMMED, expect.anything(), {
+      cache: "no-store",
+    });
   });
 
   // The card tap and the voucher page must land on one cache entry. Without

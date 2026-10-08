@@ -1,7 +1,7 @@
 import type { Offering } from "@clc/api/features/offerings/client";
 import {
   buildOfferingOrderLine,
-  offeringOrderTotal,
+  offeringOrderSummary,
   OFFERING_ORDER_MAX_ITEMS,
   type OfferingOrderLine,
 } from "@clc/core/features/offerings/order";
@@ -62,7 +62,7 @@ export function OfferingOrderPicker({
   const context = { voucherSymbol, voucherValue, voucherUoa };
   const selectedLines = selectedOfferingOrderLines(offerings, quantities, context);
   const selectedCount = Object.keys(quantities).length;
-  const total = offeringOrderTotal(selectedLines);
+  const summary = offeringOrderSummary(selectedLines);
 
   function select(offering: Offering, checked: boolean) {
     const next = { ...quantities };
@@ -101,7 +101,7 @@ export function OfferingOrderPicker({
             offering.voucherSymbol ?? voucherSymbol,
           );
           const line = selectedLines.find((candidate) => candidate.offeringId === offering.id);
-          const disabled = !price || (!checked && selectedCount >= OFFERING_ORDER_MAX_ITEMS);
+          const disabled = !checked && selectedCount >= OFFERING_ORDER_MAX_ITEMS;
           const checkboxId = `send-order-${offering.id}`;
 
           return (
@@ -163,9 +163,15 @@ export function OfferingOrderPicker({
                     </Button>
                   </div>
                   <span className="text-end font-mono text-primary text-xs">
-                    {formatOfferingDisplayValue(line.lineTotal.value, locale) ??
-                      line.lineTotal.value}{" "}
-                    {line.lineTotal.unit}
+                    {line.pricing === "fixed" ? (
+                      <>
+                        {formatOfferingDisplayValue(line.lineTotal.value, locale) ??
+                          line.lineTotal.value}{" "}
+                        {line.lineTotal.unit}
+                      </>
+                    ) : (
+                      <Trans>Price on request</Trans>
+                    )}
                   </span>
                 </div>
               ) : null}
@@ -180,16 +186,31 @@ export function OfferingOrderPicker({
         </p>
       ) : null}
 
-      {total ? (
-        <div className="flex min-h-11 items-center justify-between gap-3 border border-border bg-card px-3 py-2">
-          <span className="font-semibold text-sm">
-            <Trans>Order total</Trans>
-          </span>
-          <span className="text-end font-mono font-semibold text-primary text-sm">
-            {formatOfferingDisplayValue(total.value, locale) ?? total.value} {total.unit}
-          </span>
-        </div>
+      {summary?.kind === "price-on-request" && summary.pricedSubtotal ? (
+        <OrderSummaryRow
+          label={<Trans>Priced subtotal</Trans>}
+          value={`${formatOfferingDisplayValue(summary.pricedSubtotal.value, locale) ?? summary.pricedSubtotal.value} ${summary.pricedSubtotal.unit}`}
+        />
+      ) : null}
+      {summary ? (
+        <OrderSummaryRow
+          label={<Trans>Order total</Trans>}
+          value={
+            summary.kind === "exact"
+              ? `${formatOfferingDisplayValue(summary.total.value, locale) ?? summary.total.value} ${summary.total.unit}`
+              : t`Price on request`
+          }
+        />
       ) : null}
     </fieldset>
+  );
+}
+
+function OrderSummaryRow({ label, value }: { label: React.ReactNode; value: string }) {
+  return (
+    <div className="flex min-h-11 items-center justify-between gap-3 border border-border bg-card px-3 py-2">
+      <span className="font-semibold text-sm">{label}</span>
+      <span className="text-end font-mono font-semibold text-primary text-sm">{value}</span>
+    </div>
   );
 }

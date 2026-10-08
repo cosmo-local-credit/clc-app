@@ -7,6 +7,8 @@ const {
   identity,
   navigate,
   offeringsState,
+  refetchOfferings,
+  refetchVoucher,
   shareState,
   trackRelay,
   useOtxTracking,
@@ -25,7 +27,15 @@ const {
   navigate: vi.fn(),
   offeringsState: {
     offerings: [] as Array<Record<string, unknown>>,
+    pages: null as null | Array<{ offerings: Array<Record<string, unknown>> }>,
+    hasNextPage: false,
+    isError: false,
+    isFetching: false,
+    isFetchingNextPage: false,
+    isPending: false,
   },
+  refetchOfferings: vi.fn(),
+  refetchVoucher: vi.fn(),
   shareState: {
     eligible: true,
     error: null as Error | null,
@@ -43,6 +53,9 @@ const {
           voucherUoa: string | null;
           symbol: string;
         },
+    isError: false,
+    isFetching: false,
+    isPending: false,
   },
 }));
 
@@ -67,17 +80,25 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
-  useMarketVoucherDetail: () => ({ data: voucherState.data }),
+  useCurrentMarketVoucherDetail: () => ({
+    data: voucherState.data,
+    isError: voucherState.isError,
+    isFetching: voucherState.isFetching,
+    isPending: voucherState.isPending,
+    refetch: refetchVoucher,
+  }),
 }));
 
 vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
-  useVoucherOfferingsInfinite: () => ({
-    data: { pages: [{ offerings: offeringsState.offerings }] },
+  useCurrentVoucherOfferingsInfinite: () => ({
+    data: { pages: offeringsState.pages ?? [{ offerings: offeringsState.offerings }] },
     fetchNextPage: vi.fn(),
-    hasNextPage: false,
-    isError: false,
-    isFetchingNextPage: false,
-    isSuccess: true,
+    hasNextPage: offeringsState.hasNextPage,
+    isError: offeringsState.isError,
+    isFetching: offeringsState.isFetching,
+    isFetchingNextPage: offeringsState.isFetchingNextPage,
+    isPending: offeringsState.isPending,
+    refetch: refetchOfferings,
   }),
 }));
 
@@ -134,7 +155,18 @@ beforeEach(() => {
   shareState.isPending = false;
   shareState.isSuccess = false;
   voucherState.data = undefined;
+  voucherState.isError = false;
+  voucherState.isFetching = false;
+  voucherState.isPending = false;
   offeringsState.offerings = [];
+  offeringsState.pages = null;
+  offeringsState.hasNextPage = false;
+  offeringsState.isError = false;
+  offeringsState.isFetching = false;
+  offeringsState.isFetchingNextPage = false;
+  offeringsState.isPending = false;
+  refetchOfferings.mockResolvedValue(undefined);
+  refetchVoucher.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -143,6 +175,8 @@ afterEach(() => {
   useOtxTracking.mockReset();
   trackRelay.mockReset();
   createShare.mockReset();
+  refetchOfferings.mockReset();
+  refetchVoucher.mockReset();
 });
 
 describe("SendReceiptPage", () => {
@@ -399,7 +433,57 @@ describe("SendReceiptPage", () => {
     );
   });
 
-  it("keeps the ordinary private-message action when an owner has no priced offerings", () => {
+  it("includes current offerings discovered on later pages", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "1",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.pages = [
+      {
+        offerings: [
+          {
+            id: "offering-1",
+            voucherAddress: TOKEN_ADDRESS,
+            voucherSymbol: "MZ",
+            name: "First page",
+            unitLabel: "item",
+            pricePerUnit: "10",
+          },
+        ],
+      },
+      {
+        offerings: [
+          {
+            id: "offering-2",
+            voucherAddress: TOKEN_ADDRESS,
+            voucherSymbol: "MZ",
+            name: "Second page",
+            unitLabel: "item",
+            pricePerUnit: "20",
+          },
+        ],
+      },
+    ];
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Add a message or place an order"));
+    expect(screen.getByRole("checkbox", { name: /Add Second page to order/ })).toBeTruthy();
+  });
+
+  it("allows an owner offering with no fixed price to be ordered", async () => {
     voucherState.data = {
       ownerAddress: RECIPIENT,
       voucherValue: "2",
@@ -429,8 +513,237 @@ describe("SendReceiptPage", () => {
       />,
     );
 
+    fireEvent.click(screen.getByText("Add a message or place an order"));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Add Price by arrangement to order/ }));
+
+    expect(screen.getByText("Order total").parentElement?.textContent).toContain(
+      "Price on request",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Share" }));
+    await waitFor(() =>
+      expect(createShare).toHaveBeenCalledWith({
+        permission: 0,
+        note: "Order\n- 1 × Price by arrangement @ Price on request / item = Price on request\nOrder total: Price on request",
+      }),
+    );
+  });
+
+  it("keeps the ordinary private-message action when the owner has no public offerings", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
     expect(screen.getByText("Add a private message")).toBeTruthy();
     expect(screen.queryByText("Order (optional)")).toBeNull();
+  });
+
+  it("excludes unavailable offerings from the order", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.offerings = [
+      {
+        id: "offering-1",
+        voucherAddress: TOKEN_ADDRESS,
+        voucherSymbol: "MZ",
+        name: "Unavailable service",
+        unitLabel: "item",
+        pricePerUnit: "10",
+        available: false,
+      },
+    ];
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Add a private message")).toBeTruthy();
+    expect(screen.queryByText("Order (optional)")).toBeNull();
+    expect(screen.queryByText("Unavailable service")).toBeNull();
+  });
+
+  it("keeps the ordinary private-message action when the recipient is not the current owner", () => {
+    voucherState.data = {
+      ownerAddress: "0x9999999999999999999999999999999999999999",
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.offerings = [
+      {
+        id: "offering-1",
+        voucherAddress: TOKEN_ADDRESS,
+        voucherSymbol: "MZ",
+        name: "Not for this recipient",
+        unitLabel: "item",
+        pricePerUnit: "10",
+      },
+    ];
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Add a private message")).toBeTruthy();
+    expect(screen.queryByText("Order (optional)")).toBeNull();
+  });
+
+  it("shows order verification while current offerings load", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.isFetching = true;
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Checking order availability…")).toBeTruthy();
+  });
+
+  it("shows order verification instead of silently falling back while current data loads", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    voucherState.isFetching = true;
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Checking order availability…")).toBeTruthy();
+    expect(screen.queryByText("Add a private message")).toBeNull();
+  });
+
+  it("keeps messaging available and retries a failed voucher-owner check", () => {
+    voucherState.isError = true;
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Add a private message")).toBeTruthy();
+    expect(screen.getByText("Couldn't check order availability.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetchVoucher).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps messaging available and retries a failed offerings check", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.isError = true;
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Add a private message")).toBeTruthy();
+    expect(screen.getByText("Couldn't check order availability.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetchOfferings).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the retry state when loading a later offerings page fails", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.hasNextPage = true;
+    offeringsState.isError = true;
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.queryByText("Checking order availability…")).toBeNull();
+    expect(screen.getByText("Couldn't check order availability.")).toBeTruthy();
+    expect(screen.getByText("Add a private message")).toBeTruthy();
   });
 
   it("explains when the confirmed recipient cannot receive a private message", () => {
