@@ -304,6 +304,15 @@ component is rounded until you say otherwise. `apps/admin` zeroes the
 needs no `rounded-none`. Adding `rounded-none` in admin is redundant; omitting
 it in web is a bug.
 
+**One scoped exception: the NFC card writer.** Writing a batch onto NFC cards
+happens standing at a table with an Android phone in one hand, because Web NFC
+exists only in Chrome on Android. The writer screen
+(`apps/admin/src/features/paper-wallets/nfc/`) is therefore the one admin
+surface laid out mobile-first: its base classes target a 360–430px phone and
+breakpoints only widen it. The batch setup form keeps working on a phone because
+it already collapses, not because it is mobile-first. Every other admin surface
+stays desktop-first; do not cite this exception to relax one.
+
 Admin conventions:
 
 - Panels and tiles: `border border-border bg-card p-4`. Section headings are

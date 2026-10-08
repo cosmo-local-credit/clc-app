@@ -117,7 +117,17 @@ const stateTones: Record<string, StateTone> = {
     label: "underpriced",
     className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
-  // A bulk-issued paper wallet, while its account is being created.
+  // A bulk-issued paper wallet: waiting for a lane, having its key encrypted,
+  // then while its account is being created.
+  queued: {
+    label: "queued",
+    className: NEUTRAL,
+  },
+  preparing: {
+    label: "preparing",
+    className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
+    pulse: true,
+  },
   registering: {
     label: "registering",
     className: "border-state-pending/30 bg-state-pending/10 text-state-pending",
