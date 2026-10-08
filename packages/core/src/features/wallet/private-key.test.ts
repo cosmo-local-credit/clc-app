@@ -35,6 +35,24 @@ describe("normalizePrivateKey", () => {
     expect(result).toEqual({ ok: false, error: expect.any(String) });
   });
 
+  it("rejects the zero key", () => {
+    expect(normalizePrivateKey(`0x${"0".repeat(64)}`)).toEqual({
+      ok: false,
+      error: expect.any(String),
+    });
+  });
+
+  it("rejects a key at or above the secp256k1 group order", () => {
+    const order = "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141";
+    expect(normalizePrivateKey(`0x${order}`).ok).toBe(false);
+    expect(normalizePrivateKey("f".repeat(64)).ok).toBe(false);
+  });
+
+  it("accepts the largest valid key, one below the group order", () => {
+    const max = "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140";
+    expect(normalizePrivateKey(max)).toEqual({ ok: true, key: `0x${max}` });
+  });
+
   it("trims whitespace before validating", () => {
     const result = normalizePrivateKey(`  ${VALID_KEY}  `);
     expect(result).toEqual({ ok: true, key: VALID_KEY });

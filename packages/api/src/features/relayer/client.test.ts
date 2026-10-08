@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
-import { createRelayerClient } from "./client";
+import { createRelayerClient, isRelaySubmissionUncertain, RelayerError } from "./client";
 
 const BASE = "https://relayer.example";
 const client = createRelayerClient(BASE);
@@ -226,5 +226,42 @@ describe("relay", () => {
     const res = await client.relay(payload);
     expect(spy).toHaveBeenCalledWith(`${BASE}/relay`, expect.objectContaining({ method: "POST" }));
     expect(res.result.trackingId).toBe("uuid-1");
+  });
+});
+
+describe("isRelaySubmissionUncertain", () => {
+  it("treats a 4xx as a refusal that queued nothing", () => {
+    expect(isRelaySubmissionUncertain(new RelayerError("server_error", "bad", 400))).toBe(false);
+    expect(isRelaySubmissionUncertain(new RelayerError("conflict", "reused", 409))).toBe(false);
+    expect(
+      isRelaySubmissionUncertain(new RelayerError("verification_failed", "sig", 401)),
+    ).toBe(false);
+  });
+
+  it("treats a 5xx, a dropped connection or an unreadable body as unknown", () => {
+    expect(isRelaySubmissionUncertain(new RelayerError("server_error", "gateway", 502))).toBe(true);
+    expect(isRelaySubmissionUncertain(new TypeError("Failed to fetch"))).toBe(true);
+    expect(isRelaySubmissionUncertain(new SyntaxError("Unexpected token <"))).toBe(true);
+  });
+});
+
+describe("relay with an operation id", () => {
+  it("sends the operation id alongside the signed request", async () => {
+    const spy = mockFetch({ ok: true, result: { trackingId: "uuid-2" } });
+    await client.relay({
+      operationId: "op-1",
+      userAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      signedBatch: {
+        batchedCall: { calls: [], revertOnFailure: true },
+        nonce: "0",
+        keyHash: `0x${"00".repeat(32)}`,
+        executor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        deadline: "1700000000",
+      },
+      signature: "0xabc",
+      signatureType: "secp256k1",
+    });
+    const body = JSON.parse(String(spy.mock.calls[0]?.[1]?.body));
+    expect(body.operationId).toBe("op-1");
   });
 });
