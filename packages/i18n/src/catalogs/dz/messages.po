@@ -326,7 +326,7 @@ msgstr "རྩིས་ཐོ་ཆ་འཇོག་བསྒུག་པའི
 msgid "Account not approved"
 msgstr "རྩིས་ཐོ་ཆ་འཇོག་མ་གྲུབ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "རྩིས་ཐོ་མ་ཐོབ།"
 
@@ -477,7 +477,7 @@ msgstr "མཐོ་རིམ།"
 msgid "Advanced details"
 msgstr "མཐོ་རིམ་ཁ་གསལ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "མཐོ་རིམ་གདམ་ཁ།"
 
@@ -531,6 +531,10 @@ msgstr "དངུལ་བསྡོམས་འདི་ཁྱོད་ཀྱི
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "དངུལ་ཁུངས་ནང་གི་དངུལ་བསྡོམས།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "ཤོག་བྱང་བཤེར་ནི་གཞན་ཅིག་ད་ལྟོ་རང་འབད་དེ་ཡོད། ལོག་སྟེ་འབད།"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -669,7 +673,8 @@ msgstr "ཁ་པར་གཏང་།"
 msgid "Camera access denied."
 msgstr "པར་ཆས་ལག་ལེན་ཆོག་ཐམ་མ་བྱིན།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
@@ -701,6 +706,10 @@ msgstr "པར་ {0} གི་པར་བཤད།"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "པར་བཤད་ཡིག་འབྲུ་ ༥༠༠ ཡང་ན་དེ་ལས་ཉུངམ་དགོ"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "ཤོག་བྱང་ལྷག་ཚར་ཡོད་ — ནང་འཛུལ་འབད་དོ"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
@@ -981,7 +990,7 @@ msgstr "ཤོག་གུའི་དངུལ་ཁུག་བཤེར་ཆ
 msgid "Close password-protected wallet import"
 msgstr "གསང་ཚིག་གིས་སྲུང་ཡོད་པའི་དངུལ་ཁུག་ནང་འདྲེན་ཁ་བསྡམ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "སྒེར་ལྡེའི་འབྲི་ཤོག་ཁ་བསྡམ།"
 
@@ -1105,8 +1114,8 @@ msgstr "མཐུད་ཡོད་པའི་ཁ་བྱང་།"
 msgid "Connecting wallet..."
 msgstr "དངུལ་ཁུག་མཐུད་དོ..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "མཐུད་དོ..."
 
@@ -1115,7 +1124,7 @@ msgstr "མཐུད་དོ..."
 msgid "Connecting…"
 msgstr "མཐུད་དོ…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1163,7 +1172,7 @@ msgstr "CLC ལུ་འཕྲོ་མཐུད།"
 msgid "Continue to wallet"
 msgstr "དངུལ་ཁུག་ལུ་འཕྲོ་མཐུད།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "{providerLabel} དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
@@ -1171,7 +1180,7 @@ msgstr "{providerLabel} དང་ཅིག་ཁར་འཕྲོ་མཐུ�
 msgid "Continue with paper wallet"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "ཤོག་གུའི་དངུལ་ཁུག་དང་ཅིག་ཁར་འཕྲོ་མཐུད།"
 
@@ -1527,6 +1536,12 @@ msgstr "དུས་མཐུན་ལུ་ལྷོད་མ་ཚུགས།
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "འཛིན་ཤོག་འདི་གིས་བཅུ་ཚག་ག་དེམ་ཅིག་ལག་ལེན་འཐབ་ཨིན་ན་ལྷག་མ་ཚུགས།"
 
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "ཤོག་བྱང་འདི་ལྷག་མ་ཚུགས། "
+"ཁྱོད་ཀྱི་ཁ་པར་གྱི་རྒྱབ་ཁར་མ་གཡོ་བར་བཞག་སྟེ་ལོག་འབད།"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
@@ -1635,8 +1650,8 @@ msgstr "གསར་བཟོ།"
 msgid "Create account"
 msgstr "རྩིས་ཐོ་གསར་བཟོ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "རྩིས་ཐོ་ཅིག་གསར་བཟོ།"
 
@@ -2012,7 +2027,7 @@ msgstr "ལག་ལེན་པའི་མིང་ མཉམ་སྤྱོ�
 msgid "Enter a valid date and time"
 msgstr "ཆ་གནས་ཅན་གྱི་ཚེས་གྲངས་དང་ཆུ་ཚོད་བཙུགས།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་ཡང་ན་ཤོག་གུའི་དངུལ་ཁུག་བཙུགས།"
 
@@ -2292,6 +2307,10 @@ msgstr "འཕྲོད་བསྟེན།"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 msgid "Helps members find and understand your pool"
 msgstr "འཐུས་མི་ཚུ་གིས་ཁྱོད་ཀྱི་དངུལ་ཁུངས་འཚོལ་ནི་དང་ཧ་གོ་ནི་ལུ་ཕན་ཐོགས།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "ཤོག་བྱང་འདི་ཁྱོད་ཀྱི་ཁ་པར་གྱི་རྒྱབ་ཁར་ལེབ་ཏོག་ཏོ་སྦེ་བཞག"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
@@ -3054,7 +3073,7 @@ msgstr "གསལ་བསྒྲགས་གསརཔ།"
 msgid "New supply"
 msgstr "བཀྲམ་སྤེལ་གསརཔ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "CLC ལུ་གསརཔ་ཨིན་ན?"
 
@@ -3069,6 +3088,17 @@ msgstr "ཤུལ་མམ།"
 #: apps/web/src/features/home/ui/report-page.tsx:335
 msgid "Next image"
 msgstr "པར་ཤུལ་མམ།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "NFC ལག་ལེན་བཀག་ཡོད། ཁྱོད་ཀྱི་བརྡ་འཚོལ་མཉེན་ཆས་སྒྲིག་འགོད་ནང་ "
+"ཡོངས་འབྲེལ་ས་ཚིགས་འདི་ལུ་ NFC གནང་བ་བྱིན་ཞིནམ་ལས་ ལོག་འབད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "NFC ལྕོགས་མེད་བཟོ་ཡོད། "
+"ཁྱོད་ཀྱི་ཁ་པར་སྒྲིག་འགོད་ནང་ལྕོགས་ཅན་བཟོ་ཞིནམ་ལས་ ལོག་འབད།"
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
@@ -3104,7 +3134,7 @@ msgstr "ད་ལྟོའི་གྲུབ་འབྲས་ཀྱི་དོ
 msgid "No category filters are available."
 msgstr "དབྱེ་རིམ་ཚགས་མ་ཐོབ་མི་ཚུགས།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "ནང་འཛུལ་འདིའི་དོན་ལུ་ CLC རྩིས་ཐོ་མ་ཐོབ།"
 
@@ -3994,9 +4024,9 @@ msgstr "དཔར་བཏབ།"
 msgid "Private attachment"
 msgstr "སྒེར་གྱི་མཐུད་ཡིག"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "སྒེར་ལྡེ།"
 
@@ -4764,7 +4794,7 @@ msgstr "བྱ་བ་བལྟ་ནིའི་དོན་ལུ་ནང་
 msgid "Sign in to view posts."
 msgstr "གསལ་བསྒྲགས་བལྟ་ནིའི་དོན་ལུ་ནང་འཛུལ།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "སྒེར་ལྡེ་གིས་ནང་འཛུལ།"
 
@@ -4820,6 +4850,10 @@ msgstr "ཚད་ལྡན།"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:352
 msgid "Start over"
 msgstr "འགོ་ལས་ལོག་འབད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "ཤོག་བྱང་ལྷག་ཆས་འགོ་བཙུགས་དོ…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
@@ -5028,10 +5062,18 @@ msgstr "གླ་ཡོན་སོ་སོར་ལེན།"
 msgid "Take photo"
 msgstr "པར་བཏབ།"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "NFC ཤོག་བྱང་ཐུག་བཅུག"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "ཚག་གསུམ་དཀར་ཆག་ལུ་ཨེབ་ "
 "དེ་ལས་ཁྱིམ་ཤོག་ནང་ཁ་སྐོང་ཡང་ན་ལས་རིམ་གཞི་བཙུགས་འབད།"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "ཁྱོད་ཀྱི་ NFC ཤོག་བྱང་ཐུག་བཅུག"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5112,6 +5154,14 @@ msgstr "འཛིན་ཤོག་མིང་འདི་ཧེ་མ་ལས
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:210
 msgid "That voucher name was taken while you were filling this in."
 msgstr "ཁྱོད་ཀྱིས་འདི་བཀང་བའི་བསྒང་འཛིན་ཤོག་མིང་འདི་གཞན་གྱིས་ལེན་ཡོད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "ཤོག་བྱང་ལྷག་ཆས་འགོ་བཙུགས་མ་ཚུགས། ལོག་སྟེ་འབད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "ཤོག་བྱང་ལྷག་ཆས་ཀྱི་ལཱ་མཚམས་བཞག་ཡོད།"
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
@@ -5209,6 +5259,22 @@ msgid "This browser cannot store notification registration safely."
 msgstr "བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་བརྡ་བསྐུལ་ཐོ་བཀོད་ཉེན་སྲུང་ཐོག་གསོག་འཇོག་འབད་མ"
 "ི་ཚུགས།"
 
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "ཤོག་བྱང་འདི་ནང་ CLC དངུལ་ཁུག་མེད།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "ཤོག་བྱང་འདི་ནང་དངུལ་ཁུག་གཅིག་ལས་ལྷགཔ་ཡོད། ཤོག་བྱང་གཞན་ཅིག་ལག་ལེན་འཐབ།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "ཤོག་བྱང་འདི་སྟོངམ་ཨིན།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "ཤོག་བྱང་འདི་གི་དངུལ་ཁུག་ལྡེ་མིག་འདི་ཉམས་ཏེ་ཡོདཔ་ལས་ལག་ལེན་འཐབ་མི་ཚུགས།"
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
@@ -5246,6 +5312,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "ཐོ་ཡིག་འདི་ “{legacyUnit}” ཆ་ཕྲན་དང་ཅིག་ཁར་ནང་འདྲེན་འབད་ཡོད། "
 "ཁྱོད་ཀྱི་བསྒྱུར་བཅོས་སྲུང་ནིའི་དོན་ལུ་འོག་ལས་གཅིག་གདམ་ཁ་རྐྱབ།"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "ཁ་པར་ཡང་ན་བརྡ་འཚོལ་མཉེན་ཆས་འདི་གིས་ NFC ཤོག་བྱང་ལྷག་མི་ཚུགས། ཚབ་ལུ་ QR "
+"ཨང་རྟགས་ལག་ལེན་འཐབ།"
 
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
@@ -5323,7 +5394,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "གསལ་བསྒྲགས་འདི་སྲུང་ནི་ལུ་སྦོམ་དྲགས་པས། ཡི་གུ་ཐུང་ཀུ་བཟོ་ "
 "ཡང་ན་བརྡ་ལམ་ལ་ལོ་བཏོན།"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "QR ཨང་རྟགས་འདི་ནང་ཆ་གནས་ཅན་གྱི་སྒེར་ལྡེ་མེད།"
 
@@ -5422,6 +5493,7 @@ msgstr "འགྲུལ་བཞུད།"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
+#: apps/web/src/components/nfc-card-prompt.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133

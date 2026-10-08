@@ -326,7 +326,7 @@ msgstr "Account in attesa di approvazione"
 msgid "Account not approved"
 msgstr "Account non approvato"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "Account non trovato"
 
@@ -476,7 +476,7 @@ msgstr "Avanzate"
 msgid "Advanced details"
 msgstr "Dettagli avanzati"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "Opzioni avanzate"
 
@@ -531,6 +531,10 @@ msgstr "L’importo supera il saldo disponibile"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "Importo nel fondo"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "È già in corso un’altra lettura di carta. Riprovi."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -669,7 +673,8 @@ msgstr "Chiami"
 msgid "Camera access denied."
 msgstr "Accesso alla fotocamera negato."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
@@ -701,6 +706,10 @@ msgstr "Didascalia della foto {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "La didascalia deve contenere al massimo 500 caratteri"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "Carta letta — accesso in corso"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
@@ -981,7 +990,7 @@ msgstr "Chiuda lo scanner del portafoglio cartaceo"
 msgid "Close password-protected wallet import"
 msgstr "Chiuda l’importazione del portafoglio protetto da password"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "Chiuda il modulo della chiave privata"
 
@@ -1105,8 +1114,8 @@ msgstr "Indirizzo collegato"
 msgid "Connecting wallet..."
 msgstr "Collegamento del portafoglio..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "Collegamento..."
 
@@ -1115,7 +1124,7 @@ msgstr "Collegamento..."
 msgid "Connecting…"
 msgstr "Collegamento…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1163,7 +1172,7 @@ msgstr "Continui su CLC"
 msgid "Continue to wallet"
 msgstr "Continui al portafoglio"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "Continui con {providerLabel}"
 
@@ -1171,7 +1180,7 @@ msgstr "Continui con {providerLabel}"
 msgid "Continue with paper wallet"
 msgstr "Continui con il portafoglio cartaceo"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "Continui con il portafoglio cartaceo"
 
@@ -1530,6 +1539,12 @@ msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Non è stato possibile leggere il numero di decimali usato da questo "
 "buono."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "Impossibile leggere la carta. La tenga ferma contro il retro del "
+"telefono e riprovi."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
@@ -1639,8 +1654,8 @@ msgstr "Crei"
 msgid "Create account"
 msgstr "Crei un account"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "Crei un account"
 
@@ -2015,7 +2030,7 @@ msgstr "Inserisca un nome utente, il nome di un fondo, un numero di telefono o "
 msgid "Enter a valid date and time"
 msgstr "Inserisca una data e un’ora valide"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "Inserisca una chiave privata o un portafoglio cartaceo validi."
 
@@ -2297,6 +2312,10 @@ msgstr "Salute"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 msgid "Helps members find and understand your pool"
 msgstr "Aiuta i membri a trovare e comprendere il fondo"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "Tenga la carta appoggiata al retro del telefono."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
@@ -3058,7 +3077,7 @@ msgstr "Nuova pubblicazione"
 msgid "New supply"
 msgstr "Nuova emissione"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "È la prima volta su CLC?"
 
@@ -3073,6 +3092,17 @@ msgstr "Avanti"
 #: apps/web/src/features/home/ui/report-page.tsx:335
 msgid "Next image"
 msgstr "Immagine successiva"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "L’accesso NFC è stato bloccato. Consenta l’NFC per questo sito nelle "
+"impostazioni del browser, quindi riprovi."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "L’NFC è disattivato. Lo attivi nelle impostazioni del telefono, quindi "
+"riprovi."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
@@ -3108,7 +3138,7 @@ msgstr "Nessuna categoria disponibile per i risultati correnti."
 msgid "No category filters are available."
 msgstr "Nessun filtro di categoria disponibile."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "Nessun account CLC trovato per questo accesso."
 
@@ -3999,9 +4029,9 @@ msgstr "Stampi"
 msgid "Private attachment"
 msgstr "Allegato privato"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "Chiave privata"
 
@@ -4768,7 +4798,7 @@ msgstr "Acceda per visualizzare l’attività."
 msgid "Sign in to view posts."
 msgstr "Acceda per visualizzare le pubblicazioni."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "Acceda con la chiave privata"
 
@@ -4825,6 +4855,10 @@ msgstr "Standard"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:352
 msgid "Start over"
 msgstr "Ricominci"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "Avvio del lettore di carte…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
@@ -5034,10 +5068,18 @@ msgstr "Trattenga le commissioni separatamente"
 msgid "Take photo"
 msgstr "Scatti una foto"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "Avvicini la carta NFC"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Tocchi il menu con i tre puntini, quindi Aggiungi alla schermata Home o "
 "Installa app."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "Avvicini la sua carta NFC"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5119,6 +5161,14 @@ msgstr "Il nome del buono è già in uso"
 msgid "That voucher name was taken while you were filling this in."
 msgstr "Il nome del buono è stato scelto da qualcun altro mentre compilava il "
 "modulo."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "Impossibile avviare il lettore di carte. Riprovi."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "Il lettore di carte si è fermato."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
@@ -5216,6 +5266,23 @@ msgid "This browser cannot store notification registration safely."
 msgstr "Questo browser non può archiviare in modo sicuro la registrazione delle "
 "notifiche."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "Questa carta non contiene un portafoglio CLC."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "Questa carta contiene più di un portafoglio. Usi un’altra carta."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "Questa carta è vuota."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "La chiave del portafoglio su questa carta è danneggiata e non può "
+"essere usata."
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
@@ -5253,6 +5320,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Questa inserzione è stata importata con l’unità “{legacyUnit}”. Ne "
 "scelga una qui sotto per salvare le modifiche."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "Questo telefono o browser non può leggere carte NFC. Usi invece il "
+"codice QR."
 
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
@@ -5330,7 +5402,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "La pubblicazione è troppo grande per essere salvata. Abbrevi il testo o "
 "rimuova alcuni contenuti multimediali."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "Questo codice QR non contiene una chiave privata valida."
 
@@ -5430,6 +5502,7 @@ msgstr "Viaggio"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
+#: apps/web/src/components/nfc-card-prompt.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133

@@ -9,8 +9,8 @@ import {
  * A card is another carrier of the paper-wallet credential — one NDEF URL
  * record holding the same `?w=` link a printed QR does. Each app owns its own
  * `NDEFReader` adapter under `#/lib/nfc/`; everything that decides what a tag
- * means and how a platform error reads lives here, so the adapters can drift
- * only in plumbing, never in behaviour.
+ * means, how a platform error reads, and which lifecycle step comes next lives
+ * here, so the two adapters can drift only in plumbing, never in behaviour.
  *
  * Nothing in this module touches a browser global. A React Native adapter
  * implements the same `NfcScanner` / `NfcWriter` contract.
@@ -235,6 +235,67 @@ export function classifyNfcError(error: unknown, context: NfcErrorContext): NfcE
       return "permission-denied";
     default:
       return "unknown";
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reader lifecycle
+
+/**
+ * ```text
+ * idle -> starting -> ready -> handling -> complete
+ *                  |           |
+ *                  +---------> error
+ * any active state -> cancelled
+ * ```
+ */
+export type NfcSessionPhase =
+  | "idle"
+  | "starting"
+  | "ready"
+  | "handling"
+  | "complete"
+  | "error"
+  | "cancelled";
+
+export type NfcSessionEvent =
+  | { type: "start" }
+  | { type: "started" }
+  | { type: "tag" }
+  /** `done` ends the session; otherwise it keeps listening for the next card. */
+  | { type: "handled"; done: boolean }
+  | { type: "fail" }
+  | { type: "cancel" };
+
+function isNfcSessionActive(phase: NfcSessionPhase): boolean {
+  return phase === "starting" || phase === "ready" || phase === "handling";
+}
+
+/**
+ * The next lifecycle phase, or the current one when the event does not apply.
+ *
+ * Held in a ref and advanced synchronously, this is the in-flight latch: a
+ * second `tag` while one is `handling` is not a transition, so it is dropped
+ * before any parsing, login or relay has been awaited.
+ */
+export function nextNfcSessionPhase(
+  phase: NfcSessionPhase,
+  event: NfcSessionEvent,
+): NfcSessionPhase {
+  switch (event.type) {
+    case "start":
+      return isNfcSessionActive(phase) ? phase : "starting";
+    case "started":
+      return phase === "starting" ? "ready" : phase;
+    case "tag":
+      return phase === "ready" ? "handling" : phase;
+    case "handled":
+      if (phase !== "handling") return phase;
+      return event.done ? "complete" : "ready";
+    case "fail":
+      return isNfcSessionActive(phase) ? "error" : phase;
+    case "cancel":
+      return isNfcSessionActive(phase) ? "cancelled" : phase;
   }
 }
 

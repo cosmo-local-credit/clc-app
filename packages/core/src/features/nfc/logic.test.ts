@@ -7,6 +7,7 @@ import {
   ndefUrlMessageSize,
   type NfcReading,
   type NfcRecord,
+  nextNfcSessionPhase,
   nfcReadingMatchesUrl,
   readNfcCardContent,
   summarizeDurations,
@@ -165,6 +166,37 @@ describe("classifyNfcError", () => {
     expect(classifyNfcError(notAllowed, { operation: "write", tagHadRecords: true })).toBe(
       "tag-occupied",
     );
+  });
+});
+
+describe("nextNfcSessionPhase", () => {
+  it("walks the happy path", () => {
+    let phase = nextNfcSessionPhase("idle", { type: "start" });
+    expect(phase).toBe("starting");
+    phase = nextNfcSessionPhase(phase, { type: "started" });
+    expect(phase).toBe("ready");
+    phase = nextNfcSessionPhase(phase, { type: "tag" });
+    expect(phase).toBe("handling");
+    expect(nextNfcSessionPhase(phase, { type: "handled", done: true })).toBe("complete");
+    expect(nextNfcSessionPhase(phase, { type: "handled", done: false })).toBe("ready");
+  });
+
+  it("drops a second tag while one is being handled", () => {
+    expect(nextNfcSessionPhase("handling", { type: "tag" })).toBe("handling");
+    expect(nextNfcSessionPhase("starting", { type: "tag" })).toBe("starting");
+    expect(nextNfcSessionPhase("cancelled", { type: "tag" })).toBe("cancelled");
+  });
+
+  it("cancels and fails only active sessions", () => {
+    expect(nextNfcSessionPhase("ready", { type: "cancel" })).toBe("cancelled");
+    expect(nextNfcSessionPhase("starting", { type: "fail" })).toBe("error");
+    expect(nextNfcSessionPhase("complete", { type: "cancel" })).toBe("complete");
+    expect(nextNfcSessionPhase("idle", { type: "fail" })).toBe("idle");
+  });
+
+  it("restarts from a finished session but not an active one", () => {
+    expect(nextNfcSessionPhase("error", { type: "start" })).toBe("starting");
+    expect(nextNfcSessionPhase("ready", { type: "start" })).toBe("ready");
   });
 });
 

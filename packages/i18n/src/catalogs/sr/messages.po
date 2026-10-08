@@ -322,7 +322,7 @@ msgstr "Налог чека одобрење"
 msgid "Account not approved"
 msgstr "Налог није одобрен"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "Nalog nije pronađen"
 
@@ -472,7 +472,7 @@ msgstr "Напредно"
 msgid "Advanced details"
 msgstr "Напредни детаљи"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "Напредне опције"
 
@@ -527,6 +527,10 @@ msgstr "Износ премашује ваше стање"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "Износ у пулу"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "Већ је у току друго очитавање картице. Покушајте поново."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -665,7 +669,8 @@ msgstr "Позови"
 msgid "Camera access denied."
 msgstr "Приступ камери је одбијен."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
@@ -697,6 +702,10 @@ msgstr "Опис фотографије {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "Опис мора имати 500 знакова или мање"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "Картица је очитана — пријављивање"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
@@ -975,7 +984,7 @@ msgstr "Затвори скенер папирног новчаника"
 msgid "Close password-protected wallet import"
 msgstr "Затвори увоз новчаника заштићеног лозинком"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "Затвори образац за приватни кључ"
 
@@ -1097,8 +1106,8 @@ msgstr "Повезана адреса"
 msgid "Connecting wallet..."
 msgstr "Povezivanje novčanika..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "Повезивање..."
 
@@ -1107,7 +1116,7 @@ msgstr "Повезивање..."
 msgid "Connecting…"
 msgstr "Повезивање…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1155,7 +1164,7 @@ msgstr "Настави на CLC"
 msgid "Continue to wallet"
 msgstr "Настави до новчаника"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "Настави помоћу {providerLabel}"
 
@@ -1163,7 +1172,7 @@ msgstr "Настави помоћу {providerLabel}"
 msgid "Continue with paper wallet"
 msgstr "Настави са папирним новчаником"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "Настави са папирним новчаником"
 
@@ -1520,6 +1529,12 @@ msgstr "Ажурирање није било могуће преузети. Пр
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Није било могуће прочитати број децимала овог ваучера."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "Картицу није могуће очитати. Држите је мирно уз полеђину телефона и "
+"покушајте поново."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
@@ -1629,8 +1644,8 @@ msgstr "Направи"
 msgid "Create account"
 msgstr "Направите налог"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "Направите налог"
 
@@ -2003,7 +2018,7 @@ msgstr "Унесите корисничко име, назив пула, бро�
 msgid "Enter a valid date and time"
 msgstr "Унесите исправан датум и вријеме"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "Унесите важећи приватни кључ или папирни новчаник."
 
@@ -2286,6 +2301,10 @@ msgstr "Здравље"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 msgid "Helps members find and understand your pool"
 msgstr "Помаже члановима да пронађу и разумеју ваш пул"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "Прислоните картицу равно уз полеђину телефона."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
@@ -3045,7 +3064,7 @@ msgstr "Нова објава"
 msgid "New supply"
 msgstr "Нова емисија"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "Нови сте у CLC-у?"
 
@@ -3060,6 +3079,17 @@ msgstr "Даље"
 #: apps/web/src/features/home/ui/report-page.tsx:335
 msgid "Next image"
 msgstr "Следећа слика"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "Приступ NFC-у је блокиран. Дозволите NFC за овај сајт у подешавањима "
+"прегледача, па покушајте поново."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "NFC је искључен. Укључите га у подешавањима телефона, па покушајте "
+"поново."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
@@ -3095,7 +3125,7 @@ msgstr "Нема доступних категорија за тренутне �
 msgid "No category filters are available."
 msgstr "Нема доступних филтера категорија."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "Nije pronađen CLC nalog za ovu prijavu."
 
@@ -3985,9 +4015,9 @@ msgstr "Штампај"
 msgid "Private attachment"
 msgstr "Приватни прилог"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "Приватни кључ"
 
@@ -4755,7 +4785,7 @@ msgstr "Пријавите се да бисте видјели активнос�
 msgid "Sign in to view posts."
 msgstr "Пријавите се да бисте видјели објаве."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "Пријави се приватним кључем"
 
@@ -4811,6 +4841,10 @@ msgstr "Стандардни"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:352
 msgid "Start over"
 msgstr "Почни испочетка"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "Покретање читача картица…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
@@ -5019,10 +5053,18 @@ msgstr "Одвајај накнаде"
 msgid "Take photo"
 msgstr "Снимите фотографију"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "Прислони NFC картицу"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Додирните мени са три тачке, па „Додај на почетни екран“ или "
 "„Инсталирај апликацију“."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "Прислоните своју NFC картицу"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5102,6 +5144,14 @@ msgstr "То име ваучера је већ заузето"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:210
 msgid "That voucher name was taken while you were filling this in."
 msgstr "То име ваучера је заузето док сте попуњавали ово."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "Читач картица се није покренуо. Покушајте поново."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "Читач картица је заустављен."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
@@ -5197,6 +5247,22 @@ msgstr "Овај налог не може бити одобрен. Обрати�
 msgid "This browser cannot store notification registration safely."
 msgstr "Овај прегледач не може безбједно да сачува регистрацију за обавјештења."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "Ова картица не садржи CLC новчаник."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "Ова картица садржи више од једног новчаника. Користите другу картицу."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "Ова картица је празна."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "Кључ новчаника на овој картици је оштећен и не може се користити."
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
@@ -5233,6 +5299,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Ова понуда је увезена са јединицом „{legacyUnit}“. Изаберите једну "
 "испод да бисте сачували измене."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "Овај телефон или прегледач не може да очита NFC картице. Умјесто тога "
+"користите QR код."
 
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
@@ -5309,7 +5380,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Ова објава је превелика да би се сачувала. Скратите текст или уклоните "
 "дио медијског садржаја."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "Овај QR код не садржи важећи приватни кључ."
 
@@ -5408,6 +5479,7 @@ msgstr "Вожња"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
+#: apps/web/src/components/nfc-card-prompt.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133

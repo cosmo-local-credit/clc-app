@@ -320,7 +320,7 @@ msgstr "Обліковий запис очікує схвалення"
 msgid "Account not approved"
 msgstr "Обліковий запис не схвалено"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:418
+#: apps/web/src/components/auth/sign-in-panel.tsx:488
 msgid "Account not found"
 msgstr "Обліковий запис не знайдено"
 
@@ -471,7 +471,7 @@ msgstr "Розширені"
 msgid "Advanced details"
 msgstr "Розширені відомості"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:339
+#: apps/web/src/components/auth/sign-in-panel.tsx:409
 msgid "Advanced options"
 msgstr "Розширені параметри"
 
@@ -525,6 +525,10 @@ msgstr "Сума перевищує ваш баланс"
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:764
 msgid "Amount in pool"
 msgstr "Сума в пулі"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:26
+msgid "Another card scan is already running. Try again."
+msgstr "Уже триває інше зчитування картки. Спробуйте ще раз."
 
 #: apps/web/src/components/catalog-filter-controls.tsx:442
 #: apps/web/src/components/catalog-filter-controls.tsx:532
@@ -663,7 +667,8 @@ msgstr "Зателефонувати"
 msgid "Camera access denied."
 msgstr "Доступ до камери заборонено."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:396
+#: apps/web/src/components/auth/sign-in-panel.tsx:466
+#: apps/web/src/components/nfc-card-prompt.tsx:121
 #: apps/web/src/components/reviews/review-editor.tsx:132
 #: apps/web/src/components/ui/photo-source-picker.tsx:123
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
@@ -695,6 +700,10 @@ msgstr "Підпис до фото {0}"
 #: apps/web/src/lib/validation-i18n.ts:265
 msgid "Caption must be 500 characters or fewer"
 msgstr "Підпис має містити не більше 500 символів"
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+msgid "Card read — signing in"
+msgstr "Картку зчитано — виконується вхід"
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:106
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:110
@@ -974,7 +983,7 @@ msgstr "Закрити сканер паперового гаманця"
 msgid "Close password-protected wallet import"
 msgstr "Закрити імпорт захищеного паролем гаманця"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:367
+#: apps/web/src/components/auth/sign-in-panel.tsx:437
 msgid "Close private key form"
 msgstr "Закрити форму приватного ключа"
 
@@ -1096,8 +1105,8 @@ msgstr "Під’єднана адреса"
 msgid "Connecting wallet..."
 msgstr "Під’єднання гаманця..."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:267
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:318
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Connecting..."
 msgstr "Під’єднання..."
 
@@ -1106,7 +1115,7 @@ msgstr "Під’єднання..."
 msgid "Connecting…"
 msgstr "Під’єднання…"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:126
+#: apps/web/src/components/auth/sign-in-panel.tsx:135
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:293
 #: apps/web/src/routes/__root.tsx:226
 #: apps/web/src/routes/__root.tsx:257
@@ -1154,7 +1163,7 @@ msgstr "Перейти до CLC"
 msgid "Continue to wallet"
 msgstr "Перейти до гаманця"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:315
+#: apps/web/src/components/auth/sign-in-panel.tsx:378
 msgid "Continue with {providerLabel}"
 msgstr "Продовжити через {providerLabel}"
 
@@ -1162,7 +1171,7 @@ msgstr "Продовжити через {providerLabel}"
 msgid "Continue with paper wallet"
 msgstr "Продовжити з паперовим гаманцем"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:327
+#: apps/web/src/components/auth/sign-in-panel.tsx:390
 msgid "Continue with Paper Wallet"
 msgstr "Продовжити з паперовим гаманцем"
 
@@ -1517,6 +1526,12 @@ msgstr "Не вдалося отримати оновлення. Перевір�
 msgid "Couldn't read how many decimals this voucher uses."
 msgstr "Не вдалося прочитати кількість десяткових знаків цього ваучера."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:16
+msgid "Couldn't read that card. Hold it still against the back of your phone "
+"and try again."
+msgstr "Не вдалося зчитати картку. Тримайте її нерухомо біля задньої панелі "
+"телефона й спробуйте ще раз."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:199
 msgid "Couldn't read this voucher's current rate, so it can't be changed right "
 "now."
@@ -1626,8 +1641,8 @@ msgstr "Створити"
 msgid "Create account"
 msgstr "Створити обліковий запис"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:408
-#: apps/web/src/components/auth/sign-in-panel.tsx:426
+#: apps/web/src/components/auth/sign-in-panel.tsx:478
+#: apps/web/src/components/auth/sign-in-panel.tsx:496
 msgid "Create an account"
 msgstr "Створити обліковий запис"
 
@@ -2001,7 +2016,7 @@ msgstr "Введіть ім’я користувача, назву пулу, н
 msgid "Enter a valid date and time"
 msgstr "Введіть дійсні дату й час"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:230
+#: apps/web/src/components/auth/sign-in-panel.tsx:281
 msgid "Enter a valid private key or paper wallet."
 msgstr "Введіть дійсний приватний ключ або паперовий гаманець."
 
@@ -2278,6 +2293,10 @@ msgstr "Здоров’я"
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:732
 msgid "Helps members find and understand your pool"
 msgstr "Допомагає учасникам знайти й зрозуміти ваш пул"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:102
+msgid "Hold the card flat against the back of your phone."
+msgstr "Прикладіть картку рівно до задньої панелі телефона."
 
 #: apps/web/src/features/home/ui/wallet-page.tsx:251
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:181
@@ -3034,7 +3053,7 @@ msgstr "Новий допис"
 msgid "New supply"
 msgstr "Нова кількість"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:401
+#: apps/web/src/components/auth/sign-in-panel.tsx:471
 msgid "New to CLC?"
 msgstr "Уперше в CLC?"
 
@@ -3049,6 +3068,17 @@ msgstr "Далі"
 #: apps/web/src/features/home/ui/report-page.tsx:335
 msgid "Next image"
 msgstr "Наступне зображення"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:22
+msgid "NFC access was blocked. Allow NFC for this site in your browser "
+"settings, then try again."
+msgstr "Доступ до NFC заблоковано. Дозвольте NFC для цього сайту в "
+"налаштуваннях браузера, а потім спробуйте ще раз."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:24
+msgid "NFC is turned off. Turn it on in your phone's settings, then try again."
+msgstr "NFC вимкнено. Увімкніть його в налаштуваннях телефона, а потім "
+"спробуйте ще раз."
 
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:45
 msgid "No"
@@ -3084,7 +3114,7 @@ msgstr "Для поточних результатів немає доступн
 msgid "No category filters are available."
 msgstr "Фільтри категорій недоступні."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:421
+#: apps/web/src/components/auth/sign-in-panel.tsx:491
 msgid "No CLC account was found for this sign-in."
 msgstr "Для цього способу входу не знайдено облікового запису CLC."
 
@@ -3969,9 +3999,9 @@ msgstr "Друкувати"
 msgid "Private attachment"
 msgstr "Приватне вкладення"
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:352
-#: apps/web/src/components/auth/sign-in-panel.tsx:362
-#: apps/web/src/components/auth/sign-in-panel.tsx:385
+#: apps/web/src/components/auth/sign-in-panel.tsx:422
+#: apps/web/src/components/auth/sign-in-panel.tsx:432
+#: apps/web/src/components/auth/sign-in-panel.tsx:455
 msgid "Private key"
 msgstr "Приватний ключ"
 
@@ -4730,7 +4760,7 @@ msgstr "Увійдіть, щоб переглянути активність."
 msgid "Sign in to view posts."
 msgstr "Увійдіть, щоб переглянути дописи."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:389
+#: apps/web/src/components/auth/sign-in-panel.tsx:459
 msgid "Sign in with private key"
 msgstr "Увійти за допомогою приватного ключа"
 
@@ -4785,6 +4815,10 @@ msgstr "Стандартний"
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:352
 msgid "Start over"
 msgstr "Почати спочатку"
+
+#: apps/web/src/components/nfc-card-prompt.tsx:100
+msgid "Starting the card reader…"
+msgstr "Запуск зчитувача карток…"
 
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:416
 msgid "Starting…"
@@ -4993,10 +5027,18 @@ msgstr "Зберігати комісії окремо"
 msgid "Take photo"
 msgstr "Зробити фото"
 
+#: apps/web/src/components/auth/sign-in-panel.tsx:396
+msgid "Tap NFC card"
+msgstr "Прикласти NFC-картку"
+
 #: apps/web/src/components/install-instructions.tsx:42
 msgid "Tap the three-dot menu, then Add to home screen or Install app."
 msgstr "Торкніться меню з трьома крапками, а потім виберіть «Додати на "
 "початковий екран» або «Установити застосунок»."
+
+#: apps/web/src/components/auth/sign-in-panel.tsx:339
+msgid "Tap your NFC card"
+msgstr "Прикладіть свою NFC-картку"
 
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:314
 #: apps/web/src/features/onboarding/ui/onboarding-profile-form.tsx:331
@@ -5076,6 +5118,14 @@ msgstr "Ця назва ваучера вже зайнята"
 #: apps/web/src/features/vouchers/ui/create-voucher-flow.tsx:210
 msgid "That voucher name was taken while you were filling this in."
 msgstr "Цю назву ваучера зайняли, поки ви заповнювали форму."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:28
+msgid "The card reader couldn't start. Try again."
+msgstr "Не вдалося запустити зчитувач карток. Спробуйте ще раз."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:104
+msgid "The card reader stopped."
+msgstr "Зчитувач карток зупинено."
 
 #: apps/web/src/components/offerings/offerings-panel.tsx:493
 msgid "The cart isn't ready yet."
@@ -5170,6 +5220,22 @@ msgstr "Цей обліковий запис неможливо схвалити
 msgid "This browser cannot store notification registration safely."
 msgstr "Цей браузер не може безпечно зберігати реєстрацію сповіщень."
 
+#: apps/web/src/components/nfc-card-prompt.tsx:40
+msgid "This card doesn't hold a CLC wallet."
+msgstr "На цій картці немає гаманця CLC."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:36
+msgid "This card holds more than one wallet. Use another card."
+msgstr "На цій картці більше ніж один гаманець. Використайте іншу картку."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:34
+msgid "This card is blank."
+msgstr "Ця картка порожня."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:38
+msgid "This card's wallet key is damaged and can't be used."
+msgstr "Ключ гаманця на цій картці пошкоджено, його не можна використати."
+
 #: apps/web/src/features/home/ui/passkey-settings-section.tsx:88
 msgid "This device does not have your paper wallet key. Sign in with or import "
 "your paper wallet here, then link a passkey."
@@ -5207,6 +5273,11 @@ msgid "This listing was imported with the unit “{legacyUnit}”. Pick one belo
 "to save your changes."
 msgstr "Цю пропозицію імпортовано з одиницею «{legacyUnit}». Оберіть одиницю "
 "нижче, щоб зберегти зміни."
+
+#: apps/web/src/components/nfc-card-prompt.tsx:20
+msgid "This phone or browser can't read NFC cards. Use the QR code instead."
+msgstr "Цей телефон або браузер не підтримує зчитування NFC-карток. Натомість "
+"скористайтеся QR-кодом."
 
 #. placeholder {0}: selected.symbol
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:467
@@ -5282,7 +5353,7 @@ msgid "This post is too large to save. Shorten the text or remove some media."
 msgstr "Цей допис завеликий для збереження. Скоротіть текст або видаліть "
 "частину медіафайлів."
 
-#: apps/web/src/components/auth/sign-in-panel.tsx:245
+#: apps/web/src/components/auth/sign-in-panel.tsx:296
 msgid "This QR code does not contain a valid private key."
 msgstr "Цей QR-код не містить дійсного приватного ключа."
 
@@ -5382,6 +5453,7 @@ msgstr "Поїздка"
 #: apps/web/src/components/auth/authenticated-route.tsx:34
 #: apps/web/src/components/catalog-filter-controls.tsx:375
 #: apps/web/src/components/nearby-catalog.tsx:124
+#: apps/web/src/components/nfc-card-prompt.tsx:116
 #: apps/web/src/components/offerings/offerings-panel.tsx:142
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:71
 #: apps/web/src/components/reviews/voucher-reviews-panel.tsx:133

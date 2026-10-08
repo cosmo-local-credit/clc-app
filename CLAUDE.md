@@ -746,6 +746,21 @@ for wagmi: read from hooks at point of use, don't mirror chain/account.
   using viem clients and actions. React hooks (`useConnection`,
   `useReadContract`, etc.) and wagmi actions stay in `apps/web/`.
 
+### NFC wallet cards
+
+An NFC card is another carrier of the paper-wallet credential: one NDEF URL
+record holding the same `?w=` link a printed QR does. `apps/web` reads cards
+(sign-in); `apps/admin` writes them (the batch writer).
+
+- **Split:** everything that decides what a tag means — record decoding,
+  `classifyNfcError`, the reader lifecycle and the writer state machine — is
+  pure and lives in `@clc/core/features/nfc/*`. Each app has its own
+  `NDEFReader` adapter under `#/lib/nfc/`, constructor injected so tests pass
+  a fake rather than patching `window`. No shared NFC package.
+- **Visibility is the capability check alone** (`useWebNfcSupported`). No
+  feature flag; QR stays available everywhere.
+- **A card's URL is data.** Decode the `?w=` payload; never navigate to it.
+
 ### Serwist (PWA)
 
 `apps/web` only. Custom Vite plugin at `apps/web/plugins/serwist.ts`, worker
