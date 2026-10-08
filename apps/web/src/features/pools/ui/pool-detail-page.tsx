@@ -16,7 +16,7 @@ import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVoucherRates } from "#/features/pools/hooks/use-pool-quoter";
 import { usePoolVoucherTokens } from "#/features/pools/hooks/use-pool-voucher-tokens";
-import { usePoolVouchers } from "#/features/pools/hooks/use-pool-vouchers";
+import { usePoolVouchersWithStatus } from "#/features/pools/hooks/use-pool-vouchers";
 import { useUserPoolByAddress } from "#/features/pools/hooks/use-user-pools";
 import { POOL_PRICE_INDEX_DECIMALS } from "@clc/core/features/pool-admin/logic";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
@@ -62,7 +62,12 @@ export function PoolDetailPage({
   // stay selectable as a *source* so a holder is never left unable to swap out
   // of one. This is the browse list, where it is only an entry to a page that no
   // longer resolves.
-  const vouchers = usePoolVouchers(pool).filter((voucher) => voucher.active);
+  // Approval exclusion needs the complete, unfiltered membership rather than
+  // the first page of active browse rows. The registry remains authoritative;
+  // this catalog set is the fallback for older pools without a registry.
+  const poolVouchersQuery = usePoolVouchersWithStatus(pool, { all: true });
+  const poolVouchers = poolVouchersQuery.vouchers;
+  const vouchers = poolVouchers.filter((voucher) => voucher.active);
   const sheet = useVoucherSheetSelection();
   const voucherTokens = usePoolVoucherTokens(vouchers);
   const auth = useAuthStatus();
@@ -275,7 +280,7 @@ export function PoolDetailPage({
       {canManageOnChain ? (
         <PoolVoucherSheet
           pool={pool}
-          poolVouchers={vouchers}
+          poolVouchers={poolVouchers}
           voucher={null}
           open={approving}
           onClose={() => setApproving(false)}
@@ -285,7 +290,7 @@ export function PoolDetailPage({
       {canManageOnChain && managing ? (
         <PoolVoucherSheet
           pool={pool}
-          poolVouchers={vouchers}
+          poolVouchers={poolVouchers}
           voucher={managing}
           open
           onClose={() => setManaging(null)}

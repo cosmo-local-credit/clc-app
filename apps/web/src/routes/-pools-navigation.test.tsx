@@ -60,6 +60,12 @@ vi.mock("#/features/pools/hooks/use-user-pools", () => ({
 
 vi.mock("#/features/pools/hooks/use-pool-vouchers", () => ({
   usePoolVouchers: () => [],
+  usePoolVouchersWithStatus: () => ({
+    vouchers: [],
+    isPending: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
 }));
 
 vi.mock("#/features/pools/hooks/use-pool-voucher-tokens", () => ({

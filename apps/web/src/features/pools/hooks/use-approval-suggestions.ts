@@ -1,7 +1,12 @@
-import { accountTokensPageQueryOptions } from "@clc/api/features/accounts/queries";
+import type { AccountToken } from "@clc/api/features/accounts/client";
+import {
+  accountTokensInfiniteQueryOptions,
+  latestAccountTokensQueryOptions,
+} from "@clc/api/features/accounts/queries";
 import { voucherFilteredPageQueryOptions } from "@clc/api/features/market/queries";
 import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useConnection } from "wagmi";
 
 import { accountsClient } from "#/lib/api/accounts";
@@ -12,29 +17,33 @@ import {
 } from "#/features/pools/logic/approval-suggestions";
 
 /**
- * One page of each personal list. The sheet is a head start, not a browser:
- * anything past the page, and any voucher the steward neither issued nor holds,
- * is what the search field is for.
+ * Issued vouchers are only a convenience shortlist. Balance-backed sources are
+ * drained completely because a deposit waiting at the pool must not disappear
+ * merely because a newer transfer occupies the first page.
  */
 const SUGGESTION_PAGE_SIZE = 20;
+const ACCOUNT_PAGE_SIZE = 100;
 
 export type ApprovalSuggestionSource = {
   rows: ApprovalCandidate[];
   status: "idle" | "loading" | "ready" | "error";
+  completeness: "complete" | "partial";
   retry: () => void;
 };
 
 /**
- * Vouchers the connected wallet issued, and vouchers it holds.
+ * Vouchers the connected wallet holds or issued, plus tokens already deposited
+ * at the pool address.
  *
  * Issued comes from the catalog's owner predicate. Holdings come from the
  * account balance list rather than that same catalog: the catalog drops a
  * voucher with no coordinates, and a balance row already carries the name and
  * symbol the row needs.
  */
-export function useApprovalSuggestions() {
+export function useApprovalSuggestions(poolAddress: string | undefined) {
   const { address } = useConnection();
   const owner = address?.toLowerCase();
+  const pool = poolAddress?.toLowerCase();
 
   const issuedQuery = useQuery({
     ...voucherFilteredPageQueryOptions(marketClient, {
@@ -45,9 +54,8 @@ export function useApprovalSuggestions() {
     enabled: Boolean(owner),
   });
 
-  const heldQuery = useQuery(
-    accountTokensPageQueryOptions(accountsClient, owner, SUGGESTION_PAGE_SIZE),
-  );
+  const holdings = useAccountSuggestionSource(owner);
+  const deposited = useAccountSuggestionSource(pool);
 
   const issued = (issuedQuery.data?.vouchers ?? []).flatMap((voucher) => {
     const candidate = toApprovalCandidate({
@@ -58,7 +66,78 @@ export function useApprovalSuggestions() {
     });
     return candidate ? [candidate] : [];
   });
-  const holdings = (heldQuery.data?.tokens ?? []).flatMap((token) => {
+  return {
+    // These requests are independent conveniences. A federation balance read
+    // can fail while the public owner catalog succeeds (or vice versa), so one
+    // source must never turn the whole picker into an error or hide the other.
+    issued: {
+      rows: issued,
+      status: sourceStatus(owner, issuedQuery),
+      completeness: "complete",
+      retry: () => void issuedQuery.refetch(),
+    } satisfies ApprovalSuggestionSource,
+    holdings,
+    deposited,
+  };
+}
+
+function useAccountSuggestionSource(address: string | undefined): ApprovalSuggestionSource {
+  const complete = useInfiniteQuery(
+    accountTokensInfiniteQueryOptions(accountsClient, address, ACCOUNT_PAGE_SIZE),
+  );
+  const { fetchNextPage, hasNextPage, isError, isFetchingNextPage } = complete;
+
+  useEffect(() => {
+    if (isError || !hasNextPage || isFetchingNextPage) return;
+    void fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isError, isFetchingNextPage]);
+
+  // The small endpoint powers the wallet home and is deliberately a fallback:
+  // it keeps the picker useful when cursor pagination is unhealthy without
+  // pretending its five recent balances are a complete account inventory.
+  const recent = useQuery({
+    ...latestAccountTokensQueryOptions(accountsClient, address),
+    enabled: Boolean(address) && complete.isError,
+  });
+
+  if (!address) {
+    return { rows: [], status: "idle", completeness: "complete", retry: () => undefined };
+  }
+
+  const completeTokens = complete.data?.pages.flatMap((page) => page.tokens) ?? [];
+  if (!complete.isError) {
+    const draining = complete.isPending || hasNextPage || isFetchingNextPage;
+    return {
+      rows: draining ? [] : tokensToCandidates(completeTokens),
+      status: draining ? "loading" : "ready",
+      completeness: "complete",
+      retry: () => void complete.refetch(),
+    };
+  }
+
+  const fallbackTokens = dedupeTokens([...completeTokens, ...(recent.data?.tokens ?? [])]);
+  const fallbackReady = completeTokens.length > 0 || recent.isSuccess;
+  return {
+    rows: fallbackReady ? tokensToCandidates(fallbackTokens) : [],
+    status: fallbackReady ? "ready" : recent.isPending ? "loading" : "error",
+    completeness: "partial",
+    retry: () => {
+      void complete.refetch();
+      if (recent.isError) void recent.refetch();
+    },
+  };
+}
+
+function tokensToCandidates(tokens: readonly AccountToken[]): ApprovalCandidate[] {
+  return tokens.flatMap((token) => {
+    // The federation can retain a historical token row after its balance has
+    // returned to zero. Neither an empty wallet row nor an empty pool deposit
+    // is an approval suggestion.
+    try {
+      if (BigInt(token.balance) <= 0n) return [];
+    } catch {
+      return [];
+    }
     const candidate = toApprovalCandidate({
       id: token.tokenAddress,
       address: token.tokenAddress,
@@ -67,22 +146,16 @@ export function useApprovalSuggestions() {
     });
     return candidate ? [candidate] : [];
   });
+}
 
-  return {
-    // These requests are independent conveniences. A federation balance read
-    // can fail while the public owner catalog succeeds (or vice versa), so one
-    // source must never turn the whole picker into an error or hide the other.
-    issued: {
-      rows: issued,
-      status: sourceStatus(owner, issuedQuery),
-      retry: () => void issuedQuery.refetch(),
-    } satisfies ApprovalSuggestionSource,
-    holdings: {
-      rows: holdings,
-      status: sourceStatus(owner, heldQuery),
-      retry: () => void heldQuery.refetch(),
-    } satisfies ApprovalSuggestionSource,
-  };
+function dedupeTokens(tokens: readonly AccountToken[]): AccountToken[] {
+  const seen = new Set<string>();
+  return tokens.filter((token) => {
+    const key = token.tokenAddress.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function sourceStatus(
