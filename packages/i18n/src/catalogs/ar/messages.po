@@ -508,7 +508,7 @@ msgstr "هل لديك حساب بالفعل؟"
 #~ msgstr "تصلح دائمًا لتسجيل الدخول واستعادة هذه المحفظة. احتفظ بها بأمان."
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:120
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:156
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:277
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:123
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:208
@@ -521,7 +521,7 @@ msgstr "هل لديك حساب بالفعل؟"
 msgid "Amount"
 msgstr "المبلغ"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:418
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:412
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:264
 msgid "Amount exceeds your balance"
 msgstr "المبلغ يتجاوز رصيدك"
@@ -673,7 +673,7 @@ msgstr "رُفض الوصول إلى الكاميرا."
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:396
 #: apps/web/src/features/auth/ui/profile-username-section.tsx:230
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:476
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:676
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:680
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:324
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:585
 #: apps/web/src/features/posts/ui/post-confirm-dialog.tsx:61
@@ -803,7 +803,7 @@ msgstr "جارٍ التحقق من المعروض…"
 msgid "Checking voucher availability…"
 msgstr "جارٍ التحقق من توفر القسيمة…"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:381
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:375
 msgid "Checking which vouchers this pool takes…"
 msgstr "جارٍ التحقق من القسائم التي يقبلها هذا الصندوق…"
 
@@ -1009,6 +1009,11 @@ msgstr "قسائم المجتمع وتفاصيلها."
 msgid "Complete"
 msgstr "إكمال"
 
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:205
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:259
+msgid "Complete fee details are unavailable for this swap."
+msgstr "تفاصيل الرسوم الكاملة غير متاحة لهذه المبادلة."
+
 #: apps/web/src/features/home/ui/notification-settings-section.tsx:130
 msgid "Complete the browser permission prompt to continue."
 msgstr "أكمل طلب إذن المتصفح للمتابعة."
@@ -1048,15 +1053,15 @@ msgstr "تأكيد كلمة المرور"
 msgid "Confirm send"
 msgstr "تأكيد الإرسال"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:637
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:668
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:622
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:672
 msgid "Confirm swap"
 msgstr "تأكيد المبادلة"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:51
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:255
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:222
 msgid "Confirmed"
 msgstr "تم التأكيد"
@@ -1227,9 +1232,9 @@ msgstr "نسخ الإيصال"
 msgid "Copy supply creation transaction hash"
 msgstr "نسخ تجزئة معاملة إصدار المعروض"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:157
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:198
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:203
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:211
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:235
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:205
 msgid "Copy transaction hash"
 msgstr "نسخ تجزئة المعاملة"
@@ -1293,7 +1298,7 @@ msgstr "تعذّر التحقق من توفر الرسالة."
 msgid "Couldn't check voucher availability."
 msgstr "تعذّر التحقق من توفر القسيمة."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:386
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:380
 msgid "Couldn't check which vouchers this pool takes."
 msgstr "تعذّر التحقق من القسائم التي يقبلها هذا الصندوق."
 
@@ -1353,11 +1358,11 @@ msgstr "تعذّر نسخ الإيصال"
 msgid "Couldn't copy supply creation transaction hash"
 msgstr "تعذّر نسخ تجزئة معاملة إصدار المعروض"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:63
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:77
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:83
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:162
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:168
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:167
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:173
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:132
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:138
 msgid "Couldn't copy transaction hash"
@@ -1378,8 +1383,8 @@ msgstr "تعذّر إصدار المعروض الأول."
 msgid "Couldn't create vouchers."
 msgstr "تعذّر إنشاء القسائم."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:411
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:414
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:405
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:408
 msgid "Couldn't estimate this swap."
 msgstr "تعذّر تقدير هذه المبادلة."
 
@@ -1439,11 +1444,11 @@ msgid "Couldn't load the private attachment."
 msgstr "تعذّر تحميل المرفق الخاص."
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:93
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:290
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:259
 msgid "Couldn't load this pool."
 msgstr "تعذّر تحميل هذا الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:863
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:867
 msgid "Couldn't load this pool's vouchers."
 msgstr "تعذّر تحميل قسائم هذا الصندوق."
 
@@ -1595,8 +1600,8 @@ msgstr "تعذّر نقل الملكية."
 msgid "Couldn't upload that photo. Try again."
 msgstr "تعذّر تحميل تلك الصورة. حاول مرة أخرى."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:519
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:547
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:513
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:541
 msgid "Couldn't verify this swap. Try again."
 msgstr "تعذّر التحقق من هذه المبادلة. حاول مرة أخرى."
 
@@ -1667,12 +1672,12 @@ msgstr "أنشئ حسابك"
 
 #: apps/web/src/features/home/ui/activity-page.tsx:105
 #: apps/web/src/features/home/ui/report-page.tsx:558
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:57
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:71
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:616
 msgid "Created"
 msgstr "تم الإنشاء"
 
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:196
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:197
 msgid "Created in the pool"
 msgstr "أُنشئ في الصندوق"
 
@@ -1731,7 +1736,7 @@ msgid "Dark"
 msgstr "داكن"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:137
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:149
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:190
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:589
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:726
 msgid "Date"
@@ -1777,8 +1782,8 @@ msgstr "معاملة النشر"
 msgid "Deployment transaction hash copied"
 msgstr "تم نسخ تجزئة معاملة النشر"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:59
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:73
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:153
 msgid "Deposit"
 msgstr "إيداع"
@@ -1827,8 +1832,8 @@ msgid "Display name must be 120 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم العرض 120 حرفًا"
 
 #: apps/web/src/features/pools/ui/pool-receive-sheet.tsx:97
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:280
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:330
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:340
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:390
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:248
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:521
 msgid "Done"
@@ -2012,7 +2017,7 @@ msgid "Enter a valid website URL including https://"
 msgstr "أدخل رابط موقع ويب صالحًا يتضمن https://"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:234
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:447
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:441
 msgid "Enter an amount greater than zero."
 msgstr "أدخل مبلغًا أكبر من صفر."
 
@@ -2096,7 +2101,7 @@ msgid "Expiring"
 msgstr "قريب الانتهاء"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:58
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:92
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:106
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:53
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:109
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:208
@@ -2113,8 +2118,8 @@ msgid "Farming"
 msgstr "الزراعة"
 
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:246
-msgid "fee"
-msgstr "رسم"
+#~ msgid "fee"
+#~ msgstr "رسم"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:101
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:150
@@ -2124,6 +2129,11 @@ msgstr "نسبة الرسم ومستلمه"
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:335
 #~ msgid "Fee calculated at confirmation"
 #~ msgstr "يُحسب الرسم عند التأكيد"
+
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:212
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:265
+msgid "Fee details unavailable."
+msgstr "تفاصيل الرسوم غير متاحة."
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:46
 msgid "Fee policy"
@@ -2235,8 +2245,8 @@ msgstr "اضبط إطار صورتك"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:145
 #: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:136
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:177
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "From"
 msgstr "من"
@@ -2346,7 +2356,7 @@ msgstr "لقد حفظت هذا المفتاح"
 msgid "I have saved this key. If lost, my wallet cannot be recovered."
 msgstr "لقد حفظت هذا المفتاح. إذا فُقد، فلن يمكن استعادة محفظتي."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:243
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:292
 msgid "I made a swap."
 msgstr "أجريتُ مبادلة."
 
@@ -2367,11 +2377,11 @@ msgstr "أرسلتُ {amountLabel} إلى {recipientLabel}."
 msgid "I sent a payment."
 msgstr "أرسلتُ دفعة."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:241
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:290
 msgid "I swapped {sentLabel} for {amountLabel} in {poolName}."
 msgstr "بادلتُ {sentLabel} مقابل {amountLabel} في {poolName}."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:242
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:291
 msgid "I swapped {sentLabel} for {amountLabel}."
 msgstr "بادلتُ {sentLabel} مقابل {amountLabel}."
 
@@ -2679,7 +2689,7 @@ msgid "Loading offerings…"
 msgstr "جارٍ تحميل العروض…"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:90
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:287
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:256
 msgid "Loading pool…"
 msgstr "جارٍ تحميل الصندوق…"
 
@@ -2729,7 +2739,7 @@ msgstr "جارٍ تحميل القسيمة…"
 #: apps/web/src/features/home/ui/wallet-page.tsx:212
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:118
 #: apps/web/src/features/pools/ui/pool-output-voucher-filter.tsx:157
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:859
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:863
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:959
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:146
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:208
@@ -2859,7 +2869,7 @@ msgstr "الحد الأقصى"
 #~ msgid "Max {max}"
 #~ msgstr "الحد الأقصى {max}"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:765
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:769
 msgid "Max {max} {symbol}"
 msgstr "الحد الأقصى {max} {symbol}"
 
@@ -3010,7 +3020,7 @@ msgstr "الاسم على المحفظة"
 msgid "Name, symbol or address"
 msgstr "الاسم أو الرمز أو العنوان"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:221
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:245
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:208
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:506
 msgid "Network"
@@ -3029,8 +3039,8 @@ msgstr "منشور جديد"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:149
 #: apps/web/src/features/home/ui/activity-page.tsx:128
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:139
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:203
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:180
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:204
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:625
 msgid "New supply"
 msgstr "إصدار جديد"
@@ -3242,7 +3252,7 @@ msgstr "لا يوجد عنوان محفظة متاح."
 msgid "No. of participants"
 msgstr "عدد المشاركين"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:976
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:980
 msgid "None left to swap for"
 msgstr "لا يتبقى رصيد للمبادلة مقابله"
 
@@ -3262,7 +3272,7 @@ msgstr "هذا ليس رقم Safaricom قياسيًا. تابع فقط إذا ك
 msgid "Not approved"
 msgstr "غير معتمد"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:874
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:878
 msgid "Not held"
 msgstr "غير محتفظ به"
 
@@ -3463,8 +3473,8 @@ msgstr "رد المالك"
 msgid "Ownership transfer submitted."
 msgstr "تم إرسال نقل الملكية."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:60
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:199
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:74
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:200
 msgid "Paid out"
 msgstr "تم الدفع"
 
@@ -3546,7 +3556,7 @@ msgstr "إيصال الدفع"
 
 #: apps/web/src/features/onboarding/ui/onboarding-wallet-step.tsx:515
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:136
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:138
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:144
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:219
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:353
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:150
@@ -3640,11 +3650,11 @@ msgstr "المكان"
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:186
 #: apps/web/src/features/pools/ui/pool-details-rows.tsx:30
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:298
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:656
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:987
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:200
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:321
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:267
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:660
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:991
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:224
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:381
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:97
 msgid "Pool"
 msgstr "الصندوق"
@@ -3657,7 +3667,7 @@ msgstr "إجراءات الصندوق"
 msgid "Pool activity"
 msgstr "نشاط الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:80
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:94
 msgid "Pool activity details"
 msgstr "تفاصيل نشاط الصندوق"
 
@@ -3700,21 +3710,24 @@ msgstr "يجب ألا يتجاوز وصف الصندوق 500 حرف"
 msgid "Pool details updated."
 msgstr "تم تحديث تفاصيل الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:223
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:118
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:334
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:633
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:190
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:299
 msgid "Pool fee"
 msgstr "رسوم الصندوق"
 
 #: apps/web/src/features/pools/ui/pool-swap-page.tsx:223
 #: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
-msgid "Pool fee ({poolFeePercent})"
-msgstr "رسوم الصندوق ({poolFeePercent})"
+#~ msgid "Pool fee ({poolFeePercent})"
+#~ msgstr "رسوم الصندوق ({poolFeePercent})"
 
 #: apps/web/src/features/pools/ui/pool-controls-panel.tsx:468
 msgid "Pool fee updated."
 msgstr "تم تحديث رسوم الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:523
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:517
 msgid "Pool liquidity changed. Review the updated quote and try again."
 msgstr "تغيّرت سيولة الصندوق. راجع عرض السعر المحدّث وحاول مرة أخرى."
 
@@ -3746,15 +3759,15 @@ msgid "Pool name must be 80 characters or fewer"
 msgstr "يجب ألا يتجاوز اسم الصندوق 80 حرفًا"
 
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:96
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:293
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:262
 msgid "Pool not found."
 msgstr "لم يُعثر على الصندوق."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:115
 msgid "Pool paid out"
 msgstr "دفع الصندوق"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:98
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:112
 msgid "Pool received"
 msgstr "استلم الصندوق"
 
@@ -3993,10 +4006,12 @@ msgstr "حماية المحفظة الورقية بكلمة مرور"
 msgid "Protecting paper wallet..."
 msgstr "جارٍ حماية المحفظة الورقية..."
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:107
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:371
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:652
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:193
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:133
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:247
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:347
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:642
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:203
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:300
 msgid "Protocol fee"
 msgstr "رسوم البروتوكول"
 
@@ -4062,7 +4077,7 @@ msgstr "الكمية"
 msgid "Queued"
 msgstr "في قائمة الانتظار"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:357
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:326
 msgid "Rate"
 msgstr "سعر الصرف"
 
@@ -4121,7 +4136,7 @@ msgid "Received"
 msgstr "تم الاستلام"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:56
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:129
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:170
 msgid "Received voucher"
 msgstr "قسيمة مستلمة"
 
@@ -4162,8 +4177,8 @@ msgstr "أعد ربط المحفظة التي نشرت هذه القسيمة ل�
 #~ msgid "Reconnect the wallet that published this voucher to mint."
 #~ msgstr "أعد ربط المحفظة التي نشرت هذه القسيمة لإصدارها."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:256
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:262
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:316
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:322
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:200
 msgid "Redeem"
 msgstr "استرداد"
@@ -4357,7 +4372,7 @@ msgstr "إعادة محاولة الاتصال"
 #~ msgstr "عكس اتجاه المبادلة"
 
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:54
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:150
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:156
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:159
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:164
 msgid "Reverted"
@@ -4564,7 +4579,7 @@ msgid "Send"
 msgstr "إرسال"
 
 #. placeholder {0}: details.receiveSymbol
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:270
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:330
 msgid "Send {0}"
 msgstr "إرسال {0}"
 
@@ -4797,8 +4812,8 @@ msgid "Starts"
 msgstr "يبدأ"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:109
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:87
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:376
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:101
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:436
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:220
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:511
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:570
@@ -4810,7 +4825,7 @@ msgstr "الحالة"
 msgid "Step {clampedStep} of {clampedTotal}"
 msgstr "الخطوة {clampedStep} من {clampedTotal}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:225
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:249
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:212
 msgid "Submitted"
 msgstr "تم الإرسال"
@@ -4870,11 +4885,11 @@ msgid "SVG files are not supported. Use PNG, JPEG, or WebP."
 msgstr "ملفات SVG غير مدعومة. استخدم PNG أو JPEG أو WebP."
 
 #: apps/web/src/components/vouchers/voucher-sheet.tsx:421
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:55
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:69
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:135
 #: apps/web/src/features/pools/ui/pool-detail-page.tsx:378
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:301
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:463
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:270
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:457
 msgid "Swap"
 msgstr "مبادلة"
 
@@ -4900,37 +4915,37 @@ msgstr "يجب أن تكون رسوم المبادلة رقمًا من 0 إلى 
 msgid "Swap for {0}"
 msgstr "مبادلة مقابل {0}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:237
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:286
 msgid "Swap receipt"
 msgstr "إيصال المبادلة"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:146
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:152
 msgid "Swap reverted"
 msgstr "تم التراجع عن المبادلة"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:122
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:128
 msgid "Swap tracking details are missing."
 msgstr "تفاصيل تتبّع المبادلة مفقودة."
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:120
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:126
 msgid "Swap unavailable"
 msgstr "المبادلة غير متاحة"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:173
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:178
 msgid "Swapped"
 msgstr "تمت المبادلة"
 
 #. placeholder {0}: entry.received.tokenSymbol
 #. placeholder {1}: entry.sent.tokenSymbol
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:191
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:192
 msgid "Swapped {0} for {1}"
 msgstr "تمت مبادلة {0} مقابل {1}"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:134
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:140
 msgid "Swapping"
 msgstr "جارٍ المبادلة"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:668
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:672
 msgid "Swapping…"
 msgstr "جارٍ المبادلة…"
 
@@ -5083,7 +5098,7 @@ msgstr "أصبح اسم القسيمة هذا مستخدمًا أثناء تعب
 msgid "The cart isn't ready yet."
 msgstr "سلة التسوق ليست جاهزة بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:969
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:973
 msgid "The credit limit has been reached. No more can be added to this pool."
 msgstr "تم بلوغ حد الائتمان. لا يمكن إضافة المزيد إلى هذا الصندوق."
 
@@ -5127,7 +5142,7 @@ msgstr "تعذّر نشر الصندوق."
 msgid "The pool doesn't hold that much {0}."
 msgstr "لا يحتوي الصندوق على هذا المقدار من {0}."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:533
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:527
 msgid "The quote changed. Review the updated amounts before confirming."
 msgstr "تغيّر عرض السعر. راجع المبالغ المحدّثة قبل التأكيد."
 
@@ -5217,22 +5232,22 @@ msgstr "يقبل هذا الصندوق {0} بالفعل. سيؤدي الحفظ �
 
 #. placeholder {0}: localizedAmounts.depositHeadroom
 #. placeholder {1}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:425
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:419
 msgid "This pool can only take {0} more {1} right now."
 msgstr "يمكن لهذا الصندوق قبول {0} {1} إضافية فقط الآن."
 
 #. placeholder {0}: selectedFrom?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:423
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:417
 msgid "This pool can't take any more {0} right now."
 msgstr "لا يمكن لهذا الصندوق قبول المزيد من {0} الآن."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:402
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:867
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:396
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:871
 msgid "This pool doesn't take any vouchers yet."
 msgstr "لا يقبل هذا الصندوق أي قسائم بعد."
 
 #. placeholder {0}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:437
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:431
 msgid "This pool has no {0} available to swap."
 msgstr "لا يتوفر في هذا الصندوق أي {0} للمبادلة."
 
@@ -5256,7 +5271,7 @@ msgstr "لا يحتوي هذا الصندوق على شيء بعد."
 
 #. placeholder {0}: localizedAmounts.availableAmountOut
 #. placeholder {1}: selectedTo?.token.symbol
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:439
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:433
 msgid "This pool only has {0} {1} available to swap."
 msgstr "لا يتوفر في هذا الصندوق سوى {0} {1} للمبادلة."
 
@@ -5272,7 +5287,7 @@ msgid "This pool values every voucher equally, so there is no rate to set. "
 msgstr "يمنح هذا الصندوق كل القسائم قيمة متساوية، لذلك لا يوجد سعر صرف لتعيينه. "
 "ولا يمكن إضافة قسائم إليه من هنا بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:528
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:522
 msgid "This pool's deposit limit changed. Review the updated amounts and try "
 "again."
 msgstr "تغيّر حد الإيداع لهذا الصندوق. راجع المبالغ المحدّثة وحاول مرة أخرى."
@@ -5305,8 +5320,8 @@ msgstr "يجب ألا يتجاوز العنوان 200 حرف"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:161
 #: apps/web/src/features/home/ui/activity-page.tsx:131
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:145
-#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:206
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:186
+#: apps/web/src/features/pools/ui/pool-activity-panel.tsx:207
 #: apps/web/src/features/wallet/ui/send-amount-page.tsx:129
 #: apps/web/src/features/wallet/ui/voucher-detail-page.tsx:628
 msgid "To"
@@ -5336,8 +5351,16 @@ msgstr "أدوات"
 msgid "Total"
 msgstr "الإجمالي"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:154
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:207
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:144
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:360
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:651
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:213
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:301
+msgid "Total fees"
+msgstr "إجمالي الرسوم"
+
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:195
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:231
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:204
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:607
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:744
@@ -5352,9 +5375,9 @@ msgstr "تفاصيل المعاملة"
 msgid "Transaction hash"
 msgstr "تجزئة المعاملة"
 
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:68
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:82
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:205
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:167
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:172
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:137
 msgid "Transaction hash copied"
 msgstr "تم نسخ تجزئة المعاملة"
@@ -5390,11 +5413,13 @@ msgstr "رحلة"
 #: apps/web/src/features/home/ui/wallet-page.tsx:82
 #: apps/web/src/features/home/ui/wallet-page.tsx:229
 #: apps/web/src/features/home/ui/wallet-page.tsx:320
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:221
 #: apps/web/src/features/pools/ui/pool-activity-panel.tsx:85
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:115
 #: apps/web/src/features/pools/ui/pool-filter-ui.tsx:87
 #: apps/web/src/features/pools/ui/pool-holding-list.tsx:54
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:397
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:391
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:277
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:438
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:163
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:224
@@ -5428,7 +5453,7 @@ msgstr "تعذّر تحميل اللغة. تمت العودة إلى الإنج�
 #: apps/web/src/features/pools/ui/pool-deployment-receipt-page.tsx:86
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:770
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:784
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:124
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:130
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:191
 #: apps/web/src/features/vouchers/ui/voucher-deployment-receipt-page.tsx:355
 msgid "Unavailable"
@@ -5631,7 +5656,7 @@ msgid "View offering details: {0}"
 msgstr "عرض تفاصيل العرض: {0}"
 
 #: apps/web/src/components/wallet/transfer-details-sheet.tsx:202
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:168
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:232
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:625
 #: apps/web/src/features/wallet/ui/top-up-page.tsx:762
 msgid "View on block explorer"
@@ -5658,7 +5683,7 @@ msgstr "قسيمة"
 
 #: apps/web/src/components/vouchers/voucher-labels.ts:17
 #: apps/web/src/components/vouchers/voucher-labels.ts:57
-#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:123
+#: apps/web/src/features/pools/ui/pool-activity-details-sheet.tsx:164
 #: apps/web/src/features/posts/ui/post-editor-page.tsx:171
 msgid "Voucher"
 msgstr "قسيمة"
@@ -5703,7 +5728,7 @@ msgstr "يجب ألا يتجاوز وصف القسيمة 500 حرف"
 msgid "Voucher details"
 msgstr "تفاصيل القسيمة"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:962
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:966
 msgid "Voucher details unavailable"
 msgstr "تفاصيل القسيمة غير متاحة"
 
@@ -5799,7 +5824,7 @@ msgstr "في انتظار تأكيد سلسلة الكتل..."
 msgid "Waiting for confirmation…"
 msgstr "في انتظار التأكيد…"
 
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:136
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:142
 #: apps/web/src/features/wallet/ui/send-receipt-page.tsx:147
 msgid "Waiting for on-chain confirmation"
 msgstr "في انتظار التأكيد على السلسلة"
@@ -5991,7 +6016,7 @@ msgstr "لم تُصدر أيًا من هذه القسائم."
 msgid "You don't have a username yet."
 msgstr "ليس لديك اسم مستخدم بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:406
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:400
 msgid "You don't hold any voucher this pool takes."
 msgstr "لا تحتفظ بأي قسيمة يقبلها هذا الصندوق."
 
@@ -6011,15 +6036,15 @@ msgstr "لم تُصدر قسيمة بعد."
 msgid "You haven't written any posts yet."
 msgstr "لم تكتب أي منشورات بعد."
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:49
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:642
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:176
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:51
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:627
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:181
 msgid "You receive"
 msgstr "أنت تستلم"
 
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:50
-#: apps/web/src/features/pools/ui/pool-swap-page.tsx:645
-#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:181
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:52
+#: apps/web/src/features/pools/ui/pool-swap-page.tsx:630
+#: apps/web/src/features/pools/ui/swap-receipt-page.tsx:186
 msgid "You send"
 msgstr "أنت ترسل"
 

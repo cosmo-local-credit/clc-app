@@ -352,10 +352,16 @@ beforeEach(() => {
   poolRegistry.address = null;
   poolRegistry.entries = [];
   poolRegistry.metadata = {};
-  publicClientRead.mockImplementation(({ functionName }: { functionName: string }) => {
-    if (functionName === "entryCount") return Promise.resolve(BigInt(poolRegistry.entries.length));
-    return Promise.reject(new Error(`Unexpected read: ${functionName}`));
-  });
+  publicClientRead.mockImplementation(
+    ({ functionName, args }: { functionName: string; args?: readonly unknown[] }) => {
+      if (functionName === "getFee") {
+        return Promise.resolve((BigInt(String(args?.[2])) * poolOwnFee.ppm) / 1_000_000n);
+      }
+      if (functionName === "entryCount")
+        return Promise.resolve(BigInt(poolRegistry.entries.length));
+      return Promise.reject(new Error(`Unexpected read: ${functionName}`));
+    },
+  );
   poolTreasuryState.balances = {
     [USDC_ADDRESS.toLowerCase()]: 30_000_000n,
     [TTX_ADDRESS.toLowerCase()]: 30_000_000n,
@@ -1125,21 +1131,41 @@ describe("pool voucher UI", () => {
       search: {
         trackingId: "swap-tracking-1",
         sendAmount: "1.00",
+        sendAmountRaw: "1000000",
         sendSymbol: "USDC",
+        sendToken: USDC_ADDRESS,
         receiveAmount: "2.00",
+        receiveAmountRaw: "2000000",
         receiveSymbol: "TTX",
         // Carried so the receipt can prefill a send of what was swapped out; a
         // symbol alone would not identify the token to send.
         receiveToken: TTX_ADDRESS,
         poolName: "Trade Pool",
-        // Raw with their decimals, so the receipt states the fees the swap was
-        // confirmed on without rounding a sub-cent one to zero.
-        receiveDecimals: 6,
-        poolFee: "0",
-        protocolFee: "0",
-        poolFeePpm: "0",
       },
     });
+  });
+
+  it("requires review again when the fee split changes without changing the net quote", async () => {
+    poolNetFee.ppm = 20_000n;
+    poolOwnFee.ppm = 15_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "1" },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^swap$/i }));
+
+    // The total remains 2%, so the delivered amount is unchanged. Only who
+    // receives the fee changed, which must still invalidate confirmation.
+    poolOwnFee.ppm = 10_000n;
+    fireEvent.click(screen.getByRole("button", { name: /^confirm swap$/i }));
+
+    expect(await screen.findByText(/quote changed/i)).toBeTruthy();
+    expect(swapMutateAsync).not.toHaveBeenCalled();
   });
 
   it("relays the full raw voucher balance when Max is selected", async () => {
@@ -1240,6 +1266,7 @@ describe("pool voucher UI", () => {
     });
 
     expect(await screen.findByRole("alert", { name: /couldn't estimate this swap/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /try again/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(true);
   });
 
@@ -1441,9 +1468,10 @@ describe("pool voucher UI", () => {
         "48.98",
       ),
     );
-    expect(screen.getByText("Pool fee (2%)").parentElement?.textContent).toContain("1.00 TTX");
-    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.02 TTX");
-    expect(screen.queryByText("Fees")).toBeNull();
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("1.00 TTX2.00%");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.02 TTX0.04%");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.02 TTX2.04%");
+    expect(screen.queryByText(/fee calculated at confirmation/i)).toBeNull();
   });
 
   it("names the protocol fee a zero-fee pool still pays, and keeps a sub-cent one visible", async () => {
@@ -1460,7 +1488,9 @@ describe("pool voucher UI", () => {
     await waitFor(() =>
       expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX"),
     );
-    expect(screen.getByText("Pool fee (0%)").parentElement?.textContent).toContain("0.00 TTX");
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("0.00 TTX0.00%");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX0.02%");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("<0.01 TTX0.02%");
   });
 
   it("repeats the fee split on the confirmation sheet", async () => {
@@ -1478,11 +1508,14 @@ describe("pool voucher UI", () => {
     fireEvent.click(screen.getByRole("button", { name: /^swap$/i }));
 
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText("Pool fee (2%)").parentElement?.textContent).toContain(
-      "1.00 TTX",
+    expect(within(dialog).getByText("Pool fee").parentElement?.textContent).toContain(
+      "1.00 TTX2.00%",
     );
     expect(within(dialog).getByText("Protocol fee").parentElement?.textContent).toContain(
-      "0.02 TTX",
+      "0.02 TTX0.04%",
+    );
+    expect(within(dialog).getByText("Total fees").parentElement?.textContent).toContain(
+      "1.02 TTX2.04%",
     );
   });
 
@@ -1541,7 +1574,7 @@ describe("pool voucher UI", () => {
       ),
     );
     await waitFor(() =>
-      expect(screen.getByText("Pool fee (2%)").parentElement?.textContent).toContain("0.52 TTX"),
+      expect(screen.getByText("Total fees").parentElement?.textContent).toContain("0.52 TTX"),
     );
     expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.00 TTX");
   });

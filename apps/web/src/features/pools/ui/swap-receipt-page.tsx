@@ -1,9 +1,15 @@
+import { createRelayerClient } from "@clc/api/features/relayer/client";
+import {
+  formatPoolSwapFeePercentage,
+  type PoolSwapFeeBreakdownRaw,
+} from "@clc/core/features/pool-swaps/logic";
+import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { RiCoinLine, RiFileCopyLine, RiSendPlane2Line } from "react-icons/ri";
 import { toast } from "sonner";
 import { isAddress } from "viem";
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -17,27 +23,25 @@ import {
 } from "#/components/wallet";
 import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
-import { formatPoolFeePercent, formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
-import { createRelayerClient } from "@clc/api/features/relayer/client";
-import { RELAYER_URL } from "#/lib/relayer-config";
+import { usePoolSwapSettlement } from "#/features/pools/hooks/use-pool-swap-settlement";
+import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
 import { CHAIN_INFO } from "#/lib/chain";
-import { explorerTxUrl } from "@clc/core/lib/constants/chains";
+import { RELAYER_URL } from "#/lib/relayer-config";
+import { PoolSwapFeeValue } from "./pool-swap-fee-value";
 
 const relayerClient = createRelayerClient(RELAYER_URL);
 
 export type SwapReceiptSearch = {
   trackingId?: string;
   sendAmount?: string;
+  sendAmountRaw?: string;
   sendSymbol?: string;
+  sendToken?: string;
   receiveAmount?: string;
+  receiveAmountRaw?: string;
   receiveSymbol?: string;
   receiveToken?: string;
   poolName?: string;
-  receiveDecimals?: number;
-  /** Raw, in the received voucher. */
-  poolFee?: string;
-  protocolFee?: string;
-  poolFeePpm?: string;
 };
 
 export function SwapReceiptPage({
@@ -54,6 +58,9 @@ export function SwapReceiptPage({
     queryFn: async (trackingId) => (await relayerClient.trackRelay(trackingId)).result,
   });
   const outcome = tracking.outcome;
+  const txHash = outcome.kind === "success" ? outcome.otx.txHash || undefined : undefined;
+  const sentToken =
+    details.sendToken && isAddress(details.sendToken) ? details.sendToken : undefined;
   const receivedToken =
     details.receiveToken && isAddress(details.receiveToken) ? details.receiveToken : undefined;
   // The URL names the voucher but never its issuer. Resolve the current issuer
@@ -62,6 +69,20 @@ export function SwapReceiptPage({
   const receivedVoucher = useMarketVoucherDetail(
     details.trackingId && outcome.kind === "success" ? receivedToken : undefined,
   );
+  const settlement = usePoolSwapSettlement({
+    txHash,
+    poolAddress,
+    tokenIn: sentToken,
+    tokenOut: receivedToken,
+    amountInRaw: details.sendAmountRaw,
+    amountOutRaw: details.receiveAmountRaw,
+  });
+  const feeDecimals = receivedVoucher.data?.decimals;
+  const feeBreakdown = settlement.data?.source === "settlement" ? settlement.data.breakdown : null;
+  const feeDisplayPending = settlement.isFetching || (!!receivedToken && receivedVoucher.isPending);
+  const feeMetadataUnavailable =
+    !feeDisplayPending &&
+    (feeDecimals === null || feeDecimals === undefined || receivedVoucher.isError);
   const localizedReceiveAmount = details.receiveAmount
     ? localizeCanonicalAmount(details.receiveAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
@@ -75,21 +96,6 @@ export function SwapReceiptPage({
   const sentLabel =
     localizedSendAmount && details.sendSymbol
       ? `${localizedSendAmount} ${details.sendSymbol}`
-      : null;
-  // The fees as quoted when the swap was confirmed, the same source as the two
-  // amounts above. Absent from an older receipt URL, which then shows none.
-  const feeDecimals = details.receiveDecimals;
-  const poolFeeAmount =
-    feeDecimals !== undefined && details.poolFee !== undefined && details.receiveSymbol
-      ? `${formatPoolSwapFee(details.poolFee, feeDecimals, i18n.locales?.[0] ?? i18n.locale)} ${details.receiveSymbol}`
-      : null;
-  const protocolFeeAmount =
-    feeDecimals !== undefined && details.protocolFee !== undefined && details.receiveSymbol
-      ? `${formatPoolSwapFee(details.protocolFee, feeDecimals, i18n.locales?.[0] ?? i18n.locale)} ${details.receiveSymbol}`
-      : null;
-  const poolFeePercent =
-    details.poolFeePpm !== undefined
-      ? formatPoolFeePercent(details.poolFeePpm, i18n.locales?.[0] ?? i18n.locale)
       : null;
   const exitReceipt = () => {
     void navigate({
@@ -153,7 +159,6 @@ export function SwapReceiptPage({
     );
   }
 
-  const txHash = outcome.otx.txHash || null;
   const explorerUrl = txHash ? explorerTxUrl(CHAIN_INFO, txHash) : null;
   const poolName = details.poolName;
   const submittedAt = outcome.otx.createdAt || null;
@@ -182,20 +187,39 @@ export function SwapReceiptPage({
             <SignedAmount direction="out" amount={sentLabel} />
           </ReceiptRow>
         ) : null}
-        {poolFeeAmount ? (
-          <ReceiptRow label={poolFeePercent ? t`Pool fee (${poolFeePercent})` : t`Pool fee`}>
-            <span dir="ltr" className="font-mono text-xs font-semibold">
-              {poolFeeAmount}
-            </span>
-          </ReceiptRow>
-        ) : null}
-        {protocolFeeAmount ? (
-          <ReceiptRow label={<Trans>Protocol fee</Trans>}>
-            <span dir="ltr" className="font-mono text-xs font-semibold">
-              {protocolFeeAmount}
-            </span>
-          </ReceiptRow>
-        ) : null}
+        <ReceiptRow label={<Trans>Pool fee</Trans>}>
+          <PoolSwapFeeValue
+            breakdown={feeBreakdown}
+            part="pool"
+            decimals={feeDecimals}
+            symbol={details.receiveSymbol}
+            locale={i18n.locales?.[0] ?? i18n.locale}
+            pending={!!txHash && feeDisplayPending}
+            amountRaw={
+              settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
+            }
+          />
+        </ReceiptRow>
+        <ReceiptRow label={<Trans>Protocol fee</Trans>}>
+          <PoolSwapFeeValue
+            breakdown={feeBreakdown}
+            part="protocol"
+            decimals={feeDecimals}
+            symbol={details.receiveSymbol}
+            locale={i18n.locales?.[0] ?? i18n.locale}
+            pending={!!txHash && feeDisplayPending}
+          />
+        </ReceiptRow>
+        <ReceiptRow label={<Trans>Total fees</Trans>}>
+          <PoolSwapFeeValue
+            breakdown={feeBreakdown}
+            part="total"
+            decimals={feeDecimals}
+            symbol={details.receiveSymbol}
+            locale={i18n.locales?.[0] ?? i18n.locale}
+            pending={!!txHash && feeDisplayPending}
+          />
+        </ReceiptRow>
         {details.poolName ? (
           <ReceiptRow label={<Trans>Pool</Trans>}>
             <span className="min-w-0 break-words text-end text-xs font-semibold">
@@ -230,6 +254,31 @@ export function SwapReceiptPage({
         ) : null}
         <StatusRow status={<StatusPill tone="success" label={t`Confirmed`} />} />
       </div>
+      {settlement.data?.source === "legacy" ? (
+        <p role="status" className="mb-2.5 text-muted-foreground text-xs">
+          <Trans>Complete fee details are unavailable for this swap.</Trans>
+        </p>
+      ) : (!settlement.data && (!settlement.canLoad || settlement.isError)) ||
+        feeMetadataUnavailable ? (
+        <div className="mb-2.5 flex items-center justify-between gap-3">
+          <p role="alert" className="text-muted-foreground text-xs">
+            <Trans>Fee details unavailable.</Trans>
+          </p>
+          {settlement.canLoad || receivedToken ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 bg-card"
+              onClick={() => {
+                if (settlement.canLoad) void settlement.refetch();
+                if (receivedToken) void receivedVoucher.refetch();
+              }}
+            >
+              <Trans>Try again</Trans>
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="flex-1" />
       {explorerUrl ? (
         <ShareReceiptButton
@@ -241,6 +290,17 @@ export function SwapReceiptPage({
                 ? t`I swapped ${sentLabel} for ${amountLabel} in ${poolName}.`
                 : t`I swapped ${sentLabel} for ${amountLabel}.`
               : t`I made a swap.`,
+            ...feeShareLines({
+              breakdown: feeBreakdown,
+              decimals: feeDecimals,
+              symbol: details.receiveSymbol,
+              locale: i18n.locales?.[0] ?? i18n.locale,
+              labels: {
+                pool: t`Pool fee`,
+                protocol: t`Protocol fee`,
+                total: t`Total fees`,
+              },
+            }),
             ...(submittedAt
               ? [formatSubmittedAt(submittedAt, i18n.locales?.[0] ?? i18n.locale)]
               : []),
@@ -392,4 +452,36 @@ function localizeCanonicalAmount(amount: string, locale: string): string {
   } catch {
     return amount;
   }
+}
+
+function feeShareLines(input: {
+  breakdown: PoolSwapFeeBreakdownRaw | null;
+  decimals: number | null | undefined;
+  symbol: string | undefined;
+  locale: string;
+  labels: { pool: string; protocol: string; total: string };
+}): string[] {
+  if (
+    !input.breakdown ||
+    input.decimals === null ||
+    input.decimals === undefined ||
+    !input.symbol
+  ) {
+    return [];
+  }
+  return (
+    [
+      [input.labels.pool, input.breakdown.poolFeeRaw],
+      [input.labels.protocol, input.breakdown.protocolFeeRaw],
+      [input.labels.total, input.breakdown.totalFeeRaw],
+    ] as const
+  ).map(([label, feeRaw]) => {
+    const amount = formatPoolSwapFee(feeRaw, input.decimals!, input.locale);
+    const percentage = formatPoolSwapFeePercentage({
+      feeRaw,
+      grossAmountOutRaw: input.breakdown!.grossAmountOutRaw,
+      locale: input.locale,
+    });
+    return `${label}: ${amount} ${input.symbol}${percentage ? ` (${percentage})` : ""}`;
+  });
 }

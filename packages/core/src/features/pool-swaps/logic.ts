@@ -1,4 +1,5 @@
 import { encodeFunctionData, isAddress, parseAbi, zeroAddress } from "viem";
+import { formatTokenAmountFixed } from "../wallet/logic";
 import type { CaliburCall } from "../webauthn/index";
 
 export const erc20ApproveAbi = parseAbi([
@@ -40,6 +41,12 @@ export const poolQuoterReverseValueForAbi = parseAbi([
 export const swapPoolGetFeeAbi = parseAbi([
   "function getFee(address inToken, address outToken, uint256 value) view returns (uint256)",
 ]);
+export const swapPoolSwapEventAbi = parseAbi([
+  "event Swap(address indexed initiator, address indexed tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut, uint256 fee)",
+]);
+export const swapPoolSwapSettlementEventAbi = parseAbi([
+  "event SwapSettlement(address indexed initiator, address indexed tokenIn, address indexed tokenOut, uint256 amountIn, uint256 quotedAmountOut, uint256 nominalAmountOut, uint256 amountOut, uint256 poolFee, uint256 protocolFee)",
+]);
 export const swapPoolFeesAbi = parseAbi(["function fees(address token) view returns (uint256)"]);
 export const swapPoolFeesDecoupledAbi = parseAbi(["function feesDecoupled() view returns (bool)"]);
 export const swapRouterQuoteExactInputAbi = parseAbi([
@@ -50,6 +57,74 @@ export const swapRouterQuoteExactOutputAbi = parseAbi([
   "struct Hop { address pool; address tokenIn; address tokenOut }",
   "function quoteExactOutput(Hop[] path, uint256 amountOut) returns (uint256)",
 ]);
+
+export type PoolSwapFeeBreakdownRaw = {
+  grossAmountOutRaw: string;
+  poolFeeRaw: string;
+  protocolFeeRaw: string;
+  totalFeeRaw: string;
+};
+
+/**
+ * Splits a pool quote into the two fees the holder pays.
+ *
+ * `getFee` reports the pool's fee while the router quote includes both the pool
+ * and protocol fees. Keeping the subtraction here makes every quote surface use
+ * the same sign and consistency checks rather than risking a negative protocol
+ * fee when contract state changes between reads.
+ */
+export function poolSwapFeeBreakdownRaw(input: {
+  grossAmountOutRaw: string;
+  netAmountOutRaw: string;
+  poolFeeRaw: string;
+}): PoolSwapFeeBreakdownRaw | null {
+  try {
+    const gross = BigInt(input.grossAmountOutRaw);
+    const net = BigInt(input.netAmountOutRaw);
+    const poolFee = BigInt(input.poolFeeRaw);
+    if (gross < 0n || net < 0n || poolFee < 0n || net > gross) return null;
+
+    const totalFee = gross - net;
+    if (poolFee > totalFee) return null;
+
+    return {
+      grossAmountOutRaw: gross.toString(),
+      poolFeeRaw: poolFee.toString(),
+      protocolFeeRaw: (totalFee - poolFee).toString(),
+      totalFeeRaw: totalFee.toString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Formats one fee as an effective percentage of the gross output quote.
+ *
+ * The calculation remains integer-only. Two decimal places means the scaled
+ * value is hundredths of one percent (`fee * 10_000 / gross`). A positive fee
+ * below that display boundary is called out instead of being shown as 0.00%.
+ */
+export function formatPoolSwapFeePercentage(input: {
+  feeRaw: string;
+  grossAmountOutRaw: string;
+  locale?: string;
+}): string | null {
+  try {
+    const fee = BigInt(input.feeRaw);
+    const gross = BigInt(input.grossAmountOutRaw);
+    if (fee < 0n || gross <= 0n || fee > gross) return null;
+    if (fee === 0n) return `${formatTokenAmountFixed("0", 2, 2, input.locale)}%`;
+
+    const hundredthsOfPercent = (fee * 10_000n) / gross;
+    if (hundredthsOfPercent === 0n) {
+      return `<${formatTokenAmountFixed("1", 2, 2, input.locale)}%`;
+    }
+    return `${formatTokenAmountFixed(hundredthsOfPercent.toString(), 2, 2, input.locale)}%`;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * What the pool can actually pay out of a voucher.

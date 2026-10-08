@@ -1,12 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { navigate, trackRelay, useMarketVoucherDetail, useOtxTracking } = vi.hoisted(() => ({
-  navigate: vi.fn(),
-  trackRelay: vi.fn(),
-  useMarketVoucherDetail: vi.fn(),
-  useOtxTracking: vi.fn(),
-}));
+const { navigate, trackRelay, useMarketVoucherDetail, useOtxTracking, usePoolSwapSettlement } =
+  vi.hoisted(() => ({
+    navigate: vi.fn(),
+    trackRelay: vi.fn(),
+    useMarketVoucherDetail: vi.fn(),
+    useOtxTracking: vi.fn(),
+    usePoolSwapSettlement: vi.fn(),
+  }));
 
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
@@ -28,6 +30,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("#/features/auth/hooks/use-otx-tracking", () => ({ useOtxTracking }));
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({ useMarketVoucherDetail }));
+vi.mock("#/features/pools/hooks/use-pool-swap-settlement", () => ({ usePoolSwapSettlement }));
 
 vi.mock("@clc/api/features/relayer/client", () => ({
   createRelayerClient: () => ({ trackRelay }),
@@ -68,9 +71,16 @@ const confirmed = {
 
 beforeEach(() => {
   useMarketVoucherDetail.mockReturnValue({
-    data: { ownerAddress: ISSUER_ADDRESS },
+    data: { ownerAddress: ISSUER_ADDRESS, decimals: 6 },
     isPending: false,
     isError: false,
+    refetch: vi.fn(),
+  });
+  usePoolSwapSettlement.mockReturnValue({
+    data: undefined,
+    isPending: false,
+    isError: true,
+    refetch: vi.fn(),
   });
 });
 
@@ -80,6 +90,7 @@ afterEach(() => {
   trackRelay.mockReset();
   useMarketVoucherDetail.mockReset();
   useOtxTracking.mockReset();
+  usePoolSwapSettlement.mockReset();
 });
 
 describe("SwapReceiptPage", () => {
@@ -87,8 +98,27 @@ describe("SwapReceiptPage", () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, "share", { configurable: true, value: share });
     useOtxTracking.mockReturnValue(confirmed);
+    usePoolSwapSettlement.mockReturnValue({
+      data: {
+        source: "settlement",
+        breakdown: {
+          grossAmountOutRaw: "50000000",
+          poolFeeRaw: "1000000",
+          protocolFeeRaw: "100000",
+          totalFeeRaw: "1100000",
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
 
-    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
     fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
 
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
@@ -96,6 +126,9 @@ describe("SwapReceiptPage", () => {
     expect(payload.text).toContain("1.00 USDC");
     expect(payload.text).toContain("2.00 TTX");
     expect(payload.text).toContain("Trade Pool");
+    expect(payload.text).toContain("Pool fee: 1.00 TTX (2.00%)");
+    expect(payload.text).toContain("Protocol fee: 0.10 TTX (0.20%)");
+    expect(payload.text).toContain("Total fees: 1.10 TTX (2.20%)");
     expect(payload.text).toContain(TX_HASH);
     Reflect.deleteProperty(navigator, "share");
   });
@@ -202,6 +235,70 @@ describe("SwapReceiptPage", () => {
     expect(screen.getByText("+2.00 TTX").parentElement?.className).toContain("text-primary");
   });
 
+  it("shows pool, protocol, and total fees with effective percentages", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+    usePoolSwapSettlement.mockReturnValue({
+      data: {
+        source: "settlement",
+        breakdown: {
+          grossAmountOutRaw: "50000000",
+          poolFeeRaw: "1000000",
+          protocolFeeRaw: "100000",
+          totalFeeRaw: "1100000",
+        },
+      },
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("1.00 TTX2.00%");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("0.10 TTX0.20%");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.10 TTX2.20%");
+  });
+
+  it("does not present fee amounts when canonical voucher decimals are unavailable", () => {
+    useOtxTracking.mockReturnValue(confirmed);
+    usePoolSwapSettlement.mockReturnValue({
+      data: {
+        source: "settlement",
+        breakdown: {
+          grossAmountOutRaw: "50000000",
+          poolFeeRaw: "1000000",
+          protocolFeeRaw: "100000",
+          totalFeeRaw: "1100000",
+        },
+      },
+      isFetching: false,
+      isError: false,
+      canLoad: true,
+      refetch: vi.fn(),
+    });
+    useMarketVoucherDetail.mockReturnValue({
+      data: undefined,
+      isPending: false,
+      isError: true,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    expect(screen.getByRole("alert").textContent).toContain("Fee details unavailable");
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("—");
+  });
+
   it("groups receipt displays while keeping the send prefill canonical", () => {
     useOtxTracking.mockReturnValue(confirmed);
 
@@ -224,34 +321,15 @@ describe("SwapReceiptPage", () => {
     expect(target.searchParams.get("amount")).toBe("10000.00");
   });
 
-  it("states the pool fee and the protocol fee the swap was confirmed on", () => {
-    useOtxTracking.mockReturnValue(confirmed);
-
-    render(
-      <SwapReceiptPage
-        poolAddress={POOL_ADDRESS}
-        details={{
-          ...details,
-          receiveDecimals: 6,
-          poolFee: "0",
-          protocolFee: "400",
-          poolFeePpm: "0",
-        }}
-      />,
-    );
-
-    expect(screen.getByText("Pool fee (0%)").parentElement?.textContent).toContain("0.00 TTX");
-    // 0.0004 TTX: rounded to two decimals it would read as no fee at all.
-    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX");
-  });
-
-  it("shows no fee rows for a receipt link that predates them", () => {
+  it("does not present unknown legacy receipt fees as zero", () => {
     useOtxTracking.mockReturnValue(confirmed);
 
     render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={details} />);
 
-    expect(screen.queryByText(/pool fee/i)).toBeNull();
-    expect(screen.queryByText("Protocol fee")).toBeNull();
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("—");
+    expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("—");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("—");
+    expect(screen.getByRole("alert").textContent).toContain("Fee details unavailable");
   });
 
   it("shows the backend on-chain failure instead of a successful receipt", () => {

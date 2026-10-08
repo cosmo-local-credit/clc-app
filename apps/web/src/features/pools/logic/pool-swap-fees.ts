@@ -1,4 +1,3 @@
-import { POOL_FEE_PPM } from "@clc/core/features/pool-swaps/logic";
 import { formatTokenAmountFixed } from "@clc/core/features/wallet/logic";
 
 /**
@@ -16,11 +15,4 @@ export function formatPoolSwapFee(raw: string, decimals: number, locale: string)
     return `<${formatTokenAmountFixed(smallestShown.toString(), decimals, 2, locale)}`;
   }
   return formatTokenAmountFixed(raw, decimals, 2, locale);
-}
-
-/** A pool fee rate held in ppm, as a localized percentage exact to the ppm. */
-export function formatPoolFeePercent(feePpm: string, locale: string): string {
-  return new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 4 }).format(
-    Number(feePpm) / Number(POOL_FEE_PPM),
-  );
 }

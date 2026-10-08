@@ -6,6 +6,8 @@ import {
   buildPoolRouteCalls,
   buildPoolWithdrawCalls,
   erc20ApproveAbi,
+  formatPoolSwapFeePercentage,
+  poolSwapFeeBreakdownRaw,
   poolSwapInputUpperBoundRaw,
   poolSwapMaxInputRaw,
   splitPoolSwapFees,
@@ -241,6 +243,90 @@ describe("pool swap fee split", () => {
     ).toBeNull();
     expect(
       splitPoolSwapFees({ grossAmountOutRaw: "x", netAmountOutRaw: "99", poolFeePpm: "0" }),
+    ).toBeNull();
+  });
+});
+
+describe("pool swap fee breakdown", () => {
+  it("separates pool and protocol fees from the gross and net quote", () => {
+    expect(
+      poolSwapFeeBreakdownRaw({
+        grossAmountOutRaw: "50000000",
+        netAmountOutRaw: "48900000",
+        poolFeeRaw: "1000000",
+      }),
+    ).toEqual({
+      grossAmountOutRaw: "50000000",
+      poolFeeRaw: "1000000",
+      protocolFeeRaw: "100000",
+      totalFeeRaw: "1100000",
+    });
+  });
+
+  it("rejects malformed and internally inconsistent fee figures", () => {
+    expect(
+      poolSwapFeeBreakdownRaw({
+        grossAmountOutRaw: "100",
+        netAmountOutRaw: "101",
+        poolFeeRaw: "0",
+      }),
+    ).toBeNull();
+    expect(
+      poolSwapFeeBreakdownRaw({
+        grossAmountOutRaw: "100",
+        netAmountOutRaw: "90",
+        poolFeeRaw: "11",
+      }),
+    ).toBeNull();
+    expect(
+      poolSwapFeeBreakdownRaw({
+        grossAmountOutRaw: "not-an-amount",
+        netAmountOutRaw: "90",
+        poolFeeRaw: "1",
+      }),
+    ).toBeNull();
+  });
+
+  it("formats effective percentages without crossing through Number", () => {
+    expect(
+      formatPoolSwapFeePercentage({
+        feeRaw: "2000000000000000000000000",
+        grossAmountOutRaw: "100000000000000000000000000",
+        locale: "en",
+      }),
+    ).toBe("2.00%");
+    expect(
+      formatPoolSwapFeePercentage({
+        feeRaw: "2000000000000000000000000",
+        grossAmountOutRaw: "100000000000000000000000000",
+        locale: "de",
+      }),
+    ).toBe("2,00%");
+    expect(
+      formatPoolSwapFeePercentage({
+        feeRaw: "2000000000000000000000000",
+        grossAmountOutRaw: "100000000000000000000000000",
+        locale: "ar-u-nu-arab",
+      }),
+    ).toBe("٢٫٠٠%");
+  });
+
+  it("distinguishes zero, sub-basis-point, and unavailable percentages", () => {
+    expect(
+      formatPoolSwapFeePercentage({ feeRaw: "0", grossAmountOutRaw: "1000000", locale: "en" }),
+    ).toBe("0.00%");
+    expect(
+      formatPoolSwapFeePercentage({ feeRaw: "1", grossAmountOutRaw: "1000000", locale: "en" }),
+    ).toBe("<0.01%");
+    expect(
+      formatPoolSwapFeePercentage({
+        feeRaw: "1",
+        grossAmountOutRaw: "1000000",
+        locale: "ar-u-nu-arab",
+      }),
+    ).toBe("<٠٫٠١%");
+    expect(
+      formatPoolSwapFeePercentage({ feeRaw: "1", grossAmountOutRaw: "0", locale: "en" }),
     ).toBeNull();
   });
 });

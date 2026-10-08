@@ -3,6 +3,7 @@ import {
   erc20BalanceOfAbi,
   POOL_FEE_PPM,
   poolAvailableLiquidityRaw,
+  poolSwapFeeBreakdownRaw,
   splitPoolSwapFees,
   swapPoolFeesAbi,
   swapPoolFeesDecoupledAbi,
@@ -230,17 +231,32 @@ export function usePoolSwapQuote(input: {
         netAmountOutRaw,
         poolFeePpm: poolFeePpm.toString(),
       });
+      const feeBreakdown = fees
+        ? poolSwapFeeBreakdownRaw({
+            grossAmountOutRaw,
+            netAmountOutRaw,
+            poolFeeRaw: fees.poolFeeRaw,
+          })
+        : null;
+      if (!feeBreakdown) {
+        throw new Error("Pool swap fee quote is inconsistent.");
+      }
       return {
         amountRaw: quotedAmountRaw,
         amount: formatTokenAmountFixed(quotedAmountRaw, quotedDecimals, 2),
         amountInRaw,
         amountOutRaw,
+        /** The nominal output this exact input settles, including exact-output rounding. */
+        settlementAmountOutRaw: netAmountOutRaw,
         grossAmountOutRaw,
         /**
          * What the pool and the protocol each keep, in the output voucher. Null if
          * the figures cannot come from one swap, rather than a negative fee.
          */
-        fees: fees ? { ...fees, poolFeePpm: poolFeePpm.toString() } : null,
+        fees: { ...fees, poolFeePpm: poolFeePpm.toString() },
+        feeBreakdown,
+        /** @deprecated Prefer the complete fee breakdown. */
+        feeAmountRaw: feeBreakdown.totalFeeRaw,
         availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
           availableAmountOutRaw,
@@ -259,8 +275,21 @@ export function usePoolSwapQuote(input: {
       };
     },
     enabled: !!client && !!poolAddress && !!tokenIn && !!tokenOut && !!amountRaw,
-    placeholderData: (previousData, previousQuery) =>
-      previousQuery?.queryKey[1] === input.mode ? previousData : undefined,
+    placeholderData: (previousData, previousQuery) => {
+      const previousInput = previousQuery?.queryKey[2] as
+        | {
+            poolAddress?: string;
+            tokenIn?: string;
+            tokenOut?: string;
+          }
+        | undefined;
+      return previousQuery?.queryKey[1] === input.mode &&
+        previousInput?.poolAddress === poolAddress &&
+        previousInput?.tokenIn === tokenIn &&
+        previousInput?.tokenOut === tokenOut
+        ? previousData
+        : undefined;
+    },
     staleTime: 4_000,
     retry: false,
   });
