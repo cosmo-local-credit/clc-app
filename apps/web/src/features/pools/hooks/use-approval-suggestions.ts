@@ -6,7 +6,10 @@ import { useConnection } from "wagmi";
 
 import { accountsClient } from "#/lib/api/accounts";
 import { marketClient } from "#/lib/api/market";
-import { toApprovalCandidate } from "#/features/pools/logic/approval-suggestions";
+import {
+  type ApprovalCandidate,
+  toApprovalCandidate,
+} from "#/features/pools/logic/approval-suggestions";
 
 /**
  * One page of each personal list. The sheet is a head start, not a browser:
@@ -14,6 +17,12 @@ import { toApprovalCandidate } from "#/features/pools/logic/approval-suggestions
  * is what the search field is for.
  */
 const SUGGESTION_PAGE_SIZE = 20;
+
+export type ApprovalSuggestionSource = {
+  rows: ApprovalCandidate[];
+  status: "idle" | "loading" | "ready" | "error";
+  retry: () => void;
+};
 
 /**
  * Vouchers the connected wallet issued, and vouchers it holds.
@@ -40,32 +49,50 @@ export function useApprovalSuggestions() {
     accountTokensPageQueryOptions(accountsClient, owner, SUGGESTION_PAGE_SIZE),
   );
 
+  const issued = (issuedQuery.data?.vouchers ?? []).flatMap((voucher) => {
+    const candidate = toApprovalCandidate({
+      id: voucher.id,
+      address: voucher.address,
+      name: voucher.name,
+      symbol: voucher.symbol,
+    });
+    return candidate ? [candidate] : [];
+  });
+  const holdings = (heldQuery.data?.tokens ?? []).flatMap((token) => {
+    const candidate = toApprovalCandidate({
+      id: token.tokenAddress,
+      address: token.tokenAddress,
+      name: token.tokenName,
+      symbol: token.tokenSymbol,
+    });
+    return candidate ? [candidate] : [];
+  });
+
   return {
-    issued: (issuedQuery.data?.vouchers ?? []).flatMap((voucher) => {
-      const candidate = toApprovalCandidate({
-        id: voucher.id,
-        address: voucher.address,
-        name: voucher.name,
-        symbol: voucher.symbol,
-      });
-      return candidate ? [candidate] : [];
-    }),
-    holdings: (heldQuery.data?.tokens ?? []).flatMap((token) => {
-      const candidate = toApprovalCandidate({
-        id: token.tokenAddress,
-        address: token.tokenAddress,
-        name: token.tokenName,
-        symbol: token.tokenSymbol,
-      });
-      return candidate ? [candidate] : [];
-    }),
-    // A disabled read is pending forever. With no wallet there is nothing to
-    // wait for, and the pool's own vouchers can still be offered.
-    isPending: Boolean(owner) && (issuedQuery.isPending || heldQuery.isPending),
-    isError: Boolean(owner) && (issuedQuery.isError || heldQuery.isError),
-    refetch: () => {
-      void issuedQuery.refetch();
-      void heldQuery.refetch();
-    },
+    // These requests are independent conveniences. A federation balance read
+    // can fail while the public owner catalog succeeds (or vice versa), so one
+    // source must never turn the whole picker into an error or hide the other.
+    issued: {
+      rows: issued,
+      status: sourceStatus(owner, issuedQuery),
+      retry: () => void issuedQuery.refetch(),
+    } satisfies ApprovalSuggestionSource,
+    holdings: {
+      rows: holdings,
+      status: sourceStatus(owner, heldQuery),
+      retry: () => void heldQuery.refetch(),
+    } satisfies ApprovalSuggestionSource,
   };
+}
+
+function sourceStatus(
+  owner: string | undefined,
+  query: { isPending: boolean; isError: boolean },
+): ApprovalSuggestionSource["status"] {
+  // A disabled TanStack query remains pending. Without a connected wallet the
+  // personal sections are absent rather than loading forever.
+  if (!owner) return "idle";
+  if (query.isPending) return "loading";
+  if (query.isError) return "error";
+  return "ready";
 }
