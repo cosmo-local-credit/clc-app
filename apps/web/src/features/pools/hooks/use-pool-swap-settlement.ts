@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { isAddress, type Hex } from "viem";
+import { isAddress, isHash } from "viem";
 import { getTransactionReceipt } from "viem/actions";
 import { useClient } from "wagmi";
 
 import { findPoolSwapSettlement } from "#/features/pools/logic/pool-swap-settlement";
-
-const TRANSACTION_HASH_PATTERN = /^0x[0-9a-f]{64}$/i;
 
 export function usePoolSwapSettlement(input: {
   txHash: string | undefined;
@@ -16,7 +14,7 @@ export function usePoolSwapSettlement(input: {
   amountOutRaw?: string;
 }) {
   const client = useClient();
-  const txHash = input.txHash?.match(TRANSACTION_HASH_PATTERN) ? (input.txHash as Hex) : undefined;
+  const txHash = input.txHash && isHash(input.txHash) ? input.txHash : undefined;
   const poolAddress =
     input.poolAddress && isAddress(input.poolAddress) ? input.poolAddress : undefined;
   const tokenIn = input.tokenIn && isAddress(input.tokenIn) ? input.tokenIn : undefined;

@@ -34,13 +34,12 @@ const relayerClient = createRelayerClient(RELAYER_URL);
 export type SwapReceiptSearch = {
   trackingId?: string;
   sendAmount?: string;
-  sendAmountRaw?: string;
   sendSymbol?: string;
   sendToken?: string;
   receiveAmount?: string;
-  receiveAmountRaw?: string;
   receiveSymbol?: string;
   receiveToken?: string;
+  receiveDecimals?: number;
   poolName?: string;
 };
 
@@ -69,20 +68,17 @@ export function SwapReceiptPage({
   const receivedVoucher = useMarketVoucherDetail(
     details.trackingId && outcome.kind === "success" ? receivedToken : undefined,
   );
+  // Matched on the pool and the pair alone. The swap is the one hop in its own
+  // batch, so they already single it out, while its amounts can differ from the
+  // confirmed quote if the price moved before the relay landed.
   const settlement = usePoolSwapSettlement({
     txHash,
     poolAddress,
     tokenIn: sentToken,
     tokenOut: receivedToken,
-    amountInRaw: details.sendAmountRaw,
-    amountOutRaw: details.receiveAmountRaw,
   });
-  const feeDecimals = receivedVoucher.data?.decimals;
+  const feeDecimals = details.receiveDecimals;
   const feeBreakdown = settlement.data?.source === "settlement" ? settlement.data.breakdown : null;
-  const feeDisplayPending = settlement.isFetching || (!!receivedToken && receivedVoucher.isPending);
-  const feeMetadataUnavailable =
-    !feeDisplayPending &&
-    (feeDecimals === null || feeDecimals === undefined || receivedVoucher.isError);
   const localizedReceiveAmount = details.receiveAmount
     ? localizeCanonicalAmount(details.receiveAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
@@ -194,7 +190,7 @@ export function SwapReceiptPage({
             decimals={feeDecimals}
             symbol={details.receiveSymbol}
             locale={i18n.locales?.[0] ?? i18n.locale}
-            pending={!!txHash && feeDisplayPending}
+            pending={settlement.isFetching}
             amountRaw={
               settlement.data?.source === "legacy" ? settlement.data.poolFeeRaw : undefined
             }
@@ -207,7 +203,7 @@ export function SwapReceiptPage({
             decimals={feeDecimals}
             symbol={details.receiveSymbol}
             locale={i18n.locales?.[0] ?? i18n.locale}
-            pending={!!txHash && feeDisplayPending}
+            pending={settlement.isFetching}
           />
         </ReceiptRow>
         <ReceiptRow label={<Trans>Total fees</Trans>}>
@@ -217,7 +213,7 @@ export function SwapReceiptPage({
             decimals={feeDecimals}
             symbol={details.receiveSymbol}
             locale={i18n.locales?.[0] ?? i18n.locale}
-            pending={!!txHash && feeDisplayPending}
+            pending={settlement.isFetching}
           />
         </ReceiptRow>
         {details.poolName ? (
@@ -259,20 +255,17 @@ export function SwapReceiptPage({
           <Trans>Complete fee details are unavailable for this swap.</Trans>
         </p>
       ) : (!settlement.data && (!settlement.canLoad || settlement.isError)) ||
-        feeMetadataUnavailable ? (
+        feeDecimals === undefined ? (
         <div className="mb-2.5 flex items-center justify-between gap-3">
           <p role="alert" className="text-muted-foreground text-xs">
             <Trans>Fee details unavailable.</Trans>
           </p>
-          {settlement.canLoad || receivedToken ? (
+          {settlement.isError ? (
             <Button
               variant="outline"
               size="sm"
               className="h-9 bg-card"
-              onClick={() => {
-                if (settlement.canLoad) void settlement.refetch();
-                if (receivedToken) void receivedVoucher.refetch();
-              }}
+              onClick={() => void settlement.refetch()}
             >
               <Trans>Try again</Trans>
             </Button>
@@ -454,34 +447,33 @@ function localizeCanonicalAmount(amount: string, locale: string): string {
   }
 }
 
-function feeShareLines(input: {
+function feeShareLines({
+  breakdown,
+  decimals,
+  symbol,
+  locale,
+  labels,
+}: {
   breakdown: PoolSwapFeeBreakdownRaw | null;
-  decimals: number | null | undefined;
+  decimals: number | undefined;
   symbol: string | undefined;
   locale: string;
   labels: { pool: string; protocol: string; total: string };
 }): string[] {
-  if (
-    !input.breakdown ||
-    input.decimals === null ||
-    input.decimals === undefined ||
-    !input.symbol
-  ) {
-    return [];
-  }
+  if (!breakdown || decimals === undefined || !symbol) return [];
   return (
     [
-      [input.labels.pool, input.breakdown.poolFeeRaw],
-      [input.labels.protocol, input.breakdown.protocolFeeRaw],
-      [input.labels.total, input.breakdown.totalFeeRaw],
+      [labels.pool, breakdown.poolFeeRaw],
+      [labels.protocol, breakdown.protocolFeeRaw],
+      [labels.total, breakdown.totalFeeRaw],
     ] as const
   ).map(([label, feeRaw]) => {
-    const amount = formatPoolSwapFee(feeRaw, input.decimals!, input.locale);
+    const amount = formatPoolSwapFee(feeRaw, decimals, locale);
     const percentage = formatPoolSwapFeePercentage({
       feeRaw,
-      grossAmountOutRaw: input.breakdown!.grossAmountOutRaw,
-      locale: input.locale,
+      grossAmountOutRaw: breakdown.grossAmountOutRaw,
+      locale,
     });
-    return `${label}: ${amount} ${input.symbol}${percentage ? ` (${percentage})` : ""}`;
+    return `${label}: ${amount} ${symbol}${percentage ? ` (${percentage})` : ""}`;
   });
 }

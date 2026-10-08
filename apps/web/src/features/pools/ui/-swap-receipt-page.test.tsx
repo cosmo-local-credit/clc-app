@@ -42,6 +42,7 @@ const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
 
 const TTX_ADDRESS = "0x2222222222222222222222222222222222222222";
+const USDC_ADDRESS = "0x4444444444444444444444444444444444444444";
 const ISSUER_ADDRESS = "0x3333333333333333333333333333333333333333";
 
 const details = {
@@ -116,7 +117,7 @@ describe("SwapReceiptPage", () => {
     render(
       <SwapReceiptPage
         poolAddress={POOL_ADDRESS}
-        details={{ ...details, receiveToken: TTX_ADDRESS }}
+        details={{ ...details, receiveToken: TTX_ADDRESS, receiveDecimals: 6 }}
       />,
     );
     fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
@@ -255,7 +256,7 @@ describe("SwapReceiptPage", () => {
     render(
       <SwapReceiptPage
         poolAddress={POOL_ADDRESS}
-        details={{ ...details, receiveToken: TTX_ADDRESS }}
+        details={{ ...details, receiveToken: TTX_ADDRESS, receiveDecimals: 6 }}
       />,
     );
 
@@ -264,7 +265,27 @@ describe("SwapReceiptPage", () => {
     expect(screen.getByText("Total fees").parentElement?.textContent).toContain("1.10 TTX2.20%");
   });
 
-  it("does not present fee amounts when canonical voucher decimals are unavailable", () => {
+  it("reads the settlement by pool and pair, not by the quoted amounts", () => {
+    // The executed output can differ from the confirmed quote when the price
+    // moves before the relay lands; matching on it would lose the fees for good.
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, sendToken: USDC_ADDRESS, receiveToken: TTX_ADDRESS }}
+      />,
+    );
+
+    expect(usePoolSwapSettlement).toHaveBeenCalledWith({
+      txHash: TX_HASH,
+      poolAddress: POOL_ADDRESS,
+      tokenIn: USDC_ADDRESS,
+      tokenOut: TTX_ADDRESS,
+    });
+  });
+
+  it("does not present fee amounts when the link lacks the voucher's decimals", () => {
     useOtxTracking.mockReturnValue(confirmed);
     usePoolSwapSettlement.mockReturnValue({
       data: {
@@ -281,12 +302,6 @@ describe("SwapReceiptPage", () => {
       canLoad: true,
       refetch: vi.fn(),
     });
-    useMarketVoucherDetail.mockReturnValue({
-      data: undefined,
-      isPending: false,
-      isError: true,
-      refetch: vi.fn(),
-    });
 
     render(
       <SwapReceiptPage
@@ -297,6 +312,30 @@ describe("SwapReceiptPage", () => {
 
     expect(screen.getByRole("alert").textContent).toContain("Fee details unavailable");
     expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("—");
+    // Reading the event again cannot supply decimals the link never carried.
+    expect(screen.queryByRole("button", { name: /try again/i })).toBeNull();
+  });
+
+  it("retries a failed settlement read", () => {
+    const refetch = vi.fn();
+    useOtxTracking.mockReturnValue(confirmed);
+    usePoolSwapSettlement.mockReturnValue({
+      data: undefined,
+      isFetching: false,
+      isError: true,
+      canLoad: true,
+      refetch,
+    });
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{ ...details, receiveToken: TTX_ADDRESS, receiveDecimals: 6 }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+
+    expect(refetch).toHaveBeenCalledTimes(1);
   });
 
   it("groups receipt displays while keeping the send prefill canonical", () => {

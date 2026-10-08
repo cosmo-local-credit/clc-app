@@ -212,7 +212,12 @@ describe("pool swap fee split", () => {
         netAmountOutRaw: "99980000",
         poolFeePpm: "0",
       }),
-    ).toEqual({ poolFeeRaw: "0", protocolFeeRaw: "20000" });
+    ).toEqual({
+      grossAmountOutRaw: "100000000",
+      poolFeeRaw: "0",
+      protocolFeeRaw: "20000",
+      totalFeeRaw: "20000",
+    });
   });
 
   it("takes the protocol's cut of the pool fee once it is above the floor", () => {
@@ -223,14 +228,19 @@ describe("pool swap fee split", () => {
         netAmountOutRaw: "97960000",
         poolFeePpm: "20000",
       }),
-    ).toEqual({ poolFeeRaw: "2000000", protocolFeeRaw: "40000" });
+    ).toEqual({
+      grossAmountOutRaw: "100000000",
+      poolFeeRaw: "2000000",
+      protocolFeeRaw: "40000",
+      totalFeeRaw: "2040000",
+    });
   });
 
   it("floors the pool fee as FeePolicy's rate does, leaving the remainder to the protocol", () => {
     // 0.57% of 333 raw is 1.898, floored to 1.
     expect(
       splitPoolSwapFees({ grossAmountOutRaw: "333", netAmountOutRaw: "332", poolFeePpm: "5700" }),
-    ).toEqual({ poolFeeRaw: "1", protocolFeeRaw: "0" });
+    ).toEqual({ grossAmountOutRaw: "333", poolFeeRaw: "1", protocolFeeRaw: "0", totalFeeRaw: "1" });
   });
 
   it("returns no split for figures one swap cannot produce", () => {

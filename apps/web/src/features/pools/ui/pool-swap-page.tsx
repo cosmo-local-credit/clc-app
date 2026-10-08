@@ -578,13 +578,14 @@ export function PoolSwapPage({
             search: {
               trackingId: result.trackingId,
               sendAmount: confirmedSendAmount,
-              sendAmountRaw: refreshed.data.amountInRaw,
               sendSymbol: selectedFrom.token.symbol,
               sendToken: tokenIn,
               receiveAmount: confirmedReceiveAmount,
-              receiveAmountRaw: refreshed.data.settlementAmountOutRaw,
               receiveSymbol: selectedTo.token.symbol,
               receiveToken: tokenOut,
+              // The receipt reads its fees from the settlement event, which states
+              // them raw in the received voucher.
+              receiveDecimals: selectedTo.decimals,
               poolName: pool.name,
             },
           });
@@ -1014,22 +1015,23 @@ function fixedEnteredAmount(amount: string, decimals: number | null, locale?: st
   }
 }
 
+/**
+ * What the confirmation sheet showed. Both amounts plus the gross and the two fees
+ * pin everything else: the total is their sum and the delivered output is the
+ * gross less it.
+ */
 function quoteFingerprint(quote: {
-  amountRaw: string;
   amountInRaw: string;
   amountOutRaw: string;
-  settlementAmountOutRaw: string;
-  feeBreakdown: PoolSwapFeeBreakdownRaw;
+  feeBreakdown: PoolSwapFeeBreakdownRaw | null;
 }): string {
+  const fees = quote.feeBreakdown;
   return [
-    quote.amountRaw,
     quote.amountInRaw,
     quote.amountOutRaw,
-    quote.settlementAmountOutRaw,
-    quote.feeBreakdown.grossAmountOutRaw,
-    quote.feeBreakdown.poolFeeRaw,
-    quote.feeBreakdown.protocolFeeRaw,
-    quote.feeBreakdown.totalFeeRaw,
+    fees?.grossAmountOutRaw,
+    fees?.poolFeeRaw,
+    fees?.protocolFeeRaw,
   ].join(":");
 }
 

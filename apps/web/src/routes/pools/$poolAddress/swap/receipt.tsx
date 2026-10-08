@@ -7,14 +7,14 @@ import { SwapReceiptPage } from "#/features/pools/ui";
 const searchSchema = z.object({
   trackingId: z.string().optional().catch(undefined),
   sendAmount: z.string().optional().catch(undefined),
-  sendAmountRaw: z.string().regex(/^\d+$/).optional().catch(undefined),
   sendSymbol: z.string().optional().catch(undefined),
   sendToken: z.string().optional().catch(undefined),
   receiveAmount: z.string().optional().catch(undefined),
-  receiveAmountRaw: z.string().regex(/^\d+$/).optional().catch(undefined),
   receiveSymbol: z.string().optional().catch(undefined),
   /** Contract address of the received voucher, so the receipt can prefill a send. */
   receiveToken: z.string().optional().catch(undefined),
+  /** Decimals of the received voucher, which the settlement event's fees are in. */
+  receiveDecimals: z.number().int().min(0).max(255).optional().catch(undefined),
   poolName: z.string().optional().catch(undefined),
 });
 

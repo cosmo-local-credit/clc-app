@@ -1129,15 +1129,14 @@ describe("pool voucher UI", () => {
       search: {
         trackingId: "swap-tracking-1",
         sendAmount: "1.00",
-        sendAmountRaw: "1000000",
         sendSymbol: "USDC",
         sendToken: USDC_ADDRESS,
         receiveAmount: "2.00",
-        receiveAmountRaw: "2000000",
         receiveSymbol: "TTX",
         // Carried so the receipt can prefill a send of what was swapped out; a
         // symbol alone would not identify the token to send.
         receiveToken: TTX_ADDRESS,
+        receiveDecimals: 6,
         poolName: "Trade Pool",
       },
     });
@@ -1489,6 +1488,26 @@ describe("pool voucher UI", () => {
     expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("0.00 TTX0.00%");
     expect(screen.getByText("Protocol fee").parentElement?.textContent).toContain("<0.01 TTX0.02%");
     expect(screen.getByText("Total fees").parentElement?.textContent).toContain("<0.01 TTX0.02%");
+  });
+
+  it("still lets the swap through when the fee split does not add up", async () => {
+    // A pool fee larger than all the gross loses cannot come from one swap. The
+    // router's quote is still what the swap delivers, so only the split is withheld.
+    poolNetFee.ppm = 10_000n;
+    poolOwnFee.ppm = 20_000n;
+    mockPoolRequests();
+    renderWithQueryClient(<PoolSwapPage poolAddress={POOL_ADDRESS} />);
+
+    fireEvent.change(await screen.findByRole("textbox", { name: "You send" }), {
+      target: { value: "1" },
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^swap$/i }).hasAttribute("disabled")).toBe(false);
+    });
+    expect(screen.getByText("Pool fee").parentElement?.textContent).toContain("—");
+    expect(screen.getByText("Total fees").parentElement?.textContent).toContain("—");
+    expect(screen.queryByText(/couldn't estimate this swap/i)).toBeNull();
   });
 
   it("repeats the fee split on the confirmation sheet", async () => {

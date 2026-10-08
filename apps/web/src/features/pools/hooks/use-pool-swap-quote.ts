@@ -3,7 +3,6 @@ import {
   erc20BalanceOfAbi,
   POOL_FEE_PPM,
   poolAvailableLiquidityRaw,
-  poolSwapFeeBreakdownRaw,
   splitPoolSwapFees,
   swapPoolFeesAbi,
   swapPoolFeesDecoupledAbi,
@@ -224,39 +223,24 @@ export function usePoolSwapQuote(input: {
             ).toString();
       const quotedDecimals =
         input.mode === "exact-input" ? input.tokenOutDecimals : input.tokenInDecimals;
-      // The fees are what the gross quote for the input spent loses on the way to
-      // what that input delivers, split into the pool's share and the protocol's.
-      const fees = splitPoolSwapFees({
-        grossAmountOutRaw,
-        netAmountOutRaw,
-        poolFeePpm: poolFeePpm.toString(),
-      });
-      const feeBreakdown = fees
-        ? poolSwapFeeBreakdownRaw({
-            grossAmountOutRaw,
-            netAmountOutRaw,
-            poolFeeRaw: fees.poolFeeRaw,
-          })
-        : null;
-      if (!feeBreakdown) {
-        throw new Error("Pool swap fee quote is inconsistent.");
-      }
       return {
         amountRaw: quotedAmountRaw,
         amount: formatTokenAmountFixed(quotedAmountRaw, quotedDecimals, 2),
         amountInRaw,
         amountOutRaw,
-        /** The nominal output this exact input settles, including exact-output rounding. */
-        settlementAmountOutRaw: netAmountOutRaw,
         grossAmountOutRaw,
         /**
-         * What the pool and the protocol each keep, in the output voucher. Null if
-         * the figures cannot come from one swap, rather than a negative fee.
+         * What the gross quote for the input spent loses on the way to what that
+         * input delivers, split into the pool's share and the protocol's, in the
+         * output voucher. Null if the figures cannot come from one swap: the fee
+         * rows then read "—", but the router's quote still stands, so the swap
+         * itself is not blocked over a breakdown.
          */
-        fees: { ...fees, poolFeePpm: poolFeePpm.toString() },
-        feeBreakdown,
-        /** @deprecated Prefer the complete fee breakdown. */
-        feeAmountRaw: feeBreakdown.totalFeeRaw,
+        feeBreakdown: splitPoolSwapFees({
+          grossAmountOutRaw,
+          netAmountOutRaw,
+          poolFeePpm: poolFeePpm.toString(),
+        }),
         availableAmountOutRaw,
         availableAmountOut: formatTokenAmountFixed(
           availableAmountOutRaw,
