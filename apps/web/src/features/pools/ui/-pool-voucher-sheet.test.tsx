@@ -26,13 +26,8 @@ const mocks = vi.hoisted(() => ({
     isPending: boolean;
   },
   searchResults: [] as { id: string; address: string; name: string; symbol: string }[],
-  suggestions: {
-    issued: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
-    holdings: [] as { id: string; address: `0x${string}`; name: string; symbol: string }[],
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
-  },
+  getFilteredMarketVouchers: vi.fn(),
+  getAccountTokens: vi.fn(),
   membership: { data: false as boolean | undefined, isPending: false },
   rates: {
     data: new Map<string, bigint>(),
@@ -81,8 +76,12 @@ vi.mock("#/features/home/hooks/use-voucher-search", () => ({
   }),
 }));
 
-vi.mock("#/features/pools/hooks/use-approval-suggestions", () => ({
-  useApprovalSuggestions: () => mocks.suggestions,
+vi.mock("#/lib/api/market", () => ({
+  marketClient: { getFilteredMarketVouchers: mocks.getFilteredMarketVouchers },
+}));
+
+vi.mock("#/lib/api/accounts", () => ({
+  accountsClient: { getAccountTokens: mocks.getAccountTokens },
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
@@ -215,13 +214,8 @@ beforeEach(() => {
     refetch: vi.fn(),
   };
   mocks.searchResults = [];
-  mocks.suggestions = {
-    issued: [],
-    holdings: [],
-    isPending: false,
-    isError: false,
-    refetch: vi.fn(),
-  };
+  mocks.getFilteredMarketVouchers.mockReset();
+  mocks.getAccountTokens.mockReset();
   mocks.toastError.mockReset();
   mocks.toastSuccess.mockReset();
 });
@@ -362,19 +356,7 @@ describe("PoolVoucherSheet approving", () => {
     ).toBe(true);
   });
 
-  it("offers likely vouchers before a search, and keeps pool members out of the results", async () => {
-    const issued = "0x1111000000000000000000000000000000000001" as const;
-    const held = "0x2222000000000000000000000000000000000002" as const;
-    mocks.suggestions = {
-      issued: [{ id: "own", address: issued, name: "Will", symbol: "WLLR" }],
-      holdings: [
-        { id: "own-again", address: issued, name: "Will", symbol: "WLLR" },
-        { id: "held", address: held, name: "Sarafu", symbol: "SRF" },
-      ],
-      isPending: false,
-      isError: false,
-      refetch: vi.fn(),
-    };
+  it("uses pool rows without personal requests before search and excludes them from results", async () => {
     mocks.searchResults = [
       { id: "m1", address: TOKEN, name: "Pepas Voucher", symbol: "PEPAS" },
       { id: "m2", address: CANDIDATE, name: "Juan's Voucher", symbol: "JUAN" },
@@ -390,23 +372,22 @@ describe("PoolVoucherSheet approving", () => {
     );
 
     const dialog = await screen.findByRole("dialog");
-    const issuedGroup = within(within(dialog).getByRole("region", { name: "Vouchers you issued" }));
-    const heldGroup = within(within(dialog).getByRole("region", { name: "Vouchers you hold" }));
     const poolGroup = within(within(dialog).getByRole("region", { name: "In this pool" }));
-    expect(issuedGroup.getByRole("button", { name: /Will/ })).toBeTruthy();
-    expect(heldGroup.getByRole("button", { name: /Sarafu/ })).toBeTruthy();
-    expect(heldGroup.queryByRole("button", { name: /Will/ })).toBeNull();
     expect(poolGroup.getByRole("button", { name: /Pepas Voucher/ })).toBeTruthy();
     expect(within(dialog).queryByRole("button", { name: /Juan's Voucher/ })).toBeNull();
-
-    const text = dialog.textContent ?? "";
-    expect(text.indexOf("Vouchers you issued")).toBeLessThan(text.indexOf("Vouchers you hold"));
-    expect(text.indexOf("Vouchers you hold")).toBeLessThan(text.indexOf("In this pool"));
+    expect(mocks.getFilteredMarketVouchers).not.toHaveBeenCalled();
+    expect(mocks.getAccountTokens).not.toHaveBeenCalled();
+    expect(within(dialog).queryByRole("alert")).toBeNull();
 
     searchVouchers(dialog);
     expect(within(dialog).queryByRole("button", { name: /Pepas Voucher/ })).toBeNull();
-    expect(within(dialog).queryByRole("button", { name: /Will/ })).toBeNull();
     expect(within(dialog).getByRole("button", { name: /Juan's Voucher/ })).toBeTruthy();
+
+    searchVouchers(dialog, "");
+    expect(within(dialog).getByRole("button", { name: /Pepas Voucher/ })).toBeTruthy();
+    expect(within(dialog).queryByRole("button", { name: /Juan's Voucher/ })).toBeNull();
+    expect(mocks.getFilteredMarketVouchers).not.toHaveBeenCalled();
+    expect(mocks.getAccountTokens).not.toHaveBeenCalled();
   });
 });
 

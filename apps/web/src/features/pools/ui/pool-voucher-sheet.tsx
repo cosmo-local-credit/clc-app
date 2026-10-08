@@ -40,7 +40,6 @@ import {
   useVoucherSearch,
   VOUCHER_SEARCH_MIN_CHARS,
 } from "#/features/home/hooks/use-voucher-search";
-import { useApprovalSuggestions } from "#/features/pools/hooks/use-approval-suggestions";
 import { usePoolAdminRelay } from "#/features/pools/hooks/use-pool-admin";
 import {
   usePoolQuoterKind,
@@ -805,8 +804,8 @@ function SelectedVoucher({
 }
 
 /**
- * Before a search, offer the vouchers a steward can name without typing:
- * ones they issued, ones they hold, and ones this pool already allows.
+ * Before a search, offer vouchers this pool already allows, using its loaded rows.
+ * Personal catalog and balance requests must not run on an empty search.
  *
  * Search stays the way to reach every other voucher. Pool members stay out of
  * those results — `TokenUniqueSymbolIndex.add` reverts on a token the registry
@@ -823,7 +822,6 @@ function VoucherPicker({
   const { t } = useLingui();
   const [query, setQuery] = useState("");
   const search = useVoucherSearch(query, setQuery, true);
-  const suggestions = useApprovalSuggestions();
   const term = query.trim();
   const searching = term.length >= VOUCHER_SEARCH_MIN_CHARS;
   const inPool = excluded.flatMap((voucher) => {
@@ -836,8 +834,8 @@ function VoucherPicker({
     return candidate ? [candidate] : [];
   });
   const suggested = suggestApprovalVouchers({
-    issued: suggestions.isPending ? [] : suggestions.issued,
-    holdings: suggestions.isPending ? [] : suggestions.holdings,
+    issued: [],
+    holdings: [],
     inPool,
   });
   const held = new Set(inPool.map((voucher) => voucher.address.toLowerCase()));
@@ -872,13 +870,7 @@ function VoucherPicker({
       {searching ? (
         <SearchResults search={search} results={results} onSelect={onSelect} />
       ) : (
-        <SuggestionLists
-          suggested={suggested}
-          pending={suggestions.isPending}
-          failed={suggestions.isError}
-          onRetry={suggestions.refetch}
-          onSelect={onSelect}
-        />
+        <SuggestionLists suggested={suggested} onSelect={onSelect} />
       )}
     </div>
   );
@@ -935,15 +927,9 @@ function SearchResults({
 
 function SuggestionLists({
   suggested,
-  pending,
-  failed,
-  onRetry,
   onSelect,
 }: {
   suggested: ReturnType<typeof suggestApprovalVouchers>;
-  pending: boolean;
-  failed: boolean;
-  onRetry: () => void;
   onSelect: (voucher: ApprovalCandidate) => void;
 }) {
   const groups = [
@@ -954,27 +940,6 @@ function SuggestionLists({
 
   return (
     <div className="space-y-3">
-      {pending ? (
-        <p className="text-muted-foreground text-xs">
-          <Trans>Loading vouchers…</Trans>
-        </p>
-      ) : null}
-      {failed ? (
-        <div className="space-y-2">
-          <p role="alert" className="text-destructive text-sm">
-            <Trans>Couldn't load vouchers.</Trans>
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-9 bg-card"
-            onClick={onRetry}
-          >
-            <Trans>Retry</Trans>
-          </Button>
-        </div>
-      ) : null}
       {groups.map((group) => (
         <section key={group.id} aria-labelledby={`approve-${group.id}`} className="space-y-1">
           <p id={`approve-${group.id}`} className="text-muted-foreground text-xs">
