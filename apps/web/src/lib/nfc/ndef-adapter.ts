@@ -55,7 +55,7 @@ function toNfcRecord(record: NdefRecordLike): NfcRecord {
   };
 }
 
-export function toNfcReading(event: NdefReadingEventLike): NfcReading {
+function toNfcReading(event: NdefReadingEventLike): NfcReading {
   return {
     serialNumber: event.serialNumber || null,
     records: event.message.records.map(toNfcRecord),

@@ -3,7 +3,7 @@ export const PAPER_WALLET_SOURCES = ["blank", "csv"] as const;
 export type PaperWalletSource = (typeof PAPER_WALLET_SOURCES)[number];
 
 /** How the batch reaches holders: an A4 sheet of QR cards, or NFC cards written on a phone. */
-export const PAPER_WALLET_CARRIERS = ["print", "nfc"] as const;
+const PAPER_WALLET_CARRIERS = ["print", "nfc"] as const;
 
 export type PaperWalletCarrier = (typeof PAPER_WALLET_CARRIERS)[number];
 

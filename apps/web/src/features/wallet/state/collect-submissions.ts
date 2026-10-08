@@ -3,7 +3,7 @@ import type { CollectToken } from "@clc/core/features/nfc/collect";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-export type CollectSubmissionStatus = "pending" | "confirmed" | "failed" | "unknown";
+type CollectSubmissionStatus = "pending" | "confirmed" | "failed" | "unknown";
 
 /**
  * One collected payment, as much of it as a reload needs to carry on: public

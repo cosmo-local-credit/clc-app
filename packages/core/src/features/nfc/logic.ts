@@ -98,7 +98,7 @@ export function nfcRecordText(record: NfcRecord): string | null {
   }
 }
 
-export type NfcWalletCredential = Exclude<PaperWalletImportPayload, { type: "invalid" }>;
+type NfcWalletCredential = Exclude<PaperWalletImportPayload, { type: "invalid" }>;
 
 export type NfcCardContent =
   /** No records, or only `empty` ones. A browser may still refuse to treat it as blank. */
@@ -267,7 +267,7 @@ export type NfcSessionEvent =
   | { type: "fail" }
   | { type: "cancel" };
 
-export function isNfcSessionActive(phase: NfcSessionPhase): boolean {
+function isNfcSessionActive(phase: NfcSessionPhase): boolean {
   return phase === "starting" || phase === "ready" || phase === "handling";
 }
 

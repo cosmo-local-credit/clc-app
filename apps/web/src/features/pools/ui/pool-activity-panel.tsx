@@ -108,6 +108,7 @@ export function PoolActivityPanel({ pool }: { pool: UserPool }) {
       </section>
 
       <PoolActivityDetailsSheet
+        poolAddress={pool.address}
         entry={selected}
         open={selected !== null}
         onOpenChange={(open) => {
@@ -243,7 +244,7 @@ function EntryAmount({ entry }: { entry: PoolActivityEntry }) {
         // Shown apart from the trader's side: it left the pool in the same
         // transaction but went to the protocol, not to whoever swapped.
         <span className="block font-mono text-muted-foreground text-[0.625rem] tabular-nums">
-          <Trans>fee</Trans> {legAmount(entry.protocolFee)}
+          <Trans>Protocol fee</Trans> {legAmount(entry.protocolFee)}
         </span>
       ) : null}
     </>

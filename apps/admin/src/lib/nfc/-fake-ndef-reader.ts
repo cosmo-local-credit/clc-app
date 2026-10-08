@@ -5,7 +5,7 @@ import type { NdefReaderConstructor, NdefReaderLike } from "./ndef-adapter";
  * code under test, never a patched global, so each test owns its own radio.
  */
 
-export type FakeRecord = { recordType: string; mediaType?: string; data?: string };
+type FakeRecord = { recordType: string; mediaType?: string; data?: string };
 
 export type FakeCard = { serialNumber: string; records: FakeRecord[] };
 

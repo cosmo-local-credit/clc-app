@@ -40,7 +40,7 @@ export type OccupiedReason =
   /** Some other content. Never overwritten without a deliberate rewrite. */
   | "occupied";
 
-export type AttentionReason = "transfer-failed" | "verify-mismatch" | "write-error";
+type AttentionReason = "transfer-failed" | "verify-mismatch" | "write-error";
 
 export type WriterPhase =
   | { phase: "idle" }
@@ -122,7 +122,7 @@ export function issuanceOf(model: WriterModel, rowId: number): CardIssuance {
 }
 
 /** The row a fresh arm would write: the first registered row still pending. */
-export function nextIssuableRow(
+function nextIssuableRow(
   model: WriterModel,
   readyIds: readonly number[],
   exclude?: number,

@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import type { RelayerClient } from "./client";
 
-export const relayerKeys = {
+const relayerKeys = {
   health: ["clc", "relayer", "health"] as const,
 };
 
