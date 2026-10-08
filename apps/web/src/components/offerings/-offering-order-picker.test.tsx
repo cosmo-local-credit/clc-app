@@ -75,13 +75,31 @@ describe("OfferingOrderPicker", () => {
     expect(screen.getByText("70 KES")).toBeTruthy();
   });
 
-  it("does not allow an offering without a usable price to be ordered", () => {
+  it("allows an offering without a fixed price and marks its total as price on request", () => {
     render(<Picker offerings={[offering("one", "Price by arrangement", null)]} />);
-    expect(screen.getByText("Price on request")).toBeTruthy();
+    const checkbox = screen.getByRole("checkbox", { name: /Add Price by arrangement to order/ });
+    expect(checkbox.getAttribute("aria-disabled")).not.toBe("true");
+
+    fireEvent.click(checkbox);
+    expect(screen.getAllByText("Price on request").length).toBeGreaterThanOrEqual(2);
     expect(
-      screen
-        .getByRole("checkbox", { name: /Add Price by arrangement to order/ })
-        .getAttribute("aria-disabled"),
-    ).toBe("true");
+      screen.getByRole("button", { name: "Increase Price by arrangement quantity" }),
+    ).toBeTruthy();
+  });
+
+  it("shows a priced subtotal and a price-on-request final total for mixed orders", () => {
+    render(
+      <Picker
+        offerings={[offering("one", "Fixed", "10"), offering("two", "By arrangement", null)]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("checkbox", { name: /Add Fixed to order/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Add By arrangement to order/ }));
+
+    expect(screen.getByText("Priced subtotal").parentElement?.textContent).toContain("10 KES");
+    expect(screen.getByText("Order total").parentElement?.textContent).toContain(
+      "Price on request",
+    );
   });
 });

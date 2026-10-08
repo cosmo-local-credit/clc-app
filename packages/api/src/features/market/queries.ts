@@ -1,6 +1,11 @@
 import type { CatalogFilter } from "@clc/core/features/catalog/logic";
 import { infiniteQueryOptions, keepPreviousData, queryOptions } from "@tanstack/react-query";
-import type { MarketBoundingBox, MarketClient, MarketVoucherPage } from "./client";
+import type {
+  MarketBoundingBox,
+  MarketClient,
+  MarketReadOverrides,
+  MarketVoucherPage,
+} from "./client";
 
 /**
  * Canonical query identity and base options for the voucher catalog.
@@ -190,10 +195,17 @@ export function voucherViewportQueryOptions(
   });
 }
 
-export function voucherQueryOptions(market: MarketClient, address: string | undefined) {
+export function voucherQueryOptions(
+  market: MarketClient,
+  address: string | undefined,
+  overrides?: MarketReadOverrides,
+) {
   return queryOptions({
     queryKey: voucherKeys.detail(address ?? "none"),
-    queryFn: ({ signal }) => market.getMarketVoucher(requireAddress(address), signal),
+    queryFn: ({ signal }) =>
+      overrides
+        ? market.getMarketVoucher(requireAddress(address), signal, overrides)
+        : market.getMarketVoucher(requireAddress(address), signal),
     enabled: Boolean(address),
   });
 }

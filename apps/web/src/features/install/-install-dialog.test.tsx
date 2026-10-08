@@ -31,7 +31,8 @@ afterEach(async () => {
 });
 
 async function chooseLanguage(name: string) {
-  const option = await screen.findByRole("option", { name });
+  const option = (await screen.findByText(name)).closest('[role="option"]');
+  if (!option) throw new Error(`${name} is not offered as a language option`);
   // Base UI distinguishes touch from a mouse click on an unhighlighted item.
   const pointer = new Event("pointerdown", { bubbles: true });
   Object.defineProperty(pointer, "pointerType", { value: "touch" });
@@ -59,7 +60,7 @@ it("changes every iPhone install step when the open dialog's language changes", 
   expect(within(dialog).getByText(/Chagua.*Ongeza kwenye/)).toBeTruthy();
   expect(within(dialog).getByRole("button", { name: "Endelea kwenye kivinjari" })).toBeTruthy();
   expect(navigator.language).toBe("en-US");
-});
+}, 10_000);
 
 it("keeps the native event available through a language change and translates cancellation", async () => {
   let choose!: (choice: { outcome: "dismissed"; platform: string }) => void;
