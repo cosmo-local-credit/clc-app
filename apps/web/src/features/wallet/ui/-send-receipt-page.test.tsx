@@ -2,29 +2,49 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const { createShare, identity, navigate, shareState, trackRelay, useOtxTracking } = vi.hoisted(
-  () => ({
-    createShare: vi.fn(),
-    identity: {
-      data: null as null | {
-        name: string;
-        alias: string;
-        address: string;
-        chainId: number;
-        kind: "user" | "pool";
-      },
+const {
+  createShare,
+  identity,
+  navigate,
+  offeringsState,
+  shareState,
+  trackRelay,
+  useOtxTracking,
+  voucherState,
+} = vi.hoisted(() => ({
+  createShare: vi.fn(),
+  identity: {
+    data: null as null | {
+      name: string;
+      alias: string;
+      address: string;
+      chainId: number;
+      kind: "user" | "pool";
     },
-    navigate: vi.fn(),
-    shareState: {
-      eligible: true,
-      error: null as Error | null,
-      isPending: false,
-      isSuccess: false,
-    },
-    trackRelay: vi.fn(),
-    useOtxTracking: vi.fn(),
-  }),
-);
+  },
+  navigate: vi.fn(),
+  offeringsState: {
+    offerings: [] as Array<Record<string, unknown>>,
+  },
+  shareState: {
+    eligible: true,
+    error: null as Error | null,
+    isPending: false,
+    isSuccess: false,
+  },
+  trackRelay: vi.fn(),
+  useOtxTracking: vi.fn(),
+  voucherState: {
+    data: undefined as
+      | undefined
+      | {
+          ownerAddress: string | null;
+          voucherValue: string | null;
+          voucherUoa: string | null;
+          symbol: string;
+        },
+  },
+}));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...props }: { children: ReactNode }) => <a {...props}>{children}</a>,
@@ -42,6 +62,21 @@ vi.mock("#/features/auth/hooks/use-profile", () => ({
       geoLat: -1.2921,
       geoLng: 36.8219,
     },
+    isSuccess: true,
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
+  useMarketVoucherDetail: () => ({ data: voucherState.data }),
+}));
+
+vi.mock("#/features/home/hooks/use-voucher-offerings", () => ({
+  useVoucherOfferingsInfinite: () => ({
+    data: { pages: [{ offerings: offeringsState.offerings }] },
+    fetchNextPage: vi.fn(),
+    hasNextPage: false,
+    isError: false,
+    isFetchingNextPage: false,
     isSuccess: true,
   }),
 }));
@@ -89,6 +124,7 @@ import { SendReceiptPage } from "./send-receipt-page";
 const RECIPIENT = "0xa316408425cF17F1827483dee621c6C3A9B5fad4";
 const TX_HASH = "0x4d8ab3f71c9e052d8a7b1c6e9f0a2d3e4f5a6b7c";
 const POOL_ADDRESS = "0x1111111111111111111111111111111111111111";
+const TOKEN_ADDRESS = "0x2222222222222222222222222222222222222222";
 
 beforeEach(() => {
   identity.data = null;
@@ -97,6 +133,8 @@ beforeEach(() => {
   shareState.error = null;
   shareState.isPending = false;
   shareState.isSuccess = false;
+  voucherState.data = undefined;
+  offeringsState.offerings = [];
 });
 
 afterEach(() => {
@@ -311,6 +349,88 @@ describe("SendReceiptPage", () => {
         note: "Thanks for the delivery",
       }),
     );
+  });
+
+  it("offers an optional three-item order after a confirmed send to the voucher owner", async () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.offerings = [
+      {
+        id: "offering-1",
+        voucherAddress: TOKEN_ADDRESS,
+        voucherSymbol: "MZ",
+        name: "Maize flour",
+        unitLabel: "bag",
+        pricePerUnit: "10",
+      },
+    ];
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        amount="2.13"
+        symbol="MZ"
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Add a message or place an order"));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Add Maize flour to order/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Increase Maize flour quantity" }));
+    fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Friday please" } });
+
+    expect(screen.getAllByText("40 KES")).toHaveLength(2);
+    expect(screen.getByText("−2.13 MZ")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Share" }));
+
+    await waitFor(() =>
+      expect(createShare).toHaveBeenCalledWith({
+        permission: 0,
+        note: "Order\n- 2 × Maize flour @ 20 KES / bag = 40 KES\nOrder total: 40 KES\n\nMessage: Friday please",
+      }),
+    );
+  });
+
+  it("keeps the ordinary private-message action when an owner has no priced offerings", () => {
+    voucherState.data = {
+      ownerAddress: RECIPIENT,
+      voucherValue: "2",
+      voucherUoa: "KES",
+      symbol: "MZ",
+    };
+    offeringsState.offerings = [
+      {
+        id: "offering-1",
+        voucherAddress: TOKEN_ADDRESS,
+        voucherSymbol: "MZ",
+        name: "Price by arrangement",
+        unitLabel: "item",
+        pricePerUnit: null,
+      },
+    ];
+    useOtxTracking.mockReturnValue({
+      outcome: { kind: "success", otx: { txHash: TX_HASH, createdAt: "" } },
+    });
+
+    render(
+      <SendReceiptPage
+        token={TOKEN_ADDRESS}
+        trackingId="tracking-1"
+        recipient={RECIPIENT}
+        symbol="MZ"
+      />,
+    );
+
+    expect(screen.getByText("Add a private message")).toBeTruthy();
+    expect(screen.queryByText("Order (optional)")).toBeNull();
   });
 
   it("explains when the confirmed recipient cannot receive a private message", () => {

@@ -570,11 +570,9 @@ describe("pool voucher UI", () => {
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("A sack of maize")).toBeTruthy();
     expect(within(dialog).getByText("25 USD / bag")).toBeTruthy();
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("25 USD");
-    expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    expect(within(dialog).getByText("Total").parentElement?.textContent).toContain("50 USD");
+    expect(within(dialog).queryByText("Quantity")).toBeNull();
+    expect(within(dialog).queryByText("Total")).toBeNull();
+    expect(within(dialog).getByText("Open voucher page")).toBeTruthy();
   });
 
   it("puts offerings first and links the vouchers tab without stacking history", async () => {

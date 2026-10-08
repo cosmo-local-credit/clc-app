@@ -1,73 +1,69 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { type ReactNode, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import type { MarketVoucher, MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { MapSheetSnap } from "#/components/ui/map-sheet";
-import type { VoucherSheetTab } from "#/lib/navigation/voucher-sheet-search";
 
-const { detailResult, detailError, poolRequests, mapsRequests, selection } = vi.hoisted(() => ({
-  selection: { voucherTab: "offerings" as string, close: vi.fn() },
-  detailResult: { current: undefined as MarketVoucherDetail | undefined },
-  detailError: { current: false, refetch: vi.fn() },
-  poolRequests: { current: [] as unknown[] },
-  mapsRequests: { current: [] as unknown[] },
+const mocks = vi.hoisted(() => ({
+  detail: undefined as MarketVoucherDetail | undefined,
+  detailError: false,
+  refetchDetail: vi.fn(),
+  close: vi.fn(),
+  maps: [] as unknown[],
+  authenticated: false,
+  sessionAddress: "0x9999999999999999999999999999999999999999",
+  balance: "0",
+  reviewSummary: { total: 0, average: 0 },
 }));
 
 vi.mock("#/lib/navigation/use-voucher-sheet-selection", () => ({
-  useVoucherSheetSelection: () => ({
-    voucher: VOUCHER,
-    voucherTab: selection.voucherTab,
-    open: vi.fn(),
-    close: selection.close,
-  }),
+  useVoucherSheetSelection: () => ({ voucher: VOUCHER, open: vi.fn(), close: mocks.close }),
 }));
 
 vi.mock("#/features/home/hooks/use-market-voucher-detail", () => ({
   useMarketVoucherDetail: () => ({
-    data: detailResult.current,
-    isError: detailError.current,
-    refetch: detailError.refetch,
+    data: mocks.detail,
+    isError: mocks.detailError,
+    refetch: mocks.refetchDetail,
   }),
 }));
 
-vi.mock("#/lib/api/pools", () => ({
-  poolsClient: {
-    getFilteredPools: async (params: unknown) => {
-      poolRequests.current.push(params);
-      return {
-        pools: [
-          {
-            address: "0x1111111111111111111111111111111111111111",
-            name: "Kilifi Pool",
-            imageUrl: null,
-            voucherCount: 4,
-          },
-        ],
-        receivedCount: 1,
-        first: 1,
-        last: 1,
-        tagFacets: null,
-        voucherFacets: null,
-      };
-    },
-  },
+vi.mock("#/features/reviews/hooks/use-voucher-reviews", () => ({
+  useVoucherReviewSummary: () => ({ summary: mocks.reviewSummary }),
+}));
+
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    isAuthenticated: mocks.authenticated,
+    session: mocks.authenticated ? { address: mocks.sessionAddress } : null,
+  }),
+}));
+
+vi.mock("#/features/wallet/hooks/use-account-balances", () => ({
+  useAllAccountTokens: () => ({
+    tokens: mocks.balance === "0" ? [] : [{ tokenAddress: VOUCHER, balance: mocks.balance }],
+  }),
 }));
 
 vi.mock("#/lib/default-maps", () => ({
   openDefaultMaps: (target: unknown) => {
-    mapsRequests.current.push(target);
+    mocks.maps.push(target);
     return true;
   },
 }));
 
 vi.mock("#/components/vouchers/voucher-offerings-panel", () => ({
-  VoucherOfferingsPanel: () => <div id="voucher-panel-offerings">Offerings panel</div>,
+  VoucherOfferingsPanel: ({ maxItems }: { maxItems?: number }) => (
+    <div data-testid="offerings" data-max-items={maxItems}>
+      Offerings panel
+    </div>
+  ),
 }));
 
 vi.mock("#/components/reviews/voucher-reviews-panel", () => ({
-  VoucherReviewsPanel: () => <div id="voucher-panel-reviews">Reviews panel</div>,
+  VoucherReviewsPanel: () => <div data-testid="reviews">Reviews panel</div>,
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -75,40 +71,25 @@ vi.mock("@tanstack/react-router", () => ({
     to,
     params,
     search,
-    replace,
-    state,
-    resetScroll: _resetScroll,
     children,
     ...rest
   }: {
     to: string;
     params?: Record<string, string>;
-    search?:
-      | Record<string, unknown>
-      | ((previous: Record<string, unknown>) => Record<string, unknown>);
-    replace?: boolean;
-    state?: unknown;
-    resetScroll?: boolean;
+    search?: Record<string, unknown>;
     children?: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
-      (path, [key, value]) => path.replace(`$${key}`, value),
+      (result, [key, value]) => result.replace(`$${key}`, value),
       to,
     );
-    const resolved =
-      typeof search === "function" ? search({ tab: "market", voucher: VOUCHER }) : (search ?? {});
     const query = new URLSearchParams(
-      Object.entries(resolved).flatMap(([key, value]): [string, string][] =>
+      Object.entries(search ?? {}).flatMap(([key, value]): [string, string][] =>
         typeof value === "string" || typeof value === "number" ? [[key, String(value)]] : [],
       ),
     ).toString();
     return (
-      <a
-        href={query ? `${path}?${query}` : path}
-        data-replace={replace ? "true" : undefined}
-        data-keep-state={state === true ? "true" : undefined}
-        {...rest}
-      >
+      <a href={query ? `${path}?${query}` : path} {...rest}>
         {children}
       </a>
     );
@@ -118,6 +99,7 @@ vi.mock("@tanstack/react-router", () => ({
 import { VoucherSheet, type VoucherPlaceholder } from "./voucher-sheet";
 
 const VOUCHER = "0xAbC0000000000000000000000000000000000123";
+const OWNER = "0x1111111111111111111111111111111111111111";
 
 const CATALOG: VoucherPlaceholder & MarketVoucher = {
   id: "1",
@@ -142,7 +124,7 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     name: "Priscilah Malii",
     symbol: "MALII",
     decimals: 6,
-    ownerAddress: null,
+    ownerAddress: OWNER,
     description: "Fresh vegetables from the farm.",
     voucherUoa: "KSH",
     voucherValue: "10",
@@ -155,11 +137,13 @@ function detail(overrides: Partial<MarketVoucherDetail> = {}): MarketVoucherDeta
     terms: null,
     iconUrl: null,
     bannerUrl: null,
-    tags: [],
+    tags: ["Food", "Farming", "Local", "Extra"],
     kind: "goods",
     active: true,
+    markerIcon: null,
+    markerColor: null,
     ...overrides,
-  } as MarketVoucherDetail;
+  };
 }
 
 function Sheet({
@@ -185,11 +169,7 @@ function Sheet({
   );
 }
 
-function renderSheet({
-  voucherTab = "offerings",
-  ...props
-}: Parameters<typeof Sheet>[0] & { voucherTab?: VoucherSheetTab } = {}) {
-  selection.voucherTab = voucherTab;
+function renderSheet(props: Parameters<typeof Sheet>[0] = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
@@ -199,117 +179,52 @@ function renderSheet({
 }
 
 beforeEach(() => {
-  detailResult.current = undefined;
-  detailError.current = false;
-  detailError.refetch.mockReset();
-  selection.close.mockReset();
-  poolRequests.current = [];
-  mapsRequests.current = [];
+  mocks.detail = undefined;
+  mocks.detailError = false;
+  mocks.refetchDetail.mockReset();
+  mocks.close.mockReset();
+  mocks.maps = [];
+  mocks.authenticated = false;
+  mocks.balance = "0";
+  mocks.reviewSummary = { total: 0, average: 0 };
 });
 
-describe("VoucherSheet peek", () => {
-  it("draws from the catalog row before detail arrives", () => {
+describe("VoucherSheet summary", () => {
+  it("shows empty voucher-level reviews and location without kind or valuation", () => {
     renderSheet();
-
-    const card = screen.getByRole("dialog", { name: "Priscilah Malii" });
-    expect(card.textContent).toContain("MALII");
-    expect(card.textContent).toContain("Goods");
-    expect(card.textContent).toContain("Kilifi");
-    expect(card.textContent).not.toContain("=");
+    const dialog = screen.getByRole("dialog", { name: "Priscilah Malii" });
+    expect(dialog.textContent).toContain("MALII");
+    expect(dialog.textContent).toContain("(0)");
+    expect(screen.getByRole("img", { name: "0 out of 5 stars" })).toBeTruthy();
+    expect(dialog.textContent).toContain("Kilifi");
+    expect(dialog.textContent).not.toContain("Goods");
+    expect(dialog.textContent).not.toContain("=");
   });
 
-  it("advances from peek to half and then full when the voucher header is clicked", async () => {
-    const onSnapChange = vi.fn();
-    renderSheet({ onSnapChange });
-    const title = screen.getByRole("heading", { name: "Priscilah Malii" });
-    const header = title.parentElement?.parentElement;
-    if (!header) throw new Error("expected the voucher header");
-
-    fireEvent.click(header);
-    fireEvent.click(header);
-
-    expect(onSnapChange.mock.calls).toEqual([["half"], ["full"]]);
-    expect(await screen.findByRole("tab", { name: "Offerings" })).toBeTruthy();
-  });
-
-  it("opens the full voucher details when its header is double-clicked", async () => {
-    const onSnapChange = vi.fn();
-    renderSheet({ initialSnap: "half", onSnapChange });
-    const title = screen.getByRole("heading", { name: "Priscilah Malii" });
-    const header = title.parentElement?.parentElement;
-    if (!header) throw new Error("expected the voucher header");
-
-    fireEvent.doubleClick(header);
-
-    expect(onSnapChange).toHaveBeenCalledWith("full");
-    expect(await screen.findByRole("tab", { name: "Offerings" })).toBeTruthy();
-  });
-
-  it("says so when a linked voucher cannot be loaded, and offers a retry", () => {
-    detailError.current = true;
-    renderSheet({ placeholder: null });
-
-    expect(screen.getByRole("dialog", { name: "Couldn't load this voucher." })).toBeTruthy();
-    expect(screen.queryByRole("link", { name: "Get" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(detailError.refetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("adds the rate once detail arrives", () => {
-    detailResult.current = detail();
+  it("shows a half-star rating and at most three voucher tags", () => {
+    mocks.detail = detail();
+    mocks.reviewSummary = { total: 10, average: 4.4 };
     renderSheet();
-
-    expect(screen.getByRole("dialog").textContent).toContain("1 MALII = 10 KSH");
+    expect(screen.getByRole("img", { name: "4.4 out of 5 stars" })).toBeTruthy();
+    expect(document.querySelectorAll('[data-state="half"]')).toHaveLength(1);
+    expect(screen.getByText("(10)")).toBeTruthy();
+    expect(screen.getByText("Food")).toBeTruthy();
+    expect(screen.getByText("Farming")).toBeTruthy();
+    expect(screen.getByText("Local")).toBeTruthy();
+    expect(screen.queryByText("Extra")).toBeNull();
   });
 
-  it("offers Call and Website only when the voucher lists them", () => {
-    detailResult.current = detail();
-    const { unmount } = renderSheet();
-    expect(screen.queryByRole("link", { name: "Call" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Website" })).toBeNull();
-    unmount();
-
-    detailResult.current = detail({ phone: "+254700000000", website: "https://malii.example" });
-    renderSheet();
-    expect(screen.getByRole("link", { name: "Call" }).getAttribute("href")).toBe(
-      "tel:+254700000000",
-    );
-    expect(screen.getByRole("link", { name: "Website" }).getAttribute("href")).toBe(
-      "https://malii.example",
-    );
-  });
-
-  it("never links a website that is not http(s)", () => {
-    detailResult.current = detail({ website: "javascript:alert(1)" });
-    renderSheet();
-
-    expect(screen.queryByRole("link", { name: "Website" })).toBeNull();
-  });
-
-  it("sends Get to the pools that give out this voucher", () => {
-    renderSheet();
-
-    expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
-      `/pools?out_voucher=${VOUCHER.toLowerCase()}`,
-    );
-  });
-
-  it("opens Directions at the voucher's location", () => {
-    renderSheet();
-
-    fireEvent.click(screen.getByRole("button", { name: "Directions" }));
-
-    expect(mapsRequests.current).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);
-  });
-
-  it("shares the card's own link", async () => {
+  it("puts Share before Close and shares the voucher link", async () => {
     const share = vi.fn(async () => {});
     Object.defineProperty(navigator, "share", { value: share, configurable: true });
     try {
       renderSheet();
-
-      fireEvent.click(screen.getByRole("button", { name: "Share" }));
-
+      const shareButton = screen.getByRole("button", { name: "Share" });
+      const closeButton = screen.getByRole("button", { name: "Close" });
+      expect(
+        shareButton.compareDocumentPosition(closeButton) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      fireEvent.click(shareButton);
       await waitFor(() =>
         expect(share).toHaveBeenCalledWith({
           title: "Priscilah Malii",
@@ -321,130 +236,95 @@ describe("VoucherSheet peek", () => {
     }
   });
 
-  it("expands to half when the header is tapped", () => {
-    const onSnapChange = vi.fn();
-    renderSheet({ onSnapChange });
+  it("shows Send and Redeem only for an authenticated positive balance", () => {
+    mocks.detail = detail();
+    const guest = renderSheet();
+    expect(screen.queryByRole("link", { name: "Send" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Redeem" })).toBeNull();
+    guest.unmount();
 
-    fireEvent.click(screen.getByRole("heading", { name: "Priscilah Malii" }));
-
-    expect(onSnapChange).toHaveBeenCalledWith("half");
-  });
-});
-
-describe("VoucherSheet half", () => {
-  it("asks for pools only once half is reached", async () => {
-    detailResult.current = detail();
+    mocks.authenticated = true;
+    mocks.balance = "2500000";
     renderSheet();
-    expect(poolRequests.current).toEqual([]);
-
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-
-    expect(await screen.findByText("Kilifi Pool")).toBeTruthy();
-    expect(poolRequests.current).toHaveLength(1);
-    expect(poolRequests.current[0]).toMatchObject({
-      perPage: 10,
-      filter: { vouchers: [{ chainId: 100, address: VOUCHER }] },
-    });
-  });
-
-  it("keeps the half tier mounted after collapsing, so it does not refetch", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "half" });
-    await screen.findByText("Kilifi Pool");
-
-    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
-    fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
-
-    expect(screen.getByText("Kilifi Pool")).toBeTruthy();
-    expect(poolRequests.current).toHaveLength(1);
-  });
-
-  it("swaps into a pool with this voucher preselected, and lists the rest", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "half" });
-
-    const swap = await screen.findByRole("link", { name: "Swap" });
-    expect(swap.getAttribute("href")).toBe(
-      `/pools/0x1111111111111111111111111111111111111111/swap?receive=${VOUCHER}`,
+    expect(screen.getByRole("link", { name: "Send" }).getAttribute("href")).toBe(
+      `/wallet/send?token=${VOUCHER}`,
     );
-    expect(screen.getByRole("link", { name: "See all" }).getAttribute("href")).toBe(
+    expect(screen.getByRole("link", { name: "Redeem" }).getAttribute("href")).toBe(
+      `/wallet/send/amount?token=${VOUCHER}&recipient=${OWNER}`,
+    );
+  });
+
+  it.each([null, "not-an-address", "0x0000000000000000000000000000000000000000"])(
+    "keeps Redeem hidden when the verified owner is %s",
+    (ownerAddress) => {
+      mocks.detail = detail({ ownerAddress: ownerAddress as `0x${string}` | null });
+      mocks.authenticated = true;
+      mocks.balance = "1";
+      renderSheet();
+      expect(screen.getByRole("link", { name: "Send" })).toBeTruthy();
+      expect(screen.queryByRole("link", { name: "Redeem" })).toBeNull();
+    },
+  );
+
+  it("keeps existing Get and Directions behavior", () => {
+    renderSheet();
+    expect(screen.getByRole("link", { name: "Get" }).getAttribute("href")).toBe(
       `/pools?out_voucher=${VOUCHER.toLowerCase()}`,
     );
-  });
-
-  it("goes straight from the actions to the pools, with no picture or bio between", async () => {
-    detailResult.current = detail({ bannerUrl: "https://content.example/banner.jpg" });
-    renderSheet({ initialSnap: "half" });
-
-    await screen.findByText("Kilifi Pool");
-    expect(screen.getByRole("dialog").querySelector("img")).toBeNull();
-    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Directions" }));
+    expect(mocks.maps).toEqual([{ label: "Kilifi", lat: -3.63, lng: 39.85 }]);
   });
 });
 
-describe("VoucherSheet full", () => {
-  it("opens on Offerings, then Reviews, then Overview", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "full" });
-
-    await screen.findByRole("tab", { name: "Offerings", selected: true });
-    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
-      "Offerings",
-      "Reviews",
-      "Overview",
-    ]);
+describe("VoucherSheet continuous content", () => {
+  it("mounts offerings and reviews at half and keeps them mounted after collapse", async () => {
+    mocks.detail = detail();
+    renderSheet();
+    expect(screen.queryByText("Offerings panel")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(screen.getByText("Reviews panel")).toBeTruthy();
+    expect(screen.getByTestId("offerings").getAttribute("data-max-items")).toBe("3");
+    fireEvent.click(screen.getByRole("button", { name: "Expand" }));
+    fireEvent.click(screen.getByRole("button", { name: "Collapse" }));
     expect(screen.getByText("Offerings panel")).toBeTruthy();
   });
 
-  it("switches tabs in place, without adding history", async () => {
-    detailResult.current = detail();
+  it("has no old tabs, overview, or pool carousel", async () => {
+    mocks.detail = detail();
     renderSheet({ initialSnap: "full" });
-
-    const reviews = await screen.findByRole("tab", { name: "Reviews" });
-    expect(reviews.getAttribute("href")).toContain("voucherTab=reviews");
-    expect(reviews.getAttribute("data-replace")).toBe("true");
-    // Keeps the mark that lets Close pop the entry the tap pushed.
-    expect(reviews.getAttribute("data-keep-state")).toBe("true");
+    expect(await screen.findByText("Offerings panel")).toBeTruthy();
+    expect(screen.queryByRole("tab")).toBeNull();
+    expect(screen.queryByText("Pools with this voucher")).toBeNull();
+    expect(screen.queryByText("Fresh vegetables from the farm.")).toBeNull();
   });
 
-  it("reads the description once, in Overview, and the rate once", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "full", voucherTab: "overview" });
-
-    const panel = await screen.findByRole("tabpanel");
-    expect(screen.getAllByText("Fresh vegetables from the farm.")).toHaveLength(1);
-    expect(within(panel).getByText("Fresh vegetables from the farm.").getAttribute("dir")).toBe(
-      "auto",
-    );
-    expect(screen.getAllByText("1 MALII = 10 KSH")).toHaveLength(1);
-  });
-
-  it("shows the chosen tab's panel, and drops the tab for the default", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "full", voucherTab: "reviews" });
-
-    expect(await screen.findByText("Reviews panel")).toBeTruthy();
-    expect(screen.getByRole("tab", { name: "Offerings" }).getAttribute("href")).not.toContain(
-      "voucherTab",
-    );
-  });
-
-  it("leaves for the voucher's page, carrying where the card was opened", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "full" });
-
+  it("opens the complete voucher page with its origin", async () => {
+    mocks.detail = detail();
+    renderSheet({ initialSnap: "half" });
     const page = await screen.findByRole("link", { name: "Open voucher page" });
     expect(page.getAttribute("href")).toBe(`/vouchers/${VOUCHER}?from=wallet`);
-    // Filled in the brand colour, unlike the outlined actions above it.
-    expect(page.getAttribute("data-variant")).toBe("default");
   });
 
-  it("has no app bar above the header at full", async () => {
-    detailResult.current = detail();
-    renderSheet({ initialSnap: "full" });
+  it("advances through snap points from the identity header", async () => {
+    const onSnapChange = vi.fn();
+    renderSheet({ onSnapChange });
+    const title = screen.getByRole("heading", { name: "Priscilah Malii" });
+    const header = title.parentElement?.parentElement;
+    if (!header) throw new Error("expected the voucher identity header");
+    fireEvent.click(header);
+    fireEvent.click(header);
+    expect(onSnapChange.mock.calls).toEqual([["half"], ["full"]]);
+    expect(await screen.findByText("Reviews panel")).toBeTruthy();
+  });
+});
 
-    await screen.findByRole("tab", { name: "Offerings", selected: true });
-    expect(screen.getAllByText("Priscilah Malii")).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Share" })).toHaveLength(1);
+describe("VoucherSheet unavailable state", () => {
+  it("offers Retry when a deep-linked voucher cannot be loaded", () => {
+    mocks.detailError = true;
+    renderSheet({ placeholder: null });
+    expect(screen.getByRole("dialog", { name: "Couldn't load this voucher." })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mocks.refetchDetail).toHaveBeenCalledTimes(1);
   });
 });

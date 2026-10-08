@@ -7,7 +7,13 @@ import { ReviewEditor, ReviewStars } from "./review-editor";
 
 type Editor = { kind: "review" } | { kind: "reply" | "flag"; review: VoucherReview };
 
-export function VoucherReviewsPanel({ address }: { address: string }) {
+export function VoucherReviewsPanel({
+  address,
+  presentation = "tabpanel",
+}: {
+  address: string;
+  presentation?: "tabpanel" | "section";
+}) {
   const { t } = useLingui();
   const [filter, setFilter] = useState<number>();
   const [editor, setEditor] = useState<Editor | null>(null);
@@ -19,7 +25,10 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
     mutation.reset();
   }, [auth.address, auth.isAuthenticated, address]);
   const summary = reviews.data?.pages[0];
-  const items = reviews.data?.pages.flatMap((page) => page.reviews) ?? [];
+  const summaryTotal = summary && Number.isFinite(summary.total) ? (summary.total ?? 0) : 0;
+  const summaryAverage = summary && Number.isFinite(summary.average) ? (summary.average ?? 0) : 0;
+  const summaryCounts = summary?.counts ?? {};
+  const items = reviews.data?.pages.flatMap((page) => page.reviews ?? []) ?? [];
   const open = (next: Editor) => {
     mutation.reset();
     setEditor(next);
@@ -52,9 +61,9 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
 
   return (
     <section
-      id="voucher-panel-reviews"
-      role="tabpanel"
-      aria-labelledby="voucher-tab-reviews"
+      id={presentation === "tabpanel" ? "voucher-panel-reviews" : undefined}
+      role={presentation === "tabpanel" ? "tabpanel" : undefined}
+      aria-labelledby={presentation === "tabpanel" ? "voucher-tab-reviews" : undefined}
       className="space-y-3"
     >
       {reviews.isPending ? (
@@ -72,7 +81,7 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
           </Button>
         </div>
       ) : null}
-      {summary?.total === 0 ? (
+      {summary && summaryTotal === 0 ? (
         <p className="border border-border bg-card p-4 text-sm text-muted-foreground">
           <Trans>No reviews yet.</Trans>
         </p>
@@ -80,10 +89,10 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
         <div className="border border-border bg-card p-4">
           <div className="flex items-center gap-5">
             <div className="shrink-0 text-center">
-              <p className="font-heading text-4xl font-bold">{summary.average.toFixed(1)}</p>
-              <ReviewStars stars={Math.round(summary.average)} />
+              <p className="font-heading text-4xl font-bold">{summaryAverage.toFixed(1)}</p>
+              <ReviewStars stars={summaryAverage} />
               <p className="mt-1 text-xs text-muted-foreground">
-                <Trans>{summary.total} reviews</Trans>
+                <Trans>{summaryTotal} reviews</Trans>
               </p>
             </div>
             <div className="min-w-0 flex-1" aria-label={t`Ratings distribution`}>
@@ -103,11 +112,11 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
                     <span
                       className="block h-full rounded-full bg-amber-500"
                       style={{
-                        width: `${summary.total ? ((summary.counts[stars] ?? 0) / summary.total) * 100 : 0}%`,
+                        width: `${summaryTotal ? ((summaryCounts[stars] ?? 0) / summaryTotal) * 100 : 0}%`,
                       }}
                     />
                   </span>
-                  <span className="w-7 text-right tabular-nums">{summary.counts[stars] ?? 0}</span>
+                  <span className="w-7 text-right tabular-nums">{summaryCounts[stars] ?? 0}</span>
                 </button>
               ))}
             </div>
@@ -182,7 +191,7 @@ export function VoucherReviewsPanel({ address }: { address: string }) {
         )}
       </div>
 
-      {summary && summary.total > 0 ? (
+      {summary && summaryTotal > 0 ? (
         <>
           <div className="flex min-h-10 items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>

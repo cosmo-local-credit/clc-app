@@ -608,7 +608,7 @@ describe("VoucherDetailPage", () => {
     expect(within(dialog).queryByText("Description")).toBeNull();
     expect(description.parentElement?.className).toContain("bg-card");
     expect(description.parentElement?.className).toContain("border-border");
-    // Redundant with the voucher itself, and replaced by the quantity stepper.
+    // Redundant with the voucher itself.
     expect(within(dialog).queryByText("Kangemi Market")).toBeNull();
     expect(within(dialog).queryByText("Seller")).toBeNull();
     // Tapping outside dismisses, so the only close control is screen-reader only.
@@ -629,45 +629,18 @@ describe("VoucherDetailPage", () => {
     expect(produce.style.backgroundColor).not.toBe(fresh.style.backgroundColor);
   });
 
-  it("gives the quantity and total rows one shared height", () => {
+  it("keeps the offering rollup informational and closes it onto the voucher page", () => {
     render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
 
     fireEvent.click(screen.getByRole("button", { name: "View offering details: Vegetables" }));
 
     const dialog = screen.getByRole("dialog");
-    const quantityRow = within(dialog).getByText("Quantity").parentElement;
-    const totalRow = within(dialog).getByText("Total").parentElement;
-
-    expect(quantityRow?.className).toContain("h-14");
-    expect(totalRow?.className).toContain("h-14");
-  });
-
-  it("multiplies the unit price into a running total as the quantity changes", () => {
-    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="offerings" />);
-
-    fireEvent.click(screen.getByRole("button", { name: "View offering details: Vegetables" }));
-
-    const dialog = screen.getByRole("dialog");
-    const totalRow = () => within(dialog).getByText("Total").parentElement?.textContent;
-    const decrease = within(dialog).getByRole("button", {
-      name: "Decrease quantity",
-    }) as HTMLButtonElement;
-
     expect(within(dialog).getByText("100 KSH / kg")).toBeTruthy();
-    expect(totalRow()).toContain("100 KSH");
-    // One is the floor, so the minus is inert until the quantity leaves it.
-    expect(decrease.disabled).toBe(true);
-
-    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Increase quantity" }));
-
-    expect(totalRow()).toContain("300 KSH");
-    expect(decrease.disabled).toBe(false);
-
-    fireEvent.click(decrease);
-
-    expect(totalRow()).toContain("200 KSH");
-    expect(within(dialog).getByRole("button", { name: /Add to cart/ })).toBeTruthy();
+    expect(within(dialog).queryByText("Quantity")).toBeNull();
+    expect(within(dialog).queryByText("Total")).toBeNull();
+    expect(within(dialog).queryByRole("button", { name: /Add to cart/ })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Open voucher page" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("shows the unit-of-account price and hides a new offering's synthetic quantity", () => {
@@ -699,8 +672,8 @@ describe("VoucherDetailPage", () => {
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Price on request")).toBeTruthy();
     expect(within(dialog).queryByText("Total")).toBeNull();
-    // The quantity is still selectable: an unpriced item is still orderable.
-    expect(within(dialog).getByRole("button", { name: "Increase quantity" })).toBeTruthy();
+    expect(within(dialog).queryByText("Quantity")).toBeNull();
+    expect(within(dialog).getByRole("button", { name: "Open voucher page" })).toBeTruthy();
   });
 
   it("disables Redeem when the voucher has no known issuer to send back to", () => {

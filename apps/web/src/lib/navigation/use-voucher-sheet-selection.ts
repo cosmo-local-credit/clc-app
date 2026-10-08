@@ -1,10 +1,7 @@
 import { useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
 
-import {
-  parseVoucherSheetSearch,
-  type VoucherSheetTab,
-} from "#/lib/navigation/voucher-sheet-search";
+import { parseVoucherSheetSearch } from "#/lib/navigation/voucher-sheet-search";
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -20,7 +17,6 @@ declare module "@tanstack/react-router" {
 export type VoucherSheetSelection = {
   /** The voucher whose card is open, as the URL spells it. */
   voucher: `0x${string}` | null;
-  voucherTab: VoucherSheetTab;
   open: (address: `0x${string}`) => void;
   close: () => void;
 };
@@ -42,7 +38,7 @@ export function useVoucherSheetSelection(): VoucherSheetSelection {
   const search = useSearch({ strict: false });
   const navigate = useNavigate();
   const router = useRouter();
-  const { voucher = null, voucherTab = "offerings" } = parseVoucherSheetSearch(search);
+  const { voucher = null } = parseVoucherSheetSearch(search);
 
   // Closing by Back is asynchronous. A swipe and a tap landing together must
   // not pop two entries.
@@ -81,5 +77,5 @@ export function useVoucherSheetSelection(): VoucherSheetSelection {
     });
   }, [navigate, router, voucher]);
 
-  return { voucher, voucherTab, open, close };
+  return { voucher, open, close };
 }
