@@ -52,11 +52,18 @@ export type CollectRejection =
 export type CollectState =
   | { phase: "idle" }
   | { phase: "armed"; intent: CollectIntent; source: CollectSource }
+  /** An encrypted card claimed the intent; its holder is entering the password. */
+  | { phase: "unlocking"; intent: CollectIntent }
   | { phase: "processing"; intent: CollectIntent; payer: `0x${string}` }
   /** The relay accepted the request and returned a tracking id. Not yet confirmed. */
   | { phase: "submitted"; intent: CollectIntent; payer: `0x${string}`; trackingId: string }
   /** The request may have reached the relay; its answer was lost. */
   | { phase: "checking"; intent: CollectIntent; payer: `0x${string}` }
+  /**
+   * Checking ran out at the signed request's deadline without an answer. It
+   * can no longer execute, but whether it already did is not known here.
+   */
+  | { phase: "unknown"; intent: CollectIntent; payer: `0x${string}` }
   /** Ended before anything was submitted: nothing was deducted. */
   | {
       phase: "rejected";
@@ -87,7 +94,7 @@ function samePayer(a: `0x${string}` | null, b: `0x${string}`): boolean {
 /** An intent can be armed only while no other is waiting or in flight. */
 export function canArmCollectIntent(session: CollectSession): boolean {
   const { phase } = session.state;
-  return phase === "idle" || phase === "submitted" || phase === "rejected";
+  return phase === "idle" || phase === "submitted" || phase === "rejected" || phase === "unknown";
 }
 
 /** A payer whose previous payment from this session is still pending or uncertain. */
@@ -154,6 +161,78 @@ export function claimCollectIntent(
   };
 }
 
+/**
+ * An encrypted card consumes the armed intent before its payer is known: the
+ * address only exists once the password has unlocked the key.
+ */
+export function beginCollectUnlock(
+  session: CollectSession,
+):
+  | { ok: true; session: CollectSession; intent: CollectIntent }
+  | { ok: false; reason: "not-armed" | "wrong-source" } {
+  const { state } = session;
+  if (state.phase !== "armed") return { ok: false, reason: "not-armed" };
+  if (state.source !== "card") return { ok: false, reason: "wrong-source" };
+  return {
+    ok: true,
+    intent: state.intent,
+    session: { ...session, state: { phase: "unlocking", intent: state.intent } },
+  };
+}
+
+/**
+ * The password unlocked the card. Typing it is the holder's deliberate act, so
+ * the same-wallet latch does not apply; the unresolved and self-payment rules
+ * do. A refusal re-arms the intent, since nothing was charged.
+ */
+export function completeCollectUnlock(
+  session: CollectSession,
+  intentId: string,
+  payer: `0x${string}`,
+):
+  | { ok: true; session: CollectSession; intent: CollectIntent }
+  | {
+      ok: false;
+      session: CollectSession;
+      reason: "not-armed" | "payer-unresolved" | "self-payment";
+    } {
+  const { state } = session;
+  if (state.phase !== "unlocking" || state.intent.id !== intentId) {
+    return { ok: false, session, reason: "not-armed" };
+  }
+  const refusal = isPayerUnresolved(session, payer)
+    ? "payer-unresolved"
+    : samePayer(state.intent.collector, payer)
+      ? "self-payment"
+      : null;
+  if (refusal) {
+    return {
+      ok: false,
+      reason: refusal,
+      session: { ...session, state: { phase: "armed", intent: state.intent, source: "card" } },
+    };
+  }
+  return {
+    ok: true,
+    intent: state.intent,
+    session: {
+      ...session,
+      latchedPayer: payer,
+      state: { phase: "processing", intent: state.intent, payer },
+    },
+  };
+}
+
+/** The holder backed out of the password: nothing was charged. */
+export function cancelCollectUnlock(session: CollectSession, intentId: string): CollectSession {
+  const { state } = session;
+  if (state.phase !== "unlocking" || state.intent.id !== intentId) return session;
+  return {
+    ...session,
+    state: { phase: "rejected", intent: state.intent, payer: null, reason: "unlock-cancelled" },
+  };
+}
+
 function isCurrent(session: CollectSession, intentId: string): boolean {
   const { state } = session;
   return state.phase !== "idle" && state.intent.id === intentId;
@@ -214,6 +293,22 @@ export function recordCollectRejected(
   return {
     ...resolveCollectPayment(session, intentId),
     state: { phase: "rejected", intent: state.intent, payer: state.payer, reason, detail },
+  };
+}
+
+/**
+ * Reconciliation reached the signed request's deadline without learning its
+ * fate. The request is dead either way, so the payer is freed; the collector is
+ * told to check before charging the card again.
+ */
+export function recordCollectUnknown(session: CollectSession, intentId: string): CollectSession {
+  const { state } = session;
+  if (!isCurrent(session, intentId) || state.phase !== "checking") {
+    return resolveCollectPayment(session, intentId);
+  }
+  return {
+    ...resolveCollectPayment(session, intentId),
+    state: { phase: "unknown", intent: state.intent, payer: state.payer },
   };
 }
 

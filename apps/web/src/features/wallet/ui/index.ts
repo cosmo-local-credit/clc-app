@@ -1,4 +1,5 @@
 export { AllVouchersPage } from "./all-vouchers-page";
+export { CollectPage } from "./collect-page";
 export { ReceivePage } from "./receive-page";
 export { SendAmountPage } from "./send-amount-page";
 export { SendReceiptPage } from "./send-receipt-page";

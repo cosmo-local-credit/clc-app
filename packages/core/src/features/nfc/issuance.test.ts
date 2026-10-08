@@ -76,7 +76,11 @@ describe("writerTransition", () => {
     const partial: WriterContext = { readyIds: [0], preparing: true };
     const starved = run([{ type: "start" }, { type: "write-succeeded", rowId: 0 }], fast, partial);
     expect(starved.phase).toEqual({ phase: "starved" });
-    const woken = writerTransition(starved, { type: "rows-changed" }, { readyIds: [0, 1], preparing: true });
+    const woken = writerTransition(
+      starved,
+      { type: "rows-changed" },
+      { readyIds: [0, 1], preparing: true },
+    );
     expect(woken.phase).toMatchObject({ phase: "waiting", rowId: 1 });
   });
 
@@ -168,7 +172,8 @@ describe("writerTransition", () => {
 
   it("stops on a permission or hardware failure", () => {
     expect(
-      run([{ type: "start" }, { type: "write-failed", rowId: 0, error: "permission-denied" }]).phase,
+      run([{ type: "start" }, { type: "write-failed", rowId: 0, error: "permission-denied" }])
+        .phase,
     ).toEqual({ phase: "stopped", error: "permission-denied" });
   });
 

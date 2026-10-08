@@ -233,9 +233,9 @@ describe("isRelaySubmissionUncertain", () => {
   it("treats a 4xx as a refusal that queued nothing", () => {
     expect(isRelaySubmissionUncertain(new RelayerError("server_error", "bad", 400))).toBe(false);
     expect(isRelaySubmissionUncertain(new RelayerError("conflict", "reused", 409))).toBe(false);
-    expect(
-      isRelaySubmissionUncertain(new RelayerError("verification_failed", "sig", 401)),
-    ).toBe(false);
+    expect(isRelaySubmissionUncertain(new RelayerError("verification_failed", "sig", 401))).toBe(
+      false,
+    );
   });
 
   it("treats a 5xx, a dropped connection or an unreadable body as unknown", () => {
@@ -261,7 +261,7 @@ describe("relay with an operation id", () => {
       signature: "0xabc",
       signatureType: "secp256k1",
     });
-    const body = JSON.parse(String(spy.mock.calls[0]?.[1]?.body));
+    const body = JSON.parse(spy.mock.calls[0]?.[1]?.body as string);
     expect(body.operationId).toBe("op-1");
   });
 });

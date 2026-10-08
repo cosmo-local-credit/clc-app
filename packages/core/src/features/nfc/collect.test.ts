@@ -2,8 +2,11 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   armCollectIntent,
+  beginCollectUnlock,
   canArmCollectIntent,
+  cancelCollectUnlock,
   claimCollectIntent,
+  completeCollectUnlock,
   type CollectIntent,
   type CollectSession,
   disarmCollectIntent,
@@ -12,6 +15,7 @@ import {
   recordCollectRejected,
   recordCollectSubmitted,
   recordCollectUncertain,
+  recordCollectUnknown,
   resolveCollectPayment,
 } from "./collect";
 
@@ -35,7 +39,11 @@ function armed(id = "a", source: "card" | "retained" = "card", base = INITIAL_CO
   return session;
 }
 
-function claimed(session: CollectSession, payer = PAYER, source: "card" | "retained" = "card") {
+function claimed(
+  session: CollectSession,
+  payer: `0x${string}` = PAYER,
+  source: "card" | "retained" = "card",
+) {
   const claim = claimCollectIntent(session, payer, source);
   if (!claim.ok) throw new Error(`expected a claim, got ${claim.reason}`);
   return claim.session;
@@ -152,5 +160,66 @@ describe("outcomes", () => {
     expect(finishCollectCustomer(processing)).toBe(processing);
     const checking = recordCollectUncertain(processing, "a");
     expect(finishCollectCustomer(checking)).toBe(checking);
+  });
+});
+
+describe("encrypted cards", () => {
+  function unlocking(base = INITIAL_COLLECT_SESSION) {
+    const begun = beginCollectUnlock(armed("a", "card", base));
+    if (!begun.ok) throw new Error("expected to begin unlock");
+    return begun.session;
+  }
+
+  it("consumes the armed intent before the payer is known", () => {
+    const session = unlocking();
+    expect(session.state.phase).toBe("unlocking");
+    expect(claimCollectIntent(session, PAYER, "card")).toEqual({ ok: false, reason: "not-armed" });
+    expect(beginCollectUnlock(session)).toEqual({ ok: false, reason: "not-armed" });
+  });
+
+  it("claims for the unlocked payer, latching it", () => {
+    const result = completeCollectUnlock(unlocking(), "a", PAYER);
+    expect(result.ok).toBe(true);
+    expect(result.session.state).toMatchObject({ phase: "processing", payer: PAYER });
+    expect(result.session.latchedPayer).toBe(PAYER);
+  });
+
+  it("re-arms when the unlocked wallet is the collector's own", () => {
+    const result = completeCollectUnlock(unlocking(), "a", COLLECTOR);
+    expect(result).toMatchObject({ ok: false, reason: "self-payment" });
+    expect(result.session.state).toMatchObject({ phase: "armed", source: "card" });
+  });
+
+  it("refuses a payer whose previous payment is unresolved", () => {
+    const pending = recordCollectSubmitted(claimed(armed("p")), "p", "t1");
+    expect(completeCollectUnlock(unlocking(pending), "a", PAYER)).toMatchObject({
+      ok: false,
+      reason: "payer-unresolved",
+    });
+  });
+
+  it("records a cancelled unlock as nothing charged", () => {
+    expect(cancelCollectUnlock(unlocking(), "a").state).toMatchObject({
+      phase: "rejected",
+      reason: "unlock-cancelled",
+      payer: null,
+    });
+  });
+});
+
+describe("unknown outcomes", () => {
+  it("frees the payer once checking gives up at the deadline", () => {
+    const unknown = recordCollectUnknown(recordCollectUncertain(claimed(armed()), "a"), "a");
+    expect(unknown.state).toMatchObject({ phase: "unknown", payer: PAYER });
+    expect(unknown.unresolved).toEqual({});
+    expect(canArmCollectIntent(unknown)).toBe(true);
+  });
+
+  it("resolves a background payment without touching the current intent", () => {
+    const background = recordCollectUncertain(claimed(armed()), "a");
+    const moved = { ...background, state: { phase: "idle" as const } };
+    const resolved = recordCollectUnknown(moved, "a");
+    expect(resolved.state).toEqual({ phase: "idle" });
+    expect(resolved.unresolved).toEqual({});
   });
 });

@@ -27,7 +27,9 @@ function url(text: string): NfcRecord {
 function text(value: string, encoding = "utf-8"): NfcRecord {
   const data =
     encoding === "utf-16be"
-      ? new Uint8Array([...value].flatMap((char) => [0, char.charCodeAt(0)]))
+      ? new Uint8Array(
+          Array.from({ length: value.length }, (_, i) => [0, value.charCodeAt(i)]).flat(),
+        )
       : encode(value);
   return { recordType: "text", mediaType: null, encoding, data };
 }
@@ -131,9 +133,9 @@ describe("nfcReadingMatchesUrl", () => {
 
   it("rejects extra records, other rows and blank cards", () => {
     expect(nfcReadingMatchesUrl(reading(url(expected), text("x")), expected)).toBe(false);
-    expect(nfcReadingMatchesUrl(reading(url(buildPaperWalletUrl(ORIGIN, OTHER_KEY))), expected)).toBe(
-      false,
-    );
+    expect(
+      nfcReadingMatchesUrl(reading(url(buildPaperWalletUrl(ORIGIN, OTHER_KEY))), expected),
+    ).toBe(false);
     expect(nfcReadingMatchesUrl(reading(), expected)).toBe(false);
     expect(nfcReadingMatchesUrl(reading(text(expected)), expected)).toBe(false);
   });

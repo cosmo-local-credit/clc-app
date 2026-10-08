@@ -190,8 +190,7 @@ export function writerTransition(
   switch (event.type) {
     case "start": {
       if (phase.phase === "waiting" || phase.phase === "verifying") return model;
-      const resumeRow =
-        phase.phase === "paused" || phase.phase === "blocked" ? phase.rowId : null;
+      const resumeRow = phase.phase === "paused" || phase.phase === "blocked" ? phase.rowId : null;
       if (resumeRow !== null && issuanceOf(model, resumeRow).status === "pending") {
         return arm(model, resumeRow, false);
       }
@@ -227,10 +226,16 @@ export function writerTransition(
             },
           };
         case "transfer-failed":
-          return { ...model, phase: { phase: "attention", rowId: event.rowId, reason: "transfer-failed" } };
+          return {
+            ...model,
+            phase: { phase: "attention", rowId: event.rowId, reason: "transfer-failed" },
+          };
         case "unknown":
         case "busy":
-          return { ...model, phase: { phase: "attention", rowId: event.rowId, reason: "write-error" } };
+          return {
+            ...model,
+            phase: { phase: "attention", rowId: event.rowId, reason: "write-error" },
+          };
         default:
           return { ...model, phase: { phase: "stopped", error: event.error } };
       }
@@ -241,7 +246,11 @@ export function writerTransition(
     case "verify-read": {
       if (phase.phase !== "verifying" || phase.rowId !== event.rowId) return model;
       if (event.matches) {
-        return advance(withIssuance(model, event.rowId, { status: "verified" }), context, event.rowId);
+        return advance(
+          withIssuance(model, event.rowId, { status: "verified" }),
+          context,
+          event.rowId,
+        );
       }
       // Not issued: the card read back as something other than this row's record.
       return {

@@ -1,4 +1,7 @@
-import { type PaperWalletImportPayload, parsePaperWalletImportPayload } from "../wallet/paper-wallet";
+import {
+  type PaperWalletImportPayload,
+  parsePaperWalletImportPayload,
+} from "../wallet/paper-wallet";
 
 /**
  * NFC wallet cards: the platform-agnostic half.
@@ -275,7 +278,10 @@ export function isNfcSessionActive(phase: NfcSessionPhase): boolean {
  * second `tag` while one is `handling` is not a transition, so it is dropped
  * before any parsing, login or relay has been awaited.
  */
-export function nextNfcSessionPhase(phase: NfcSessionPhase, event: NfcSessionEvent): NfcSessionPhase {
+export function nextNfcSessionPhase(
+  phase: NfcSessionPhase,
+  event: NfcSessionEvent,
+): NfcSessionPhase {
   switch (event.type) {
     case "start":
       return isNfcSessionActive(phase) ? phase : "starting";
