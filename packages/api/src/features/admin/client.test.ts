@@ -628,6 +628,26 @@ describe("listPoolTransactions", () => {
     );
   });
 
+  it("keeps protocol fee precision and distinguishes zero from missing history", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        transactions: [
+          { ...swap, protocolFee: "123456789012345678901" },
+          { ...swap, protocolFee: "0" },
+          { ...swap, protocolFee: null },
+          { ...swap },
+        ],
+      }),
+    );
+    const page = await client().listPoolTransactions({ perPage: 10 });
+    expect(page.transactions.map((row) => row.protocolFee)).toEqual([
+      "123456789012345678901",
+      "0",
+      null,
+      null,
+    ]);
+  });
+
   it("leaves a deposit's out side null, since nothing left the pool", async () => {
     fetchMock.mockResolvedValue(
       ok({

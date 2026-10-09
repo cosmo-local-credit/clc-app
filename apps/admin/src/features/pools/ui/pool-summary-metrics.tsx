@@ -39,7 +39,7 @@ export function PoolSummaryMetrics({
         label="Priced"
         size="sm"
         value={available ? composition.priced : 0}
-        unavailable={!available}
+        unavailable={!available || composition.pricing === null}
         tone={composition.unpriced > 0 ? "warning" : "neutral"}
         detail={
           coverage ?? (composition.unpriced > 0 ? `${composition.unpriced} unpriced` : undefined)
@@ -54,11 +54,17 @@ export function PoolSummaryMetrics({
         detail={coverage ?? (composition.blocked > 0 ? "deposits blocked" : undefined)}
       />
       <MetricCard
-        label="Price feeds"
+        label={composition.pricing === "oracle" ? "Price feeds" : "Pricing"}
         size="sm"
-        value={available ? composition.feeds : 0}
-        unavailable={!available}
-        detail={coverage}
+        value={
+          composition.pricing === "oracle"
+            ? composition.feeds
+            : composition.pricing === "relative"
+              ? "Relative"
+              : "Decimals"
+        }
+        unavailable={!available || composition.pricing === null}
+        detail={composition.pricing === "oracle" ? coverage : undefined}
       />
       <MetricCard
         label="Offers"

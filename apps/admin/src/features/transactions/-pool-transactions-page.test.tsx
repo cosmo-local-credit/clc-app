@@ -36,6 +36,7 @@ const swap = {
   tokenOutDecimals: 6,
   amountOut: "990000",
   fee: "1000",
+  protocolFee: "2000",
 };
 
 const rows = vi.hoisted(() => ({ current: [] as Array<Record<string, unknown>> }));
@@ -113,7 +114,7 @@ describe("PoolTransactionsPage", () => {
     expect(amountIn.closest("td")?.className).not.toContain("text-right");
     expect(rendered.getByText("0.99")).toBeTruthy();
     expect(rendered.getByText("SRF")).toBeTruthy();
-    expect(rendered.getByText("CKS")).toBeTruthy();
+    expect(rendered.getAllByText("CKS").length).toBeGreaterThan(0);
   });
 
   it("renders the operation and receipt outcome as badges", async () => {
@@ -150,7 +151,7 @@ describe("PoolTransactionsPage", () => {
     const rendered = await table();
     expect(rendered.getByText("deposit")).toBeTruthy();
     expect(rendered.queryByText("0")).toBeNull();
-    expect(rendered.getAllByText("—")).toHaveLength(2);
+    expect(rendered.getAllByText("—")).toHaveLength(3);
   });
 
   it("sends a pool-search term to the backend and keeps it in the URL", async () => {

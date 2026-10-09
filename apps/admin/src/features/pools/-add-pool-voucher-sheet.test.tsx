@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import type { PoolVoucherEdit } from "./ui/pool-holdings-panel";
 import { AddPoolVoucherSheet } from "./ui/add-pool-voucher-sheet";
 
 const POOL = "0x8e0a000000000000000000000000000000000b41";
@@ -101,13 +102,18 @@ function member(address: string): PoolVoucher {
 
 const onAdded = vi.fn();
 
-function renderSheet(overrides: Partial<UserPool> = {}, members: PoolVoucher[] = []) {
+function renderSheet(
+  overrides: Partial<UserPool> = {},
+  members: PoolVoucher[] = [],
+  edit?: PoolVoucherEdit,
+) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={queryClient}>
       <AddPoolVoucherSheet
         pool={pool(overrides)}
         poolVouchers={members}
+        edit={edit}
         open
         onClose={() => {}}
         onAdded={onAdded}
@@ -169,18 +175,24 @@ describe("AddPoolVoucherSheet", () => {
     expect(screen.getByText(/does not record which quoter/)).toBeTruthy();
   });
 
-  it("refuses a pool still on the retired relative quoter", async () => {
-    // Registering without a rate is not neutral: RelativeQuoter reads an unset
-    // token as parity, so the pair would silently start quoting 1:1.
+  it("requires an explicit relative rate and signs its PPM setter", async () => {
     renderSheet({ quoterType: "relative" });
-
-    fireEvent.click(await waitFor(() => screen.getByRole("button", { name: /Kiriba/ })));
-    await waitFor(() => expect(screen.getByText(/retired RelativeQuoter/)).toBeTruthy());
-
+    await pickKiriba();
     expect(screen.queryByLabelText("Aggregator address")).toBeNull();
-    expect(screen.getByRole("button", { name: "Sign and add" }).hasAttribute("disabled")).toBe(
-      true,
+    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText("Enter a positive rate with at most six decimal places"),
+      ).toBeTruthy(),
     );
+    expect(relayOperatorBatch).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText("Exchange rate"), { target: { value: "1.25" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    const calls = relayOperatorBatch.mock.calls[0]![0];
+    expect(calls.map((call: { to: string }) => call.to)).toEqual([REGISTRY, LIMITER, QUOTER]);
+    expect(calls[2].data).toContain((1_250_000).toString(16));
   });
 
   it("configures nothing per voucher on a decimal quoter", async () => {
@@ -190,6 +202,35 @@ describe("AddPoolVoucherSheet", () => {
     expect(screen.getByText(/prices every pair from token decimals/)).toBeTruthy();
     expect(screen.queryByLabelText("Aggregator address")).toBeNull();
     expect(screen.queryByLabelText(/Rate \(PPM\)/)).toBeNull();
+  });
+
+  it("updates an existing relative voucher without re-registering and accepts a zero cap", async () => {
+    const voucher = member(RIBA);
+    renderSheet({ quoterType: "relative" }, [voucher], {
+      voucher,
+      ratePpm: "1250000",
+      capRaw: "300000000",
+    });
+    expect(screen.getByLabelText("Exchange rate").getAttribute("value")).toBe("1.25");
+    fireEvent.change(screen.getByLabelText(/Cap in MUMO/), { target: { value: "0" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and update" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      LIMITER,
+      QUOTER,
+    ]);
+  });
+
+  it("adds to a decimal pool without sending a quoter setter", async () => {
+    renderSheet({ quoterType: "decimal" });
+    await pickKiriba();
+    fireEvent.change(screen.getByLabelText(/Cap in RIBA/), { target: { value: "300" } });
+    fireEvent.click(screen.getByRole("button", { name: "Sign and add" }));
+    await waitFor(() => expect(relayOperatorBatch).toHaveBeenCalled());
+    expect(relayOperatorBatch.mock.calls[0]![0].map((call: { to: string }) => call.to)).toEqual([
+      REGISTRY,
+      LIMITER,
+    ]);
   });
 
   it("offers no cap when the pool has no limiter on record", async () => {

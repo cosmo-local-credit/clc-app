@@ -332,6 +332,8 @@ export type AdminPoolTransaction = AdminChainTransaction & {
   amountOut: string | null;
   /** Denominated in `tokenOut`, and excluding the protocol fee. */
   fee: string | null;
+  /** Output-token units. Omitted by older backends; null for legacy swaps. */
+  protocolFee?: string | null;
 };
 
 export type AdminOTX = {
@@ -540,7 +542,13 @@ type BackendAdminVoucherTransaction = Omit<
 
 type BackendAdminPoolTransaction = Omit<
   AdminPoolTransaction,
-  "tokenInDecimals" | "tokenOut" | "tokenOutDecimals" | "amountIn" | "amountOut" | "fee"
+  | "tokenInDecimals"
+  | "tokenOut"
+  | "tokenOutDecimals"
+  | "amountIn"
+  | "amountOut"
+  | "fee"
+  | "protocolFee"
 > & {
   tokenInDecimals: unknown;
   tokenOut: unknown;
@@ -548,6 +556,7 @@ type BackendAdminPoolTransaction = Omit<
   amountIn: unknown;
   amountOut: unknown;
   fee: unknown;
+  protocolFee?: unknown;
 };
 
 type BackendAdminPool = Parameters<typeof normalizeUserPool>[0];
@@ -857,6 +866,7 @@ export function createAdminClient(http: HttpClient): AdminClient {
         amountIn: normalizeRawAmount(row.amountIn),
         amountOut: normalizeRawAmount(row.amountOut),
         fee: normalizeRawAmount(row.fee),
+        protocolFee: normalizeRawAmount(row.protocolFee),
       }));
       return {
         transactions: received,

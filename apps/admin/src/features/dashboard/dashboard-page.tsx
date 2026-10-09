@@ -35,6 +35,7 @@ import {
   RELAYER_GAS_FLOOR_WEI,
   relayerGasTone,
 } from "./relayer-gas";
+import { LatestSwapsPanel } from "./latest-swaps-panel";
 import { useDashboardStats, useRelayerGas } from "./use-dashboard-metrics";
 
 const catalogChartConfig = {
@@ -145,6 +146,8 @@ export function DashboardPage({
           link={{ to: "/transactions/vouchers" }}
         />
       </div>
+
+      <LatestSwapsPanel />
 
       <div className="grid gap-4 xl:grid-cols-2">
         <SeriesChart

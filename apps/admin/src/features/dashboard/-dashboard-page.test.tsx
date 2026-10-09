@@ -48,6 +48,8 @@ vi.mock("./use-dashboard-metrics", () => ({
   useRelayerGas: () => relayerGas(),
 }));
 
+vi.mock("./latest-swaps-panel", () => ({ LatestSwapsPanel: () => <div>Latest swaps</div> }));
+
 const { DashboardPage } = await import("./dashboard-page");
 
 function renderPage() {
