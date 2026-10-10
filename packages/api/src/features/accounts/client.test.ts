@@ -5,6 +5,8 @@ import { createAccountsClient } from "./client";
 // One client over a test base URL. `fetch` is left to the platform so the
 // existing vi.stubGlobal("fetch") in each test is what answers the request.
 const api = createAccountsClient(createHttpClient({ baseUrl: "https://api.test" }));
+const ACCOUNT = "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d";
+const LOWERCASE_ACCOUNT = ACCOUNT.toLowerCase();
 
 function mockFetch(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -40,13 +42,11 @@ describe("account token balances", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const result = await api.getLatestAccountTokens("0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d");
+    const result = await api.getLatestAccountTokens(LOWERCASE_ACCOUNT);
 
     expect(result.tokens[0]?.tokenSymbol).toBe("USD₮");
     expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "/api/v2/accounts/0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d/tokens/latest",
-      ),
+      expect.stringContaining(`/api/v2/accounts/${ACCOUNT}/tokens/latest`),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
@@ -56,7 +56,7 @@ describe("account token balances", () => {
     vi.stubGlobal("fetch", fetcher);
 
     await api.getAccountTransfers({
-      address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      address: LOWERCASE_ACCOUNT,
       perPage: 20,
       cursor: 5,
       next: true,
@@ -64,8 +64,20 @@ describe("account token balances", () => {
 
     expect(fetcher).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/v2/accounts/0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d/transfers?perPage=20&cursor=5&next=true",
+        `/api/v2/accounts/${ACCOUNT}/transfers?perPage=20&cursor=5&next=true`,
       ),
+      expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
+    );
+  });
+
+  it("checksums paginated token-balance account paths", async () => {
+    const fetcher = mockFetch({ ok: true, result: { tokens: [], first: 10, last: 5 } });
+    vi.stubGlobal("fetch", fetcher);
+
+    await api.getAccountTokens({ address: LOWERCASE_ACCOUNT, perPage: 20 });
+
+    expect(fetcher).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/v2/accounts/${ACCOUNT}/tokens?perPage=20`),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
   });
@@ -85,7 +97,7 @@ describe("account status", () => {
     });
     vi.stubGlobal("fetch", fetcher);
 
-    const status = await api.getAccountStatus(address);
+    const status = await api.getAccountStatus(address.toLowerCase());
 
     expect(status.gasBalance).toBe("3202847782677689810");
     expect(status.active).toBe(true);
@@ -95,18 +107,15 @@ describe("account status", () => {
     );
   });
 
-  it("encodes the address so a malformed one cannot alter the route", async () => {
+  it("rejects a malformed address before making a request", async () => {
     const fetcher = mockFetch({
       ok: true,
       result: { gasBalance: "0", networkNonce: 0, internalNonce: 0, active: false },
     });
     vi.stubGlobal("fetch", fetcher);
 
-    await api.getAccountStatus("../../tokens");
+    await expect(api.getAccountStatus("../../tokens")).rejects.toThrow(/address.*invalid/i);
 
-    expect(fetcher).toHaveBeenCalledWith(
-      expect.stringContaining("/api/v2/account/status/..%2F..%2Ftokens"),
-      expect.any(Object),
-    );
+    expect(fetcher).not.toHaveBeenCalled();
   });
 });
