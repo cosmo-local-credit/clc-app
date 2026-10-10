@@ -191,6 +191,17 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Dutch", async () => {
+    await activateLocale("nl");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Kies een locatie");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Ongeldig telefoonnummer");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Een naam voor de waardebon is verplicht",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
+  });
+
   it("translates known validation errors into Ukrainian", async () => {
     await activateLocale("uk");
 
@@ -203,7 +214,19 @@ describe("translateValidationError", () => {
   });
 
   it("keeps every known validation error wired to a translated catalog message", async () => {
-    for (const locale of ["ar", "de", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
+    for (const locale of [
+      "ar",
+      "de",
+      "dz",
+      "es",
+      "fr",
+      "it",
+      "nl",
+      "pt",
+      "sr",
+      "sw",
+      "uk",
+    ] as const) {
       await activateLocale(locale);
 
       for (const error of knownErrors) {

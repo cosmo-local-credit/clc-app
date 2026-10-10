@@ -90,6 +90,13 @@ describe("translated distance labels", () => {
     expect(kilometres({ value: "12,4" })).toBe("12,4 km");
   });
 
+  it("renders Dutch", async () => {
+    await activateLocale("nl");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12,4" })).toBe("12,4 km");
+  });
+
   it("renders Ukrainian", async () => {
     await activateLocale("uk");
 
@@ -149,6 +156,11 @@ describe("translated distance labels", () => {
     expect(i18n._(msg`Services`)).toBe("Servizi");
     expect(i18n._(msg`Voucher`)).toBe("Buono");
 
+    await activateLocale("nl");
+    expect(i18n._(msg`Goods`)).toBe("Goederen");
+    expect(i18n._(msg`Services`)).toBe("Diensten");
+    expect(i18n._(msg`Voucher`)).toBe("Waardebon");
+
     await activateLocale("sw");
     expect(i18n._(msg`Goods`)).toBe("Bidhaa");
     expect(i18n._(msg`Services`)).toBe("Huduma");
@@ -166,7 +178,19 @@ describe("translated distance labels", () => {
   });
 
   it("translates the market load error, retry, and empty states", async () => {
-    for (const locale of ["ar", "de", "dz", "es", "fr", "it", "pt", "sr", "sw", "uk"] as const) {
+    for (const locale of [
+      "ar",
+      "de",
+      "dz",
+      "es",
+      "fr",
+      "it",
+      "nl",
+      "pt",
+      "sr",
+      "sw",
+      "uk",
+    ] as const) {
       await activateLocale(locale);
       for (const message of [
         msg`Could not load vouchers.`,
