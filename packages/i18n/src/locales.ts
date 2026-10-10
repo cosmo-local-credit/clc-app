@@ -6,6 +6,7 @@ const SUPPORTED_LOCALES = [
   "dz",
   "en",
   "es",
+  "fil",
   "fr",
   "hi",
   "it",
@@ -62,6 +63,13 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
   },
   { code: "de", label: "German", nativeLabel: "Deutsch", direction: "ltr", intlLocale: "de" },
   { code: "es", label: "Spanish", nativeLabel: "Español", direction: "ltr", intlLocale: "es" },
+  {
+    code: "fil",
+    label: "Filipino",
+    nativeLabel: "Filipino",
+    direction: "ltr",
+    intlLocale: "fil-PH",
+  },
   { code: "fr", label: "French", nativeLabel: "Français", direction: "ltr", intlLocale: "fr" },
   { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", direction: "ltr", intlLocale: "hi" },
   { code: "it", label: "Italian", nativeLabel: "Italiano", direction: "ltr", intlLocale: "it" },
@@ -130,6 +138,7 @@ export function matchSupportedLocale(preferred: readonly string[]): SupportedLoc
       if (locale) return locale;
       continue;
     }
+    if (primary === "tl") return "fil";
     if (isSupportedLocale(primary)) return primary;
   }
   return DEFAULT_LOCALE;

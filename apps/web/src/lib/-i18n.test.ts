@@ -25,6 +25,7 @@ describe("i18n catalogs", () => {
     ["dz", "ད་ཚུན་བསྐྱར་ཞིབ་མེད།"],
     ["en", "No reviews yet."],
     ["es", "Aún no hay reseñas."],
+    ["fil", "Wala pang mga review."],
     ["fr", "Aucun avis pour le moment."],
     ["hi", "अभी तक कोई समीक्षा नहीं।"],
     ["it", "Non ci sono ancora recensioni."],
@@ -103,6 +104,57 @@ describe("i18n catalogs", () => {
     expect(voucherCount(1)).toBe("1 waardebon");
     expect(voucherCount(2)).toBe("2 waardebonnen");
     expect(voucherCount(1.5)).toBe("1,5 waardebonnen");
+  });
+
+  it("activates the Filipino catalog with product terminology and Filipino plurals", async () => {
+    await activateLocale("fil");
+
+    expect(i18n.locales).toEqual(["fil-PH"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Piliin ang lokasyon",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Mga pool");
+    expect(i18n._(msg`Wallet`)).toBe("Wallet");
+    expect(i18n._(msg`Swap`)).toBe("Palitan");
+    expect(i18n._(msg`Redeem`)).toBe("Tubusin");
+    expect(i18n._(msg`Marketplace`)).toBe("Pamilihan");
+    expect(i18n._(msg`Credit limit`)).toBe("Credit limit");
+    expect(maxAmount("55.00")).toBe("Pinakamataas na 55.00");
+
+    const pluralMessages = [
+      ["{count, plural, one {# pool} other {# pools}}", "count", "pool"],
+      ["{requested, plural, one {# filter} other {# filters}}", "requested", "filter"],
+      ["{count, plural, one {# tag} other {# tags}}", "count", "tag"],
+      ["{count, plural, one {# voucher} other {# vouchers}}", "count", "voucher"],
+      ["{count, plural, one {# post} other {# posts}}", "count", "post"],
+    ] as const;
+    const pluralCases = [
+      [0, "one"],
+      [0.4, "other"],
+      [0.5, "one"],
+      [1, "one"],
+      [1.4, "other"],
+      [2, "one"],
+      [3, "one"],
+      [4, "other"],
+      [5, "one"],
+      [6, "other"],
+      [9, "other"],
+      [10, "one"],
+      [14, "other"],
+      [21, "one"],
+      [24, "other"],
+    ] as const;
+
+    for (const [count, category] of pluralCases) {
+      expect(new Intl.PluralRules("fil-PH").select(count)).toBe(category);
+      for (const [message, variable, noun] of pluralMessages) {
+        const localizedCount = new Intl.NumberFormat("fil-PH").format(count);
+        expect(i18n._({ id: message, message, values: { [variable]: count } })).toBe(
+          `${localizedCount} ${noun}`,
+        );
+      }
+    }
   });
 
   it("activates the Hindi catalog with product terminology and Hindi plurals", async () => {
@@ -420,6 +472,7 @@ describe("i18n catalogs", () => {
     ["ar", "فتح القائمة", "الانتقال إلى الموقع المحفوظ", "شروط الخدمة"],
     ["de", "Menü öffnen", "Zum gespeicherten Standort", "Nutzungsbedingungen"],
     ["es", "Abrir menú", "Ir a la ubicación guardada", "Términos del servicio"],
+    ["fil", "Buksan ang menu", "Pumunta sa naka-save na lokasyon", "Mga Tuntunin ng Serbisyo"],
     ["fr", "Ouvrir le menu", "Accéder à l’emplacement enregistré", "Conditions d’utilisation"],
     ["hi", "मेनू खोलें", "सहेजे गए स्थान पर जाएँ", "सेवा की शर्तें"],
     ["it", "Apra il menu", "Vada alla posizione salvata", "Termini di servizio"],

@@ -68,6 +68,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("es")}>
         Español
       </button>
+      <button type="button" onClick={() => setLocale("fil")}>
+        Filipino
+      </button>
       <button type="button" onClick={() => setLocale("fr")}>
         Français
       </button>
@@ -193,6 +196,19 @@ describe("AppI18nProvider", () => {
 
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("es");
+    });
+  });
+
+  it("detects legacy Tagalog as canonical Filipino and applies LTR", async () => {
+    setNavigatorLanguages(["tl-Latn-PH", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fil");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("fil");
+      expect(document.documentElement.lang).toBe("fil");
+      expect(document.documentElement.dir).toBe("ltr");
     });
   });
 
@@ -405,6 +421,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("es");
     expect(localStorage.getItem("clc.locale")).toBe("es");
     expect(Cookies.get("clc_locale")).toBe("es");
+  });
+
+  it("persists a Filipino locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Filipino" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fil");
+    expect(document.documentElement.lang).toBe("fil");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("fil");
+    expect(Cookies.get("clc_locale")).toBe("fil");
   });
 
   it("persists an Italian locale selection", async () => {

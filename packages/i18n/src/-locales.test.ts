@@ -57,11 +57,30 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["zh-US", "fr-FR"])).toBe("fr");
   });
 
+  it("matches canonical Filipino and legacy Tagalog preferences", () => {
+    expect(matchSupportedLocale(["fil"])).toBe("fil");
+    expect(matchSupportedLocale(["fil-PH"])).toBe("fil");
+    expect(matchSupportedLocale(["fil-Latn-PH"])).toBe("fil");
+    expect(matchSupportedLocale(["fil-US"])).toBe("fil");
+    expect(matchSupportedLocale(["tl"])).toBe("fil");
+    expect(matchSupportedLocale(["tl-PH"])).toBe("fil");
+    expect(matchSupportedLocale(["tl-Latn-PH"])).toBe("fil");
+  });
+
+  it("honors Filipino aliases in preference order", () => {
+    expect(matchSupportedLocale(["ja-JP", "tl-PH", "fr-FR"])).toBe("fil");
+  });
+
   it("exposes Chinese direction and formatting metadata", () => {
     expect(getLocaleDirection("zh")).toBe("ltr");
     expect(getLocaleFormattingLocale("zh")).toBe("zh-CN");
     expect(getLocaleDirection("zh-Hant")).toBe("ltr");
     expect(getLocaleFormattingLocale("zh-Hant")).toBe("zh-Hant");
+  });
+
+  it("exposes Filipino direction and formatting metadata", () => {
+    expect(getLocaleDirection("fil")).toBe("ltr");
+    expect(getLocaleFormattingLocale("fil")).toBe("fil-PH");
   });
 
   it("exposes Arabic direction and numbering metadata", () => {
@@ -223,6 +242,8 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["IT-ch"])).toBe("it");
     expect(matchSupportedLocale(["NL-be"])).toBe("nl");
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
+    expect(matchSupportedLocale(["FiL-lAtN-pH"])).toBe("fil");
+    expect(matchSupportedLocale(["TL-pH"])).toBe("fil");
     expect(matchSupportedLocale(["UK-ua"])).toBe("uk");
     expect(matchSupportedLocale(["ZH-hAnS-cN"])).toBe("zh");
     expect(matchSupportedLocale(["ZH-hAnT-hK"])).toBe("zh-Hant");
@@ -233,6 +254,8 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
     expect(matchSupportedLocale(["de_LI"])).toBe("de");
     expect(matchSupportedLocale(["hi_IN"])).toBe("hi");
+    expect(matchSupportedLocale(["fil_PH"])).toBe("fil");
+    expect(matchSupportedLocale(["tl_PH"])).toBe("fil");
     expect(matchSupportedLocale(["nl_AW"])).toBe("nl");
     expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
     expect(matchSupportedLocale(["zh_Hans_SG"])).toBe("zh");
@@ -242,6 +265,7 @@ describe("matchSupportedLocale", () => {
 
   it("trims surrounding whitespace", () => {
     expect(matchSupportedLocale(["  sw-KE  "])).toBe("sw");
+    expect(matchSupportedLocale(["  tl-Latn-PH  "])).toBe("fil");
     expect(matchSupportedLocale(["  zh-Hant-HK  "])).toBe("zh-Hant");
   });
 });

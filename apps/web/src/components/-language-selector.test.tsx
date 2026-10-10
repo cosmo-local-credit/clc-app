@@ -76,6 +76,7 @@ describe("LanguageSelector", () => {
     expect(screen.getByRole("option", { name: "རྫོང་ཁ" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Deutsch" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Español" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Filipino" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Français" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "हिन्दी" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Italiano" })).toBeTruthy();
@@ -92,6 +93,7 @@ describe("LanguageSelector", () => {
       "རྫོང་ཁ",
       "Deutsch",
       "Español",
+      "Filipino",
       "Français",
       "हिन्दी",
       "Italiano",
@@ -134,6 +136,14 @@ describe("LanguageSelector", () => {
       target: { value: "dz" },
     });
     expect(setLocale).toHaveBeenCalledWith("dz");
+  });
+
+  it("requests a locale change when the user selects Filipino", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "fil" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("fil");
   });
 
   it("requests a locale change when the user selects German", () => {

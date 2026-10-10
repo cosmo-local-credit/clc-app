@@ -130,6 +130,21 @@ describe("translateValidationError", () => {
     );
   });
 
+  it("translates known validation errors into Filipino", async () => {
+    await activateLocale("fil");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Piliin ang lokasyon");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe(
+      "Hindi wastong numero ng telepono",
+    );
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Kinakailangan ang pangalan ng voucher",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe(
+      "Kinakailangan ang pangalan ng pool",
+    );
+  });
+
   it("translates known validation errors into Arabic", async () => {
     await activateLocale("ar");
 
@@ -246,6 +261,7 @@ describe("translateValidationError", () => {
       "de",
       "dz",
       "es",
+      "fil",
       "fr",
       "hi",
       "it",

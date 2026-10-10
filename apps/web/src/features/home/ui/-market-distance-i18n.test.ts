@@ -62,6 +62,13 @@ describe("translated distance labels", () => {
     expect(kilometres({ value: "12,4" })).toBe("12,4 km");
   });
 
+  it("renders Filipino", async () => {
+    await activateLocale("fil");
+
+    expect(metres({ value: 300 })).toBe("300 m");
+    expect(kilometres({ value: "12.4" })).toBe("12.4 km");
+  });
+
   it("renders Serbian", async () => {
     await activateLocale("sr");
 
@@ -167,6 +174,11 @@ describe("translated distance labels", () => {
     expect(i18n._(msg`Services`)).toBe("Services");
     expect(i18n._(msg`Voucher`)).toBe("Bon d’échange");
 
+    await activateLocale("fil");
+    expect(i18n._(msg`Goods`)).toBe("Mga produkto");
+    expect(i18n._(msg`Services`)).toBe("Mga serbisyo");
+    expect(i18n._(msg`Voucher`)).toBe("Voucher");
+
     await activateLocale("hi");
     expect(i18n._(msg`Goods`)).toBe("माल");
     expect(i18n._(msg`Services`)).toBe("सेवाएँ");
@@ -219,6 +231,7 @@ describe("translated distance labels", () => {
       "de",
       "dz",
       "es",
+      "fil",
       "fr",
       "hi",
       "it",

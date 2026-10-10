@@ -51,7 +51,6 @@ export const catalogMemberSchema = z.object({
   name: z.string(),
   imageUrl: imageSchema,
 });
-export type CatalogMember = z.infer<typeof catalogMemberSchema>;
 
 /** A validated create-first intent. No arbitrary redirect URL is accepted. */
 export const catalogCreateIntentSchema = z.object({

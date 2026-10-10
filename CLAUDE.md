@@ -656,7 +656,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{ar,de,dz,en,es,fr,hi,it,nl,pt,sr,sw,uk,zh,zh-Hant}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,de,dz,en,es,fil,fr,hi,it,nl,pt,sr,sw,uk,zh,zh-Hant}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -693,6 +693,15 @@ German uses the `de` catalog, stays `ltr`, and uses `de` Intl formatting with a
 decimal comma and period grouping. Its CLDR plural categories are `one` and
 `other`. Product terminology uses **Fonds**, **Gutschein**, and **Geldbörse**;
 editable amounts and machine-readable values remain canonical ASCII.
+
+Filipino uses the canonical `fil` catalog, stays `ltr`, and uses `fil-PH` Intl
+formatting with Latin digits and comma grouping. Legacy Tagalog browser tags
+(`tl` and its regional or script variants) resolve to `fil`; only `fil` is
+persisted. Its CLDR plural categories are `one` and `other`, with the category
+depending on the final integer or fractional digit rather than English rules.
+Product terminology intentionally keeps familiar loanwords such as **pool**,
+**voucher**, and **wallet**. Editable amounts and machine-readable values remain
+canonical ASCII.
 
 Dutch uses the `nl` catalog, stays `ltr`, and uses `nl` Intl formatting with a
 decimal comma and period grouping. Its CLDR plural categories are `one` and

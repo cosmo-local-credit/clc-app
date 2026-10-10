@@ -21,8 +21,6 @@ const memberPageSchema = z.object({
 });
 const savedSchema = z.object({ catalog: catalogSchema });
 const membershipSchema = z.object({ added: z.boolean() });
-export type CatalogPage = z.infer<typeof catalogPageSchema>;
-export type CatalogMemberPage = z.infer<typeof memberPageSchema>;
 export type CatalogsClient = ReturnType<typeof createCatalogsClient>;
 
 export function createCatalogsClient(http: HttpClient) {
