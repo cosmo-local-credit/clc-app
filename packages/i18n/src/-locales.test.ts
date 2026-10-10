@@ -28,6 +28,34 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["ja-JP", "ar-EG", "fr-FR"])).toBe("ar");
   });
 
+  it("matches generic, regional, and script-tagged Simplified Chinese locales", () => {
+    expect(matchSupportedLocale(["zh"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-CN"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-SG"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-MY"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-Hans"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-Hans-CN"])).toBe("zh");
+    expect(matchSupportedLocale(["zh_Hans_SG"])).toBe("zh");
+  });
+
+  it("does not map explicit Traditional Chinese preferences to Simplified Chinese", () => {
+    expect(matchSupportedLocale(["zh-Hant"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["zh-TW"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["zh-HK"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["zh-MO"])).toBe(DEFAULT_LOCALE);
+    expect(matchSupportedLocale(["zh-Hant-CN"])).toBe(DEFAULT_LOCALE);
+  });
+
+  it("skips unsupported Traditional Chinese and honors later preferences", () => {
+    expect(matchSupportedLocale(["zh-Hant-TW", "fr-FR"])).toBe("fr");
+    expect(matchSupportedLocale(["zh_TW", "zh_Hans_CN"])).toBe("zh");
+  });
+
+  it("exposes Simplified Chinese direction and formatting metadata", () => {
+    expect(getLocaleDirection("zh")).toBe("ltr");
+    expect(getLocaleFormattingLocale("zh")).toBe("zh-CN");
+  });
+
   it("exposes Arabic direction and numbering metadata", () => {
     expect(getLocaleDirection("ar")).toBe("rtl");
     expect(getLocaleDirection("en")).toBe("ltr");
@@ -188,6 +216,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["NL-be"])).toBe("nl");
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
     expect(matchSupportedLocale(["UK-ua"])).toBe("uk");
+    expect(matchSupportedLocale(["ZH-hAnS-cN"])).toBe("zh");
   });
 
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
@@ -197,6 +226,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["hi_IN"])).toBe("hi");
     expect(matchSupportedLocale(["nl_AW"])).toBe("nl");
     expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
+    expect(matchSupportedLocale(["zh_Hans_SG"])).toBe("zh");
   });
 
   it("trims surrounding whitespace", () => {

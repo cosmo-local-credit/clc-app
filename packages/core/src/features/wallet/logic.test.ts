@@ -110,6 +110,14 @@ describe("formatTokenAmountFixed", () => {
       "9,00,71,99,25,47,40,99,31,234.56",
     );
   });
+  it("uses Simplified Chinese grouping for human-facing values", () => {
+    expect(formatTokenAmountFixed("1000000000", 4, 2, "zh-CN")).toBe("100,000.00");
+  });
+  it("preserves large values with Simplified Chinese grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-CN")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
   it("preserves large values with Portuguese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "pt")).toBe(
       "90.071.992.547.409.931.234,56",
