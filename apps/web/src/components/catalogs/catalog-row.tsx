@@ -1,0 +1,45 @@
+import type { Catalog } from "@clc/core/features/catalogs/logic";
+import { Link } from "@tanstack/react-router";
+import { RiBookOpenLine } from "react-icons/ri";
+import { ProgressiveImage } from "#/components/ui/progressive-image";
+
+export function CatalogPicture({ url }: { url: string | null }) {
+  return (
+    <span className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden border border-border bg-card">
+      {url ? (
+        <ProgressiveImage src={url} alt="" className="size-full object-cover" />
+      ) : (
+        <RiBookOpenLine className="size-6 text-muted-foreground" aria-hidden="true" />
+      )}
+    </span>
+  );
+}
+
+export function CatalogRow({
+  catalog,
+  distanceLabel,
+}: {
+  catalog: Catalog;
+  distanceLabel?: string;
+}) {
+  return (
+    <Link
+      to="/catalogs/$catalogId"
+      params={{ catalogId: catalog.id }}
+      className="flex min-h-24 items-center gap-3 border border-border bg-card p-3"
+    >
+      <CatalogPicture url={catalog.imageUrl} />
+      <span className="min-w-0 flex-1">
+        <span dir="auto" className="block break-words font-heading font-semibold">
+          {catalog.name}
+        </span>
+        <span dir="auto" className="mt-1 block text-sm text-muted-foreground">
+          {catalog.locationName}
+        </span>
+        {distanceLabel ? (
+          <span className="mt-1 block text-xs text-muted-foreground">{distanceLabel}</span>
+        ) : null}
+      </span>
+    </Link>
+  );
+}
