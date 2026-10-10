@@ -72,6 +72,7 @@ describe("LanguageSelector", () => {
     expect(screen.getByRole("option", { name: "English" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "العربية" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "中文（简体）" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "中文（繁體）" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "རྫོང་ཁ" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Deutsch" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "Español" })).toBeTruthy();
@@ -87,6 +88,7 @@ describe("LanguageSelector", () => {
       "English",
       "العربية",
       "中文（简体）",
+      "中文（繁體）",
       "རྫོང་ཁ",
       "Deutsch",
       "Español",
@@ -116,6 +118,14 @@ describe("LanguageSelector", () => {
       target: { value: "zh" },
     });
     expect(setLocale).toHaveBeenCalledWith("zh");
+  });
+
+  it("requests a locale change when the user selects Traditional Chinese", () => {
+    renderSelector();
+    fireEvent.change(screen.getByRole("combobox", { name: /language/i }), {
+      target: { value: "zh-Hant" },
+    });
+    expect(setLocale).toHaveBeenCalledWith("zh-Hant");
   });
 
   it("requests a locale change when the user selects Dzongkha", () => {

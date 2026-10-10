@@ -15,6 +15,7 @@ const SUPPORTED_LOCALES = [
   "sw",
   "uk",
   "zh",
+  "zh-Hant",
 ] as const;
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
@@ -44,6 +45,13 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
     nativeLabel: "中文（简体）",
     direction: "ltr",
     intlLocale: "zh-CN",
+  },
+  {
+    code: "zh-Hant",
+    label: "Chinese (Traditional)",
+    nativeLabel: "中文（繁體）",
+    direction: "ltr",
+    intlLocale: "zh-Hant",
   },
   {
     code: "dz",
@@ -95,28 +103,31 @@ export function isSupportedLocale(value: string | null | undefined): value is Su
 const SIMPLIFIED_CHINESE_REGIONS = new Set(["cn", "sg", "my"]);
 const TRADITIONAL_CHINESE_REGIONS = new Set(["tw", "hk", "mo"]);
 
-function matchesSimplifiedChinese(parts: readonly string[]): boolean {
-  if (parts.length === 1) return true;
+function matchChineseLocale(parts: readonly string[]): "zh" | "zh-Hant" | undefined {
+  if (parts.length === 1) return "zh";
 
   const subtags = parts.slice(1);
-  if (subtags.includes("hant")) return false;
-  if (subtags.includes("hans")) return true;
-  if (subtags.some((subtag) => TRADITIONAL_CHINESE_REGIONS.has(subtag))) return false;
-  return subtags.some((subtag) => SIMPLIFIED_CHINESE_REGIONS.has(subtag));
+  const script = subtags.find((subtag) => subtag === "hans" || subtag === "hant");
+  if (script === "hans") return "zh";
+  if (script === "hant") return "zh-Hant";
+  if (subtags.some((subtag) => TRADITIONAL_CHINESE_REGIONS.has(subtag))) return "zh-Hant";
+  if (subtags.some((subtag) => SIMPLIFIED_CHINESE_REGIONS.has(subtag))) return "zh";
+  return undefined;
 }
 
 // Match an ordered list of preferred language tags (e.g. navigator.languages,
 // ["sw-KE", "en-US", "en"]) to a supported locale. Chinese is resolved by
-// script and region so an explicit Traditional preference never activates the
-// Simplified catalog. Other tags retain primary-subtag matching. Tags are
-// normalized first because navigator values can contain underscores, mixed
-// case, or surrounding whitespace. First supported match wins.
+// script and region, with an explicit script taking precedence over region.
+// Other tags retain primary-subtag matching. Tags are normalized first because
+// navigator values can contain underscores, mixed case, or surrounding
+// whitespace. First supported match wins.
 export function matchSupportedLocale(preferred: readonly string[]): SupportedLocale {
   for (const tag of preferred) {
     const parts = tag.trim().toLowerCase().split(/[-_]/).filter(Boolean);
     const primary = parts[0];
     if (primary === "zh") {
-      if (matchesSimplifiedChinese(parts)) return "zh";
+      const locale = matchChineseLocale(parts);
+      if (locale) return locale;
       continue;
     }
     if (isSupportedLocale(primary)) return primary;
