@@ -60,6 +60,7 @@ describe("formatTokenAmountFixed", () => {
     ["en", "10,000.00"],
     ["es", "10.000,00"],
     ["fr", "10 000,00"],
+    ["hi", "10,000.00"],
     ["it", "10.000,00"],
     ["nl", "10.000,00"],
     ["pt", "10.000,00"],
@@ -99,6 +100,14 @@ describe("formatTokenAmountFixed", () => {
   it("preserves large values with Dutch grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "nl")).toBe(
       "90.071.992.547.409.931.234,56",
+    );
+  });
+  it("uses Indian grouping for Hindi values", () => {
+    expect(formatTokenAmountFixed("100000000000", 6, 2, "hi")).toBe("1,00,000.00");
+  });
+  it("preserves large values with Hindi grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "hi")).toBe(
+      "9,00,71,99,25,47,40,99,31,234.56",
     );
   });
   it("preserves large values with Portuguese grouping", () => {

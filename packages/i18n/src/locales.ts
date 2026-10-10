@@ -7,6 +7,7 @@ const SUPPORTED_LOCALES = [
   "en",
   "es",
   "fr",
+  "hi",
   "it",
   "nl",
   "pt",
@@ -46,6 +47,7 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
   { code: "de", label: "German", nativeLabel: "Deutsch", direction: "ltr", intlLocale: "de" },
   { code: "es", label: "Spanish", nativeLabel: "Español", direction: "ltr", intlLocale: "es" },
   { code: "fr", label: "French", nativeLabel: "Français", direction: "ltr", intlLocale: "fr" },
+  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", direction: "ltr", intlLocale: "hi" },
   { code: "it", label: "Italian", nativeLabel: "Italiano", direction: "ltr", intlLocale: "it" },
   { code: "nl", label: "Dutch", nativeLabel: "Nederlands", direction: "ltr", intlLocale: "nl" },
   {

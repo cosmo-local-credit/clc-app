@@ -95,6 +95,22 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["ja-JP", "fr-CA", "en-US"])).toBe("fr");
   });
 
+  it("matches generic, regional, and script-tagged Hindi locales", () => {
+    expect(matchSupportedLocale(["hi"])).toBe("hi");
+    expect(matchSupportedLocale(["hi-IN"])).toBe("hi");
+    expect(matchSupportedLocale(["hi-Deva-IN"])).toBe("hi");
+    expect(matchSupportedLocale(["hi_IN"])).toBe("hi");
+  });
+
+  it("honors Hindi in the preferred-language order", () => {
+    expect(matchSupportedLocale(["ja-JP", "hi-IN", "en-US"])).toBe("hi");
+  });
+
+  it("exposes Hindi direction and formatting metadata", () => {
+    expect(getLocaleDirection("hi")).toBe("ltr");
+    expect(getLocaleFormattingLocale("hi")).toBe("hi");
+  });
+
   it("matches generic and region-tagged Italian locales", () => {
     expect(matchSupportedLocale(["it"])).toBe("it");
     expect(matchSupportedLocale(["it-IT"])).toBe("it");
@@ -167,6 +183,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["DE-ch"])).toBe("de");
     expect(matchSupportedLocale(["SW"])).toBe("sw");
     expect(matchSupportedLocale(["ES-mx"])).toBe("es");
+    expect(matchSupportedLocale(["HI-in"])).toBe("hi");
     expect(matchSupportedLocale(["IT-ch"])).toBe("it");
     expect(matchSupportedLocale(["NL-be"])).toBe("nl");
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
@@ -177,6 +194,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["sw_KE", "en_US"])).toBe("sw");
     expect(matchSupportedLocale(["dz_BT"])).toBe("dz");
     expect(matchSupportedLocale(["de_LI"])).toBe("de");
+    expect(matchSupportedLocale(["hi_IN"])).toBe("hi");
     expect(matchSupportedLocale(["nl_AW"])).toBe("nl");
     expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
   });

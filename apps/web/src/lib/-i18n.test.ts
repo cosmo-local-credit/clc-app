@@ -26,6 +26,7 @@ describe("i18n catalogs", () => {
     ["en", "No reviews yet."],
     ["es", "Aún no hay reseñas."],
     ["fr", "Aucun avis pour le moment."],
+    ["hi", "अभी तक कोई समीक्षा नहीं।"],
     ["it", "Non ci sono ancora recensioni."],
     ["nl", "Nog geen beoordelingen."],
     ["pt", "Ainda não há avaliações."],
@@ -100,6 +101,31 @@ describe("i18n catalogs", () => {
     expect(voucherCount(1)).toBe("1 waardebon");
     expect(voucherCount(2)).toBe("2 waardebonnen");
     expect(voucherCount(1.5)).toBe("1,5 waardebonnen");
+  });
+
+  it("activates the Hindi catalog with product terminology and Hindi plurals", async () => {
+    await activateLocale("hi");
+
+    expect(i18n.locales).toEqual(["hi"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("एक स्थान चुनें");
+    expect(i18n._(msg`Pools`)).toBe("पूल");
+    expect(i18n._(msg`Wallet`)).toBe("वॉलेट");
+    expect(i18n._(msg`Swap`)).toBe("अदला-बदली");
+    expect(i18n._(msg`Redeem`)).toBe("भुनाएँ");
+    expect(i18n._(msg`Marketplace`)).toBe("बाज़ार");
+    expect(i18n._(msg`Credit limit`)).toBe("क्रेडिट सीमा");
+    expect(maxAmount("55.00")).toBe("अधिकतम 55.00");
+
+    const voucherCount = (count: number) =>
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count },
+      });
+
+    for (const count of [0, 0.5, 1, 1.1, 2, 10]) {
+      expect(voucherCount(count)).toBe(`${new Intl.NumberFormat("hi").format(count)} वाउचर`);
+    }
   });
 
   it("activates the French catalog on demand", async () => {
@@ -331,6 +357,7 @@ describe("i18n catalogs", () => {
     ["de", "Menü öffnen", "Zum gespeicherten Standort", "Nutzungsbedingungen"],
     ["es", "Abrir menú", "Ir a la ubicación guardada", "Términos del servicio"],
     ["fr", "Ouvrir le menu", "Accéder à l’emplacement enregistré", "Conditions d’utilisation"],
+    ["hi", "मेनू खोलें", "सहेजे गए स्थान पर जाएँ", "सेवा की शर्तें"],
     ["it", "Apra il menu", "Vada alla posizione salvata", "Termini di servizio"],
     ["pt", "Abrir menu", "Ir para a localização guardada", "Termos de Serviço"],
     ["sr", "Отвори мени", "Иди на сачувану локацију", "Услови коришћења"],
