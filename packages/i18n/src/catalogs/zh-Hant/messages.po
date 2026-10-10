@@ -356,13 +356,17 @@ msgid "Activity"
 msgstr "活動"
 
 #: apps/web/src/components/ui/tag-combobox.tsx:163
-msgid "Add 「{customValue}」"
+msgid "Add “{customValue}”"
 msgstr "新增「{customValue}」"
 
 #. placeholder {0}: offering.name
 #: apps/web/src/components/offerings/offering-order-picker.tsx:129
 msgid "Add {0} to order"
 msgstr "將 {0} 新增到訂單"
+
+#: apps/web/src/components/ui/tag-combobox.tsx:163
+#~ msgid "Add 「{customValue}」"
+#~ msgstr "新增「{customValue}」"
 
 #: apps/web/src/features/posts/ui/post-attachment-fields.tsx:130
 msgid "Add a link"
@@ -3423,8 +3427,12 @@ msgid "Nothing has moved through this pool yet."
 msgstr "尚無資金流經此資金池。"
 
 #: apps/web/src/components/catalog-filter-controls.tsx:501
-msgid "Nothing matching 「{searchTerm}」 carries a category."
-msgstr "與「{searchTerm}」匹配的結果都沒有類別。"
+msgid "Nothing matching “{searchTerm}” carries a category."
+msgstr "與「{searchTerm}」相符的結果都沒有類別。"
+
+#: apps/web/src/components/catalog-filter-controls.tsx:501
+#~ msgid "Nothing matching 「{searchTerm}」 carries a category."
+#~ msgstr "與「{searchTerm}」匹配的結果都沒有類別。"
 
 #: apps/web/src/features/pools/ui/create-pool-flow.tsx:860
 #: apps/web/src/features/pools/ui/pool-profile-editor-sheet.tsx:413
@@ -4414,8 +4422,8 @@ msgstr "刪除"
 
 #. placeholder {0}: offering.name
 #: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:88
-msgid "Remove 「{0}」 from the marketplace?"
-msgstr "從市場中刪除「{0}」？"
+msgid "Remove “{0}” from the marketplace?"
+msgstr "從市場移除「{0}」？"
 
 #. placeholder {0}: voucherLabel(voucher)
 #: apps/web/src/components/catalog-filter-controls.tsx:329
@@ -4429,6 +4437,11 @@ msgstr "刪除{0}"
 #: apps/web/src/features/wallet/ui/voucher-profile-editor-sheet.tsx:348
 msgid "Remove {tag}"
 msgstr "刪除{tag}"
+
+#. placeholder {0}: offering.name
+#: apps/web/src/components/vouchers/voucher-offerings-panel.tsx:88
+#~ msgid "Remove 「{0}」 from the marketplace?"
+#~ msgstr "從市場中刪除「{0}」？"
 
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:572
 msgid "Remove from pool"
@@ -5502,9 +5515,14 @@ msgid "This link has too many filters ({0}, maximum {1})."
 msgstr "此連結包含過多篩選條件（{0} 個，最多 {1} 個）。"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:233
-msgid "This listing was imported with the unit 「{legacyUnit}」. Pick one below "
+msgid "This listing was imported with the unit “{legacyUnit}”. Pick one below "
 "to save your changes."
-msgstr "此列表是使用單位「{legacyUnit}」匯入的。選擇下面的一項來儲存您的更改。"
+msgstr "此刊登項目匯入時使用單位「{legacyUnit}」。請從下方選擇一項以儲存變更。"
+
+#: apps/web/src/components/vouchers/offering-editor-sheet.tsx:233
+#~ msgid "This listing was imported with the unit 「{legacyUnit}」. Pick one below "
+#~ "to save your changes."
+#~ msgstr "此列表是使用單位「{legacyUnit}」匯入的。選擇下面的一項來儲存您的更改。"
 
 #: apps/web/src/components/offerings/offering-order-picker.tsx:88
 msgid "This order is shared as a private message. It does not change the "
@@ -5862,8 +5880,12 @@ msgid "Uploading…"
 msgstr "正在上傳…"
 
 #: apps/web/src/components/vouchers/offering-editor-sheet.tsx:347
-msgid "Use 「{unit}」"
+msgid "Use “{unit}”"
 msgstr "使用「{unit}」"
+
+#: apps/web/src/components/vouchers/offering-editor-sheet.tsx:347
+#~ msgid "Use 「{unit}」"
+#~ msgstr "使用「{unit}」"
 
 #: apps/web/src/features/home/ui/market-page.tsx:143
 msgid "Use current location"

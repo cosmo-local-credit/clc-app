@@ -8,6 +8,7 @@ export default defineConfig({
     "dz",
     "en",
     "es",
+    "fil",
     "fr",
     "hi",
     "it",

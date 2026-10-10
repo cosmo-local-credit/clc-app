@@ -59,6 +59,7 @@ describe("formatTokenAmountFixed", () => {
     ["dz", "༡༠,༠༠༠.༠༠"],
     ["en", "10,000.00"],
     ["es", "10.000,00"],
+    ["fil-PH", "10,000.00"],
     ["fr", "10 000,00"],
     ["hi", "10,000.00"],
     ["it", "10.000,00"],
@@ -114,6 +115,9 @@ describe("formatTokenAmountFixed", () => {
   it("uses Simplified Chinese grouping for human-facing values", () => {
     expect(formatTokenAmountFixed("1000000000", 4, 2, "zh-CN")).toBe("100,000.00");
   });
+  it("uses Filipino grouping for human-facing values", () => {
+    expect(formatTokenAmountFixed("1000000000", 4, 2, "fil-PH")).toBe("100,000.00");
+  });
   it("preserves large values with Simplified Chinese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-CN")).toBe(
       "90,071,992,547,409,931,234.56",
@@ -121,6 +125,11 @@ describe("formatTokenAmountFixed", () => {
   });
   it("preserves large values with Traditional Chinese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-Hant")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+  it("preserves large values with Filipino grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "fil-PH")).toBe(
       "90,071,992,547,409,931,234.56",
     );
   });
