@@ -11,6 +11,7 @@ const SUPPORTED_LOCALES = [
   "hi",
   "it",
   "nl",
+  "nl-BE",
   "pt",
   "sr",
   "sw",
@@ -75,6 +76,13 @@ export const LOCALE_OPTIONS: readonly LocaleOption[] = [
   { code: "it", label: "Italian", nativeLabel: "Italiano", direction: "ltr", intlLocale: "it" },
   { code: "nl", label: "Dutch", nativeLabel: "Nederlands", direction: "ltr", intlLocale: "nl" },
   {
+    code: "nl-BE",
+    label: "Flemish",
+    nativeLabel: "Vlaams",
+    direction: "ltr",
+    intlLocale: "nl-BE",
+  },
+  {
     code: "pt",
     label: "Portuguese",
     nativeLabel: "Português",
@@ -126,9 +134,10 @@ function matchChineseLocale(parts: readonly string[]): "zh" | "zh-Hant" | undefi
 // Match an ordered list of preferred language tags (e.g. navigator.languages,
 // ["sw-KE", "en-US", "en"]) to a supported locale. Chinese is resolved by
 // script and region, with an explicit script taking precedence over region.
-// Other tags retain primary-subtag matching. Tags are normalized first because
-// navigator values can contain underscores, mixed case, or surrounding
-// whitespace. First supported match wins.
+// Belgian Dutch is resolved separately from generic Dutch. Other tags retain
+// primary-subtag matching. Tags are normalized first because navigator values
+// can contain underscores, mixed case, or surrounding whitespace. First
+// supported match wins.
 export function matchSupportedLocale(preferred: readonly string[]): SupportedLocale {
   for (const tag of preferred) {
     const parts = tag.trim().toLowerCase().split(/[-_]/).filter(Boolean);
@@ -137,6 +146,9 @@ export function matchSupportedLocale(preferred: readonly string[]): SupportedLoc
       const locale = matchChineseLocale(parts);
       if (locale) return locale;
       continue;
+    }
+    if (primary === "nl") {
+      return parts.slice(1, 3).includes("be") ? "nl-BE" : "nl";
     }
     if (primary === "tl") return "fil";
     if (isSupportedLocale(primary)) return primary;

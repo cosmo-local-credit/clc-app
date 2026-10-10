@@ -13,6 +13,7 @@ export default defineConfig({
     "hi",
     "it",
     "nl",
+    "nl-BE",
     "pt",
     "sr",
     "sw",

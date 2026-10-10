@@ -656,7 +656,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{ar,de,dz,en,es,fil,fr,hi,it,nl,pt,sr,sw,uk,zh,zh-Hant}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,de,dz,en,es,fil,fr,hi,it,nl,nl-BE,pt,sr,sw,uk,zh,zh-Hant}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -707,6 +707,13 @@ Dutch uses the `nl` catalog, stays `ltr`, and uses `nl` Intl formatting with a
 decimal comma and period grouping. Its CLDR plural categories are `one` and
 `other`. Product terminology uses **fonds**, **waardebon**, and **portemonnee**;
 editable amounts and machine-readable values remain canonical ASCII.
+
+Flemish uses the separate `nl-BE` catalog for Belgian Dutch browser preferences,
+stays `ltr`, and uses `nl-BE` Intl formatting with a decimal comma and period
+grouping. Its CLDR plural categories are `one` and `other`. Product terminology
+uses **fonds**, **waardebon**, and **portefeuille**; generic Dutch and non-Belgian
+regional tags continue to resolve to `nl`. Editable amounts and machine-readable
+values remain canonical ASCII.
 
 Hindi uses the `hi` catalog, stays `ltr`, and uses `hi` Intl formatting with
 Latin digits and Indian grouping. Its CLDR plural categories are `one` and

@@ -83,6 +83,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("nl")}>
         Nederlands
       </button>
+      <button type="button" onClick={() => setLocale("nl-BE")}>
+        Vlaams
+      </button>
       <button type="button" onClick={() => setLocale("pt")}>
         Português
       </button>
@@ -277,8 +280,8 @@ describe("AppI18nProvider", () => {
     });
   });
 
-  it("detects Dutch from a region-tagged device language and applies LTR", async () => {
-    setNavigatorLanguages(["nl-BE", "en"]);
+  it("detects Dutch from a non-Belgian region-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["nl-NL", "en"]);
 
     renderProvider();
 
@@ -286,6 +289,19 @@ describe("AppI18nProvider", () => {
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("nl");
       expect(document.documentElement.lang).toBe("nl");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Flemish from a Belgian Dutch device language and applies LTR", async () => {
+    setNavigatorLanguages(["nl-Latn-BE", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl-BE");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("nl-BE");
+      expect(document.documentElement.lang).toBe("nl-BE");
       expect(document.documentElement.dir).toBe("ltr");
     });
   });
@@ -556,6 +572,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("nl");
     expect(Cookies.get("clc_locale")).toBe("nl");
+  });
+
+  it("persists a Flemish locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Vlaams" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl-BE");
+    expect(document.documentElement.lang).toBe("nl-BE");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("nl-BE");
+    expect(Cookies.get("clc_locale")).toBe("nl-BE");
   });
 
   it("persists Arabic and restores LTR when English is selected", async () => {

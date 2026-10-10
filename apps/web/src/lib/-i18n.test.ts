@@ -30,6 +30,7 @@ describe("i18n catalogs", () => {
     ["hi", "अभी तक कोई समीक्षा नहीं।"],
     ["it", "Non ci sono ancora recensioni."],
     ["nl", "Nog geen beoordelingen."],
+    ["nl-BE", "Nog geen beoordelingen."],
     ["pt", "Ainda não há avaliações."],
     ["sr", "Још нема рецензија."],
     ["sw", "Bado hakuna maoni."],
@@ -104,6 +105,34 @@ describe("i18n catalogs", () => {
     expect(voucherCount(1)).toBe("1 waardebon");
     expect(voucherCount(2)).toBe("2 waardebonnen");
     expect(voucherCount(1.5)).toBe("1,5 waardebonnen");
+  });
+
+  it("activates the Flemish catalog with Belgian terminology and Dutch plurals", async () => {
+    await activateLocale("nl-BE");
+
+    expect(i18n.locales).toEqual(["nl-BE"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe(
+      "Kies een locatie",
+    );
+    expect(i18n._(msg`Pools`)).toBe("Fondsen");
+    expect(i18n._(msg`Wallet`)).toBe("Portefeuille");
+    expect(i18n._(msg`Swap`)).toBe("Omwisselen");
+    expect(i18n._(msg`Redeem`)).toBe("Inwisselen");
+    expect(i18n._(msg`Marketplace`)).toBe("Marktplaats");
+    expect(i18n._(msg`Credit limit`)).toBe("Kredietlimiet");
+    expect(maxAmount("55,00")).toBe("Max. 55,00");
+
+    const voucherCount = (count: number) =>
+      i18n._({
+        id: "{count, plural, one {# voucher} other {# vouchers}}",
+        message: "{count, plural, one {# voucher} other {# vouchers}}",
+        values: { count },
+      });
+
+    expect(voucherCount(0)).toBe("0 waardebonnen");
+    expect(voucherCount(1)).toBe("1 waardebon");
+    expect(voucherCount(1.5)).toBe("1,5 waardebonnen");
+    expect(voucherCount(2)).toBe("2 waardebonnen");
   });
 
   it("activates the Filipino catalog with product terminology and Filipino plurals", async () => {
