@@ -217,6 +217,17 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
   });
 
+  it("translates known validation errors into Flemish", async () => {
+    await activateLocale("nl-BE");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("Kies een locatie");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("Ongeldig telefoonnummer");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe(
+      "Een naam voor de waardebon is verplicht",
+    );
+    expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
+  });
+
   it("translates known validation errors into Hindi", async () => {
     await activateLocale("hi");
 
@@ -266,6 +277,7 @@ describe("translateValidationError", () => {
       "hi",
       "it",
       "nl",
+      "nl-BE",
       "pt",
       "sr",
       "sw",
