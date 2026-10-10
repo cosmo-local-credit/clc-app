@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { MarketVoucherDetail } from "@clc/api/features/market/client";
 import type { ReportSummary } from "@clc/api/features/reports/client";
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
 
 const mocks = vi.hoisted(() => ({
   address: "0x1111111111111111111111111111111111111111" as string | undefined,

@@ -6,6 +6,7 @@ import {
   RiBankCardLine,
   RiDownloadLine,
   RiGroupLine,
+  RiBookOpenLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 
@@ -17,6 +18,7 @@ import { useLatestAccountTokens } from "#/features/wallet/hooks/use-account-bala
 import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-vouchers";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { CompleteProfileBanner } from "./complete-profile-banner";
+import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
 import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
@@ -109,6 +111,13 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/top-up",
     },
     { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
+    {
+      id: "catalogs",
+      label: t`Catalogs`,
+      icon: RiBookOpenLine,
+      variant: "outline",
+      to: "/catalogs",
+    },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
   const vouchers = vouchersQuery.data?.tokens.map(accountTokenToWalletToken) ?? [];
@@ -150,7 +159,7 @@ export function WalletPage({ address }: { address?: string }) {
       <CompleteProfileBanner address={address} />
 
       <section aria-label={t`Wallet actions`} className="space-y-3">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
             // Pretium's ramps exist only on the chains its worker watches. Keep
@@ -195,6 +204,8 @@ export function WalletPage({ address }: { address?: string }) {
           })}
         </div>
       </section>
+
+      <MyCatalogSection />
 
       {!vouchersReady ? (
         <section aria-labelledby="your-vouchers-title">

@@ -10,6 +10,7 @@
  */
 
 import { createAccountsClient } from "../features/accounts/client";
+import { createCatalogsClient } from "../features/catalogs/client";
 import { createAdminClient } from "../features/admin/client";
 import { createAuthClient } from "../features/auth/client";
 import { createDeploymentsClient } from "../features/deployments/client";
@@ -45,6 +46,7 @@ export function createClcApi({ catalogCache, ...options }: CreateClcApiOptions) 
   // caller needing a new request must add it to the appropriate module.
   return {
     accounts: createAccountsClient(http),
+    catalogs: createCatalogsClient(http),
     admin: createAdminClient(http),
     auth: createAuthClient(http),
     deployments: createDeploymentsClient(http),

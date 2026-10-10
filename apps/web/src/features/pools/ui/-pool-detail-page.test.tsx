@@ -8,6 +8,7 @@ import type { UserPool } from "@clc/api/features/pools/client";
 const OWNER = "0xDeF0000000000000000000000000000000000456";
 const OTHER = "0x9999999999999999999999999999999999999999";
 const ADDRESS = "0xAbC0000000000000000000000000000000000123";
+vi.mock("#/components/catalogs/add-to-catalog-button", () => ({ AddToCatalogButton: () => null }));
 
 const mocks = vi.hoisted(() => ({
   auth: {
