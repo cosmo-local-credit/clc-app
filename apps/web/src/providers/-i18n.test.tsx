@@ -50,6 +50,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("ar")}>
         العربية
       </button>
+      <button type="button" onClick={() => setLocale("zh")}>
+        中文（简体）
+      </button>
       <button type="button" onClick={() => setLocale("dz")}>
         རྫོང་ཁ
       </button>
@@ -215,6 +218,27 @@ describe("AppI18nProvider", () => {
       expect(document.documentElement.lang).toBe("hi");
       expect(document.documentElement.dir).toBe("ltr");
     });
+  });
+
+  it("detects Simplified Chinese and applies the generic LTR locale", async () => {
+    setNavigatorLanguages(["zh-Hans-CN", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("zh");
+      expect(document.documentElement.lang).toBe("zh");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("skips explicit Traditional Chinese and uses the next device preference", () => {
+    setNavigatorLanguages(["zh-Hant-TW", "fr-FR"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("fr");
   });
 
   it("detects Portuguese from a region-tagged device language", async () => {
@@ -407,6 +431,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("hi");
     expect(Cookies.get("clc_locale")).toBe("hi");
+  });
+
+  it("persists a Simplified Chinese locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "中文（简体）" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh");
+    expect(document.documentElement.lang).toBe("zh");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("zh");
+    expect(Cookies.get("clc_locale")).toBe("zh");
   });
 
   it("persists a Dzongkha locale selection", async () => {

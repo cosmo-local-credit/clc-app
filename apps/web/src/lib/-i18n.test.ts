@@ -33,6 +33,7 @@ describe("i18n catalogs", () => {
     ["sr", "Још нема рецензија."],
     ["sw", "Bado hakuna maoni."],
     ["uk", "Відгуків ще немає."],
+    ["zh", "暂无评价。"],
   ] as const)("loads the review empty state in %s", async (locale, emptyMessage) => {
     await activateLocale(locale);
     expect(i18n._("dEETgs")).toBe(emptyMessage);
@@ -125,6 +126,37 @@ describe("i18n catalogs", () => {
 
     for (const count of [0, 0.5, 1, 1.1, 2, 10]) {
       expect(voucherCount(count)).toBe(`${new Intl.NumberFormat("hi").format(count)} वाउचर`);
+    }
+  });
+
+  it("activates Simplified Chinese with product terminology and its single plural form", async () => {
+    await activateLocale("zh");
+
+    expect(i18n.locales).toEqual(["zh-CN"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("请选择位置");
+    expect(i18n._(msg`Pools`)).toBe("资金池");
+    expect(i18n._(msg`Wallet`)).toBe("钱包");
+    expect(i18n._(msg`Swap`)).toBe("兑换");
+    expect(i18n._(msg`Redeem`)).toBe("兑付");
+    expect(i18n._(msg`Marketplace`)).toBe("市场");
+    expect(i18n._(msg`Credit limit`)).toBe("信用额度");
+    expect(maxAmount("55.00")).toBe("最多 55.00");
+
+    const pluralMessages = [
+      ["{count, plural, one {# pool} other {# pools}}", "count", "个资金池"],
+      ["{requested, plural, one {# filter} other {# filters}}", "requested", "个筛选条件"],
+      ["{count, plural, one {# tag} other {# tags}}", "count", "个标签"],
+      ["{count, plural, one {# voucher} other {# vouchers}}", "count", "张代金券"],
+      ["{count, plural, one {# post} other {# posts}}", "count", "篇帖子"],
+    ] as const;
+
+    for (const [message, variable, noun] of pluralMessages) {
+      for (const count of [0, 0.5, 1, 2, 10]) {
+        const localizedCount = new Intl.NumberFormat("zh-CN").format(count);
+        expect(i18n._({ id: message, message, values: { [variable]: count } })).toBe(
+          `${localizedCount} ${noun}`,
+        );
+      }
     }
   });
 
@@ -363,6 +395,7 @@ describe("i18n catalogs", () => {
     ["sr", "Отвори мени", "Иди на сачувану локацију", "Услови коришћења"],
     ["sw", "Fungua menyu", "Nenda kwenye eneo lililohifadhiwa", "Masharti ya Huduma"],
     ["uk", "Відкрити меню", "Перейти до збереженого місця", "Умови користування"],
+    ["zh", "打开菜单", "前往已保存的位置", "服务条款"],
   ] as const)("translates the reusable app menu into %s", async (locale, open, location, terms) => {
     await activateLocale(locale);
 

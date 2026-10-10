@@ -656,7 +656,7 @@ not add `<Trans>` or the `t` macro to admin code.
 
 User-facing copy in `apps/web` is translated with lingui (`<Trans>` / the `t`
 macro from `@lingui/react/macro`). The **`.po` catalogs are the source of truth**:
-`packages/i18n/src/catalogs/{ar,de,dz,en,es,fr,hi,it,nl,pt,sr,sw,uk}/messages.po`. They are compiled in-memory by
+`packages/i18n/src/catalogs/{ar,de,dz,en,es,fr,hi,it,nl,pt,sr,sw,uk,zh}/messages.po`. They are compiled in-memory by
 `@lingui/vite-plugin` (wired into dev, build, and `vitest.config.ts`) — there is
 **no `lingui compile` step** and the generated `messages.ts` files are gitignored
 (do not import or commit them).
@@ -704,6 +704,13 @@ Latin digits and Indian grouping. Its CLDR plural categories are `one` and
 `other`, with zero and one selecting `one`. Product terminology uses **पूल**,
 **वाउचर**, and **वॉलेट**; editable amounts and machine-readable values remain
 canonical ASCII.
+
+Simplified Chinese uses the `zh` catalog, stays `ltr`, and uses `zh-CN` Intl
+formatting with Latin digits and comma grouping. Its CLDR plural rule has only
+the `other` category. Product terminology uses **资金池**, **代金券**, and
+**钱包**; editable amounts and machine-readable values remain canonical ASCII.
+The existing font stacks rely on platform CJK fallback; do not add a font
+dependency solely for Chinese.
 
 ### Client / server / URL state
 
