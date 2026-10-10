@@ -65,6 +65,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("fr")}>
         Français
       </button>
+      <button type="button" onClick={() => setLocale("hi")}>
+        हिन्दी
+      </button>
       <button type="button" onClick={() => setLocale("it")}>
         Italiano
       </button>
@@ -197,6 +200,19 @@ describe("AppI18nProvider", () => {
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("it");
       expect(document.documentElement.lang).toBe("it");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
+  });
+
+  it("detects Hindi from a script-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["hi-Deva-IN", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("hi");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("hi");
+      expect(document.documentElement.lang).toBe("hi");
       expect(document.documentElement.dir).toBe("ltr");
     });
   });
@@ -374,6 +390,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("it");
     expect(Cookies.get("clc_locale")).toBe("it");
+  });
+
+  it("persists a Hindi locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "हिन्दी" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("hi");
+    expect(document.documentElement.lang).toBe("hi");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("hi");
+    expect(Cookies.get("clc_locale")).toBe("hi");
   });
 
   it("persists a Dzongkha locale selection", async () => {

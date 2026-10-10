@@ -202,6 +202,15 @@ describe("translateValidationError", () => {
     expect(translateValidationError("Pool name is required", i18n)).toBe("Fondsnaam is verplicht");
   });
 
+  it("translates known validation errors into Hindi", async () => {
+    await activateLocale("hi");
+
+    expect(translateValidationError("Choose a location", i18n)).toBe("एक स्थान चुनें");
+    expect(translateValidationError("Invalid phone number", i18n)).toBe("अमान्य फ़ोन नंबर");
+    expect(translateValidationError("Voucher name is required", i18n)).toBe("वाउचर नाम आवश्यक है");
+    expect(translateValidationError("Pool name is required", i18n)).toBe("पूल का नाम आवश्यक है");
+  });
+
   it("translates known validation errors into Ukrainian", async () => {
     await activateLocale("uk");
 
@@ -220,6 +229,7 @@ describe("translateValidationError", () => {
       "dz",
       "es",
       "fr",
+      "hi",
       "it",
       "nl",
       "pt",

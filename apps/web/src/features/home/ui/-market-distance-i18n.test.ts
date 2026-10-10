@@ -90,6 +90,13 @@ describe("translated distance labels", () => {
     expect(kilometres({ value: "12,4" })).toBe("12,4 km");
   });
 
+  it("renders Hindi with Latin digits and translated units", async () => {
+    await activateLocale("hi");
+
+    expect(metres({ value: 300 })).toBe("300 मी");
+    expect(kilometres({ value: "12.4" })).toBe("12.4 किमी");
+  });
+
   it("renders Dutch", async () => {
     await activateLocale("nl");
 
@@ -146,6 +153,11 @@ describe("translated distance labels", () => {
     expect(i18n._(msg`Services`)).toBe("Services");
     expect(i18n._(msg`Voucher`)).toBe("Bon d’échange");
 
+    await activateLocale("hi");
+    expect(i18n._(msg`Goods`)).toBe("माल");
+    expect(i18n._(msg`Services`)).toBe("सेवाएँ");
+    expect(i18n._(msg`Voucher`)).toBe("वाउचर");
+
     await activateLocale("pt");
     expect(i18n._(msg`Goods`)).toBe("Bens");
     expect(i18n._(msg`Services`)).toBe("Serviços");
@@ -184,6 +196,7 @@ describe("translated distance labels", () => {
       "dz",
       "es",
       "fr",
+      "hi",
       "it",
       "nl",
       "pt",
