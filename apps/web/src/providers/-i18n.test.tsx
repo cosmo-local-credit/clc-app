@@ -68,6 +68,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("it")}>
         Italiano
       </button>
+      <button type="button" onClick={() => setLocale("nl")}>
+        Nederlands
+      </button>
       <button type="button" onClick={() => setLocale("pt")}>
         Português
       </button>
@@ -207,6 +210,19 @@ describe("AppI18nProvider", () => {
 
     await waitFor(() => {
       expect(localStorage.getItem("clc.locale")).toBe("pt");
+    });
+  });
+
+  it("detects Dutch from a region-tagged device language and applies LTR", async () => {
+    setNavigatorLanguages(["nl-BE", "en"]);
+
+    renderProvider();
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("nl");
+      expect(document.documentElement.lang).toBe("nl");
+      expect(document.documentElement.dir).toBe("ltr");
     });
   });
 
@@ -391,6 +407,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.lang).toBe("pt");
     expect(localStorage.getItem("clc.locale")).toBe("pt");
     expect(Cookies.get("clc_locale")).toBe("pt");
+  });
+
+  it("persists a Dutch locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Nederlands" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("nl");
+    expect(document.documentElement.lang).toBe("nl");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("nl");
+    expect(Cookies.get("clc_locale")).toBe("nl");
   });
 
   it("persists Arabic and restores LTR when English is selected", async () => {
