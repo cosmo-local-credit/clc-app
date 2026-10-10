@@ -14,6 +14,19 @@ const GENERATED_TREE = resolve(ROUTES_DIR, "../routeTree.gen.ts");
 
 const routePolicy = [
   { id: "/_nav/", fullPath: "/", source: "_nav/index.tsx", navOwner: "home" },
+  {
+    id: "/_nav/catalogs/",
+    fullPath: "/catalogs/",
+    source: "_nav/catalogs/index.tsx",
+    navOwner: "wallet",
+  },
+  {
+    id: "/_nav/catalogs/$catalogId",
+    fullPath: "/catalogs/$catalogId",
+    source: "_nav/catalogs/$catalogId.tsx",
+    navOwner: "wallet",
+  },
+  { id: "/catalogs/create", fullPath: "/catalogs/create", source: "catalogs/create.tsx" },
   // $reportId is a directory, not a leaf: the owner edit route lives beside the
   // public detail one, and a leaf file with a sibling folder becomes a layout
   // with no Outlet.

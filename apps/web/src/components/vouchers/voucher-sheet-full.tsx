@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { Button } from "#/components/ui/button";
+import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { VoucherOfferingsPanel } from "#/components/vouchers/voucher-offerings-panel";
 
 /** The voucher page's own search: where Back leads once it is open. */
@@ -26,6 +27,9 @@ export function VoucherSheetFull({
 
   return (
     <div className="space-y-6 px-4 pb-6 pt-2">
+      {detail ? (
+        <AddToCatalogButton kind="voucher" resourceId={detail.id} address={detail.address} />
+      ) : null}
       <section aria-labelledby="voucher-sheet-offerings">
         <h3
           id="voucher-sheet-offerings"

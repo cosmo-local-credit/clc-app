@@ -26,6 +26,7 @@ import {
 import { useConnection } from "wagmi";
 
 import { Button } from "#/components/ui/button";
+import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { VoucherAbout } from "#/components/vouchers/voucher-about";
 import { VoucherOfferingsPanel } from "#/components/vouchers/voucher-offerings-panel";
@@ -264,6 +265,12 @@ export function VoucherDetailPage({
           </Link>
         </Button>
       </div>
+
+      {detail ? (
+        <div className="mb-4">
+          <AddToCatalogButton kind="voucher" resourceId={detail.id} address={detail.address} />
+        </div>
+      ) : null}
 
       <div
         className="mb-3 grid grid-cols-5 border border-border bg-card p-1"

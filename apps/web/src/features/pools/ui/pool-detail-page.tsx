@@ -11,6 +11,7 @@ import {
   RiSettings3Line,
 } from "react-icons/ri";
 import { Button } from "#/components/ui/button";
+import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
 import { VoucherSheet } from "#/components/vouchers/voucher-sheet";
 import { BackChevron, PoolLogo, TokenLogo, type WalletToken } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
@@ -171,6 +172,7 @@ export function PoolDetailPage({
       </section>
 
       <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
+      <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
 
       {canEditDetails ? (
         <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
