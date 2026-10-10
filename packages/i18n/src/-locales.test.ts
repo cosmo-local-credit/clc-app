@@ -38,22 +38,30 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["zh_Hans_SG"])).toBe("zh");
   });
 
-  it("does not map explicit Traditional Chinese preferences to Simplified Chinese", () => {
-    expect(matchSupportedLocale(["zh-Hant"])).toBe(DEFAULT_LOCALE);
-    expect(matchSupportedLocale(["zh-TW"])).toBe(DEFAULT_LOCALE);
-    expect(matchSupportedLocale(["zh-HK"])).toBe(DEFAULT_LOCALE);
-    expect(matchSupportedLocale(["zh-MO"])).toBe(DEFAULT_LOCALE);
-    expect(matchSupportedLocale(["zh-Hant-CN"])).toBe(DEFAULT_LOCALE);
+  it("matches script-tagged and regional Traditional Chinese locales", () => {
+    expect(matchSupportedLocale(["zh-Hant"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh-TW"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh-HK"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh-MO"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh-Hant-TW"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh_Hant_HK"])).toBe("zh-Hant");
   });
 
-  it("skips unsupported Traditional Chinese and honors later preferences", () => {
-    expect(matchSupportedLocale(["zh-Hant-TW", "fr-FR"])).toBe("fr");
-    expect(matchSupportedLocale(["zh_TW", "zh_Hans_CN"])).toBe("zh");
+  it("gives an explicit Chinese script precedence over the region", () => {
+    expect(matchSupportedLocale(["zh-Hans-TW"])).toBe("zh");
+    expect(matchSupportedLocale(["zh-Hant-CN"])).toBe("zh-Hant");
   });
 
-  it("exposes Simplified Chinese direction and formatting metadata", () => {
+  it("honors Traditional Chinese in preference order and skips unknown regions", () => {
+    expect(matchSupportedLocale(["zh-Hant-TW", "fr-FR"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh-US", "fr-FR"])).toBe("fr");
+  });
+
+  it("exposes Chinese direction and formatting metadata", () => {
     expect(getLocaleDirection("zh")).toBe("ltr");
     expect(getLocaleFormattingLocale("zh")).toBe("zh-CN");
+    expect(getLocaleDirection("zh-Hant")).toBe("ltr");
+    expect(getLocaleFormattingLocale("zh-Hant")).toBe("zh-Hant");
   });
 
   it("exposes Arabic direction and numbering metadata", () => {
@@ -217,6 +225,7 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["PT-br"])).toBe("pt");
     expect(matchSupportedLocale(["UK-ua"])).toBe("uk");
     expect(matchSupportedLocale(["ZH-hAnS-cN"])).toBe("zh");
+    expect(matchSupportedLocale(["ZH-hAnT-hK"])).toBe("zh-Hant");
   });
 
   it("normalizes underscore-delimited tags (e.g. en_US)", () => {
@@ -227,9 +236,12 @@ describe("matchSupportedLocale", () => {
     expect(matchSupportedLocale(["nl_AW"])).toBe("nl");
     expect(matchSupportedLocale(["uk_UA"])).toBe("uk");
     expect(matchSupportedLocale(["zh_Hans_SG"])).toBe("zh");
+    expect(matchSupportedLocale(["zh_Hant_MO"])).toBe("zh-Hant");
+    expect(matchSupportedLocale(["zh_TW"])).toBe("zh-Hant");
   });
 
   it("trims surrounding whitespace", () => {
     expect(matchSupportedLocale(["  sw-KE  "])).toBe("sw");
+    expect(matchSupportedLocale(["  zh-Hant-HK  "])).toBe("zh-Hant");
   });
 });

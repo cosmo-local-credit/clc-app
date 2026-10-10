@@ -34,6 +34,7 @@ describe("i18n catalogs", () => {
     ["sw", "Bado hakuna maoni."],
     ["uk", "Відгуків ще немає."],
     ["zh", "暂无评价。"],
+    ["zh-Hant", "暫無評價。"],
   ] as const)("loads the review empty state in %s", async (locale, emptyMessage) => {
     await activateLocale(locale);
     expect(i18n._("dEETgs")).toBe(emptyMessage);
@@ -153,6 +154,37 @@ describe("i18n catalogs", () => {
     for (const [message, variable, noun] of pluralMessages) {
       for (const count of [0, 0.5, 1, 2, 10]) {
         const localizedCount = new Intl.NumberFormat("zh-CN").format(count);
+        expect(i18n._({ id: message, message, values: { [variable]: count } })).toBe(
+          `${localizedCount} ${noun}`,
+        );
+      }
+    }
+  });
+
+  it("activates Traditional Chinese with product terminology and its single plural form", async () => {
+    await activateLocale("zh-Hant");
+
+    expect(i18n.locales).toEqual(["zh-Hant"]);
+    expect(i18n._({ id: "Choose a location", message: "Choose a location" })).toBe("請選擇位置");
+    expect(i18n._(msg`Pools`)).toBe("資金池");
+    expect(i18n._(msg`Wallet`)).toBe("錢包");
+    expect(i18n._(msg`Swap`)).toBe("兌換");
+    expect(i18n._(msg`Redeem`)).toBe("兌付");
+    expect(i18n._(msg`Marketplace`)).toBe("市場");
+    expect(i18n._(msg`Credit limit`)).toBe("信用額度");
+    expect(maxAmount("55.00")).toBe("最多 55.00");
+
+    const pluralMessages = [
+      ["{count, plural, one {# pool} other {# pools}}", "count", "個資金池"],
+      ["{requested, plural, one {# filter} other {# filters}}", "requested", "個篩選條件"],
+      ["{count, plural, one {# tag} other {# tags}}", "count", "個標籤"],
+      ["{count, plural, one {# voucher} other {# vouchers}}", "count", "張代金券"],
+      ["{count, plural, one {# post} other {# posts}}", "count", "篇貼文"],
+    ] as const;
+
+    for (const [message, variable, noun] of pluralMessages) {
+      for (const count of [0, 0.5, 1, 2, 10]) {
+        const localizedCount = new Intl.NumberFormat("zh-Hant").format(count);
         expect(i18n._({ id: message, message, values: { [variable]: count } })).toBe(
           `${localizedCount} ${noun}`,
         );
@@ -396,6 +428,7 @@ describe("i18n catalogs", () => {
     ["sw", "Fungua menyu", "Nenda kwenye eneo lililohifadhiwa", "Masharti ya Huduma"],
     ["uk", "Відкрити меню", "Перейти до збереженого місця", "Умови користування"],
     ["zh", "打开菜单", "前往已保存的位置", "服务条款"],
+    ["zh-Hant", "開啟選單", "前往已儲存的位置", "服務條款"],
   ] as const)("translates the reusable app menu into %s", async (locale, open, location, terms) => {
     await activateLocale(locale);
 

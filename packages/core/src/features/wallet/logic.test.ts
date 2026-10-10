@@ -67,6 +67,7 @@ describe("formatTokenAmountFixed", () => {
     ["sw", "10,000.00"],
     ["sr", "10.000,00"],
     ["uk", "10 000,00"],
+    ["zh-Hant", "10,000.00"],
   ])("groups fixed amounts for the %s locale", (locale, expected) => {
     expect(formatTokenAmountFixed("10000000000", 6, 2, locale)).toBe(expected);
   });
@@ -115,6 +116,11 @@ describe("formatTokenAmountFixed", () => {
   });
   it("preserves large values with Simplified Chinese grouping", () => {
     expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-CN")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+  it("preserves large values with Traditional Chinese grouping", () => {
+    expect(formatTokenAmountFixed("9007199254740993123456", 2, 2, "zh-Hant")).toBe(
       "90,071,992,547,409,931,234.56",
     );
   });

@@ -33,6 +33,7 @@ const catalogLoaders: Record<SupportedLocale, () => Promise<{ messages: Messages
   sw: () => import("./catalogs/sw/messages.po"),
   uk: () => import("./catalogs/uk/messages.po"),
   zh: () => import("./catalogs/zh/messages.po"),
+  "zh-Hant": () => import("./catalogs/zh-Hant/messages.po"),
 };
 
 const loadedLocales = new Set<SupportedLocale>();

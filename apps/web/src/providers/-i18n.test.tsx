@@ -53,6 +53,9 @@ function LocaleProbe() {
       <button type="button" onClick={() => setLocale("zh")}>
         中文（简体）
       </button>
+      <button type="button" onClick={() => setLocale("zh-Hant")}>
+        中文（繁體）
+      </button>
       <button type="button" onClick={() => setLocale("dz")}>
         རྫོང་ཁ
       </button>
@@ -233,12 +236,17 @@ describe("AppI18nProvider", () => {
     });
   });
 
-  it("skips explicit Traditional Chinese and uses the next device preference", () => {
+  it("detects Traditional Chinese and applies its canonical LTR locale", async () => {
     setNavigatorLanguages(["zh-Hant-TW", "fr-FR"]);
 
     renderProvider();
 
-    expect(screen.getByLabelText("locale").textContent).toBe("fr");
+    expect(screen.getByLabelText("locale").textContent).toBe("zh-Hant");
+    await waitFor(() => {
+      expect(localStorage.getItem("clc.locale")).toBe("zh-Hant");
+      expect(document.documentElement.lang).toBe("zh-Hant");
+      expect(document.documentElement.dir).toBe("ltr");
+    });
   });
 
   it("detects Portuguese from a region-tagged device language", async () => {
@@ -448,6 +456,23 @@ describe("AppI18nProvider", () => {
     expect(document.documentElement.dir).toBe("ltr");
     expect(localStorage.getItem("clc.locale")).toBe("zh");
     expect(Cookies.get("clc_locale")).toBe("zh");
+  });
+
+  it("persists a Traditional Chinese locale selection", async () => {
+    renderProvider();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "中文（繁體）" }));
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(screen.getByLabelText("locale").textContent).toBe("zh-Hant");
+    expect(document.documentElement.lang).toBe("zh-Hant");
+    expect(document.documentElement.dir).toBe("ltr");
+    expect(localStorage.getItem("clc.locale")).toBe("zh-Hant");
+    expect(Cookies.get("clc_locale")).toBe("zh-Hant");
   });
 
   it("persists a Dzongkha locale selection", async () => {
