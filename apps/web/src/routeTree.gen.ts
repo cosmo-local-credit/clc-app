@@ -19,6 +19,7 @@ import { Route as NavIndexRouteImport } from './routes/_nav/index'
 import { Route as WalletTopUpRouteImport } from './routes/wallet/top-up'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
 import { Route as WalletCollectRouteImport } from './routes/wallet/collect'
+import { Route as WalletCashRouteImport } from './routes/wallet/cash'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as CatalogsCreateRouteImport } from './routes/catalogs/create'
 import { Route as WalletSendIndexRouteImport } from './routes/wallet/send/index'
@@ -90,6 +91,11 @@ const WalletReceiveRoute = WalletReceiveRouteImport.update({
 const WalletCollectRoute = WalletCollectRouteImport.update({
   id: '/wallet/collect',
   path: '/wallet/collect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletCashRoute = WalletCashRouteImport.update({
+  id: '/wallet/cash',
+  path: '/wallet/cash',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsProfileRoute = SettingsProfileRouteImport.update({
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/catalogs/create': typeof CatalogsCreateRoute
   '/settings/profile': typeof SettingsProfileRoute
+  '/wallet/cash': typeof WalletCashRoute
   '/wallet/collect': typeof WalletCollectRoute
   '/wallet/receive': typeof WalletReceiveRoute
   '/wallet/top-up': typeof WalletTopUpRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/catalogs/create'
     | '/settings/profile'
+    | '/wallet/cash'
     | '/wallet/collect'
     | '/wallet/receive'
     | '/wallet/top-up'
@@ -428,6 +440,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   CatalogsCreateRoute: typeof CatalogsCreateRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
+  WalletCashRoute: typeof WalletCashRoute
   WalletCollectRoute: typeof WalletCollectRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
   WalletTopUpRoute: typeof WalletTopUpRoute
@@ -515,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet/collect'
       fullPath: '/wallet/collect'
       preLoaderRoute: typeof WalletCollectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet/cash': {
+      id: '/wallet/cash'
+      path: '/wallet/cash'
+      fullPath: '/wallet/cash'
+      preLoaderRoute: typeof WalletCashRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/profile': {
@@ -721,6 +741,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   CatalogsCreateRoute: CatalogsCreateRoute,
   SettingsProfileRoute: SettingsProfileRoute,
+  WalletCashRoute: WalletCashRoute,
   WalletCollectRoute: WalletCollectRoute,
   WalletReceiveRoute: WalletReceiveRoute,
   WalletTopUpRoute: WalletTopUpRoute,

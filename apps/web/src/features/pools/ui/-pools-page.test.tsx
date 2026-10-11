@@ -250,7 +250,7 @@ describe("pools list", () => {
     expect(screen.getByRole("region", { name: "Pools list" }).className).not.toMatch(/rounded-/);
 
     const trigger = screen.getByRole("button", { name: "Filters" });
-    expect(trigger.className).toContain("h-8");
+    expect(trigger.className).toContain("h-9");
     expect(trigger.textContent).toContain("Filters");
     fireEvent.click(trigger);
     const sheet = screen.getByRole("dialog", { name: "Filter pools" });

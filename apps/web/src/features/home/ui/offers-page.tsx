@@ -15,6 +15,7 @@ import {
   useNearbyCatalogFilter,
 } from "#/components/nearby-catalog";
 import { OfferingsPanel } from "#/components/offerings";
+import { BackChevron } from "#/components/wallet";
 import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
@@ -94,27 +95,52 @@ export function OffersPage({
 
   return (
     <main className="min-h-[100svh] space-y-4 bg-background px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-bottom-nav">
+      <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Offers</Trans>
       </h1>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <MarketplaceResourceNavigation current="offers" />
-        <CatalogFilterSheet
-          filter={filter}
-          facets={facets}
-          title={<Trans>Filter offers</Trans>}
-          facetTitle={<Trans>Tags</Trans>}
-          showHeader={false}
-          open={filtersOpen}
-          onOpenChange={setFiltersOpen}
-          onApply={filter.applyFacetFilters}
-        />
-      </div>
-      <CatalogSearchField
-        filter={filter}
-        label={t`Search offers, vouchers, descriptions, or tags`}
+      <MarketplaceResourceNavigation
+        current="offers"
+        filters={
+          <CatalogFilterSheet
+            filter={filter}
+            facets={facets}
+            title={<Trans>Filter offers</Trans>}
+            facetTitle={<Trans>Tags</Trans>}
+            showHeader={false}
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            onApply={filter.applyFacetFilters}
+          />
+        }
       />
+      <div className="flex items-end gap-3">
+        <CreditableBrowseControl
+          part="control"
+          state={credit}
+          onChange={(checked) =>
+            void navigate({
+              to: ".",
+              search: (previous) => ({ ...previous, creditable: checked }),
+            })
+          }
+          onClear={() =>
+            void navigate({
+              to: ".",
+              replace: true,
+              search: (previous) => ({ ...previous, creditable: undefined }),
+            })
+          }
+        />
+        <div className="min-w-0 flex-1">
+          <CatalogSearchField
+            filter={filter}
+            label={t`Search offers, vouchers, descriptions, or tags`}
+          />
+        </div>
+      </div>
       <CreditableBrowseControl
+        part="feedback"
         state={credit}
         onChange={(checked) =>
           void navigate({

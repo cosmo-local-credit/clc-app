@@ -255,20 +255,24 @@ export function PoolsPage({
 
   return (
     <div className="space-y-4">
-      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
+      <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
       <div className="flex items-start justify-between gap-3">
         <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
           <Trans>Pools</Trans>
         </h1>
-        <div className="flex items-center gap-1.5">
-          {auth.isAuthenticated ? (
-            <Button asChild variant="outline" className="bg-card">
-              <Link to="/pools/create/$step" params={{ step: "pool" }}>
-                <RiAddLine className="size-4" aria-hidden="true" />
-                <Trans>Create</Trans>
-              </Link>
-            </Button>
-          ) : null}
+        {auth.isAuthenticated ? (
+          <Button asChild variant="outline" className="bg-card">
+            <Link to="/pools/create/$step" params={{ step: "pool" }}>
+              <RiAddLine className="size-4" aria-hidden="true" />
+              <Trans>Create</Trans>
+            </Link>
+          </Button>
+        ) : null}
+      </div>
+
+      <MarketplaceResourceNavigation
+        current="pools"
+        filters={
           <PoolFilterSheet
             filter={filter}
             facets={catalog.tagFacets}
@@ -279,12 +283,57 @@ export function PoolsPage({
               setFiltersOpen(next);
             }}
           />
+        }
+      />
+
+      <div className="flex items-end gap-3">
+        {auth.isAuthenticated ? (
+          <label
+            htmlFor="creditable-pools"
+            className="flex min-h-9 shrink-0 cursor-pointer items-center gap-2 text-sm"
+          >
+            <Checkbox
+              id="creditable-pools"
+              checked={creditChecked}
+              disabled={
+                specialFilterInvalid ||
+                creditable.status !== "ready" ||
+                (outputFilterActive && outputAvailability.status !== "ready")
+              }
+              onCheckedChange={(checked) => {
+                setCreditChoice({
+                  holder: holderKey,
+                  context: creditContext,
+                  mode: creditMode,
+                  initialized: true,
+                  checked,
+                  touched: true,
+                });
+                void navigate({
+                  to: ".",
+                  search: (previous) => ({ ...previous, creditable: checked }),
+                });
+              }}
+            />
+            <span>
+              <Trans>Credit</Trans>
+            </span>
+            {creditable.status === "loading" ? (
+              <span className="text-muted-foreground text-xs">
+                <Trans>Checking…</Trans>
+              </span>
+            ) : null}
+            {creditable.isRefreshing ? (
+              <span className="sr-only">
+                <Trans>Refreshing creditable pools…</Trans>
+              </span>
+            ) : null}
+          </label>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <CatalogSearchField filter={filter} label={t`Search pools`} />
         </div>
       </div>
-
-      <MarketplaceResourceNavigation current="pools" />
-
-      <CatalogSearchField filter={filter} label={t`Search pools`} />
 
       <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
 
@@ -404,52 +453,6 @@ export function PoolsPage({
         <>
           <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2">
             <p className="shrink-0 font-medium text-sm tabular-nums">{resultCountLabel}</p>
-            {auth.isAuthenticated ? (
-              <label
-                htmlFor="creditable-pools"
-                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-sm"
-              >
-                <Checkbox
-                  id="creditable-pools"
-                  checked={creditChecked}
-                  disabled={
-                    specialFilterInvalid ||
-                    creditable.status !== "ready" ||
-                    (outputFilterActive && outputAvailability.status !== "ready")
-                  }
-                  onCheckedChange={(checked) => {
-                    setCreditChoice({
-                      holder: holderKey,
-                      context: creditContext,
-                      mode: creditMode,
-                      initialized: true,
-                      checked,
-                      touched: true,
-                    });
-                    void navigate({
-                      to: ".",
-                      search: (previous) => ({
-                        ...previous,
-                        creditable: checked,
-                      }),
-                    });
-                  }}
-                />
-                <span>
-                  <Trans>Credit</Trans>
-                </span>
-                {creditable.status === "loading" ? (
-                  <span className="text-muted-foreground text-xs">
-                    <Trans>Checking…</Trans>
-                  </span>
-                ) : null}
-                {creditable.isRefreshing ? (
-                  <span className="sr-only">
-                    <Trans>Refreshing creditable pools…</Trans>
-                  </span>
-                ) : null}
-              </label>
-            ) : null}
             <PoolOutputVoucherFilter
               facets={voucherVocabulary.data?.voucherFacets ?? []}
               value={outputVoucherAddress}

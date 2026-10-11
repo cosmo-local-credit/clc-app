@@ -1,8 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 
 // The card is covered on its own; here only that a voucher opens it.
 const voucherSheet = vi.hoisted(() => ({ open: vi.fn() }));
@@ -186,35 +184,19 @@ describe("WalletPage", () => {
     expect(screen.queryByText(/total balance/i)).toBeNull();
   });
 
-  it("keeps Cash visible and disables it only when this chain has no ramp", () => {
+  it("shows only Send, Receive, and Cash shortcuts", () => {
     mockLatestTokens();
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
-    expect(screen.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
-    expect(screen.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
+    const actions = within(screen.getByRole("region", { name: "Wallet actions" }));
+    expect(actions.getByRole("link", { name: /send/i }).getAttribute("href")).toBe("/wallet/send");
+    expect(actions.getByRole("link", { name: /receive/i }).getAttribute("href")).toBe(
       "/wallet/receive",
     );
-    // Exact, not /pools/i: the Your Pools header also links out to "All pools".
-    expect(screen.getByRole("link", { name: "Pools" }).getAttribute("href")).toBe(
-      "/pools?creditable=true",
-    );
+    expect(actions.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe("/wallet/cash");
+    expect(actions.queryByRole("link", { name: "Pools" })).toBeNull();
+    expect(actions.queryByRole("link", { name: "Catalogs" })).toBeNull();
     expect(screen.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
-    const catalogs = screen.getByRole("link", { name: "Catalogs" });
-    expect(catalogs.getAttribute("href")).toBe("/catalogs");
-    expect(catalogs.getAttribute("data-variant")).toBe("success");
     expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
-
-    if (chainHasPretiumRamp(CHAIN_ID)) {
-      expect(screen.getByRole("link", { name: /cash/i }).getAttribute("href")).toBe(
-        "/wallet/top-up",
-      );
-      expect(screen.queryByRole("button", { name: /cash/i })).toBeNull();
-      return;
-    }
-
-    const cash = screen.getByRole("button", { name: /cash/i }) as HTMLButtonElement;
-    expect(cash.disabled).toBe(true);
-    expect(cash.title).toBe(`Cash services aren't available on ${CHAIN_INFO.name}.`);
-    expect(screen.queryByRole("link", { name: /cash/i })).toBeNull();
   });
 
   it("shows fetched voucher balances with real logos", async () => {

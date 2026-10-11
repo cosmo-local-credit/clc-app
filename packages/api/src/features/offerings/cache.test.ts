@@ -22,6 +22,8 @@ function row(id: string, overrides: Partial<Offering> = {}): Offering {
     voucherAddress: VOUCHER as Offering["voucherAddress"],
     voucherName: "Kilifi",
     voucherSymbol: "KLV",
+    voucherUoa: "KES",
+    priceInUnitOfAccount: "10",
     voucherDecimals: 6,
     sellerAddress: "0x6666666666666666666666666666666666666666" as Offering["sellerAddress"],
     name: `Offering ${id}`,

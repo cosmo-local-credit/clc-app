@@ -15,6 +15,8 @@ function offering(id: string, name: string, pricePerUnit: string | null): Offeri
     voucherAddress: VOUCHER,
     voucherName: "Market voucher",
     voucherSymbol: "MKT",
+    voucherUoa: "KES",
+    priceInUnitOfAccount: pricePerUnit,
     voucherDecimals: 6,
     sellerAddress: VOUCHER,
     name,

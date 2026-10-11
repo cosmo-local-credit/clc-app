@@ -41,6 +41,8 @@ export type Offering = {
   voucherAddress: HexAddress;
   voucherName: string | null;
   voucherSymbol: string | null;
+  voucherUoa: string | null;
+  priceInUnitOfAccount: string | null;
   voucherDecimals: number | null;
   voucherImageUrl?: string | null;
   voucherLocationName?: string | null;
@@ -133,6 +135,8 @@ type BackendOffering = Partial<{
   voucherAddress: string;
   voucherName: string | null;
   voucherSymbol: string | null;
+  voucherUoa: string | null;
+  priceInUnitOfAccount: string | number | null;
   voucherDecimals: string | number | null;
   voucherImageUrl: string | null;
   voucherLocationName: string | null;
@@ -396,6 +400,8 @@ function normalizeOffering(offering: BackendOffering): Offering | null {
     voucherAddress,
     voucherName: normalizeText(offering.voucherName),
     voucherSymbol: normalizeText(offering.voucherSymbol),
+    voucherUoa: normalizeText(offering.voucherUoa),
+    priceInUnitOfAccount: normalizeNumericText(offering.priceInUnitOfAccount),
     voucherDecimals: normalizeNumber(offering.voucherDecimals),
     voucherImageUrl: normalizeImageUrl(offering.voucherImageUrl),
     voucherLocationName: normalizeText(offering.voucherLocationName),

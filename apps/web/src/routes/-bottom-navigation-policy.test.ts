@@ -116,6 +116,7 @@ const routePolicy = [
     source: "pools/create/receipt.tsx",
   },
   { id: "/wallet/", fullPath: "/wallet/", source: "wallet/index.tsx" },
+  { id: "/wallet/cash", fullPath: "/wallet/cash", source: "wallet/cash.tsx" },
   { id: "/wallet/collect", fullPath: "/wallet/collect", source: "wallet/collect.tsx" },
   { id: "/wallet/receive", fullPath: "/wallet/receive", source: "wallet/receive.tsx" },
   { id: "/wallet/top-up", fullPath: "/wallet/top-up", source: "wallet/top-up.tsx" },

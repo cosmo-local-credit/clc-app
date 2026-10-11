@@ -107,6 +107,8 @@ vi.mock("#/components/vouchers/voucher-sheet", () => ({ VoucherSheet: () => null
 vi.mock("@tanstack/react-router", () => ({
   useSearch: () => mocks.search,
   useNavigate: () => mocks.navigate,
+  useRouter: () => ({ history: { back: vi.fn() } }),
+  useCanGoBack: () => false,
   Link: ({
     to,
     params,
@@ -311,6 +313,7 @@ describe("MarketListPage", () => {
     render(<MarketListPage />);
 
     const offers = screen.getByRole("link", { name: "Offers" });
+    const vouchers = screen.getByRole("button", { name: "Vouchers" });
     const pools = screen.getByRole("link", { name: "Pools" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
     const map = screen.getByRole("link", { name: "Map" });
@@ -324,8 +327,12 @@ describe("MarketListPage", () => {
     expect(offers.className).toContain("h-9");
     expect(pools.className).toContain("h-9");
     expect(catalogs.className).toContain("h-9");
-    expect(filters.className).toContain("h-8");
-    expect(offers.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.className).toContain("h-9");
+    expect(vouchers.getAttribute("aria-current")).toBe("page");
+    expect(
+      offers.compareDocumentPosition(vouchers) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(vouchers.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(catalogs.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(map.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
