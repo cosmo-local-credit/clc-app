@@ -8,6 +8,7 @@ import {
   useMarketFacetVocabulary,
 } from "#/features/home/hooks/use-filtered-market-vouchers";
 import type { CatalogFilterControls } from "#/lib/navigation/use-catalog-filter";
+import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
 import { useMarketMapVouchers } from "#/features/home/hooks/use-market-vouchers";
 import type { MarketViewport } from "#/features/home/ui/market-map";
 
@@ -27,9 +28,21 @@ export function useMarketCatalogVouchers(
   enabled = true,
   /** The facet vocabulary is only read inside the filter sheet — don't pay for it until it opens. */
   vocabularyEnabled = false,
+  pools?: readonly { chainId: number; address: string }[],
 ): MarketCatalog {
-  const unfiltered = useMarketMapVouchers(viewport, undefined, enabled && !filter.isFiltered);
-  const filtered = useFilteredMarketVouchers(enabled && filter.isFiltered ? filter.filter : null);
+  const usesPoolFilter = pools !== undefined;
+  const unfiltered = useMarketMapVouchers(
+    viewport,
+    undefined,
+    enabled && !filter.isFiltered && !usesPoolFilter,
+  );
+  const filtered = useFilteredMarketVouchers(
+    enabled && filter.result.ok && (filter.isFiltered || usesPoolFilter)
+      ? (filter.filter ?? EMPTY_CATALOG_FILTER)
+      : null,
+    undefined,
+    pools,
+  );
   const filteredState = toFilteredCatalogState(filtered, filter.isDebouncing);
   const vocabulary = useMarketFacetVocabulary(vocabularyEnabled);
 
@@ -59,7 +72,7 @@ export function useMarketCatalogVouchers(
       };
     }
 
-    if (!filter.isFiltered) {
+    if (!filter.isFiltered && !usesPoolFilter) {
       return {
         vouchers: unfiltered.vouchers,
         isCatalogComplete: unfiltered.isCatalogComplete,
@@ -79,7 +92,7 @@ export function useMarketCatalogVouchers(
         error: null,
         retry: retryFiltered,
         tagFacets: chipFacets,
-        filterKey: filterIdentity(filter),
+        filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
       };
     }
 
@@ -95,9 +108,22 @@ export function useMarketCatalogVouchers(
       error: filteredState.status === "error" ? filteredState.error : null,
       retry: retryFiltered,
       tagFacets: chipFacets,
-      filterKey: filterIdentity(filter),
+      filterKey: `${filterIdentity(filter)}\u0000${poolIdentity(pools)}`,
     };
-  }, [enabled, filter, unfiltered, filteredState, retryFiltered, chipFacets]);
+  }, [
+    enabled,
+    filter,
+    unfiltered,
+    filteredState,
+    retryFiltered,
+    chipFacets,
+    pools,
+    usesPoolFilter,
+  ]);
+}
+
+function poolIdentity(pools: readonly { chainId: number; address: string }[] | undefined): string {
+  return pools?.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(",") ?? "all";
 }
 
 function filterIdentity(filter: CatalogFilterControls): string {

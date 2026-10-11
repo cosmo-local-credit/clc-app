@@ -127,6 +127,103 @@ describe("getVoucherOfferings", () => {
   });
 });
 
+describe("getOfferings discovery", () => {
+  it("serializes search, tags, nearby scope, facets, cursor, and verified pools", async () => {
+    fetchMock.mockResolvedValue(
+      response({
+        offerings: [
+          offering({
+            voucherName: "Community voucher",
+            voucherSymbol: "CV",
+            voucherImageUrl: "https://content.example/voucher.jpg",
+            voucherLocationName: "Kilifi",
+            voucherGeoLat: -3.63,
+            voucherGeoLng: 39.85,
+            effectiveLocationName: "Mombasa",
+            effectiveGeoLat: -4.05,
+            effectiveGeoLng: 39.67,
+            distanceMeters: 12_345,
+            tags: ["food"],
+          }),
+        ],
+        nextCursor: "opaque+/=",
+        tagFacets: [
+          { tag: "food", count: 2 },
+          { tag: "", count: -1 },
+        ],
+      }),
+    );
+    const controller = new AbortController();
+
+    const page = await api.getOfferings(
+      {
+        perPage: 20,
+        cursor: "cursor+/=",
+        q: "  maize flour  ",
+        tags: ["food", "local"],
+        tagMatch: "all",
+        facets: true,
+        nearby: true,
+        pools: [{ chainId: 100, address: VOUCHER_ADDRESS.toUpperCase() }],
+      },
+      controller.signal,
+    );
+
+    const [rawUrl, init] = fetchMock.mock.calls[0] ?? [];
+    const url = new URL(String(rawUrl));
+    expect(url.pathname).toBe("/api/v2/offerings");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      perPage: "20",
+      cursor: "cursor+/=",
+      q: "maize flour",
+      tags: "food,local",
+      tagMatch: "all",
+      facets: "true",
+      nearby: "true",
+      pools: `100:${VOUCHER_ADDRESS}`,
+    });
+    expect(init).toMatchObject({
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    expect(page).toMatchObject({
+      nextCursor: "opaque+/=",
+      receivedCount: 1,
+      tagFacets: [{ tag: "food", count: 2 }],
+      offerings: [
+        {
+          voucherName: "Community voucher",
+          voucherSymbol: "CV",
+          voucherImageUrl: "https://content.example/voucher.jpg",
+          effectiveLocationName: "Mombasa",
+          effectiveGeoLat: -4.05,
+          effectiveGeoLng: 39.67,
+          distanceMeters: 12_345,
+          tags: ["food"],
+        },
+      ],
+    });
+  });
+
+  it("keeps global discovery public and omits empty filters", async () => {
+    fetchMock.mockResolvedValue(response({ offerings: [], nextCursor: null }));
+
+    await api.getOfferings({ q: " ", tags: [], tagMatch: "all", pools: [] });
+
+    const [rawUrl, init] = fetchMock.mock.calls[0] ?? [];
+    const url = new URL(String(rawUrl));
+    expect(url.searchParams.get("perPage")).toBe("20");
+    expect(url.searchParams.has("q")).toBe(false);
+    expect(url.searchParams.has("tags")).toBe(false);
+    expect(url.searchParams.has("tagMatch")).toBe(false);
+    expect(url.searchParams.has("pools")).toBe(false);
+    expect(init).toMatchObject({ method: "GET", credentials: "omit" });
+    expect(init).not.toHaveProperty("cache");
+  });
+});
+
 describe("offerings HTTP cache policy", () => {
   const fresh = createOfferingsClient(createHttpClient({ baseUrl: "https://api.test" }), {
     cache: "no-store",
@@ -153,12 +250,12 @@ describe("offerings HTTP cache policy", () => {
     expect("cache" in initOf()).toBe(false);
   });
 
-  // The pool route is authenticated and already no-store; the option must not
+  // The pool route is public and already no-store; the option must not
   // change what it sends.
-  it("leaves the authenticated pool route on its own no-store", async () => {
+  it("leaves the public pool route on its own no-store", async () => {
     fetchMock.mockResolvedValue(response({ offerings: [], first: 0, last: 0 }));
     await api.getPoolOfferings(VOUCHER_ADDRESS, { perPage: 10 });
-    expect(initOf().cache).toBe("no-store");
+    expect(initOf()).toMatchObject({ cache: "no-store", credentials: "omit" });
   });
 });
 

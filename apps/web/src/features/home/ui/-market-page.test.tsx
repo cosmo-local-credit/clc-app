@@ -384,7 +384,7 @@ describe("MarketPage guest entry", () => {
     );
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
-    ).toContain("start-[4.75rem]");
+    ).toContain("start-[8.25rem]");
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
     ).toContain("top-[calc(env(safe-area-inset-top)+1rem)]");
@@ -769,9 +769,7 @@ describe("MarketPage voucher card", () => {
   it("links Browse all to the marketplace list without rendering it over the map", () => {
     renderPage();
 
-    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe(
-      "/?tab=market&view=list",
-    );
+    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe("/offers");
     expect(screen.queryByRole("list")).toBeNull();
   });
 });
@@ -1016,7 +1014,7 @@ describe("MarketPage filtering", () => {
     expect(screen.getByText("\u201cart\u201d")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
     const edit = screen.getByRole("link", { name: "Edit filters" });
-    expect(edit.getAttribute("href")).toContain("view=list");
+    expect(edit.getAttribute("href")).toContain("/offers");
     expect(edit.getAttribute("href")).toContain("q=art");
   });
 
@@ -1034,7 +1032,7 @@ describe("MarketPage filtering", () => {
     const href = screen.getByRole("link", { name: "Browse all" }).getAttribute("href");
     expect(href).toContain("q=art");
     expect(href).toContain("tags=Art");
-    expect(href).toContain("view=list");
+    expect(href).toContain("/offers");
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {

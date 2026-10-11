@@ -17,6 +17,13 @@ export const catalogWriteSchema = z.object({
       "Display name must be 120 characters or fewer",
     ),
   imageUrl: storedImageUrlSchema,
+  description: z
+    .string()
+    .trim()
+    .refine(
+      (description) => Array.from(description).length <= 500,
+      "Description must be 500 characters or fewer",
+    ),
   locationName: z.string().trim().min(1, "Choose a location").max(200),
   geoLat: z.number().min(-90).max(90),
   geoLng: z.number().min(-180).max(180),
@@ -31,6 +38,11 @@ const imageSchema = storedImageUrlSchema.nullable();
 export const catalogSchema = z.object({
   id: catalogIdSchema,
   name: z.string(),
+  description: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((description) => description ?? null),
   imageUrl: imageSchema,
   locationName: z.string(),
   geoLat: z.number().min(-90).max(90),

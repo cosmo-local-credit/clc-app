@@ -2,6 +2,7 @@ import {
   formatOfferingDisplayPrice,
   formatOfferingQuantity,
 } from "@clc/core/features/market/logic";
+import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
@@ -73,6 +74,7 @@ export function OfferingsPanel({
   query,
   emptyState,
   showVoucher = false,
+  showVoucherName = false,
   fallbackSymbol,
   suppressed = false,
   management,
@@ -80,6 +82,9 @@ export function OfferingsPanel({
   maxItems,
   autoLoadMore = true,
   openVoucherPageAction = "navigate",
+  directNavigation = false,
+  showLocation = false,
+  distanceOrigin,
   ...props
 }: ComponentProps<"div"> & {
   query: OfferingsQueryLike;
@@ -87,6 +92,8 @@ export function OfferingsPanel({
   emptyState: ReactNode;
   /** A pool's offerings come from many vouchers, so each tile names its own. */
   showVoucher?: boolean;
+  /** Global discovery names the parent voucher as well as its symbol. */
+  showVoucherName?: boolean;
   /** Used only when a row arrives with no voucher symbol of its own. */
   fallbackSymbol?: string;
   /** The caller already knows the result is empty and issued no request. */
@@ -101,6 +108,10 @@ export function OfferingsPanel({
   autoLoadMore?: boolean;
   /** The voucher page itself only needs to dismiss the informational rollup. */
   openVoucherPageAction?: "navigate" | "close";
+  /** A discovery result opens its parent voucher without an intermediate rollup. */
+  directNavigation?: boolean;
+  showLocation?: boolean;
+  distanceOrigin?: { lat: number; lng: number } | null;
 }) {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
@@ -168,9 +179,13 @@ export function OfferingsPanel({
               offering={offering}
               voucherSymbol={offering.voucherSymbol ?? fallbackSymbol ?? "VOUCHER"}
               showVoucher={showVoucher}
+              showVoucherName={showVoucherName}
               management={management}
               voucherRate={resolveVoucherRate?.(offering) ?? null}
               openVoucherPageAction={openVoucherPageAction}
+              directNavigation={directNavigation}
+              showLocation={showLocation}
+              distanceOrigin={distanceOrigin}
             />
           ))}
         </div>
@@ -201,22 +216,31 @@ function OfferingTile({
   offering,
   voucherSymbol,
   showVoucher,
+  showVoucherName,
   management,
   voucherRate,
   openVoucherPageAction,
+  directNavigation,
+  showLocation,
+  distanceOrigin,
 }: {
   offering: Offering;
   voucherSymbol: string;
   showVoucher: boolean;
+  showVoucherName: boolean;
   management?: OfferingManagement;
   voucherRate: OfferingVoucherRate | null;
   openVoucherPageAction: "navigate" | "close";
+  directNavigation: boolean;
+  showLocation: boolean;
+  distanceOrigin?: { lat: number; lng: number } | null;
 }) {
   const { i18n, t } = useLingui();
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [failedImage, setFailedImage] = useState<string | null>(null);
+  const candidateImageUrl = offering.imageUrl ?? offering.voucherImageUrl ?? null;
   const imageUrl =
-    offering.imageUrl && failedImage !== offering.imageUrl ? offering.imageUrl : null;
+    candidateImageUrl && failedImage !== candidateImageUrl ? candidateImageUrl : null;
   const price = formatOfferingDisplayPrice(
     offering.pricePerUnit,
     voucherRate?.value ?? null,
@@ -238,68 +262,84 @@ function OfferingTile({
       : quantity?.value;
   const frequency = useOfferingFrequencyLabel(offering.frequency);
   const initials = offeringInitials(offering.name);
+  const locationLabel = showLocation
+    ? offeringDistanceLabel(offering, distanceOrigin, i18n.locales?.[0] ?? i18n.locale)
+    : null;
+
+  const tileContents = (
+    <>
+      <span
+        data-slot="offering-media"
+        className="relative block h-36 w-full shrink-0 overflow-hidden bg-muted"
+      >
+        <OfferingImage
+          imageUrl={imageUrl}
+          initials={initials}
+          seed={offering.id}
+          initialsClassName="text-3xl"
+          onError={() => setFailedImage(imageUrl)}
+        />
+      </span>
+      <span className="block min-h-[4.5rem] flex-1 p-2">
+        {showVoucher ? (
+          <span
+            data-slot="offering-voucher"
+            className="mb-0.5 block truncate font-mono text-[0.625rem] font-semibold text-info"
+          >
+            {showVoucherName && offering.voucherName
+              ? `${offering.voucherName} · ${voucherSymbol}`
+              : voucherSymbol}
+          </span>
+        ) : null}
+        <span className="line-clamp-2 font-heading text-xs font-semibold leading-tight [overflow-wrap:anywhere]">
+          {offering.name}
+        </span>
+        <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
+          {price ? (
+            `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
+          ) : (
+            <Trans>Price on request</Trans>
+          )}
+        </span>
+        {quantityValue || frequency ? (
+          <span className="block truncate text-[0.6875rem] text-muted-foreground">
+            {quantityValue}
+            {quantityValue && quantity?.unit ? ` ${quantity.unit}` : null}
+            {quantityValue && frequency ? <span aria-hidden="true"> · </span> : null}
+            {frequency}
+          </span>
+        ) : null}
+        {locationLabel ? (
+          <span className="mt-1 line-clamp-2 block text-[0.6875rem] text-muted-foreground">
+            {locationLabel}
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
 
   return (
     <div className="flex flex-col">
-      <button
-        type="button"
-        className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-start active:bg-muted"
-        aria-label={t`View offering details: ${offering.name}`}
-        onClick={() => setDetailsOpen(true)}
-      >
-        {/* One fixed height for every offering's image, whatever the tile around
-            it does. A grid row stretches its tiles to the tallest one, and an
-            `aspect-ratio` height is only a preference — so a tile with fewer text
-            lines used to hand its slack to the image, and neighbouring images
-            came out different heights. The height is pinned and `object-cover`
-            crops; the text below absorbs the slack instead. */}
-        <span
-          data-slot="offering-media"
-          className="relative block h-36 w-full shrink-0 overflow-hidden bg-muted"
+      {directNavigation ? (
+        <Link
+          to="/vouchers/$voucherAddress"
+          params={{ voucherAddress: offering.voucherAddress }}
+          search={{}}
+          className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-start active:bg-muted"
+          aria-label={t`Open voucher for ${offering.name}`}
         >
-          <OfferingImage
-            imageUrl={imageUrl}
-            initials={initials}
-            seed={offering.id}
-            initialsClassName="text-3xl"
-            onError={() => setFailedImage(imageUrl)}
-          />
-        </span>
-        <span className="block min-h-[4.5rem] flex-1 p-2">
-          {/* Which voucher this is bought with, in the same blue the wallet uses
-              for Pools. Mono and verbatim, like every other symbol in the app:
-              issuer-authored identifiers are not re-cased (USDm, USD₮, GE KSH). */}
-          {showVoucher ? (
-            <span
-              data-slot="offering-voucher"
-              className="mb-0.5 block truncate font-mono text-[0.625rem] font-semibold text-info"
-            >
-              {voucherSymbol}
-            </span>
-          ) : null}
-          <span className="line-clamp-2 font-heading text-xs font-semibold leading-tight [overflow-wrap:anywhere]">
-            {offering.name}
-          </span>
-          {/* Currency code, slash and issuer-authored unit are all data. The
-              amount is converted through the voucher's recorded rate; a legacy
-              voucher without one falls back to its own symbol. */}
-          <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
-            {price ? (
-              `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
-            ) : (
-              <Trans>Price on request</Trans>
-            )}
-          </span>
-          {quantityValue || frequency ? (
-            <span className="block truncate text-[0.6875rem] text-muted-foreground">
-              {quantityValue}
-              {quantityValue && quantity?.unit ? ` ${quantity.unit}` : null}
-              {quantityValue && frequency ? <span aria-hidden="true"> · </span> : null}
-              {frequency}
-            </span>
-          ) : null}
-        </span>
-      </button>
+          {tileContents}
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className="flex min-w-0 flex-col overflow-hidden border border-border bg-card text-start active:bg-muted"
+          aria-label={t`View offering details: ${offering.name}`}
+          onClick={() => setDetailsOpen(true)}
+        >
+          {tileContents}
+        </button>
+      )}
 
       {/* Outside the tile's button, not inside it: nesting a button in a button is
           invalid, and a tap meant for Edit must not also open the buying sheet. */}
@@ -327,19 +367,47 @@ function OfferingTile({
         </span>
       ) : null}
 
-      <OfferingDetailsSheet
-        offering={offering}
-        voucherSymbol={voucherSymbol}
-        imageUrl={imageUrl}
-        initials={initials}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        onImageError={() => setFailedImage(imageUrl)}
-        voucherRate={voucherRate}
-        openVoucherPageAction={openVoucherPageAction}
-      />
+      {directNavigation ? null : (
+        <OfferingDetailsSheet
+          offering={offering}
+          voucherSymbol={voucherSymbol}
+          imageUrl={imageUrl}
+          initials={initials}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          onImageError={() => setFailedImage(imageUrl)}
+          voucherRate={voucherRate}
+          openVoucherPageAction={openVoucherPageAction}
+        />
+      )}
     </div>
   );
+}
+
+function offeringDistanceLabel(
+  offering: Offering,
+  origin: { lat: number; lng: number } | null | undefined,
+  locale: string,
+): string | null {
+  const meters =
+    offering.distanceMeters ??
+    (origin &&
+    typeof offering.effectiveGeoLat === "number" &&
+    typeof offering.effectiveGeoLng === "number"
+      ? haversineMeters(origin, {
+          lat: offering.effectiveGeoLat,
+          lng: offering.effectiveGeoLng,
+        })
+      : null);
+  const location = offering.effectiveLocationName ?? null;
+  if (meters === null) return location;
+  const display = formatDistance(meters);
+  const value = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: display.fractionDigits,
+    maximumFractionDigits: display.fractionDigits,
+  }).format(display.value);
+  const distance = `${value} ${display.unit}`;
+  return location ? `${location} · ${distance}` : distance;
 }
 
 /**

@@ -1,7 +1,7 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Suspense, useCallback, useMemo, useState, type ReactNode } from "react";
-import { RiFocus3Line, RiListUnordered } from "react-icons/ri";
+import { RiFocus3Line, RiListUnordered, RiSearchLine } from "react-icons/ri";
 
 import { AppMenu } from "#/components/app-menu";
 import { Button } from "#/components/ui/button";
@@ -19,6 +19,7 @@ import { useMarketMapPools } from "#/features/home/hooks/use-market-pools";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useMarketFilter } from "#/features/home/hooks/use-market-filter";
+import { catalogSearchForScope } from "#/lib/navigation/catalog-search";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { MarketFilterSummary, useMarketFilterNotice } from "./market-filter-ui";
 import type { MarketCamera, MarketViewport } from "./market-map";
@@ -212,8 +213,19 @@ export function MarketPage({
 
       <AppMenu className="absolute start-4 top-[calc(env(safe-area-inset-top)+1rem)] z-30" />
 
+      <Button
+        asChild
+        variant="outline"
+        size="icon-lg"
+        className="absolute start-[4.75rem] top-[calc(env(safe-area-inset-top)+1rem)] z-30 h-11 w-11 bg-card"
+      >
+        <Link to="/offers" aria-label={t`Search offers`}>
+          <RiSearchLine className="size-5" aria-hidden="true" />
+        </Link>
+      </Button>
+
       {onboardingBanner ? (
-        <div className="pointer-events-none absolute start-[4.75rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
+        <div className="pointer-events-none absolute start-[8.25rem] end-0 top-[calc(env(safe-area-inset-top)+1rem)] z-20 pe-4">
           {onboardingBanner}
         </div>
       ) : null}
@@ -260,7 +272,7 @@ export function MarketPage({
           <MarketFilterSummary filter={filter} />
           <div className="flex items-center gap-2">
             <Button asChild className="pointer-events-auto h-11 flex-1">
-              <Link to="/" search={(previous) => ({ ...previous, tab: "market", view: "list" })}>
+              <Link to="/offers" search={(previous) => catalogSearchForScope(previous, false)}>
                 <RiListUnordered className="me-2 size-4" aria-hidden="true" />
                 <Trans>Browse all</Trans>
               </Link>

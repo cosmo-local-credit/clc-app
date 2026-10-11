@@ -91,6 +91,9 @@ export function PoolDetailPage({
   const [managing, setManaging] = useState<PoolVoucher | null>(null);
   const [approving, setApproving] = useState(false);
   const [receiving, setReceiving] = useState(false);
+  const visibleTabs = auth.isAuthenticated
+    ? POOL_TABS
+    : POOL_TABS.filter((tab) => tab === "offerings" || tab === "vouchers");
 
   if (poolQuery.isPending) {
     return <DetailShell message={t`Loading pool…`} />;
@@ -134,56 +137,65 @@ export function PoolDetailPage({
 
       {/* The three-up icon grid the wallet and voucher screens already use, so
           a pool's actions are read the same way as every other screen's. */}
-      <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
-        <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
-          <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
-            <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
-            <Trans>Swap</Trans>
-          </Link>
-        </Button>
-        {/* A shortcut into the ordinary send flow with the pool as the
+      {auth.isAuthenticated ? (
+        <section className="grid grid-cols-3 gap-2" aria-label={t`Pool actions`}>
+          <Button asChild className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+            <Link to="/pools/$poolAddress/swap" params={{ poolAddress }}>
+              <RiArrowLeftRightLine className="size-4" aria-hidden="true" />
+              <Trans>Swap</Trans>
+            </Link>
+          </Button>
+          {/* A shortcut into the ordinary send flow with the pool as the
             recipient, rather than a flow of its own. Back returns here on its
             own: BackChevron prefers real history over its deep-link fallback.
             `returnPool` rides along to the receipt so finishing the send lands
             back on this pool rather than on the wallet. */}
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
-          <Link
-            to="/wallet/send/amount"
-            search={{
-              recipient: pool.address,
-              recipientLabel: pool.name,
-              returnPool: pool.address,
-            }}
-          >
-            <RiArrowRightUpLine className="size-4" aria-hidden="true" />
-            <Trans>Deposit</Trans>
-          </Link>
-        </Button>
-        {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
+          <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1 text-[0.6875rem]">
+            <Link
+              to="/wallet/send/amount"
+              search={{
+                recipient: pool.address,
+                recipientLabel: pool.name,
+                returnPool: pool.address,
+              }}
+            >
+              <RiArrowRightUpLine className="size-4" aria-hidden="true" />
+              <Trans>Deposit</Trans>
+            </Link>
+          </Button>
+          {/* The sheet's own title carries "Receive vouchers"; the trigger stays a
             one-word label so all three fit a 360px row. */}
-        <Button
-          variant="info"
-          className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-          onClick={() => setReceiving(true)}
-        >
-          <RiQrCodeLine className="size-4" aria-hidden="true" />
-          <Trans>Receive</Trans>
-        </Button>
-      </section>
+          <Button
+            variant="info"
+            className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
+            onClick={() => setReceiving(true)}
+          >
+            <RiQrCodeLine className="size-4" aria-hidden="true" />
+            <Trans>Receive</Trans>
+          </Button>
+        </section>
+      ) : null}
 
-      <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
-      <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
+      {auth.isAuthenticated ? (
+        <>
+          <PoolReceiveSheet pool={pool} open={receiving} onClose={() => setReceiving(false)} />
+          <AddToCatalogButton kind="pool" resourceId={pool.id} address={pool.address} />
+        </>
+      ) : null}
 
       {canEditDetails ? (
         <PoolControlsPanel pool={pool} vouchers={vouchers} canManageOnChain={canManageOnChain} />
       ) : null}
 
       <div
-        className="grid grid-cols-5 border border-border bg-card p-1"
+        className={[
+          "grid border border-border bg-card p-1",
+          auth.isAuthenticated ? "grid-cols-5" : "grid-cols-2",
+        ].join(" ")}
         role="tablist"
         aria-label={t`Pool contents`}
       >
-        {POOL_TABS.map((tab) => {
+        {visibleTabs.map((tab) => {
           const label = TAB_LABELS[tab];
           // Five tabs leave about 60px a label at 360px. A label of two words
           // wraps onto a second line centred under the first; a single word

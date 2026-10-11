@@ -65,6 +65,11 @@ export function CatalogDetailPage({ id }: { id: string }) {
               </p>
             </div>
           </header>
+          {catalog.description ? (
+            <p dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed">
+              {catalog.description}
+            </p>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <CatalogShareButton id={catalog.id} name={catalog.name} />
             {owner ? (

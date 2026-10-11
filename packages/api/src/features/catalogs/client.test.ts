@@ -7,6 +7,7 @@ const api = createCatalogsClient(createHttpClient({ baseUrl: "https://api.test" 
 const row = {
   id: 7,
   name: "Local",
+  description: "A local directory",
   imageUrl: null,
   locationName: "Sarajevo",
   geoLat: 43,
@@ -39,6 +40,28 @@ describe("catalog HTTP contract", () => {
     expect(url.searchParams.get("cursor")).toBe("opaque+/=");
     expect(fetcher.mock.calls[1]?.[1].credentials).toBe("include");
     expect(url.searchParams.has("geoLat")).toBe(false);
+  });
+  it("trims catalog search and carries descriptions through reads and writes", async () => {
+    const fetcher = respond({ catalogs: [row], nextCursor: null });
+    const page = await api.list({ q: "  fresh food  " });
+    expect(page.catalogs[0]?.description).toBe("A local directory");
+    expect(new URL(fetcher.mock.calls[0]?.[0]).searchParams.get("q")).toBe("fresh food");
+
+    fetcher.mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true, result: { catalog: row } }), { status: 200 }),
+    );
+    await api.create({
+      name: "Local",
+      description: "  A local directory  ",
+      imageUrl: "",
+      locationName: "Sarajevo",
+      geoLat: 43,
+      geoLng: 18,
+    });
+    expect(JSON.parse(fetcher.mock.calls[1]?.[1].body)).toMatchObject({
+      name: "Local",
+      description: "A local directory",
+    });
   });
   it("uses resource DB IDs and one pool-only membership write", async () => {
     const fetcher = respond({ added: true });

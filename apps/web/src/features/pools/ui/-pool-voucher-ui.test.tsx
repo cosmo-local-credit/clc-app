@@ -127,6 +127,19 @@ vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d" }),
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    state: "authenticated",
+    isAuthenticated: true,
+    isLoading: false,
+    address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+    session: {
+      address: "0x1a3E18f7329bb8b533E5Be0D8B176eE1ed73563d",
+      role: "USER",
+    },
+  }),
+}));
+
 vi.mock("#/features/webauthn/hooks/use-calibur-delegation", () => ({
   useCaliburDelegation: () => "delegated",
 }));

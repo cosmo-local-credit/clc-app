@@ -679,6 +679,25 @@ describe("getFilteredMarketVouchers request", () => {
     expect(url.searchParams.get("perPage")).toBe("500");
   });
 
+  it("encodes verified pool references without changing public credentials", async () => {
+    fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
+
+    await api.getFilteredMarketVouchers({
+      perPage: 20,
+      filter: FILTER,
+      pools: [
+        { chainId: 100, address: VALID_ROW.address },
+        { chainId: 42220, address: `0x${"b".repeat(40)}` },
+      ],
+    });
+
+    const url = new URL(requestedUrl());
+    expect(url.searchParams.get("pools")).toBe(
+      `100:${VALID_ROW.address.toLowerCase()},42220:0x${"b".repeat(40)}`,
+    );
+    expect(requestedInit().credentials).toBe("omit");
+  });
+
   it("omits a filter key it has nothing to say about", async () => {
     fetchMock.mockResolvedValue(pageResponse({ vouchers: [], first: 0, last: 0 }));
 

@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import {
+  catalogSearchForScope,
   canonicalRedirectSearch,
   type CatalogRouteSearch,
   pickCatalogSearch,
@@ -26,6 +27,13 @@ export const Route = createFileRoute("/_nav/")({
     ...pickCatalogSearch(search),
   }),
   beforeLoad: ({ search }) => {
+    if (search.tab === "market" && search.view === "list") {
+      throw redirect({
+        to: "/offers",
+        search: catalogSearchForScope(search, false),
+        replace: true,
+      });
+    }
     const next = canonicalRedirectSearch(search, { voucherRelationships: search.tab === "posts" });
     if (!next) return;
     throw redirect({ to: "/", search: next, replace: true });

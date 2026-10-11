@@ -38,6 +38,20 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/features/auth/hooks/use-auth-status", () => ({
+  useAuthStatus: () => ({
+    address: "0xabc0000000000000000000000000000000000123",
+    isAuthenticated: true,
+    isLoading: false,
+    state: "authenticated",
+    session: { address: "0xabc0000000000000000000000000000000000123" },
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
+  useDiscoveryDistanceOrigin: () => null,
+}));
+
 vi.mock("wagmi", () => ({
   useConnection: () => ({ address: "0xabc0000000000000000000000000000000000123" }),
 }));

@@ -5,7 +5,10 @@ import type { CatalogsClient } from "./client";
 
 export const catalogKeys = {
   all: ["clc", "catalogs"] as const,
-  list: (scope?: string) => ["clc", "catalogs", "list", scope ?? "public"] as const,
+  list: (input: { scope?: string; q?: string } | string = {}) => {
+    const params = typeof input === "string" ? { scope: input } : input;
+    return ["clc", "catalogs", "list", params.scope ?? "public", params.q?.trim() ?? ""] as const;
+  },
   mine: (address: string) => ["clc", "catalogs", "mine", address.toLowerCase()] as const,
   detail: (id: string) => ["clc", "catalogs", "detail", id] as const,
   members: (id: string, kind: CatalogKind) => ["clc", "catalogs", "members", id, kind] as const,
@@ -13,11 +16,16 @@ export const catalogKeys = {
     ["clc", "catalogs", "membership", address.toLowerCase(), id, kind, resourceId] as const,
 };
 
-export function catalogsInfiniteQueryOptions(client: CatalogsClient, scope?: string) {
+export function catalogsInfiniteQueryOptions(
+  client: CatalogsClient,
+  input: { scope?: string; q?: string } | string = {},
+) {
+  const params = typeof input === "string" ? { scope: input } : input;
   return infiniteQueryOptions({
-    queryKey: catalogKeys.list(scope),
+    queryKey: catalogKeys.list(params),
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam, signal }) => client.list({ cursor: pageParam, nearby: !!scope }, signal),
+    queryFn: ({ pageParam, signal }) =>
+      client.list({ cursor: pageParam, nearby: !!params.scope, q: params.q }, signal),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
   });
 }

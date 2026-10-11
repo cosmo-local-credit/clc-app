@@ -2,7 +2,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
-import { useConnection } from "wagmi";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
@@ -22,6 +21,11 @@ import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/po
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
+import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
+import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
 import { PoolOutputVoucherFilter } from "./pool-output-voucher-filter";
 
@@ -45,7 +49,10 @@ export function PoolsPage({
 }) {
   const { t, i18n } = useLingui();
   const navigate = useNavigate();
-  const { address } = useConnection();
+  const auth = useAuthStatus();
+  const address = auth.isAuthenticated ? auth.address : undefined;
+  const storageOwner = useStorageOwner();
+  const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const outputVoucherResult = parsePoolOutputVoucher(outputVoucherSearch);
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
@@ -60,14 +67,10 @@ export function PoolsPage({
         ? "on"
         : "off";
   const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
-  const filter = usePersistedCatalogFilter(
-    CATALOG_FILTER_PREFERENCE_NAMES.pools,
-    useStorageOwner(),
-    {
-      voucherRelationships: true,
-      externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
-    },
-  );
+  const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
+    voucherRelationships: true,
+    externalFilterActive: outputVoucherSearch !== undefined || creditableSearch !== undefined,
+  });
   const poolsQuery = useUserPoolsInfinite(
     undefined,
     !filter.isFiltered && !filter.isRestoringPreference,
@@ -258,12 +261,14 @@ export function PoolsPage({
           <Trans>Pools</Trans>
         </h1>
         <div className="flex items-center gap-1.5">
-          <Button asChild variant="outline" className="bg-card">
-            <Link to="/pools/create/$step" params={{ step: "pool" }}>
-              <RiAddLine className="size-4" aria-hidden="true" />
-              <Trans>Create</Trans>
-            </Link>
-          </Button>
+          {auth.isAuthenticated ? (
+            <Button asChild variant="outline" className="bg-card">
+              <Link to="/pools/create/$step" params={{ step: "pool" }}>
+                <RiAddLine className="size-4" aria-hidden="true" />
+                <Trans>Create</Trans>
+              </Link>
+            </Button>
+          ) : null}
           <PoolFilterSheet
             filter={filter}
             facets={catalog.tagFacets}
@@ -276,6 +281,8 @@ export function PoolsPage({
           />
         </div>
       </div>
+
+      <MarketplaceResourceNavigation current="pools" />
 
       <CatalogSearchField filter={filter} label={t`Search pools`} />
 
@@ -397,50 +404,52 @@ export function PoolsPage({
         <>
           <div className="flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2">
             <p className="shrink-0 font-medium text-sm tabular-nums">{resultCountLabel}</p>
-            <label
-              htmlFor="creditable-pools"
-              className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-sm"
-            >
-              <Checkbox
-                id="creditable-pools"
-                checked={creditChecked}
-                disabled={
-                  specialFilterInvalid ||
-                  creditable.status !== "ready" ||
-                  (outputFilterActive && outputAvailability.status !== "ready")
-                }
-                onCheckedChange={(checked) => {
-                  setCreditChoice({
-                    holder: holderKey,
-                    context: creditContext,
-                    mode: creditMode,
-                    initialized: true,
-                    checked,
-                    touched: true,
-                  });
-                  void navigate({
-                    to: ".",
-                    search: (previous) => ({
-                      ...previous,
-                      creditable: checked,
-                    }),
-                  });
-                }}
-              />
-              <span>
-                <Trans>Credit</Trans>
-              </span>
-              {creditable.status === "loading" ? (
-                <span className="text-muted-foreground text-xs">
-                  <Trans>Checking…</Trans>
+            {auth.isAuthenticated ? (
+              <label
+                htmlFor="creditable-pools"
+                className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-sm"
+              >
+                <Checkbox
+                  id="creditable-pools"
+                  checked={creditChecked}
+                  disabled={
+                    specialFilterInvalid ||
+                    creditable.status !== "ready" ||
+                    (outputFilterActive && outputAvailability.status !== "ready")
+                  }
+                  onCheckedChange={(checked) => {
+                    setCreditChoice({
+                      holder: holderKey,
+                      context: creditContext,
+                      mode: creditMode,
+                      initialized: true,
+                      checked,
+                      touched: true,
+                    });
+                    void navigate({
+                      to: ".",
+                      search: (previous) => ({
+                        ...previous,
+                        creditable: checked,
+                      }),
+                    });
+                  }}
+                />
+                <span>
+                  <Trans>Credit</Trans>
                 </span>
-              ) : null}
-              {creditable.isRefreshing ? (
-                <span className="sr-only">
-                  <Trans>Refreshing creditable pools…</Trans>
-                </span>
-              ) : null}
-            </label>
+                {creditable.status === "loading" ? (
+                  <span className="text-muted-foreground text-xs">
+                    <Trans>Checking…</Trans>
+                  </span>
+                ) : null}
+                {creditable.isRefreshing ? (
+                  <span className="sr-only">
+                    <Trans>Refreshing creditable pools…</Trans>
+                  </span>
+                ) : null}
+              </label>
+            ) : null}
             <PoolOutputVoucherFilter
               facets={voucherVocabulary.data?.voucherFacets ?? []}
               value={outputVoucherAddress}
@@ -516,7 +525,12 @@ export function PoolsPage({
           aria-label={t`Pools list`}
         >
           {pools.map((pool, index) => (
-            <PoolRow key={pool.address} pool={pool} isLast={index === pools.length - 1} />
+            <PoolRow
+              key={pool.address}
+              pool={pool}
+              isLast={index === pools.length - 1}
+              distanceOrigin={distanceOrigin}
+            />
           ))}
           <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
           {catalog.isLoadingMore ? (
@@ -530,7 +544,27 @@ export function PoolsPage({
   );
 }
 
-function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
+function PoolRow({
+  pool,
+  isLast,
+  distanceOrigin,
+}: {
+  pool: UserPool;
+  isLast: boolean;
+  distanceOrigin: { lat: number; lng: number } | null | undefined;
+}) {
+  const { i18n } = useLingui();
+  const distanceMeters =
+    distanceOrigin && pool.geoLat !== null && pool.geoLng !== null
+      ? haversineMeters(distanceOrigin, { lat: pool.geoLat, lng: pool.geoLng })
+      : null;
+  const distance = distanceMeters === null ? null : formatDistance(distanceMeters);
+  const distanceLabel = distance
+    ? `${new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale, {
+        minimumFractionDigits: distance.fractionDigits,
+        maximumFractionDigits: distance.fractionDigits,
+      }).format(distance.value)} ${distance.unit}`
+    : null;
   return (
     <Link
       to="/pools/$poolAddress"
@@ -550,6 +584,11 @@ function PoolRow({ pool, isLast }: { pool: UserPool; isLast: boolean }) {
             <Trans>{pool.voucherCount} vouchers</Trans>
           )}
         </p>
+        {pool.locationName || distanceLabel ? (
+          <p className="mt-1 truncate text-[0.6875rem] text-muted-foreground">
+            {[pool.locationName, distanceLabel].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
         {pool.tags.length > 0 ? (
           <span className="mt-1.5 flex gap-1 overflow-hidden">
             {pool.tags.slice(0, POOL_ROW_TAG_LIMIT).map((tag) => (

@@ -1,0 +1,160 @@
+import { offeringsDiscoveryInfiniteQueryOptions } from "@clc/api/features/offerings/queries";
+import { EMPTY_CATALOG_FILTER } from "@clc/core/features/catalog/logic";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+
+import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
+import {
+  isWithinNearbyCatalog,
+  nearbyQueryPolicy,
+  useNearbyCatalog,
+  useNearbyCatalogFilter,
+} from "#/components/nearby-catalog";
+import { OfferingsPanel } from "#/components/offerings";
+import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
+import { CATALOG_FILTER_PREFERENCE_NAMES } from "#/lib/navigation/catalog-filter-preference-storage";
+import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { offeringsClient } from "#/lib/api/offerings";
+
+export function OffersPage({
+  creditableSearch,
+  locationOwner = GUEST_STORAGE_OWNER,
+}: {
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
+  locationOwner?: string;
+}) {
+  const { t } = useLingui();
+  const navigate = useNavigate();
+  const nearby = useNearbyCatalog();
+  const visibilityFilter = useNearbyCatalogFilter();
+  const distanceOrigin = useDiscoveryDistanceOrigin(locationOwner);
+  const credit = useCreditableBrowse(creditableSearch);
+  const filter = usePersistedCatalogFilter(
+    CATALOG_FILTER_PREFERENCE_NAMES.offers,
+    useStorageOwner(),
+    { externalFilterActive: creditableSearch !== undefined },
+  );
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const parsedFilter = filter.result.ok ? filter.result.filter : EMPTY_CATALOG_FILTER;
+  const query = useInfiniteQuery({
+    ...offeringsDiscoveryInfiniteQueryOptions(offeringsClient, {
+      perPage: 20,
+      q: parsedFilter.term,
+      tags: parsedFilter.tags,
+      tagMatch: parsedFilter.tagMatch,
+      facets: true,
+      nearby: !!nearby,
+      scope: nearby,
+      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
+    }),
+    enabled:
+      filter.result.ok &&
+      !filter.isRestoringPreference &&
+      !filter.isDebouncing &&
+      !credit.blocksResults,
+    ...nearbyQueryPolicy(nearby),
+  });
+  const allOfferings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
+  const visibleOfferings = visibilityFilter
+    ? allOfferings.filter((offering) =>
+        isWithinNearbyCatalog(visibilityFilter, {
+          lat: offering.effectiveGeoLat ?? null,
+          lng: offering.effectiveGeoLng ?? null,
+        }),
+      )
+    : allOfferings;
+  const crossedDistanceBoundary =
+    visibilityFilter !== undefined && visibleOfferings.length !== allOfferings.length;
+  const viewQuery = useMemo(
+    () => ({
+      ...query,
+      data: query.data
+        ? {
+            ...query.data,
+            pages: [
+              {
+                ...query.data.pages[0],
+                offerings: visibleOfferings,
+              },
+            ],
+          }
+        : undefined,
+      hasNextPage: query.hasNextPage && !crossedDistanceBoundary,
+    }),
+    [crossedDistanceBoundary, query, visibleOfferings],
+  );
+  const facets = query.data?.pages[0]?.tagFacets ?? [];
+
+  return (
+    <main className="min-h-[100svh] space-y-4 bg-background px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-bottom-nav">
+      <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
+        <Trans>Offers</Trans>
+      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <MarketplaceResourceNavigation current="offers" />
+        <CatalogFilterSheet
+          filter={filter}
+          facets={facets}
+          title={<Trans>Filter offers</Trans>}
+          facetTitle={<Trans>Tags</Trans>}
+          showHeader={false}
+          open={filtersOpen}
+          onOpenChange={setFiltersOpen}
+          onApply={filter.applyFacetFilters}
+        />
+      </div>
+      <CatalogSearchField
+        filter={filter}
+        label={t`Search offers, vouchers, descriptions, or tags`}
+      />
+      <CreditableBrowseControl
+        state={credit}
+        onChange={(checked) =>
+          void navigate({
+            to: ".",
+            search: (previous) => ({ ...previous, creditable: checked }),
+          })
+        }
+        onClear={() =>
+          void navigate({
+            to: ".",
+            replace: true,
+            search: (previous) => ({ ...previous, creditable: undefined }),
+          })
+        }
+      />
+      {!filter.result.ok ? (
+        <div className="space-y-3 border border-destructive bg-card p-3" role="alert">
+          <p className="text-sm">
+            <Trans>These filters aren't valid.</Trans>
+          </p>
+          <button type="button" className="underline" onClick={filter.clear}>
+            <Trans>Clear filters</Trans>
+          </button>
+        </div>
+      ) : null}
+      {credit.enabled && credit.poolRefs?.length === 0 ? (
+        <div className="border border-border bg-card p-4 text-sm text-muted-foreground">
+          <Trans>No offers are available through your Credit pools.</Trans>
+        </div>
+      ) : filter.result.ok && !credit.blocksResults ? (
+        <OfferingsPanel
+          query={viewQuery}
+          emptyState={<Trans>No offers match this search.</Trans>}
+          showVoucher
+          showVoucherName
+          showLocation
+          distanceOrigin={distanceOrigin}
+          directNavigation
+        />
+      ) : null}
+    </main>
+  );
+}

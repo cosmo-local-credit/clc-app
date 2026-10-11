@@ -1,0 +1,115 @@
+import type { Offering } from "@clc/api/features/offerings/client";
+import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vite-plus/test";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    to,
+    params,
+    search: _search,
+    children,
+    ...props
+  }: {
+    to: string;
+    params: Record<string, string>;
+    search?: unknown;
+    children: ReactNode;
+  }) => (
+    <a
+      href={Object.entries(params).reduce(
+        (path, [key, value]) => path.replace(`$${key}`, value),
+        to,
+      )}
+      {...props}
+    >
+      {children}
+    </a>
+  ),
+}));
+
+import { OfferingsPanel } from "./offerings-panel";
+
+const offering: Offering = {
+  id: "7",
+  sourceId: null,
+  voucherId: "3",
+  voucherAddress: "0x1111111111111111111111111111111111111111",
+  voucherName: "Kilifi Food Voucher",
+  voucherSymbol: "KFV",
+  voucherDecimals: 6,
+  voucherImageUrl: "https://content.example/voucher.webp",
+  voucherLocationName: "Kilifi",
+  voucherGeoLat: -3.63,
+  voucherGeoLng: 39.85,
+  sellerAddress: "0x2222222222222222222222222222222222222222",
+  name: "Fresh maize",
+  commodityType: "GOOD",
+  description: "One bag",
+  quantity: "1",
+  unit: "bag",
+  unitLabel: "bag",
+  frequency: null,
+  pricePerUnit: "250",
+  available: true,
+  locationName: null,
+  geoLat: null,
+  geoLng: null,
+  effectiveLocationName: "Kilifi Market",
+  effectiveGeoLat: -3.63,
+  effectiveGeoLng: 39.85,
+  distanceMeters: 1_200,
+  imageUrl: null,
+  tags: ["food"],
+};
+
+function queryFor(row: Offering) {
+  return {
+    data: { pages: [{ offerings: [row] }] },
+    isPending: false,
+    isError: false,
+    isSuccess: true,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
+    refetch: vi.fn(),
+  };
+}
+
+describe("OfferingsPanel discovery mode", () => {
+  it("links the whole tile directly to its voucher and shows discovery metadata", () => {
+    const { container } = render(
+      <OfferingsPanel
+        query={queryFor(offering)}
+        emptyState="No offers"
+        showVoucher
+        showVoucherName
+        showLocation
+        directNavigation
+      />,
+    );
+
+    const link = screen.getByRole("link", { name: "Open voucher for Fresh maize" });
+    expect(link.getAttribute("href")).toBe("/vouchers/0x1111111111111111111111111111111111111111");
+    expect(screen.getByText("Kilifi Food Voucher · KFV")).toBeTruthy();
+    expect(screen.getByText("Kilifi Market · 1.2 km")).toBeTruthy();
+    expect(container.querySelector("img")?.getAttribute("src")).toBe(
+      "https://content.example/voucher.webp",
+    );
+    expect(screen.queryByRole("button", { name: /view offering details/i })).toBeNull();
+  });
+
+  it("prefers an offering thumbnail over the parent voucher image", () => {
+    const { container } = render(
+      <OfferingsPanel
+        query={queryFor({ ...offering, imageUrl: "https://content.example/offering.webp" })}
+        emptyState="No offers"
+        directNavigation
+      />,
+    );
+
+    expect(container.querySelector("img")?.getAttribute("src")).toBe(
+      "https://content.example/offering.webp",
+    );
+  });
+});

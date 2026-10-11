@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import type { OfferingPage, OfferingsClient } from "./client";
 import {
   nextOfferingCursor,
   offeringKeys,
+  offeringsDiscoveryInfiniteQueryOptions,
   poolOfferingsInfiniteQueryOptions,
   voucherOfferingsInfiniteQueryOptions,
 } from "./queries";
@@ -20,6 +21,7 @@ describe("offeringKeys", () => {
       offeringKeys.byVoucherInfinite(ADDRESS, 20),
       offeringKeys.byPool(ADDRESS, 20),
       offeringKeys.byPoolInfinite(ADDRESS, 20),
+      offeringKeys.discovery({ perPage: 20 }),
     ]) {
       expect(key.slice(0, offeringKeys.all.length)).toEqual([...offeringKeys.all]);
     }
@@ -55,6 +57,32 @@ describe("offeringKeys", () => {
       offeringKeys.byPoolInfinite(ADDRESS, 50),
     );
   });
+
+  it("isolates discovery by search, scope, tags, and verified pools", () => {
+    const base = {
+      perPage: 20,
+      q: " maize ",
+      tags: ["food"],
+      scope: "account:1:2:100",
+      pools: [{ chainId: 100, address: ADDRESS }],
+    };
+    expect(offeringKeys.discovery(base)).toEqual(
+      offeringKeys.discovery({
+        ...base,
+        q: "maize",
+        pools: [{ chainId: 100, address: ADDRESS.toLowerCase() }],
+      }),
+    );
+    expect(offeringKeys.discovery(base)).not.toEqual(
+      offeringKeys.discovery({ ...base, q: "beans" }),
+    );
+    expect(offeringKeys.discovery(base)).not.toEqual(
+      offeringKeys.discovery({ ...base, scope: "account:3:4:100" }),
+    );
+    expect(offeringKeys.discovery(base)).not.toEqual(
+      offeringKeys.discovery({ ...base, pools: [] }),
+    );
+  });
 });
 
 describe("nextOfferingCursor", () => {
@@ -85,6 +113,29 @@ describe("scoped options", () => {
     );
     expect(poolOfferingsInfiniteQueryOptions({} as OfferingsClient, undefined, 20).enabled).toBe(
       false,
+    );
+  });
+
+  it("passes opaque discovery cursors to the client unchanged", async () => {
+    const getOfferings = vi.fn().mockResolvedValue({
+      offerings: [],
+      nextCursor: null,
+      receivedCount: 0,
+      tagFacets: null,
+    });
+    const options = offeringsDiscoveryInfiniteQueryOptions(
+      { getOfferings } as unknown as OfferingsClient,
+      { perPage: 20, q: "maize", scope: "saved:1:2:100" },
+    );
+
+    await options.queryFn?.({
+      pageParam: "opaque+/=",
+      signal: new AbortController().signal,
+    } as never);
+
+    expect(getOfferings).toHaveBeenCalledWith(
+      { perPage: 20, q: "maize", cursor: "opaque+/=" },
+      expect.any(AbortSignal),
     );
   });
 });
