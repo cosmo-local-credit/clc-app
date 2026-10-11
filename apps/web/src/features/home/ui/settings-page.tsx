@@ -79,9 +79,9 @@ export function SettingsPage({
             <LanguageSelector triggerClassName="w-32" />
           </div>
           <div className="-mx-4 my-3 h-px bg-border" />
-          <div className="flex items-center justify-between gap-3">
+          <div id="visibility" className="flex scroll-mt-4 items-center justify-between gap-3">
             <p className="text-muted-foreground text-sm">
-              <Trans>Choose how far away marketplace results can be.</Trans>
+              <Trans>Choose how far away location-filtered discovery results can be.</Trans>
             </p>
             <VisibilitySelector triggerClassName="w-32" />
           </div>

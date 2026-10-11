@@ -104,7 +104,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} वाउचर और अदला-बदली के लिए तैयार है।"
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} किमी"
 
@@ -217,11 +219,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} समीक्षाएँ"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} किमी"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} मी"
 
@@ -788,7 +790,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "कैटलॉग सहेजा गया। आइटम जोड़ा नहीं जा सका। फिर से प्रयास करें।"
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "कैटलॉग"
@@ -933,7 +936,6 @@ msgid "Choose a location"
 msgstr "एक स्थान चुनें"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "एक स्थान चुनें"
 
@@ -987,8 +989,13 @@ msgid "Choose from photos"
 msgstr "फ़ोटो में से चुनें"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "चुनें कि बाज़ार के परिणाम कितने दूर हो सकते हैं।"
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "चुनें कि स्थान के अनुसार फ़िल्टर किए गए खोज परिणाम कितनी दूर तक के हो "
+"सकते हैं।"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "चुनें कि बाज़ार के परिणाम कितने दूर हो सकते हैं।"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1533,7 +1540,7 @@ msgstr "कैटलॉग के आइटम लोड नहीं हो स
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "कैटलॉग लोड नहीं हो सके।"
 
@@ -2122,7 +2129,6 @@ msgstr "पोस्ट संपादित करें"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "प्रोफ़ाइल संपादित करें"
@@ -2842,7 +2848,7 @@ msgid "Litre"
 msgstr "लीटर"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "और अधिक लोड करें"
@@ -2883,7 +2889,7 @@ msgstr "होल्डिंग्स लोड हो रही हैं..."
 msgid "Loading location map"
 msgstr "स्थान मानचित्र लोड हो रहा है"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "बाज़ार लोड हो रहा है..."
 
@@ -2979,8 +2985,7 @@ msgstr "आपकी प्रोफ़ाइल लोड हो रही ह�
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3044,7 +3049,7 @@ msgstr "वाउचर, पूल और स्थानीय भुगता�
 msgid "Manage your wallet session and app preferences."
 msgstr "अपना वॉलेट सत्र और ऐप प्राथमिकताएं प्रबंधित करें।"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "मानचित्र"
 
@@ -3068,7 +3073,7 @@ msgstr "बाज़ार"
 msgid "Marketplace"
 msgstr "बाज़ार"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "बाज़ार वाउचर"
 
@@ -3329,7 +3334,7 @@ msgstr "इस डिवाइस पर कोई कैमरा नहीं 
 msgid "No cash activity yet."
 msgstr "अभी तक कोई नकद गतिविधि नहीं."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "कोई कैटलॉग नहीं मिला।"
 
@@ -3487,7 +3492,7 @@ msgstr "इस खोज से कोई वाउचर मेल नहीं
 msgid "No vouchers to collect"
 msgstr "इकट्ठा करने के लिए कोई वाउचर नहीं"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "दिखाने के लिए अभी तक कोई वाउचर नहीं है."
@@ -4660,8 +4665,7 @@ msgstr "सेवानिवृत्त हो रहे हैं..."
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4784,11 +4788,11 @@ msgstr "QR कोड को स्कैन करें"
 msgid "Scan recipient address"
 msgstr "प्राप्तकर्ता का पता स्कैन करें"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "अधिक के लिए स्क्रॉल करें"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "नाम या प्रतीक से खोजें"
 
@@ -5042,14 +5046,24 @@ msgstr "{stars}-स्टार समीक्षाएँ दिखाएँ"
 msgid "Show all"
 msgstr "सब दिखाओ"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "कैटलॉग <0>दुनिया भर के</0> दिखाए जा रहे हैं।"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "केवल हाल के वाउचर दिखा रहा है।"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "आपकी प्रोफ़ाइल में सहेजे गए <1>स्थान</1> से <0>{radiusLabel}</0> के "
+"भीतर के परिणाम दिखाए जा रहे हैं।"
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "आपकी प्रोफ़ाइल में सहेजे गए स्थान से 1,000 किमी के भीतर के परिणाम दिखाए "
-"जा रहे हैं।"
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "आपकी प्रोफ़ाइल में सहेजे गए स्थान से 1,000 किमी के भीतर के परिणाम दिखाए "
+#~ "जा रहे हैं।"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6322,7 +6336,7 @@ msgstr "श्रृंखला की प्रतीक्षा में...
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6356,7 +6370,6 @@ msgstr "हम आपका प्रोफ़ाइल फ़ोन नंब�
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "हम आपकी प्रोफ़ाइल लोड नहीं कर सके."
 

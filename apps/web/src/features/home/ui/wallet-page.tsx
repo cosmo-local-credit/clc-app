@@ -115,7 +115,7 @@ export function WalletPage({ address }: { address?: string }) {
       id: "catalogs",
       label: t`Catalogs`,
       icon: RiBookOpenLine,
-      variant: "outline",
+      variant: "success",
       to: "/catalogs",
     },
   ] as const;

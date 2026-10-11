@@ -292,17 +292,25 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("links to all pools with the blue Pools action immediately before Filters", () => {
+  it("orders blue Pools and green Catalogs actions immediately before Filters", () => {
     render(<MarketListPage />);
 
     const pools = screen.getByRole("link", { name: "Pools" });
+    const catalogs = screen.getByRole("link", { name: "Catalogs" });
     const filters = screen.getByRole("button", { name: "Filters" });
 
     expect(pools.getAttribute("href")).toBe("/pools?creditable=false");
     expect(pools.getAttribute("data-variant")).toBe("info");
+    expect(catalogs.getAttribute("href")).toBe("/catalogs");
+    expect(catalogs.getAttribute("data-variant")).toBe("success");
     expect(pools.className).toContain("h-8");
+    expect(catalogs.className).toContain("h-8");
     expect(filters.className).toContain("h-8");
-    expect(pools.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      catalogs.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(catalogs.parentElement?.className).toContain("flex-wrap");
   });
 
   it("removes the visible sheet header while preserving accessible controls", () => {

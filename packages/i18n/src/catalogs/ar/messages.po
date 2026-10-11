@@ -110,7 +110,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "أصبح {0} جاهزًا للقسائم والمبادلات."
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} كم"
 
@@ -223,11 +225,11 @@ msgstr "{pinIcon}، {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "المراجعات: {summaryTotal}"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} كم"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} م"
 
@@ -788,7 +790,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "تم حفظ الكتالوج. تعذرت إضافة العنصر. حاول مجددًا."
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "الكتالوجات"
@@ -933,7 +936,6 @@ msgid "Choose a location"
 msgstr "اختر موقعًا"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "اختر موقعًا"
 
@@ -987,8 +989,12 @@ msgid "Choose from photos"
 msgstr "اختر من الصور"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "اختر أقصى مسافة لعرض نتائج السوق."
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "اختر أقصى مسافة لنتائج الاستكشاف المفلترة حسب الموقع."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "اختر أقصى مسافة لعرض نتائج السوق."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1531,7 +1537,7 @@ msgstr "تعذر تحميل عناصر الكتالوج."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "تعذر تحميل الكتالوجات."
 
@@ -2113,7 +2119,6 @@ msgstr "تعديل المنشور"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "تعديل الملف الشخصي"
@@ -2828,7 +2833,7 @@ msgid "Litre"
 msgstr "لتر"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "تحميل المزيد"
@@ -2869,7 +2874,7 @@ msgstr "جارٍ تحميل الأرصدة…"
 msgid "Loading location map"
 msgstr "جارٍ تحميل خريطة الموقع"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "جارٍ تحميل السوق…"
 
@@ -2965,8 +2970,7 @@ msgstr "جارٍ تحميل ملفك الشخصي…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3030,7 +3034,7 @@ msgstr "أدِر القسائم والصناديق والمدفوعات المح
 msgid "Manage your wallet session and app preferences."
 msgstr "أدِر جلسة محفظتك وتفضيلات التطبيق."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "الخريطة"
 
@@ -3054,7 +3058,7 @@ msgstr "السوق"
 msgid "Marketplace"
 msgstr "السوق"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "قسائم السوق"
 
@@ -3314,7 +3318,7 @@ msgstr "لم يُعثر على كاميرا في هذا الجهاز."
 msgid "No cash activity yet."
 msgstr "لا يوجد نشاط نقدي بعد."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "لم يتم العثور على كتالوجات."
 
@@ -3473,7 +3477,7 @@ msgstr "لا توجد قسائم تطابق هذا البحث."
 msgid "No vouchers to collect"
 msgstr "لا توجد قسائم للتحصيل"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "لا توجد قسائم لعرضها بعد."
@@ -4642,8 +4646,7 @@ msgstr "جارٍ السحب من التداول…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4765,11 +4768,11 @@ msgstr "مسح رمز QR"
 msgid "Scan recipient address"
 msgstr "مسح عنوان المستلم"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "مرّر لرؤية المزيد"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "البحث بالاسم أو الرمز"
 
@@ -5022,13 +5025,23 @@ msgstr "عرض المراجعات بتقييم {stars} نجوم"
 msgid "Show all"
 msgstr "عرض الكل"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "عرض الكتالوجات <0>عالميًا</0>."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "يتم عرض القسائم الحديثة فقط."
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "عرض النتائج ضمن <0>{radiusLabel}</0> من <1>موقع ملفك الشخصي</1> "
+"المحفوظ."
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "عرض النتائج ضمن ١٬٠٠٠ كم من الموقع المحفوظ في ملفك الشخصي."
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "عرض النتائج ضمن ١٬٠٠٠ كم من الموقع المحفوظ في ملفك الشخصي."
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6296,7 +6309,7 @@ msgstr "في انتظار السلسلة…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6329,7 +6342,6 @@ msgstr "تعذّر تحميل رقم الهاتف في ملفك الشخصي."
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "تعذّر تحميل ملفك الشخصي."
 

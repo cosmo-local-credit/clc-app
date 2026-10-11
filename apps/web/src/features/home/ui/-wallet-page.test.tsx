@@ -198,6 +198,9 @@ describe("WalletPage", () => {
       "/pools?creditable=true",
     );
     expect(screen.getByRole("link", { name: "All pools" }).getAttribute("href")).toBe("/pools");
+    const catalogs = screen.getByRole("link", { name: "Catalogs" });
+    expect(catalogs.getAttribute("href")).toBe("/catalogs");
+    expect(catalogs.getAttribute("data-variant")).toBe("success");
     expect(screen.queryByRole("link", { name: /swap/i })).toBeNull();
 
     if (chainHasPretiumRamp(CHAIN_ID)) {

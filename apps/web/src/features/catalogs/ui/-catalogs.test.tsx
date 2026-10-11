@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button";
+import { useCatalogVisibilityStore } from "#/features/home/state/catalog-visibility";
 import { CatalogCreatePage } from "./catalog-create-page";
 import { CatalogDetailPage } from "./catalog-detail-page";
 import { CatalogsPage } from "./catalogs-page";
@@ -21,6 +22,9 @@ const mocks = vi.hoisted(() => ({
     update: vi.fn(),
   },
   auth: {
+    address: `0x${"a".repeat(40)}`,
+    chainId: 100,
+    error: null,
     isAuthenticated: true,
     isLoading: false,
     state: "authenticated",
@@ -52,18 +56,23 @@ vi.mock("@tanstack/react-router", () => ({
     to,
     params,
     search,
+    hash,
+    hashScrollIntoView: _hashScrollIntoView,
     children,
   }: {
     to: string;
     params?: Record<string, string>;
     search?: Record<string, string>;
+    hash?: string;
+    hashScrollIntoView?: boolean;
     children: ReactNode;
   }) => {
     const path = Object.entries(params ?? {}).reduce(
       (value, [key, replacement]) => value.replace(`$${key}`, replacement),
       to,
     );
-    return <a href={search ? `${path}?${new URLSearchParams(search)}` : path}>{children}</a>;
+    const query = search ? `?${new URLSearchParams(search)}` : "";
+    return <a href={`${path}${query}${hash ? `#${hash}` : ""}`}>{children}</a>;
   },
 }));
 vi.mock("#/components/ui/image-upload-field", () => ({
@@ -108,9 +117,16 @@ function mount(ui: ReactNode) {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  window.localStorage.clear();
+  useCatalogVisibilityStore.setState({ visibility: "1000" });
   mocks.auth.isAuthenticated = true;
+  mocks.auth.isLoading = false;
+  mocks.auth.state = "authenticated";
+  mocks.auth.error = null;
   mocks.auth.session.address = catalog.ownerAddress;
   mocks.profile.data = { geoLat: 43, geoLng: 18, locationName: "Sarajevo" };
+  mocks.profile.isPending = false;
+  mocks.profile.isError = false;
   mocks.api.mine.mockResolvedValue({ catalogs: [catalog], nextCursor: null });
   mocks.api.membership.mockResolvedValue({ added: false });
   mocks.api.setMember.mockResolvedValue({ added: true });
@@ -239,21 +255,124 @@ describe("catalog curation", () => {
 });
 describe("catalog discovery", () => {
   it("uses nearby session discovery at the established radius", async () => {
+    mocks.api.list.mockResolvedValue({
+      catalogs: [{ ...catalog, geoLat: -10, geoLng: -10 }],
+      nextCursor: null,
+    });
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
       { cursor: undefined, nearby: true },
       expect.any(AbortSignal),
     );
-    expect(
-      screen.getByText("Showing results within 1,000 km of your saved profile location."),
-    ).toBeTruthy();
+    const distance = screen.getByRole("link", { name: "1,000 km" });
+    const profile = screen.getByRole("link", { name: "profile location" });
+    expect(distance.getAttribute("href")).toBe("/?tab=settings#visibility");
+    expect(profile.getAttribute("href")).toBe("/settings/profile");
+    expect(distance.closest("p")?.textContent).toBe(
+      "Showing results within 1,000 km of your saved profile location.",
+    );
+  });
+
+  it("uses public unfiltered discovery for authenticated Global visibility", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("global");
+    mount(<CatalogsPage />);
+    await screen.findByText("Local makers");
+    expect(mocks.api.list).toHaveBeenCalledWith(
+      { cursor: undefined, nearby: false },
+      expect.any(AbortSignal),
+    );
+    const global = screen.getByRole("link", { name: "globally" });
+    expect(global.getAttribute("href")).toBe("/?tab=settings#visibility");
+    expect(global.closest("p")?.textContent).toBe("Showing catalogs globally.");
+  });
+
+  it("filters nearby pages to the selected distance and stops after the boundary", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("100");
+    mocks.api.list.mockResolvedValue({
+      catalogs: [
+        { ...catalog, id: "7", name: "Near catalog", geoLat: 43.2 },
+        { ...catalog, id: "8", name: "Far catalog", geoLat: 44.2 },
+      ],
+      nextCursor: "next",
+    });
+
+    mount(<CatalogsPage />);
+
+    expect(await screen.findByText("Near catalog")).toBeTruthy();
+    expect(screen.queryByText("Far catalog")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Load more" })).toBeNull();
+  });
+
+  it("applies the smallest 50 km visibility choice", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("50");
+    mocks.api.list.mockResolvedValue({
+      catalogs: [
+        { ...catalog, id: "7", name: "Inside 50 km", geoLat: 43.2 },
+        { ...catalog, id: "8", name: "Outside 50 km", geoLat: 43.6 },
+      ],
+      nextCursor: null,
+    });
+
+    mount(<CatalogsPage />);
+
+    expect(await screen.findByText("Inside 50 km")).toBeTruthy();
+    expect(screen.queryByText("Outside 50 km")).toBeNull();
+    expect(screen.getByRole("link", { name: "50 km" }).getAttribute("href")).toBe(
+      "/?tab=settings#visibility",
+    );
+  });
+
+  it("continues nearest-first pagination until a later page crosses the boundary", async () => {
+    useCatalogVisibilityStore.getState().setVisibility("500");
+    mocks.api.list
+      .mockResolvedValueOnce({
+        catalogs: [{ ...catalog, id: "7", name: "First nearby", geoLat: 43.2 }],
+        nextCursor: "next",
+      })
+      .mockResolvedValueOnce({
+        catalogs: [{ ...catalog, id: "8", name: "Outside radius", geoLat: 49 }],
+        nextCursor: "later",
+      });
+
+    mount(<CatalogsPage />);
+
+    expect(await screen.findByText("First nearby")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Load more" }));
+    await waitFor(() => expect(mocks.api.list).toHaveBeenCalledTimes(2));
+    expect(screen.queryByText("Outside radius")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Load more" })).toBeNull();
   });
   it("does not silently fall back to a global list when the profile lacks a location", () => {
     mocks.profile.data.geoLat = null;
     mount(<CatalogsPage />);
     expect(screen.getByRole("link", { name: "Edit profile" })).toBeTruthy();
     expect(mocks.api.list).not.toHaveBeenCalled();
+  });
+
+  it("keeps discovery hidden and retries a failed profile request", () => {
+    mocks.profile.isError = true;
+    mount(<CatalogsPage />);
+    expect(screen.getByText("We couldn't load your profile.")).toBeTruthy();
+    expect(mocks.api.list).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(mocks.auth.retry).toHaveBeenCalledTimes(1);
+    expect(mocks.profile.refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps query failures retryable without displaying stale rows", async () => {
+    mocks.api.list.mockRejectedValueOnce(new Error("offline")).mockResolvedValue({
+      catalogs: [catalog],
+      nextCursor: null,
+    });
+    mount(<CatalogsPage />);
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      "Couldn't load catalogs.",
+    );
+    expect(screen.queryByText("Local makers")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Local makers")).toBeTruthy();
   });
   it("allows public guest discovery", async () => {
     mocks.auth.isAuthenticated = false;

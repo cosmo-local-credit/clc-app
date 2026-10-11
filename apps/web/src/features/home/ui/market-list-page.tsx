@@ -2,7 +2,7 @@ import { haversineMeters } from "@clc/core/lib/geo/distance";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { RiArrowRightSLine, RiGroupLine, RiMap2Line } from "react-icons/ri";
+import { RiArrowRightSLine, RiBookOpenLine, RiGroupLine, RiMap2Line } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
@@ -108,11 +108,11 @@ export function MarketListPage({
   return (
     <main className="relative min-h-[100svh] bg-background px-4 pb-[calc(max(var(--bottom-nav-offset),env(safe-area-inset-bottom))+2rem)]">
       <div className="pt-[calc(env(safe-area-inset-top)+1rem)]">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-3">
           <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
             <Trans>Marketplace</Trans>
           </h1>
-          <div className="ms-auto flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
               asChild
               variant="info"
@@ -121,6 +121,16 @@ export function MarketListPage({
               <Link to="/pools" search={{ creditable: false }}>
                 <RiGroupLine className="size-4" aria-hidden="true" />
                 <Trans>Pools</Trans>
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="success"
+              className="relative h-8 px-2.5 before:absolute before:-inset-y-1.5 before:inset-x-0 before:content-['']"
+            >
+              <Link to="/catalogs">
+                <RiBookOpenLine className="size-4" aria-hidden="true" />
+                <Trans>Catalogs</Trans>
               </Link>
             </Button>
             <MarketFilterSheet
