@@ -8,6 +8,7 @@ import {
   formatOfferingQuantity,
   formatOfferingTotal,
   formatVoucherRate,
+  formatVoucherUnitValue,
   sumDecimalAmounts,
 } from "./logic";
 
@@ -84,6 +85,43 @@ describe("formatVoucherRate", () => {
   it("passes the unit through verbatim apart from surrounding space", () => {
     expect(formatVoucherRate("1", " Hours ")?.unit).toBe("Hours");
     expect(formatVoucherRate("1", "usd")?.unit).toBe("usd");
+  });
+});
+
+describe("formatVoucherUnitValue", () => {
+  it("converts whole and decimal voucher amounts exactly", () => {
+    expect(formatVoucherUnitValue("10", "1", "KES")).toEqual({ value: "10", unit: "KES" });
+    expect(formatVoucherUnitValue("12.5", "2.4", "KES")).toEqual({
+      value: "30",
+      unit: "KES",
+    });
+  });
+
+  it("keeps zero amounts while rejecting unset or incomplete rates", () => {
+    expect(formatVoucherUnitValue("0", "2", "KES")).toEqual({ value: "0", unit: "KES" });
+    expect(formatVoucherUnitValue("10", "0", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("10", null, "KES")).toBeNull();
+    expect(formatVoucherUnitValue("10", "1", null)).toBeNull();
+  });
+
+  it("rejects malformed voucher amounts", () => {
+    expect(formatVoucherUnitValue("1,000", "2", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("1.", "2", "KES")).toBeNull();
+    expect(formatVoucherUnitValue("-1", "2", "KES")).toBeNull();
+  });
+
+  it("does not lose values beyond JavaScript's safe integer range", () => {
+    expect(formatVoucherUnitValue("9007199254740993.25", "1.2", "KES")).toEqual({
+      value: "10808639105689191.9",
+      unit: "KES",
+    });
+  });
+
+  it("trims issuer-authored whitespace and stored decimal scale", () => {
+    expect(formatVoucherUnitValue("10.00", "1.000000", " Hours ")).toEqual({
+      value: "10",
+      unit: "Hours",
+    });
   });
 });
 
