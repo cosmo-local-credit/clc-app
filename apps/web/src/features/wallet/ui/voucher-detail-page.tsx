@@ -51,7 +51,10 @@ import {
   useAccountTransfersInfinite,
 } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import {
+  formatTransferDate,
+  formatTransferUnitValue,
+} from "#/features/wallet/logic/transfer-display";
 import { openDefaultMaps } from "#/lib/default-maps";
 import {
   resolveVoucherNavigationOwner,
@@ -527,6 +530,7 @@ function VoucherActivityPanel({
   accountAddress: string | undefined;
   contractAddress: string | undefined;
 }) {
+  const { i18n } = useLingui();
   const transfersQuery = useAccountTransfersInfinite(accountAddress, { poll: true });
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -596,6 +600,11 @@ function VoucherActivityPanel({
           const kind = transfer.direction === "IN" ? "in" : "out";
           const created = isVoucherCreationTransfer(transfer);
           const transferDate = formatTransferDate(transfer.dateBlock);
+          const uoaLabel = formatTransferUnitValue(
+            transfer.uoaValue,
+            transfer.uoa,
+            i18n.locales?.[0] ?? i18n.locale,
+          );
           return (
             <button
               key={`${transfer.txHash}-${transfer.id}`}
@@ -645,8 +654,14 @@ function VoucherActivityPanel({
                   ) : null}
                 </span>
               </span>
-              <span className="shrink-0 font-mono text-xs font-semibold">
-                {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}
+              <span className="shrink-0 text-end font-mono text-xs font-semibold">
+                <span className="block">
+                  {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                  {transfer.tokenSymbol}
+                </span>
+                {uoaLabel ? (
+                  <span className="block text-muted-foreground">({uoaLabel})</span>
+                ) : null}
               </span>
             </button>
           );
