@@ -73,6 +73,7 @@ vi.mock("#/components/ui/location-picker", () => ({
     value,
     onChange,
     error,
+    required,
   }: {
     value:
       | {
@@ -93,9 +94,16 @@ vi.mock("#/components/ui/location-picker", () => ({
         | undefined,
     ) => void;
     error?: string;
+    required?: boolean;
   }) => (
     <div data-testid="location-picker">
       <span>{value?.locationName ?? "No location"}</span>
+      {required ? <span className="text-destructive">Required</span> : null}
+      <input
+        aria-label="Location"
+        aria-invalid={Boolean(error)}
+        aria-required={required || undefined}
+      />
       <button
         type="button"
         onClick={() =>
@@ -156,6 +164,9 @@ describe("OnboardingProfileForm rendering", () => {
     expect(screen.getByRole("textbox", { name: /bio/i })).toBeTruthy();
     expect(screen.getByRole("textbox", { name: /website/i })).toBeTruthy();
     expect(screen.getByTestId("location-picker")).toBeTruthy();
+    expect(screen.getByRole("textbox", { name: "Location" }).getAttribute("aria-required")).toBe(
+      "true",
+    );
     expect(screen.queryByTestId("country-select")).toBeNull();
   });
 
@@ -192,6 +203,99 @@ describe("OnboardingProfileForm rendering", () => {
 });
 
 describe("OnboardingProfileForm submission", () => {
+  it("focuses and centers the missing photo after an empty submission", async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView");
+    renderForm();
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    const photo = screen.getByRole("button", { name: /add a photo/i });
+    await waitFor(() => expect(document.activeElement).toBe(photo));
+    expect(photo.getAttribute("aria-invalid")).toBe("true");
+    expect(photo.className).toContain("aria-invalid:ring-destructive/20");
+    expect(scrollIntoView).toHaveBeenCalledWith(
+      expect.objectContaining({ block: "center", inline: "nearest" }),
+    );
+  });
+
+  it("focuses the first schema-invalid field when a photo is present", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    const name = screen.getByRole("textbox", { name: /^name$/i });
+    await waitFor(() => expect(document.activeElement).toBe(name));
+    expect(name.className).toContain("aria-invalid:focus-visible:border-destructive");
+    expect(name.parentElement?.textContent).toContain("Required");
+    expect(screen.queryByText("Name is required")).toBeNull();
+  });
+
+  it("keeps the specific validation message for a name that is too long", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "A".repeat(81) },
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    expect(screen.getByText("Name must be 80 characters or fewer")).toBeTruthy();
+  });
+
+  it("advances focus to the next reported invalid field after the first is corrected", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /^name$/i })),
+    );
+
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Location" })),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /choose location/i }));
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: /email/i })),
+    );
+  });
+
+  it("focuses the location when all preceding fields are valid", async () => {
+    renderForm(vi.fn(), undefined, PHOTO);
+    fireEvent.change(screen.getByRole("textbox", { name: /^name$/i }), {
+      target: { value: "Alice" },
+    });
+    fireEvent.change(screen.getByRole("textbox", { name: /email/i }), {
+      target: { value: "alice@example.com" },
+    });
+
+    await act(async () => {
+      fireEvent.submit(screen.getByRole("form"));
+    });
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Location" })),
+    );
+  });
+
   it("blocks a consecutive-dot email and continues after it is corrected", async () => {
     const mockOnNext = vi.fn();
     renderForm(mockOnNext, undefined, PHOTO);
@@ -244,7 +348,8 @@ describe("OnboardingProfileForm submission", () => {
     });
 
     expect(mockOnNext).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert").textContent).toBe("Add a profile photo to continue.");
+    expect(screen.getByRole("alert").textContent).toBe("Required");
+    expect(screen.getAllByText("Required")).toHaveLength(2);
     expect(screen.getByRole("button", { name: /add a photo/i }).getAttribute("aria-invalid")).toBe(
       "true",
     );
@@ -516,8 +621,9 @@ describe("OnboardingProfileForm photo", () => {
   it("offers a photo alongside the identity fields", () => {
     renderForm();
 
-    expect(screen.getByRole("button", { name: /add a photo/i })).toBeTruthy();
-    expect(screen.getByText("Required")).toBeTruthy();
+    const photoButton = screen.getByRole("button", { name: /add a photo/i });
+    expect(photoButton).toBeTruthy();
+    expect(photoButton.parentElement?.querySelector("p")?.textContent).toBe("Required");
   });
 
   it("carries the chosen photo out with the validated profile", async () => {

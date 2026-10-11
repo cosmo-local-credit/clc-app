@@ -16,6 +16,7 @@ export function CurrencySelect({
   placeholder,
   emptyMessage,
   ariaLabel,
+  ariaInvalid,
 }: {
   id: string;
   value: string;
@@ -23,6 +24,7 @@ export function CurrencySelect({
   placeholder: string;
   emptyMessage: string;
   ariaLabel?: string;
+  ariaInvalid?: boolean;
 }) {
   const options = useMemo<SearchableOption[]>(
     () =>
@@ -45,6 +47,7 @@ export function CurrencySelect({
       placeholder={placeholder}
       emptyMessage={emptyMessage}
       ariaLabel={ariaLabel}
+      ariaInvalid={ariaInvalid}
     />
   );
 }

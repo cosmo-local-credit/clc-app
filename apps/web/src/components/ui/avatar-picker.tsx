@@ -104,7 +104,7 @@ export function AvatarPicker({
           disabled={disabled}
           required={required}
           ariaInvalid={!!validationError}
-          ariaDescribedBy={validationError ? validationErrorId : undefined}
+          ariaDescribedBy={required || validationError ? validationErrorId : undefined}
         />
 
         {value ? (
@@ -119,12 +119,20 @@ export function AvatarPicker({
           >
             {t`Remove`}
           </button>
+        ) : required || validationError ? (
+          <p
+            id={validationErrorId}
+            className="text-destructive text-xs"
+            role={validationError ? "alert" : undefined}
+          >
+            {validationError ?? t`Required`}
+          </p>
         ) : (
-          <p className="text-muted-foreground text-xs">{required ? t`Required` : t`Optional`}</p>
+          <p className="text-muted-foreground text-xs">{t`Optional`}</p>
         )}
 
         {error ? <p className="text-destructive text-xs">{error}</p> : null}
-        {validationError ? (
+        {value && validationError ? (
           <p id={validationErrorId} className="text-destructive text-xs" role="alert">
             {validationError}
           </p>

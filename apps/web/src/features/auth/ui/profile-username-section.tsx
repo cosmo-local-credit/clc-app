@@ -171,7 +171,6 @@ function UsernameForm({ profile, onClose }: { profile: ProfileResult; onClose: (
             return (
               <UsernameInput
                 id="profile-username"
-                automatic={false}
                 value={field.state.value}
                 hint={() => profile.name}
                 onChange={(next) => {

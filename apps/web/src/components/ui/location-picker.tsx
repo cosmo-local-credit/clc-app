@@ -20,6 +20,7 @@ type LocationPickerProps = {
   error?: string;
   label?: string;
   markerStyle?: MarkerStyle;
+  required?: boolean;
 };
 
 type PlacePinOptions = {
@@ -34,6 +35,7 @@ export function LocationPicker({
   error,
   label,
   markerStyle,
+  required,
 }: LocationPickerProps) {
   const { t } = useLingui();
   const [query, setQuery] = useState({ text: value?.locationName ?? "", shouldSearch: false });
@@ -194,8 +196,13 @@ export function LocationPicker({
   return (
     <div className="space-y-3">
       <div className="relative">
-        <label htmlFor="location-search" className="font-medium text-sm">
-          {label ?? <Trans>Location</Trans>}
+        <label htmlFor="location-search" className="flex items-baseline gap-2 font-medium text-sm">
+          <span>{label ?? <Trans>Location</Trans>}</span>
+          {required ? (
+            <span aria-hidden="true" className="font-normal text-destructive text-xs">
+              <Trans>Required</Trans>
+            </span>
+          ) : null}
         </label>
         <div className="relative mt-1.5">
           <Input
@@ -210,6 +217,7 @@ export function LocationPicker({
             }}
             className="bg-card pe-10"
             aria-invalid={!!shownError}
+            aria-required={required || undefined}
           />
           <button
             type="button"

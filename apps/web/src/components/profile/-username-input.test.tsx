@@ -10,7 +10,7 @@ vi.mock("#/lib/api/recipients", () => ({
 
 import { UsernameInput } from "./username-input";
 
-function TestInput({ error, automatic = true }: { error?: string; automatic?: boolean }) {
+function TestInput({ error }: { error?: string }) {
   const [value, setValue] = useState("");
   return (
     <UsernameInput
@@ -20,7 +20,6 @@ function TestInput({ error, automatic = true }: { error?: string; automatic?: bo
       onChange={setValue}
       onBlur={vi.fn()}
       error={error}
-      automatic={automatic}
     />
   );
 }
@@ -61,7 +60,7 @@ describe("UsernameInput", () => {
     suggest.mockImplementation(
       () => new Promise<string>((resolve) => (resolveSuggestion = resolve)),
     );
-    render(<TestInput automatic={false} />);
+    render(<TestInput />);
     const input = screen.getByRole("textbox", { name: "Username" }) as HTMLInputElement;
 
     fireEvent.click(screen.getByRole("button", { name: "Suggest username" }));
@@ -73,6 +72,7 @@ describe("UsernameInput", () => {
     );
     expect(input.value).toBe("manual-name");
     expect(screen.getByText("People can use this name to send vouchers to you.")).toBeTruthy();
+    expect(screen.queryByText(/choose automatically/i)).toBeNull();
   });
 
   it("announces suggestion failures without marking the input invalid", async () => {

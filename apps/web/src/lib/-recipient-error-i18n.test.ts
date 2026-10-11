@@ -11,7 +11,7 @@ const messages = [
   msg`Suggest username`,
   msg`Finding a name…`,
   msg`Couldn't suggest a username. Please try again.`,
-  msg`People can use this name to send vouchers to you. Leave blank to choose automatically.`,
+  msg`People can use this name to send vouchers to you.`,
   msg`People can use this name to send vouchers to you. Leave blank to keep your current username.`,
   msg`Enter a username, pool name, phone number or address.`,
   msg`Recipient username, pool name, phone or address`,

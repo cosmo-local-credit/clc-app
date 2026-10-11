@@ -59,7 +59,7 @@ function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
       data-slot="combobox-input"
       className={cn(
         "h-9 w-full min-w-0 rounded-none border border-input bg-card px-3 py-1 text-base outline-none transition-[color,border-color] placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-visible:border-foreground",
+        "focus-visible:border-foreground aria-invalid:border-destructive aria-invalid:ring-1 aria-invalid:ring-destructive/20 aria-invalid:focus-visible:border-destructive aria-invalid:focus-visible:ring-destructive/20",
         className,
       )}
       {...props}
