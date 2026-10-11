@@ -11,12 +11,18 @@ export function CreditableBrowseControl({
   state,
   onChange,
   onClear,
+  part = "all",
 }: {
   state: State;
   onChange: (checked: boolean) => void;
   onClear: () => void;
+  part?: "all" | "control" | "feedback";
 }) {
+  const showControl = part !== "feedback";
+  const showFeedback = part !== "control";
+
   if (!state.parsed.ok) {
+    if (!showFeedback) return null;
     return (
       <div
         className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
@@ -33,6 +39,7 @@ export function CreditableBrowseControl({
   }
 
   if (state.enabled && !state.auth.isLoading && !state.auth.isAuthenticated) {
+    if (!showFeedback) return null;
     return (
       <div className="space-y-3 border border-border bg-card p-3" role="status">
         <p className="text-sm">
@@ -48,6 +55,7 @@ export function CreditableBrowseControl({
   }
 
   if (state.enabled && state.auth.isLoading) {
+    if (!showFeedback) return null;
     return (
       <div className="border border-border bg-card p-3 text-sm text-muted-foreground" role="status">
         <Trans>Checking Credit availability…</Trans>
@@ -57,7 +65,7 @@ export function CreditableBrowseControl({
 
   return (
     <>
-      {state.auth.isAuthenticated ? (
+      {showControl && state.auth.isAuthenticated ? (
         <label className="flex min-h-11 items-center gap-2 text-sm">
           <Checkbox
             checked={state.enabled}
@@ -72,7 +80,7 @@ export function CreditableBrowseControl({
           ) : null}
         </label>
       ) : null}
-      {state.enabled && state.verification.status === "error" ? (
+      {showFeedback && state.enabled && state.verification.status === "error" ? (
         <div
           className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
           role="alert"

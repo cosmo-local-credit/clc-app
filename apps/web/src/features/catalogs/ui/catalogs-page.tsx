@@ -27,7 +27,7 @@ export function CatalogsPage() {
   const { t } = useLingui();
   return (
     <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
-      <BackChevron label={t`Wallet`} to="/" search={{ tab: "wallet" }} />
+      <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
       <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
         <Trans>Catalogs</Trans>
       </h1>

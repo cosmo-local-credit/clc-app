@@ -1,5 +1,7 @@
 import {
   formatOfferingDisplayPrice,
+  formatOfferingDisplayValue,
+  formatOfferingPrice,
   formatOfferingQuantity,
 } from "@clc/core/features/market/logic";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
@@ -241,12 +243,12 @@ function OfferingTile({
   const candidateImageUrl = offering.imageUrl ?? offering.voucherImageUrl ?? null;
   const imageUrl =
     candidateImageUrl && failedImage !== candidateImageUrl ? candidateImageUrl : null;
-  const price = formatOfferingDisplayPrice(
-    offering.pricePerUnit,
-    voucherRate?.value ?? null,
-    voucherRate?.unit ?? null,
-    voucherSymbol,
+  const price = resolveOfferingDisplayPrice(
+    offering,
+    voucherRate,
+    i18n.locales?.[0] ?? i18n.locale,
   );
+  const hasFixedPrice = formatOfferingPrice(offering.pricePerUnit) !== null;
   const quantity = formatOfferingQuantity(
     offering.quantity,
     offering.unitLabel,
@@ -297,6 +299,8 @@ function OfferingTile({
         <span className="mt-1 block truncate font-mono text-[0.6875rem] font-semibold text-primary">
           {price ? (
             `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
+          ) : hasFixedPrice ? (
+            <Trans>Price unavailable</Trans>
           ) : (
             <Trans>Price on request</Trans>
           )}
@@ -370,7 +374,6 @@ function OfferingTile({
       {directNavigation ? null : (
         <OfferingDetailsSheet
           offering={offering}
-          voucherSymbol={voucherSymbol}
           imageUrl={imageUrl}
           initials={initials}
           open={detailsOpen}
@@ -422,7 +425,6 @@ function offeringDistanceLabel(
  */
 function OfferingDetailsSheet({
   offering,
-  voucherSymbol,
   imageUrl,
   initials,
   open,
@@ -432,7 +434,6 @@ function OfferingDetailsSheet({
   openVoucherPageAction,
 }: {
   offering: Offering;
-  voucherSymbol: string;
   imageUrl: string | null;
   initials: string;
   open: boolean;
@@ -441,12 +442,13 @@ function OfferingDetailsSheet({
   voucherRate: OfferingVoucherRate | null;
   openVoucherPageAction: "navigate" | "close";
 }) {
-  const price = formatOfferingDisplayPrice(
-    offering.pricePerUnit,
-    voucherRate?.value ?? null,
-    voucherRate?.unit ?? null,
-    voucherSymbol,
+  const { i18n } = useLingui();
+  const price = resolveOfferingDisplayPrice(
+    offering,
+    voucherRate,
+    i18n.locales?.[0] ?? i18n.locale,
   );
+  const hasFixedPrice = formatOfferingPrice(offering.pricePerUnit) !== null;
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
       <SheetPortal>
@@ -478,6 +480,8 @@ function OfferingDetailsSheet({
               <p className="font-mono text-sm font-semibold text-primary">
                 {price ? (
                   `${price.value} ${price.unit}${offering.unitLabel ? ` / ${offering.unitLabel}` : ""}`
+                ) : hasFixedPrice ? (
+                  <Trans>Price unavailable</Trans>
                 ) : (
                   <Trans>Price on request</Trans>
                 )}
@@ -523,6 +527,27 @@ function OfferingDetailsSheet({
       </SheetPortal>
     </SheetRoot>
   );
+}
+
+function resolveOfferingDisplayPrice(
+  offering: Offering,
+  voucherRate: OfferingVoucherRate | null,
+  locale: string,
+): { value: string; unit: string } | null {
+  if (!formatOfferingPrice(offering.pricePerUnit)) return null;
+
+  const converted = voucherRate
+    ? formatOfferingDisplayPrice(offering.pricePerUnit, voucherRate.value, voucherRate.unit, "")
+    : offering.priceInUnitOfAccount && offering.voucherUoa
+      ? {
+          value: formatOfferingPrice(offering.priceInUnitOfAccount)?.value ?? "",
+          unit: offering.voucherUoa.trim(),
+        }
+      : null;
+  if (!converted?.value || !converted.unit) return null;
+
+  const localized = formatOfferingDisplayValue(converted.value, locale);
+  return localized ? { value: localized, unit: converted.unit } : null;
 }
 
 /**

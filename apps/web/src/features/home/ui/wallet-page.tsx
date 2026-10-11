@@ -1,12 +1,9 @@
-import { chainHasPretiumRamp } from "@clc/core/features/wallet/pretium";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   RiArrowRightSLine,
   RiBankCardLine,
   RiDownloadLine,
-  RiGroupLine,
-  RiBookOpenLine,
   RiSendPlane2Line,
 } from "react-icons/ri";
 
@@ -19,7 +16,6 @@ import { usePartitionedVouchers } from "#/features/wallet/hooks/use-partitioned-
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
 import { CompleteProfileBanner } from "./complete-profile-banner";
 import { MyCatalogSection } from "#/components/catalogs/my-catalog-section";
-import { CHAIN_ID, CHAIN_INFO } from "#/lib/chain";
 import { useVoucherSheetSelection } from "#/lib/navigation/use-voucher-sheet-selection";
 import { parseVoucherAddress } from "#/lib/navigation/voucher-sheet-search";
 
@@ -92,8 +88,6 @@ function UnresolvedVouchersRow({
 export function WalletPage({ address }: { address?: string }) {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const cashAvailable = chainHasPretiumRamp(CHAIN_ID);
-  const cashUnavailableReason = t`Cash services aren't available on ${CHAIN_INFO.name}.`;
   const actions = [
     { id: "send", label: t`Send`, icon: RiSendPlane2Line, variant: "default", to: "/wallet/send" },
     {
@@ -104,19 +98,11 @@ export function WalletPage({ address }: { address?: string }) {
       to: "/wallet/receive",
     },
     {
-      id: "topup",
+      id: "cash",
       label: t`Cash`,
       icon: RiBankCardLine,
       variant: "outline",
-      to: "/wallet/top-up",
-    },
-    { id: "pools", label: t`Pools`, icon: RiGroupLine, variant: "info", to: "/pools" },
-    {
-      id: "catalogs",
-      label: t`Catalogs`,
-      icon: RiBookOpenLine,
-      variant: "success",
-      to: "/catalogs",
+      to: "/wallet/cash",
     },
   ] as const;
   const vouchersQuery = useLatestAccountTokens(address);
@@ -162,25 +148,6 @@ export function WalletPage({ address }: { address?: string }) {
         <div className="grid grid-cols-3 gap-2">
           {actions.map((action) => {
             const Icon = action.icon;
-            // Pretium's ramps exist only on the chains its worker watches. Keep
-            // Cash visible elsewhere so the wallet's four capabilities do not
-            // shift around, but use a real disabled button rather than a link to
-            // a screen that cannot complete an operation.
-            if (action.id === "topup" && !cashAvailable) {
-              return (
-                <Button
-                  key={action.id}
-                  disabled
-                  variant={action.variant}
-                  aria-label={`${action.label}. ${cashUnavailableReason}`}
-                  title={cashUnavailableReason}
-                  className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
-                >
-                  <Icon className="size-4" aria-hidden="true" />
-                  {action.label}
-                </Button>
-              );
-            }
             return (
               <Button
                 key={action.id}
@@ -188,17 +155,10 @@ export function WalletPage({ address }: { address?: string }) {
                 variant={action.variant}
                 className="h-14 flex-col gap-1 px-1 text-[0.6875rem]"
               >
-                {action.id === "pools" ? (
-                  <Link to="/pools" search={{ creditable: true }}>
-                    <Icon className="size-4" aria-hidden="true" />
-                    {action.label}
-                  </Link>
-                ) : (
-                  <Link to={action.to}>
-                    <Icon className="size-4" aria-hidden="true" />
-                    {action.label}
-                  </Link>
-                )}
+                <Link to={action.to}>
+                  <Icon className="size-4" aria-hidden="true" />
+                  {action.label}
+                </Link>
               </Button>
             );
           })}

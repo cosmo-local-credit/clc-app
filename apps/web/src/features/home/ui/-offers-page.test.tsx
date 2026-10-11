@@ -1,5 +1,6 @@
 import type { Offering } from "@clc/api/features/offerings/client";
 import { render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mocks = vi.hoisted(() => ({
@@ -51,7 +52,12 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
     },
   };
 });
-vi.mock("@tanstack/react-router", () => ({ useNavigate: () => mocks.navigate }));
+vi.mock("@tanstack/react-router", () => ({
+  useNavigate: () => mocks.navigate,
+  useRouter: () => ({ history: { back: vi.fn() } }),
+  useCanGoBack: () => false,
+  Link: ({ children, ...props }: { children: ReactNode }) => <a {...props}>{children}</a>,
+}));
 vi.mock("#/components/nearby-catalog", async (importOriginal) => {
   const actual = await importOriginal<typeof import("#/components/nearby-catalog")>();
   return {
@@ -104,6 +110,8 @@ function offering(id: string, lat: number): Offering {
     voucherAddress: `0x${id.padStart(40, "0")}` as `0x${string}`,
     voucherName: `Voucher ${id}`,
     voucherSymbol: `V${id}`,
+    voucherUoa: null,
+    priceInUnitOfAccount: null,
     voucherDecimals: 6,
     sellerAddress: "0x2222222222222222222222222222222222222222",
     name: `Offer ${id}`,

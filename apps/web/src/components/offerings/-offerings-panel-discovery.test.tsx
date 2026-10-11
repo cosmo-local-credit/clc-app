@@ -37,6 +37,8 @@ const offering: Offering = {
   voucherAddress: "0x1111111111111111111111111111111111111111",
   voucherName: "Kilifi Food Voucher",
   voucherSymbol: "KFV",
+  voucherUoa: "KES",
+  priceInUnitOfAccount: "250",
   voucherDecimals: 6,
   voucherImageUrl: "https://content.example/voucher.webp",
   voucherLocationName: "Kilifi",
@@ -92,11 +94,48 @@ describe("OfferingsPanel discovery mode", () => {
     const link = screen.getByRole("link", { name: "Open voucher for Fresh maize" });
     expect(link.getAttribute("href")).toBe("/vouchers/0x1111111111111111111111111111111111111111");
     expect(screen.getByText("Kilifi Food Voucher · KFV")).toBeTruthy();
+    expect(screen.getByText("250 KES / bag")).toBeTruthy();
     expect(screen.getByText("Kilifi Market · 1.2 km")).toBeTruthy();
     expect(container.querySelector("img")?.getAttribute("src")).toBe(
       "https://content.example/voucher.webp",
     );
     expect(screen.queryByRole("button", { name: /view offering details/i })).toBeNull();
+  });
+
+  it("distinguishes an unavailable UoA conversion from an unpriced offering", () => {
+    const { rerender } = render(
+      <OfferingsPanel
+        query={queryFor({ ...offering, voucherUoa: null, priceInUnitOfAccount: null })}
+        emptyState="No offers"
+        directNavigation
+      />,
+    );
+    expect(screen.getByText("Price unavailable")).toBeTruthy();
+
+    rerender(
+      <OfferingsPanel
+        query={queryFor({ ...offering, pricePerUnit: null, priceInUnitOfAccount: null })}
+        emptyState="No offers"
+        directNavigation
+      />,
+    );
+    expect(screen.getByText("Price on request")).toBeTruthy();
+  });
+
+  it("localizes an exact UoA decimal without converting it to Number", () => {
+    render(
+      <OfferingsPanel
+        query={queryFor({
+          ...offering,
+          priceInUnitOfAccount: "9007199254740993.25",
+          unit: "dozen",
+          unitLabel: "dozen",
+        })}
+        emptyState="No offers"
+        directNavigation
+      />,
+    );
+    expect(screen.getByText("9,007,199,254,740,993.25 KES / dozen")).toBeTruthy();
   });
 
   it("prefers an offering thumbnail over the parent voucher image", () => {

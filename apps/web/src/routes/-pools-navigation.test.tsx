@@ -181,41 +181,12 @@ afterEach(() => {
 });
 
 describe("pools navigation", () => {
-  it("preserves the Wallet Credit link through Back and Forward navigation", async () => {
+  it("does not expose the removed Wallet Pools shortcut", async () => {
     const router = createTestRouter("/?tab=wallet");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    // Exact: the wallet's Your Pools header links out to "All pools" as well.
-    const poolsAction = await screen.findByRole("link", { name: "Pools" });
-    expect(poolsAction.getAttribute("href")).toBe("/pools?creditable=true");
-    fireEvent.click(poolsAction);
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(screen.getByRole("heading", { name: "Pools" })).toBeTruthy();
-    });
-
-    await act(async () => {
-      router.history.back();
-    });
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/");
-      expect(router.state.location.search).toMatchObject({ tab: "wallet" });
-    });
-
-    await act(async () => {
-      router.history.forward();
-    });
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/pools");
-      expect(router.state.location.search.creditable).toBe(true);
-      expect(
-        screen.getByRole("checkbox", { name: "Credit" }).getAttribute("data-checked"),
-      ).not.toBeNull();
-    });
+    expect(await screen.findByRole("heading", { name: "Wallet" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Pools" })).toBeNull();
   });
 
   it("deposits into a pool through the send flow and Back returns to the pool", async () => {
@@ -268,12 +239,12 @@ describe("pools navigation", () => {
     });
   });
 
-  it("falls back to the wallet tab when the pools list is deep-linked", async () => {
+  it("falls back to the Marketplace map when the pools list is deep-linked", async () => {
     const router = createTestRouter("/pools");
     render(withQueryClient(<RouterProvider router={router} />));
 
-    const back = await screen.findByRole("link", { name: "Wallet" });
-    expect(back.getAttribute("href")).toBe("/?tab=wallet");
+    const back = await screen.findByRole("link", { name: "Back" });
+    expect(back.getAttribute("href")).toBe("/?tab=market&view=map");
   });
 });
 

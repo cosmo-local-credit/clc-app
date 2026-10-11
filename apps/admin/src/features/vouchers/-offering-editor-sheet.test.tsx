@@ -101,6 +101,8 @@ function offering(overrides: Partial<Offering> = {}): Offering {
     voucherAddress: ADDRESS as Offering["voucherAddress"],
     voucherName: "Kilifi Harvest",
     voucherSymbol: "KHV",
+    voucherUoa: "KES",
+    priceInUnitOfAccount: "120",
     voucherDecimals: 6,
     sellerAddress: ADDRESS as Offering["sellerAddress"],
     name: "Maize flour",
