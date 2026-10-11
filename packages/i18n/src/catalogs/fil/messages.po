@@ -103,7 +103,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "Handa na ang {0} para sa mga voucher at pagpapalit."
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} km"
 
@@ -211,11 +213,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} review"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -776,7 +778,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Na-save ang katalogo. Hindi maidagdag ang item. Subukan muli."
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "Mga katalogo"
@@ -921,7 +924,6 @@ msgid "Choose a location"
 msgstr "Piliin ang lokasyon"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "Piliin ang lokasyon"
 
@@ -975,8 +977,13 @@ msgid "Choose from photos"
 msgstr "Pumili mula sa mga larawan"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "Piliin kung gaano kalayo maaaring magmula ang mga resulta sa pamilihan."
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "Piliin kung gaano kalayo maaaring magmula ang mga resultang sinala ayon "
+"sa lokasyon."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "Piliin kung gaano kalayo maaaring magmula ang mga resulta sa pamilihan."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1520,7 +1527,7 @@ msgstr "Hindi ma-load ang mga item sa katalogo."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "Hindi ma-load ang mga katalogo."
 
@@ -2106,7 +2113,6 @@ msgstr "I-edit ang post"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "I-edit ang profile"
@@ -2815,7 +2821,7 @@ msgid "Litre"
 msgstr "Litro"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "Mag-load pa"
@@ -2856,7 +2862,7 @@ msgstr "Nilo-load ang mga hawak na voucher…"
 msgid "Loading location map"
 msgstr "Mapa ng lokasyon ng pag-load"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "Pag-load ng pamilihan..."
 
@@ -2952,8 +2958,7 @@ msgstr "Pag-load ng inyong profile..."
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3017,7 +3022,7 @@ msgstr "Pamahalaan ang mga voucher, pool, at lokal na pagbabayad."
 msgid "Manage your wallet session and app preferences."
 msgstr "Pamahalaan ang session ng inyong wallet at mga kagustuhan sa app."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "Mapa"
 
@@ -3039,7 +3044,7 @@ msgstr "Pamilihan"
 msgid "Marketplace"
 msgstr "Pamilihan"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "Mga voucher sa pamilihan"
 
@@ -3290,7 +3295,7 @@ msgstr "Walang camera na natagpuan sa aparato na ito."
 msgid "No cash activity yet."
 msgstr "Walang cash activity pa."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "Walang nakitang katalogo."
 
@@ -3348,7 +3353,8 @@ msgstr "Walang pera ang natagpuan."
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:52
 msgid "No items yet. Add pools or vouchers from their detail pages."
-msgstr "Wala pang mga item. Magdagdag ng mga pool o voucher mula sa kanilang mga pahina ng detalye."
+msgstr "Wala pang mga item. Magdagdag ng mga pool o voucher mula sa kanilang "
+"mga pahina ng detalye."
 
 #: apps/web/src/components/wallet/recipient-address-input.tsx:210
 msgid "No matching recipients."
@@ -3449,7 +3455,7 @@ msgstr "Walang mga voucher na tumutugma sa paghahanap na ito."
 msgid "No vouchers to collect"
 msgstr "Walang voucher na kokolektahin"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "Walang mga voucher upang ipakita pa."
@@ -4615,8 +4621,7 @@ msgstr "Pagreretiro..."
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4736,11 +4741,11 @@ msgstr "I-scan ang QR code"
 msgid "Scan recipient address"
 msgstr "I-scan ang address ng tatanggap"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "Mag- scroll para sa higit pa"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "Maghanap ayon sa pangalan o simbolo"
 
@@ -4991,13 +4996,24 @@ msgstr "Ipakita ang mga {stars}-star na review"
 msgid "Show all"
 msgstr "Ipakita lahat"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "Ipinapakita ang mga catalog <0>sa buong mundo</0>."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "Nagpapakita lamang ng kamakailang mga voucher."
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "Ipinapakita ang mga resulta sa loob ng <0>{radiusLabel}</0> mula sa "
+"naka-save na <1>lokasyon ng inyong profile</1>."
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "Ipinapakita ang mga resulta sa loob ng 1,000 km mula sa naka-save na lokasyon ng inyong profile."
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "Ipinapakita ang mga resulta sa loob ng 1,000 km mula sa naka-save na "
+#~ "lokasyon ng inyong profile."
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6276,7 +6292,7 @@ msgstr "Naghihintay sa blockchain…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6311,7 +6327,6 @@ msgstr "Hindi namin ma-load ang numero ng telepono sa inyong profile."
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "Hindi namin ma-load ang inyong profile."
 

@@ -105,7 +105,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} готовий до ваучерів та обмінів."
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} км"
 
@@ -216,11 +218,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "Відгуки: {summaryTotal}"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} км"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} м"
 
@@ -784,7 +786,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Каталог збережено. Не вдалося додати елемент. Спробуйте ще раз."
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "Каталоги"
@@ -930,7 +933,6 @@ msgid "Choose a location"
 msgstr "Оберіть місце"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "Оберіть місце"
 
@@ -984,8 +986,12 @@ msgid "Choose from photos"
 msgstr "Обрати з фотографій"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "Оберіть максимальну відстань до результатів маркетплейсу."
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "Оберіть максимальну відстань до результатів, відфільтрованих за місцем."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "Оберіть максимальну відстань до результатів маркетплейсу."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1530,7 +1536,7 @@ msgstr "Не вдалося завантажити елементи катало
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "Не вдалося завантажити каталоги."
 
@@ -2119,7 +2125,6 @@ msgstr "Редагувати допис"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Редагувати профіль"
@@ -2831,7 +2836,7 @@ msgid "Litre"
 msgstr "Літр"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "Завантажити ще"
@@ -2872,7 +2877,7 @@ msgstr "Завантаження активів…"
 msgid "Loading location map"
 msgstr "Завантаження мапи місця"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "Завантаження ринку…"
 
@@ -2968,8 +2973,7 @@ msgstr "Завантаження вашого профілю…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3033,7 +3037,7 @@ msgstr "Керуйте ваучерами, пулами та місцевими 
 msgid "Manage your wallet session and app preferences."
 msgstr "Керуйте сеансом гаманця та налаштуваннями застосунку."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "Мапа"
 
@@ -3057,7 +3061,7 @@ msgstr "Ринок"
 msgid "Marketplace"
 msgstr "Ринок"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "Ваучери на ринку"
 
@@ -3317,7 +3321,7 @@ msgstr "На цьому пристрої не знайдено камери."
 msgid "No cash activity yet."
 msgstr "Готівкових операцій ще немає."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "Каталогів не знайдено."
 
@@ -3475,7 +3479,7 @@ msgstr "Жоден ваучер не відповідає цьому пошук�
 msgid "No vouchers to collect"
 msgstr "Немає ваучерів для отримання"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "Поки немає ваучерів для відображення."
@@ -4649,8 +4653,7 @@ msgstr "Виведення з обігу…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4770,11 +4773,11 @@ msgstr "Сканувати QR-код"
 msgid "Scan recipient address"
 msgstr "Сканувати адресу отримувача"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "Прокрутіть, щоб побачити більше"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "Пошук за назвою або символом"
 
@@ -5025,14 +5028,24 @@ msgstr "Показати відгуки з оцінкою {stars}"
 msgid "Show all"
 msgstr "Показати все"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "Каталоги показано <0>з усього світу</0>."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "Показано лише нещодавні ваучери."
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "Показано результати в межах <0>{radiusLabel}</0> від <1>місця, "
+"збереженого у вашому профілі</1>."
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "Показано результати в межах 1 000 км від місця, збереженого у вашому "
-"профілі."
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "Показано результати в межах 1 000 км від місця, збереженого у вашому "
+#~ "профілі."
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6305,7 +6318,7 @@ msgstr "Очікування блокчейну…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6339,7 +6352,6 @@ msgstr "Не вдалося завантажити номер телефону �
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "Не вдалося завантажити ваш профіль."
 

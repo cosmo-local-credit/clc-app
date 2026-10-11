@@ -103,7 +103,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} is ready for vouchers and swaps."
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} km"
 
@@ -216,11 +218,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} reviews"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -785,7 +787,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "Catalog saved. The item couldn't be added. Try again."
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "Catalogs"
@@ -930,7 +933,6 @@ msgid "Choose a location"
 msgstr "Choose a location"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "Choose a location"
 
@@ -984,8 +986,12 @@ msgid "Choose from photos"
 msgstr "Choose from photos"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "Choose how far away marketplace results can be."
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "Choose how far away location-filtered discovery results can be."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "Choose how far away marketplace results can be."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1527,7 +1533,7 @@ msgstr "Couldn't load catalog items."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "Couldn't load catalogs."
 
@@ -2112,7 +2118,6 @@ msgstr "Edit post"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Edit profile"
@@ -2828,7 +2833,7 @@ msgid "Litre"
 msgstr "Litre"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "Load more"
@@ -2869,7 +2874,7 @@ msgstr "Loading holdings…"
 msgid "Loading location map"
 msgstr "Loading location map"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "Loading marketplace…"
 
@@ -2965,8 +2970,7 @@ msgstr "Loading your profile…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3030,7 +3034,7 @@ msgstr "Manage vouchers, pools, and local payments."
 msgid "Manage your wallet session and app preferences."
 msgstr "Manage your wallet session and app preferences."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "Map"
 
@@ -3054,7 +3058,7 @@ msgstr "Market"
 msgid "Marketplace"
 msgstr "Marketplace"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "Marketplace vouchers"
 
@@ -3314,7 +3318,7 @@ msgstr "No camera found on this device."
 msgid "No cash activity yet."
 msgstr "No cash activity yet."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "No catalogs found."
 
@@ -3472,7 +3476,7 @@ msgstr "No vouchers match this search."
 msgid "No vouchers to collect"
 msgstr "No vouchers to collect"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "No vouchers to show yet."
@@ -4643,8 +4647,7 @@ msgstr "Retiring…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4766,11 +4769,11 @@ msgstr "Scan QR Code"
 msgid "Scan recipient address"
 msgstr "Scan recipient address"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "Scroll for more"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "Search by name or symbol"
 
@@ -5023,13 +5026,23 @@ msgstr "Show {stars}-star reviews"
 msgid "Show all"
 msgstr "Show all"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "Showing catalogs <0>globally</0>."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "Showing recent vouchers only."
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "Showing results within 1,000 km of your saved profile location."
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "Showing results within 1,000 km of your saved profile location."
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6296,7 +6309,7 @@ msgstr "Waiting for the chain…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6329,7 +6342,6 @@ msgstr "We couldn't load your profile phone number."
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "We couldn't load your profile."
 

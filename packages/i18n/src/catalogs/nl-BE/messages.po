@@ -105,7 +105,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} is klaar voor waardebonnen en omwisselingen."
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} km"
 
@@ -218,11 +220,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} beoordelingen"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} km"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} m"
 
@@ -792,7 +794,8 @@ msgstr "Catalogus opgeslagen. Het item kon niet worden toegevoegd. Probeer het "
 "opnieuw."
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "Catalogi"
@@ -939,7 +942,6 @@ msgid "Choose a location"
 msgstr "Kies een locatie"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "Kies een locatie"
 
@@ -993,8 +995,12 @@ msgid "Choose from photos"
 msgstr "Kies uit foto's"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "Kies hoe ver weg resultaten op de marktplaats mogen zijn."
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "Kies hoe ver weg locatiegefilterde zoekresultaten mogen zijn."
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "Kies hoe ver weg resultaten op de marktplaats mogen zijn."
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1544,7 +1550,7 @@ msgstr "Catalogusitems konden niet worden geladen."
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "Catalogi konden niet worden geladen."
 
@@ -2136,7 +2142,6 @@ msgstr "Bericht bewerken"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "Profiel bewerken"
@@ -2857,7 +2862,7 @@ msgid "Litre"
 msgstr "Liter"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "Meer laden"
@@ -2898,7 +2903,7 @@ msgstr "Tegoeden laden…"
 msgid "Loading location map"
 msgstr "Locatiekaart laden"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "Marktplaats laden…"
 
@@ -2994,8 +2999,7 @@ msgstr "Uw profiel laden…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3059,7 +3063,7 @@ msgstr "Beheer waardebonnen, fondsen en lokale betalingen."
 msgid "Manage your wallet session and app preferences."
 msgstr "Beheer uw portefeuillesessie en appvoorkeuren."
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "Kaart"
 
@@ -3083,7 +3087,7 @@ msgstr "Markt"
 msgid "Marketplace"
 msgstr "Marktplaats"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "Waardebonnen op de marktplaats"
 
@@ -3345,7 +3349,7 @@ msgstr "Geen camera gevonden op dit apparaat."
 msgid "No cash activity yet."
 msgstr "Nog geen contante activiteit."
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "Geen catalogi gevonden."
 
@@ -3507,7 +3511,7 @@ msgstr "Geen waardebonnen komen overeen met deze zoekopdracht."
 msgid "No vouchers to collect"
 msgstr "Geen waardebonnen om te innen"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "Nog geen waardebonnen om weer te geven."
@@ -4689,8 +4693,7 @@ msgstr "Buiten gebruik stellen…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4813,11 +4816,11 @@ msgstr "QR-code scannen"
 msgid "Scan recipient address"
 msgstr "Adres van ontvanger scannen"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "Scroll voor meer"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "Zoeken op naam of symbool"
 
@@ -5072,13 +5075,23 @@ msgstr "Beoordelingen met {stars} sterren weergeven"
 msgid "Show all"
 msgstr "Alles weergeven"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "Catalogi worden <0>wereldwijd</0> weergegeven."
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "Alleen recente waardebonnen worden weergegeven."
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "Resultaten binnen <0>{radiusLabel}</0> van de opgeslagen "
+"<1>profiellocatie</1>."
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "Resultaten binnen 1.000 km van de opgeslagen locatie in uw profiel."
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "Resultaten binnen 1.000 km van de opgeslagen locatie in uw profiel."
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6363,7 +6376,7 @@ msgstr "Wachten op de blockchain…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6398,7 +6411,6 @@ msgstr "We konden het telefoonnummer uit uw profiel niet laden."
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "We konden uw profiel niet laden."
 

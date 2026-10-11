@@ -103,7 +103,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} 已準備好用於代金券和兌換。"
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "{0} 公里"
 
@@ -216,11 +218,11 @@ msgstr "{pinIcon}、{pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "{summaryTotal} 條評價"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} 公里"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} 公尺"
 
@@ -783,7 +785,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "目錄已儲存，但無法新增項目。請重試。"
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "目錄"
@@ -928,7 +931,6 @@ msgid "Choose a location"
 msgstr "請選擇位置"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "請選擇位置"
 
@@ -982,8 +984,12 @@ msgid "Choose from photos"
 msgstr "從照片中選擇"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "選擇市場結果可以有多遠。"
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "選擇按位置篩選的探索結果的最大距離。"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "選擇市場結果可以有多遠。"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1524,7 +1530,7 @@ msgstr "無法載入目錄項目。"
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "無法載入目錄。"
 
@@ -2106,7 +2112,6 @@ msgstr "編輯貼文"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "編輯個人資料"
@@ -2817,7 +2822,7 @@ msgid "Litre"
 msgstr "升"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "載入更多"
@@ -2858,7 +2863,7 @@ msgstr "正在載入持有的代金券…"
 msgid "Loading location map"
 msgstr "載入位置圖"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "正在載入市場…"
 
@@ -2954,8 +2959,7 @@ msgstr "正在載入您的個人資料…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3018,7 +3022,7 @@ msgstr "管理代金券、資金池和本地付款。"
 msgid "Manage your wallet session and app preferences."
 msgstr "管理您的錢包登入狀態和應用程式首選項。"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "地圖"
 
@@ -3042,7 +3046,7 @@ msgstr "市場"
 msgid "Marketplace"
 msgstr "市場"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "市場代金券"
 
@@ -3301,7 +3305,7 @@ msgstr "在此裝置上找不到相機。"
 msgid "No cash activity yet."
 msgstr "尚無現金活動。"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "找不到任何目錄。"
 
@@ -3459,7 +3463,7 @@ msgstr "沒有代金券與此搜尋匹配。"
 msgid "No vouchers to collect"
 msgstr "沒有可領取的代金券"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "暫無代金券可顯示。"
@@ -4632,8 +4636,7 @@ msgstr "正在停用…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4754,11 +4757,11 @@ msgstr "掃描QR 碼"
 msgid "Scan recipient address"
 msgstr "掃描接收方地址"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "滾動查看更多"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "按名稱或符號搜尋"
 
@@ -5011,13 +5014,22 @@ msgstr "顯示 {stars} 星級評價"
 msgid "Show all"
 msgstr "顯示全部"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "正在<0>全球</0>顯示目錄。"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "僅顯示最近的代金券。"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "正在顯示已儲存的<1>個人資料位置</1>周圍 <0>{radiusLabel}</0> 內的結果。"
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "顯示您個人資料中已儲存位置周圍 1,000 公里以內的結果。"
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "顯示您個人資料中已儲存位置周圍 1,000 公里以內的結果。"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6279,7 +6291,7 @@ msgstr "正在等待鏈上確認…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6312,7 +6324,6 @@ msgstr "無法載入您個人資料中的電話號碼。"
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "我們無法載入您的個人資料。"
 

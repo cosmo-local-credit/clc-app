@@ -1,7 +1,7 @@
 import { cleanup, configure } from "@testing-library/react";
 import type * as LinguiReact from "@lingui/react";
 import type * as I18nProviderModule from "#/providers/i18n";
-import type { ReactNode } from "react";
+import { createElement, type ReactElement, type ReactNode } from "react";
 import { afterEach, vi } from "vite-plus/test";
 
 // Query-backed screens can cross Testing Library's 1s default while the full
@@ -13,6 +13,7 @@ type TestTransProps = {
   id: string;
   message?: string;
   values?: Record<string, unknown>;
+  components?: Record<string, ReactElement>;
   children?: ReactNode;
 };
 
@@ -33,13 +34,25 @@ vi.mock("@lingui/react", async (importOriginal) => {
   return {
     ...actual,
     useLingui: () => ({ i18n, _: translate }),
-    Trans: ({ id, message, values, children }: TestTransProps) => {
+    Trans: ({ id, message, values, components, children }: TestTransProps) => {
       const fallbackMessage =
         typeof children === "string"
           ? children
           : typeof children === "number" || typeof children === "bigint"
             ? children.toString()
             : id;
+      if (components) {
+        return createElement(
+          actual.I18nProvider,
+          { i18n },
+          createElement(actual.Trans, {
+            id,
+            message: message ?? fallbackMessage,
+            values,
+            components,
+          }),
+        );
+      }
       return translate({ id, message: message ?? fallbackMessage, values });
     },
   };

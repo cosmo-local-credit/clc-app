@@ -106,7 +106,9 @@ msgid "{0} is ready for vouchers and swaps."
 msgstr "{0} འདི་འཛིན་ཤོག་དང་བརྗེ་ལེན་གྱི་དོན་ལུ་གྲ་སྒྲིག་ཨིན།"
 
 #. placeholder {0}: localized.value
+#. placeholder {0}: new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)
 #: apps/web/src/components/vouchers/voucher-labels.ts:40
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:56
 msgid "{0} km"
 msgstr "ཀི་ལོ་མི་ཊར་ {0}"
 
@@ -219,11 +221,11 @@ msgstr "{pinIcon}, {pinColor}"
 msgid "{summaryTotal} reviews"
 msgstr "བསྐྱར་ཞིབ་ {summaryTotal}"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} km"
 msgstr "{value} ཀི་མི"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:140
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:157
 msgid "{value} m"
 msgstr "{value} མི"
 
@@ -790,7 +792,8 @@ msgid "Catalog saved. The item couldn't be added. Try again."
 msgstr "ཐོ་གཞུང་བསྲུངས་ཡོད། ཅ་ཆས་ཁ་སྐོང་རྐྱབ་མ་ཚུགས། ལོག་འབད་རྩོལ་བསྐྱེད།"
 
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:34
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:76
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:26
+#: apps/web/src/features/home/ui/market-list-page.tsx:133
 #: apps/web/src/features/home/ui/wallet-page.tsx:116
 msgid "Catalogs"
 msgstr "ཐོ་གཞུང་ཚུ།"
@@ -937,7 +940,6 @@ msgid "Choose a location"
 msgstr "ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།"
 
 #: apps/web/src/components/nearby-catalog.tsx:147
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:57
 msgid "Choose a location"
 msgstr "ས་གནས་ཅིག་གདམ་ཁ་རྐྱབ།"
 
@@ -991,8 +993,13 @@ msgid "Choose from photos"
 msgstr "པར་ཚུ་ནང་ལས་གདམ་ཁ་རྐྱབ།"
 
 #: apps/web/src/features/home/ui/settings-page.tsx:84
-msgid "Choose how far away marketplace results can be."
-msgstr "ཁྲོམ་རའི་གྲུབ་འབྲས་ཚུ་ཐག་རིང་ཚད་ག་དེ་སྦེ་མཐོང་ནི་ཨིན་ན་གདམ་ཁ་རྐྱབ།"
+msgid "Choose how far away location-filtered discovery results can be."
+msgstr "ས་གནས་ཀྱིས་ཚགས་མ་བཟོས་པའི་འཚོལ་ཞིབ་གྲུབ་འབྲས་ཚུ་ཐག་རིང་ཚད་ག་དེ་སྦེ་མཐོང"
+"་ནི་ཨིན་ན་གདམ་ཁ་རྐྱབ།"
+
+#: apps/web/src/features/home/ui/settings-page.tsx:84
+#~ msgid "Choose how far away marketplace results can be."
+#~ msgstr "ཁྲོམ་རའི་གྲུབ་འབྲས་ཚུ་ཐག་རིང་ཚད་ག་དེ་སྦེ་མཐོང་ནི་ཨིན་ན་གདམ་ཁ་རྐྱབ།"
 
 #: apps/web/src/components/paper-wallet-scanner.tsx:210
 msgid "Choose Image"
@@ -1539,7 +1546,7 @@ msgstr "ཐོ་གཞུང་གི་ཅ་ཆས་ཚུ་བཀལ་མ
 #: apps/web/src/components/catalogs/my-catalog-section.tsx:21
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:90
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:45
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:106
 msgid "Couldn't load catalogs."
 msgstr "ཐོ་གཞུང་ཚུ་བཀལ་མ་ཚུགས།"
 
@@ -2128,7 +2135,6 @@ msgstr "གསལ་བསྒྲགས་ཞུན་དག"
 #: apps/web/src/components/nearby-catalog.tsx:151
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:45
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:165
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:61
 #: apps/web/src/features/home/ui/complete-profile-banner.tsx:46
 msgid "Edit profile"
 msgstr "གསལ་སྡུད་ཞུན་དག"
@@ -2848,7 +2854,7 @@ msgid "Litre"
 msgstr "ལི་ཊར།"
 
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:117
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:124
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:128
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Load more"
 msgstr "ཧེང་བཀལ་མངོན་གསལ།"
@@ -2889,7 +2895,7 @@ msgstr "བཟུང་བཞག་ཚུ་མངོན་གསལ་འབད
 msgid "Loading location map"
 msgstr "ས་གནས་ས་ཁྲ་མངོན་གསལ་འབད་དོ།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:171
+#: apps/web/src/features/home/ui/market-list-page.tsx:181
 msgid "Loading marketplace…"
 msgstr "ཚོང་ར་མངོན་གསལ་འབད་དོ…"
 
@@ -2985,8 +2991,7 @@ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་ག
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:85
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:37
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:37
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:25
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:94
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:100
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1015
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:240
 msgid "Loading…"
@@ -3050,7 +3055,7 @@ msgstr "འཛིན་ཤོག་ དངུལ་ཁུངས་ དང་ས�
 msgid "Manage your wallet session and app preferences."
 msgstr "ཁྱོད་ཀྱི་དངུལ་ཁུག་ལཱ་ཡུན་དང་ལས་རིམ་དགའ་མོས་འཛིན་སྐྱོང་འབད།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:144
+#: apps/web/src/features/home/ui/market-list-page.tsx:154
 msgid "Map"
 msgstr "ས་ཁྲ།"
 
@@ -3075,7 +3080,7 @@ msgstr "ཚོང་ར།"
 msgid "Marketplace"
 msgstr "ཚོང་ར།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:192
+#: apps/web/src/features/home/ui/market-list-page.tsx:202
 msgid "Marketplace vouchers"
 msgstr "ཚོང་རའི་འཛིན་ཤོག"
 
@@ -3336,7 +3341,7 @@ msgstr "ཐབས་འཕྲུལ་འདི་གུ་པར་ཆས་མ
 msgid "No cash activity yet."
 msgstr "ད་ཚུན་དངུལ་རྐྱང་བྱ་བ་མེད།"
 
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:115
 msgid "No catalogs found."
 msgstr "ཐོ་གཞུང་ག་ནི་ཡང་འཚོལ་མ་ཐོབ།"
 
@@ -3497,7 +3502,7 @@ msgstr "འཚོལ་ཞིབ་འདི་དང་མཐུན་པའི
 msgid "No vouchers to collect"
 msgstr "བསྡུ་ལེན་འབད་ནིའི་འཛིན་ཤོག་མེད།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:180
+#: apps/web/src/features/home/ui/market-list-page.tsx:190
 #: apps/web/src/features/home/ui/market-page.tsx:252
 msgid "No vouchers to show yet."
 msgstr "ད་ཚུན་སྟོན་ནིའི་འཛིན་ཤོག་མེད།"
@@ -4679,8 +4684,7 @@ msgstr "ལག་ལེན་ལས་བཏོན་དོ…"
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:93
 #: apps/web/src/features/catalogs/ui/catalog-detail-page.tsx:49
 #: apps/web/src/features/catalogs/ui/catalog-members.tsx:46
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:41
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:103
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:109
 #: apps/web/src/features/home/ui/market-filter-ui.tsx:56
 #: apps/web/src/features/home/ui/market-map.tsx:859
 #: apps/web/src/features/home/ui/market-page.tsx:168
@@ -4800,11 +4804,11 @@ msgstr "QR ཨང་རྟགས་བཤེར།"
 msgid "Scan recipient address"
 msgstr "ལེན་མིའི་ཁ་བྱང་བཤེར།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:206
+#: apps/web/src/features/home/ui/market-list-page.tsx:216
 msgid "Scroll for more"
 msgstr "ཧེང་བཀལ་གྱི་དོན་ལུ་ཡར་མར་སྤོ།"
 
-#: apps/web/src/features/home/ui/market-list-page.tsx:155
+#: apps/web/src/features/home/ui/market-list-page.tsx:165
 msgid "Search by name or symbol"
 msgstr "མིང་ཡང་ན་མཚོན་རྟགས་ཀྱིས་འཚོལ།"
 
@@ -5058,14 +5062,24 @@ msgstr "སྐར་མ་ {stars} གི་བསྐྱར་ཞིབ་སྟ
 msgid "Show all"
 msgstr "ཆ་མཉམ་སྟོན།"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:83
+msgid "Showing catalogs <0>globally</0>."
+msgstr "ཐོ་གཞུང་ཚུ་<0>འཛམ་གླིང་ཡོངས་ལུ</0>་སྟོན་དོ།"
+
 #: apps/web/src/features/pools/ui/pool-voucher-sheet.tsx:1036
 msgid "Showing recent vouchers only."
 msgstr "ཉེ་ཆར་གྱི་འཛིན་ཤོག་ཚུ་རྐྱངམ་ཅིག་སྟོན་དོ།"
 
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:63
+msgid "Showing results within <0>{radiusLabel}</0> of your saved <1>profile "
+"location</1>."
+msgstr "ཁྱོད་ཀྱི་བསྲུངས་པའི་<1>གསལ་སྡུད་ས་གནས</1>་ལས་<0>{radiusLabel}</0>་ནང་འཁ"
+"ོད་ཀྱི་གྲུབ་འབྲས་སྟོན་དོ།"
+
 #: apps/web/src/features/catalogs/ui/catalogs-page.tsx:89
-msgid "Showing results within 1,000 km of your saved profile location."
-msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་ནང་བསྲུངས་པའི་ས་གནས་ལས་ཀི་ལོ་མི་ཊར་༡,༠༠༠་ནང་འཁོད་ཀྱི་"
-"གྲུབ་འབྲས་སྟོན་དོ།"
+#~ msgid "Showing results within 1,000 km of your saved profile location."
+#~ msgstr "ཁྱོད་ཀྱི་གསལ་སྡུད་ནང་བསྲུངས་པའི་ས་གནས་ལས་ཀི་ལོ་མི་ཊར་༡,༠༠༠་ནང་འཁོད་ཀྱི་"
+#~ "གྲུབ་འབྲས་སྟོན་དོ།"
 
 #: apps/web/src/components/vouchers/marker-style-picker.tsx:93
 msgid "Shown on the market map."
@@ -6345,7 +6359,7 @@ msgstr "བཀག་ཐག་བསྒུག་དོ…"
 #: apps/web/src/components/navigation/bottom-navigation.tsx:26
 #: apps/web/src/components/wallet/recipient-address-input.tsx:191
 #: apps/web/src/features/catalogs/ui/catalog-create-page.tsx:79
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:74
+#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:24
 #: apps/web/src/features/home/ui/wallet-page.tsx:152
 #: apps/web/src/features/pools/ui/pools-page.tsx:255
 #: apps/web/src/features/wallet/ui/all-vouchers-page.tsx:130
@@ -6379,7 +6393,6 @@ msgstr "ང་བཅས་ཀྱིས་ཁྱོད་ཀྱི་གསལ་
 
 #: apps/web/src/components/nearby-catalog.tsx:116
 #: apps/web/src/features/auth/ui/profile-edit-page.tsx:57
-#: apps/web/src/features/catalogs/ui/catalogs-page.tsx:32
 msgid "We couldn't load your profile."
 msgstr "ང་བཅས་ཀྱིས་ཁྱོད་ཀྱི་གསལ་སྡུད་མངོན་གསལ་འབད་མ་ཚུགས།"
 
