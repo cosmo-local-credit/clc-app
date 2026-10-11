@@ -43,7 +43,7 @@ export async function completeProfileStep(page: Page): Promise<void> {
 
   await page.getByLabel("Choose a profile photo").setInputFiles(PROFILE_PHOTO);
   await page.getByRole("button", { name: "Use photo" }).click();
-  await page.getByLabel("Name").fill("Test User");
+  await page.getByLabel("Name", { exact: true }).fill("Test User");
   await page.getByLabel("Email").fill("test@example.com");
 
   // Real keystrokes — fill() can bypass the controlled input's onChange.

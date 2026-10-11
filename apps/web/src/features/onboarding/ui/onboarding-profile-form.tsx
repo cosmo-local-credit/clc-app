@@ -26,6 +26,7 @@ import {
   resolveProfileCountry,
 } from "#/lib/profile-currency";
 import { translateValidationError } from "#/lib/validation-i18n";
+import { useFirstInvalidFieldFocus } from "#/lib/use-first-invalid-field-focus";
 
 type Props = {
   initialValues?: ProfileInput;
@@ -74,6 +75,7 @@ export function OnboardingProfileForm({
   // this step also requires one before advancing.
   const [avatarFile, setAvatarFile] = useState<File | null>(initialAvatarFile ?? null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const { formRef, focusFirstInvalidField } = useFirstInvalidFieldFocus();
   const currencyWasChosenRef = useRef(Boolean(initialValues?.preferredCurrency));
   const currencyWasSuggestedByLocationRef = useRef(
     Boolean(initialValues?.location && !initialValues?.preferredCurrency),
@@ -155,12 +157,13 @@ export function OnboardingProfileForm({
         </div>
 
         <form
+          ref={formRef}
           aria-label={t`Create account`}
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (!avatarFile) setPhotoError(t`Add a profile photo to continue.`);
-            void form.handleSubmit();
+            if (!avatarFile) setPhotoError(t`Required`);
+            void form.handleSubmit().finally(focusFirstInvalidField);
           }}
           className="space-y-4"
         >
@@ -202,7 +205,9 @@ export function OnboardingProfileForm({
                     />
                     {err ? (
                       <p className="text-destructive text-xs">
-                        {translateValidationError(err, i18n)}
+                        {err === "Name is required"
+                          ? t`Required`
+                          : translateValidationError(err, i18n)}
                       </p>
                     ) : null}
                   </div>
@@ -302,6 +307,7 @@ export function OnboardingProfileForm({
                       placeholder={t`Search currencies`}
                       emptyMessage={t`No currencies found`}
                       ariaLabel={t`Preferred currency`}
+                      ariaInvalid={!!err}
                     />
                     {err ? (
                       <p className="text-destructive text-xs">
@@ -386,6 +392,7 @@ export function OnboardingProfileForm({
                 <form.Subscribe selector={(s) => s.submissionAttempts}>
                   {(submissionAttempts) => (
                     <LocationPicker
+                      required
                       value={field.state.value}
                       onChange={(next) => {
                         field.handleChange(next);

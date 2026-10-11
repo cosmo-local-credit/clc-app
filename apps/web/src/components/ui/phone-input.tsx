@@ -61,7 +61,8 @@ export function PhoneInputField({
         className={cn(
           "flex h-9 w-full border border-input bg-card transition-[border-color]",
           "focus-within:border-foreground",
-          ariaInvalid && "border-destructive",
+          ariaInvalid &&
+            "border-destructive ring-1 ring-destructive/20 focus-within:border-destructive focus-within:ring-destructive/20",
           className,
         )}
       >
