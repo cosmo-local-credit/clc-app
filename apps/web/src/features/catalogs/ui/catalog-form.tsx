@@ -10,6 +10,7 @@ import { Button } from "#/components/ui/button";
 import { Field } from "#/components/ui/field";
 import { ImageUploadField } from "#/components/ui/image-upload-field";
 import { Input } from "#/components/ui/input";
+import { Textarea } from "#/components/ui/textarea";
 import { LocationPicker } from "#/components/ui/location-picker";
 import { catalogsClient } from "#/lib/api/catalogs";
 import { isStorageConfigured } from "#/lib/api/storage";
@@ -19,6 +20,7 @@ import { BackendApiError } from "@clc/api/client/errors";
 type Place = Omit<LocationInput, "country">;
 const formSchema = z.object({
   name: catalogWriteSchema.shape.name,
+  description: catalogWriteSchema.shape.description,
   imageUrl: catalogWriteSchema.shape.imageUrl,
   location: z
     .object({
@@ -46,6 +48,7 @@ export function CatalogForm({
   const [error, setError] = useState<string | null>(null);
   const defaultValues: z.input<typeof formSchema> = {
     name: catalog?.name ?? "",
+    description: catalog?.description ?? "",
     imageUrl: catalog?.imageUrl ?? "",
     location: catalog
       ? { lat: catalog.geoLat, lng: catalog.geoLng, locationName: catalog.locationName }
@@ -60,6 +63,7 @@ export function CatalogForm({
       try {
         const saved = await save.mutateAsync({
           name: value.name,
+          description: value.description,
           imageUrl: value.imageUrl,
           geoLat: value.location.lat,
           geoLng: value.location.lng,
@@ -96,6 +100,26 @@ export function CatalogForm({
               id="catalog-name"
               dir="auto"
               className="bg-card"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
+              aria-invalid={field.state.meta.errors.length > 0}
+            />
+          </Field>
+        )}
+      </form.Field>
+      <form.Field name="description">
+        {(field) => (
+          <Field
+            label={t`Description`}
+            htmlFor="catalog-description"
+            error={getFieldError(field.state.meta.errors)}
+          >
+            <Textarea
+              id="catalog-description"
+              dir="auto"
+              className="min-h-28 bg-card"
+              maxLength={500}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(event) => field.handleChange(event.target.value)}

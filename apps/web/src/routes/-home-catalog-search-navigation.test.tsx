@@ -11,7 +11,11 @@ import {
 import { render, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
 
-import { canonicalRedirectSearch, pickCatalogSearch } from "#/lib/navigation/catalog-search";
+import {
+  canonicalRedirectSearch,
+  catalogSearchForScope,
+  pickCatalogSearch,
+} from "#/lib/navigation/catalog-search";
 import {
   type HomeTab,
   type MarketView,
@@ -33,6 +37,13 @@ function createTestRouter(initialEntry: string) {
       ...pickCatalogSearch(search),
     }),
     beforeLoad: ({ search }) => {
+      if (search.tab === "market" && search.view === "list") {
+        throw redirect({
+          to: "/offers",
+          search: catalogSearchForScope(search, false),
+          replace: true,
+        });
+      }
       const next = canonicalRedirectSearch(search, {
         voucherRelationships: search.tab === "posts",
       });
@@ -42,9 +53,20 @@ function createTestRouter(initialEntry: string) {
     component: () => <div data-testid="home" />,
   });
 
+  const offersRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/offers",
+    validateSearch: pickCatalogSearch,
+    beforeLoad: ({ search }) => {
+      const next = canonicalRedirectSearch(search, { voucherRelationships: false });
+      if (next) throw redirect({ to: "/offers", search: next, replace: true });
+    },
+    component: () => <div data-testid="offers" />,
+  });
+
   const history = createMemoryHistory({ initialEntries: [initialEntry] });
   const router = createRouter({
-    routeTree: rootRoute.addChildren([indexRoute]),
+    routeTree: rootRoute.addChildren([indexRoute, offersRoute]),
     history,
   });
 
@@ -80,12 +102,16 @@ describe("home catalog search canonicalization through the router", () => {
     expect(new URLSearchParams(corrected.history.location.search).get("q")).toBe("art");
   });
 
-  it("preserves view when the URL carried it", async () => {
-    const { history } = await settle("/?view=list&q=%20art");
+  it("replaces the legacy Marketplace list with Offers and preserves compatible filters", async () => {
+    const { history } = await settle("/?tab=market&view=list&q=%20art&tags=Food");
 
     const params = new URLSearchParams(history.location.search);
-    expect(params.get("view")).toBe("list");
+    expect(history.location.pathname).toBe("/offers");
+    expect(params.has("tab")).toBe(false);
+    expect(params.has("view")).toBe(false);
     expect(params.get("q")).toBe("art");
+    expect(params.get("tags")).toBe("Food");
+    expect(history.length).toBe(1);
   });
 
   it("collapses a repeated tag key into the single comma-joined form", async () => {

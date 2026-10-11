@@ -217,10 +217,31 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  mocks.auth.isAuthenticated = true;
+  mocks.auth.isLoading = false;
   mocks.auth.session = { address: OWNER, chainId: 100 };
 });
 
 describe("PoolDetailPage pool details editor", () => {
+  it("keeps guest browsing public while hiding wallet and private pool controls", () => {
+    mocks.auth.isAuthenticated = false;
+    mocks.auth.session = null;
+
+    render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);
+
+    expect(screen.getByTestId("offerings-panel")).toBeTruthy();
+    expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([
+      "Offerings",
+      "Vouchers",
+    ]);
+    expect(screen.queryByRole("link", { name: "Swap" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Deposit" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Receive" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Holdings" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Credit" })).toBeNull();
+    expect(screen.queryByRole("tab", { name: "Activity" })).toBeNull();
+  });
+
   it("offers the editor only to the pool's owner", () => {
     mocks.auth.session = { address: OTHER, chainId: 100 };
     const stranger = render(<PoolDetailPage poolAddress={ADDRESS} activeTab="offerings" />);

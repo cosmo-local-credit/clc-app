@@ -114,6 +114,8 @@ export type FilteredMarketVouchersParams = MarketVouchersParams & {
   facets?: boolean;
   /** Only vouchers owned by this address. Compared case-insensitively. */
   owner?: string;
+  /** Vouchers accepted by at least one of these verified pools. */
+  pools?: readonly { chainId: number; address: string }[];
 };
 
 export type FilteredMarketVoucherPage = MarketVoucherPage & {
@@ -406,6 +408,7 @@ function formatFilteredMarketQuery({
   filter,
   facets,
   owner,
+  pools,
   nearby,
   ...cursor
 }: FilteredMarketVouchersParams): string {
@@ -417,6 +420,12 @@ function formatFilteredMarketQuery({
   if (filter.tags.length > 0) search.set("tags", filter.tags.join(","));
   if (filter.tags.length > 1 && filter.tagMatch === "all") search.set("tagMatch", "all");
   if (owner) search.set("owner", owner);
+  if (pools && pools.length > 0) {
+    search.set(
+      "pools",
+      pools.map((pool) => `${pool.chainId}:${pool.address.toLowerCase()}`).join(","),
+    );
+  }
   if (facets) search.set("facets", "true");
   if (nearby) search.set("nearby", "true");
   return `?${search.toString()}`;

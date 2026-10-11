@@ -36,6 +36,14 @@ export function CatalogRow({
         <span dir="auto" className="mt-1 block text-sm text-muted-foreground">
           {catalog.locationName}
         </span>
+        {catalog.description ? (
+          <span
+            dir="auto"
+            className="mt-1 line-clamp-2 block text-xs leading-relaxed text-muted-foreground"
+          >
+            {catalog.description}
+          </span>
+        ) : null}
         {distanceLabel ? (
           <span className="mt-1 block text-xs text-muted-foreground">{distanceLabel}</span>
         ) : null}

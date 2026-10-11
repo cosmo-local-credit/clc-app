@@ -15,6 +15,12 @@ describe("catalog cache", () => {
     expect(catalogKeys.mine("A")).not.toEqual(catalogKeys.mine("B"));
     expect(catalogKeys.list("A:1:2:1000")).not.toEqual(catalogKeys.list("A:2:2:1000"));
     expect(catalogKeys.list()).not.toEqual(catalogKeys.list("A:1:2:1000"));
+    expect(catalogKeys.list({ scope: "A:1:2:1000", q: " maize " })).toEqual(
+      catalogKeys.list({ scope: "A:1:2:1000", q: "maize" }),
+    );
+    expect(catalogKeys.list({ scope: "A:1:2:1000", q: "maize" })).not.toEqual(
+      catalogKeys.list({ scope: "A:1:2:1000", q: "beans" }),
+    );
     expect(catalogKeys.members("1", "pool")).not.toEqual(catalogKeys.members("1", "voucher"));
     const client = {} as CatalogsClient;
     expect(catalogMembershipQueryOptions(client, "", "1", "pool", "2").enabled).toBe(false);

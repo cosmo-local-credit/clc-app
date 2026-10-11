@@ -13,6 +13,17 @@ vi.mock("#/features/auth/hooks/use-storage-owner", () => ({
   useStorageOwner: () => "0xabc0000000000000000000000000000000000123",
 }));
 
+vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
+  useCreditableBrowse: () => ({
+    auth: { isAuthenticated: false, isLoading: false },
+    parsed: { ok: true, enabled: null },
+    enabled: false,
+    verification: { status: "loading", pools: [], retry: vi.fn() },
+    poolRefs: undefined,
+    blocksResults: false,
+  }),
+}));
+
 const MARKET_FILTER_PREFERENCES_KEY = ownerScopedKey(
   "0xabc0000000000000000000000000000000000123",
   MARKET_FILTER_PREFERENCES_NAME,
@@ -51,6 +62,10 @@ function scalar(key: string, value: unknown): string {
 
 vi.mock("#/features/home/hooks/use-market-camera", () => ({
   useMarketCamera: () => mocks.camera,
+}));
+
+vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
+  useDiscoveryDistanceOrigin: () => mocks.camera.realFix,
 }));
 
 vi.mock("#/features/home/hooks/use-market-vouchers", async (importOriginal) => {
@@ -206,7 +221,7 @@ describe("MarketListPage", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByText("Loading marketplace…")).toBeNull();
-    expect(screen.getByLabelText("Marketplace vouchers")).toBeTruthy();
+    expect(screen.getByLabelText("Vouchers list")).toBeTruthy();
   });
 
   it("waits for the complete catalog before proximity ordering", () => {
@@ -223,7 +238,7 @@ describe("MarketListPage", () => {
     render(<MarketListPage />);
 
     expect(screen.getByText("Loading marketplace…")).toBeTruthy();
-    expect(screen.queryByLabelText("Marketplace vouchers")).toBeNull();
+    expect(screen.queryByLabelText("Vouchers list")).toBeNull();
   });
 
   it("orders the complete catalog by raw distance from a real fix", () => {
@@ -242,7 +257,7 @@ describe("MarketListPage", () => {
 
     render(<MarketListPage />);
 
-    const list = screen.getByLabelText("Marketplace vouchers");
+    const list = screen.getByLabelText("Vouchers list");
     expect(
       within(list)
         .getAllByRole("button")
@@ -265,7 +280,7 @@ describe("MarketListPage", () => {
 
     render(<MarketListPage />);
 
-    const list = screen.getByLabelText("Marketplace vouchers");
+    const list = screen.getByLabelText("Vouchers list");
     expect(within(list).getAllByRole("button")).toHaveLength(20);
 
     act(() => {
@@ -292,24 +307,28 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("orders blue Pools and green Catalogs actions immediately before Filters", () => {
+  it("orders resource actions before Filters", () => {
     render(<MarketListPage />);
 
+    const offers = screen.getByRole("link", { name: "Offers" });
     const pools = screen.getByRole("link", { name: "Pools" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
+    const map = screen.getByRole("link", { name: "Map" });
     const filters = screen.getByRole("button", { name: "Filters" });
 
+    expect(offers.getAttribute("href")).toBe("/offers");
     expect(pools.getAttribute("href")).toBe("/pools?creditable=false");
     expect(pools.getAttribute("data-variant")).toBe("info");
     expect(catalogs.getAttribute("href")).toBe("/catalogs");
     expect(catalogs.getAttribute("data-variant")).toBe("success");
-    expect(pools.className).toContain("h-8");
-    expect(catalogs.className).toContain("h-8");
+    expect(offers.className).toContain("h-9");
+    expect(pools.className).toContain("h-9");
+    expect(catalogs.className).toContain("h-9");
     expect(filters.className).toContain("h-8");
+    expect(offers.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(
-      catalogs.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(catalogs.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(map.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(catalogs.parentElement?.className).toContain("flex-wrap");
   });
 
@@ -355,7 +374,7 @@ describe("MarketListPage", () => {
     };
     render(<MarketListPage />);
 
-    expect(screen.getByLabelText("Marketplace vouchers").className).not.toMatch(/rounded-/);
+    expect(screen.getByLabelText("Vouchers list").className).not.toMatch(/rounded-/);
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
     expect(sheet.className).toContain("rounded-none");
@@ -384,7 +403,7 @@ describe("MarketListPage", () => {
     };
 
     render(<MarketListPage />);
-    const row = within(screen.getByLabelText("Marketplace vouchers")).getByRole("button");
+    const row = within(screen.getByLabelText("Vouchers list")).getByRole("button");
     fireEvent.click(row);
 
     expect(row.tagName).toBe("BUTTON");
@@ -443,7 +462,7 @@ describe("MarketListPage search", () => {
 
     render(<MarketListPage />);
 
-    const list = screen.getByRole("region", { name: "Marketplace vouchers" });
+    const list = screen.getByRole("region", { name: "Vouchers list" });
     expect(within(list).getAllByRole("button")).toHaveLength(1);
     expect(list.getAttribute("aria-busy")).toBe("true");
     expect(screen.queryByText("No vouchers match this search.")).toBeNull();
@@ -581,7 +600,7 @@ describe("MarketListPage filter transitions", () => {
     mocks.catalog = { ...mocks.catalog, vouchers: many };
 
     const { rerender } = render(<MarketListPage />);
-    const list = screen.getByLabelText("Marketplace vouchers");
+    const list = screen.getByLabelText("Vouchers list");
 
     act(() => {
       mocks.intersectionCallback?.(
@@ -593,17 +612,13 @@ describe("MarketListPage filter transitions", () => {
 
     mocks.catalog = { ...mocks.catalog, vouchers: [...many, voucher(99, -1.4, 36.9)] };
     rerender(<MarketListPage />);
-    expect(
-      within(screen.getByLabelText("Marketplace vouchers")).getAllByRole("button"),
-    ).toHaveLength(25);
+    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("button")).toHaveLength(25);
 
     mocks.search = { q: "art" };
     mocks.filtered = { ...mocks.filtered, data: { vouchers: many, tagFacets: null } };
     rerender(<MarketListPage />);
     await settleDebounce();
-    expect(
-      within(screen.getByLabelText("Marketplace vouchers")).getAllByRole("button"),
-    ).toHaveLength(20);
+    expect(within(screen.getByLabelText("Vouchers list")).getAllByRole("button")).toHaveLength(20);
   });
 });
 

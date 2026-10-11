@@ -48,11 +48,12 @@ export type FilteredCatalogState =
 export function useFilteredMarketVouchers(
   filter: CatalogFilter | null,
   perPage = MARKET_MAP_PAGE_SIZE,
+  pools?: readonly { chainId: number; address: string }[],
 ) {
   const nearby = useNearbyCatalog();
   const visibilityFilter = useNearbyCatalogFilter();
   const query = useQuery({
-    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage), nearby),
+    queryKey: nearbyQueryKey(marketVoucherQueryKeys.filtered(filter, perPage, pools), nearby),
     queryFn: async ({ signal }): Promise<FilteredMarketCatalog> => {
       if (!filter) throw new Error("The filtered catalog query ran without a filter.");
 
@@ -68,6 +69,7 @@ export function useFilteredMarketVouchers(
             next: cursor === undefined ? undefined : true,
             filter,
             facets: index === 0,
+            ...(pools ? { pools } : {}),
           },
           signal,
         );
@@ -88,7 +90,7 @@ export function useFilteredMarketVouchers(
         tagFacets: pages[0]?.tagFacets ?? null,
       };
     },
-    enabled: filter !== null,
+    enabled: filter !== null && (pools === undefined || pools.length > 0),
     placeholderData: keepPreviousData,
     staleTime: MARKET_QUERY_FRESHNESS.staleTime,
     refetchOnReconnect: MARKET_QUERY_FRESHNESS.refetchOnReconnect,

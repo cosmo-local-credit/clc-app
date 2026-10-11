@@ -16,6 +16,12 @@ import { Button } from "#/components/ui/button";
 import { BackChevron } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
+import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
+import { CatalogSearchField } from "#/components/catalog-filter-controls";
+import { useCatalogFilter } from "#/lib/navigation/use-catalog-filter";
+import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
+import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 
 export function CatalogsPage() {
   const { t } = useLingui();
@@ -35,10 +41,17 @@ export function CatalogsPage() {
 function CatalogList() {
   const { i18n, t } = useLingui();
   const auth = useAuthStatus();
+  const storageOwner = useStorageOwner();
+  const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const scope = useNearbyCatalog();
   const filter = useNearbyCatalogFilter();
+  const search = useCatalogFilter();
   const query = useInfiniteQuery({
-    ...catalogsInfiniteQueryOptions(catalogsClient, scope),
+    ...catalogsInfiniteQueryOptions(catalogsClient, {
+      scope,
+      q: search.result.ok ? search.result.filter.term : "",
+    }),
+    enabled: search.result.ok && !search.isDebouncing,
     ...nearbyQueryPolicy(scope),
   });
   const catalogs = query.data?.pages.flatMap((page) => page.catalogs) ?? [];
@@ -59,9 +72,10 @@ function CatalogList() {
   const radiusLabel = filter
     ? t`${new Intl.NumberFormat(i18n.locales?.[0] ?? i18n.locale).format(filter.radiusKm)} km`
     : null;
-
   return (
     <div className="space-y-3">
+      <MarketplaceResourceNavigation current="catalogs" />
+      <CatalogSearchField filter={search} label={t`Search catalogs`} />
       {auth.isAuthenticated && radiusLabel ? (
         <p className="text-sm text-muted-foreground">
           <Trans>
@@ -120,7 +134,7 @@ function CatalogList() {
         </p>
       ) : null}
       {visibleCatalogs.map((catalog) => (
-        <CatalogDistanceRow key={catalog.id} catalog={catalog} filter={filter} />
+        <CatalogDistanceRow key={catalog.id} catalog={catalog} filter={distanceOrigin} />
       ))}
       {query.hasNextPage && !crossedDistanceBoundary ? (
         <Button
@@ -141,7 +155,7 @@ function CatalogDistanceRow({
   filter,
 }: {
   catalog: Catalog;
-  filter: ReturnType<typeof useNearbyCatalogFilter>;
+  filter: { lat: number; lng: number } | null | undefined;
 }) {
   const { i18n, t } = useLingui();
   let label: string | undefined;

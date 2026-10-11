@@ -42,10 +42,14 @@ export function createCatalogsClient(http: HttpClient) {
     return `/api/v2/catalogs/${catalogIdSchema.parse(id)}/${catalogKindSchema.parse(kind) === "pool" ? "pools" : "vouchers"}/${catalogIdSchema.parse(resourceId)}`;
   }
   return {
-    list(params: { cursor?: string; nearby?: boolean; perPage?: number }, signal?: AbortSignal) {
+    list(
+      params: { cursor?: string; nearby?: boolean; perPage?: number; q?: string },
+      signal?: AbortSignal,
+    ) {
       const query = new URLSearchParams({ perPage: String(params.perPage ?? 20) });
       if (params.cursor) query.set("cursor", params.cursor);
       if (params.nearby) query.set("nearby", "true");
+      if (params.q?.trim()) query.set("q", params.q.trim());
       return read(catalogPageSchema, `/api/v2/catalogs?${query}`, {
         method: "GET",
         credentials: params.nearby ? "include" : "omit",

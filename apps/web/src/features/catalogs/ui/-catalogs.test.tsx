@@ -48,10 +48,19 @@ const mocks = vi.hoisted(() => ({
 vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: mocks.api }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => mocks.profile }));
+vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
+  useDiscoveryDistanceOrigin: () => {
+    const { geoLat, geoLng } = mocks.profile.data;
+    return mocks.auth.isAuthenticated && geoLat !== null && geoLng !== null
+      ? { lat: geoLat, lng: geoLng }
+      : null;
+  },
+}));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error } }));
 vi.mock("#/components/wallet", () => ({ BackChevron: () => <a href="/">Back</a> }));
 vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => mocks.navigate,
+  useSearch: () => ({}),
   Link: ({
     to,
     params,
@@ -90,6 +99,7 @@ vi.mock("#/components/ui/location-picker", () => ({
 const catalog = {
   id: "7",
   name: "Local makers",
+  description: null,
   imageUrl: null,
   locationName: "Sarajevo",
   geoLat: 43,
@@ -204,6 +214,7 @@ describe("catalog curation", () => {
     await waitFor(() => expect(onSaved).toHaveBeenCalled());
     expect(mocks.api.update).toHaveBeenCalledWith("7", {
       name: "New name",
+      description: "",
       imageUrl: "",
       geoLat: 43,
       geoLng: 18,
@@ -262,7 +273,7 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: true },
+      { cursor: undefined, nearby: true, q: "" },
       expect.any(AbortSignal),
     );
     const distance = screen.getByRole("link", { name: "1,000 km" });
@@ -279,7 +290,7 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: false },
+      { cursor: undefined, nearby: false, q: "" },
       expect.any(AbortSignal),
     );
     const global = screen.getByRole("link", { name: "globally" });
@@ -379,7 +390,7 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: false },
+      { cursor: undefined, nearby: false, q: "" },
       expect.any(AbortSignal),
     );
   });

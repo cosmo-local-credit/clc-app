@@ -6,7 +6,7 @@ type RoutePolicy = {
   id: string;
   fullPath: string;
   source: string;
-  navOwner?: "home" | "posts" | "wallet" | "voucher";
+  navOwner?: "home" | "market" | "posts" | "wallet" | "voucher";
 };
 
 const ROUTES_DIR = resolve(import.meta.dirname);
@@ -25,6 +25,12 @@ const routePolicy = [
     fullPath: "/catalogs/$catalogId",
     source: "_nav/catalogs/$catalogId.tsx",
     navOwner: "wallet",
+  },
+  {
+    id: "/_nav/offers/",
+    fullPath: "/offers/",
+    source: "_nav/offers/index.tsx",
+    navOwner: "market",
   },
   { id: "/catalogs/create", fullPath: "/catalogs/create", source: "catalogs/create.tsx" },
   // $reportId is a directory, not a leaf: the owner edit route lives beside the
@@ -74,6 +80,12 @@ const routePolicy = [
     source: "_nav/vouchers/$voucherAddress.tsx",
     navOwner: "voucher",
   },
+  {
+    id: "/_nav/vouchers/",
+    fullPath: "/vouchers/",
+    source: "_nav/vouchers/index.tsx",
+    navOwner: "market",
+  },
   { id: "/onboarding", fullPath: "/onboarding", source: "onboarding.tsx" },
   { id: "/install", fullPath: "/install", source: "install.tsx" },
   {
@@ -83,7 +95,6 @@ const routePolicy = [
   },
   { id: "/posts/", fullPath: "/posts/", source: "posts/index.tsx" },
   { id: "/settings/", fullPath: "/settings/", source: "settings/index.tsx" },
-  { id: "/vouchers/", fullPath: "/vouchers/", source: "vouchers/index.tsx" },
   {
     id: "/vouchers/create/$step",
     fullPath: "/vouchers/create/$step",
@@ -172,7 +183,7 @@ describe("bottom-navigation route policy", () => {
       expect(
         readFileSync(file, "utf8"),
         `${relative(ROUTES_DIR, file)} must declare navOwner`,
-      ).toMatch(/navOwner:\s*"(?:home|posts|wallet|voucher)"/);
+      ).toMatch(/navOwner:\s*"(?:home|market|posts|wallet|voucher)"/);
     }
   });
 });
