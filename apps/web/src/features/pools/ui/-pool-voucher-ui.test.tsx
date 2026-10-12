@@ -1144,12 +1144,14 @@ describe("pool voucher UI", () => {
         sendAmount: "1.00",
         sendSymbol: "USDC",
         sendToken: USDC_ADDRESS,
+        sendUoaUnavailable: true,
         receiveAmount: "2.00",
         receiveSymbol: "TTX",
         // Carried so the receipt can prefill a send of what was swapped out; a
         // symbol alone would not identify the token to send.
         receiveToken: TTX_ADDRESS,
         receiveDecimals: 6,
+        receiveUoaUnavailable: true,
         poolName: "Trade Pool",
       },
     });

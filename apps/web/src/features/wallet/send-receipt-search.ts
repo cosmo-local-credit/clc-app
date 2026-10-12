@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-const uoaValueSchema = z
+export const receiptUoaValueSchema = z
   .string()
   .trim()
   .regex(/^\d+(?:\.\d+)?$/)
   .optional()
   .catch(undefined);
 
-const uoaSchema = z
+export const receiptUoaSchema = z
   .string()
   .trim()
   .min(1)
@@ -32,8 +32,8 @@ export const sendReceiptSearchSchema = z
     recipientLabel: z.string().optional().catch(undefined),
     amount: z.string().optional().catch(undefined),
     symbol: z.string().optional().catch(undefined),
-    uoaValue: uoaValueSchema,
-    uoa: uoaSchema,
+    uoaValue: receiptUoaValueSchema,
+    uoa: receiptUoaSchema,
     uoaUnavailable: z.boolean().optional().catch(undefined),
     /** Pool the send started from, so Done returns there instead of the wallet. */
     returnPool: z.string().optional().catch(undefined),

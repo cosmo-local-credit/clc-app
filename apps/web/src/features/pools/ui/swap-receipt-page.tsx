@@ -3,7 +3,7 @@ import {
   formatPoolSwapFeePercentage,
   type PoolSwapFeeBreakdownRaw,
 } from "@clc/core/features/pool-swaps/logic";
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import { formatOfferingDisplayValue } from "@clc/core/features/market/logic";
 import { explorerTxUrl } from "@clc/core/lib/constants/chains";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -25,6 +25,7 @@ import { useOtxTracking } from "#/features/auth/hooks/use-otx-tracking";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
 import { usePoolSwapSettlement } from "#/features/pools/hooks/use-pool-swap-settlement";
 import { formatPoolSwapFee } from "#/features/pools/logic/pool-swap-fees";
+import { formatTransferUnitValue } from "#/features/wallet/logic/transfer-display";
 import { CHAIN_INFO } from "#/lib/chain";
 import { RELAYER_URL } from "#/lib/relayer-config";
 import { PoolSwapFeeValue } from "./pool-swap-fee-value";
@@ -41,6 +42,12 @@ export type SwapReceiptSearch = {
   receiveToken?: string;
   receiveDecimals?: number;
   poolName?: string;
+  sendUoaValue?: string;
+  sendUoa?: string;
+  sendUoaUnavailable?: boolean;
+  receiveUoaValue?: string;
+  receiveUoa?: string;
+  receiveUoaUnavailable?: boolean;
 };
 
 export function SwapReceiptPage({
@@ -85,13 +92,20 @@ export function SwapReceiptPage({
   const localizedSendAmount = details.sendAmount
     ? localizeCanonicalAmount(details.sendAmount, i18n.locales?.[0] ?? i18n.locale)
     : null;
+  const locale = i18n.locales?.[0] ?? i18n.locale;
+  const receiveUnitValue =
+    formatTransferUnitValue(details.receiveUoaValue, details.receiveUoa, locale) ??
+    (details.receiveUoaUnavailable ? t`Unavailable` : null);
+  const sendUnitValue =
+    formatTransferUnitValue(details.sendUoaValue, details.sendUoa, locale) ??
+    (details.sendUoaUnavailable ? t`Unavailable` : null);
   const amountLabel =
     localizedReceiveAmount && details.receiveSymbol
-      ? `${localizedReceiveAmount} ${details.receiveSymbol}`
+      ? `${localizedReceiveAmount} ${details.receiveSymbol}${receiveUnitValue ? ` (${receiveUnitValue})` : ""}`
       : null;
   const sentLabel =
     localizedSendAmount && details.sendSymbol
-      ? `${localizedSendAmount} ${details.sendSymbol}`
+      ? `${localizedSendAmount} ${details.sendSymbol}${sendUnitValue ? ` (${sendUnitValue})` : ""}`
       : null;
   const exitReceipt = () => {
     void navigate({
@@ -440,11 +454,7 @@ function formatSubmittedAt(value: string, locale: string): string {
 }
 
 function localizeCanonicalAmount(amount: string, locale: string): string {
-  try {
-    return formatTokenAmountFixed(parseTokenAmount(amount, 2), 2, 2, locale);
-  } catch {
-    return amount;
-  }
+  return formatOfferingDisplayValue(amount, locale) ?? amount;
 }
 
 function feeShareLines({

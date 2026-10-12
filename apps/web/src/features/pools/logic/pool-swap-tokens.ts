@@ -34,6 +34,9 @@ export type PoolSwapToken = {
   token: WalletToken;
   /** Null where the catalog never recorded it, which leaves every amount unsizable. */
   decimals: number | null;
+  /** Database-backed claim metadata used for informational valuation only. */
+  voucherValue: string | null;
+  voucherUoa: string | null;
   /** The holder's balance, raw. */
   balanceRaw: string;
   held: boolean;
@@ -204,6 +207,8 @@ export function buildPoolSwapTokens({
           lastDateBlock: "",
         }),
         decimals: voucher.decimals,
+        voucherValue: voucher.voucherValue,
+        voucherUoa: voucher.voucherUoa,
         balanceRaw,
         held,
         liquidityRaw,

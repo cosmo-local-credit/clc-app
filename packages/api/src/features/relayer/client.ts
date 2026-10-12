@@ -1,4 +1,6 @@
 import type { EIP7702Auth, SignedBatch } from "@clc/core/features/webauthn/index";
+import { getAddress, isAddress } from "viem";
+import { z } from "zod";
 import type { OtxTrackResult } from "../auth/client";
 
 type OKResponse<T> = { ok: true; description?: string; result: T };
@@ -49,6 +51,17 @@ export type RelayPayload = {
   credentialId?: string;
   publicKeyX?: string;
   publicKeyY?: string;
+};
+
+export type RelayValuationSnapshot = {
+  tokenAddress: `0x${string}`;
+  voucherValue: string;
+  voucherUoa: string;
+};
+
+export type RelayResult = {
+  trackingId: string;
+  valuationSnapshots?: RelayValuationSnapshot[];
 };
 
 export type RecoverPayload = {
@@ -109,7 +122,46 @@ export function createRelayerClient(baseUrl: string) {
     relayPreview: (payload: RelayPreviewPayload) =>
       post<{ nonce: string; digest: `0x${string}` }>("/relay/preview", payload),
 
-    relay: (payload: RelayPayload) => post<{ trackingId: string }>("/relay", payload),
+    relay: async (payload: RelayPayload) => {
+      const response = await post<unknown>("/relay", payload);
+      return { ...response, result: parseRelayResult(response.result) };
+    },
+  };
+}
+
+const relayResultSchema = z.object({
+  trackingId: z.string().min(1),
+  valuationSnapshots: z.array(z.unknown()).optional(),
+});
+
+const relayValuationSnapshotSchema = z.object({
+  tokenAddress: z.string().refine(isAddress),
+  voucherValue: z
+    .string()
+    .trim()
+    .regex(/^(?:0|[1-9]\d*)(?:\.\d+)?$/)
+    .refine((value) => !/^0(?:\.0+)?$/.test(value)),
+  voucherUoa: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,16}$/),
+});
+
+function parseRelayResult(value: unknown): RelayResult {
+  const parsed = relayResultSchema.parse(value);
+  const valuationSnapshots = parsed.valuationSnapshots
+    ?.map((snapshot) => relayValuationSnapshotSchema.safeParse(snapshot))
+    .filter((snapshot) => snapshot.success)
+    .map(({ data }) => ({
+      tokenAddress: getAddress(data.tokenAddress),
+      voucherValue: data.voucherValue,
+      voucherUoa: data.voucherUoa,
+    }));
+
+  return {
+    trackingId: parsed.trackingId,
+    ...(valuationSnapshots && valuationSnapshots.length > 0 ? { valuationSnapshots } : {}),
   };
 }
 

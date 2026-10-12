@@ -20,7 +20,10 @@ import {
 import { EllipsizedAddress, SignedAmount } from "#/components/wallet";
 import { usePoolSwapSettlement } from "#/features/pools/hooks/use-pool-swap-settlement";
 import type { PoolActivityEntry, PoolActivityLeg } from "#/features/pools/logic/pool-activity";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import {
+  formatTransferDate,
+  formatTransferUnitValue,
+} from "#/features/wallet/logic/transfer-display";
 import { CHAIN_INFO } from "#/lib/chain";
 import { PoolSwapFeeValue } from "./pool-swap-fee-value";
 
@@ -49,6 +52,7 @@ export function PoolActivityDetailsSheet({
   onOpenChange: (open: boolean) => void;
 }) {
   const { i18n, t } = useLingui();
+  const locale = i18n.locales?.[0] ?? i18n.locale;
   const swapEntry = entry?.kind === "swap" ? entry : null;
   const settlement = usePoolSwapSettlement({
     txHash: open && swapEntry ? swapEntry.txHash : undefined,
@@ -110,10 +114,10 @@ export function PoolActivityDetailsSheet({
                 {entry.kind === "swap" ? (
                   <>
                     <DetailRow label={t`Pool received`}>
-                      <SignedAmount direction="in" amount={legAmount(entry.received)} />
+                      <SignedAmount direction="in" amount={legAmount(entry.received, locale)} />
                     </DetailRow>
                     <DetailRow label={t`Pool paid out`}>
-                      <SignedAmount direction="out" amount={legAmount(entry.sent)} />
+                      <SignedAmount direction="out" amount={legAmount(entry.sent, locale)} />
                     </DetailRow>
                     <DetailRow label={t`Pool fee`}>
                       <PoolSwapFeeValue
@@ -156,7 +160,7 @@ export function PoolActivityDetailsSheet({
                   <DetailRow label={t`Amount`}>
                     <SignedAmount
                       direction={entry.kind === "mint" || entry.direction === "IN" ? "in" : "out"}
-                      amount={legAmount(entry.leg)}
+                      amount={legAmount(entry.leg, locale)}
                     />
                   </DetailRow>
                 )}
@@ -248,8 +252,10 @@ function DetailRow({ label, children }: { label: string; children: ReactNode }) 
   );
 }
 
-function legAmount(leg: PoolActivityLeg): string {
-  return `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
+function legAmount(leg: PoolActivityLeg, locale: string): string {
+  const tokenAmount = `${formatTokenAmount(leg.amount, leg.tokenDecimals)} ${leg.tokenSymbol}`;
+  const unitValue = formatTransferUnitValue(leg.uoaValue, leg.uoa, locale);
+  return `${tokenAmount}${unitValue ? ` (${unitValue})` : ""}`;
 }
 
 function activityFeeBreakdown(

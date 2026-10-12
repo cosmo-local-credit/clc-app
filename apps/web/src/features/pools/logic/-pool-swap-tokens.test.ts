@@ -92,6 +92,16 @@ function reads(overrides: Partial<PoolSwapTokenReads> = {}): PoolSwapTokenReads 
 }
 
 describe("buildPoolSwapTokens", () => {
+  it("carries database claim metadata into the swap token", () => {
+    const [token] = buildPoolSwapTokens({
+      pool: pool({ limiterAddress: null }),
+      vouchers: [voucher({ voucherValue: "1.25", voucherUoa: "KES" })],
+      reads: new Map([[KAW.toLowerCase(), reads({ holderBalanceRaw: "1000000" })]]),
+    });
+
+    expect(token).toMatchObject({ voucherValue: "1.25", voucherUoa: "KES" });
+  });
+
   it("orders what you hold ahead of what you don't, largest holding first", () => {
     const tokens = buildPoolSwapTokens({
       pool: pool({ limiterAddress: null }),

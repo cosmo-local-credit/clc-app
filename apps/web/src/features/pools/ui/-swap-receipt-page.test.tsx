@@ -134,6 +134,54 @@ describe("SwapReceiptPage", () => {
     Reflect.deleteProperty(navigator, "share");
   });
 
+  it("shows and shares both submission-time voucher values", async () => {
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: share });
+    useOtxTracking.mockReturnValue(confirmed);
+
+    render(
+      <SwapReceiptPage
+        poolAddress={POOL_ADDRESS}
+        details={{
+          ...details,
+          sendUoaValue: "130",
+          sendUoa: "KES",
+          receiveUoaValue: "2.5",
+          receiveUoa: "USD",
+        }}
+      />,
+    );
+
+    expect(screen.getByText("−1.00 USDC (130 KES)")).toBeTruthy();
+    expect(screen.getByText("+2.00 TTX (2.5 USD)")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    const payload = share.mock.calls[0]?.[0] as { text: string };
+    expect(payload.text).toContain("1.00 USDC (130 KES)");
+    expect(payload.text).toContain("2.00 TTX (2.5 USD)");
+    Reflect.deleteProperty(navigator, "share");
+  });
+
+  it("keeps both values on pending and reverted receipts", () => {
+    const valuedDetails = {
+      ...details,
+      sendUoaValue: "130",
+      sendUoa: "KES",
+      receiveUoaValue: "2.5",
+      receiveUoa: "USD",
+    };
+    useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
+    const { unmount } = render(
+      <SwapReceiptPage poolAddress={POOL_ADDRESS} details={valuedDetails} />,
+    );
+    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.5 usd\)/i })).toBeTruthy();
+    unmount();
+
+    useOtxTracking.mockReturnValue({ outcome: { kind: "error", error: "reverted" } });
+    render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={valuedDetails} />);
+    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.5 usd\)/i })).toBeTruthy();
+  });
+
   it("shows a swapping state while polling the relayer transaction", async () => {
     useOtxTracking.mockReturnValue({ outcome: { kind: "pending" } });
     trackRelay.mockResolvedValue({ result: { otx: [] } });

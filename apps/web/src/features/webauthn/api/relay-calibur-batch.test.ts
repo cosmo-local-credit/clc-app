@@ -44,6 +44,31 @@ afterEach(() => {
 });
 
 describe("relayCaliburBatch", () => {
+  it("returns the database claim snapshots from the accepted relay", async () => {
+    const client = createClientStub();
+    storePrivateKey(PRIVATE_KEY);
+    vi.mocked(client.relay).mockResolvedValue({
+      ok: true,
+      result: {
+        trackingId: "tracking-1",
+        valuationSnapshots: [
+          {
+            tokenAddress: CALLS[0]?.to as `0x${string}`,
+            voucherValue: "1",
+            voucherUoa: "KES",
+          },
+        ],
+      },
+    });
+
+    await expect(
+      relayCaliburBatch({ senderAddress: USER, connectorId: "private-key", calls: CALLS }, client),
+    ).resolves.toMatchObject({
+      trackingId: "tracking-1",
+      valuationSnapshots: [{ voucherValue: "1", voucherUoa: "KES" }],
+    });
+  });
+
   it("previews and relays a multi-call batch with the stored private key", async () => {
     const client = createClientStub();
     storePrivateKey(PRIVATE_KEY);

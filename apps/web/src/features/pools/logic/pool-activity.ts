@@ -11,6 +11,9 @@ export type PoolActivityLeg = {
   tokenName: string;
   tokenDecimals: number;
   amount: string;
+  /** Historical value derived from this indexed amount and its submission-time claim. */
+  uoaValue?: string;
+  uoa?: string;
 };
 
 /**
@@ -239,6 +242,8 @@ function leg(transfer: PoolTransfer): PoolActivityLeg {
     tokenName: transfer.tokenName,
     tokenDecimals: transfer.tokenDecimals,
     amount: transfer.amount,
+    uoaValue: transfer.uoaValue,
+    uoa: transfer.uoa,
   };
 }
 

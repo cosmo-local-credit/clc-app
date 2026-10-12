@@ -420,6 +420,11 @@ describe("SendAmountPage", () => {
 
   it("sends the full raw balance when Use max was clicked", async () => {
     setVoucherDetail(USDC, { voucherValue: "1", voucherUoa: "KES" });
+    sendMutateAsync.mockResolvedValue({
+      trackingId: "tracking-1",
+      signatureType: "secp256k1",
+      valuationSnapshots: [{ tokenAddress: USDC, voucherValue: "1", voucherUoa: "KES" }],
+    });
     mockTokens({ usdcBalance: "2134567" });
     renderWithQueryClient(
       <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
@@ -452,12 +457,41 @@ describe("SendAmountPage", () => {
         token: USDC,
         recipient: RECIPIENT,
         recipientLabel: "Alice",
-        amount: "2.13",
+        amount: "2.134567",
         symbol: "USDC",
         uoaValue: "2.134567",
         uoa: "KES",
         returnPool: undefined,
       },
     });
+  });
+
+  it("uses the relayer claim snapshot instead of a cached claim on the receipt", async () => {
+    setVoucherDetail(USDC, { voucherValue: "1", voucherUoa: "KES" });
+    sendMutateAsync.mockResolvedValue({
+      trackingId: "tracking-1",
+      signatureType: "secp256k1",
+      valuationSnapshots: [{ tokenAddress: USDC, voucherValue: "2", voucherUoa: "USD" }],
+    });
+    mockTokens();
+    renderWithQueryClient(
+      <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" />,
+    );
+
+    await screen.findByRole("button", { name: /use max · 245/i });
+    fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
+      target: { value: "3" },
+    });
+    expect(screen.getByText("(3 KES)")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirm and send/i }));
+
+    await waitFor(() =>
+      expect(navigate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          search: expect.objectContaining({ uoaValue: "6", uoa: "USD" }),
+        }),
+      ),
+    );
   });
 });

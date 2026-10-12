@@ -30,6 +30,7 @@ import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher
 import { useAccountTokensInfinite } from "#/features/wallet/hooks/use-account-balances";
 import { useSendVoucherTransfer } from "#/features/wallet/hooks/use-send-voucher-transfer";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
+import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
 import { cn } from "#/lib/utils";
 import { TokenPickerSheet } from "./token-picker-sheet";
@@ -104,6 +105,7 @@ export function SendAmountPage({
     parsedAmountRaw === null
       ? null
       : formatTokenAmount(parsedAmountRaw, tokenDecimals, tokenDecimals);
+  const submittedVoucherAmount = maxAmountRaw ? (exactVoucherAmount ?? amount) : amount;
   const unitValue =
     exactVoucherAmount === null
       ? null
@@ -348,7 +350,7 @@ export function SendAmountPage({
       <SendConfirmationSheet
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        amount={amount}
+        amount={submittedVoucherAmount}
         symbol={selectedToken?.symbol ?? ""}
         unitValueLabel={unitValueLabel}
         recipient={recipientAddress}
@@ -368,6 +370,11 @@ export function SendAmountPage({
             })
             .catch(() => null);
           if (!result) return;
+          const submittedUnitValue = relaySnapshotUnitValue(
+            result.valuationSnapshots,
+            tokenAddress,
+            exactVoucherAmount ?? amount,
+          );
           void navigate({
             to: "/wallet/send/receipt",
             search: {
@@ -375,10 +382,10 @@ export function SendAmountPage({
               token: tokenAddress,
               recipient: recipientAddress,
               recipientLabel,
-              amount,
+              amount: submittedVoucherAmount,
               symbol: selectedToken.symbol,
-              ...(unitValue
-                ? { uoaValue: unitValue.value, uoa: unitValue.unit }
+              ...(submittedUnitValue
+                ? { uoaValue: submittedUnitValue.value, uoa: submittedUnitValue.unit }
                 : { uoaUnavailable: true }),
               returnPool,
             },

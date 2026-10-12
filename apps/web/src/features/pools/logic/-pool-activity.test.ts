@@ -73,6 +73,20 @@ describe("buildPoolActivity", () => {
     });
   });
 
+  it("carries each indexed leg's historical Unit-of-Account value", () => {
+    const [received, sent] = swapLegs();
+    const [entry] = buildPoolActivity([
+      { ...received, uoaValue: "5", uoa: "KES" } as PoolTransfer,
+      { ...sent, uoaValue: "9", uoa: "USD" } as PoolTransfer,
+    ]);
+
+    expect(entry).toMatchObject({
+      kind: "swap",
+      received: { uoaValue: "5", uoa: "KES" },
+      sent: { uoaValue: "9", uoa: "USD" },
+    });
+  });
+
   it("pairs legs whichever order the indexer inserted them in", () => {
     // Twenty concurrent workers write these rows, and the response carries no
     // log index, so the only ordering is insertion sequence.
