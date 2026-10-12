@@ -52,10 +52,24 @@ describe("account token balances", () => {
   });
 
   it("fetches transfer history with documented cursor pagination", async () => {
-    const fetcher = mockFetch({ ok: true, result: { transfers: [], first: 10, last: 5 } });
+    const fetcher = mockFetch({
+      ok: true,
+      result: {
+        transfers: [
+          {
+            id: 10,
+            txHash: `0x${"11".repeat(32)}`,
+            uoaValue: "9007199254740993.25",
+            uoa: "KES",
+          },
+        ],
+        first: 10,
+        last: 5,
+      },
+    });
     vi.stubGlobal("fetch", fetcher);
 
-    await api.getAccountTransfers({
+    const result = await api.getAccountTransfers({
       address: LOWERCASE_ACCOUNT,
       perPage: 20,
       cursor: 5,
@@ -68,6 +82,10 @@ describe("account token balances", () => {
       ),
       expect.objectContaining({ credentials: "include", method: "GET", cache: "no-store" }),
     );
+    expect(result.transfers[0]).toMatchObject({
+      uoaValue: "9007199254740993.25",
+      uoa: "KES",
+    });
   });
 
   it("checksums paginated token-balance account paths", async () => {

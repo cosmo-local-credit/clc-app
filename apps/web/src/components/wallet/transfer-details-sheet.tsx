@@ -17,7 +17,10 @@ import {
   SheetRoot,
   SheetTitle,
 } from "#/components/ui/sheet";
-import { formatTransferDate } from "#/features/wallet/logic/transfer-display";
+import {
+  formatTransferDate,
+  formatTransferUnitValue,
+} from "#/features/wallet/logic/transfer-display";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { useAddressBookRecipients } from "#/features/wallet/hooks/use-address-book";
 import { useReverseRecipientResolution } from "#/features/wallet/hooks/use-recipient-resolution";
@@ -35,6 +38,8 @@ export type TransferDetails = {
   tokenDecimals: number;
   tokenSymbol: string;
   amount: string;
+  uoaValue?: string;
+  uoa?: string;
   dateBlock: string;
   success: boolean;
 };
@@ -85,9 +90,13 @@ export function TransferDetailsSheet({
   const recipientLabel = recipientIdentity.data
     ? formatRecipientLabel(recipientIdentity.data)
     : (recipientAlias ?? transfer?.recipientAddress);
-  const amountLabel = transfer
+  const tokenAmountLabel = transfer
     ? `${formatTokenAmount(transfer.amount, transfer.tokenDecimals)} ${transfer.tokenSymbol}`
     : "";
+  const uoaLabel = transfer
+    ? formatTransferUnitValue(transfer.uoaValue, transfer.uoa, i18n.locales?.[0] ?? i18n.locale)
+    : null;
+  const amountLabel = uoaLabel ? `${tokenAmountLabel} (${uoaLabel})` : tokenAmountLabel;
 
   return (
     <SheetRoot open={open} onOpenChange={onOpenChange}>
@@ -119,17 +128,22 @@ export function TransferDetailsSheet({
                   <span className="text-muted-foreground text-xs">
                     <Trans>Amount</Trans>
                   </span>
-                  <span className="font-mono text-xs font-semibold">
-                    {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
-                    <Link
-                      to="/vouchers/$voucherAddress"
-                      params={{ voucherAddress: transfer.tokenAddress.toLowerCase() }}
-                      search={{ from: "wallet" }}
-                      aria-label={t`View voucher`}
-                      className="underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <bdi dir="ltr">{transfer.tokenSymbol}</bdi>
-                    </Link>
+                  <span className="text-end font-mono text-xs font-semibold">
+                    <span className="block">
+                      {formatTokenAmount(transfer.amount, transfer.tokenDecimals)}{" "}
+                      <Link
+                        to="/vouchers/$voucherAddress"
+                        params={{ voucherAddress: transfer.tokenAddress.toLowerCase() }}
+                        search={{ from: "wallet" }}
+                        aria-label={t`View voucher`}
+                        className="underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <bdi dir="ltr">{transfer.tokenSymbol}</bdi>
+                      </Link>
+                    </span>
+                    {uoaLabel ? (
+                      <span className="block text-muted-foreground">({uoaLabel})</span>
+                    ) : null}
                   </span>
                 </div>
                 <div className="flex min-h-11 items-center justify-between gap-3 border-b border-border px-3 py-2.5">

@@ -34,6 +34,9 @@ type AccountTransfer = {
   tokenDecimals: number;
   amount: string;
   success: boolean;
+  /** Immutable informational valuation captured when the transfer was submitted. */
+  uoaValue?: string;
+  uoa?: string;
   /**
    * Whether this transfer carries a private attachment (a message and/or
    * shared contact details) the caller is allowed to read. The backend joins

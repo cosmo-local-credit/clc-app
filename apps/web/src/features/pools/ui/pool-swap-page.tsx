@@ -1,5 +1,13 @@
 import type { PoolSwapFeeBreakdownRaw } from "@clc/core/features/pool-swaps/logic";
-import { formatTokenAmountFixed, parseTokenAmount } from "@clc/core/features/wallet/logic";
+import {
+  formatOfferingDisplayValue,
+  formatVoucherUnitValue,
+} from "@clc/core/features/market/logic";
+import {
+  formatTokenAmount,
+  formatTokenAmountFixed,
+  parseTokenAmount,
+} from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -35,6 +43,7 @@ import {
   defaultPoolSwapTo,
 } from "#/features/pools/logic/pool-swap-tokens";
 import { useCaliburDelegation } from "#/features/webauthn/hooks/use-calibur-delegation";
+import { relaySnapshotUnitValue } from "#/features/wallet/logic/relay-valuation";
 import { cn } from "#/lib/utils";
 import { PoolSwapFeeValue } from "./pool-swap-fee-value";
 
@@ -161,6 +170,20 @@ export function PoolSwapPage({
       : localizedQuoteToAmount;
   const displayedFromAmount = focusedField === "from" ? editableFromAmount : settledFromAmount;
   const displayedToAmount = focusedField === "to" ? editableToAmount : settledToAmount;
+  const exactFromAmount =
+    quote.data && !quote.isPlaceholderData && fromDecimals !== null
+      ? formatTokenAmount(quote.data.amountInRaw, fromDecimals, fromDecimals)
+      : quoteMode === "exact-input"
+        ? canonicalEnteredAmount(fromAmount, fromDecimals)
+        : null;
+  const exactToAmount =
+    quote.data && !quote.isPlaceholderData && toDecimals !== null
+      ? formatTokenAmount(quote.data.amountOutRaw, toDecimals, toDecimals)
+      : quoteMode === "exact-output"
+        ? canonicalEnteredAmount(toAmount, toDecimals)
+        : null;
+  const fromUnitValue = swapUnitValue(selectedFrom, exactFromAmount, locale);
+  const toUnitValue = swapUnitValue(selectedTo, exactToAmount, locale);
 
   let rate = "—";
   if (quote.data && fromDecimals !== null && toDecimals !== null) {
@@ -278,6 +301,7 @@ export function PoolSwapPage({
           label={receiveLabel}
           token={selectedTo?.token}
           amount={displayedToAmount}
+          unitValue={exactToAmount ? (toUnitValue ?? t`Unavailable`) : undefined}
           autoFocus
           max={maxReceiveAmount ?? undefined}
           actionsDisabled={!maxSettled}
@@ -301,6 +325,7 @@ export function PoolSwapPage({
           label={sendLabel}
           token={selectedFrom?.token}
           amount={displayedFromAmount}
+          unitValue={exactFromAmount ? (fromUnitValue ?? t`Unavailable`) : undefined}
           max={localizedMaxFromAmount}
           actionsDisabled={!maxSettled}
           invalid={exceedsBalance || exceedsDepositCap}
@@ -505,8 +530,10 @@ export function PoolSwapPage({
         onOpenChange={setConfirmOpen}
         fromAmount={localizedQuoteFromAmount}
         fromSymbol={selectedFrom?.token.symbol ?? ""}
+        fromUnitValue={exactFromAmount ? (fromUnitValue ?? t`Unavailable`) : null}
         toAmount={localizedQuoteToAmount}
         toSymbol={selectedTo?.token.symbol ?? ""}
+        toUnitValue={exactToAmount ? (toUnitValue ?? t`Unavailable`) : null}
         feeBreakdown={quote.data?.feeBreakdown ?? null}
         feeDecimals={toDecimals}
         locale={locale}
@@ -562,15 +589,23 @@ export function PoolSwapPage({
             })
             .catch(() => null);
           if (!result) return;
-          const confirmedSendAmount = formatTokenAmountFixed(
+          const confirmedSendAmount = receiptTokenAmount(
             refreshed.data.amountInRaw,
             selectedFrom.decimals,
-            2,
           );
-          const confirmedReceiveAmount = formatTokenAmountFixed(
+          const confirmedReceiveAmount = receiptTokenAmount(
             refreshed.data.amountOutRaw,
             selectedTo.decimals,
-            2,
+          );
+          const submittedSendUnitValue = relaySnapshotUnitValue(
+            result.valuationSnapshots,
+            tokenIn,
+            confirmedSendAmount,
+          );
+          const submittedReceiveUnitValue = relaySnapshotUnitValue(
+            result.valuationSnapshots,
+            tokenOut,
+            confirmedReceiveAmount,
           );
           void navigate({
             to: "/pools/$poolAddress/swap/receipt",
@@ -587,6 +622,18 @@ export function PoolSwapPage({
               // them raw in the received voucher.
               receiveDecimals: selectedTo.decimals,
               poolName: pool.name,
+              ...(submittedSendUnitValue
+                ? {
+                    sendUoaValue: submittedSendUnitValue.value,
+                    sendUoa: submittedSendUnitValue.unit,
+                  }
+                : { sendUoaUnavailable: true }),
+              ...(submittedReceiveUnitValue
+                ? {
+                    receiveUoaValue: submittedReceiveUnitValue.value,
+                    receiveUoa: submittedReceiveUnitValue.unit,
+                  }
+                : { receiveUoaUnavailable: true }),
             },
           });
         }}
@@ -600,8 +647,10 @@ function SwapConfirmationSheet({
   onOpenChange,
   fromAmount,
   fromSymbol,
+  fromUnitValue,
   toAmount,
   toSymbol,
+  toUnitValue,
   feeBreakdown,
   feeDecimals,
   locale,
@@ -614,8 +663,10 @@ function SwapConfirmationSheet({
   onOpenChange: (open: boolean) => void;
   fromAmount: string;
   fromSymbol: string;
+  fromUnitValue: string | null;
   toAmount: string;
   toSymbol: string;
+  toUnitValue: string | null;
   feeBreakdown: PoolSwapFeeBreakdownRaw | null;
   feeDecimals: number | null;
   locale: string;
@@ -638,9 +689,11 @@ function SwapConfirmationSheet({
             <div className="border border-border bg-card">
               <SwapConfirmationRow label={<Trans>You receive</Trans>}>
                 {toAmount} {toSymbol}
+                {toUnitValue ? ` (${toUnitValue})` : ""}
               </SwapConfirmationRow>
               <SwapConfirmationRow label={<Trans>You send</Trans>}>
                 {fromAmount} {fromSymbol}
+                {fromUnitValue ? ` (${fromUnitValue})` : ""}
               </SwapConfirmationRow>
               <SwapConfirmationRow label={<Trans>Pool fee</Trans>}>
                 <PoolSwapFeeValue
@@ -737,6 +790,7 @@ function SwapField({
   label,
   token,
   amount,
+  unitValue,
   autoFocus = false,
   max,
   actionsDisabled = false,
@@ -752,6 +806,7 @@ function SwapField({
   label: string;
   token: WalletToken | undefined;
   amount: string;
+  unitValue?: string;
   autoFocus?: boolean;
   max?: string;
   /** Max stays visible but cannot be tapped while its figure is a stale one. */
@@ -818,6 +873,11 @@ function SwapField({
           aria-invalid={invalid}
         />
       </div>
+      {unitValue ? (
+        <p className="mt-1 text-end font-mono text-muted-foreground text-xs" aria-live="polite">
+          ({unitValue})
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -1004,6 +1064,39 @@ function SwapShell({ fallbackTo, message }: { fallbackTo: string; message: strin
       <p className="mt-4 text-muted-foreground text-sm">{message}</p>
     </div>
   );
+}
+
+function canonicalEnteredAmount(amount: string, decimals: number | null): string | null {
+  if (!amount || decimals === null) return null;
+  try {
+    const raw = parseTokenAmount(amount, decimals);
+    return formatTokenAmount(raw, decimals, decimals);
+  } catch {
+    return null;
+  }
+}
+
+/** Keep the established two-decimal receipt style unless it would lose raw precision. */
+function receiptTokenAmount(rawAmount: string, decimals: number): string {
+  const fixed = formatTokenAmountFixed(rawAmount, decimals, 2);
+  try {
+    if (parseTokenAmount(fixed, decimals) === rawAmount) return fixed;
+  } catch {
+    // The exact formatter below is the safe fallback.
+  }
+  return formatTokenAmount(rawAmount, decimals, decimals);
+}
+
+function swapUnitValue(
+  token: PoolSwapToken | undefined,
+  amount: string | null,
+  locale: string,
+): string | null {
+  if (!token || amount === null) return null;
+  const valuation = formatVoucherUnitValue(amount, token.voucherValue, token.voucherUoa);
+  if (!valuation) return null;
+  const localized = formatOfferingDisplayValue(valuation.value, locale);
+  return `${localized ?? valuation.value} ${valuation.unit}`;
 }
 
 function fixedEnteredAmount(amount: string, decimals: number | null, locale?: string): string {

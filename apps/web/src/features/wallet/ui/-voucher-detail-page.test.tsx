@@ -532,8 +532,36 @@ describe("VoucherDetailPage", () => {
 
     expect(await screen.findByText("Created")).toBeTruthy();
     expect(screen.getByText(/New supply/)).toBeTruthy();
-    expect(screen.getByText("1000")).toBeTruthy();
+    expect(screen.getByText("1000 MALII")).toBeTruthy();
     expect(document.body.textContent).not.toContain("0x0000");
+  });
+
+  it("shows the immutable Unit-of-Account snapshot in voucher activity", async () => {
+    mocks.transfers = [
+      {
+        id: 743841,
+        txHash: `0x${"12".repeat(32)}`,
+        dateBlock: "2026-09-30T05:27:30Z",
+        direction: "OUT",
+        counterpartyAddress: "0x2222222222222222222222222222222222222222",
+        senderAddress: mocks.address,
+        recipientAddress: "0x2222222222222222222222222222222222222222",
+        tokenAddress: ADDRESS,
+        tokenSymbol: "MALII",
+        tokenName: "Priscilah Malii",
+        tokenDecimals: 2,
+        amount: "1000",
+        success: true,
+        uoaValue: "125.5",
+        uoa: "KES",
+      },
+    ];
+
+    render(<VoucherDetailPage voucherAddress={ADDRESS} activeTab="activity" />);
+
+    expect(await screen.findByText("Sent")).toBeTruthy();
+    expect(screen.getByText("10 MALII")).toBeTruthy();
+    expect(screen.getByText("(125.5 KES)")).toBeTruthy();
   });
 
   it("puts balance and the three voucher actions above the tabs", () => {

@@ -22,6 +22,11 @@ export type OfferingDisplayPrice = {
   unit: string;
 };
 
+export type VoucherUnitValue = {
+  value: string;
+  unit: string;
+};
+
 /**
  * A plain non-negative decimal, matching the column's `>= 0` check. No sign, no
  * exponent, no separators — `NUMERIC::TEXT` emits none of those, so anything
@@ -45,6 +50,31 @@ export function formatVoucherRate(value: string | null, unit: string | null): Vo
   if (!trimmedUnit || !trimmedValue || !DECIMAL.test(trimmedValue)) return null;
 
   return { value: trimScale(trimmedValue), unit: trimmedUnit };
+}
+
+/**
+ * Restates a voucher amount in the issuer's saved unit of account.
+ *
+ * The result stays canonical decimal text so callers can persist an exact
+ * informational snapshot and localize it only at the display boundary. A zero
+ * amount is legitimate; a zero rate is not, because the voucher profile treats
+ * it as unset rather than claiming the voucher has no value.
+ */
+export function formatVoucherUnitValue(
+  amount: string,
+  voucherValue: string | null,
+  voucherUoa: string | null,
+): VoucherUnitValue | null {
+  const trimmedAmount = amount.trim();
+  if (!DECIMAL.test(trimmedAmount)) return null;
+
+  const rate = formatVoucherRate(voucherValue, voucherUoa);
+  if (!rate || isZero(rate.value)) return null;
+
+  return {
+    value: multiplyDecimals(trimScale(trimmedAmount), rate.value),
+    unit: rate.unit,
+  };
 }
 
 /**
@@ -74,13 +104,8 @@ export function formatOfferingDisplayPrice(
   const unitPrice = formatOfferingPrice(price);
   if (!unitPrice) return null;
 
-  const rate = formatVoucherRate(voucherValue, voucherUoa);
-  if (rate && !isZero(rate.value)) {
-    return {
-      value: multiplyDecimals(unitPrice.value, rate.value),
-      unit: rate.unit,
-    };
-  }
+  const converted = formatVoucherUnitValue(unitPrice.value, voucherValue, voucherUoa);
+  if (converted) return converted;
 
   const symbol = voucherSymbol.trim();
   return symbol ? { value: unitPrice.value, unit: symbol } : null;
