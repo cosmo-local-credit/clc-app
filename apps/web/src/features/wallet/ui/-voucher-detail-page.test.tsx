@@ -561,7 +561,7 @@ describe("VoucherDetailPage", () => {
 
     expect(await screen.findByText("Sent")).toBeTruthy();
     expect(screen.getByText("10 MALII")).toBeTruthy();
-    expect(screen.getByText("(125.5 KES)")).toBeTruthy();
+    expect(screen.getByText("(125.50 KES)")).toBeTruthy();
   });
 
   it("puts balance and the three voucher actions above the tabs", () => {

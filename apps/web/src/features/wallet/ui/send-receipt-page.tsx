@@ -6,7 +6,7 @@ import {
   type OfferingOrderLabels,
   type OfferingOrderLine,
 } from "@clc/core/features/offerings/order";
-import { formatOfferingDisplayValue } from "@clc/core/features/market/logic";
+import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
 import { buildSendSharePermission, sendShareFormSchema } from "@clc/core/features/wallet/logic";
 import { getFieldError, useForm } from "@clc/core/lib/forms";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -137,7 +137,7 @@ export function SendReceiptPage({
         )?.label ??
         (submittedRecipientLabel?.trim() || null));
   const localizedUoaValue = uoaValue
-    ? formatOfferingDisplayValue(uoaValue, i18n.locales?.[0] ?? i18n.locale)
+    ? formatUnitOfAccountDisplayValue(uoaValue, i18n.locales?.[0] ?? i18n.locale)
     : null;
   const uoaLabel =
     localizedUoaValue && uoa

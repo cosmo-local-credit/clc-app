@@ -1,6 +1,6 @@
 import type { PoolSwapFeeBreakdownRaw } from "@clc/core/features/pool-swaps/logic";
 import {
-  formatOfferingDisplayValue,
+  formatUnitOfAccountDisplayValue,
   formatVoucherUnitValue,
 } from "@clc/core/features/market/logic";
 import {
@@ -1095,7 +1095,7 @@ function swapUnitValue(
   if (!token || amount === null) return null;
   const valuation = formatVoucherUnitValue(amount, token.voucherValue, token.voucherUoa);
   if (!valuation) return null;
-  const localized = formatOfferingDisplayValue(valuation.value, locale);
+  const localized = formatUnitOfAccountDisplayValue(valuation.value, locale);
   return `${localized ?? valuation.value} ${valuation.unit}`;
 }
 

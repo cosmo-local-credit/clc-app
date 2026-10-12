@@ -89,7 +89,7 @@ describe("ActivityPage", () => {
 
     expect(await screen.findByText("Received")).toBeTruthy();
     expect(screen.getByText("1.23 USD₮")).toBeTruthy();
-    expect(screen.getByText("(3.0864175 KES)")).toBeTruthy();
+    expect(screen.getByText("(3.09 KES)")).toBeTruthy();
     expect(document.body.textContent).toContain("0x27c1…6c8E4");
     expect(document.body.textContent).toContain(formatTransferDate("2026-07-01T12:20:29Z"));
   });
@@ -185,9 +185,7 @@ describe("ActivityPage", () => {
     expect(within(dialog).getByText("From")).toBeTruthy();
     expect(within(dialog).getByText("To")).toBeTruthy();
     expect(within(dialog).getByText("Amount").parentElement?.textContent).toContain("1.23 USD₮");
-    expect(within(dialog).getByText("Amount").parentElement?.textContent).toContain(
-      "3.0864175 KES",
-    );
+    expect(within(dialog).getByText("Amount").parentElement?.textContent).toContain("3.09 KES");
     expect(within(dialog).getByRole("link", { name: "View voucher" }).getAttribute("href")).toBe(
       "/vouchers/0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e?from=wallet",
     );

@@ -42,6 +42,33 @@ export function formatOfferingDisplayValue(value: string, locale?: string): stri
   return formatTokenAmountFixed(`${whole}${fraction}`, fraction.length, fraction.length, locale);
 }
 
+/**
+ * Formats an informational Unit-of-Account value to currency-like precision.
+ *
+ * The exact canonical value remains the source of truth for snapshots and
+ * calculations. Only its presentation is rounded, using integer arithmetic so
+ * large values never cross through `Number`. A positive value below one
+ * hundredth remains visible instead of being presented as zero.
+ */
+export function formatUnitOfAccountDisplayValue(value: string, locale?: string): string | null {
+  const trimmed = value.trim();
+  if (!DECIMAL.test(trimmed)) return null;
+
+  const [whole = "", fraction = ""] = trimmed.split(".");
+  const unscaled = BigInt(`${whole}${fraction}`);
+  const firstTwoFractionDigits = fraction.padEnd(2, "0").slice(0, 2);
+  if (unscaled > 0n && BigInt(whole) === 0n && firstTwoFractionDigits === "00") {
+    return `<${formatTokenAmountFixed("1", 2, 2, locale)}`;
+  }
+
+  let hundredths = BigInt(whole) * 100n + BigInt(firstTwoFractionDigits || "0");
+  if (fraction.length > 2 && (fraction[2] ?? "0") >= "5") {
+    hundredths += 1n;
+  }
+
+  return formatTokenAmountFixed(hundredths.toString(), 2, 2, locale);
+}
+
 export function formatVoucherRate(value: string | null, unit: string | null): VoucherRate | null {
   // The unit is free text (KSH, Ksh, usd, Hour all occur), so it is only
   // trimmed. Normalising it would misreport what the issuer wrote.
