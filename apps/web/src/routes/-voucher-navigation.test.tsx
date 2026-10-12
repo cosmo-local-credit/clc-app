@@ -240,7 +240,7 @@ function renderAt(initialPath: string) {
       const activeTab =
         tab === "activity" || tab === "info" || tab === "reviews" || tab === "posts"
           ? tab
-          : "offerings";
+          : undefined;
       return voucherAddress ? (
         <VoucherDetailPage
           voucherAddress={voucherAddress}
@@ -286,9 +286,7 @@ async function openVoucherPageFromCard() {
 }
 
 describe("voucher navigation", () => {
-  // Tabs are panels on one screen, not destinations: switching them replaces the
-  // entry so a single Back leaves the voucher instead of retracing the tabs.
-  it("opens the unified voucher page and returns to the map in one Back after tab switches", async () => {
+  it("opens the continuous voucher page and returns to the map in one Back", async () => {
     const router = renderAt("/");
     await waitFor(() => expect(screen.getByTestId("marker-2710")).toBeTruthy());
 
@@ -297,13 +295,9 @@ describe("voucher navigation", () => {
     await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toBeTruthy());
     expect(router.state.location.pathname).toBe(`/vouchers/${VOUCHER_ADDRESS}`);
     expect(screen.getByText("No offerings yet")).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("tab", { name: "Info" }));
-    await waitFor(() => expect(screen.getByText("issuer@example.org")).toBeTruthy());
-    expect(router.state.location.search).toMatchObject({ tab: "info" });
-
-    fireEvent.click(screen.getByRole("tab", { name: "Posts" }));
-    await waitFor(() => expect(screen.getByText("No posts yet.")).toBeTruthy());
+    expect(screen.getByText("issuer@example.org")).toBeTruthy();
+    expect(screen.getByText("No posts yet.")).toBeTruthy();
+    expect(screen.queryByRole("tab")).toBeNull();
 
     await act(async () => {
       router.history.back();
@@ -321,6 +315,9 @@ describe("voucher navigation", () => {
     );
     expect(getMarketVoucher).toHaveBeenCalledWith(VOUCHER_ADDRESS, expect.anything());
     expect(screen.getByRole("link", { name: "Market" }).getAttribute("href")).toBe("/");
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Info" })),
+    );
   });
 
   // Opened from the wallet balances, Back must name — and fall back to — the
@@ -343,8 +340,7 @@ describe("voucher navigation", () => {
     await openVoucherPageFromCard();
     await waitFor(() => expect(router.state.location.pathname).not.toBe("/"));
 
-    // Rendered from cache: detail-backed info opens with no second request.
-    fireEvent.click(screen.getByRole("tab", { name: "Info" }));
+    // Rendered from cache: detail-backed info is already part of the page.
     expect(await screen.findByText("1 MALII = 10 KSH")).toBeTruthy();
     expect(getMarketVoucher).toHaveBeenCalledTimes(1);
   });

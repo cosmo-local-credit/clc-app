@@ -165,13 +165,11 @@ export function WalletPage({ address }: { address?: string }) {
         </div>
       </section>
 
-      <MyCatalogSection />
-
       {!vouchersReady ? (
-        <section aria-labelledby="your-vouchers-title">
+        <section aria-labelledby="my-vouchers-title">
           <SectionHeader
-            id="your-vouchers-title"
-            title={<Trans>Your Vouchers</Trans>}
+            id="my-vouchers-title"
+            title={<Trans>My Vouchers</Trans>}
             action={<Trans>View all</Trans>}
             onAction={() => {
               void navigate({ to: "/wallet/vouchers" });
@@ -225,10 +223,10 @@ export function WalletPage({ address }: { address?: string }) {
               </div>
             </section>
           ) : null}
-          <section aria-labelledby="your-vouchers-title">
+          <section aria-labelledby="my-vouchers-title">
             <SectionHeader
-              id="your-vouchers-title"
-              title={<Trans>Your Vouchers</Trans>}
+              id="my-vouchers-title"
+              title={<Trans>My Vouchers</Trans>}
               action={<Trans>View all</Trans>}
               onAction={() => {
                 void navigate({ to: "/wallet/vouchers" });
@@ -264,10 +262,10 @@ export function WalletPage({ address }: { address?: string }) {
         </>
       )}
 
-      <section aria-labelledby="your-pools-title">
+      <section aria-labelledby="my-pools-title">
         <SectionHeader
-          id="your-pools-title"
-          title={<Trans>Your Pools</Trans>}
+          id="my-pools-title"
+          title={<Trans>My Pools</Trans>}
           action={<Trans>All pools</Trans>}
           actionTo="/pools"
         />
@@ -333,6 +331,8 @@ export function WalletPage({ address }: { address?: string }) {
           ))}
         </div>
       </section>
+
+      <MyCatalogSection />
 
       <VoucherSheet
         placeholder={

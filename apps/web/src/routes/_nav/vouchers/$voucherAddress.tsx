@@ -22,7 +22,7 @@ function VoucherDetailRoute() {
   return (
     <VoucherDetailPage
       voucherAddress={voucherAddress}
-      activeTab={tab ?? "offerings"}
+      activeTab={tab}
       origin={from ?? "market"}
       poolAddress={poolAddress}
     />

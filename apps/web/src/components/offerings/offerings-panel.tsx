@@ -82,6 +82,7 @@ export function OfferingsPanel({
   management,
   resolveVoucherRate,
   maxItems,
+  manualPageSize,
   autoLoadMore = true,
   openVoucherPageAction = "navigate",
   directNavigation = false,
@@ -106,6 +107,8 @@ export function OfferingsPanel({
   resolveVoucherRate?: (offering: Offering) => OfferingVoucherRate | null;
   /** A compact preview may intentionally show only the first few rows. */
   maxItems?: number;
+  /** A continuous detail page reveals this many rows per explicit request. */
+  manualPageSize?: number;
   /** Infinite catalog screens load on intersection; bounded previews do not. */
   autoLoadMore?: boolean;
   /** The voucher page itself only needs to dismiss the informational rollup. */
@@ -115,15 +118,21 @@ export function OfferingsPanel({
   showLocation?: boolean;
   distanceOrigin?: { lat: number; lng: number } | null;
 }) {
+  const { t } = useLingui();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [manualLimit, setManualLimit] = useState(manualPageSize ?? 0);
+  const manualIncrement = manualPageSize ?? 0;
   const offerings = query.data?.pages.flatMap((page) => page.offerings) ?? [];
-  const visibleOfferings = maxItems === undefined ? offerings : offerings.slice(0, maxItems);
+  const itemLimit = maxItems ?? (manualPageSize ? manualLimit : undefined);
+  const visibleOfferings = itemLimit === undefined ? offerings : offerings.slice(0, itemLimit);
+  const hasManualNext = !!manualPageSize && (manualLimit < offerings.length || query.hasNextPage);
 
   useEffect(() => {
     const target = loadMoreRef.current;
     if (
       !target ||
       suppressed ||
+      !!manualPageSize ||
       !autoLoadMore ||
       !query.hasNextPage ||
       typeof IntersectionObserver === "undefined"
@@ -138,7 +147,14 @@ export function OfferingsPanel({
     });
     observer.observe(target);
     return () => observer.disconnect();
-  }, [autoLoadMore, suppressed, query.fetchNextPage, query.hasNextPage, query.isFetchingNextPage]);
+  }, [
+    autoLoadMore,
+    manualPageSize,
+    suppressed,
+    query.fetchNextPage,
+    query.hasNextPage,
+    query.isFetchingNextPage,
+  ]);
 
   return (
     <div {...props}>
@@ -194,10 +210,28 @@ export function OfferingsPanel({
       ) : null}
 
       <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-      {autoLoadMore && query.isFetchingNextPage ? (
+      {autoLoadMore && !manualPageSize && query.isFetchingNextPage ? (
         <p className="py-3 text-center text-muted-foreground text-xs">
           <Trans>Loading more…</Trans>
         </p>
+      ) : null}
+      {hasManualNext ? (
+        <Button
+          variant="outline"
+          className="mt-3 h-11 w-full bg-card"
+          disabled={query.isFetchingNextPage}
+          onClick={() => {
+            if (manualLimit >= offerings.length && query.hasNextPage) {
+              void Promise.resolve(query.fetchNextPage()).then(() =>
+                setManualLimit((current) => current + manualIncrement),
+              );
+              return;
+            }
+            setManualLimit((current) => current + manualIncrement);
+          }}
+        >
+          {query.isFetchingNextPage ? t`Loading…` : t`Load more`}
+        </Button>
       ) : null}
     </div>
   );

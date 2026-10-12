@@ -47,7 +47,9 @@ vi.mock("@tanstack/react-router", () => ({
 
 // The profile nudge reads the connected wallet; it has its own test.
 vi.mock("./complete-profile-banner", () => ({ CompleteProfileBanner: () => null }));
-vi.mock("#/components/catalogs/my-catalog-section", () => ({ MyCatalogSection: () => null }));
+vi.mock("#/components/catalogs/my-catalog-section", () => ({
+  MyCatalogSection: () => <section aria-label="My catalog">My catalog</section>,
+}));
 
 import { WalletPage } from "./wallet-page";
 
@@ -230,7 +232,7 @@ describe("WalletPage", () => {
     renderWithQueryClient(<WalletPage address={ADDRESS} />);
 
     const holdings = within(await screen.findByRole("region", { name: "Holdings" }));
-    const issued = within(screen.getByRole("region", { name: "Your Vouchers" }));
+    const issued = within(screen.getByRole("region", { name: "My Vouchers" }));
     expect(holdings.getByText("USD₮")).toBeTruthy();
     expect(holdings.queryByText("WLLR")).toBeNull();
     expect(issued.getByText("WLLR")).toBeTruthy();
@@ -238,7 +240,9 @@ describe("WalletPage", () => {
     expect(issued.queryByText("USD₮")).toBeNull();
 
     const text = document.body.textContent ?? "";
-    expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("Your Vouchers"));
+    expect(text.indexOf("Holdings")).toBeLessThan(text.indexOf("My Vouchers"));
+    expect(text.indexOf("My Vouchers")).toBeLessThan(text.indexOf("My Pools"));
+    expect(text.indexOf("My Pools")).toBeLessThan(text.indexOf("My catalog"));
   });
 
   it("treats a token the catalog does not list as a holding", async () => {

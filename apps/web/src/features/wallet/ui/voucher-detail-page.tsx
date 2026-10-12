@@ -5,22 +5,11 @@ import type { VoucherRef } from "@clc/core/features/catalog/logic";
 import { formatTokenAmount, isVoucherCreationTransfer } from "@clc/core/features/wallet/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  Suspense,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentProps,
-  type ReactNode,
-} from "react";
+import { Suspense, useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import {
   RiArrowLeftDownLine,
   RiArrowRightUpLine,
-  RiCoinLine,
-  RiGroupLine,
   RiNavigationLine,
-  RiSendPlane2Line,
   RiSparkling2Line,
 } from "react-icons/ri";
 import { useConnection } from "wagmi";
@@ -30,6 +19,13 @@ import { AddToCatalogButton } from "#/components/catalogs/add-to-catalog-button"
 import { VoucherReviewsPanel } from "#/components/reviews/voucher-reviews-panel";
 import { VoucherAbout } from "#/components/vouchers/voucher-about";
 import { VoucherOfferingsPanel } from "#/components/vouchers/voucher-offerings-panel";
+import { useMarketDistanceLabel } from "#/components/vouchers/voucher-labels";
+import {
+  ShareVoucherButton,
+  VoucherActionRow,
+  VoucherReviewSummaryContent,
+  VoucherTagList,
+} from "#/components/vouchers/voucher-summary";
 import { ReportList } from "#/components/reports/report-list";
 import { LocationMap } from "#/components/ui/location-map.lazy";
 import { Skeleton } from "#/components/ui/skeleton";
@@ -42,12 +38,13 @@ import {
   type WalletToken,
 } from "#/components/wallet";
 import { useMarketVoucherDetail } from "#/features/home/hooks/use-market-voucher-detail";
+import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
 import { useVoucherReportsInfinite } from "#/features/home/hooks/use-reports";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { usePoolVouchersInfinite } from "#/features/pools/hooks/use-pool-vouchers";
 import { poolVoucherToWalletToken } from "#/features/pools/logic/pool-voucher-display";
 import {
-  useAccountTokensInfinite,
+  useAllAccountTokens,
   useAccountTransfersInfinite,
 } from "#/features/wallet/hooks/use-account-balances";
 import { accountTokenToWalletToken } from "#/features/wallet/logic/account-token-display";
@@ -65,9 +62,7 @@ import { VoucherContractActionsPanel } from "./voucher-contract-actions-panel";
 export type { VoucherOrigin } from "#/lib/navigation/voucher-navigation-owner";
 
 type TxKind = "in" | "out";
-type VoucherDetailTab = "offerings" | "activity" | "info" | "reviews" | "posts";
-
-const VOUCHER_TABS: VoucherDetailTab[] = ["offerings", "info", "activity", "reviews", "posts"];
+type VoucherDetailSection = "offerings" | "activity" | "info" | "reviews" | "posts";
 
 const TX_ICON: Record<TxKind, ReactNode> = {
   in: <RiArrowLeftDownLine className="size-3.5" aria-hidden="true" />,
@@ -86,7 +81,8 @@ export function VoucherDetailPage({
   poolAddress,
 }: {
   voucherAddress: string;
-  activeTab: VoucherDetailTab;
+  /** A legacy tab URL now identifies the section to focus on first render. */
+  activeTab?: VoucherDetailSection;
   origin?: VoucherOrigin;
   poolAddress?: string;
 }) {
@@ -107,11 +103,11 @@ export function VoucherDetailPage({
     to: voucherNavigation.to,
     search: voucherNavigation.search,
   };
-  const tokensQuery = useAccountTokensInfinite(address, { perPage: 50 });
+  const holdingsAddress = auth.isAuthenticated ? (auth.session?.address ?? undefined) : undefined;
+  const tokensQuery = useAllAccountTokens(holdingsAddress);
   const poolVouchersQuery = usePoolVouchersInfinite(poolAddress);
   const normalizedVoucherAddress = voucherAddress.toLowerCase();
-  const fetchedTokens =
-    tokensQuery.data?.pages.flatMap((page) => page.tokens.map(accountTokenToWalletToken)) ?? [];
+  const fetchedTokens = tokensQuery.tokens.map(accountTokenToWalletToken);
   const fetchedToken = fetchedTokens.find((item) => item.id === normalizedVoucherAddress);
   const poolVoucher = poolVouchersQuery.data?.pages
     .flatMap((page) => page.vouchers)
@@ -130,8 +126,33 @@ export function VoucherDetailPage({
   const detailAddress = baseToken?.contractAddress ?? voucherAddress;
   const detailQuery = useMarketVoucherDetail(detailAddress);
   const detail = detailQuery.data;
+  const distanceOrigin = useDiscoveryDistanceOrigin(holdingsAddress ?? "voucher-detail");
+  const distanceTarget =
+    typeof (detail?.lat ?? baseToken?.lat) === "number" &&
+    typeof (detail?.lng ?? baseToken?.lng) === "number"
+      ? { lat: (detail?.lat ?? baseToken?.lat)!, lng: (detail?.lng ?? baseToken?.lng)! }
+      : null;
+  const distanceLabel = useMarketDistanceLabel(distanceOrigin, distanceTarget);
   const supportingDataPending =
-    (!!address && tokensQuery.isPending) || (!!poolAddress && poolVouchersQuery.isPending);
+    (!!holdingsAddress && tokensQuery.isPending) || (!!poolAddress && poolVouchersQuery.isPending);
+
+  useEffect(() => {
+    if (!activeTab || detailQuery.isPending || supportingDataPending) return;
+    const frame = requestAnimationFrame(() => {
+      const heading = document.getElementById(`voucher-section-${activeTab}`);
+      if (!heading) return;
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView({
+        behavior:
+          typeof window.matchMedia === "function" &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
+        block: "start",
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeTab, detailQuery.isPending, supportingDataPending]);
 
   if (!baseToken && !detail && (detailQuery.isPending || supportingDataPending)) {
     return <VoucherShell back={back} message={t`Loading voucher…`} />;
@@ -183,7 +204,15 @@ export function VoucherDetailPage({
   const lat = detail?.lat ?? token.lat ?? null;
   const lng = detail?.lng ?? token.lng ?? null;
   const sendToken = contractAddress ?? token.id;
-  const issuerAddress = token.owner ?? null;
+  const holding = tokensQuery.tokens.find(
+    (item) => item.tokenAddress.toLowerCase() === sendToken.toLowerCase(),
+  );
+  const hasPositiveBalance =
+    auth.isAuthenticated &&
+    !!holding &&
+    /^\d+$/.test(holding.balance) &&
+    BigInt(holding.balance) > 0n;
+  const place = distanceLabel ?? locationName;
   const canEditDetails =
     auth.isAuthenticated &&
     !!detail &&
@@ -196,16 +225,6 @@ export function VoucherDetailPage({
     reportChainId && contractAddress
       ? { chainId: reportChainId, address: contractAddress as VoucherRef["address"] }
       : undefined;
-  // Redeeming is sending the voucher back to whoever issued it.
-  const redeemContent = (
-    <>
-      <RiCoinLine className="size-4" aria-hidden="true" />
-      <span className="text-[0.6875rem] font-semibold">
-        <Trans>Redeem</Trans>
-      </span>
-    </>
-  );
-
   return (
     <div className="flex min-h-[100svh] flex-col bg-background px-6 pt-[calc(env(safe-area-inset-top)+0.875rem)] pb-bottom-nav">
       <BackChevron label={back.label} to={back.to} search={back.search} />
@@ -218,9 +237,17 @@ export function VoucherDetailPage({
           size={56}
         />
         <div className="min-w-0 flex-1">
-          <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
-            {token.name}
-          </h1>
+          <div className="flex min-w-0 items-start gap-1">
+            <h1 className="min-w-0 flex-1 font-heading text-[1.75rem] font-bold leading-tight [overflow-wrap:anywhere]">
+              {token.name}
+            </h1>
+            <ShareVoucherButton
+              name={token.name}
+              address={contractAddress ?? voucherAddress}
+              destination="detail"
+              className="-me-3 -mt-2"
+            />
+          </div>
           <p
             aria-label={t`Balance`}
             className="mt-1.5 font-heading text-[1.375rem] font-bold leading-none tracking-tight"
@@ -233,176 +260,121 @@ export function VoucherDetailPage({
         </div>
       </div>
 
-      <div className="my-4 grid grid-cols-3 gap-2" aria-label={t`Voucher actions`}>
-        {issuerAddress ? (
-          <Button asChild className="h-14 flex-col gap-1 px-1">
-            <Link to="/wallet/send/amount" search={{ token: sendToken, recipient: issuerAddress }}>
-              {redeemContent}
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            className="h-14 flex-col gap-1 px-1 disabled:bg-primary disabled:text-primary-foreground disabled:opacity-70"
-            disabled
-          >
-            {redeemContent}
-          </Button>
-        )}
-        <Button asChild variant="outline" className="h-14 flex-col gap-1 px-1">
-          <Link to="/wallet/send" search={{ token: sendToken }}>
-            <RiSendPlane2Line className="size-4" aria-hidden="true" />
-            <span className="text-[0.6875rem] font-semibold">
-              <Trans>Send</Trans>
-            </span>
-          </Link>
-        </Button>
-        <Button asChild variant="info" className="h-14 flex-col gap-1 px-1">
-          <Link
-            to="/market"
-            search={{
-              scope: "pools",
-              out_voucher: (contractAddress ?? voucherAddress).toLowerCase(),
-            }}
-          >
-            <RiGroupLine className="size-4" aria-hidden="true" />
-            <span className="text-[0.6875rem] font-semibold">
-              <Trans>Pools</Trans>
-            </span>
-          </Link>
-        </Button>
-      </div>
+      <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-muted-foreground text-xs">
+        <VoucherReviewSummaryContent address={contractAddress ?? voucherAddress} place={place} />
+      </p>
+      <VoucherTagList tags={detail?.tags} className="mt-2" />
+
+      <VoucherActionRow
+        address={sendToken}
+        name={token.name}
+        ownerAddress={detail?.ownerAddress}
+        hasPositiveBalance={hasPositiveBalance}
+        locationName={locationName}
+        lat={lat}
+        lng={lng}
+        phone={token.phone}
+        website={website}
+        className="my-3"
+      />
 
       {detail ? (
-        <div className="mb-4">
+        <div className="mb-6">
           <AddToCatalogButton kind="voucher" resourceId={detail.id} address={detail.address} />
         </div>
       ) : null}
 
-      <div
-        className="mb-3 grid grid-cols-5 border border-border bg-card p-1"
-        role="tablist"
-        aria-label={t`Voucher details`}
-      >
-        {VOUCHER_TABS.map((tab) => {
-          const label =
-            tab === "offerings" ? (
-              <Trans>Offerings</Trans>
-            ) : tab === "activity" ? (
-              <Trans>Activity</Trans>
-            ) : tab === "info" ? (
-              <Trans>Info</Trans>
-            ) : tab === "reviews" ? (
-              <Trans>Reviews</Trans>
-            ) : (
-              <Trans>Posts</Trans>
-            );
-          const className = [
-            "flex h-10 min-w-0 items-center justify-center px-1 text-[0.6875rem] font-semibold",
-            activeTab === tab ? "bg-foreground text-background" : "text-muted-foreground",
-          ].join(" ");
+      <div className="space-y-8 pb-6">
+        <VoucherDetailSection id="offerings" title={<Trans>Offerings</Trans>}>
+          <VoucherOfferingsPanel
+            key={contractAddress ?? voucherAddress}
+            voucherAddress={contractAddress}
+            voucherSymbol={token.symbol}
+            voucherValue={voucherValue}
+            voucherUoa={voucherUoa}
+            ownerAddress={detail?.ownerAddress ?? null}
+            isKnownEmpty={detail?.kind === "voucher"}
+            openVoucherPageAction="close"
+            presentation="section"
+            manualPageSize={3}
+            autoLoadMore={false}
+          />
+        </VoucherDetailSection>
 
-          if (activeTab === tab) {
-            return (
-              <button
-                key={tab}
-                type="button"
-                id={`voucher-tab-${tab}`}
-                role="tab"
-                aria-selected="true"
-                aria-controls={`voucher-panel-${tab}`}
-                className={className}
-              >
-                {label}
-              </button>
-            );
-          }
+        <VoucherDetailSection id="reviews" title={<Trans>Reviews</Trans>}>
+          <VoucherReviewsPanel
+            key={contractAddress ?? voucherAddress}
+            address={contractAddress ?? voucherAddress}
+            presentation="section"
+          />
+        </VoucherDetailSection>
 
-          return (
-            <Link
-              key={tab}
-              id={`voucher-tab-${tab}`}
-              role="tab"
-              aria-selected="false"
-              aria-controls={`voucher-panel-${tab}`}
-              to="/vouchers/$voucherAddress"
-              params={{ voucherAddress }}
-              search={{
-                tab: tab === "offerings" ? undefined : tab,
-                from: origin === "market" ? undefined : origin,
-                poolAddress,
-              }}
-              // Switching panel on the same screen is not a navigation: Back
-              // must leave the voucher, not walk back through visited tabs.
-              replace
-              resetScroll={false}
-              className={className}
-            >
-              {label}
-            </Link>
-          );
-        })}
+        <VoucherDetailSection id="posts" title={<Trans>Posts</Trans>}>
+          <VoucherPostsPanel
+            voucher={reportVoucher}
+            voucherName={token.name}
+            voucherDataPending={detailQuery.isPending || supportingDataPending}
+            canWritePost={canEditDetails}
+          />
+        </VoucherDetailSection>
+
+        <VoucherDetailSection id="info" title={<Trans>Info</Trans>}>
+          <VoucherInfoPanel
+            rate={rate}
+            symbol={token.symbol}
+            description={description}
+            contractAddress={contractAddress}
+            email={token.email ?? null}
+            website={website}
+            phone={token.phone ?? null}
+            terms={terms}
+            issuerAddress={token.owner ?? null}
+            locationName={locationName}
+            lat={lat}
+            lng={lng}
+            editable={canEditDetails ? detail : null}
+            contractActions={{
+              tokenAddress: contractAddress,
+              tokenSymbol: token.symbol,
+              tokenDecimals: token.tokenDecimals,
+              ownerAddress: token.owner ?? null,
+              walletAddress: address,
+              onRetired: () => {
+                void navigate({ to: back.to, search: back.search, replace: true });
+              },
+            }}
+          />
+        </VoucherDetailSection>
+
+        <VoucherDetailSection id="activity" title={<Trans>Activity</Trans>}>
+          <VoucherActivityPanel accountAddress={address} contractAddress={contractAddress} />
+        </VoucherDetailSection>
       </div>
-
-      {activeTab === "offerings" ? (
-        <VoucherOfferingsPanel
-          voucherAddress={contractAddress}
-          voucherSymbol={token.symbol}
-          voucherValue={voucherValue}
-          voucherUoa={voucherUoa}
-          ownerAddress={detail?.ownerAddress ?? null}
-          isKnownEmpty={detail?.kind === "voucher"}
-          openVoucherPageAction="close"
-        />
-      ) : null}
-      {activeTab === "activity" ? (
-        <VoucherActivityPanel accountAddress={address} contractAddress={contractAddress} />
-      ) : null}
-      {activeTab === "info" ? (
-        <VoucherInfoPanel
-          rate={rate}
-          symbol={token.symbol}
-          description={description}
-          contractAddress={contractAddress}
-          email={token.email ?? null}
-          website={website}
-          phone={token.phone ?? null}
-          terms={terms}
-          issuerAddress={token.owner ?? null}
-          locationName={locationName}
-          lat={lat}
-          lng={lng}
-          editable={canEditDetails ? detail : null}
-          contractActions={{
-            tokenAddress: contractAddress,
-            tokenSymbol: token.symbol,
-            tokenDecimals: token.tokenDecimals,
-            ownerAddress: token.owner ?? null,
-            walletAddress: address,
-            // A retired voucher's page no longer resolves, so leave for wherever
-            // Back already points — the pool, the wallet or the market the
-            // viewer arrived from. `replace` so Back does not return them to a
-            // screen that would now fail to load.
-            onRetired: () => {
-              void navigate({ to: back.to, search: back.search, replace: true });
-            },
-          }}
-        />
-      ) : null}
-      {activeTab === "posts" ? (
-        <VoucherPostsPanel
-          voucher={reportVoucher}
-          voucherName={token.name}
-          voucherDataPending={detailQuery.isPending || supportingDataPending}
-          canWritePost={canEditDetails}
-        />
-      ) : null}
-      {activeTab === "reviews" ? (
-        <VoucherReviewsPanel
-          key={contractAddress ?? voucherAddress}
-          address={contractAddress ?? voucherAddress}
-        />
-      ) : null}
     </div>
+  );
+}
+
+function VoucherDetailSection({
+  id,
+  title,
+  children,
+}: {
+  id: VoucherDetailSection;
+  title: ReactNode;
+  children: ReactNode;
+}) {
+  const headingID = `voucher-section-${id}`;
+  return (
+    <section aria-labelledby={headingID}>
+      <h2
+        id={headingID}
+        tabIndex={-1}
+        className="mb-3 scroll-mt-4 font-heading text-[1.375rem] font-semibold leading-tight tracking-[-0.02em] focus:outline-none"
+      >
+        {title}
+      </h2>
+      {children}
+    </section>
   );
 }
 
@@ -424,24 +396,8 @@ function VoucherPostsPanel({
 }) {
   const { t } = useLingui();
   const auth = useAuthStatus();
-  const reportsQuery = useVoucherReportsInfinite(voucher, 20, auth.isAuthenticated && !!voucher);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const reportsQuery = useVoucherReportsInfinite(voucher, 3, auth.isAuthenticated && !!voucher);
   const reports = reportsQuery.data?.pages.flatMap((page) => page.reports) ?? [];
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !reportsQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting && !reportsQuery.isFetchingNextPage) {
-        void reportsQuery.fetchNextPage();
-      }
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [reportsQuery.fetchNextPage, reportsQuery.hasNextPage, reportsQuery.isFetchingNextPage]);
 
   let content: ReactNode;
   if (auth.isLoading || (auth.isAuthenticated && !voucher && voucherDataPending)) {
@@ -495,12 +451,7 @@ function VoucherPostsPanel({
   }
 
   return (
-    <div
-      id="voucher-panel-posts"
-      role="tabpanel"
-      aria-labelledby="voucher-tab-posts"
-      className="space-y-2"
-    >
+    <div className="space-y-2">
       {/* Writing about this voucher starts here as well as on the Posts screen.
           The editor is the same one either way — the voucher travels in the URL
           and arrives already linked. Only the issuer (or a superadmin) sees it:
@@ -516,11 +467,15 @@ function VoucherPostsPanel({
         </Button>
       ) : null}
       {content}
-      <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-      {reportsQuery.isFetchingNextPage ? (
-        <p className="text-center text-muted-foreground text-xs">
-          <Trans>Loading more…</Trans>
-        </p>
+      {reportsQuery.hasNextPage ? (
+        <Button
+          variant="outline"
+          className="h-11 w-full bg-card"
+          disabled={reportsQuery.isFetchingNextPage}
+          onClick={() => void reportsQuery.fetchNextPage()}
+        >
+          {reportsQuery.isFetchingNextPage ? t`Loading…` : t`Load more`}
+        </Button>
       ) : null}
     </div>
   );
@@ -536,7 +491,7 @@ function VoucherActivityPanel({
   const { i18n } = useLingui();
   const transfersQuery = useAccountTransfersInfinite(accountAddress, { poll: true });
   const [selectedTransfer, setSelectedTransfer] = useState<TransferDetails | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
   const transfers = useMemo(() => {
     const allTransfers = transfersQuery.data?.pages.flatMap((page) => page.transfers) ?? [];
     if (!contractAddress) return allTransfers;
@@ -544,31 +499,12 @@ function VoucherActivityPanel({
       (transfer) => transfer.tokenAddress.toLowerCase() === contractAddress.toLowerCase(),
     );
   }, [contractAddress, transfersQuery.data]);
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !transfersQuery.hasNextPage || typeof IntersectionObserver === "undefined") {
-      return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (entry?.isIntersecting && !transfersQuery.isFetchingNextPage) {
-        void transfersQuery.fetchNextPage();
-      }
-    });
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [transfersQuery.fetchNextPage, transfersQuery.hasNextPage, transfersQuery.isFetchingNextPage]);
+  const visibleTransfers = transfers.slice(0, visibleCount);
+  const hasMoreTransfers = visibleCount < transfers.length || transfersQuery.hasNextPage;
 
   return (
     <>
-      <div
-        id="voucher-panel-activity"
-        className="border border-border bg-card"
-        role="tabpanel"
-        aria-labelledby="voucher-tab-activity"
-      >
+      <div className="border border-border bg-card">
         {!accountAddress ? (
           <div className="p-3 text-muted-foreground text-sm">
             <Trans>Sign in to view activity.</Trans>
@@ -594,12 +530,15 @@ function VoucherActivityPanel({
             </Button>
           </div>
         ) : null}
-        {accountAddress && transfersQuery.isSuccess && transfers.length === 0 ? (
+        {accountAddress &&
+        transfersQuery.isSuccess &&
+        transfers.length === 0 &&
+        !transfersQuery.hasNextPage ? (
           <div className="p-3 text-muted-foreground text-sm">
             <Trans>No activity yet.</Trans>
           </div>
         ) : null}
-        {transfers.map((transfer, index, list) => {
+        {visibleTransfers.map((transfer, index, list) => {
           const kind = transfer.direction === "IN" ? "in" : "out";
           const created = isVoucherCreationTransfer(transfer);
           const transferDate = formatTransferDate(transfer.dateBlock);
@@ -669,13 +608,26 @@ function VoucherActivityPanel({
             </button>
           );
         })}
-        <div ref={loadMoreRef} className="h-px" aria-hidden="true" />
-        {transfersQuery.isFetchingNextPage ? (
-          <div className="p-3 text-center text-muted-foreground text-xs">
-            <Trans>Loading more…</Trans>
-          </div>
-        ) : null}
       </div>
+
+      {hasMoreTransfers ? (
+        <Button
+          variant="outline"
+          className="h-11 w-full bg-card"
+          disabled={transfersQuery.isFetchingNextPage}
+          onClick={() => {
+            if (visibleCount >= transfers.length && transfersQuery.hasNextPage) {
+              void Promise.resolve(transfersQuery.fetchNextPage()).then(() =>
+                setVisibleCount((current) => current + 3),
+              );
+              return;
+            }
+            setVisibleCount((current) => current + 3);
+          }}
+        >
+          {transfersQuery.isFetchingNextPage ? <Trans>Loading…</Trans> : <Trans>Load more</Trans>}
+        </Button>
+      ) : null}
 
       <TransferDetailsSheet
         transfer={selectedTransfer}
@@ -707,12 +659,7 @@ function VoucherInfoPanel({
   const locationLabel = locationName ?? (hasCoordinates ? `${lat}, ${lng}` : null);
 
   return (
-    <div
-      id="voucher-panel-info"
-      role="tabpanel"
-      aria-labelledby="voucher-tab-info"
-      className="space-y-3"
-    >
+    <div className="space-y-3">
       <VoucherContractActionsPanel {...contractActions} editable={editable} />
 
       <VoucherAbout {...about} />
