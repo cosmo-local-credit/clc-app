@@ -25,9 +25,6 @@ export function SettingsPage() {
                 <Label htmlFor="dark-mode" className="font-heading text-sm font-medium">
                   Dark mode
                 </Label>
-                <p className="text-muted-foreground text-xs leading-relaxed">
-                  Use a dark surface for this console.
-                </p>
               </div>
               <Switch
                 id="dark-mode"

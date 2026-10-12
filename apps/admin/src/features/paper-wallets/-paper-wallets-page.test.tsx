@@ -41,16 +41,6 @@ vi.mock("qrcode", () => ({
 
 import { PaperWalletsPage } from "./paper-wallets-page";
 
-const registered = (count: number): BatchWallet[] =>
-  Array.from({ length: count }, (_, id) => ({
-    id,
-    address: `0x${String(id + 1)
-      .repeat(40)
-      .slice(0, 40)}`,
-    recipient: { name: `Holder ${id + 1}`, email: "", phone: "", country: "", currency: "" },
-    status: "ready" as const,
-  }));
-
 describe("PaperWalletsPage", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -65,7 +55,7 @@ describe("PaperWalletsPage", () => {
   });
 
   it("requires a confirmed batch password before generating", () => {
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "print" }} />);
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
     const generate = screen.getByRole("button", { name: "Generate 10 wallets" });
     expect(generate.hasAttribute("disabled")).toBe(true);
 
@@ -81,7 +71,7 @@ describe("PaperWalletsPage", () => {
   it.each(["+254712345678", "254712345678"])(
     "issues valid CSV rows with phone %s normalised and each with its own password",
     async (phone) => {
-      render(<PaperWalletsPage search={{ source: "csv", carrier: "print" }} />);
+      render(<PaperWalletsPage search={{ source: "csv" }} />);
       expect(screen.queryByText("QR protection")).toBeNull();
 
       const file = new File(
@@ -125,7 +115,7 @@ describe("PaperWalletsPage", () => {
     });
     mocks.renderSheet.mockReturnValue(pending);
 
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "print" }} />);
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
     fireEvent.click(screen.getByRole("button", { name: "Download A4 PDF (1)" }));
 
     expect(screen.getByText("Preparing card design…")).toBeTruthy();
@@ -150,7 +140,7 @@ describe("PaperWalletsPage", () => {
   it("asks before leaving while the batch is preparing", () => {
     mocks.phase = "preparing";
     mocks.wallets = [];
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "print" }} />);
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
 
     const event = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(event);
@@ -158,48 +148,17 @@ describe("PaperWalletsPage", () => {
   });
 
   it("lets an idle page go without asking", () => {
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "print" }} />);
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
 
     const event = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(event);
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it("offers NFC cards only where the browser can write them", () => {
-    const view = render(<PaperWalletsPage search={{ source: "blank", carrier: "nfc" }} />);
+  it("keeps NFC writing out of the paper wallet page", () => {
+    vi.stubGlobal("NDEFReader", createFakeNfc().Reader);
+    render(<PaperWalletsPage search={{ source: "blank" }} />);
     expect(screen.queryByText("Write NFC cards")).toBeNull();
-    // Without Web NFC the shared link falls back to printing.
     expect(screen.getByRole("button", { name: "Generate 10 wallets" })).toBeTruthy();
-    view.unmount();
-
-    vi.stubGlobal("NDEFReader", createFakeNfc().Reader);
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "print" }} />);
-    fireEvent.click(screen.getByText("Write NFC cards"));
-    expect(mocks.navigate).toHaveBeenCalledWith({
-      to: "/paper-wallets",
-      search: { source: "blank", carrier: "nfc" },
-    });
-  });
-
-  it("prepares an NFC batch with conservative encryption on the phone", () => {
-    vi.stubGlobal("NDEFReader", createFakeNfc().Reader);
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "nfc" }} />);
-    fireEvent.change(screen.getByLabelText("Password"), { target: { value: "sunflower" } });
-    fireEvent.change(screen.getByLabelText("Confirm password"), { target: { value: "sunflower" } });
-    fireEvent.click(screen.getByRole("button", { name: "Prepare 10 wallets" }));
-    expect(mocks.start.mock.calls[0]?.[1]).toEqual({ encryptWorkers: 2 });
-  });
-
-  it("shows the writer and holds the page while registered wallets have no card", () => {
-    vi.stubGlobal("NDEFReader", createFakeNfc().Reader);
-    mocks.phase = "done";
-    mocks.wallets = registered(2);
-    render(<PaperWalletsPage search={{ source: "blank", carrier: "nfc" }} />);
-
-    expect(screen.getByRole("region", { name: "NFC card writer" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Start writing" })).toBeTruthy();
-    const event = new Event("beforeunload", { cancelable: true });
-    window.dispatchEvent(event);
-    expect(event.defaultPrevented).toBe(true);
   });
 });

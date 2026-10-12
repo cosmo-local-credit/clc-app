@@ -37,7 +37,7 @@ export type OccupiedReason =
   | "card-still-present"
   /** The card already carries another wallet from this batch. */
   | "already-issued"
-  /** Some other content. Never overwritten without a deliberate rewrite. */
+  /** Content from outside this batch. */
   | "occupied";
 
 type AttentionReason = "transfer-failed" | "verify-mismatch" | "write-error";
@@ -74,10 +74,12 @@ export type WriterModel = {
   nextArmId: number;
   /** Write-and-verify, or the explicit fast write-only mode. */
   verify: boolean;
+  /** Allow replacing cards from outside this batch after inspecting their contents. */
+  overwrite: boolean;
 };
 
-export function createWriterModel(verify = true): WriterModel {
-  return { phase: { phase: "idle" }, issuance: {}, setAside: 0, nextArmId: 1, verify };
+export function createWriterModel(verify = true, overwrite = false): WriterModel {
+  return { phase: { phase: "idle" }, issuance: {}, setAside: 0, nextArmId: 1, verify, overwrite };
 }
 
 export type WriterContext = {
@@ -115,7 +117,8 @@ export type WriterEvent =
   | { type: "requeue-skipped" }
   | { type: "pause" }
   | { type: "fail"; error: NfcErrorKind }
-  | { type: "set-verify"; verify: boolean };
+  | { type: "set-verify"; verify: boolean }
+  | { type: "set-overwrite"; overwrite: boolean };
 
 export function issuanceOf(model: WriterModel, rowId: number): CardIssuance {
   return model.issuance[rowId] ?? { status: "pending" };
@@ -214,6 +217,12 @@ export function writerTransition(
         case "aborted":
           return { ...model, phase: { phase: "paused", rowId: event.rowId } };
         case "tag-occupied":
+          // Probe with overwrite off so a card left on the phone cannot receive
+          // the next wallet. Only known content from outside this batch advances
+          // to an overwrite; unreadable or unobserved cards stay blocked.
+          if (model.overwrite && !phase.overwrite && event.occupied?.reason === "occupied") {
+            return arm(model, event.rowId, true);
+          }
           return {
             ...model,
             nextArmId: model.nextArmId + 1,
@@ -321,6 +330,16 @@ export function writerTransition(
       return { ...model, phase: { phase: "stopped", error: event.error } };
     case "set-verify":
       return { ...model, verify: event.verify };
+    case "set-overwrite": {
+      const next = { ...model, overwrite: event.overwrite };
+      if (phase.phase === "waiting" && phase.overwrite && !event.overwrite) {
+        return arm(next, phase.rowId, false);
+      }
+      if (phase.phase === "blocked" && phase.reason === "occupied" && event.overwrite) {
+        return arm(next, phase.rowId, false);
+      }
+      return next;
+    }
   }
 }
 

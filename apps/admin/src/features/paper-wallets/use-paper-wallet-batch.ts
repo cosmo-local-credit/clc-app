@@ -38,6 +38,8 @@ export type BatchWallet = {
 export type BatchPhase = "idle" | "preparing" | "done";
 
 export type BatchStartOptions = {
+  /** Placeholder name for cards issued before the holder sets their profile. */
+  useAddressAsName?: boolean;
   /**
    * Encryption workers. A phone writing NFC cards starts with fewer than a
    * desktop, since each scrypt job holds 32 MiB.
@@ -204,10 +206,11 @@ export function usePaperWalletBatch() {
         const privateKey = generatePrivateKey();
         keysRef.current.set(id, privateKey);
         if (passphrase) passphrasesRef.current.set(id, passphrase);
+        const address = privateKeyToAccount(privateKey).address;
         return {
           id,
-          address: privateKeyToAccount(privateKey).address,
-          recipient,
+          address,
+          recipient: options.useAddressAsName ? { ...recipient, name: address } : recipient,
           status: "queued",
         };
       });

@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createFakeNfc } from "#/lib/nfc/-fake-ndef-reader";
-import type { BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 import { NfcWriterPanel } from "./nfc-writer-panel";
 import { useNfcWriter } from "./use-nfc-writer";
 
@@ -33,6 +33,16 @@ afterEach(() => {
 });
 
 describe("NfcWriterPanel", () => {
+  it("lets the operator enable overwriting with a switch", () => {
+    const { Reader } = createFakeNfc();
+    render(<Harness Reader={Reader} />);
+    const overwrite = screen.getByRole("switch", { name: "Overwrite existing cards" });
+    expect(overwrite.getAttribute("aria-checked")).toBe("false");
+    fireEvent.click(overwrite);
+    expect(overwrite.getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByText("Existing card data will be replaced.")).toBeTruthy();
+  });
+
   it("walks the operator from start to the next card", async () => {
     const { env, Reader } = createFakeNfc();
     render(<Harness Reader={Reader} />);

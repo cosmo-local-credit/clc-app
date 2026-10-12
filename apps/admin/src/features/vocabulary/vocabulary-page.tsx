@@ -160,10 +160,7 @@ export function VocabularyPage() {
             />
           </VocabularySection>
 
-          <VocabularySection
-            title="Default tags"
-            description="Shipped with every deployment. Rename one to fit this deployment; defaults cannot be deleted."
-          >
+          <VocabularySection title="Default tags" description="Cannot be deleted.">
             <DataTable
               columns={tagColumns}
               data={vocabulary.data.tags.filter((row) => !row.isCustom)}
@@ -175,7 +172,7 @@ export function VocabularyPage() {
 
           <VocabularySection
             title="Default offering units"
-            description="The apps translate these by name, so they cannot be renamed or deleted."
+            description="Cannot be renamed or deleted."
           >
             <DataTable
               columns={unitColumns}
@@ -398,9 +395,7 @@ function DeleteVocabularyDialog({
               <li key={detail}>{detail}</li>
             ))}
           </ul>
-        ) : (
-          <p className="text-muted-foreground text-sm">This value currently has no references.</p>
-        )}
+        ) : null}
         {error ? <p className="text-destructive text-sm">{error.message}</p> : null}
 
         <DialogFooter className="rounded-none">

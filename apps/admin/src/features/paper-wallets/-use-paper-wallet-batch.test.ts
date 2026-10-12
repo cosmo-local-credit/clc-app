@@ -71,6 +71,20 @@ describe("usePaperWalletBatch", () => {
     expect(result.current.qrUrlFor(2)).toBe("https://app.test/?w=6Pencrypted2");
   });
 
+  it("uses each card's address as its signup placeholder name", async () => {
+    const { result } = renderHook(() => usePaperWalletBatch());
+    await act(() => result.current.start(entries(null), { useAddressAsName: true }));
+
+    for (const wallet of result.current.wallets) {
+      expect(wallet.recipient.name).toBe(wallet.address);
+      expect(mocks.provision).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipient: { ...EMPTY_PAPER_WALLET_RECIPIENT, name: wallet.address },
+        }),
+      );
+    }
+  });
+
   it("encrypts only the wallets that carry their own password", async () => {
     mocks.encryptKeys.mockImplementation(async (jobs: unknown[], onEncrypted) => {
       jobs.forEach((_, index) => onEncrypted(index, `6Pencrypted${index}`));

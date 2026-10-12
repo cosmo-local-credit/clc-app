@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vite-plus/test";
 
 import { createFakeNfc, type FakeCard } from "#/lib/nfc/-fake-ndef-reader";
-import type { BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 import { useNfcWriter } from "./use-nfc-writer";
 
 const urlFor = (id: number) => `https://app.test/?w=0x${(id + 1).toString(16).padStart(64, "0")}`;
@@ -220,6 +220,58 @@ describe("useNfcWriter", () => {
     await waitFor(() => expect(env.pendingWrites()).toBe(1));
     await tap(env, foreign);
     expect(foreign.records).toEqual([{ recordType: "url", data: urlFor(0) }]);
+  });
+
+  it("reuses written cards with the switch on and protects the card still held", async () => {
+    const { env, hook, phase } = setup();
+    act(() => {
+      hook.result.current.setVerify(false);
+      hook.result.current.setOverwrite(true);
+      hook.result.current.start();
+    });
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    const reused: FakeCard = {
+      serialNumber: "04:ff",
+      records: [{ recordType: "url", data: "https://menu.example" }],
+    };
+    await tap(env, reused);
+    await waitFor(() =>
+      expect(phase()).toMatchObject({ phase: "waiting", rowId: 0, overwrite: true }),
+    );
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    await tap(env, reused);
+    expect(reused.records).toEqual([{ recordType: "url", data: urlFor(0) }]);
+
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    expect(phase()).toMatchObject({ rowId: 1, overwrite: false });
+    await tap(env, reused);
+    await waitFor(() =>
+      expect(phase()).toMatchObject({ phase: "blocked", reason: "card-still-present" }),
+    );
+    expect(reused.records).toEqual([{ recordType: "url", data: urlFor(0) }]);
+    expect(hook.result.current.counts).toMatchObject({ written: 1, remaining: 2 });
+  });
+
+  it("re-arms a blocked card when overwrite is enabled and preserves the preference on reset", async () => {
+    const { env, hook, phase } = setup();
+    act(() => hook.result.current.start());
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    const reused: FakeCard = {
+      serialNumber: "04:ff",
+      records: [{ recordType: "url", data: "https://menu.example" }],
+    };
+    await tap(env, reused);
+    await waitFor(() => expect(phase()).toMatchObject({ phase: "blocked", reason: "occupied" }));
+    act(() => hook.result.current.setOverwrite(true));
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    await tap(env, reused);
+    await waitFor(() => expect(phase()).toMatchObject({ phase: "waiting", overwrite: true }));
+    await waitFor(() => expect(env.pendingWrites()).toBe(1));
+    await tap(env, reused);
+    expect(reused.records).toEqual([{ recordType: "url", data: urlFor(0) }]);
+    act(() => hook.result.current.reset());
+    expect(hook.result.current.model.overwrite).toBe(true);
+    expect(phase()).toEqual({ phase: "idle" });
   });
 
   it("pauses without writing and resumes the same row on an explicit action", async () => {

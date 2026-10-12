@@ -218,12 +218,11 @@ export function PostDetailPage({ reportId }: { reportId: string }) {
               </div>
               {post.status === "APPROVED" ? (
                 <p className="text-muted-foreground mt-3 text-xs leading-5">
-                  Visible in the Posts feed. An edit by its author sends it back for review; an edit
-                  here does not.
+                  Author edits require approval again.
                 </p>
               ) : (
                 <p className="text-muted-foreground mt-3 text-xs leading-5">
-                  Hidden from the Posts feed until approved. Approval cannot be undone.
+                  Approval cannot be undone.
                 </p>
               )}
             </div>

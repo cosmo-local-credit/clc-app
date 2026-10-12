@@ -496,7 +496,7 @@ describe("unlisting", () => {
     fireEvent.click(await waitFor(() => screen.getByRole("button", { name: "Unlist" })));
 
     const confirm = await waitFor(() => screen.getByRole("button", { name: "Unlist offering" }));
-    expect(screen.getByText(/disappears from the marketplace/)).toBeTruthy();
+    expect(screen.getByText(/Remove Maize flour from the marketplace/)).toBeTruthy();
     expect(deleteVoucherOffering).not.toHaveBeenCalled();
 
     fireEvent.click(confirm);

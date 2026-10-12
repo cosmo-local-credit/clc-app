@@ -51,8 +51,9 @@ async function renderBanner(live: AppBuildInfo, path = "/") {
     ),
   });
   const shellRoute = createRoute({ getParentRoute: () => rootRoute, id: "_shell" });
-  const pages = ["/", "/paper-wallets", "/pools/publish", "/posts/new"].map((pagePath) =>
-    createRoute({ getParentRoute: () => shellRoute, path: pagePath, component: () => null }),
+  const pages = ["/", "/paper-wallets", "/nfc-cards", "/pools/publish", "/posts/new"].map(
+    (pagePath) =>
+      createRoute({ getParentRoute: () => shellRoute, path: pagePath, component: () => null }),
   );
   const router = createRouter({
     routeTree: rootRoute.addChildren([shellRoute.addChildren(pages)]),
@@ -135,7 +136,7 @@ describe("AppUpdateBanner", () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it.each(["/paper-wallets", "/pools/publish", "/posts/new"])(
+  it.each(["/paper-wallets", "/nfc-cards", "/pools/publish", "/posts/new"])(
     "stays hidden on %s, whose work lives outside mutations",
     async (path) => {
       await renderBanner(REQUIRED, path);

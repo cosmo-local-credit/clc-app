@@ -106,7 +106,7 @@ describe("writerTransition", () => {
     });
   });
 
-  it("never enables overwrite after a refusal; only a deliberate rewrite does", () => {
+  it("keeps overwrite off by default and supports a deliberate rewrite", () => {
     const blocked = run([
       { type: "start" },
       { type: "write-failed", rowId: 0, error: "tag-occupied" },
@@ -118,6 +118,54 @@ describe("writerTransition", () => {
       rowId: 0,
       overwrite: true,
     });
+  });
+
+  it("overwrites external cards when enabled and probes each next card again", () => {
+    const armed = run(
+      [
+        { type: "set-overwrite", overwrite: true },
+        { type: "start" },
+        { type: "write-failed", rowId: 0, error: "tag-occupied", occupied: { reason: "occupied" } },
+      ],
+      createWriterModel(false),
+    );
+    expect(armed.phase).toMatchObject({ phase: "waiting", rowId: 0, overwrite: true });
+    const next = run([{ type: "write-succeeded", rowId: 0 }], armed);
+    expect(next.phase).toMatchObject({ phase: "waiting", rowId: 1, overwrite: false });
+    expect(next.overwrite).toBe(true);
+  });
+
+  it.each(["card-still-present", "already-issued"] as const)(
+    "keeps %s protected while overwrite is enabled",
+    (reason) => {
+      const blocked = run(
+        [
+          { type: "start" },
+          { type: "write-failed", rowId: 0, error: "tag-occupied", occupied: { reason } },
+        ],
+        createWriterModel(false, true),
+      );
+      expect(blocked.phase).toMatchObject({ phase: "blocked", rowId: 0, reason });
+    },
+  );
+
+  it("cancels an armed overwrite when the switch is turned off", () => {
+    const armed = run([
+      { type: "set-overwrite", overwrite: true },
+      { type: "start" },
+      { type: "write-failed", rowId: 0, error: "tag-occupied", occupied: { reason: "occupied" } },
+    ]);
+    const off = run([{ type: "set-overwrite", overwrite: false }], armed);
+    expect(off.phase).toMatchObject({ phase: "waiting", rowId: 0, overwrite: false });
+    expect(off.overwrite).toBe(false);
+  });
+
+  it("blocks unobserved cards even when overwrite is enabled", () => {
+    const blocked = run(
+      [{ type: "start" }, { type: "write-failed", rowId: 0, error: "tag-occupied" }],
+      createWriterModel(false, true),
+    );
+    expect(blocked.phase).toMatchObject({ phase: "blocked", rowId: 0 });
   });
 
   it("holds an uncertain write for the operator and retries the same row", () => {

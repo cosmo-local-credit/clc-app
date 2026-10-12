@@ -27,13 +27,15 @@ export function protectionError(draft: ProtectionDraft): string | null {
 export function ProtectionFields({
   value,
   onChange,
+  carrier = "QR code",
 }: {
   value: ProtectionDraft;
+  carrier?: "QR code" | "NFC card";
   onChange: (next: ProtectionDraft) => void;
 }) {
   return (
     <div className="space-y-4">
-      <SectionLabel>QR protection</SectionLabel>
+      <SectionLabel>{carrier === "NFC card" ? "Card protection" : "QR protection"}</SectionLabel>
       <ToggleGroup
         variant="outline"
         size="sm"
@@ -77,7 +79,7 @@ export function ProtectionFields({
         </>
       ) : (
         <p className="text-sm text-amber-700 dark:text-amber-400">
-          Anyone with this QR code controls the wallet.
+          Anyone with this {carrier} controls the wallet.
         </p>
       )}
     </div>

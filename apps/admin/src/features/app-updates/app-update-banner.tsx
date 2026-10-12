@@ -21,6 +21,7 @@ import {
  */
 const RELOAD_UNSAFE_ROUTES: ReadonlySet<string> = new Set([
   "/_shell/paper-wallets",
+  "/_shell/nfc-cards",
   "/_shell/pools/publish",
   "/_shell/vouchers/publish",
   "/_shell/posts/new",

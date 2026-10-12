@@ -206,7 +206,6 @@ export function EditPoolProfileSheet({
                 <Field
                   htmlFor={field.name}
                   label="Unit of account"
-                  hint="What amounts in this pool are quoted in, for example KES."
                   error={getFieldError(field.state.meta.errors)}
                 >
                   <UnitOfAccountCombobox
@@ -283,7 +282,7 @@ export function EditPoolProfileSheet({
                   <Field
                     htmlFor={field.name}
                     label="Terms"
-                    hint="A link to the terms, or the terms themselves written as Markdown."
+                    hint="URL or Markdown."
                     error={getFieldError(field.state.meta.errors)}
                   >
                     <Textarea
@@ -305,7 +304,7 @@ export function EditPoolProfileSheet({
                   {(field) => (
                     <ImageUploadField
                       label="Logo"
-                      hint="Square. Stored at 400px."
+                      hint="Square."
                       purpose="pool.image"
                       value={field.state.value === "" ? null : field.state.value}
                       onChange={(url) => field.handleChange(url ?? "")}
@@ -317,7 +316,7 @@ export function EditPoolProfileSheet({
                   {(field) => (
                     <ImageUploadField
                       label="Banner"
-                      hint="Wide. Stored at 1280px."
+                      hint="Wide."
                       purpose="pool.banner"
                       value={field.state.value === "" ? null : field.state.value}
                       onChange={(url) => field.handleChange(url ?? "")}
