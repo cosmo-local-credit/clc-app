@@ -68,13 +68,13 @@ describe("PaperWalletReader", () => {
     expect(onDecoded).not.toHaveBeenCalled();
   });
 
-  it("starts the default camera, not a rear-facing one", async () => {
+  it("prefers the rear camera", async () => {
     render(<PaperWalletReader onDecoded={onDecoded} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Scan with camera" }));
 
     await waitFor(() => expect(mockStartQrCamera).toHaveBeenCalledOnce());
-    expect(cameraOptions().facingMode).toBeUndefined();
+    expect(cameraOptions().facingMode).toBe("environment");
   });
 
   it("passes a camera decode on and returns to the choices", async () => {
