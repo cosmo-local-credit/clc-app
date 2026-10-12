@@ -22,7 +22,7 @@ import { SectionLabel } from "#/components/admin/section-heading";
 import { Button } from "#/components/ui/button";
 import { Switch } from "#/components/ui/switch";
 import { cn } from "#/lib/utils";
-import type { BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 import type { NfcWriterController } from "./use-nfc-writer";
 
 /*
@@ -74,37 +74,45 @@ function describe(
     eligible,
     justWrote,
     skipped,
-  }: { canStart: boolean; ready: number; eligible: number; justWrote: boolean; skipped: number },
+    overwrite,
+  }: {
+    canStart: boolean;
+    ready: number;
+    eligible: number;
+    justWrote: boolean;
+    skipped: number;
+    overwrite: boolean;
+  },
 ): Status {
   switch (phase.phase) {
     case "idle":
       return canStart
         ? {
             headline: "Ready to write",
-            detail: "Start, then present the first blank card.",
+            detail: "",
             tone: "idle",
           }
         : {
             headline: "Preparing wallets",
-            detail: `${ready} of ${eligible} ready. Writing can start once a few are registered.`,
+            detail: `${ready} / ${eligible} ready`,
             tone: "idle",
           };
     case "waiting":
       if (phase.overwrite) {
         return {
           headline: "Present the card to overwrite",
-          detail: "Whatever it holds will be replaced with this wallet.",
+          detail: "Existing data will be replaced.",
           tone: "warning",
         };
       }
       return justWrote
         ? {
             headline: "Remove card · present next card",
-            detail: "Hold the next blank card steady against the back of the phone.",
+            detail: "Hold the next card against the phone.",
             tone: "success",
           }
         : {
-            headline: "Present a blank card",
+            headline: overwrite ? "Present a card" : "Present a blank card",
             detail: "Hold it steady against the back of the phone.",
             tone: "active",
           };
@@ -112,7 +120,7 @@ function describe(
       return phase.retap
         ? {
             headline: "Tap the card again to verify",
-            detail: "It was written but did not read back while held.",
+            detail: "",
             tone: "active",
           }
         : { headline: "Written · verifying", detail: "Keep holding the card.", tone: "success" };
@@ -120,39 +128,39 @@ function describe(
       if (phase.reason === "card-still-present") {
         return {
           headline: "Remove card · present next card",
-          detail: "The card on the reader is the one just written.",
+          detail: "",
           tone: "warning",
         };
       }
       if (phase.reason === "already-issued" && phase.issuedRowId !== undefined) {
         return {
           headline: "Use a blank card",
-          detail: `This card already holds wallet #${phase.issuedRowId + 1}. It was not changed.`,
+          detail: `Already holds wallet #${phase.issuedRowId + 1} from this batch.`,
           tone: "warning",
         };
       }
       return {
         headline: "Use a blank card",
-        detail: "This card already holds data. It was not changed.",
+        detail: "Card already has data. Enable overwrite to replace it.",
         tone: "warning",
       };
     case "attention":
       if (phase.reason === "verify-mismatch") {
         return {
           headline: "Card does not match",
-          detail: "It read back differently and is not issued. Retry it or set it aside.",
+          detail: "Retry or set this card aside.",
           tone: "error",
         };
       }
       return {
         headline: phase.reason === "transfer-failed" ? "Write interrupted" : "Write failed",
-        detail: "The card may be partly written. Retry it, or set it aside and use a new card.",
+        detail: "May be partly written. Retry or set this card aside.",
         tone: "error",
       };
     case "paused":
       return {
         headline: "Paused",
-        detail: "Nothing is written while paused. Resume when the next card is ready.",
+        detail: "",
         tone: "idle",
       };
     case "stopped":
@@ -160,16 +168,13 @@ function describe(
     case "starved":
       return {
         headline: "Waiting for wallets",
-        detail: `${ready} of ${eligible} prepared. The next card starts as soon as one is ready.`,
+        detail: `${ready} / ${eligible} ready`,
         tone: "idle",
       };
     case "finished":
       return {
         headline: skipped > 0 ? "Batch done with skipped rows" : "All cards written",
-        detail:
-          skipped > 0
-            ? `${skipped} skipped rows have no card yet.`
-            : "Every registered wallet has a card.",
+        detail: skipped > 0 ? `${skipped} skipped` : "",
         tone: skipped > 0 ? "warning" : "success",
       };
   }
@@ -233,6 +238,7 @@ export function NfcWriterPanel({
     eligible,
     justWrote,
     skipped: counts.skipped,
+    overwrite: model.overwrite,
   });
 
   // A brief flash on each successful write, on top of the vibration and beep.
@@ -260,17 +266,30 @@ export function NfcWriterPanel({
       className="flex flex-col gap-4 border border-border bg-card p-4"
       aria-label="NFC card writer"
     >
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <SectionLabel>NFC card writer</SectionLabel>
-        <label htmlFor="nfc-verify" className="flex min-h-9 items-center gap-2 text-sm">
-          <Switch
-            id="nfc-verify"
-            checked={model.verify}
-            onCheckedChange={(checked) => writer.setVerify(checked === true)}
-          />
-          Verify each card
-        </label>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <label htmlFor="nfc-verify" className="flex min-h-9 items-center gap-2 text-sm">
+            <Switch
+              id="nfc-verify"
+              checked={model.verify}
+              onCheckedChange={(checked) => writer.setVerify(checked === true)}
+            />
+            Verify each card
+          </label>
+          <label htmlFor="nfc-overwrite" className="flex min-h-9 items-center gap-2 text-sm">
+            <Switch
+              id="nfc-overwrite"
+              checked={model.overwrite}
+              onCheckedChange={(checked) => writer.setOverwrite(checked === true)}
+            />
+            Overwrite existing cards
+          </label>
+        </div>
       </div>
+      {model.overwrite ? (
+        <p className="text-sm text-destructive">Existing card data will be replaced.</p>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-4">
         <Figure label="Written" value={counts.written + counts.verified} />
@@ -306,8 +325,10 @@ export function NfcWriterPanel({
         {row ? (
           <p className="font-data text-xs text-muted-foreground">
             #{row.id + 1}
-            {row.recipient.name ? ` · ${row.recipient.name}` : ""} ·{" "}
-            <span className="font-mono">{formatVoucherAddress(row.address)}</span>
+            {row.recipient.name && row.recipient.name !== row.address
+              ? ` · ${row.recipient.name}`
+              : ""}{" "}
+            · <span className="font-mono">{formatVoucherAddress(row.address)}</span>
           </p>
         ) : null}
         <p className="font-heading text-xl font-semibold leading-tight">{status.headline}</p>

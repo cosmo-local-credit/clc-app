@@ -10,7 +10,7 @@ vi.mock("#/components/admin/data-table", () => ({
 }));
 
 import { BatchResults } from "./batch-results";
-import type { BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 
 const wallets: BatchWallet[] = [
   {

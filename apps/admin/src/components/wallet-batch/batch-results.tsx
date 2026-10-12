@@ -10,8 +10,7 @@ import { DataTable } from "#/components/admin/data-table";
 import { SectionLabel } from "#/components/admin/section-heading";
 import { StateBadge } from "#/components/admin/state-badge";
 import { Button } from "#/components/ui/button";
-import type { PaperWalletCarrier } from "../paper-wallets-search";
-import type { BatchPhase, BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchPhase, BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 
 const STATE: Record<BatchWallet["status"], string> = {
   queued: "queued",
@@ -95,40 +94,37 @@ const WalletTable = memo(function WalletTable({
         wallet.status === "ready" ? ISSUANCE_STATE[issuance[wallet.id] ?? "pending"] : "—",
       cell: ({ getValue }) => <span className="font-mono text-xs">{String(getValue())}</span>,
     };
-    return [...columns.slice(0, 5), card, ...columns.slice(5)];
+    return [columns[0]!, columns[1]!, columns[4]!, card, columns[5]!];
   }, [issuance]);
   return <DataTable columns={withIssuance} data={wallets} />;
 });
 
-export function BatchResults({
-  carrier = "print",
-  issuance = null,
-  wallets,
-  phase,
-  encrypted,
-  toEncrypt,
-  renderStage,
-  rendered,
-  pdfDownloaded,
-  onDownloadPdf,
-  onDownloadManifest,
-  onRetryFailed,
-  onReset,
-}: {
-  carrier?: PaperWalletCarrier;
-  issuance?: IssuanceByRow | null;
+type BatchResultsProps = {
   wallets: BatchWallet[];
   phase: BatchPhase;
   encrypted: number;
   toEncrypt: number;
-  renderStage: "preparing" | "cards" | "assembling" | null;
-  rendered: number;
-  pdfDownloaded: boolean;
-  onDownloadPdf: () => void;
   onDownloadManifest: () => void;
   onRetryFailed: () => void;
   onReset: () => void;
-}) {
+} & (
+  | {
+      carrier?: "print";
+      renderStage: "preparing" | "cards" | "assembling" | null;
+      rendered: number;
+      pdfDownloaded: boolean;
+      onDownloadPdf: () => void;
+    }
+  | { carrier: "nfc"; issuance: IssuanceByRow }
+);
+
+export function BatchResults(props: BatchResultsProps) {
+  const { wallets, phase, encrypted, toEncrypt, onDownloadManifest, onRetryFailed, onReset } =
+    props;
+  const print = props.carrier !== "nfc";
+  const issuance = props.carrier === "nfc" ? props.issuance : null;
+  const renderStage = print ? props.renderStage : null;
+  const rendered = print ? props.rendered : 0;
   const ready = wallets.filter((wallet) => wallet.status === "ready").length;
   const failed = wallets.filter((wallet) => wallet.status === "failed").length;
   const busy = phase === "preparing";
@@ -145,7 +141,7 @@ export function BatchResults({
           ? `Drawing cards… ${rendered} / ${ready}`
           : renderStage === "assembling"
             ? "Assembling PDF…"
-            : `${ready} of ${wallets.length} wallets registered and approved${failed ? `, ${failed} failed` : ""}.`;
+            : `${ready} of ${wallets.length} registered${failed ? `, ${failed} failed` : ""}.`;
 
   return (
     <div className="space-y-4">
@@ -181,15 +177,20 @@ export function BatchResults({
               </div>
             </div>
           ) : null}
-          {carrier === "print" && phase === "done" && !pdfDownloaded ? (
+          {print && phase === "done" && !props.pdfDownloaded ? (
             <p className="text-muted-foreground text-xs">
               Download the PDF before leaving. Keys cannot be recovered.
             </p>
           ) : null}
-          {carrier === "nfc" ? (
+          {props.carrier === "nfc" &&
+          (busy ||
+            wallets.some(
+              (wallet) =>
+                wallet.status === "ready" &&
+                !["written", "verified"].includes(issuance?.[wallet.id] ?? "pending"),
+            )) ? (
             <p className="text-muted-foreground text-xs">
-              Keep this page open until every card is written. Unwritten keys cannot be recovered;
-              issue replacements instead.
+              Keep this page open until all cards are written. Keys cannot be recovered.
             </p>
           ) : null}
         </div>
@@ -209,10 +210,16 @@ export function BatchResults({
             <HiOutlineDocumentDownload />
             Manifest CSV
           </Button>
-          <Button type="button" disabled={busy || rendering || ready === 0} onClick={onDownloadPdf}>
-            {rendering ? <FiLoader className="animate-spin" /> : <HiOutlinePrinter />}
-            {rendering ? "Creating PDF…" : `Download A4 PDF (${ready})`}
-          </Button>
+          {print ? (
+            <Button
+              type="button"
+              disabled={busy || rendering || ready === 0}
+              onClick={props.onDownloadPdf}
+            >
+              {rendering ? <FiLoader className="animate-spin" /> : <HiOutlinePrinter />}
+              {rendering ? "Creating PDF…" : `Download A4 PDF (${ready})`}
+            </Button>
+          ) : null}
           <Button type="button" variant="ghost" disabled={busy || rendering} onClick={onReset}>
             New batch
           </Button>

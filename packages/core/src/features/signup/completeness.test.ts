@@ -25,4 +25,15 @@ describe("profileGaps", () => {
     });
     expect(hasProfileGaps(gaps)).toBe(false);
   });
+
+  it("asks an NFC holder to replace the address placeholder name", () => {
+    expect(
+      profileGaps({
+        name: ADDRESS,
+        email: placeholderSignupEmail(ADDRESS),
+        phone: "",
+        avatarUrl: null,
+      }),
+    ).toEqual({ avatar: true, name: true, contact: true });
+  });
 });

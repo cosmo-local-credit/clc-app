@@ -165,12 +165,6 @@ function PostEditorForm({
         }
       />
 
-      <p className="text-muted-foreground text-sm">
-        {post
-          ? "An operator edit keeps the post's current status. Approval and withdrawal are separate actions."
-          : "A post you create is approved immediately and appears in the Posts feed."}
-      </p>
-
       <form
         className="flex flex-col gap-6"
         onSubmit={(event) => {

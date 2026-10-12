@@ -130,10 +130,7 @@ export function ImageCropDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Frame the image</DialogTitle>
-          <DialogDescription>
-            Stored at {policy.width}px wide in this shape. Drag to move, scroll or use the slider to
-            zoom.
-          </DialogDescription>
+          <DialogDescription>Drag to move; use the slider to zoom.</DialogDescription>
         </DialogHeader>
 
         <div

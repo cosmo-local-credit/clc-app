@@ -18,7 +18,7 @@ export function profileGaps(profile: ProfileCompletenessInput): ProfileGaps {
   const name = profile.name.trim();
   return {
     avatar: !profile.avatarUrl,
-    name: name === "" || name === PAPER_WALLET_PLACEHOLDER_NAME,
+    name: name === "" || name === PAPER_WALLET_PLACEHOLDER_NAME || /^0x[0-9a-f]{40}$/i.test(name),
     contact:
       (profile.email.trim() === "" || isPlaceholderSignupEmail(profile.email)) &&
       profile.phone.trim() === "",

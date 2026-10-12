@@ -23,7 +23,7 @@ import {
   type NdefReaderConstructor,
   queryNfcPermission,
 } from "#/lib/nfc/ndef-adapter";
-import type { BatchWallet } from "../use-paper-wallet-batch";
+import type { BatchWallet } from "#/features/paper-wallets/use-paper-wallet-batch";
 
 /**
  * Registered rows to have in hand before the first card. Preparation keeps
@@ -263,7 +263,7 @@ export function useNfcWriter({
             rowId,
             error: kind,
             occupied:
-              kind === "tag-occupied"
+              kind === "tag-occupied" && observed
                 ? classifyOccupiedCard({
                     observed,
                     previousCard: previousCardRef.current,
@@ -374,7 +374,7 @@ export function useNfcWriter({
   }, [dispatch]);
 
   const reset = useCallback(() => {
-    modelRef.current = createWriterModel(modelRef.current.verify);
+    modelRef.current = createWriterModel(modelRef.current.verify, modelRef.current.overwrite);
     setModel(modelRef.current);
     observedRef.current = null;
     previousCardRef.current = null;
@@ -408,6 +408,10 @@ export function useNfcWriter({
     requeueSkipped: useCallback(() => dispatch({ type: "requeue-skipped" }), [dispatch]),
     setVerify: useCallback(
       (verify: boolean) => dispatch({ type: "set-verify", verify }),
+      [dispatch],
+    ),
+    setOverwrite: useCallback(
+      (overwrite: boolean) => dispatch({ type: "set-overwrite", overwrite }),
       [dispatch],
     ),
   };
