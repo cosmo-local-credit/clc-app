@@ -47,6 +47,16 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("#/lib/api/catalogs", () => ({ catalogsClient: mocks.api }));
 vi.mock("#/features/auth/hooks/use-auth-status", () => ({ useAuthStatus: () => mocks.auth }));
+vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
+  useCreditableBrowse: () => ({
+    auth: mocks.auth,
+    parsed: { ok: true, enabled: null },
+    enabled: false,
+    verification: { status: "idle", pools: [], retry: vi.fn() },
+    poolRefs: undefined,
+    blocksResults: false,
+  }),
+}));
 vi.mock("#/features/auth/hooks/use-profile", () => ({ useAuthProfile: () => mocks.profile }));
 vi.mock("#/features/home/hooks/use-discovery-distance-origin", () => ({
   useDiscoveryDistanceOrigin: () => {
@@ -110,6 +120,7 @@ const catalog = {
   distanceMeters: null,
   createdAt: "2026-10-10",
   updatedAt: "2026-10-10",
+  tags: [],
 };
 const intent = {
   kind: "pool" as const,
@@ -219,6 +230,7 @@ describe("catalog curation", () => {
       geoLat: 43,
       geoLng: 18,
       locationName: "Sarajevo",
+      tags: [],
     });
     expect(mocks.api.create).not.toHaveBeenCalled();
   });
@@ -273,7 +285,15 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: true, q: "" },
+      {
+        cursor: undefined,
+        facets: true,
+        nearby: true,
+        pools: undefined,
+        q: "",
+        tagMatch: "any",
+        tags: [],
+      },
       expect.any(AbortSignal),
     );
     const distance = screen.getByRole("link", { name: "1,000 km" });
@@ -290,7 +310,15 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: false, q: "" },
+      {
+        cursor: undefined,
+        facets: true,
+        nearby: false,
+        pools: undefined,
+        q: "",
+        tagMatch: "any",
+        tags: [],
+      },
       expect.any(AbortSignal),
     );
     const global = screen.getByRole("link", { name: "globally" });
@@ -390,7 +418,15 @@ describe("catalog discovery", () => {
     mount(<CatalogsPage />);
     await screen.findByText("Local makers");
     expect(mocks.api.list).toHaveBeenCalledWith(
-      { cursor: undefined, nearby: false, q: "" },
+      {
+        cursor: undefined,
+        facets: true,
+        nearby: false,
+        pools: undefined,
+        q: "",
+        tagMatch: "any",
+        tags: [],
+      },
       expect.any(AbortSignal),
     );
   });

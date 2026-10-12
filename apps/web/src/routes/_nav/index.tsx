@@ -2,12 +2,12 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { canonicalRedirectSearch } from "#/lib/navigation/catalog-search";
 import {
-  catalogSearchForScope,
-  canonicalRedirectSearch,
-  type CatalogRouteSearch,
-  pickCatalogSearch,
-} from "#/lib/navigation/catalog-search";
+  marketplaceSearchForScope,
+  pickMarketplaceSearch,
+  type MarketplaceRouteSearch,
+} from "#/lib/navigation/marketplace-search";
 import {
   type HomeRouteSearch,
   isPrivateHomeTab,
@@ -22,15 +22,15 @@ const HomePage = lazy(() =>
 
 export const Route = createFileRoute("/_nav/")({
   staticData: { navOwner: "home" },
-  validateSearch: (search): HomeRouteSearch & CatalogRouteSearch => ({
+  validateSearch: (search): HomeRouteSearch & MarketplaceRouteSearch => ({
     ...parseHomeSearch(search),
-    ...pickCatalogSearch(search),
+    ...pickMarketplaceSearch(search),
   }),
   beforeLoad: ({ search }) => {
     if (search.tab === "market" && search.view === "list") {
       throw redirect({
-        to: "/offers",
-        search: catalogSearchForScope(search, false),
+        to: "/market",
+        search: marketplaceSearchForScope(pickMarketplaceSearch(search), null),
         replace: true,
       });
     }
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/_nav/")({
 
 function IndexPage() {
   const auth = useAuthStatus();
-  const { tab, view } = Route.useSearch();
+  const { tab, view, creditable } = Route.useSearch();
   const navigate = Route.useNavigate();
   const activeTab = auth.isAuthenticated ? tab : isPrivateHomeTab(tab ?? "market") ? "market" : tab;
 
@@ -57,7 +57,12 @@ function IndexPage() {
 
   return (
     <Suspense fallback={<HomePageFallback />}>
-      <HomePage activeTab={activeTab} marketView={view} isAuthenticated={auth.isAuthenticated} />
+      <HomePage
+        activeTab={activeTab}
+        marketView={view}
+        isAuthenticated={auth.isAuthenticated}
+        creditableSearch={creditable}
+      />
     </Suspense>
   );
 }

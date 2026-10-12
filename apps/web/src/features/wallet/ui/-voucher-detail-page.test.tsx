@@ -581,7 +581,9 @@ describe("VoucherDetailPage", () => {
     );
     const pools = within(actions).getByRole("link", { name: "Pools" });
     expect(pools.getAttribute("data-variant")).toBe("info");
-    expect(pools.getAttribute("href")).toBe(`/pools?out_voucher=${ADDRESS.toLowerCase()}`);
+    expect(pools.getAttribute("href")).toBe(
+      `/market?scope=pools&out_voucher=${ADDRESS.toLowerCase()}`,
+    );
     expect(within(actions).queryByRole("link", { name: "Receive" })).toBeNull();
 
     expect(screen.getAllByRole("tab").map((tab) => tab.textContent)).toEqual([

@@ -27,6 +27,7 @@ export const catalogWriteSchema = z.object({
   locationName: z.string().trim().min(1, "Choose a location").max(200),
   geoLat: z.number().min(-90).max(90),
   geoLng: z.number().min(-180).max(180),
+  tags: z.array(z.string()).max(12, "Choose at most 12 tags"),
 });
 export type CatalogWrite = z.infer<typeof catalogWriteSchema>;
 
@@ -53,6 +54,10 @@ export const catalogSchema = z.object({
   distanceMeters: z.number().nonnegative().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  tags: z
+    .array(z.string())
+    .optional()
+    .transform((tags) => tags ?? []),
 });
 export type Catalog = z.infer<typeof catalogSchema>;
 

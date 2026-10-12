@@ -23,12 +23,14 @@ export type HomePageProps = {
   activeTab?: HomeTab;
   marketView?: MarketView;
   isAuthenticated?: boolean;
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
 };
 
 export function HomePage({
   activeTab = "market",
   marketView = "map",
   isAuthenticated = true,
+  creditableSearch,
 }: HomePageProps) {
   const { address } = useConnection();
   const delegationStatus = useCaliburDelegation(address);
@@ -87,6 +89,7 @@ export function HomePage({
               onboardingBanner={!isAuthenticated ? <OnboardingBanner /> : undefined}
               isAuthenticated={isAuthenticated}
               locationOwner={locationOwner}
+              creditableSearch={creditableSearch}
             />
           ) : (
             <MarketListPage

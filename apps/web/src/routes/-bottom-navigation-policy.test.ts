@@ -18,7 +18,7 @@ const routePolicy = [
     id: "/_nav/catalogs/",
     fullPath: "/catalogs/",
     source: "_nav/catalogs/index.tsx",
-    navOwner: "wallet",
+    navOwner: "market",
   },
   {
     id: "/_nav/catalogs/$catalogId",
@@ -30,6 +30,12 @@ const routePolicy = [
     id: "/_nav/offers/",
     fullPath: "/offers/",
     source: "_nav/offers/index.tsx",
+    navOwner: "market",
+  },
+  {
+    id: "/_nav/market/",
+    fullPath: "/market/",
+    source: "_nav/market/index.tsx",
     navOwner: "market",
   },
   { id: "/catalogs/create", fullPath: "/catalogs/create", source: "catalogs/create.tsx" },
@@ -67,7 +73,7 @@ const routePolicy = [
     source: "_nav/wallet/vouchers.tsx",
     navOwner: "wallet",
   },
-  { id: "/_nav/pools/", fullPath: "/pools/", source: "_nav/pools/index.tsx", navOwner: "wallet" },
+  { id: "/_nav/pools/", fullPath: "/pools/", source: "_nav/pools/index.tsx", navOwner: "market" },
   {
     id: "/_nav/pools/$poolAddress/",
     fullPath: "/pools/$poolAddress/",

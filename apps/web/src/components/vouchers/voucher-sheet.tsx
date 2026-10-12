@@ -319,7 +319,7 @@ function VoucherCard({
 
         <div className="mt-3 flex flex-wrap gap-2 py-1">
           <Button asChild size="sm" className={PILL}>
-            <Link to="/pools" search={{ out_voucher: address.toLowerCase() }}>
+            <Link to="/market" search={{ scope: "pools", out_voucher: address.toLowerCase() }}>
               <RiHandCoinLine aria-hidden="true" />
               <Trans>Get</Trans>
             </Link>

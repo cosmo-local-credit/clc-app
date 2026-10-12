@@ -31,6 +31,26 @@ vi.mock("#/features/auth/hooks/use-auth-status", () => ({
   useAuthStatus: () => ({ isAuthenticated: true, isLoading: false }),
 }));
 
+vi.mock("#/features/home/hooks/use-creditable-browse", () => ({
+  useCreditableBrowse: () => ({
+    auth: { isAuthenticated: true, isLoading: false },
+    parsed: { ok: true, enabled: null },
+    enabled: false,
+    verification: { status: "idle", pools: [], retry: vi.fn() },
+    poolRefs: undefined,
+    blocksResults: false,
+  }),
+}));
+
+vi.mock("#/features/home/hooks/use-marketplace-map-search", () => ({
+  useMarketplaceMapSearch: () => ({
+    locations: [],
+    status: "disabled",
+    error: null,
+    retry: vi.fn(),
+  }),
+}));
+
 vi.mock("#/components/ui/location-map.lazy", () => ({
   LocationMap: () => <div data-testid="location-map" />,
 }));

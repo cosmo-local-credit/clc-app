@@ -3,55 +3,69 @@ import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import type { Catalog } from "@clc/core/features/catalogs/logic";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { CatalogRow } from "#/components/catalogs/catalog-row";
 import {
-  isWithinNearbyCatalog,
   NearbyCatalog,
+  isWithinNearbyCatalog,
   nearbyQueryPolicy,
   useNearbyCatalog,
   useNearbyCatalogFilter,
 } from "#/components/nearby-catalog";
 import { Button } from "#/components/ui/button";
-import { BackChevron } from "#/components/wallet";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
 import { catalogsClient } from "#/lib/api/catalogs";
-import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
-import { CatalogSearchField } from "#/components/catalog-filter-controls";
+import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
+import { CatalogFilterSheet, CatalogSearchField } from "#/components/catalog-filter-controls";
+import { CreditableBrowseControl } from "#/components/creditable-browse-control";
 import { useCatalogFilter } from "#/lib/navigation/use-catalog-filter";
 import { useStorageOwner } from "#/features/auth/hooks/use-storage-owner";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
+import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 
-export function CatalogsPage() {
-  const { t } = useLingui();
+export function CatalogsPage({
+  creditableSearch,
+}: {
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
+}) {
   return (
-    <div className="min-h-[100svh] space-y-5 bg-background px-6 pt-6 pb-bottom-nav">
-      <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
-      <h1 className="font-heading text-[1.75rem] font-bold leading-tight">
-        <Trans>Catalogs</Trans>
-      </h1>
-      <NearbyCatalog>
-        <CatalogList />
-      </NearbyCatalog>
-    </div>
+    <NearbyCatalog>
+      <div className="min-h-[100svh] space-y-5 bg-background px-4 pb-bottom-nav">
+        <h1 className="sr-only">
+          <Trans>Catalogs</Trans>
+        </h1>
+        <CatalogList creditableSearch={creditableSearch} />
+      </div>
+    </NearbyCatalog>
   );
 }
 
-function CatalogList() {
+function CatalogList({
+  creditableSearch,
+}: {
+  creditableSearch?: boolean | string | readonly (boolean | string)[];
+}) {
   const { i18n, t } = useLingui();
+  const navigate = useNavigate();
   const auth = useAuthStatus();
   const storageOwner = useStorageOwner();
   const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const scope = useNearbyCatalog();
   const filter = useNearbyCatalogFilter();
   const search = useCatalogFilter();
+  const credit = useCreditableBrowse(creditableSearch);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const query = useInfiniteQuery({
     ...catalogsInfiniteQueryOptions(catalogsClient, {
       scope,
       q: search.result.ok ? search.result.filter.term : "",
+      tags: search.result.ok ? search.result.filter.tags : [],
+      tagMatch: search.result.ok ? search.result.filter.tagMatch : "any",
+      ...(credit.enabled && credit.poolRefs ? { pools: credit.poolRefs } : {}),
     }),
-    enabled: search.result.ok && !search.isDebouncing,
+    enabled: search.result.ok && !search.isDebouncing && !credit.blocksResults,
     ...nearbyQueryPolicy(scope),
   });
   const catalogs = query.data?.pages.flatMap((page) => page.catalogs) ?? [];
@@ -74,8 +88,59 @@ function CatalogList() {
     : null;
   return (
     <div className="space-y-3">
-      <MarketplaceResourceNavigation current="catalogs" />
-      <CatalogSearchField filter={search} label={t`Search catalogs`} />
+      <MarketplaceSearchShell
+        current="catalogs"
+        className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+        search={<CatalogSearchField filter={search} label={t`Search catalogs`} />}
+        credit={
+          <CreditableBrowseControl
+            part="control"
+            state={credit}
+            onChange={(checked) =>
+              void navigate({
+                to: "/market",
+                search: (previous) => ({ ...previous, creditable: checked }),
+              })
+            }
+            onClear={() =>
+              void navigate({
+                to: "/market",
+                replace: true,
+                search: (previous) => ({ ...previous, creditable: undefined }),
+              })
+            }
+          />
+        }
+        filters={
+          <CatalogFilterSheet
+            filter={search}
+            facets={query.data?.pages[0]?.tagFacets ?? []}
+            title={<Trans>Filter catalogs</Trans>}
+            facetTitle={<Trans>Tags</Trans>}
+            showHeader={false}
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            onApply={search.setFacets}
+          />
+        }
+      />
+      <CreditableBrowseControl
+        part="feedback"
+        state={credit}
+        onChange={(checked) =>
+          void navigate({
+            to: "/market",
+            search: (previous) => ({ ...previous, creditable: checked }),
+          })
+        }
+        onClear={() =>
+          void navigate({
+            to: "/market",
+            replace: true,
+            search: (previous) => ({ ...previous, creditable: undefined }),
+          })
+        }
+      />
       {auth.isAuthenticated && radiusLabel ? (
         <p className="text-sm text-muted-foreground">
           <Trans>
@@ -113,12 +178,16 @@ function CatalogList() {
           </Trans>
         </p>
       ) : null}
-      {query.isPending ? (
+      {credit.enabled && credit.poolRefs?.length === 0 ? (
+        <p>
+          <Trans>No catalogs are available through your Credit pools.</Trans>
+        </p>
+      ) : credit.blocksResults ? null : query.isPending ? (
         <p role="status">
           <Trans>Loading…</Trans>
         </p>
       ) : null}
-      {query.isError ? (
+      {!credit.blocksResults && query.isError ? (
         <div className="space-y-2">
           <p role="alert">
             <Trans>Couldn't load catalogs.</Trans>
@@ -128,15 +197,17 @@ function CatalogList() {
           </Button>
         </div>
       ) : null}
-      {query.isSuccess && visibleCatalogs.length === 0 ? (
+      {!credit.blocksResults && query.isSuccess && visibleCatalogs.length === 0 ? (
         <p>
           <Trans>No catalogs found.</Trans>
         </p>
       ) : null}
-      {visibleCatalogs.map((catalog) => (
-        <CatalogDistanceRow key={catalog.id} catalog={catalog} filter={distanceOrigin} />
-      ))}
-      {query.hasNextPage && !crossedDistanceBoundary ? (
+      {!credit.blocksResults
+        ? visibleCatalogs.map((catalog) => (
+            <CatalogDistanceRow key={catalog.id} catalog={catalog} filter={distanceOrigin} />
+          ))
+        : null}
+      {!credit.blocksResults && query.hasNextPage && !crossedDistanceBoundary ? (
         <Button
           variant="outline"
           className="h-11 w-full bg-card"

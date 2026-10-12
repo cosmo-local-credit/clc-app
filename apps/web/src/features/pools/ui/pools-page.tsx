@@ -5,10 +5,9 @@ import { RiAddLine, RiArrowRightSLine } from "react-icons/ri";
 
 import { CatalogSearchField } from "#/components/catalog-filter-controls";
 import { Button } from "#/components/ui/button";
-import { Checkbox } from "#/components/ui/checkbox";
-import { BackChevron, PoolLogo } from "#/components/wallet";
+import { CreditableBrowseControl } from "#/components/creditable-browse-control";
+import { PoolLogo } from "#/components/wallet";
 import type { UserPool } from "@clc/api/features/pools/client";
-import { useCreditablePools } from "#/features/pools/hooks/use-creditable-pools";
 import { usePoolCatalog, usePoolFacetVocabulary } from "#/features/pools/hooks/use-filtered-pools";
 import { usePoolOutputAvailability } from "#/features/pools/hooks/use-pool-output-availability";
 import { useUserPoolsInfinite } from "#/features/pools/hooks/use-user-pools";
@@ -21,8 +20,9 @@ import { parsePoolCreditable, parsePoolOutputVoucher } from "#/lib/navigation/po
 import { resetPoolCreateHistory } from "#/lib/navigation/pool-create-history";
 import { usePersistedCatalogFilter } from "#/lib/navigation/use-persisted-catalog-filter";
 import { TagBadge } from "#/components/ui/tag-badge";
-import { MarketplaceResourceNavigation } from "#/components/marketplace-resource-navigation";
+import { MarketplaceSearchShell } from "#/components/marketplace-search-shell";
 import { useAuthStatus } from "#/features/auth/hooks/use-auth-status";
+import { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 import { GUEST_STORAGE_OWNER } from "#/lib/storage/owner-tier-key";
 import { formatDistance, haversineMeters } from "@clc/core/lib/geo/distance";
 import { useDiscoveryDistanceOrigin } from "#/features/home/hooks/use-discovery-distance-origin";
@@ -30,15 +30,6 @@ import { PoolFilterFeedback, PoolFilterSheet } from "./pool-filter-ui";
 import { PoolOutputVoucherFilter } from "./pool-output-voucher-filter";
 
 const POOL_ROW_TAG_LIMIT = 3;
-
-type CreditChoice = {
-  holder: string;
-  context: string;
-  mode: "auto" | "on" | "off" | "invalid";
-  initialized: boolean;
-  checked: boolean;
-  touched: boolean;
-};
 
 export function PoolsPage({
   creditableSearch,
@@ -50,22 +41,15 @@ export function PoolsPage({
   const { t, i18n } = useLingui();
   const navigate = useNavigate();
   const auth = useAuthStatus();
-  const address = auth.isAuthenticated ? auth.address : undefined;
   const storageOwner = useStorageOwner();
   const distanceOrigin = useDiscoveryDistanceOrigin(storageOwner ?? GUEST_STORAGE_OWNER);
   const outputVoucherResult = parsePoolOutputVoucher(outputVoucherSearch);
   const outputVoucherAddress = outputVoucherResult.ok ? outputVoucherResult.address : null;
   const outputFilterActive = outputVoucherAddress !== null;
   const outputFilterInvalid = !outputVoucherResult.ok;
+  const credit = useCreditableBrowse(creditableSearch);
   const creditableResult = parsePoolCreditable(creditableSearch);
   const creditFilterInvalid = !creditableResult.ok;
-  const creditMode = creditFilterInvalid
-    ? "invalid"
-    : creditableResult.enabled === null
-      ? "auto"
-      : creditableResult.enabled
-        ? "on"
-        : "off";
   const specialFilterInvalid = outputFilterInvalid || creditFilterInvalid;
   const filter = usePersistedCatalogFilter(CATALOG_FILTER_PREFERENCE_NAMES.pools, storageOwner, {
     voucherRelationships: true,
@@ -95,7 +79,7 @@ export function PoolsPage({
     },
     filtersEverOpened,
   );
-  const creditable = useCreditablePools(address);
+  const creditable = credit.verification;
   const outputAvailability = usePoolOutputAvailability(
     outputVoucherAddress ? { chainId: CHAIN_ID, address: outputVoucherAddress } : undefined,
   );
@@ -112,10 +96,6 @@ export function PoolsPage({
         : creditable.pools,
     [catalog.pools, creditable.pools, creditableAddresses, filter.isFiltered],
   );
-  const outputAddresses = useMemo(
-    () => new Set(outputAvailability.pools.map((pool) => pool.address.toLowerCase())),
-    [outputAvailability.pools],
-  );
   const creditableOutputPools = useMemo(
     () =>
       outputAvailability.pools.filter((pool) =>
@@ -124,37 +104,15 @@ export function PoolsPage({
     [creditableAddresses, outputAvailability.pools],
   );
   const specialPools = outputFilterActive ? creditableOutputPools : filteredCreditablePools;
-  const creditDefaultPools = outputFilterActive
-    ? filter.isFiltered
-      ? catalog.pools.filter(
-          (pool) =>
-            outputAddresses.has(pool.address.toLowerCase()) &&
-            creditableAddresses.has(pool.address.toLowerCase()),
-        )
-      : creditableOutputPools
-    : filteredCreditablePools;
-  const holderKey = address?.toLowerCase() ?? "";
-  const creditContext = outputVoucherAddress ?? (outputFilterInvalid ? "invalid" : "all");
-  const [creditChoice, setCreditChoice] = useState<CreditChoice | null>(null);
-  const creditReadyForDefault =
-    holderKey !== "" &&
+  const creditReady =
+    auth.isAuthenticated &&
     creditable.status === "ready" &&
     (!outputFilterActive || outputAvailability.status === "ready") &&
     !outputFilterInvalid &&
     catalog.status === "ready" &&
     !filter.isRestoringPreference &&
     filter.result.ok;
-  const creditChecked =
-    creditMode === "on"
-      ? creditReadyForDefault
-      : creditMode === "off" || creditMode === "invalid"
-        ? false
-        : Boolean(
-            creditChoice?.holder === holderKey &&
-            creditChoice.mode === "auto" &&
-            creditChoice.checked &&
-            (creditChoice.touched || creditChoice.context === creditContext),
-          );
+  const creditChecked = credit.enabled && creditReady;
   const specialFilterActive = creditChecked || outputFilterActive;
   const selectedSpecialPools = outputFilterActive
     ? creditChecked
@@ -165,21 +123,27 @@ export function PoolsPage({
     () => new Set(selectedSpecialPools.map((pool) => pool.address.toLowerCase())),
     [selectedSpecialPools],
   );
-  const pools = specialFilterInvalid
-    ? []
-    : specialFilterActive
-      ? filter.isFiltered
-        ? catalog.pools.filter((pool) => selectedSpecialAddresses.has(pool.address.toLowerCase()))
-        : selectedSpecialPools
-      : catalog.pools;
-  const hasMore = !specialFilterActive && !specialFilterInvalid && catalog.hasMore;
+  const pools =
+    specialFilterInvalid || credit.blocksResults
+      ? []
+      : specialFilterActive
+        ? filter.isFiltered
+          ? catalog.pools.filter((pool) => selectedSpecialAddresses.has(pool.address.toLowerCase()))
+          : selectedSpecialPools
+        : catalog.pools;
+  const hasMore =
+    !specialFilterActive && !specialFilterInvalid && !credit.blocksResults && catalog.hasMore;
   const isRefining =
     catalog.status === "refining" ||
     filter.isDebouncing ||
     (outputFilterActive && outputAvailability.isRefreshing);
   const outputReady = !outputFilterActive || outputAvailability.status === "ready";
   const canShowResults =
-    catalog.status === "ready" && filter.result.ok && !specialFilterInvalid && outputReady;
+    catalog.status === "ready" &&
+    filter.result.ok &&
+    !specialFilterInvalid &&
+    !credit.blocksResults &&
+    outputReady;
   const resultCountLabel = i18n._("{count, plural, one {# pool} other {# pools}}", {
     count: pools.length,
   });
@@ -188,54 +152,6 @@ export function PoolsPage({
     resetPoolCreateHistory();
     clearCreateDraft();
   }, [clearCreateDraft]);
-
-  useEffect(() => {
-    setCreditChoice((current) => {
-      if (holderKey === "") return null;
-      if (current?.holder !== holderKey || current.mode !== creditMode) {
-        if (creditMode !== "auto") {
-          return {
-            holder: holderKey,
-            context: creditContext,
-            mode: creditMode,
-            initialized: creditReadyForDefault,
-            checked: creditMode === "on" && creditReadyForDefault,
-            touched: false,
-          };
-        }
-        return {
-          holder: holderKey,
-          context: creditContext,
-          mode: "auto",
-          initialized: creditReadyForDefault,
-          checked: creditReadyForDefault && creditDefaultPools.length > 0,
-          touched: false,
-        };
-      }
-      if (creditMode !== "auto") return current;
-      if (!current.touched && current.context !== creditContext) {
-        return {
-          holder: holderKey,
-          context: creditContext,
-          mode: "auto",
-          initialized: creditReadyForDefault,
-          checked: creditReadyForDefault && creditDefaultPools.length > 0,
-          touched: false,
-        };
-      }
-      if (!current.initialized && creditReadyForDefault) {
-        return {
-          holder: holderKey,
-          context: creditContext,
-          mode: "auto",
-          initialized: true,
-          checked: creditDefaultPools.length > 0,
-          touched: false,
-        };
-      }
-      return current;
-    });
-  }, [creditContext, creditDefaultPools.length, creditMode, creditReadyForDefault, holderKey]);
 
   useEffect(() => {
     const target = loadMoreRef.current;
@@ -255,23 +171,32 @@ export function PoolsPage({
 
   return (
     <div className="space-y-4">
-      <BackChevron label={t`Back`} to="/" search={{ tab: "market", view: "map" }} />
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="min-w-0 font-heading text-[1.75rem] font-bold leading-tight">
-          <Trans>Pools</Trans>
-        </h1>
-        {auth.isAuthenticated ? (
-          <Button asChild variant="outline" className="bg-card">
-            <Link to="/pools/create/$step" params={{ step: "pool" }}>
-              <RiAddLine className="size-4" aria-hidden="true" />
-              <Trans>Create</Trans>
-            </Link>
-          </Button>
-        ) : null}
-      </div>
-
-      <MarketplaceResourceNavigation
+      <h1 className="sr-only">
+        <Trans>Pools</Trans>
+      </h1>
+      <MarketplaceSearchShell
         current="pools"
+        className="sticky top-0 z-20 pt-[calc(env(safe-area-inset-top)+0.5rem)]"
+        search={<CatalogSearchField filter={filter} label={t`Search pools`} />}
+        credit={
+          <CreditableBrowseControl
+            part="control"
+            state={credit}
+            onChange={(checked) =>
+              void navigate({
+                to: "/market",
+                search: (previous) => ({ ...previous, creditable: checked }),
+              })
+            }
+            onClear={() =>
+              void navigate({
+                to: "/market",
+                replace: true,
+                search: (previous) => ({ ...previous, creditable: undefined }),
+              })
+            }
+          />
+        }
         filters={
           <PoolFilterSheet
             filter={filter}
@@ -285,57 +210,41 @@ export function PoolsPage({
           />
         }
       />
-
-      <div className="flex items-end gap-3">
+      <CreditableBrowseControl
+        part="feedback"
+        state={credit}
+        onChange={(checked) =>
+          void navigate({
+            to: "/market",
+            search: (previous) => ({ ...previous, creditable: checked }),
+          })
+        }
+        onClear={() =>
+          void navigate({
+            to: "/market",
+            replace: true,
+            search: (previous) => ({ ...previous, creditable: undefined }),
+          })
+        }
+      />
+      <div className="flex items-start justify-end gap-3">
         {auth.isAuthenticated ? (
-          <label
-            htmlFor="creditable-pools"
-            className="flex min-h-9 shrink-0 cursor-pointer items-center gap-2 text-sm"
-          >
-            <Checkbox
-              id="creditable-pools"
-              checked={creditChecked}
-              disabled={
-                specialFilterInvalid ||
-                creditable.status !== "ready" ||
-                (outputFilterActive && outputAvailability.status !== "ready")
-              }
-              onCheckedChange={(checked) => {
-                setCreditChoice({
-                  holder: holderKey,
-                  context: creditContext,
-                  mode: creditMode,
-                  initialized: true,
-                  checked,
-                  touched: true,
-                });
-                void navigate({
-                  to: ".",
-                  search: (previous) => ({ ...previous, creditable: checked }),
-                });
-              }}
-            />
-            <span>
-              <Trans>Credit</Trans>
-            </span>
-            {creditable.status === "loading" ? (
-              <span className="text-muted-foreground text-xs">
-                <Trans>Checking…</Trans>
-              </span>
-            ) : null}
-            {creditable.isRefreshing ? (
-              <span className="sr-only">
-                <Trans>Refreshing creditable pools…</Trans>
-              </span>
-            ) : null}
-          </label>
+          <Button asChild variant="outline" className="bg-card">
+            <Link to="/pools/create/$step" params={{ step: "pool" }}>
+              <RiAddLine className="size-4" aria-hidden="true" />
+              <Trans>Create</Trans>
+            </Link>
+          </Button>
         ) : null}
-        <div className="min-w-0 flex-1">
-          <CatalogSearchField filter={filter} label={t`Search pools`} />
-        </div>
       </div>
 
       <PoolFilterFeedback filter={filter} error={catalog.error} onRetry={catalog.retry} />
+
+      {credit.enabled && credit.poolRefs?.length === 0 ? (
+        <div className="border border-border bg-card p-3 text-muted-foreground text-sm">
+          <Trans>No creditable pools are available.</Trans>
+        </div>
+      ) : null}
 
       {outputFilterInvalid ? (
         <div
@@ -362,31 +271,6 @@ export function PoolsPage({
         </div>
       ) : null}
 
-      {creditFilterInvalid ? (
-        <div
-          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
-          role="alert"
-        >
-          <p className="text-sm">
-            <Trans>This link contains an invalid Credit filter.</Trans>
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
-            onClick={() =>
-              void navigate({
-                to: ".",
-                replace: true,
-                search: (previous) => ({ ...previous, creditable: undefined }),
-              })
-            }
-          >
-            <Trans>Clear filter</Trans>
-          </Button>
-        </div>
-      ) : null}
-
       {outputFilterActive && outputAvailability.status === "error" ? (
         <div
           className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
@@ -400,25 +284,6 @@ export function PoolsPage({
             size="sm"
             className="h-9 shrink-0 bg-card"
             onClick={outputAvailability.retry}
-          >
-            <Trans>Retry</Trans>
-          </Button>
-        </div>
-      ) : null}
-
-      {creditable.status === "error" ? (
-        <div
-          className="flex items-center justify-between gap-3 border border-destructive bg-card p-3"
-          role="alert"
-        >
-          <p className="text-sm">
-            <Trans>Couldn't check creditable pools.</Trans>
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 shrink-0 bg-card"
-            onClick={creditable.retry}
           >
             <Trans>Retry</Trans>
           </Button>

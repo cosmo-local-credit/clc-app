@@ -295,13 +295,11 @@ describe("MarketListPage", () => {
     expect(within(list).getAllByRole("button")).toHaveLength(25);
   });
 
-  it("keeps location controls out of the list view and links to the map subview", () => {
+  it("keeps location controls out of the list view and links to the canonical map", () => {
     render(<MarketListPage />);
 
     expect(screen.queryByRole("button", { name: "Use location" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe(
-      "/?tab=market&view=map",
-    );
+    expect(screen.getByRole("link", { name: "Map" }).getAttribute("href")).toBe("/");
     fireEvent.click(screen.getByRole("button", { name: /^Filters/ }));
     const sheet = screen.getByRole("dialog", { name: "Filter vouchers" });
     expect(within(sheet).queryByRole("button", { name: "Use location" })).toBeNull();
@@ -313,20 +311,18 @@ describe("MarketListPage", () => {
     render(<MarketListPage />);
 
     const offers = screen.getByRole("link", { name: "Offers" });
-    const vouchers = screen.getByRole("button", { name: "Vouchers" });
+    const vouchers = screen.getByRole("button", { name: "Voucher" });
     const pools = screen.getByRole("link", { name: "Pools" });
     const catalogs = screen.getByRole("link", { name: "Catalogs" });
     const map = screen.getByRole("link", { name: "Map" });
     const filters = screen.getByRole("button", { name: "Filters" });
 
-    expect(offers.getAttribute("href")).toBe("/offers");
-    expect(pools.getAttribute("href")).toBe("/pools?creditable=false");
-    expect(pools.getAttribute("data-variant")).toBe("info");
-    expect(catalogs.getAttribute("href")).toBe("/catalogs");
-    expect(catalogs.getAttribute("data-variant")).toBe("success");
-    expect(offers.className).toContain("h-9");
-    expect(pools.className).toContain("h-9");
-    expect(catalogs.className).toContain("h-9");
+    expect(offers.getAttribute("href")).toBe("/market?scope=offers");
+    expect(pools.getAttribute("href")).toBe("/market?scope=pools");
+    expect(catalogs.getAttribute("href")).toBe("/market?scope=catalogs");
+    expect(offers.className).toContain("size-11");
+    expect(pools.className).toContain("size-11");
+    expect(catalogs.className).toContain("size-11");
     expect(filters.className).toContain("h-9");
     expect(vouchers.getAttribute("aria-current")).toBe("page");
     expect(
@@ -336,7 +332,8 @@ describe("MarketListPage", () => {
     expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(catalogs.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(map.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(catalogs.parentElement?.className).toContain("flex-wrap");
+    expect(catalogs.parentElement?.className).toContain("overflow-x-auto");
+    expect(filters.parentElement?.className).toContain("shrink-0");
   });
 
   it("removes the visible sheet header while preserving accessible controls", () => {
@@ -424,7 +421,7 @@ describe("MarketListPage", () => {
 
     const href = screen.getByRole("link", { name: "Map" }).getAttribute("href");
     expect(href).toContain("q=art");
-    expect(href).toContain("view=map");
+    expect(href).not.toContain("view=map");
   });
 });
 
