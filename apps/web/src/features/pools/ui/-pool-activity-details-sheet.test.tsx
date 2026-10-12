@@ -127,6 +127,6 @@ describe("PoolActivityDetailsSheet", () => {
     );
 
     expect(screen.getByText("+1 KAW (1.25 KES)")).toBeTruthy();
-    expect(screen.getByText("−1 SAR (2.5 USD)")).toBeTruthy();
+    expect(screen.getByText("−1 SAR (2.50 USD)")).toBeTruthy();
   });
 });

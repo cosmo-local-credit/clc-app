@@ -1,6 +1,6 @@
 import { RecipientIdentityLabel } from "#/components/wallet/recipient-identity-label";
 import {
-  formatOfferingDisplayValue,
+  formatUnitOfAccountDisplayValue,
   formatVoucherUnitValue,
 } from "@clc/core/features/market/logic";
 import {
@@ -115,7 +115,7 @@ export function SendAmountPage({
           voucherDetail.data?.voucherUoa ?? null,
         );
   const localizedUnitValue = unitValue
-    ? (formatOfferingDisplayValue(unitValue.value, i18n.locales?.[0] ?? i18n.locale) ??
+    ? (formatUnitOfAccountDisplayValue(unitValue.value, i18n.locales?.[0] ?? i18n.locale) ??
       unitValue.value)
     : null;
   const unitValueLabel =

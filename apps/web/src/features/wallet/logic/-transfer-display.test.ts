@@ -9,10 +9,16 @@ describe("formatTransferDate", () => {
 });
 
 describe("formatTransferUnitValue", () => {
-  it("localizes exact historical values without converting through Number", () => {
+  it("localizes historical values without converting through Number", () => {
     expect(formatTransferUnitValue("9007199254740993.25", "KES", "de")).toBe(
       "9.007.199.254.740.993,25 KES",
     );
+  });
+
+  it("rounds display values to two decimals while keeping tiny positives visible", () => {
+    expect(formatTransferUnitValue("1.000001", "KES", "en")).toBe("1.00 KES");
+    expect(formatTransferUnitValue("1.005", "KES", "en")).toBe("1.01 KES");
+    expect(formatTransferUnitValue("0.000001", "KES", "en")).toBe("<0.01 KES");
   });
 
   it.each([

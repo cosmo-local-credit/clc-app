@@ -177,9 +177,9 @@ describe("SendAmountPage", () => {
     const input = screen.getByRole("textbox", { name: /amount/i });
     fireEvent.change(input, { target: { value: "4.20" } });
 
-    expect(screen.getByText("(10.5 KES)")).toBeTruthy();
+    expect(screen.getByText("(10.50 KES)")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
-    expect(screen.getByText("4.20 USDC (10.5 KES)")).toBeTruthy();
+    expect(screen.getByText("4.20 USDC (10.50 KES)")).toBeTruthy();
   });
 
   it("preserves the amount and focuses it after selecting a voucher", async () => {
@@ -236,12 +236,12 @@ describe("SendAmountPage", () => {
       <SendAmountPage token={USDC} recipient={RECIPIENT} recipientLabel="Alice" amount="3" />,
     );
 
-    await screen.findByText("(6 KES)");
+    await screen.findByText("(6.00 KES)");
     fireEvent.click(getTokenSelector());
     fireEvent.click(await screen.findByRole("button", { name: /BABAS/i }));
 
     expect(await screen.findByText("(Loading…)")).toBeTruthy();
-    expect(screen.queryByText("(6 KES)")).toBeNull();
+    expect(screen.queryByText("(6.00 KES)")).toBeNull();
     expect(screen.getByRole("button", { name: /^send$/i }).hasAttribute("disabled")).toBe(false);
   });
 
@@ -435,7 +435,7 @@ describe("SendAmountPage", () => {
     expect((screen.getByRole("textbox", { name: /amount/i }) as HTMLInputElement).value).toBe(
       "2.13",
     );
-    expect(screen.getByText("(2.134567 KES)")).toBeTruthy();
+    expect(screen.getByText("(2.13 KES)")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
     expect(screen.getByText(/confirm send/i)).toBeTruthy();
@@ -482,7 +482,7 @@ describe("SendAmountPage", () => {
     fireEvent.change(screen.getByRole("textbox", { name: /amount/i }), {
       target: { value: "3" },
     });
-    expect(screen.getByText("(3 KES)")).toBeTruthy();
+    expect(screen.getByText("(3.00 KES)")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^send$/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirm and send/i }));
 

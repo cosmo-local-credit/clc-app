@@ -7,6 +7,7 @@ import {
   formatOfferingPrice,
   formatOfferingQuantity,
   formatOfferingTotal,
+  formatUnitOfAccountDisplayValue,
   formatVoucherRate,
   formatVoucherUnitValue,
   sumDecimalAmounts,
@@ -23,6 +24,30 @@ describe("formatOfferingDisplayValue", () => {
 
   it("rejects malformed values", () => {
     expect(formatOfferingDisplayValue("1,000", "en")).toBeNull();
+  });
+});
+
+describe("formatUnitOfAccountDisplayValue", () => {
+  it("rounds informational values to two localized decimal places", () => {
+    expect(formatUnitOfAccountDisplayValue("1.000001", "en")).toBe("1.00");
+    expect(formatUnitOfAccountDisplayValue("0.506", "en")).toBe("0.51");
+    expect(formatUnitOfAccountDisplayValue("2", "de")).toBe("2,00");
+  });
+
+  it("keeps a positive sub-cent value visible and renders true zero normally", () => {
+    expect(formatUnitOfAccountDisplayValue("0.009999", "en")).toBe("<0.01");
+    expect(formatUnitOfAccountDisplayValue("0.000001", "de")).toBe("<0,01");
+    expect(formatUnitOfAccountDisplayValue("0", "en")).toBe("0.00");
+  });
+
+  it("rounds large exact values without converting them to Number", () => {
+    expect(formatUnitOfAccountDisplayValue("90071992547409931234.555", "en")).toBe(
+      "90,071,992,547,409,931,234.56",
+    );
+  });
+
+  it("rejects malformed values", () => {
+    expect(formatUnitOfAccountDisplayValue("1,000", "en")).toBeNull();
   });
 });
 

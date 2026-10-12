@@ -152,13 +152,13 @@ describe("SwapReceiptPage", () => {
       />,
     );
 
-    expect(screen.getByText("−1.00 USDC (130 KES)")).toBeTruthy();
-    expect(screen.getByText("+2.00 TTX (2.5 USD)")).toBeTruthy();
+    expect(screen.getByText("−1.00 USDC (130.00 KES)")).toBeTruthy();
+    expect(screen.getByText("+2.00 TTX (2.50 USD)")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /share receipt/i }));
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const payload = share.mock.calls[0]?.[0] as { text: string };
-    expect(payload.text).toContain("1.00 USDC (130 KES)");
-    expect(payload.text).toContain("2.00 TTX (2.5 USD)");
+    expect(payload.text).toContain("1.00 USDC (130.00 KES)");
+    expect(payload.text).toContain("2.00 TTX (2.50 USD)");
     Reflect.deleteProperty(navigator, "share");
   });
 
@@ -174,12 +174,12 @@ describe("SwapReceiptPage", () => {
     const { unmount } = render(
       <SwapReceiptPage poolAddress={POOL_ADDRESS} details={valuedDetails} />,
     );
-    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.5 usd\)/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.50 usd\)/i })).toBeTruthy();
     unmount();
 
     useOtxTracking.mockReturnValue({ outcome: { kind: "error", error: "reverted" } });
     render(<SwapReceiptPage poolAddress={POOL_ADDRESS} details={valuedDetails} />);
-    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.5 usd\)/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /2\.00 ttx \(2\.50 usd\)/i })).toBeTruthy();
   });
 
   it("shows a swapping state while polling the relayer transaction", async () => {

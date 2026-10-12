@@ -1,4 +1,4 @@
-import { formatOfferingDisplayValue } from "@clc/core/features/market/logic";
+import { formatUnitOfAccountDisplayValue } from "@clc/core/features/market/logic";
 
 export function formatTransferDate(
   dateBlock: string,
@@ -31,6 +31,6 @@ export function formatTransferUnitValue(
   if (!normalizedUnit || !/^[A-Za-z0-9]{2,16}$/.test(normalizedUnit) || value === undefined) {
     return null;
   }
-  const localizedValue = formatOfferingDisplayValue(value, locale);
+  const localizedValue = formatUnitOfAccountDisplayValue(value, locale);
   return localizedValue ? `${localizedValue} ${normalizedUnit}` : null;
 }
