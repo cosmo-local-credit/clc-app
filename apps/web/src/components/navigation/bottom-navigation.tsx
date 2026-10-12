@@ -99,8 +99,8 @@ function MarketNavLink({
   const active = activeTab === "market";
   return (
     <Link
-      to="/"
-      search={{ tab: "market", view: undefined }}
+      to="/market"
+      search={{}}
       activeOptions={{ exact: true, explicitUndefined: true }}
       aria-current={active ? (atActiveTabRoot ? "page" : "true") : undefined}
       className="relative flex h-full flex-col items-center justify-end gap-0.5 pb-1 text-muted-foreground transition-colors active:bg-muted"

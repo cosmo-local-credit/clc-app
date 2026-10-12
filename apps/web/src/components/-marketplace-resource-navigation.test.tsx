@@ -33,7 +33,7 @@ describe("MarketplaceResourceNavigation", () => {
     render(
       <MarketplaceResourceNavigation
         current="vouchers"
-        filters={<button type="button">Filters</button>}
+        credit={<button type="button">Credit</button>}
       />,
     );
 
@@ -45,18 +45,18 @@ describe("MarketplaceResourceNavigation", () => {
       "Pools",
       "Catalogs",
       "Map",
-      "Filters",
+      "Credit",
     ]);
     const current = within(nav).getByRole("button", { name: "Voucher" });
     expect(current.getAttribute("aria-current")).toBe("page");
     expect((current as HTMLButtonElement).disabled).toBe(true);
   });
 
-  it("shows Catalog Filters as a disabled control", () => {
+  it("does not reserve trailing space when Credit is unavailable", () => {
     render(<MarketplaceResourceNavigation current="catalogs" />);
-    expect((screen.getByRole("button", { name: "Filters" }) as HTMLButtonElement).disabled).toBe(
-      true,
-    );
+
+    const nav = screen.getByRole("navigation", { name: "Marketplace sections" });
+    expect(nav.querySelectorAll("a,button")).toHaveLength(6);
   });
 
   it("brings the active scope into the mobile scroll area", () => {

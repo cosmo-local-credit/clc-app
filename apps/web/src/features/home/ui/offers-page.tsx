@@ -132,6 +132,7 @@ export function OffersPage({
             title={<Trans>Filter offers</Trans>}
             facetTitle={<Trans>Tags</Trans>}
             showHeader={false}
+            trigger="marketplace-icon"
             open={filtersOpen}
             onOpenChange={setFiltersOpen}
             onApply={filter.applyFacetFilters}

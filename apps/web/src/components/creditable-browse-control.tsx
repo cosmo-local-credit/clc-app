@@ -1,8 +1,8 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "@tanstack/react-router";
+import { RiLoader4Line } from "react-icons/ri";
 
 import { Button } from "#/components/ui/button";
-import { Checkbox } from "#/components/ui/checkbox";
 import type { useCreditableBrowse } from "#/features/home/hooks/use-creditable-browse";
 
 type State = ReturnType<typeof useCreditableBrowse>;
@@ -66,19 +66,23 @@ export function CreditableBrowseControl({
   return (
     <>
       {showControl && state.auth.isAuthenticated ? (
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <Checkbox
-            checked={state.enabled}
-            disabled={state.auth.isLoading}
-            onCheckedChange={onChange}
-          />
+        <Button
+          variant="outline"
+          className={
+            state.enabled
+              ? "h-11 border-destructive bg-destructive px-2.5 text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground"
+              : "h-11 bg-card px-2.5"
+          }
+          aria-pressed={state.enabled}
+          aria-busy={state.enabled && state.verification.status === "loading"}
+          disabled={state.auth.isLoading}
+          onClick={() => onChange(!state.enabled)}
+        >
           <Trans>Credit</Trans>
           {state.enabled && state.verification.status === "loading" ? (
-            <span className="text-xs text-muted-foreground">
-              <Trans>Checking…</Trans>
-            </span>
+            <RiLoader4Line className="size-4 animate-spin" aria-hidden="true" />
           ) : null}
-        </label>
+        </Button>
       ) : null}
       {showFeedback && state.enabled && state.verification.status === "error" ? (
         <div

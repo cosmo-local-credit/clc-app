@@ -4,7 +4,6 @@ import { type ComponentProps, type ReactNode, useEffect, useRef } from "react";
 import {
   RiBookOpenLine,
   RiCoupon3Line,
-  RiFilter3Line,
   RiGroupLine,
   RiMap2Line,
   RiSearch2Line,
@@ -55,11 +54,9 @@ const resources = [
 export function MarketplaceResourceNavigation({
   current,
   credit,
-  filters,
 }: {
   current: MarketplaceResource;
   credit?: ReactNode;
-  filters?: ReactNode;
 }) {
   const { t } = useLingui();
   const activeControlRef = useRef<HTMLButtonElement>(null);
@@ -153,22 +150,7 @@ export function MarketplaceResourceNavigation({
           );
         })}
       </span>
-      <span className="ms-auto flex shrink-0 items-center gap-1">
-        {credit}
-        {filters ?? (
-          <Button
-            variant="outline"
-            disabled
-            className="size-11 bg-muted opacity-100"
-            title={t`Filters`}
-          >
-            <RiFilter3Line className="size-5" aria-hidden="true" />
-            <span className="sr-only">
-              <Trans>Filters</Trans>
-            </span>
-          </Button>
-        )}
-      </span>
+      {credit ? <span className="ms-auto flex shrink-0 items-center">{credit}</span> : null}
     </nav>
   );
 }

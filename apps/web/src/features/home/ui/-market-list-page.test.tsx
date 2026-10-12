@@ -307,7 +307,7 @@ describe("MarketListPage", () => {
     expect(mocks.camera.requestLocation).not.toHaveBeenCalled();
   });
 
-  it("orders resource actions before Filters", () => {
+  it("places Filters in the search row before the scope controls", () => {
     render(<MarketListPage />);
 
     const offers = screen.getByRole("link", { name: "Offers" });
@@ -323,7 +323,8 @@ describe("MarketListPage", () => {
     expect(offers.className).toContain("size-11");
     expect(pools.className).toContain("size-11");
     expect(catalogs.className).toContain("size-11");
-    expect(filters.className).toContain("h-9");
+    expect(filters.className).toContain("size-11");
+    expect(filters.className).toContain("bg-destructive");
     expect(vouchers.getAttribute("aria-current")).toBe("page");
     expect(
       offers.compareDocumentPosition(vouchers) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -331,9 +332,8 @@ describe("MarketListPage", () => {
     expect(vouchers.compareDocumentPosition(pools) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(pools.compareDocumentPosition(catalogs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(catalogs.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(map.compareDocumentPosition(filters) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.compareDocumentPosition(offers) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(catalogs.parentElement?.className).toContain("overflow-x-auto");
-    expect(filters.parentElement?.className).toContain("shrink-0");
   });
 
   it("removes the visible sheet header while preserving accessible controls", () => {
@@ -827,7 +827,8 @@ describe("MarketListPage clear affordances", () => {
     render(<MarketListPage />);
 
     expect(screen.getByRole("alert").textContent).toContain("too many filters");
-    expect(screen.getByRole("button", { name: "Filters13" })).toBeTruthy();
+    const filters = screen.getByRole("button", { name: "Filters" });
+    expect(filters.textContent).toBe("13");
     expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 

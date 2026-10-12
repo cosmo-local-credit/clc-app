@@ -403,13 +403,10 @@ describe("MarketPage location button", () => {
 });
 
 describe("MarketPage guest entry", () => {
-  it("floats the app menu at logical top-start and places sign-in below the search shell", () => {
+  it("places the shared app menu inside the search shell and sign-in below it", () => {
     renderPage(<MarketPage onboardingBanner={<button type="button">Sign in or sign up</button>} />);
 
-    expect(screen.getByTestId("app-menu").className).toContain("start-4");
-    expect(screen.getByTestId("app-menu").className).toContain(
-      "top-[calc(env(safe-area-inset-top)+1rem)]",
-    );
+    expect(screen.getByTestId("app-menu")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Sign in or sign up" }).parentElement?.className,
     ).toContain("inset-x-4");
@@ -422,7 +419,7 @@ describe("MarketPage guest entry", () => {
     renderPage();
 
     expect(profileRequests.current).toBe(0);
-    expect(lastAppMenuProps.current).toEqual({ className: expect.any(String) });
+    expect(lastAppMenuProps.current).toEqual({});
   });
 });
 
@@ -747,14 +744,13 @@ describe("MarketPage voucher card", () => {
     expect(lastMapProps.current?.camera).toBeNull();
   });
 
-  it("moves the location button onto the card and hides the rest of the controls", () => {
+  it("moves the location button onto the card", () => {
     vouchersResult.current = { ...vouchersResult.current, vouchers: [voucher("1")] };
     renderPage();
-    expect(screen.getByRole("link", { name: /browse all/i })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
 
     fireEvent.click(screen.getByTestId("marker-1"));
 
-    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
     const location = screen.getByRole("button", { name: "Use current location" });
     expect(screen.getByRole("dialog").contains(location)).toBe(true);
   });
@@ -794,10 +790,10 @@ describe("MarketPage voucher card", () => {
     expect(selection.calls.at(-1)).toEqual(["close"]);
   });
 
-  it("links Browse all to the marketplace list without rendering it over the map", () => {
+  it("does not render the obsolete Browse all action over the map", () => {
     renderPage();
 
-    expect(screen.getByRole("link", { name: /browse all/i }).getAttribute("href")).toBe("/market");
+    expect(screen.queryByRole("link", { name: /browse all/i })).toBeNull();
     expect(screen.queryByRole("list")).toBeNull();
   });
 });
@@ -1052,15 +1048,19 @@ describe("MarketPage filtering", () => {
     expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
   });
 
-  it("preserves the filter when leaving for the list", () => {
+  it("keeps the filter summary after removing Browse all", () => {
     routeSearch.current = { q: "art", tags: "Art" };
+    filteredResult.current = {
+      ...filteredResult.current,
+      data: { vouchers: [voucherAt(1, -1.29, 36.82)], tagFacets: null },
+    };
 
     render(<MarketPage />);
 
-    const href = screen.getByRole("link", { name: "Browse all" }).getAttribute("href");
-    expect(href).toContain("q=art");
-    expect(href).toContain("tags=Art");
-    expect(href).toContain("/market");
+    const summary = screen.getByRole("link", { name: "Edit filters" });
+    expect(summary.textContent).toContain("“art”");
+    expect(summary.textContent).toContain("1 tag");
+    expect(screen.queryByRole("link", { name: "Browse all" })).toBeNull();
   });
 
   it("distinguishes a filtered-empty map from an empty catalog", () => {

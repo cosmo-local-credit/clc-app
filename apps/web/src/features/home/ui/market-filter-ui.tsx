@@ -99,6 +99,7 @@ export function MarketFilterSheet({
       title={<Trans>Filter vouchers</Trans>}
       facetTitle={<Trans>What they offer</Trans>}
       showHeader={false}
+      trigger="marketplace-icon"
       open={open}
       onOpenChange={onOpenChange}
       onApply={filter.applyFacetFilters}
